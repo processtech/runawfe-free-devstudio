@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:runa="http://runa.ru/wfe/xml" targetNamespace="http://runa.ru/wfe/xml">
+  <process name="Businesstrip">
+    <extensionElements>
+      <runa:property name="showSwimlane" value="none"/>
+      <runa:property name="documentation" value="Participants of this process are members of manager, staff, bookkeeper and human resource groups"/>
+      <runa:property name="version" value="4.2.1.201506302219"/>
+      <runa:property name="accessType" value="Process"/>
+    </extensionElements>
+    <laneSet id="laneSet1">
+      <lane id="ID73" name="bookkeeper">
+        <extensionElements>
+          <runa:property name="class" value="ru.runa.wfe.extension.assign.DefaultAssignmentHandler"/>
+          <runa:property name="config"><![CDATA[ru.runa.wfe.extension.orgfunction.ExecutorByNameFunction(bookkeeper)]]></runa:property>
+        </extensionElements>
+      </lane>
+      <lane id="ID74" name="human resource inspector">
+        <extensionElements>
+          <runa:property name="class" value="ru.runa.wfe.extension.assign.DefaultAssignmentHandler"/>
+          <runa:property name="config"><![CDATA[ru.runa.wfe.extension.orgfunction.ExecutorByNameFunction(human resource)]]></runa:property>
+        </extensionElements>
+      </lane>
+      <lane id="ID75" name="staffrole">
+        <extensionElements>
+          <runa:property name="class" value="ru.runa.wfe.extension.assign.DefaultAssignmentHandler"/>
+          <runa:property name="config"><![CDATA[]]></runa:property>
+        </extensionElements>
+      </lane>
+      <lane id="ID76" name="boss">
+        <extensionElements>
+          <runa:property name="class" value="ru.runa.wfe.extension.assign.DefaultAssignmentHandler"/>
+          <runa:property name="config"><![CDATA[]]></runa:property>
+        </extensionElements>
+      </lane>
+    </laneSet>
+    <startEvent id="ID1" name="Send an employee to a business trip">
+      <extensionElements>
+        <runa:property name="lane" value="boss"/>
+      </extensionElements>
+    </startEvent>
+    <sequenceFlow id="ID115" name="tr1" sourceRef="ID1" targetRef="ID3"/>
+    <exclusiveGateway id="ID3" name="Trip type">
+      <extensionElements>
+        <runa:property name="class" value="ru.runa.wfe.extension.decision.GroovyDecisionHandler"/>
+        <runa:property name="config"><![CDATA[if ( businessTripType.equals("toAnotherRegion") ) {
+	return "to another region";
+};
+
+return "local";
+]]></runa:property>
+      </extensionElements>
+    </exclusiveGateway>
+    <sequenceFlow id="ID116" name="to another region" sourceRef="ID3" targetRef="ID14"/>
+    <sequenceFlow id="ID133" name="local" sourceRef="ID3" targetRef="ID132"/>
+    <userTask id="ID2" name="Confirm otification business trip out to another region">
+      <documentation><![CDATA[Employee confirms that business trip notification is received]]></documentation>
+      <extensionElements>
+        <runa:property name="lane" value="staffrole"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID131" name="tr1" sourceRef="ID2" targetRef="ID129"/>
+    <userTask id="ID11" name="Make an order">
+      <documentation><![CDATA[Make an order for the business trip]]></documentation>
+      <extensionElements>
+        <runa:property name="lane" value="human resource inspector"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID109" name="tr1" sourceRef="ID11" targetRef="ID96"/>
+    <userTask id="ID12" name="Receive a signature on the order">
+      <documentation><![CDATA[Receive the employee's signature on the business trip order]]></documentation>
+      <extensionElements>
+        <runa:property name="lane" value="human resource inspector"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID102" name="tr1" sourceRef="ID12" targetRef="ID101"/>
+    <userTask id="ID13" name="Sign the order">
+      <documentation><![CDATA[Bustness trip. Sign the order]]></documentation>
+      <extensionElements>
+        <runa:property name="lane" value="staffrole"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID128" name="tr1" sourceRef="ID13" targetRef="ID126"/>
+    <userTask id="ID25" name="Give a business trip warrant">
+      <documentation><![CDATA[Give a warrant for the business trip]]></documentation>
+      <extensionElements>
+        <runa:property name="lane" value="human resource inspector"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID106" name="tr1" sourceRef="ID25" targetRef="ID105"/>
+    <userTask id="ID26" name="Take a business trip warrant">
+      <documentation><![CDATA[Take a warrant for the business trip]]></documentation>
+      <extensionElements>
+        <runa:property name="lane" value="staffrole"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID125" name="tr1" sourceRef="ID26" targetRef="ID123"/>
+    <userTask id="ID34" name="Take business trip money">
+      <documentation><![CDATA[Take money from bookkeeper for a business trip]]></documentation>
+      <extensionElements>
+        <runa:property name="lane" value="staffrole"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID122" name="tr1" sourceRef="ID34" targetRef="ID120"/>
+    <userTask id="ID35" name="Give business trip money">
+      <documentation><![CDATA[Give money to employee for a business trip]]></documentation>
+      <extensionElements>
+        <runa:property name="lane" value="bookkeeper"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID111" name="tr1" sourceRef="ID35" targetRef="ID110"/>
+    <userTask id="ID43" name="Give a business trip financial report">
+      <documentation><![CDATA[Give a business trip financial report to bookkeeper]]></documentation>
+      <extensionElements>
+        <runa:property name="lane" value="staffrole"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID119" name="tr1" sourceRef="ID43" targetRef="ID117"/>
+    <userTask id="ID44" name="Take a business trip financial report">
+      <documentation><![CDATA[Take a business trip financial report from the employee]]></documentation>
+      <extensionElements>
+        <runa:property name="lane" value="bookkeeper"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID118" name="tr1" sourceRef="ID44" targetRef="ID117"/>
+    <userTask id="ID132" name="Confirm notification of local business trip">
+      <documentation><![CDATA[Employee confirms that business trip notification is received]]></documentation>
+      <extensionElements>
+        <runa:property name="lane" value="staffrole"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID134" name="tr1" sourceRef="ID132" targetRef="ID52"/>
+    <parallelGateway id="ID14" name="first fork"/>
+    <sequenceFlow id="ID136" name="tr2" sourceRef="ID14" targetRef="ID2"/>
+    <sequenceFlow id="ID137" name="tr1" sourceRef="ID14" targetRef="ID11"/>
+    <parallelGateway id="ID96" name="Параллельный шлюз 2"/>
+    <sequenceFlow id="ID99" name="tr1" sourceRef="ID96" targetRef="ID12"/>
+    <sequenceFlow id="ID100" name="tr2" sourceRef="ID96" targetRef="ID13"/>
+    <parallelGateway id="ID101" name="Параллельный шлюз 3"/>
+    <sequenceFlow id="ID103" name="tr1" sourceRef="ID101" targetRef="ID26"/>
+    <sequenceFlow id="ID104" name="tr2" sourceRef="ID101" targetRef="ID25"/>
+    <parallelGateway id="ID105" name="Параллельный шлюз 4"/>
+    <sequenceFlow id="ID107" name="tr1" sourceRef="ID105" targetRef="ID34"/>
+    <sequenceFlow id="ID108" name="tr2" sourceRef="ID105" targetRef="ID35"/>
+    <parallelGateway id="ID110" name="Параллельный шлюз 5"/>
+    <sequenceFlow id="ID112" name="tr1" sourceRef="ID110" targetRef="ID44"/>
+    <sequenceFlow id="ID113" name="tr2" sourceRef="ID110" targetRef="ID43"/>
+    <parallelGateway id="ID117" name="Параллельный шлюз 6"/>
+    <sequenceFlow id="ID121" name="tr1" sourceRef="ID117" targetRef="ID120"/>
+    <parallelGateway id="ID120" name="Параллельный шлюз 7"/>
+    <sequenceFlow id="ID124" name="tr1" sourceRef="ID120" targetRef="ID123"/>
+    <parallelGateway id="ID123" name="Параллельный шлюз 8"/>
+    <sequenceFlow id="ID127" name="tr1" sourceRef="ID123" targetRef="ID126"/>
+    <parallelGateway id="ID126" name="Параллельный шлюз 9"/>
+    <sequenceFlow id="ID130" name="tr1" sourceRef="ID126" targetRef="ID129"/>
+    <parallelGateway id="ID129" name="Параллельный шлюз 10"/>
+    <sequenceFlow id="ID135" name="tr1" sourceRef="ID129" targetRef="ID52"/>
+    <endEvent id="ID52" name="end"/>
+  </process>
+</definitions>

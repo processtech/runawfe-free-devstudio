@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-diagram name="WebService - who is" notation="bpmn" rendered="graphiti" width="1363" height="623" showActions="false" showGrid="false">
+  <node name="ID1" x="160" y="40" width="48" height="48">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID3" x="118" y="180" width="132" height="84">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID4" x="118" y="290" width="132" height="91">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID2" x="166" y="110" width="132" height="84" minimizedView="true">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID5" x="161" y="410" width="48" height="48"/>
+</process-diagram>

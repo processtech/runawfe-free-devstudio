@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<validators>
+  <field name="string">
+    <field-validator type="required">
+      <message><![CDATA[Field is required]]></message>
+    </field-validator>
+  </field>
+  <field name="double">
+    <field-validator type="required">
+      <message><![CDATA[Field is required]]></message>
+    </field-validator>
+  </field>
+  <field name="date">
+    <field-validator type="required">
+      <message><![CDATA[Field is required]]></message>
+    </field-validator>
+  </field>
+</validators>

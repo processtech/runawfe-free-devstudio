@@ -1,0 +1,70 @@
+﻿div.form-container { 
+	margin: 0px; 
+	padding: 10px; 
+	border: #888 1px solid; 
+	font: 100% Arial,Helvetica,sans-serif; 
+	color: #111; 
+	background-color: #f3f3f3;
+}
+p.legend { 
+	margin-bottom: 1em; 
+	margin-left: 10%; 
+	text-align: left;
+	font-size: 1.2em;
+}
+div.form-container { 
+	margin: 0; 
+}
+div.form-container fieldset { 
+	margin: 10px 0; 
+	padding: 10px; 
+}
+div.form-container legend { 
+	color: #666; 
+}
+div.form-container fieldset div { 
+	padding: 0.25em 0; 
+}
+div.form-container label { 
+	margin-right: 10px; 
+	padding-right: 10px; 
+	width: 150px; 
+	display: block; 
+	float: left; 
+	text-align: right; 
+	position: relative; 
+}
+div.form-container label em { 
+	position: absolute; right: 0; 
+	font-size: 120%; 
+	font-style: normal; color: #C00; 
+}
+div.form-container input:focus, div.form-container textarea:focus { 
+	background-color: #FFC; 
+	border-color: #FC6; 
+}
+div.form-container input {
+	width: 300px;
+	padding-left: 5px;
+}
+div.form-container select {
+	width: 300px;
+}
+div.form-container textarea {
+	width: 300px;
+	height: 100px;
+	padding: 5px;
+	overflow: auto;
+}
+.readOnlyText { 
+	background-color: #f3f3f3; 
+}
+div.form-container div.controlset label, div.form-container div.controlset input { 
+	display: inline; 
+	float: none; 
+	width: auto;
+}
+div.form-container div.controlset { 
+	margin-left: 170px; 
+}
+

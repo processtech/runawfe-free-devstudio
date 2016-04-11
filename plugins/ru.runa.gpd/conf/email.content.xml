@@ -1,0 +1,6 @@
+<email-config>
+  <message label="MessageBody">
+    <param name="bodyInlined" presentation="checkbox" optional="true" variable="false" label.key="mail.bodyInlined" help.key="" />
+    <param name="body" variable="false" label.key="" help="" xmlNodeType="2" />
+  </message>
+</email-config>

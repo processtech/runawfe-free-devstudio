@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-diagram name="officeDocx" notation="bpmn" rendered="graphiti" width="706" height="659" showActions="true" showGrid="false">
+  <node name="ID1" x="180" y="33" width="48" height="48">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID2" x="139" y="233" width="132" height="84">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID6" x="139" y="353" width="132" height="84">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID3" x="186" y="103" width="169" height="84" minimizedView="true">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID20" x="187" y="163" width="169" height="84" minimizedView="true">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID10" x="181" y="467" width="48" height="48"/>
+</process-diagram>

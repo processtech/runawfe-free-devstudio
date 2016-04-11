@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<forms>
+  <form state="ID3" file="ID3.ftl" type="ftl" validationFile="ID3.validation.xml" jsValidation="false"/>
+  <form state="ID4" file="ID4.ftl" type="ftl" validationFile="ID4.validation.xml" jsValidation="false"/>
+  <form state="ID5" file="ID5.ftl" type="ftl" validationFile="ID5.validation.xml" jsValidation="false"/>
+  <form state="ID13" file="ID13.ftl" type="ftl" validationFile="ID13.validation.xml" jsValidation="false"/>
+  <form state="ID14" file="ID14.ftl" type="ftl" validationFile="ID14.validation.xml" jsValidation="false"/>
+  <form state="ID15" file="ID15.ftl" type="ftl" validationFile="ID15.validation.xml" jsValidation="false"/>
+  <form state="ID16" file="ID16.ftl" type="ftl" validationFile="ID16.validation.xml" jsValidation="false"/>
+  <form state="ID17" file="ID17.ftl" type="ftl" validationFile="ID17.validation.xml" jsValidation="false"/>
+  <form state="ID18" file="ID18.ftl" type="ftl" validationFile="ID18.validation.xml" jsValidation="false"/>
+</forms>

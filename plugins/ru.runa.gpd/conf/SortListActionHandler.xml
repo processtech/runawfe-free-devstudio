@@ -1,0 +1,9 @@
+<config>
+  <input>
+    <param name="list" formatFilter="java.util.List" label.key="Param.List" />
+    <param name="mode" options="asc,desc" variable="false" label.key="Param.SortMode" />
+  </input>
+  <output>
+    <param name="result" formatFilter="java.util.List" label.key="Param.Result" />
+  </output>
+</config>

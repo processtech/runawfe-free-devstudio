@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:runa="http://runa.ru/wfe/xml" targetNamespace="http://runa.ru/wfe/xml">
+  <process name="Report">
+    <extensionElements>
+      <runa:property name="showSwimlane" value="none"/>
+      <runa:property name="documentation" value="Example of a simple process. Participants of this process are members of manager and staff groups"/>
+      <runa:property name="version" value="4.2.1.201506302219"/>
+      <runa:property name="accessType" value="Process"/>
+    </extensionElements>
+    <laneSet id="laneSet1">
+      <lane id="ID5" name="staff">
+        <extensionElements>
+          <runa:property name="class" value="ru.runa.wfe.extension.assign.DefaultAssignmentHandler"/>
+          <runa:property name="config"><![CDATA[ru.runa.wfe.extension.orgfunction.ExecutorByNameFunction(staff)]]></runa:property>
+        </extensionElements>
+      </lane>
+      <lane id="ID6" name="manager">
+        <extensionElements>
+          <runa:property name="class" value="ru.runa.wfe.extension.assign.DefaultAssignmentHandler"/>
+          <runa:property name="config"><![CDATA[]]></runa:property>
+        </extensionElements>
+      </lane>
+    </laneSet>
+    <startEvent id="ID1" name="start">
+      <documentation><![CDATA[Start report making process]]></documentation>
+      <extensionElements>
+        <runa:property name="lane" value="manager"/>
+      </extensionElements>
+    </startEvent>
+    <sequenceFlow id="ID7" name="tr1" sourceRef="ID1" targetRef="ID2"/>
+    <userTask id="ID2" name="make report">
+      <documentation><![CDATA[Task for report making]]></documentation>
+      <extensionElements>
+        <runa:property name="lane" value="staff"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID8" name="tr1" sourceRef="ID2" targetRef="ID3"/>
+    <userTask id="ID3" name="read report">
+      <documentation><![CDATA[report is ready]]></documentation>
+      <extensionElements>
+        <runa:property name="lane" value="manager"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID9" name="tr1" sourceRef="ID3" targetRef="ID4"/>
+    <endEvent id="ID4" name="end"/>
+  </process>
+</definitions>

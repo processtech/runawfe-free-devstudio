@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-diagram name="MultiOnRelationSub" notation="bpmn" rendered="graphiti" width="767" height="516" showActions="true" showGrid="false">
+  <node name="ID1" x="110" y="33" width="48" height="48">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID2" x="68" y="143" width="132" height="84">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID3" x="110" y="293" width="48" height="48"/>
+</process-diagram>

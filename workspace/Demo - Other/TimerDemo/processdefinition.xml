@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:runa="http://runa.ru/wfe/xml" targetNamespace="http://runa.ru/wfe/xml">
+  <process name="TimerDemo">
+    <extensionElements>
+      <runa:property name="showSwimlane" value="none"/>
+      <runa:property name="documentation" value="Demo for element timer (no start form provided)"/>
+      <runa:property name="version" value="4.2.1.201506302219"/>
+      <runa:property name="accessType" value="Process"/>
+    </extensionElements>
+    <laneSet id="laneSet1">
+      <lane id="ID10" name="requester">
+        <extensionElements>
+          <runa:property name="class" value="ru.runa.wfe.extension.assign.DefaultAssignmentHandler"/>
+          <runa:property name="config"><![CDATA[]]></runa:property>
+        </extensionElements>
+      </lane>
+    </laneSet>
+    <startEvent id="ID1" name="start">
+      <extensionElements>
+        <runa:property name="lane" value="requester"/>
+      </extensionElements>
+    </startEvent>
+    <sequenceFlow id="ID6" name="tr1" sourceRef="ID1" targetRef="ID2"/>
+    <userTask id="ID2" name="Before timer triggered">
+      <documentation><![CDATA[Before timer triggered]]></documentation>
+      <extensionElements>
+        <runa:property name="lane" value="requester"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID8" name="tr1" sourceRef="ID2" targetRef="ID3"/>
+    <boundaryEvent id="ID5" name="Таймер 1" cancelActivity="true" attachedToRef="ID2">
+      <timerEventDefinition>
+        <timeDuration>3 minutes</timeDuration>
+      </timerEventDefinition>
+    </boundaryEvent>
+    <sequenceFlow id="ID7" name="time-out-transition" sourceRef="ID5" targetRef="ID4"/>
+    <userTask id="ID4" name="After timer triggered">
+      <documentation><![CDATA[After timer triggered]]></documentation>
+      <extensionElements>
+        <runa:property name="lane" value="requester"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID9" name="tr1" sourceRef="ID4" targetRef="ID3"/>
+    <endEvent id="ID3" name="end"/>
+  </process>
+</definitions>

@@ -1,0 +1,9 @@
+<config>
+  <input>
+    <param name="map1" formatFilter="java.util.Map" label.key="Param.Map" />
+    <param name="map2" formatFilter="java.util.Map" label.key="Param.Map" />
+  </input>
+  <output>
+    <param name="map" formatFilter="java.util.Map" label.key="Param.Result" />
+  </output>
+</config>

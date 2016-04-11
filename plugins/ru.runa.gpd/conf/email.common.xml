@@ -1,0 +1,6 @@
+<email-config>
+  <common label="CommonSettings">
+    <param name="throwErrorOnFailure" presentation="checkbox" defaultValue="true" variable="false" label.key="actionHandler.throwErrorOnFailure" help.key="actionHandler.throwErrorOnFailure.help" />
+    <param name="basePropertiesFileName" variable="false" label.key="mail.basePropertiesFileName" optional="true" help.key="mail.basePropertiesFileName.help" />
+  </common>
+</email-config>

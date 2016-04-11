@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<bottasks>
+  <task id="ID2" class="ru.runa.wfe.office.doc.DocxHandler" botTaskName="Generate DOCX">
+    <config> 
+      <input> 
+        <param name="ParamTemplate" value="FileTemplate"/>  
+        <param name="ParamTableName" variable="TableName"/>  
+        <param name="ParamItems" variable="items"/>  
+        <param name="ParamPrices" variable="prices"/>  
+        <param name="ParamNumbers" variable="numbers"/>  
+        <param name="ParamDateTimeNow" variable="dtnow"/> 
+      </input>  
+      <output> 
+        <param name="ParamReport" variable="FileReport"/> 
+      </output> 
+    </config>
+  </task>
+</bottasks>

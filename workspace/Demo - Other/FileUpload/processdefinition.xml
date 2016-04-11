@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:runa="http://runa.ru/wfe/xml" targetNamespace="http://runa.ru/wfe/xml">
+  <process name="FileUpload">
+    <extensionElements>
+      <runa:property name="showSwimlane" value="none"/>
+      <runa:property name="documentation" value="This is sample workflow process demonstrates work with file"/>
+      <runa:property name="version" value="4.2.1.201506302219"/>
+      <runa:property name="accessType" value="Process"/>
+    </extensionElements>
+    <laneSet id="laneSet1">
+      <lane id="ID6" name="user">
+        <extensionElements>
+          <runa:property name="class" value="ru.runa.wfe.extension.assign.DefaultAssignmentHandler"/>
+          <runa:property name="config"><![CDATA[]]></runa:property>
+        </extensionElements>
+      </lane>
+    </laneSet>
+    <startEvent id="ID1" name="Начало">
+      <extensionElements>
+        <runa:property name="lane" value="user"/>
+      </extensionElements>
+    </startEvent>
+    <sequenceFlow id="ID4" name="tr1" sourceRef="ID1" targetRef="ID2"/>
+    <userTask id="ID2" name="download">
+      <extensionElements>
+        <runa:property name="lane" value="user"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID5" name="tr1" sourceRef="ID2" targetRef="ID3"/>
+    <endEvent id="ID3" name="Окончание"/>
+  </process>
+</definitions>

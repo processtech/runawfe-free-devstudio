@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<variables>
+  <variable name="staff" scriptingName="staff" format="ru.runa.wfe.var.format.ExecutorFormat" swimlane="true" editor="SwimlaneElement.ManualLabel"/>
+  <variable name="manager" scriptingName="manager" format="ru.runa.wfe.var.format.ExecutorFormat" swimlane="true"/>
+  <variable name="report" scriptingName="report" format="ru.runa.wfe.var.format.TextFormat"/>
+  <variable name="report theme" scriptingName="report_theme" format="ru.runa.wfe.var.format.StringFormat"/>
+</variables>

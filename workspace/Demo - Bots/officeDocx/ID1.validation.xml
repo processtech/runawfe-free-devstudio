@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<validators>
+  <field name="items">
+    <field-validator type="required">
+      <message><![CDATA[Filed is required]]></message>
+    </field-validator>
+  </field>
+  <field name="numbers">
+    <field-validator type="required">
+      <message><![CDATA[Filed is required]]></message>
+    </field-validator>
+  </field>
+  <field name="prices">
+    <field-validator type="required">
+      <message><![CDATA[Filed is required]]></message>
+    </field-validator>
+  </field>
+  <field name="TableName">
+    <field-validator type="required">
+      <message><![CDATA[Filed is required]]></message>
+    </field-validator>
+  </field>
+</validators>

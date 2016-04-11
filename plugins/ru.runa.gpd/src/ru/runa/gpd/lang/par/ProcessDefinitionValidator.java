@@ -1,0 +1,96 @@
+package ru.runa.gpd.lang.par;
+
+import java.util.List;
+
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
+
+import ru.runa.gpd.PluginConstants;
+import ru.runa.gpd.PluginLogger;
+import ru.runa.gpd.lang.ValidationError;
+import ru.runa.gpd.lang.model.Action;
+import ru.runa.gpd.lang.model.NamedGraphElement;
+import ru.runa.gpd.lang.model.Node;
+import ru.runa.gpd.lang.model.ProcessDefinition;
+import ru.runa.gpd.lang.model.Swimlane;
+import ru.runa.gpd.lang.model.Transition;
+import ru.runa.gpd.ui.view.ValidationErrorsView;
+
+import com.google.common.collect.Lists;
+
+public class ProcessDefinitionValidator {
+
+    /**
+     * 0 = no errors 1 = only warnings 2 = errors
+     */
+    public static int validateDefinition(IFile definitionFile, ProcessDefinition definition) {
+        try {
+            boolean hasErrors = false;
+            boolean hasWarnings = false;
+            definitionFile.deleteMarkers(ValidationErrorsView.ID, true, IResource.DEPTH_INFINITE);
+            List<ValidationError> errors = Lists.newArrayList();
+            definition.validate(errors, definitionFile);
+            for (ValidationError validationError : errors) {
+                addError(definitionFile, definition, validationError);
+                if (validationError.getSeverity() == IMarker.SEVERITY_WARNING) {
+                    hasWarnings = true;
+                }
+                if (validationError.getSeverity() == IMarker.SEVERITY_ERROR) {
+                    hasErrors = true;
+                }
+            }
+            if (hasErrors) {
+                return 2;
+            }
+            if (hasWarnings) {
+                return 1;
+            }
+            return 0;
+        } catch (Throwable e) {
+            PluginLogger.logError(e);
+            return 2;
+        }
+    }
+
+    private static void addError(IFile definitionFile, ProcessDefinition definition, ValidationError validationError) {
+        try {
+            IMarker marker = definitionFile.createMarker(ValidationErrorsView.ID);
+            if (marker.exists()) {
+                marker.setAttribute(IMarker.MESSAGE, validationError.getMessage());
+                String elementId = validationError.getSource().toString();
+                if (validationError.getSource() instanceof Node) {
+                    elementId = ((Node) validationError.getSource()).getId();
+                }
+                if (validationError.getSource() instanceof Swimlane) {
+                    marker.setAttribute(PluginConstants.SWIMLANE_LINK_KEY, elementId);
+                } else if (validationError.getSource() instanceof Action) {
+                    Action action = (Action) validationError.getSource();
+                    NamedGraphElement actionParent = (NamedGraphElement) action.getParent();
+                    if (actionParent != null) {
+                        marker.setAttribute(PluginConstants.ACTION_INDEX_KEY, actionParent.getActions().indexOf(action));
+                        String parentNodeTreePath;
+                        if (actionParent instanceof Transition) {
+                            parentNodeTreePath = ((NamedGraphElement) actionParent.getParent()).getName() + "|" + actionParent.getName();
+                        } else {
+                            parentNodeTreePath = actionParent.getName();
+                        }
+                        marker.setAttribute(PluginConstants.PARENT_NODE_KEY, parentNodeTreePath);
+                        elementId = action + " (" + parentNodeTreePath + ")";
+                    } else {
+                        elementId = action.toString();
+                    }
+                } else {
+                    marker.setAttribute(PluginConstants.SELECTION_LINK_KEY, elementId);
+                }
+                marker.setAttribute(IMarker.LOCATION, validationError.getSource().toString());
+                marker.setAttribute(IMarker.SEVERITY, validationError.getSeverity());
+                marker.setAttribute(PluginConstants.PROCESS_NAME_KEY, definition.getName());
+            }
+        } catch (CoreException e) {
+            PluginLogger.logError(e);
+        }
+    }
+
+}

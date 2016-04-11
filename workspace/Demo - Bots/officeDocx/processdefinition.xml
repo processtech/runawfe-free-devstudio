@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:runa="http://runa.ru/wfe/xml" targetNamespace="http://runa.ru/wfe/xml">
+  <process name="officeDocx">
+    <extensionElements>
+      <runa:property name="showSwimlane" value="none"/>
+      <runa:property name="documentation" value="Bot creates docx file"/>
+      <runa:property name="version" value="4.2.1.201506302219"/>
+      <runa:property name="accessType" value="Process"/>
+    </extensionElements>
+    <laneSet id="laneSet1">
+      <lane id="ID5" name="operator">
+        <extensionElements>
+          <runa:property name="class" value="ru.runa.wfe.extension.assign.DefaultAssignmentHandler"/>
+          <runa:property name="config"><![CDATA[]]></runa:property>
+        </extensionElements>
+      </lane>
+      <lane id="ID12" name="bot">
+        <extensionElements>
+          <runa:property name="class" value="ru.runa.wfe.extension.assign.DefaultAssignmentHandler"/>
+          <runa:property name="config"><![CDATA[#UniversalBot]]></runa:property>
+        </extensionElements>
+      </lane>
+    </laneSet>
+    <startEvent id="ID1" name="Start">
+      <documentation><![CDATA[input values]]></documentation>
+      <extensionElements>
+        <runa:property name="lane" value="operator"/>
+      </extensionElements>
+    </startEvent>
+    <sequenceFlow id="ID4" name="tr1" sourceRef="ID1" targetRef="ID3"/>
+    <userTask id="ID2" name="Create DOCX">
+      <documentation><![CDATA[Create report]]></documentation>
+      <extensionElements>
+        <runa:property name="lane" value="bot"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID23" name="tr1" sourceRef="ID2" targetRef="ID6"/>
+    <userTask id="ID6" name="Download docx">
+      <documentation><![CDATA[Download DOCX]]></documentation>
+      <extensionElements>
+        <runa:property name="lane" value="operator"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID24" name="tr1" sourceRef="ID6" targetRef="ID10"/>
+    <scriptTask id="ID3" name="Get the current date time">
+      <documentation><![CDATA[Get the current date time]]></documentation>
+      <extensionElements>
+        <runa:property name="class" value="ru.runa.wfe.extension.handler.var.FormulaActionHandler"/>
+        <runa:property name="config"><![CDATA[dtnow=current_date_time();]]></runa:property>
+      </extensionElements>
+    </scriptTask>
+    <sequenceFlow id="ID21" name="tr1" sourceRef="ID3" targetRef="ID20"/>
+    <scriptTask id="ID20" name="Call botstation">
+      <extensionElements>
+        <runa:property name="class" value="ru.runa.wfe.service.handler.BotInvokerActionHandler"/>
+        <runa:property name="config"><![CDATA[]]></runa:property>
+      </extensionElements>
+    </scriptTask>
+    <sequenceFlow id="ID22" name="tr1" sourceRef="ID20" targetRef="ID2"/>
+    <endEvent id="ID10" name="End"/>
+  </process>
+</definitions>

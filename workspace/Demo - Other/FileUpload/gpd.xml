@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-diagram name="FileUpload" notation="bpmn" rendered="graphiti" width="723" height="567" showActions="false" showGrid="false">
+  <node name="ID1" x="123" y="33" width="48" height="48">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID2" x="80" y="114" width="132" height="84">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID3" x="122" y="224" width="48" height="48"/>
+</process-diagram>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<variables>
+  <variable name="user" scriptingName="user" format="ru.runa.wfe.var.format.ExecutorFormat" swimlane="true"/>
+  <variable name="file1" scriptingName="file1" format="ru.runa.wfe.var.format.FileFormat"/>
+  <variable name="file2" scriptingName="file2" format="ru.runa.wfe.var.format.FileFormat"/>
+  <variable name="a" scriptingName="a" format="ru.runa.wfe.var.format.LongFormat"/>
+  <variable name="c" scriptingName="c" format="ru.runa.wfe.var.format.BooleanFormat"/>
+  <variable name="variable" scriptingName="variable" format="ru.runa.wfe.var.format.BooleanFormat"/>
+  <variable name="date" scriptingName="date" format="ru.runa.wfe.var.format.DateFormat"/>
+  <variable name="str" scriptingName="str" format="ru.runa.wfe.var.format.StringFormat"/>
+  <variable name="minutes" scriptingName="minutes" format="ru.runa.wfe.var.format.LongFormat"/>
+</variables>

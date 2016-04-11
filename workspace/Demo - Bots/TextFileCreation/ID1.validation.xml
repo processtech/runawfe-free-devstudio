@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<validators>
+  <field name="number">
+    <field-validator type="required">
+      <message><![CDATA[value is requared]]></message>
+    </field-validator>
+  </field>
+  <field name="date">
+    <field-validator type="required">
+      <message><![CDATA[value is requared]]></message>
+    </field-validator>
+  </field>
+  <field name="header">
+    <field-validator type="stringlength">
+      <message><![CDATA[too long]]></message>
+      <param name="maxLength"><![CDATA[50]]></param>
+    </field-validator>
+    <field-validator type="required">
+      <message><![CDATA[value is requared]]></message>
+    </field-validator>
+  </field>
+  <field name="mainText">
+    <field-validator type="stringlength">
+      <message><![CDATA[too long text]]></message>
+      <param name="maxLength"><![CDATA[10000]]></param>
+    </field-validator>
+    <field-validator type="required">
+      <message><![CDATA[value is requared]]></message>
+    </field-validator>
+  </field>
+</validators>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<variables>
+  <variable name="bookkeeper" scriptingName="bookkeeper" format="ru.runa.wfe.var.format.ExecutorFormat" swimlane="true" editor="SwimlaneElement.ManualLabel"/>
+  <variable name="human resource inspector" scriptingName="human_resource_inspector" format="ru.runa.wfe.var.format.ExecutorFormat" swimlane="true"/>
+  <variable name="staffrole" scriptingName="staffrole" format="ru.runa.wfe.var.format.ExecutorFormat" swimlane="true"/>
+  <variable name="boss" scriptingName="boss" format="ru.runa.wfe.var.format.ExecutorFormat" swimlane="true"/>
+  <variable name="comment" scriptingName="comment" format="ru.runa.wfe.var.format.TextFormat"/>
+  <variable name="businessTripType" scriptingName="businessTripType" format="ru.runa.wfe.var.format.StringFormat"/>
+  <variable name="official_order_number" scriptingName="official_order_number" format="ru.runa.wfe.var.format.StringFormat"/>
+  <variable name="official_order_date" scriptingName="official_order_date" format="ru.runa.wfe.var.format.DateFormat"/>
+  <variable name="till" scriptingName="till" format="ru.runa.wfe.var.format.DateFormat"/>
+  <variable name="reason" scriptingName="reason" format="ru.runa.wfe.var.format.StringFormat"/>
+  <variable name="since" scriptingName="since" format="ru.runa.wfe.var.format.DateFormat"/>
+</variables>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-diagram name="Hello World" notation="bpmn" rendered="graphiti" width="1407" height="569" showActions="false" showGrid="false">
+  <node name="ID1" x="100" y="40" width="48" height="48">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID2" x="101" y="190" width="48" height="48"/>
+</process-diagram>

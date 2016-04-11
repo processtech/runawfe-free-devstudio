@@ -1,0 +1,9 @@
+<config>
+  <input>
+    <param name="value" label.key="Param.Value" />
+    <param name="text" label.key="Param.Text" />
+  </input>
+  <output>
+    <param name="option" label.key="Param.Result" />
+  </output>
+</config>

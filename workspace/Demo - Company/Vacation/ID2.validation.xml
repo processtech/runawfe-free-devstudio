@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<validators>
+  <field name="boss_comment">
+    <field-validator type="stringlength">
+      <message><![CDATA[Length cannot be more than 255 symbols]]></message>
+      <param name="maxLength">255</param>
+    </field-validator>
+  </field>
+  <field name="bossDecision">
+    <field-validator type="required">
+      <message><![CDATA[Filed is required]]></message>
+    </field-validator>
+  </field>
+</validators>

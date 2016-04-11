@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<bottasks>
+  <task id="ID2" class="ru.runa.wf.logic.bot.MSWordReportTaskHandler" botTaskName="Generate MS Word Report">
+    <config> 
+      <input> 
+        <param name="ParamDate" variable="date"/>  
+        <param name="ParamDouble" variable="double"/>  
+        <param name="ParamString" variable="string"/> 
+      </input>  
+      <output> 
+        <param name="output" variable="resultWord"/> 
+      </output> 
+    </config>
+  </task>
+</bottasks>

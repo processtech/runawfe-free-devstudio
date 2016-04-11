@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<validators>
+  <field name="report">
+    <field-validator type="stringlength">
+      <message><![CDATA[Length cannot be more than 1000 symbols]]></message>
+      <param name="maxLength"><![CDATA[1000]]></param>
+    </field-validator>
+    <field-validator type="required">
+      <message><![CDATA[Value is required]]></message>
+    </field-validator>
+  </field>
+</validators>

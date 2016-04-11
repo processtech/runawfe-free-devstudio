@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:runa="http://runa.ru/wfe/xml" targetNamespace="http://runa.ru/wfe/xml">
+  <process name="Overtime Work">
+    <extensionElements>
+      <runa:property name="showSwimlane" value="none"/>
+      <runa:property name="documentation" value="Participants of this process are members of manager and staff groups"/>
+      <runa:property name="version" value="4.2.1.201506302219"/>
+      <runa:property name="accessType" value="Process"/>
+    </extensionElements>
+    <laneSet id="laneSet1">
+      <lane id="ID10" name="staffrole">
+        <extensionElements>
+          <runa:property name="class" value="ru.runa.wfe.extension.assign.DefaultAssignmentHandler"/>
+          <runa:property name="config"><![CDATA[]]></runa:property>
+        </extensionElements>
+      </lane>
+      <lane id="ID11" name="manager">
+        <extensionElements>
+          <runa:property name="class" value="ru.runa.wfe.extension.assign.DefaultAssignmentHandler"/>
+          <runa:property name="config"><![CDATA[]]></runa:property>
+        </extensionElements>
+      </lane>
+    </laneSet>
+    <startEvent id="ID1" name="Offer an overtime work">
+      <extensionElements>
+        <runa:property name="lane" value="manager"/>
+      </extensionElements>
+    </startEvent>
+    <sequenceFlow id="ID6" name="tr1" sourceRef="ID1" targetRef="ID3"/>
+    <userTask id="ID2" name="Notify of rejection">
+      <documentation><![CDATA[Notify that an overtime work is rejected]]></documentation>
+      <extensionElements>
+        <runa:property name="lane" value="manager"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID13" name="tr1" sourceRef="ID2" targetRef="ID5"/>
+    <userTask id="ID3" name="Make a decision">
+      <documentation><![CDATA[Accept or decline the offering]]></documentation>
+      <extensionElements>
+        <runa:property name="lane" value="staffrole"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID14" name="rejected" sourceRef="ID3" targetRef="ID2"/>
+    <sequenceFlow id="ID15" name="accepted" sourceRef="ID3" targetRef="ID4"/>
+    <userTask id="ID4" name="Notify of acceptance">
+      <documentation><![CDATA[Notify that an overtime work is accepted]]></documentation>
+      <extensionElements>
+        <runa:property name="lane" value="manager"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID12" name="tr1" sourceRef="ID4" targetRef="ID5"/>
+    <endEvent id="ID5" name="end"/>
+  </process>
+</definitions>

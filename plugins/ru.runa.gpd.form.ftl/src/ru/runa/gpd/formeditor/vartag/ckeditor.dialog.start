@@ -1,0 +1,18 @@
+var VAR_TAG = "customtag";
+var NAME_ATTR = 'var' ;
+var TYPE_ATTR = 'delegation' ;
+
+CKEDITOR.dialog.add(
+	VAR_TAG,
+	function(editor){
+		return{
+			title:		editor.lang.FreemarkerTags.MethodTitle,
+			minWidth:	350,
+			minHeight:	150,
+			contents:[{
+				id:'mainTab',
+				label:'',
+				title:'',
+				expand:true,
+				padding:0,
+				elements:[

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:runa="http://runa.ru/wfe/xml" targetNamespace="http://runa.ru/wfe/xml">
+  <process name="MainProcess">
+    <extensionElements>
+      <runa:property name="showSwimlane" value="none"/>
+      <runa:property name="documentation" value="MainProcess for subprocess demonstration (no start form provided)"/>
+      <runa:property name="version" value="4.2.1.201506302219"/>
+      <runa:property name="accessType" value="Process"/>
+    </extensionElements>
+    <laneSet id="laneSet1">
+      <lane id="ID11" name="a_role">
+        <extensionElements>
+          <runa:property name="class" value="ru.runa.wfe.extension.assign.DefaultAssignmentHandler"/>
+          <runa:property name="config"><![CDATA[]]></runa:property>
+        </extensionElements>
+      </lane>
+    </laneSet>
+    <startEvent id="ID1" name="start">
+      <extensionElements>
+        <runa:property name="lane" value="a_role"/>
+      </extensionElements>
+    </startEvent>
+    <sequenceFlow id="ID7" name="tr1" sourceRef="ID1" targetRef="ID2"/>
+    <userTask id="ID2" name="before subprocess">
+      <documentation><![CDATA[before subprocess]]></documentation>
+      <extensionElements>
+        <runa:property name="lane" value="a_role"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID8" name="tr1" sourceRef="ID2" targetRef="ID3"/>
+    <userTask id="ID4" name="after subprocess">
+      <documentation><![CDATA[after subprocess]]></documentation>
+      <extensionElements>
+        <runa:property name="lane" value="a_role"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID10" name="tr1" sourceRef="ID4" targetRef="ID5"/>
+    <subProcess id="ID3" name="process-state" runa:process="SubProcess">
+      <extensionElements>
+        <runa:variables>
+          <runa:variable name="a_role" mappedName="role1" usage="read"/>
+          <runa:variable name="number" mappedName="n" usage="read,write"/>
+          <runa:variable name="date" mappedName="d" usage="read,write"/>
+        </runa:variables>
+      </extensionElements>
+    </subProcess>
+    <sequenceFlow id="ID9" name="tr1" sourceRef="ID3" targetRef="ID4"/>
+    <endEvent id="ID5" name="end"/>
+  </process>
+</definitions>

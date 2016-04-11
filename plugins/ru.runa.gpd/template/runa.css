@@ -1,0 +1,65 @@
+/** from runa.css template */
+.taskform {
+	font-family: Arial,sans-serif; 
+	font-size: 14px;
+	color: #231f20;
+}
+.taskform table {
+	background: #d1d3d4;
+	border-collapse: collapse;
+	border: 2px solid #aaa;
+	width: 100%;
+}
+.taskform th, .taskform caption {
+	background: #fbb040;
+	font-size: 13pt;
+}
+.taskform th, .taskform td, .taskform caption {
+	padding: 10px;
+}
+.taskform th p, .taskform td p {
+	margin: 5px 0px 5px 0px;
+}
+.taskform td {
+	border: 1px solid white;
+}
+.taskform td.label {
+	vertical-align: top;
+	text-align: right;
+}
+.taskform textarea {
+	width: 100%;
+	height: 100px;
+	min-width: 300px;
+}
+.taskform input, .taskform select {
+	width: 90%;
+}
+.taskform .inputBoolean, .taskform input[type="radio"] {
+	width: 20px;
+}
+.taskform a {
+	border: 0px;
+	color: #231f20;
+	text-decoration: none;
+}
+.taskform a:hover {
+	color: #a30134;
+	text-decoration: underline;
+}
+.taskform .warning {
+	font-size: 9pt;
+	color: red;
+	font-style: italic;
+}
+.taskform p.warning {
+	background: url('/wfe/images/error.png') no-repeat;
+	padding-left: 30px;
+}
+.title {
+	font-size: 13pt;
+}
+.subtitle {
+	font-size: 11pt;
+	color: blue;
+}

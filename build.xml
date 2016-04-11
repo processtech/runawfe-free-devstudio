@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<project basedir="." default="build" name="Runa Graphical Process Designer">
+	<dirname property="WFE.RUNA GPD.basedir" file="${ant.file.Runa Graphical Process Designer}"/>
+
+	<property name="project.version" value="dev"/>
+	<property name="project.build.id" value="dev"/>
+
+	<property file="build.properties" />
+
+	<target name="build">
+		<replace dir="${basedir}/plugins" token="_RunaWFE-Version_" value="${project.version}"/>
+		<java jar="${eclipse.home.dir}/plugins/org.eclipse.equinox.launcher_1.2.0.v20110502.jar" fork="true" failonerror="true">
+			<arg value="-application"/>
+			<arg value="org.eclipse.ant.core.antRunner"/>
+			<arg value="-buildfile"/>
+			<arg value="${eclipse.home.dir}/plugins/org.eclipse.pde.build_3.7.0.v20111116-2009/scripts/productBuild/productBuild.xml"/>
+			<arg value="-Dbuilder=${basedir}/build.conf"/>
+			<arg value="-Dproduct=${basedir}/plugins/ru.runa.gpd.app/gpd.product"/>
+			<arg value="-DbuildDirectory=${basedir}"/>
+			<arg value="-Dbase=${eclipse.home.dir}/.."/>
+			<arg value="-DbaseLocation=${eclipse.home.dir}"/>
+			<arg value="-Dproject.version=${project.version}"/>
+			<arg value="-Dproject.build.id=${project.build.id}"/>
+		</java>
+	</target>
+	
+</project>

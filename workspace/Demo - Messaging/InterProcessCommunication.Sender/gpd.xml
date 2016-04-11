@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-diagram name="InterProcessCommunication.Sender" notation="bpmn" rendered="graphiti" width="723" height="518" showActions="false" showGrid="false">
+  <node name="ID1" x="10" y="80" width="48" height="48">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID3" x="160" y="62" width="132" height="84">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID6" x="430" y="152" width="132" height="84">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID2" x="90" y="86" width="132" height="84" minimizedView="true">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID4" x="330" y="80" width="48" height="48">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID5" x="330" y="170" width="48" height="48">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID7" x="607" y="170" width="48" height="48"/>
+</process-diagram>

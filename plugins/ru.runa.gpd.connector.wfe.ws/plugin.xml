@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="ru.runa.gpd.wfeConnectors">
+      <connector
+            class="ru.runa.gpd.connector.wfe.ws.WFEJboss4WebServicesConnector"
+            defaultPort="8080"
+            description="%jboss4.ws.connector.description"
+            id="jboss4.ws"
+            name="%jboss4.ws.connector.name">
+      </connector>
+      <connector
+            class="ru.runa.gpd.connector.wfe.ws.WFEJboss7WebServicesConnector"
+            defaultPort="8080"
+            description="%jboss7.ws.connector.description"
+            id="jboss7.ws"
+            name="%jboss7.ws.connector.name">
+      </connector>
+   </extension>
+
+</plugin>

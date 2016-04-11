@@ -1,0 +1,5 @@
+<config>
+  <output>
+    <param name="object" label.key="Param.Variable" />
+  </output>
+</config>

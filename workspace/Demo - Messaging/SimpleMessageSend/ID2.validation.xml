@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<validators>
+  <field name="msg_send">
+    <field-validator type="required">
+      <message><![CDATA[Message is required]]></message>
+    </field-validator>
+  </field>
+</validators>

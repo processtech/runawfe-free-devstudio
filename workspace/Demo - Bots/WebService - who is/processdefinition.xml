@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:runa="http://runa.ru/wfe/xml" targetNamespace="http://runa.ru/wfe/xml">
+  <process name="WebService - who is">
+    <extensionElements>
+      <runa:property name="showSwimlane" value="none"/>
+      <runa:property name="documentation" value="Enter domain name and WebService bot resolve this name using whois service."/>
+      <runa:property name="version" value="4.2.1.201506302219"/>
+      <runa:property name="accessType" value="Process"/>
+    </extensionElements>
+    <laneSet id="laneSet1">
+      <lane id="ID6" name="requester">
+        <extensionElements>
+          <runa:property name="class" value="ru.runa.wfe.extension.assign.DefaultAssignmentHandler"/>
+          <runa:property name="config"><![CDATA[]]></runa:property>
+        </extensionElements>
+      </lane>
+      <lane id="ID7" name="WebServiceBot">
+        <extensionElements>
+          <runa:property name="class" value="ru.runa.wfe.extension.assign.DefaultAssignmentHandler"/>
+          <runa:property name="config"><![CDATA[#WebServiceBot]]></runa:property>
+        </extensionElements>
+      </lane>
+    </laneSet>
+    <startEvent id="ID1" name="Start">
+      <extensionElements>
+        <runa:property name="lane" value="requester"/>
+      </extensionElements>
+    </startEvent>
+    <sequenceFlow id="ID10" name="tr1" sourceRef="ID1" targetRef="ID2"/>
+    <userTask id="ID3" name="Load whois information">
+      <extensionElements>
+        <runa:property name="lane" value="WebServiceBot"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID12" name="tr1" sourceRef="ID3" targetRef="ID4"/>
+    <userTask id="ID4" name="Read DNS address information">
+      <extensionElements>
+        <runa:property name="lane" value="requester"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID13" name="tr1" sourceRef="ID4" targetRef="ID5"/>
+    <scriptTask id="ID2" name="Задача сценария 1">
+      <extensionElements>
+        <runa:property name="class" value="ru.runa.wfe.service.handler.BotInvokerActionHandler"/>
+        <runa:property name="config"><![CDATA[]]></runa:property>
+      </extensionElements>
+    </scriptTask>
+    <sequenceFlow id="ID11" name="tr1" sourceRef="ID2" targetRef="ID3"/>
+    <endEvent id="ID5" name="End"/>
+  </process>
+</definitions>

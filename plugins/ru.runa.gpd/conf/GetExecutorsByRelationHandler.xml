@@ -1,0 +1,11 @@
+<config>
+  <input>
+    <param name="name" formatFilter="java.lang.String" presentation="richcombo" label.key="Relation.Name" />
+    <param name="parameter" formatFilter="ru.runa.wfe.user.Executor" label.key="Relation.Parameter" />
+    <param name="inversed" formatFilter="java.lang.Boolean" presentation="richcombo" label.key="Relation.Inversed" />
+    <param name="recursively" formatFilter="java.lang.Boolean" presentation="richcombo" label.key="Relation.Recursively" />
+  </input>
+  <output>
+    <param name="result" formatFilter="java.util.List" label.key="Param.Result" />
+  </output>
+</config>

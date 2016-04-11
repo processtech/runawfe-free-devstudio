@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration xmlns="http://runa.ru/xml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://runa.ru/xml">	
+	<ftltag name="DisplayVariable" class="ru.runa.gpd.quick.tag.DisplayVariableTag" />
+	<ftltag name="InputVariable" class="ru.runa.gpd.quick.tag.InputVariableTag" />
+</configuration>

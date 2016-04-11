@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:runa="http://runa.ru/wfe/xml" targetNamespace="http://runa.ru/wfe/xml">
+  <process name="Vacation">
+    <extensionElements>
+      <runa:property name="showSwimlane" value="none"/>
+      <runa:property name="documentation" value="Participants of this process are members of manager, all and human resource groups"/>
+      <runa:property name="version" value="4.2.1.201506302219"/>
+      <runa:property name="accessType" value="Process"/>
+    </extensionElements>
+    <laneSet id="laneSet1">
+      <lane id="ID28" name="human_resource_inspector">
+        <extensionElements>
+          <runa:property name="class" value="ru.runa.wfe.extension.assign.DefaultAssignmentHandler"/>
+          <runa:property name="config"><![CDATA[ru.runa.wfe.extension.orgfunction.ExecutorByNameFunction(human resource)]]></runa:property>
+        </extensionElements>
+      </lane>
+      <lane id="ID29" name="boss">
+        <extensionElements>
+          <runa:property name="class" value="ru.runa.wfe.extension.assign.DefaultAssignmentHandler"/>
+          <runa:property name="config"><![CDATA[ru.runa.wfe.extension.orgfunction.DemoChiefFunction(${requester})]]></runa:property>
+        </extensionElements>
+      </lane>
+      <lane id="ID30" name="requester">
+        <extensionElements>
+          <runa:property name="class" value="ru.runa.wfe.extension.assign.DefaultAssignmentHandler"/>
+          <runa:property name="config"><![CDATA[]]></runa:property>
+        </extensionElements>
+      </lane>
+    </laneSet>
+    <startEvent id="ID1" name="Request for a vacation">
+      <documentation><![CDATA[Requester starts a vacation request process]]></documentation>
+      <extensionElements>
+        <runa:property name="lane" value="requester"/>
+      </extensionElements>
+    </startEvent>
+    <sequenceFlow id="ID6" name="tr1" sourceRef="ID1" targetRef="ID2"/>
+    <exclusiveGateway id="ID3" name="Is approved?">
+      <extensionElements>
+        <runa:property name="class" value="ru.runa.wfe.extension.decision.GroovyDecisionHandler"/>
+        <runa:property name="config"><![CDATA[if ( bossDecision.booleanValue() == false ) {
+	return "rejected";
+};
+
+return "approved";
+]]></runa:property>
+      </extensionElements>
+    </exclusiveGateway>
+    <sequenceFlow id="ID8" name="approved" sourceRef="ID3" targetRef="ID4"/>
+    <sequenceFlow id="ID12" name="rejected" sourceRef="ID3" targetRef="ID11"/>
+    <exclusiveGateway id="ID5" name="Is correct?">
+      <extensionElements>
+        <runa:property name="class" value="ru.runa.wfe.extension.decision.GroovyDecisionHandler"/>
+        <runa:property name="config"><![CDATA[if ( humanResourceInspectorCheckResult.booleanValue() == false ) {
+	return "not correct";
+};
+
+return "correct";
+]]></runa:property>
+      </extensionElements>
+    </exclusiveGateway>
+    <sequenceFlow id="ID10" name="not correct" sourceRef="ID5" targetRef="ID2"/>
+    <sequenceFlow id="ID74" name="correct" sourceRef="ID5" targetRef="ID13"/>
+    <userTask id="ID2" name="Evaluate a request">
+      <documentation><![CDATA[Evaluate a vacation request]]></documentation>
+      <extensionElements>
+        <runa:property name="lane" value="boss"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID7" name="tr1" sourceRef="ID2" targetRef="ID3"/>
+    <userTask id="ID4" name="Check rules and technologies">
+      <documentation><![CDATA[Check that all is correct]]></documentation>
+      <extensionElements>
+        <runa:property name="lane" value="human_resource_inspector"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID42" name="tr1" sourceRef="ID4" targetRef="ID5"/>
+    <userTask id="ID11" name="Notify of rejection">
+      <documentation><![CDATA[The request is rejected]]></documentation>
+      <extensionElements>
+        <runa:property name="lane" value="requester"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID24" name="tr1" sourceRef="ID11" targetRef="ID23"/>
+    <userTask id="ID15" name="Submit a hardcopy request">
+      <documentation><![CDATA[Submit a written request for vacation to the human resource department]]></documentation>
+      <extensionElements>
+        <runa:property name="lane" value="requester"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID27" name="tr1" sourceRef="ID15" targetRef="ID17"/>
+    <userTask id="ID16" name="Receive a hardcopy request">
+      <documentation><![CDATA[Receive a written request for vacation from the employee]]></documentation>
+      <extensionElements>
+        <runa:property name="lane" value="human_resource_inspector"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID71" name="tr1" sourceRef="ID16" targetRef="ID22"/>
+    <userTask id="ID22" name="Make an official order">
+      <documentation><![CDATA[Make an official order for vacation]]></documentation>
+      <extensionElements>
+        <runa:property name="lane" value="human_resource_inspector"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID72" name="tr1" sourceRef="ID22" targetRef="ID17"/>
+    <parallelGateway id="ID13" name="Параллельный шлюз 13"/>
+    <sequenceFlow id="ID18" name="tr1" sourceRef="ID13" targetRef="ID15"/>
+    <sequenceFlow id="ID19" name="tr2" sourceRef="ID13" targetRef="ID16"/>
+    <parallelGateway id="ID17" name="Параллельный шлюз 17"/>
+    <sequenceFlow id="ID73" name="tr1" sourceRef="ID17" targetRef="ID23"/>
+    <endEvent id="ID23" name="End"/>
+  </process>
+</definitions>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-diagram name="SimpleMessageSend" notation="bpmn" rendered="graphiti" width="723" height="567" showActions="false" showGrid="false">
+  <node name="ID1" x="210" y="60" width="48" height="48">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID2" x="168" y="140" width="132" height="84">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID3" x="211" y="260" width="48" height="48">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID4" x="211" y="340" width="48" height="48"/>
+</process-diagram>

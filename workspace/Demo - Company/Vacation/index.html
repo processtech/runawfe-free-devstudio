@@ -1,0 +1,40 @@
+<p>An employee requests for vacation. The employee's boss approves or rejects the request. If request is rejected, the employee receives notification and business process ends. If request is approved, the human resource inspector receive task &ldquo;check rules and technologies&rdquo;. Human resource inspector checks business process data. If check result is negative, the business process returns to the &ldquo;evaluate a request&rdquo; state (cycle example). The Boss must again consider the request, minding the human resource inspector comments. If the check result is positive, the business process sends task for hardcopy request submission and official order issuing. Employee receives task &ldquo;submit the written request for a vacation&rdquo; to the human resource department, the human resource inspector receives task &ldquo;receive a written request from the employee&rdquo; simulteniously. Upon completion of this task the human resource inspector receives next task &ldquo;make an official order&rdquo;. After all these tasks are done, the business process ends. <br />
+<i>Note</i>. Organization function determines boss for every actor. Julius is the boss of all actors, whose login name starts with &ldquo;g&rdquo;. Nero is the boss for the rest of the staff. <br />
+<br />
+<i>How to play the business process:</i></p>
+<ol>
+    <li>Log in as member of staff group (e.g. marcus)</li>
+    <li>Click on the menu item &ldquo;Process Definitions&rdquo;</li>
+    <li>Click &ldquo;Start&rdquo; for &ldquo;vacation demo&rdquo;</li>
+    <li>Start form will appeared. In this form:</li>
+</ol>
+<ul>
+    <li>Enter the time interval for the vacation</li>
+    <li>Fill in the fields &ldquo;reason&rdquo; and &ldquo;comments&rdquo;</li>
+    <li>Click &ldquo;OK&rdquo; (The new instance of &ldquo;vacation demo&rdquo; business process will start and boss will receive the &ldquo;evaluate a request&rdquo; task. The boss of marcus is nero)</li>
+</ul>
+<ol start="5">
+    <li>Click &ldquo;Logout&rdquo;</li>
+    <li>Login as nero
+    <p>&nbsp;</p>
+    </li>
+    <li>Click on &ldquo;evaluate a request&rdquo; task</li>
+    <li>Choose &ldquo;accept&rdquo;, fill in the &ldquo;boss comments&rdquo; and click &ldquo;OK&rdquo;</li>
+    <li>Click &ldquo;Logout&rdquo;</li>
+    <li>Login as member of the &ldquo;human resource&rdquo; group. (cleopatra)
+    <p>&nbsp;</p>
+    </li>
+    <li>Click &ldquo;check rules and technologies&rdquo; task</li>
+    <li>Choose &ldquo;correct&rdquo;, fill in the &ldquo;human resource inspector comments&rdquo; and click &ldquo;OK&rdquo;</li>
+    <li>Click on &ldquo;Receive a written request&rdquo; task</li>
+    <li>Click &ldquo;OK&rdquo;</li>
+    <li>Login as marcus. Click on &ldquo;Submit a written request&rdquo; task and then click &ldquo;OK&rdquo;</li>
+    <li>Login as cleopatra. Click on &ldquo;Make an official order&rdquo; task</li>
+    <li>The form will appear. In this form:</li>
+</ol>
+<ul>
+    <li>Fill in the &ldquo;Official order number&rdquo; field</li>
+    <li>Fill in the &ldquo;Official order date&rdquo; field</li>
+    <li>Click &ldquo;OK&rdquo;</li>
+</ul>
+<p>The business process ends.</p>

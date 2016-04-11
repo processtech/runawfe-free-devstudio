@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:runa="http://runa.ru/wfe/xml" targetNamespace="http://runa.ru/wfe/xml">
+  <process name="ExecuteFormulaDemo">
+    <extensionElements>
+      <runa:property name="showSwimlane" value="none"/>
+      <runa:property name="documentation" value="Example of ExecuteFormulaActionHandler using (no start form provided)"/>
+      <runa:property name="version" value="4.2.1.201506302219"/>
+      <runa:property name="accessType" value="Process"/>
+    </extensionElements>
+    <laneSet id="laneSet1">
+      <lane id="ID42" name="user">
+        <extensionElements>
+          <runa:property name="class" value="ru.runa.wfe.extension.assign.DefaultAssignmentHandler"/>
+          <runa:property name="config"><![CDATA[]]></runa:property>
+        </extensionElements>
+      </lane>
+    </laneSet>
+    <startEvent id="ID1" name="start">
+      <extensionElements>
+        <runa:property name="lane" value="user"/>
+      </extensionElements>
+    </startEvent>
+    <sequenceFlow id="ID6" name="tr1" sourceRef="ID1" targetRef="ID2"/>
+    <userTask id="ID3" name="state1">
+      <extensionElements>
+        <runa:property name="lane" value="user"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID26" name="tr1" sourceRef="ID3" targetRef="ID10"/>
+    <userTask id="ID4" name="state 2">
+      <extensionElements>
+        <runa:property name="lane" value="user"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID28" name="tr1" sourceRef="ID4" targetRef="ID11"/>
+    <userTask id="ID5" name="state3">
+      <extensionElements>
+        <runa:property name="lane" value="user"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID30" name="tr1" sourceRef="ID5" targetRef="ID12"/>
+    <userTask id="ID13" name="state4">
+      <extensionElements>
+        <runa:property name="lane" value="user"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID32" name="tr1" sourceRef="ID13" targetRef="ID20"/>
+    <userTask id="ID14" name="state5">
+      <extensionElements>
+        <runa:property name="lane" value="user"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID34" name="tr1" sourceRef="ID14" targetRef="ID21"/>
+    <userTask id="ID15" name="state6">
+      <extensionElements>
+        <runa:property name="lane" value="user"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID36" name="tr1" sourceRef="ID15" targetRef="ID22"/>
+    <userTask id="ID16" name="state7">
+      <extensionElements>
+        <runa:property name="lane" value="user"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID51" name="tr1" sourceRef="ID16" targetRef="ID18"/>
+    <userTask id="ID17" name="state9">
+      <extensionElements>
+        <runa:property name="lane" value="user"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID25" name="tr1" sourceRef="ID17" targetRef="ID19"/>
+    <userTask id="ID18" name="state8">
+      <extensionElements>
+        <runa:property name="lane" value="user"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID40" name="tr1" sourceRef="ID18" targetRef="ID24"/>
+    <scriptTask id="ID2" name="Задача сценария 1">
+      <extensionElements>
+        <runa:property name="class" value="ru.runa.wfe.extension.handler.var.FormulaActionHandler"/>
+        <runa:property name="config"><![CDATA[a = (10 + 2) / 4]]></runa:property>
+      </extensionElements>
+    </scriptTask>
+    <sequenceFlow id="ID7" name="tr1" sourceRef="ID2" targetRef="ID3"/>
+    <scriptTask id="ID10" name="Задача сценария 2">
+      <extensionElements>
+        <runa:property name="class" value="ru.runa.wfe.extension.handler.var.FormulaActionHandler"/>
+        <runa:property name="config"><![CDATA[c = true & ( false ^ true ) | ("aab"<="aaa")]]></runa:property>
+      </extensionElements>
+    </scriptTask>
+    <sequenceFlow id="ID27" name="tr1" sourceRef="ID10" targetRef="ID4"/>
+    <scriptTask id="ID11" name="Задача сценария 3">
+      <extensionElements>
+        <runa:property name="class" value="ru.runa.wfe.extension.handler.var.FormulaActionHandler"/>
+        <runa:property name="config"><![CDATA[variable = a<5 & a>0.27]]></runa:property>
+      </extensionElements>
+    </scriptTask>
+    <sequenceFlow id="ID29" name="tr1" sourceRef="ID11" targetRef="ID5"/>
+    <scriptTask id="ID12" name="Задача сценария 4">
+      <extensionElements>
+        <runa:property name="class" value="ru.runa.wfe.extension.handler.var.FormulaActionHandler"/>
+        <runa:property name="config"><![CDATA[date = 30.08.2008]]></runa:property>
+      </extensionElements>
+    </scriptTask>
+    <sequenceFlow id="ID31" name="tr1" sourceRef="ID12" targetRef="ID13"/>
+    <scriptTask id="ID20" name="Задача сценария 5">
+      <extensionElements>
+        <runa:property name="class" value="ru.runa.wfe.extension.handler.var.FormulaActionHandler"/>
+        <runa:property name="config"><![CDATA[str = "date = " + date]]></runa:property>
+      </extensionElements>
+    </scriptTask>
+    <sequenceFlow id="ID33" name="tr1" sourceRef="ID20" targetRef="ID14"/>
+    <scriptTask id="ID21" name="Задача сценария 6">
+      <extensionElements>
+        <runa:property name="class" value="ru.runa.wfe.extension.handler.var.FormulaActionHandler"/>
+        <runa:property name="config"><![CDATA[minutes = '30.08.2008 00:15' - date]]></runa:property>
+      </extensionElements>
+    </scriptTask>
+    <sequenceFlow id="ID35" name="tr1" sourceRef="ID21" targetRef="ID15"/>
+    <scriptTask id="ID22" name="Задача сценария 7">
+      <extensionElements>
+        <runa:property name="class" value="ru.runa.wfe.extension.handler.var.FormulaActionHandler"/>
+        <runa:property name="config"><![CDATA[str = str + " ; " + "variable" + " = " + variable + " ; \"" + (a-0.1) + "\""]]></runa:property>
+      </extensionElements>
+    </scriptTask>
+    <sequenceFlow id="ID37" name="tr1" sourceRef="ID22" targetRef="ID16"/>
+    <scriptTask id="ID24" name="Задача сценария 8">
+      <extensionElements>
+        <runa:property name="class" value="ru.runa.wfe.extension.handler.var.FormulaActionHandler"/>
+        <runa:property name="config"><![CDATA[file2 = file1]]></runa:property>
+      </extensionElements>
+    </scriptTask>
+    <sequenceFlow id="ID41" name="tr1" sourceRef="ID24" targetRef="ID17"/>
+    <endEvent id="ID19" name="end"/>
+  </process>
+</definitions>

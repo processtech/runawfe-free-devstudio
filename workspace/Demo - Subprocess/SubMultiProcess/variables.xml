@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<variables>
+  <variable name="operator" scriptingName="operator" format="ru.runa.wfe.var.format.ExecutorFormat" swimlane="true"/>
+  <variable name="address" scriptingName="address" format="ru.runa.wfe.var.format.StringFormat"/>
+</variables>

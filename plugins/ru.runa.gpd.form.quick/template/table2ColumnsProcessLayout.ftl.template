@@ -1,0 +1,30 @@
+<table>
+	<#if Title?length != 0>
+	<tr>
+		<th colspan="2">
+			<p class="title">${ProcessName}</p>
+			<p class="subtitle">${Title}</p>
+		</th>
+	</tr>
+	</#if>
+	<#if Warning?length != 0>
+	<tr>
+		<td colspan="2">
+			<p class="warning">${Warning}</p>
+		</th>
+	</tr>
+	</#if>
+	<#list variables as variable>
+	<tr>
+		<td class="label">
+			<#if variable.description?length != 0>
+				<img src="/wfe/images/info.png" style="float: left;" title="${variable.description}" />
+			</#if>
+			${variable.name?cap_first}
+		</td>
+		<td class="input">
+			${variable.tag}
+		</td>
+	</tr>
+	</#list>
+</table>

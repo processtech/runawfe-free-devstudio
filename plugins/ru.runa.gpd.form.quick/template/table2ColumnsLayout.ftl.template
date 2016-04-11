@@ -1,0 +1,13 @@
+<table>
+	<#if Title?length != 0>
+	<tr>
+		<th colspan="2">${Title}</td>
+	</tr>
+	</#if>
+	<#list variables as variable>
+	<tr>
+		<td class="label">${variable.name}</td>
+		<td class="input">${variable.tag}</td>
+	</tr>
+	</#list>
+</table>

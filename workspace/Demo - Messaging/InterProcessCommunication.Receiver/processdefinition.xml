@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:runa="http://runa.ru/wfe/xml" targetNamespace="http://runa.ru/wfe/xml">
+  <process name="InterProcessCommunication.Receiver">
+    <extensionElements>
+      <runa:property name="showSwimlane" value="none"/>
+      <runa:property name="version" value="4.2.1.201506302219"/>
+      <runa:property name="accessType" value="Process"/>
+    </extensionElements>
+    <laneSet id="laneSet1">
+      <lane id="ID2" name="swimlane">
+        <extensionElements>
+          <runa:property name="class" value="ru.runa.wfe.extension.assign.DefaultAssignmentHandler"/>
+          <runa:property name="config"><![CDATA[]]></runa:property>
+        </extensionElements>
+      </lane>
+    </laneSet>
+    <startEvent id="ID1" name="Start">
+      <extensionElements>
+        <runa:property name="lane" value="swimlane"/>
+      </extensionElements>
+    </startEvent>
+    <sequenceFlow id="ID13" name="tr1" sourceRef="ID1" targetRef="ID7"/>
+    <userTask id="ID9" name="Output data">
+      <extensionElements>
+        <runa:property name="lane" value="swimlane"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID15" name="tr1" sourceRef="ID9" targetRef="ID10"/>
+    <userTask id="ID11" name="No message">
+      <extensionElements>
+        <runa:property name="lane" value="swimlane"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID18" name="tr1" sourceRef="ID11" targetRef="ID12"/>
+    <sendTask id="ID10" name="Reply to sender" runa:timeDuration="1 days">
+      <extensionElements>
+        <runa:variables>
+          <runa:variable name="processId" mappedName="${senderProcessId}" usage="selector"/>
+          <runa:variable name="reply" mappedName="reply" usage="read"/>
+        </runa:variables>
+      </extensionElements>
+    </sendTask>
+    <sequenceFlow id="ID16" name="tr1" sourceRef="ID10" targetRef="ID12"/>
+    <receiveTask id="ID7" name="Receive data">
+      <extensionElements>
+        <runa:variables>
+          <runa:variable name="processDefinitionName" mappedName="${currentDefinitionName}" usage="selector"/>
+          <runa:variable name="msg_rec" mappedName="msg_send" usage="read"/>
+          <runa:variable name="senderProcessId" mappedName="process id" usage="read"/>
+        </runa:variables>
+      </extensionElements>
+    </receiveTask>
+    <sequenceFlow id="ID14" name="tr1" sourceRef="ID7" targetRef="ID9"/>
+    <boundaryEvent id="ID8" name="Таймер 1" cancelActivity="true" attachedToRef="ID7">
+      <timerEventDefinition>
+        <timeDuration>#{waitUntil} + 0 minutes</timeDuration>
+      </timerEventDefinition>
+    </boundaryEvent>
+    <sequenceFlow id="ID17" name="time-out-transition" sourceRef="ID8" targetRef="ID11"/>
+    <endEvent id="ID12" name="End"/>
+  </process>
+</definitions>

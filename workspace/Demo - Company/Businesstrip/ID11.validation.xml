@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<validators>
+  <field name="official_order_number">
+    <field-validator type="required">
+      <message><![CDATA[Order number is required]]></message>
+    </field-validator>
+  </field>
+  <field name="official_order_date">
+    <field-validator type="required">
+      <message><![CDATA[Field is required]]></message>
+    </field-validator>
+  </field>
+</validators>

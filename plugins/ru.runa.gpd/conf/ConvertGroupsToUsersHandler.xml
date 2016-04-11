@@ -1,0 +1,8 @@
+<config>
+  <input>
+    <param name="input" formatFilter="java.util.List" label.key="Param.ExecutorList" />
+  </input>
+  <output>
+    <param name="result" formatFilter="java.util.List" label.key="Param.ActorList" />
+  </output>
+</config>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<forms>
+  <form state="ID1" file="ID1.ftl" type="ftl" validationFile="ID1.validation.xml" jsValidation="false"/>
+  <form state="ID2" file="ID2.ftl" type="ftl" validationFile="ID2.validation.xml" jsValidation="false"/>
+  <form state="ID11" file="ID11.ftl" type="ftl" validationFile="ID11.validation.xml" jsValidation="false"/>
+  <form state="ID12" file="ID12.ftl" type="ftl" validationFile="ID12.validation.xml" jsValidation="false"/>
+  <form state="ID13" file="ID13.ftl" type="ftl" validationFile="ID13.validation.xml" jsValidation="false"/>
+  <form state="ID25" file="ID25.ftl" type="ftl" validationFile="ID25.validation.xml" jsValidation="false"/>
+  <form state="ID26" file="ID26.ftl" type="ftl" validationFile="ID26.validation.xml" jsValidation="false"/>
+  <form state="ID34" file="ID34.ftl" type="ftl" validationFile="ID34.validation.xml" jsValidation="false"/>
+  <form state="ID35" file="ID35.ftl" type="ftl" validationFile="ID35.validation.xml" jsValidation="false"/>
+  <form state="ID43" file="ID43.ftl" type="ftl" validationFile="ID43.validation.xml" jsValidation="false"/>
+  <form state="ID44" file="ID44.ftl" type="ftl" validationFile="ID44.validation.xml" jsValidation="false"/>
+  <form state="ID132" file="ID132.ftl" type="ftl" validationFile="ID132.validation.xml" jsValidation="false"/>
+</forms>

@@ -1,0 +1,5 @@
+<config>
+  <input>
+    <param name="uuid" formatFilter="java.lang.String" label="Alfresco object ID" />
+  </input>
+</config>

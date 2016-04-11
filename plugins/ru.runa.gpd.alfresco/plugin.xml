@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="ru.runa.gpd.handlers">
+      <handler
+            actionHandler="true"
+            assignmentHandler="false"
+            botTaskHandler="true"
+            decisionHandler="false"
+            cellEditorProvider="ru.runa.gpd.extension.handler.ConfigBasedProvider"
+            className="ru.runa.bp.handler.AlfSetContent"
+            label="Alfresco: upload file data"
+            enabled="true">
+      </handler>
+      <handler
+            actionHandler="true"
+            assignmentHandler="false"
+            botTaskHandler="true"
+            decisionHandler="false"
+            cellEditorProvider="ru.runa.gpd.extension.handler.ConfigBasedProvider"
+            className="ru.runa.bp.demo.ApproveMyDoc"
+            label="alfdemo: approve document"
+            enabled="true">
+      </handler>
+      <handler
+            actionHandler="true"
+            assignmentHandler="false"
+            botTaskHandler="true"
+            decisionHandler="false"
+            cellEditorProvider="ru.runa.gpd.extension.handler.ConfigBasedProvider"
+            className="ru.runa.bp.demo.CreateMyDoc"
+            label="alfdemo: create document"
+            enabled="true">
+      </handler>
+      <handler
+            actionHandler="true"
+            assignmentHandler="false"
+            botTaskHandler="true"
+            decisionHandler="false"
+            cellEditorProvider="ru.runa.gpd.extension.handler.ConfigBasedProvider"
+            className="ru.runa.bp.demo.RejectMyDoc"
+            label="alfdemo: reject document"
+            enabled="true">
+      </handler>
+   </extension>
+   <extension
+         point="ru.runa.gpd.form.ftl.components">
+      <component
+            id="GetMyDocStatus"
+            name="Show status of document">
+      </component>
+   </extension>
+
+</plugin>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<bottasks>
+  <task id="ID2" class="ru.runa.wf.logic.bot.TextReportTaskHandler" botTaskName="create text file">
+    <config> 
+      <input> 
+        <param name="ParamNumber" value="number"/>  
+        <param name="ParamDate" value="date"/>  
+        <param name="ParamHeader" value="header"/>  
+        <param name="ParamMainText" value="mainText"/> 
+      </input>  
+      <output> 
+        <param name="OutFile" variable="resultTextFile"/> 
+      </output> 
+    </config>
+  </task>
+</bottasks>

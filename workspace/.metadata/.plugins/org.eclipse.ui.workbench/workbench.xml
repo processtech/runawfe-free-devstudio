@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workbench version="2.0">
+<workbenchAdvisor/>
+<window height="684" width="1028" x="175" y="329">
+<fastViewData fastViewLocation="1024"/>
+<perspectiveBar/>
+<coolbarLayout>
+<coolItem id="ru.runa.gpd.actionSet" itemType="typeToolBarContribution" x="323" y="22"/>
+</coolbarLayout>
+<page focus="true" label="&lt;Unknown Label&gt; - Process designer">
+<editors>
+<editorArea activeWorkbook="DefaultEditorWorkbook">
+<info part="DefaultEditorWorkbook">
+<folder appearance="1" expanded="2">
+<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory"/>
+</folder>
+</info>
+</editorArea>
+</editors>
+<views>
+<view id="ru.runa.gpd.validationErrors" partName="Errors">
+<viewState/>
+</view>
+<view id="ru.runa.gpd.propertiesView" partName="Properties">
+<viewState/>
+</view>
+<view id="org.eclipse.ui.views.ContentOutline" partName="Outline">
+<viewState/>
+</view>
+<view id="ru.runa.gpd.explorerView" partName="Processes">
+<viewState/>
+</view>
+</views>
+<perspectives activePart="ru.runa.gpd.explorerView" activePerspective="ru.runa.gpd.perspective">
+<perspective editorAreaTrimState="2" editorAreaVisible="1" fixed="0" version="0.016">
+<descriptor class="ru.runa.gpd.PerspectiveFactory" id="ru.runa.gpd.perspective" label="Process designer"/>
+<alwaysOnActionSet id="ru.runa.gpd.actionSet"/>
+<alwaysOnActionSet id="ru.runa.gpd.form.ftl.actionSet2"/>
+<show_view_action id="ru.runa.gpd.explorerView"/>
+<new_wizard_action id="wizard.new.process.definition"/>
+<new_wizard_action id="wizard.new.project"/>
+<perspective_action id="ru.runa.gpd.perspective"/>
+<hide_toolbar_item_id id="org.eclipse.jdt.ui.actions.OpenProjectWizard"/>
+<hide_toolbar_item_id id="org.eclipse.ui.edit.text.toggleShowSelectedElementOnly"/>
+<view id="ru.runa.gpd.propertiesView"/>
+<view id="ru.runa.gpd.validationErrors"/>
+<view id="ru.runa.gpd.explorerView"/>
+<view id="org.eclipse.ui.views.ContentOutline"/>
+<fastViewBars/>
+<layout>
+<mainWindow>
+<info folder="true" part="org.eclipse.ui.internal.ViewStack@3884b1e3">
+<folder activePageID="ru.runa.gpd.explorerView" appearance="2" expanded="2">
+<page content="ru.runa.gpd.explorerView" label="Processes"/>
+<page content="ru.runa.gpd.botExplorerView" label="LabelNotFound"/>
+<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">
+<part id="0"/>
+</presentation>
+</folder>
+</info>
+<info folder="true" part="stickyFolderRight" ratio="0.75" ratioLeft="750" ratioRight="250" relationship="2" relative="org.eclipse.ui.internal.ViewStack@3884b1e3">
+<folder appearance="2" expanded="2">
+<page content="org.eclipse.ui.internal.introview" label="LabelNotFound"/>
+</folder>
+</info>
+<info folder="true" part="bottom" ratio="0.69944596" ratioLeft="505" ratioRight="217" relationship="4" relative="org.eclipse.ui.internal.ViewStack@3884b1e3">
+<folder activePageID="ru.runa.gpd.propertiesView" appearance="2" expanded="2">
+<page content="ru.runa.gpd.propertiesView" label="Properties"/>
+<page content="ru.runa.gpd.validationErrors" label="Errors"/>
+<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">
+<part id="0"/>
+<part id="1"/>
+</presentation>
+</folder>
+</info>
+<info part="org.eclipse.ui.editorss" ratio="0.2" ratioLeft="200" ratioRight="800" relationship="2" relative="org.eclipse.ui.internal.ViewStack@3884b1e3"/>
+<info folder="true" part="org.eclipse.ui.internal.ViewStack@fbacb12" ratio="0.8" ratioLeft="640" ratioRight="160" relationship="2" relative="org.eclipse.ui.editorss">
+<folder activePageID="org.eclipse.ui.views.ContentOutline" appearance="2" expanded="2">
+<page content="org.eclipse.ui.views.ContentOutline" label="Outline"/>
+<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">
+<part id="0"/>
+</presentation>
+</folder>
+</info>
+</mainWindow>
+</layout>
+</perspective>
+</perspectives>
+<workingSets/>
+<navigationHistory/>
+</page>
+<workbenchWindowAdvisor/>
+<actionBarAdvisor/>
+<trimLayout>
+<trimArea IMemento.internal.id="128">
+<trimItem IMemento.internal.id="org.eclipse.ui.internal.WorkbenchWindow.topBar"/>
+</trimArea>
+</trimLayout>
+</window>
+<mruList/>
+</workbench>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-diagram name="Report" notation="bpmn" rendered="graphiti" width="1407" height="569" showActions="true" showGrid="false">
+  <node name="ID1" x="210" y="70" width="48" height="48">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID2" x="168" y="150" width="132" height="84">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID3" x="168" y="270" width="132" height="84">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID4" x="210" y="390" width="48" height="48"/>
+</process-diagram>

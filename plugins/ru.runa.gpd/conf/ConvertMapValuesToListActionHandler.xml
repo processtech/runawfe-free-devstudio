@@ -1,0 +1,8 @@
+<config>
+  <input>
+    <param name="map" formatFilter="java.util.Map" label.key="Param.Map" />
+  </input>
+  <output>
+    <param name="list" formatFilter="java.util.List" label.key="Param.Result" />
+  </output>
+</config>

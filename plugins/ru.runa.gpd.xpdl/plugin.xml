@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.importWizards">
+      <wizard
+            class="ru.runa.xpdl.wizard.ImportFromXPDLWizard"
+            icon="icons/import.png"
+            id="ru.runa.xpdl.wizard.import"
+            name="%wizard.import.name">
+      </wizard>
+   </extension>
+   <extension
+         point="org.eclipse.ui.actionSets">
+      <actionSet
+            id="ru.runa.gpd.xpdl.actionSet"
+            label="xpdl"
+            visible="true">
+         <action
+               class="ru.runa.xpdl.actions.ImportFromXPDLAction"
+               icon="icons/import.png"
+               id="ru.runa.xpdl.action.import"
+               label="%action.import.label"
+               style="push"
+               toolbarPath="additions"
+               menubarPath="file/export"/>
+      </actionSet>
+   </extension>
+
+</plugin>

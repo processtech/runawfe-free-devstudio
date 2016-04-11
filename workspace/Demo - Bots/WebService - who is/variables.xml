@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<variables>
+  <variable name="requester" scriptingName="requester" format="ru.runa.wfe.var.format.ExecutorFormat" swimlane="true"/>
+  <variable name="WebServiceBot" scriptingName="WebServiceBot" format="ru.runa.wfe.var.format.ExecutorFormat" swimlane="true"/>
+  <variable name="DNS_name" scriptingName="DNS_name" format="ru.runa.wfe.var.format.StringFormat"/>
+  <variable name="DNS_information" scriptingName="DNS_information" format="ru.runa.wfe.var.format.TextFormat"/>
+</variables>

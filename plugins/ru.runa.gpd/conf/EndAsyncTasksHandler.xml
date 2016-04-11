@@ -1,0 +1,5 @@
+<config>
+  <input>
+    <param name="nodeId" formatFilter="java.lang.String" variable="false" label.key="Param.NodeId" presentation="text" />
+  </input>
+</config>

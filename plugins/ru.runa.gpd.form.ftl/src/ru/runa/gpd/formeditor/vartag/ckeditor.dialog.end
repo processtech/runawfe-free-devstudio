@@ -1,0 +1,27 @@
+				]}
+			],
+			buttons:[CKEDITOR.dialog.okButton, CKEDITOR.dialog.cancelButton],
+			onShow : function()
+			{
+				var fakeElement = this.getSelectedElement();
+				if ( fakeElement && fakeElement.getAttribute( '_cke_real_element_type' ) && fakeElement.getAttribute( '_cke_real_element_type' ) == VAR_TAG )
+				{
+					var html = decodeURIComponent( fakeElement.getAttribute( '_cke_realelement' ) );
+					var realElement = new CKEDITOR.dom.element( html );
+
+					this.setupContent( realElement );
+				}			
+			},
+			onOk : function()
+			{
+				var element = editor.document.createElement( VAR_TAG );
+				this.commitContent( { element : element } );
+	
+				var text = editor.createFakeElement( element, 'cke_' + VAR_TAG, VAR_TAG );
+				editor.insertElement( text );
+				// Without this editor incorrect show new element  
+				editor.setData(editor.getData());
+			}
+		};
+	}
+);

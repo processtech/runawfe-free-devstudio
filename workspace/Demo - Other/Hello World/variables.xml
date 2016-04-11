@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<variables>
+  <variable name="requester" scriptingName="requester" format="ru.runa.wfe.var.format.ExecutorFormat" swimlane="true"/>
+</variables>

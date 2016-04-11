@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<variables>
+  <variable name="staffrole" scriptingName="staffrole" format="ru.runa.wfe.var.format.ExecutorFormat" swimlane="true" editor="SwimlaneElement.ManualLabel"/>
+  <variable name="manager" scriptingName="manager" format="ru.runa.wfe.var.format.ExecutorFormat" swimlane="true"/>
+  <variable name="since" scriptingName="since" format="ru.runa.wfe.var.format.DateTimeFormat"/>
+  <variable name="till" scriptingName="till" format="ru.runa.wfe.var.format.DateTimeFormat"/>
+  <variable name="reason" scriptingName="reason" format="ru.runa.wfe.var.format.StringFormat"/>
+  <variable name="comment" scriptingName="comment" format="ru.runa.wfe.var.format.TextFormat"/>
+  <variable name="staff_person_comment" scriptingName="staff_person_comment" format="ru.runa.wfe.var.format.TextFormat"/>
+</variables>

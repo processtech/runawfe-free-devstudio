@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<variables>
+  <variable name="manager" scriptingName="manager" format="ru.runa.wfe.var.format.ExecutorFormat" swimlane="true"/>
+  <variable name="msg_send" scriptingName="msg_send" format="ru.runa.wfe.var.format.StringFormat"/>
+</variables>

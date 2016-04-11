@@ -1,0 +1,15 @@
+<email-config>
+  <connection label="ConnectionSettings">
+    <param name="mail.transport.protocol" variable="false" label.key="mail.transport.protocol" options=",smtp,smtps" help.key="mail.transport.protocol.help" />
+    <param name="mail.host" variable="false" label.key="mail.host" help.key="mail.host.help" formatFilter="java.lang.String" />
+    <param name="mail.${mail.transport.protocol}.port" variable="false" label.key="mail.smtp.port" help.key="mail.smtp.port.help" formatFilter="java.lang.Long" />
+  </connection>
+  <connection label="AuthSettings">
+    <param name="mail.${mail.transport.protocol}.auth" variable="false" presentation="checkbox" optional="true" label.key="mail.smtp.auth" help.key="mail.smtp.auth.help" />
+    <param name="mail.user" variable="false" optional="true" label.key="mail.user" help.key="mail.user.help" formatFilter="java.lang.String" />
+    <param name="mail.password" variable="false" optional="true" label.key="mail.password" help.key="mail.password.help" formatFilter="java.lang.String" />
+  </connection>
+  <connection label="DebugSettings">
+    <param name="mail.debug" presentation="checkbox" optional="true" variable="false" label.key="mail.debug" help.key="mail.debug.help" />
+  </connection>
+</email-config>

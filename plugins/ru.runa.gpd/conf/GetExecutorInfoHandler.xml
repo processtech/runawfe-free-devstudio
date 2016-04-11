@@ -1,0 +1,9 @@
+<config>
+  <input>
+    <param name="executor" formatFilter="ru.runa.wfe.user.Executor" label.key="Param.Executor" />
+    <param name="format" variable="false" options="id,name,description,fullName,active,code,email,phone" label.key="Param.Format" />
+  </input>
+  <output>
+    <param name="result" label.key="Param.Result" />
+  </output>
+</config>

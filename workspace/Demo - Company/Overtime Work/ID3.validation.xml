@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<validators>
+  <field name="staff_person_comment">
+    <field-validator type="stringlength">
+      <message><![CDATA[Length cannot be more than 250 symbols]]></message>
+      <param name="maxLength"><![CDATA[250]]></param>
+    </field-validator>
+  </field>
+</validators>

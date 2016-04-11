@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-diagram name="EndTokenDemo" notation="bpmn" rendered="graphiti" width="723" height="518" showActions="false" showGrid="false">
+  <node name="ID1" x="220" y="40" width="48" height="48">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID3" x="20" y="200" width="132" height="84">
+    <transition name="tr1">
+      <bendpoint x="86" y="385"/>
+    </transition>
+  </node>
+  <node name="ID4" x="331" y="200" width="132" height="84">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID2" x="220" y="120" width="48" height="48">
+    <transition name="tr1">
+      <bendpoint x="86" y="143"/>
+    </transition>
+    <transition name="tr2">
+      <bendpoint x="396" y="144"/>
+    </transition>
+  </node>
+  <node name="ID5" x="220" y="362" width="48" height="48">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID7" x="373" y="314" width="48" height="48"/>
+  <node name="ID6" x="221" y="430" width="48" height="48"/>
+</process-diagram>

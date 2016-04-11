@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-diagram name="TimerDemo" notation="bpmn" rendered="graphiti" width="1407" height="569" showActions="false" showGrid="false">
+  <node name="ID1" x="290" y="50" width="48" height="48">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID2" x="249" y="150" width="132" height="84">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID5" x="279" y="210" width="48" height="48">
+    <transition name="time-out-transition">
+      <bendpoint x="146" y="221"/>
+    </transition>
+  </node>
+  <node name="ID4" x="80" y="247" width="132" height="84">
+    <transition name="tr1">
+      <bendpoint x="145" y="353"/>
+    </transition>
+  </node>
+  <node name="ID3" x="290" y="330" width="48" height="48"/>
+</process-diagram>

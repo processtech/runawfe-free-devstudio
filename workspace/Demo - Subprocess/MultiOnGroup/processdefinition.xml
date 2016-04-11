@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:runa="http://runa.ru/wfe/xml" targetNamespace="http://runa.ru/wfe/xml">
+  <process name="MultiOnGroup">
+    <extensionElements>
+      <runa:property name="showSwimlane" value="none"/>
+      <runa:property name="documentation" value="A demo process with Multi subprocess by group"/>
+      <runa:property name="version" value="4.2.1.201506302219"/>
+      <runa:property name="accessType" value="Process"/>
+    </extensionElements>
+    <laneSet id="laneSet1">
+      <lane id="ID12" name="requester">
+        <extensionElements>
+          <runa:property name="class" value="ru.runa.wfe.extension.assign.DefaultAssignmentHandler"/>
+          <runa:property name="config"><![CDATA[]]></runa:property>
+        </extensionElements>
+      </lane>
+    </laneSet>
+    <startEvent id="ID1" name="Start">
+      <extensionElements>
+        <runa:property name="lane" value="requester"/>
+      </extensionElements>
+    </startEvent>
+    <sequenceFlow id="ID19" name="tr1" sourceRef="ID1" targetRef="ID4"/>
+    <userTask id="ID4" name="input data">
+      <documentation><![CDATA[confirm order]]></documentation>
+      <extensionElements>
+        <runa:property name="lane" value="requester"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID10" name="tr1" sourceRef="ID4" targetRef="ID5"/>
+    <subProcess id="ID5" name="multi by group" runa:process="MultiOnGroupSub">
+      <extensionElements>
+        <runa:property name="multiInstance" value="true"/>
+        <runa:variables>
+          <runa:variable name="Str" mappedName="Msg" usage="read"/>
+          <runa:variable name="Arr" mappedName="Return" usage="read,write,multiinstancelink"/>
+          <runa:variable name="Group" mappedName="operator" usage="multiinstancelink,group"/>
+        </runa:variables>
+      </extensionElements>
+    </subProcess>
+    <sequenceFlow id="ID11" name="tr1" sourceRef="ID5" targetRef="ID6"/>
+    <endEvent id="ID6" name="End"/>
+  </process>
+</definitions>

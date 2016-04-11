@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<validators>
+  <field name="Arr">
+    <field-validator type="required">
+      <message><![CDATA[]]></message>
+    </field-validator>
+  </field>
+  <field name="Str">
+    <field-validator type="required">
+      <message><![CDATA[]]></message>
+    </field-validator>
+  </field>
+  <field name="Group">
+    <field-validator type="required">
+      <message><![CDATA[Поле обязательно для ввода]]></message>
+    </field-validator>
+  </field>
+</validators>

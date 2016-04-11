@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<variables>
+  <variable name="swimlane" scriptingName="swimlane" format="ru.runa.wfe.var.format.ExecutorFormat" swimlane="true"/>
+  <variable name="msg_rec" scriptingName="msg_rec" format="ru.runa.wfe.var.format.StringFormat"/>
+  <variable name="waitUntil" scriptingName="waitUntil" format="ru.runa.wfe.var.format.DateTimeFormat"/>
+  <variable name="reply" scriptingName="reply" format="ru.runa.wfe.var.format.StringFormat" defaultValue="this is reply from message receiver process"/>
+  <variable name="senderProcessId" scriptingName="senderProcessId" format="ru.runa.wfe.var.format.LongFormat"/>
+</variables>

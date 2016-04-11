@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+    	<extension-point id="templates" name="Quick templates" schema="schema/templates.exsd"/>
+   
+   	<extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="ru.runa.gpd.quick.formeditor.QuickFormEditor"
+            default="false"
+            id="ru.runa.gpd.quick.formeditor.QuickFormEditor"
+            name="quickFormEditor">
+      </editor>
+   	</extension>
+   	<extension
+         point="ru.runa.gpd.formtype">
+      <element
+            contributor="ru.runa.gpd.quick.formeditor.QuickFormType"
+            name="%FormType.quick"
+            order="10"
+            type="quick"/>
+   	</extension>
+   	<extension
+         point="ru.runa.gpd.form.quick.templates">
+      <template
+            enabled="true"
+            filename="table2ColumnsLayout.ftl.template"
+            label="%template.table2ColumnsLayout"
+            name="table2ColumnsLayout">
+            <parameter name="Title" label="%parameter.title"/>
+      </template>
+      <template
+            enabled="true"
+            filename="divContainerLayout.ftl.template"
+            label="%template.divContainerLayout"
+            name="divContainerLayout">
+      </template>
+      <template
+            enabled="true"
+            filename="table2ColumnsProcessLayout.ftl.template"
+            label="%template.table2ColumnsProcessLayout"
+            name="table2ColumnsProcessLayout">
+         <parameter
+               label="%parameter.processName"
+               name="ProcessName">
+         </parameter>
+         <parameter
+               label="%parameter.title"
+               name="Title">
+         </parameter>
+         <parameter
+               label="%parameter.warning"
+               name="Warning">
+         </parameter>
+      </template>
+   	</extension>
+</plugin>

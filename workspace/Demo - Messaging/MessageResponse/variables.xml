@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<variables>
+  <variable name="staff" scriptingName="staff" format="ru.runa.wfe.var.format.ExecutorFormat" swimlane="true"/>
+  <variable name="id_query" scriptingName="id_query" format="ru.runa.wfe.var.format.StringFormat"/>
+  <variable name="str_response" scriptingName="str_response" format="ru.runa.wfe.var.format.StringFormat"/>
+</variables>

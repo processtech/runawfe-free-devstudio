@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:runa="http://runa.ru/wfe/xml" targetNamespace="http://runa.ru/wfe/xml">
+  <process name="TextFileCreation">
+    <extensionElements>
+      <runa:property name="showSwimlane" value="none"/>
+      <runa:property name="documentation" value="Bot creates text file (no start form provided)"/>
+      <runa:property name="version" value="4.2.1.201506302219"/>
+      <runa:property name="accessType" value="Process"/>
+    </extensionElements>
+    <laneSet id="laneSet1">
+      <lane id="ID10" name="bot">
+        <extensionElements>
+          <runa:property name="class" value="ru.runa.wfe.extension.assign.DefaultAssignmentHandler"/>
+          <runa:property name="config"><![CDATA[#UniversalBot]]></runa:property>
+        </extensionElements>
+      </lane>
+      <lane id="ID11" name="user">
+        <extensionElements>
+          <runa:property name="class" value="ru.runa.wfe.extension.assign.DefaultAssignmentHandler"/>
+          <runa:property name="config"><![CDATA[]]></runa:property>
+        </extensionElements>
+      </lane>
+    </laneSet>
+    <startEvent id="ID1" name="enter data">
+      <extensionElements>
+        <runa:property name="lane" value="user"/>
+      </extensionElements>
+    </startEvent>
+    <sequenceFlow id="ID4" name="tr1" sourceRef="ID1" targetRef="ID3"/>
+    <userTask id="ID2" name="create text file">
+      <extensionElements>
+        <runa:property name="lane" value="bot"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID8" name="tr1" sourceRef="ID2" targetRef="ID6"/>
+    <userTask id="ID6" name="read of save file">
+      <extensionElements>
+        <runa:property name="lane" value="user"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID9" name="tr1" sourceRef="ID6" targetRef="ID7"/>
+    <scriptTask id="ID3" name="Задача сценария 1">
+      <extensionElements>
+        <runa:property name="class" value="ru.runa.wfe.service.handler.BotInvokerActionHandler"/>
+        <runa:property name="config"><![CDATA[]]></runa:property>
+      </extensionElements>
+    </scriptTask>
+    <sequenceFlow id="ID5" name="tr1" sourceRef="ID3" targetRef="ID2"/>
+    <endEvent id="ID7" name="Окончание"/>
+  </process>
+</definitions>

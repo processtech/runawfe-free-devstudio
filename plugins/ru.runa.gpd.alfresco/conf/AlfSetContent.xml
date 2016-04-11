@@ -1,0 +1,7 @@
+<config>
+  <input>
+    <param name="uuid" formatFilter="java.lang.String" label="ID Alfresco объекта" />
+    <param name="data" label="Содержимое" />
+    <param name="mimetype" variable="false" label="Mimetype содержимого" help="Не нужен, если выбрана переменная типа Файл" optional="true" />
+  </input>
+</config>

@@ -1,0 +1,35 @@
+ActionHandler used for changing business process variables using formulas. 
+
+In each line of config should be one formula in format 
+   'variable name' = expression, for example: a = (b + c)*d 
+
+Available operations: { +, -, *, /, <, <=, ==, !=, >, >=, &, |, ^ }.
+Highest priority (4) have operations { * ,/ }.
+Operations { +, - } have priority = 3.
+Operations { <, <=, ==, !=, >, >= } have priority = 2.
+Lowest priority have operations { & (and), | (or), ^ (xor) }.
+
+If the variable name (or value) has space symbol < > then it should be enclosed with <'>.
+
+   Functions: 
+date(date) - Cleans time info in java.util.Date.
+time(date) - Cleans date info in java.util.Date.
+hours_round_up(number) - round number (minutes value) to hours.
+round(number) or round(number, accuracy).
+round_up(number) or round_up(number, accuracy).
+round_down(number) or round_down(number, accuracy).
+current_date() - current date
+current_time() - current time
+current_date_time() - current date and time
+get_instance_id() - returns current instance id
+isExecutorInGroup(group, executor) - checks whether executor belongs to group (result is boolean)
+ 
+   Examples:
+variable1 = 2
+variable2 = 3.1415926535
+variable3 = true
+variable4 = "string"
+variable5 = " \" " (escaped with <\>)
+variable6 = 01.09.2008
+variable7 = '01.09.08 18:00' (enclosed with <'>)
+variable8 = round_up(2.564367, 3) (variable8 = 2.565)

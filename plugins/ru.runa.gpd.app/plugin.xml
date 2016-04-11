@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+    <extension
+         id="product"
+         point="org.eclipse.core.runtime.products">
+      <product
+            application="ru.runa.gpd.application"
+            name="RunaWFE Developer Studio">
+         <property
+               name="aboutText"
+               value="RunaWFE Developer Studio">
+         </property>
+         <property
+               name="appName"
+               value="RunaWFE Developer Studio">
+         </property>
+         <property
+               name="windowImages"
+               value="icons/logo/16.gif,icons/logo/32.gif,icons/logo/48.gif,icons/logo/64.gif,icons/logo/128.gif">
+         </property>
+      </product>
+   </extension>
+    <extension
+          point="org.eclipse.ui.splashHandlers">
+       <splashHandler
+             class="ru.runa.gpd.app.VersionSplashHandler"
+             id="ru.runa.gpd.app.versionSplashHandler">
+       </splashHandler>
+       <splashHandlerProductBinding
+             productId="ru.runa.gpd.app.product"
+             splashId="ru.runa.gpd.app.versionSplashHandler">
+       </splashHandlerProductBinding>
+    </extension>
+
+
+</plugin>

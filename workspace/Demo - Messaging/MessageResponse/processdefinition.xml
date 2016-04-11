@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:runa="http://runa.ru/wfe/xml" targetNamespace="http://runa.ru/wfe/xml">
+  <process name="MessageResponse">
+    <extensionElements>
+      <runa:property name="showSwimlane" value="none"/>
+      <runa:property name="version" value="4.2.1.201506302219"/>
+      <runa:property name="accessType" value="Process"/>
+    </extensionElements>
+    <laneSet id="laneSet1">
+      <lane id="ID10" name="staff">
+        <extensionElements>
+          <runa:property name="class" value="ru.runa.wfe.extension.assign.DefaultAssignmentHandler"/>
+          <runa:property name="config"><![CDATA[]]></runa:property>
+        </extensionElements>
+      </lane>
+    </laneSet>
+    <startEvent id="ID1" name="Start">
+      <extensionElements>
+        <runa:property name="lane" value="staff"/>
+      </extensionElements>
+    </startEvent>
+    <sequenceFlow id="ID6" name="tr1" sourceRef="ID1" targetRef="ID2"/>
+    <userTask id="ID3" name="Input data">
+      <extensionElements>
+        <runa:property name="lane" value="staff"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="ID8" name="tr1" sourceRef="ID3" targetRef="ID4"/>
+    <sendTask id="ID4" name="Send" runa:timeDuration="1 days">
+      <extensionElements>
+        <runa:variables>
+          <runa:variable name="processId" mappedName="${id_query}" usage="selector"/>
+          <runa:variable name="str_response" mappedName="str_response" usage="read"/>
+        </runa:variables>
+      </extensionElements>
+    </sendTask>
+    <sequenceFlow id="ID9" name="tr1" sourceRef="ID4" targetRef="ID5"/>
+    <receiveTask id="ID2" name="Receive">
+      <extensionElements>
+        <runa:variables>
+          <runa:variable name="processDefinitionName" mappedName="${currentDefinitionName}" usage="selector"/>
+          <runa:variable name="id_query" mappedName="id_query" usage="read"/>
+          <runa:variable name="str_response" mappedName="str_query" usage="read"/>
+        </runa:variables>
+      </extensionElements>
+    </receiveTask>
+    <sequenceFlow id="ID7" name="tr1" sourceRef="ID2" targetRef="ID3"/>
+    <endEvent id="ID5" name="Окончание"/>
+  </process>
+</definitions>

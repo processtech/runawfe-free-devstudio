@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-diagram name="Vacation" notation="bpmn" rendered="graphiti" width="736" height="777" showActions="true" showGrid="false">
+  <node name="ID1" x="110" y="33" width="48" height="48">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID2" x="68" y="113" width="132" height="84">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID4" x="262" y="203" width="161" height="105">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID11" x="68" y="315" width="132" height="84">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID15" x="269" y="405" width="132" height="86">
+    <transition name="tr1">
+      <bendpoint x="335" y="523"/>
+      <bendpoint x="335" y="643"/>
+    </transition>
+  </node>
+  <node name="ID16" x="560" y="402" width="171" height="91">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID22" x="560" y="520" width="171" height="84">
+    <transition name="tr1">
+      <bendpoint x="646" y="643"/>
+    </transition>
+  </node>
+  <node name="ID13" x="462" y="340" width="48" height="48">
+    <transition name="tr1">
+      <bendpoint x="335" y="364"/>
+    </transition>
+    <transition name="tr2">
+      <bendpoint x="645" y="364"/>
+    </transition>
+  </node>
+  <node name="ID17" x="462" y="620" width="48" height="48">
+    <transition name="tr1">
+      <bendpoint x="485" y="733"/>
+    </transition>
+  </node>
+  <node name="ID3" x="110" y="233" width="48" height="48">
+    <transition name="approved">
+      <label x="-30" y="7"/>
+    </transition>
+    <transition name="rejected"/>
+  </node>
+  <node name="ID5" x="462" y="233" width="48" height="48">
+    <transition name="not correct">
+      <label x="-61" y="-2"/>
+      <bendpoint x="485" y="155"/>
+    </transition>
+    <transition name="correct"/>
+  </node>
+  <node name="ID23" x="110" y="710" width="48" height="48"/>
+</process-diagram>

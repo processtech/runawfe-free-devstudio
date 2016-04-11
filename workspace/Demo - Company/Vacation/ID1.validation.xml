@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<validators>
+  <validator type="expression">
+    <message><![CDATA[Till date should be more or equals since date]]></message>
+    <param name="expression"><![CDATA[till.getTime() > since.getTime()]]></param>
+  </validator>
+  <field name="reason">
+    <field-validator type="stringlength">
+      <message><![CDATA[Length cannot be more than 100 symbols]]></message>
+      <param name="maxLength"><![CDATA[100]]></param>
+    </field-validator>
+    <field-validator type="required">
+      <message><![CDATA[Value is required]]></message>
+    </field-validator>
+  </field>
+  <field name="since">
+    <field-validator type="required">
+      <message><![CDATA[Value is required]]></message>
+    </field-validator>
+  </field>
+  <field name="comment">
+    <field-validator type="stringlength">
+      <message><![CDATA[Length cannot be more than 255 symbols]]></message>
+      <param name="maxLength"><![CDATA[255]]></param>
+    </field-validator>
+  </field>
+  <field name="till">
+    <field-validator type="required">
+      <message><![CDATA[Value is required]]></message>
+    </field-validator>
+  </field>
+</validators>

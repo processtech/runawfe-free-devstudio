@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: RunaWFE Developer Studio Alfresco integration
+Bundle-SymbolicName: ru.runa.gpd.alfresco;singleton:=true
+Bundle-Version: 4.3.0.qualifier
+Bundle-Activator: ru.runa.gpd.alfresco.Activator
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ ru.runa.gpd.form.ftl,
+ ru.runa.gpd
+Bundle-ActivationPolicy: lazy
+Export-Package: ru.runa.gpd.alfresco; uses:="org.eclipse.jface.resourc
+ e,  org.eclipse.ui.plugin,  org.osgi.framework"

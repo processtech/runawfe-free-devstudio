@@ -1,0 +1,47 @@
+<email-config>
+
+  <CommonProperties>
+    <param name="interaction.useJSValidation?string(&quot;yes&quot;, &quot;no&quot;)" label.key="ftl.interaction.useJSValidation" />
+    <param name="interaction.requiredVariableNames" label.key="ftl.interaction.requiredVariableNames" />
+    <param name="interaction.formData" label.key="ftl.interaction.formData"/>
+    
+    <param name="process.id" label.key="ftl.process.id" />
+    <param name="process.startDate?datetime" label.key="ftl.process.startDate" />
+    <param name="process.endDate?datetime" label.key="ftl.process.endDate" />
+    <param name="process.hierarchyIds" label.key="ftl.process.hierarchyIds" />
+    
+    <param name="process.deployment.id" label.key="ftl.process.deployment.id" />
+    <param name="process.deployment.version" label.key="ftl.process.deployment.version" />
+    <param name="process.deployment.name" label.key="ftl.process.deployment.name" />
+    <param name="process.deployment.description" label.key="ftl.process.deployment.description" />
+    <param name="process.deployment.category" label.key="ftl.process.deployment.category" />
+    <param name="process.deployment.createDate" label.key="ftl.process.deployment.createDate" />
+  </CommonProperties>
+  
+  <NonBotProperties>
+    <param name="task.id" label.key="ftl.task.id" />
+    <param name="task.nodeId" label.key="ftl.task.nodeId" />
+    <param name="task.name" label.key="ftl.task.name" />
+    <param name="task.description" label.key="ftl.task.description" />
+    <param name="task.swimlane.name" label.key="ftl.task.swimlane.name" />
+    <param name="task.executor.label" label.key="ftl.task.executor.label" />
+    <param name="task.createDate?datetime" label.key="ftl.task.createDate" />
+    <param name="task.deadlineDate?datetime" label.key="ftl.task.deadlineDate" />
+  </NonBotProperties>
+  
+  <BotProperties>
+    <param name="task.id" label.key="ftl.task.id" />
+    <param name="task.nodeId" label.key="ftl.task.nodeId" />
+    <param name="task.processId" label.key="ftl.task.processId" />
+    <param name="task.deploymentId" label.key="ftl.task.deploymentId" />
+    <param name="task.definitionName" label.key="ftl.task.definitionName" />
+    <param name="task.name" label.key="ftl.task.name" />
+    <param name="task.description" label.key="ftl.task.description" />
+    <param name="task.swimlaneName" label.key="ftl.task.swimlaneName" />
+    <param name="task.owner.label" label.key="ftl.task.owner.label" />
+    <param name="task.creationDate?datetime" label.key="ftl.task.createionDate" />
+    <param name="task.deadlineDate?datetime" label.key="ftl.task.deadlineDate" />
+    <param name="task.deadlineWarningDate?datetime" label.key="ftl.task.deadlineWarningDate" />
+  </BotProperties>
+
+</email-config>

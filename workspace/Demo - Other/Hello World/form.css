@@ -1,0 +1,45 @@
+/** from classic.css template */
+.taskform, .taskform td {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 10pt;
+	color: #666666;
+}
+.taskform table {
+	border-collapse: collapse;
+	border: 2px solid #aaa;
+	width: 100%;
+}
+.taskform th, .taskform caption {
+	background-color: #990000;
+	color: white;
+	text-align: left;
+	font-size: 11pt;
+	padding: 0px 10px;
+}
+.taskform caption {
+	width: 100%;
+}
+.taskform td {
+	border: 1px solid #aaaaaa;
+	padding: 2px 5px 2px 5px;
+}
+.taskform td.label {
+	vertical-align: top;
+	text-align: right;
+}
+.taskform textarea {
+	width: 100%;
+	height: 100px;
+	min-width: 300px;
+}
+.taskform input, .taskform select {
+	width: 90%;
+}
+.taskform .inputBoolean {
+	width: 20px;
+}
+.taskform .warning {
+	font-size: 9pt;
+	color: red;
+	font-style: italic;
+}

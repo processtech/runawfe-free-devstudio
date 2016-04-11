@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-diagram name="Businesstrip" notation="bpmn" rendered="graphiti" width="1277" height="1408" showActions="true" showGrid="false">
+  <node name="ID1" x="481" y="33" width="48" height="48">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID2" x="470" y="243" width="155" height="91">
+    <transition name="tr1">
+      <bendpoint x="547" y="1317"/>
+    </transition>
+  </node>
+  <node name="ID11" x="646" y="243" width="159" height="91">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID12" x="727" y="423" width="191" height="91">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID13" x="570" y="423" width="132" height="91">
+    <transition name="tr1">
+      <bendpoint x="635" y="1263"/>
+    </transition>
+  </node>
+  <node name="ID25" x="830" y="603" width="191" height="97">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID26" x="660" y="603" width="132" height="97">
+    <transition name="tr1">
+      <bendpoint x="725" y="1207"/>
+    </transition>
+  </node>
+  <node name="ID34" x="749" y="793" width="132" height="91">
+    <transition name="tr1">
+      <bendpoint x="815" y="1151"/>
+    </transition>
+  </node>
+  <node name="ID35" x="1000" y="793" width="132" height="87">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID43" x="1140" y="963" width="132" height="94">
+    <transition name="tr1">
+      <bendpoint x="1206" y="1103"/>
+    </transition>
+  </node>
+  <node name="ID44" x="880" y="963" width="132" height="94">
+    <transition name="tr1">
+      <bendpoint x="945" y="1103"/>
+    </transition>
+  </node>
+  <node name="ID132" x="322" y="163" width="132" height="91">
+    <transition name="tr1">
+      <bendpoint x="385" y="1364"/>
+    </transition>
+  </node>
+  <node name="ID14" x="612" y="175" width="48" height="48">
+    <transition name="tr2">
+      <bendpoint x="551" y="199"/>
+    </transition>
+    <transition name="tr1">
+      <bendpoint x="726" y="199"/>
+    </transition>
+  </node>
+  <node name="ID96" x="702" y="363" width="48" height="48">
+    <transition name="tr1">
+      <bendpoint x="823" y="386"/>
+    </transition>
+    <transition name="tr2">
+      <bendpoint x="635" y="386"/>
+    </transition>
+  </node>
+  <node name="ID101" x="799" y="543" width="48" height="48">
+    <transition name="tr1">
+      <bendpoint x="726" y="567"/>
+    </transition>
+    <transition name="tr2">
+      <bendpoint x="924" y="566"/>
+    </transition>
+  </node>
+  <node name="ID105" x="902" y="733" width="48" height="48">
+    <transition name="tr1">
+      <bendpoint x="814" y="756"/>
+    </transition>
+    <transition name="tr2">
+      <bendpoint x="1063" y="757"/>
+    </transition>
+  </node>
+  <node name="ID110" x="1042" y="903" width="48" height="48">
+    <transition name="tr1">
+      <bendpoint x="945" y="926"/>
+    </transition>
+    <transition name="tr2">
+      <bendpoint x="1203" y="927"/>
+    </transition>
+  </node>
+  <node name="ID117" x="1042" y="1080" width="48" height="48">
+    <transition name="tr1">
+      <bendpoint x="1065" y="1151"/>
+    </transition>
+  </node>
+  <node name="ID120" x="902" y="1127" width="48" height="48">
+    <transition name="tr1">
+      <bendpoint x="925" y="1206"/>
+    </transition>
+  </node>
+  <node name="ID123" x="791" y="1183" width="48" height="48">
+    <transition name="tr1">
+      <bendpoint x="814" y="1263"/>
+    </transition>
+  </node>
+  <node name="ID126" x="702" y="1240" width="48" height="48">
+    <transition name="tr1">
+      <bendpoint x="725" y="1318"/>
+    </transition>
+  </node>
+  <node name="ID129" x="612" y="1294" width="48" height="48">
+    <transition name="tr1">
+      <bendpoint x="635" y="1365"/>
+    </transition>
+  </node>
+  <node name="ID3" x="482" y="103" width="48" height="48">
+    <transition name="to another region">
+      <label x="-77" y="7"/>
+      <bendpoint x="635" y="126"/>
+    </transition>
+    <transition name="local">
+      <label x="12" y="7"/>
+      <bendpoint x="387" y="126"/>
+    </transition>
+  </node>
+  <node name="ID52" x="481" y="1341" width="48" height="48"/>
+</process-diagram>

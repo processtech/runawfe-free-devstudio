@@ -1,0 +1,61 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+	<head>
+		<title>VarTag Properties</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<script type="text/javascript" src="prototype.js"></script>
+		<script language="javascript">
+
+var oEditor = window.parent.InnerDialogLoaded() ;
+var FCKLang = oEditor.FCKLang ;
+var varTags = oEditor.VarTags;
+
+window.onload = function () {
+	// First of all, translate the dialog box texts
+	oEditor.FCKLanguageManager.TranslatePage( document ) ;
+	
+	LoadSelected() ;
+	
+	// Show the "Ok" button.
+	window.parent.SetOkButton( true ) ;	
+}
+
+var eSelected = oEditor.FCKSelection.GetSelectedElement() ;
+
+function LoadSelected() {
+	if ( !eSelected ) {
+		return ;
+	}
+
+	if ( eSelected.varTagName && eSelected.varTagType ) {
+		$('tagName').value = eSelected.varTagName ;
+		$('tagType').value = eSelected.varTagType;
+	} else {
+		eSelected == null ;
+	}
+	$('tagName').focus();
+}
+
+function Ok() {
+	var sValue = $('tagName').value ;
+	var type = $('tagType').value;
+	
+	if ( sValue.length == 0 ) {
+		alert( FCKLang.VarTagErrNoName ) ;
+		return false ;
+	}
+
+	varTags.Add ( sValue, type );
+	return true ;
+}
+
+		</script>
+	</head>
+	
+	<body scroll="no" style="OVERFLOW: hidden">
+		<table height="100%" cellSpacing="0" cellPadding="0" width="100%" border="0">
+			<tr>
+				<td>
+					<span fckLang="VarTagDlgName">Name</span><br>
+					<select id="tagName">
+						

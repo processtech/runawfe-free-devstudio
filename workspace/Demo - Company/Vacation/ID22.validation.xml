@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<validators>
+  <field name="official_order_number">
+    <field-validator type="stringlength">
+      <message><![CDATA[Length cannot be more than 50 symbols]]></message>
+      <param name="maxLength">50</param>
+    </field-validator>
+    <field-validator type="required">
+      <message><![CDATA[Value is required]]></message>
+    </field-validator>
+  </field>
+  <field name="official_order_date">
+    <field-validator type="required">
+      <message><![CDATA[Value is required]]></message>
+    </field-validator>
+  </field>
+</validators>

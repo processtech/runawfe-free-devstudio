@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<validators>
+  <field name="n">
+    <field-validator type="required">
+      <message><![CDATA[field is required]]></message>
+    </field-validator>
+  </field>
+</validators>

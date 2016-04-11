@@ -1,0 +1,10 @@
+<config>
+  <input>
+    <param name="map" formatFilter="java.util.Map" label.key="Param.Map" />
+    <param name="key" label.key="Param.Key" presentation="richcombo" />
+    <param name="object" label.key="Param.Object" presentation="richcombo" />
+  </input>
+  <output>
+    <param name="result" formatFilter="java.util.Map" label.key="Param.Result" />
+  </output>
+</config>

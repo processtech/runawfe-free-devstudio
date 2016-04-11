@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<variables>
+  <variable name="operator" scriptingName="operator" format="ru.runa.wfe.var.format.ExecutorFormat" swimlane="true"/>
+  <variable name="bot" scriptingName="bot" format="ru.runa.wfe.var.format.ExecutorFormat" swimlane="true" editor="SwimlaneElement.BotLabel"/>
+  <variable name="TableName" scriptingName="TableName" format="ru.runa.wfe.var.format.StringFormat"/>
+  <variable name="items" scriptingName="items" format="ru.runa.wfe.var.format.ListFormat(ru.runa.wfe.var.format.StringFormat)"/>
+  <variable name="prices" scriptingName="prices" format="ru.runa.wfe.var.format.ListFormat(ru.runa.wfe.var.format.DoubleFormat)"/>
+  <variable name="numbers" scriptingName="numbers" format="ru.runa.wfe.var.format.ListFormat(ru.runa.wfe.var.format.LongFormat)"/>
+  <variable name="dtnow" scriptingName="dtnow" format="ru.runa.wfe.var.format.DateTimeFormat"/>
+  <variable name="FileReport" scriptingName="FileReport" format="ru.runa.wfe.var.format.FileFormat"/>
+</variables>

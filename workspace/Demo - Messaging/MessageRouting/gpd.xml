@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-diagram name="MessageRouting" notation="bpmn" rendered="graphiti" width="996" height="550" showActions="true" showGrid="false">
+  <node name="ID0" x="20" y="10" width="971" height="451"/>
+  <node name="ID1" x="70" y="30" width="48" height="48">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID2" x="190" y="110" width="132" height="91">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID3" x="370" y="110" width="132" height="91">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID10" x="560" y="210" width="132" height="101">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID11" x="738" y="210" width="132" height="101">
+    <transition name="tr1">
+      <bendpoint x="800" y="343"/>
+    </transition>
+  </node>
+  <node name="ID4" x="501" y="30" width="48" height="48">
+    <transition name="tr1">
+      <bendpoint x="256" y="95"/>
+    </transition>
+    <transition name="tr2">
+      <bendpoint x="436" y="89"/>
+    </transition>
+    <transition name="tr3">
+      <bendpoint x="625" y="89"/>
+    </transition>
+    <transition name="tr4">
+      <bendpoint x="803" y="54"/>
+    </transition>
+  </node>
+  <node name="ID5" x="501" y="320" width="48" height="48">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID6" x="232" y="228" width="48" height="48">
+    <transition name="tr1">
+      <bendpoint x="256" y="344"/>
+    </transition>
+  </node>
+  <node name="ID7" x="412" y="228" width="48" height="48">
+    <transition name="tr1">
+      <bendpoint x="436" y="318"/>
+    </transition>
+  </node>
+  <node name="ID8" x="602" y="128" width="48" height="48">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID9" x="780" y="128" width="48" height="48">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID12" x="500" y="410" width="48" height="48"/>
+  <node name="ID27" x="310" y="220" width="96" height="36"/>
+  <node name="ID28" x="650" y="150" width="96" height="36"/>
+  <node name="ID29" x="840" y="150" width="96" height="36"/>
+  <node name="ID30" x="130" y="220" width="96" height="36"/>
+</process-diagram>
