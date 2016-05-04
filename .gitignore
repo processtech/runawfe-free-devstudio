@@ -1,0 +1,4 @@
+/plugins/ru.altlinux.tnms
+/plugins/ru.altlinux.tnms.maven
+/plugins/*/bin
+/plugins/*/target
