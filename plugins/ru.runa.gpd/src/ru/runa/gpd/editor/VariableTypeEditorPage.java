@@ -383,7 +383,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             }
             
             for (VariableUserType userType : getDefinition().getVariableUserTypes()) {
-                // Данная проверка выполняется снаружи метода, чтобы избежать ситуации сравнения типа с самим собой.
+                // Р”Р°РЅРЅР°СЏ РїСЂРѕРІРµСЂРєР° РІС‹РїРѕР»РЅСЏРµС‚СЃСЏ СЃРЅР°СЂСѓР¶Рё РјРµС‚РѕРґР°, С‡С‚РѕР±С‹ РёР·Р±РµР¶Р°С‚СЊ СЃРёС‚СѓР°С†РёРё СЃСЂР°РІРЅРµРЅРёСЏ С‚РёРїР° СЃ СЃР°РјРёРј СЃРѕР±РѕР№.
                 if (!type.equals(userType)) {
                     if (isUserTypeUsed(type, userType)) {
                         action = RemoveAction.TYPE_USAGE;
@@ -847,17 +847,17 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
         }
 
         /**
-         * Странный метод сравнения типов.
-         * Метод выделен для реализации сравнения типов, не затрагивая базовые классы. Если писать в них, то можно уйти в StackOverflowError.
-         * @param leftType Тип для сравнения слева от знака равенства.
-         * @param rightType Тип для сравнения справа от знака равенства.
-         * @return Признак равенства типов.
+         * РЎС‚СЂР°РЅРЅС‹Р№ РјРµС‚РѕРґ СЃСЂР°РІРЅРµРЅРёСЏ С‚РёРїРѕРІ.
+         * РњРµС‚РѕРґ РІС‹РґРµР»РµРЅ РґР»СЏ СЂРµР°Р»РёР·Р°С†РёРё СЃСЂР°РІРЅРµРЅРёСЏ С‚РёРїРѕРІ, РЅРµ Р·Р°С‚СЂР°РіРёРІР°СЏ Р±Р°Р·РѕРІС‹Рµ РєР»Р°СЃСЃС‹. Р•СЃР»Рё РїРёСЃР°С‚СЊ РІ РЅРёС…, С‚Рѕ РјРѕР¶РЅРѕ СѓР№С‚Рё РІ StackOverflowError.
+         * @param leftType РўРёРї РґР»СЏ СЃСЂР°РІРЅРµРЅРёСЏ СЃР»РµРІР° РѕС‚ Р·РЅР°РєР° СЂР°РІРµРЅСЃС‚РІР°.
+         * @param rightType РўРёРї РґР»СЏ СЃСЂР°РІРЅРµРЅРёСЏ СЃРїСЂР°РІР° РѕС‚ Р·РЅР°РєР° СЂР°РІРµРЅСЃС‚РІР°.
+         * @return РџСЂРёР·РЅР°Рє СЂР°РІРµРЅСЃС‚РІР° С‚РёРїРѕРІ.
          */
         private boolean isEquals(VariableUserType leftType, VariableUserType rightType) {
             boolean result = Objects.equal(leftType.getName(), rightType.getName());
             result = result && (leftType.getAttributes() == null ? rightType.getAttributes() == null : false);
             if (leftType.getAttributes() != null && rightType.getAttributes() != null) {
-                // не должно быть result && поскольку предыдущая проверка установит false _не верно_ при переходе сюда.
+                // РЅРµ РґРѕР»Р¶РЅРѕ Р±С‹С‚СЊ result && РїРѕСЃРєРѕР»СЊРєСѓ РїСЂРµРґС‹РґСѓС‰Р°СЏ РїСЂРѕРІРµСЂРєР° СѓСЃС‚Р°РЅРѕРІРёС‚ false _РЅРµ РІРµСЂРЅРѕ_ РїСЂРё РїРµСЂРµС…РѕРґРµ СЃСЋРґР°.
                 result = leftType.getAttributes().size() == rightType.getAttributes().size();
                 if (result) {
                     for (int i = 0; i < leftType.getAttributes().size(); i++) {
