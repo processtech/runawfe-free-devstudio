@@ -1562,6 +1562,16 @@
             enabled="true"
             label="%ru.runa.wfe.extension.handler.var.CreateCalendarHandler">
       </handler>
+       <handler
+           actionHandler="true"
+           assignmentHandler="false"
+           botTaskHandler="true"
+           decisionHandler="false"
+           cellEditorProvider="ru.runa.gpd.extension.handler.var.DeadlineTransferHandlerProvider"
+           className="ru.runa.wfe.extension.handler.var.DeadlineTransferHandler"
+           enabled="true"
+           label="%ru.runa.wfe.extension.handler.var.DeadlineTransferHandler">
+       </handler>
       <handler
             actionHandler="true"
             assignmentHandler="false"

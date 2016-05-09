@@ -22,6 +22,8 @@
 			<arg value="-DbaseLocation=${eclipse.home.dir}"/>
 			<arg value="-Dproject.version=${project.version}"/>
 			<arg value="-Dproject.build.id=${project.build.id}"/>
+			<arg value="-DjavacSource=1.7"/>
+			<arg value="-DjavacTarget=1.7"/>
 		</java>
 	</target>
 	
