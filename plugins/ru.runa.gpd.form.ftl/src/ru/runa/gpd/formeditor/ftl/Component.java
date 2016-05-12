@@ -137,39 +137,32 @@ public class Component extends EventSupport implements IPropertySource {
     }
 
     @Override
+    //this method is a part of the algorithm
+    //return Freemarker expression ${type_name("param1",..)}
     public String toString() {
-        StringBuffer ftl = new StringBuffer();
-        ftl.append("${").append(type.getId()).append("(");
-        boolean first = true;
+        List<String> args=new ArrayList<String>();
         for (ComponentParameter parameter : type.getParameters()) {
-            if (!first) {
-                ftl.append(PARAMETERS_DELIM);
-            } else {
-                first = false;
-            }
             final boolean surroundWithBrackets = parameter.getType().isSurroundBrackets();
-            Object obj = null;
+            
+            //multiple type, by convention, is always the last and
+            //its items should be appended directly to the args list
             if (parameter.getType().isMultiple()) {
-                List<String> list = (List<String>) getParameterValue(parameter);
-                obj = Joiner.on(PARAMETERS_DELIM).join(Lists.transform(list, new Function<String, String>() {
-
-                    @Override
-                    public String apply(String string) {
-                        if (surroundWithBrackets) {
-                            return stringQuotation(string);
-                        }
-                        return string;
+                List<String> list = Lists.transform(
+                    (List<String>)getParameterValue(parameter),
+                    new Function<String, String>(){
+                       @Override
+                       public String apply(String string) {
+                           return surroundWithBrackets? stringQuotation(string): string;
+                       }
                     }
-                }));
-            } else {
-                obj = getParameterValue(parameter);
-                if (surroundWithBrackets) {
-                    obj = stringQuotation(obj);
-                }
+                );
+                args.addAll(list);
             }
-            ftl.append(obj);
+            else {
+                String s = getParameterValue(parameter).toString();
+                args.add(surroundWithBrackets? stringQuotation(s): s);
+            }
         }
-        ftl.append(")}");
-        return ftl.toString();
+        return "${"+type.getId()+"("+Joiner.on(PARAMETERS_DELIM).join(args)+")}";
     }
 }
