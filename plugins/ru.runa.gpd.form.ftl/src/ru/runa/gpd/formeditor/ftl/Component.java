@@ -136,16 +136,18 @@ public class Component extends EventSupport implements IPropertySource {
         return String.format("\"%s\"", obj.toString().replaceAll("\"", "\\\\\""));
     }
 
+   /*
+    * Note: this method is the part of the algorithm, don't change the return format
+    * @return the Freemarker expression ${type_name("param1",..)}
+    **/
     @Override
-    //this method is a part of the algorithm
-    //return Freemarker expression ${type_name("param1",..)}
     public String toString() {
         List<String> args=new ArrayList<String>();
         for (ComponentParameter parameter : type.getParameters()) {
             final boolean surroundWithBrackets = parameter.getType().isSurroundBrackets();
             
-            //multiple type, by convention, is always the last and
-            //its items should be appended directly to the args list
+            //multiple type argument, by convention, is always the last one
+            //and its items should be appended directly to the args list
             if (parameter.getType().isMultiple()) {
                 List<String> list = Lists.transform(
                     (List<String>)getParameterValue(parameter),
