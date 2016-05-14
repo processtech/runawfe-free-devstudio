@@ -2,4 +2,4 @@
 /plugins/ru.altlinux.tnms.maven
 /plugins/*/bin
 /plugins/*/target
-tnmspom.xml
+tnms-devstudio-pom.xml
