@@ -48,16 +48,12 @@ public class AddSwimlaneFeature extends AddElementFeature {
         ContainerShape containerShape = Graphiti.getPeCreateService().createContainerShape(context.getTargetContainer(), true);
         containerShape.getProperties().add(new GaProperty(GaProperty.SWIMLANE_DISPLAY_VERTICAL, String.valueOf(isVerticalLayout())));
         Rectangle main = Graphiti.getGaService().createRectangle(containerShape);
-        main.setForeground(Graphiti.getGaService().manageColor(getDiagram(), StyleUtil.LIGHT_BLUE));
-        main.setBackground(Graphiti.getGaService().manageColor(getDiagram(), StyleUtil.VERY_LIGHT_BLUE));
         main.setStyle(StyleUtil.getStyleForEvent(getDiagram()));
         main.setLineWidth(1);
         Graphiti.getGaService().setLocationAndSize(main, context.getX(), context.getY(), bounds.width, bounds.height);
         //
         Rectangle nameRectangle = Graphiti.getGaService().createRectangle(main);
         nameRectangle.getProperties().add(new GaProperty(GaProperty.ID, LayoutSwimlaneFeature.NAME_RECT));
-        nameRectangle.setForeground(Graphiti.getGaService().manageColor(getDiagram(), StyleUtil.LIGHT_BLUE));
-        nameRectangle.setBackground(Graphiti.getGaService().manageColor(getDiagram(), StyleUtil.VERY_LIGHT_BLUE));
         nameRectangle.setStyle(StyleUtil.getStyleForEvent(getDiagram()));
         // 
         Text nameText = Graphiti.getGaService().createDefaultText(getDiagram(), nameRectangle, swimlane.getName());
@@ -67,6 +63,7 @@ public class AddSwimlaneFeature extends AddElementFeature {
         }
         nameText.setHorizontalAlignment(Orientation.ALIGNMENT_CENTER);
         nameText.setVerticalAlignment(Orientation.ALIGNMENT_CENTER);
+        nameText.setStyle(StyleUtil.getStyleForText(getDiagram()));
         // 
         link(containerShape, swimlane);
         //

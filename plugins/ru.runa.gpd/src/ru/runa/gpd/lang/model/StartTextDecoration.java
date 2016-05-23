@@ -49,12 +49,12 @@ public class StartTextDecoration extends TextDecorationNode {
             IDimension swimlineDim = new DimensionImpl(0, 0);
 
             if (SwimlaneDisplayMode.none == target.getProcessDefinition().getSwimlaneDisplayMode()) {
-                swimlineDim = GraphitiUi.getUiLayoutService().calculateTextSize(labelSwimline, swimlane.getFont());
+                swimlineDim = GraphitiUi.getUiLayoutService().calculateTextSize(labelSwimline, getFont(swimlane));
                 maxRectWidth = swimlineDim.getWidth();
                 swimlane.setHorizontalAlignment(Orientation.ALIGNMENT_CENTER);
             }
 
-            IDimension nameDim = GraphitiUi.getUiLayoutService().calculateTextSize(labelName, name.getFont());
+            IDimension nameDim = GraphitiUi.getUiLayoutService().calculateTextSize(labelName, getFont(name));
             maxRectWidth = Math.max(nameDim.getWidth(), maxRectWidth);
             name.setHorizontalAlignment(Orientation.ALIGNMENT_CENTER);
             gaService.setLocationAndSize(name, 0, swimlineDim.getHeight(), maxRectWidth, nameDim.getHeight());
@@ -75,8 +75,8 @@ public class StartTextDecoration extends TextDecorationNode {
 
             // fit definition size for new labels
             int oldWidth = box.getWidth();
-            IDimension swimlineDim = GraphitiUi.getUiLayoutService().calculateTextSize(node.getSwimlaneLabel(), swimlane.getFont());
-            IDimension nameDim = GraphitiUi.getUiLayoutService().calculateTextSize(node.getName(), name.getFont());
+            IDimension swimlineDim = GraphitiUi.getUiLayoutService().calculateTextSize(node.getSwimlaneLabel(), getFont(swimlane));
+            IDimension nameDim = GraphitiUi.getUiLayoutService().calculateTextSize(node.getName(), getFont(name));
             int maxWidth = Math.max(swimlineDim.getWidth(), nameDim.getWidth());
             box.setWidth(maxWidth);
             box.setX(box.getX() + (oldWidth - maxWidth) / 2);

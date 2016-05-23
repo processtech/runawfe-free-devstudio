@@ -1983,6 +1983,12 @@
              id="gpd.pref.common"
              name="%pref.common">
        </page>
+        <page
+             category="gpd.pref.common"
+             class="ru.runa.gpd.settings.BPMNSettingsPage"
+             id="gpd.pref.common.bpmn"
+             name="%pref.common.bpmn">
+       </page>
        <page
              class="ru.runa.gpd.settings.FormPreferencePage"
              id="gpd.pref.form"

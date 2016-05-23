@@ -131,4 +131,6 @@ public abstract class WFEServerConnector implements IConnector, PrefConstants {
     public abstract void deployBotStation(byte[] archive);
 
     public abstract List<BotStation> getBotStations();
+
+    public abstract void setSetting(String properties, String name, String value);
 }
