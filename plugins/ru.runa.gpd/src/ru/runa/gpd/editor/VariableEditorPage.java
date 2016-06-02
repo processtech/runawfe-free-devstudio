@@ -332,27 +332,29 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
         protected void onSelection(SelectionEvent e) throws Exception {
             Clipboard clipboard = new Clipboard(getDisplay());
             @SuppressWarnings("unchecked")
-            List<Variable> data = (List<Variable>) clipboard.getContents(VariableTransfer.getInstance(getDefinition()));            
-            for (Variable variable : data) {
-                boolean nameAllowed = true;
-                Variable newVariable = VariableUtils.getVariableByName(getDefinition(), variable.getName());
-                if (newVariable == null) {
-                    newVariable = new Variable(variable);
-                } else {
-                    UpdateVariableNameDialog dialog = new UpdateVariableNameDialog(newVariable);
-                    nameAllowed = dialog.open() == Window.OK;
-                    if (nameAllowed) {
+            List<Variable> data = (List<Variable>) clipboard.getContents(VariableTransfer.getInstance(getDefinition()));
+            if (data != null) {
+                for (Variable variable : data) {
+                    boolean nameAllowed = true;
+                    Variable newVariable = VariableUtils.getVariableByName(getDefinition(), variable.getName());
+                    if (newVariable == null) {
                         newVariable = new Variable(variable);
-                        newVariable.setName(dialog.getName());
-                        newVariable.setScriptingName(dialog.getScriptingName());
+                    } else {
+                        UpdateVariableNameDialog dialog = new UpdateVariableNameDialog(newVariable);
+                        nameAllowed = dialog.open() == Window.OK;
+                        if (nameAllowed) {
+                            newVariable = new Variable(variable);
+                            newVariable.setName(dialog.getName());
+                            newVariable.setScriptingName(dialog.getScriptingName());
+                        }
                     }
-                }
-                
-                if (nameAllowed) {
-                    getDefinition().addChild(newVariable);
-                    if (newVariable.isComplex()) {
-                        copyUserTypeRecursive(newVariable.getUserType());
-                        newVariable.setUserType(getDefinition().getVariableUserTypeNotNull(newVariable.getUserType().getName()));
+                    
+                    if (nameAllowed) {
+                        getDefinition().addChild(newVariable);
+                        if (newVariable.isComplex()) {
+                            copyUserTypeRecursive(newVariable.getUserType());
+                            newVariable.setUserType(getDefinition().getVariableUserTypeNotNull(newVariable.getUserType().getName()));
+                        }
                     }
                 }
             }

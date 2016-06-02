@@ -68,8 +68,6 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
     private Button moveUpTypeButton;
     private Button moveDownTypeButton;
     private Button deleteTypeButton;
-    private Button copyTypeButton;
-    private Button pasteTypeButton;
     
     private TableViewer attributeTableViewer;
     private Button createAttributeButton;
@@ -81,8 +79,6 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
     private Button moveDownAttributeButton;
     private Button deleteAttributeButton;
     private Button moveToTypeAttributeButton;
-    private Button copyAttributeButton;
-    private Button pasteAttributeButton;
 
     public VariableTypeEditorPage(ProcessEditorBase editor) {
         super(editor);
@@ -110,10 +106,8 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
                     @Override
                     public int compare(VariableUserType o1, VariableUserType o2) {
                         int result = 0;
-                        switch (getColumn()) {
-                        case 0:
+                        if (getColumn() == 0) {
                             result = o1.getName().compareTo(o2.getName());
-                            break;
                         }
                         return result;
                     }
@@ -127,8 +121,8 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
         moveUpTypeButton = addButton(typeButtonsBar, "button.up", new MoveTypeSelectionListener(true), true);
         moveDownTypeButton = addButton(typeButtonsBar, "button.down", new MoveTypeSelectionListener(false), true);
         deleteTypeButton = addButton(typeButtonsBar, "button.delete", new RemoveTypeSelectionListener(), true);
-        copyTypeButton = addButton(typeButtonsBar, "button.copy", new CopyTypeSelectionListener(), true);
-        pasteTypeButton = addButton(typeButtonsBar, "button.paste", new PasteTypeSelectionListener(), true);
+        addButton(typeButtonsBar, "button.copy", new CopyTypeSelectionListener(), true);
+        addButton(typeButtonsBar, "button.paste", new PasteTypeSelectionListener(), true);
 
         Composite rightComposite = createSection(sashForm, "VariableUserType.attributes");        
         rightComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -179,8 +173,8 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
         moveDownAttributeButton = addButton(attributeButtonsBar, "button.down", new MoveAttributeSelectionListener(false), true);
         deleteAttributeButton = addButton(attributeButtonsBar, "button.delete", new DeleteAttributeSelectionListener(), true);
         moveToTypeAttributeButton = addButton(attributeButtonsBar, "button.move", new MoveToTypeAttributeSelectionListener(), true);
-        copyAttributeButton = addButton(attributeButtonsBar, "button.copy", new CopyAttributeSelectionListener(), true);
-        pasteAttributeButton = addButton(attributeButtonsBar, "button.paste", new PasteAttributeSelectionListener(), true);
+        addButton(attributeButtonsBar, "button.copy", new CopyAttributeSelectionListener(), true);
+        addButton(attributeButtonsBar, "button.paste", new PasteAttributeSelectionListener(), true);
 
         updateViewer();
     }
@@ -353,26 +347,87 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
         }
     }
 
+    private enum RemoveAction {
+        NONE(""),
+        OK("UserDefinedVariableType.deletion.NoUsageFound"),
+        VAR_USAGE("UserDefinedVariableType.deletion.VariablesWillBeRemoved"),
+        TYPE_USAGE("UserDefinedVariableType.deletion.UserTypeIsUsed"),
+        ;
+        
+        private final String messageKey;
+        
+        RemoveAction(String messageKey) {
+            this.messageKey = messageKey;
+        }
+        
+        public String getMessage() {
+            return Localization.getString(messageKey);
+        }
+    }
+    
     private class RemoveTypeSelectionListener extends LoggingSelectionAdapter {
         @Override
         protected void onSelection(SelectionEvent e) throws Exception {
             VariableUserType type = getSelection();
-            List<Variable> variables = getDefinition().getVariables(false, false, type.getName());
             StringBuilder info = new StringBuilder();
+
+            RemoveAction action = RemoveAction.OK;
+            String newLine = System.getProperty("line.separator");
+            
+            List<Variable> variables = getDefinition().getVariables(false, false, type.getName());
             if (variables.size() > 0) {
                 for (Variable variable : variables) {
-                    info.append(" - ").append(variable.getName()).append("\n");
+                    info.append(" - ").append(variable.getName()).append(newLine);
                 }
-                info.append(Localization.getString("UserDefinedVariableType.deletion.VariablesWillBeRemoved"));
-            } else {
-                info.append(Localization.getString("UserDefinedVariableType.deletion.NoUsageFound"));
+                action = RemoveAction.VAR_USAGE;
             }
-            if (MessageDialog.openConfirm(Display.getCurrent().getActiveShell(), Localization.getString("confirm.delete"), info.toString())) {
+            
+            for (VariableUserType userType : getDefinition().getVariableUserTypes()) {
+                // Данная проверка выполняется снаружи метода, чтобы избежать ситуации сравнения типа с самим собой.
+                if (!type.equals(userType)) {
+                    if (isUserTypeUsed(type, userType)) {
+                        action = RemoveAction.TYPE_USAGE;
+                        break;
+                    }
+                }
+            }
+            
+            info.insert(0, newLine);
+            info.insert(0, action.getMessage());
+            
+            if (!MessageDialog.openConfirm(Display.getCurrent().getActiveShell(), Localization.getString("confirm.delete"), info.toString())) {
+                action = RemoveAction.NONE;
+            }
+
+            switch (action) {
+            case TYPE_USAGE:
+                // prohibited
+                break;
+            case VAR_USAGE:
                 for (Variable variable : variables) {
                     getDefinition().removeChild(variable);
                 }
+                // fall through to remove type
+            case OK:
                 getDefinition().removeVariableUserType(type);
+                break;
+            case NONE:
+                // skip
+                break;
             }
+        }
+
+        private boolean isUserTypeUsed(VariableUserType type, VariableUserType userType) {
+            boolean result = type.equals(userType);
+            if (!result && userType != null) {
+                for (Variable var : userType.getAttributes()) {
+                    result = result || isUserTypeUsed(type, var.getUserType());
+                    if (result) {
+                        break;
+                    }
+                }
+            }
+            return result;
         }
     }
 
@@ -734,35 +789,95 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
         @Override
         protected void onSelection(SelectionEvent e) throws Exception {
             VariableUserType type = getSelection();
-            Clipboard clipboard = new Clipboard(getDisplay());
-            @SuppressWarnings("unchecked")
-            List<Variable> data = (List<Variable>) clipboard.getContents(VariableTransfer.getInstance(getDefinition()));            
-            for (Variable variable : data) {
-                boolean nameAllowed = true;
-                Variable newVariable = VariableUtils.getVariableByName(type, variable.getName());
-                if (newVariable == null) {
-                    newVariable = new Variable(variable);
-                } else {
-                    UpdateVariableNameDialog dialog = new UpdateVariableNameDialog(type, newVariable);
-                    nameAllowed = dialog.open() == Window.OK;
-                    if (nameAllowed) {
-                        newVariable = new Variable(variable);
-                        newVariable.setName(dialog.getName());
-                        newVariable.setScriptingName(dialog.getScriptingName());
+            if (type != null) {
+                Clipboard clipboard = new Clipboard(getDisplay());
+                @SuppressWarnings("unchecked")
+                List<Variable> data = (List<Variable>) clipboard.getContents(VariableTransfer.getInstance(getDefinition()));
+                if (data != null) {
+                    for (Variable variable : data) {
+                        boolean nameAllowed = true;
+                        Variable newVariable = VariableUtils.getVariableByName(type, variable.getName());
+                        if (newVariable == null) {
+                            newVariable = new Variable(variable);
+                        } else {
+                            UpdateVariableNameDialog dialog = new UpdateVariableNameDialog(type, newVariable);
+                            nameAllowed = dialog.open() == Window.OK;
+                            if (nameAllowed) {
+                                newVariable = new Variable(variable);
+                                newVariable.setName(dialog.getName());
+                                newVariable.setScriptingName(dialog.getScriptingName());
+                            }
+                        }
+                        
+                        boolean typeAllowed = isCurrentTypeAllowedForInsert(type, variable.getUserType());
+                        
+                        if (nameAllowed && typeAllowed) {
+                            type.addAttribute(newVariable);
+                            if (newVariable.isComplex()) {
+                                copyUserTypeRecursive(newVariable.getUserType());
+                                newVariable.setUserType(getDefinition().getVariableUserTypeNotNull(newVariable.getUserType().getName()));
+                            }
+                        }
+                        
+                        attributeTableViewer.setSelection(new StructuredSelection(variable));
                     }
                 }
-                
-                if (nameAllowed) {
-                    type.addAttribute(newVariable);
-                    if (newVariable.isComplex()) {
-                        copyUserTypeRecursive(newVariable.getUserType());
-                        newVariable.setUserType(getDefinition().getVariableUserTypeNotNull(newVariable.getUserType().getName()));
-                    }
-                }
-                
-                attributeTableViewer.setSelection(new StructuredSelection(variable));
+                clipboard.dispose();
             }
-            clipboard.dispose();
+        }
+
+
+        private boolean isCurrentTypeAllowedForInsert(VariableUserType selectedType, VariableUserType variableType) {
+            boolean result = true;
+
+            if (variableType != null) {
+                if (isEquals(selectedType, variableType)) {
+                    result = false;
+                } else {
+                    for (Variable var : variableType.getVariables(false, true)) {
+                        result = result && isCurrentTypeAllowedForInsert(selectedType, var.getUserType());
+                        if (!result) {
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            return result;
+        }
+
+        /**
+         * Странный метод сравнения типов.
+         * Метод выделен для реализации сравнения типов, не затрагивая базовые классы. Если писать в них, то можно уйти в StackOverflowError.
+         * @param leftType Тип для сравнения слева от знака равенства.
+         * @param rightType Тип для сравнения справа от знака равенства.
+         * @return Признак равенства типов.
+         */
+        private boolean isEquals(VariableUserType leftType, VariableUserType rightType) {
+            boolean result = Objects.equal(leftType.getName(), rightType.getName());
+            result = result && (leftType.getAttributes() == null ? rightType.getAttributes() == null : false);
+            if (leftType.getAttributes() != null && rightType.getAttributes() != null) {
+                // не должно быть result && поскольку предыдущая проверка установит false _не верно_ при переходе сюда.
+                result = leftType.getAttributes().size() == rightType.getAttributes().size();
+                if (result) {
+                    for (int i = 0; i < leftType.getAttributes().size(); i++) {
+                        Variable var1 = leftType.getAttributes().get(i);
+                        Variable var2 = rightType.getAttributes().get(i);
+                        result = result && stringEqual(var1.getName(), var2.getName());
+                        result = result && stringEqual(var1.getScriptingName(), var2.getScriptingName());
+                        result = result && stringEqual(var1.getDefaultValue(), var2.getDefaultValue());
+                        result = result && stringEqual(var1.getDescription(), var2.getDescription());
+                        if (!result) {
+                            break;
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+
+        private boolean stringEqual(String left, String right) {
+            return Objects.equal(Strings.nullToEmpty(left), Strings.nullToEmpty(right));
         }
 
         private void copyUserTypeRecursive(VariableUserType sourceUserType) {
