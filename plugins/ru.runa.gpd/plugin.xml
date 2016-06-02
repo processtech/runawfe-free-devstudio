@@ -1565,7 +1565,7 @@
        <handler
            actionHandler="true"
            assignmentHandler="false"
-           botTaskHandler="true"
+           botTaskHandler="false"
            decisionHandler="false"
            cellEditorProvider="ru.runa.gpd.extension.handler.var.TargetProcessSetDateVariableHandlerProvider"
            className="ru.runa.wfe.extension.handler.var.TargetProcessSetDateVariableHandler"
