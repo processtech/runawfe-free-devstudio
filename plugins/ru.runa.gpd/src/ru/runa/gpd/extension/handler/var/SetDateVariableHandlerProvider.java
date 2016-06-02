@@ -6,8 +6,6 @@ import java.util.List;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -28,6 +26,8 @@ import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.ui.custom.InsertVariableTextMenuDetectListener;
 import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
+import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
+import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.custom.SWTUtils;
 import ru.runa.gpd.util.Duration;
 
@@ -35,9 +35,8 @@ import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
-public class CalendarHandlerProvider extends XmlBasedConstructorProvider<CalendarConfig> {
-    private static String[] dateFormats = new String[] { Date.class.getName() };
-    private static String[] setFormats = new String[] { Date.class.getName(), Long.class.getName() };
+public class SetDateVariableHandlerProvider<T extends CalendarConfig> extends XmlBasedConstructorProvider<CalendarConfig> {
+    private static String[] DATE_TYPES = new String[] { Date.class.getName() };
 
     @Override
     protected CalendarConfig createDefault() {
@@ -45,8 +44,8 @@ public class CalendarHandlerProvider extends XmlBasedConstructorProvider<Calenda
     }
 
     @Override
-    protected CalendarConfig fromXml(String xml) throws Exception {
-        return CalendarConfig.fromXml(xml);
+    protected CalendarConfig fromXml(String xml) {
+        return new CalendarConfig(xml);
     }
 
     @Override
@@ -62,24 +61,31 @@ public class CalendarHandlerProvider extends XmlBasedConstructorProvider<Calenda
     @Override
     public List<String> getUsedVariableNames(Delegable delegable) {
         List<String> result = Lists.newArrayList();
-        CalendarConfig model = CalendarConfig.fromXml(delegable.getDelegationConfiguration());
+        CalendarConfig model = fromXml(delegable.getDelegationConfiguration());
         if (model != null) {
-            if (!Strings.isNullOrEmpty(model.getBaseVariableName())) {
-                result.add(model.getBaseVariableName());
-            }
-            if (!Strings.isNullOrEmpty(model.getOutVariableName())) {
-                result.add(model.getOutVariableName());
-            }
+            fillUserVariableNames(result, (T) model);
         }
         return result;
     }
 
+    protected void fillUserVariableNames(List<String> result, T model) {
+        if (!Strings.isNullOrEmpty(model.getBaseVariableName())) {
+            result.add(model.getBaseVariableName());
+        }
+        if (!Strings.isNullOrEmpty(model.getResultVariableName())) {
+            result.add(model.getResultVariableName());
+        }
+    }
+
     @Override
     protected boolean validateModel(Delegable delegable, CalendarConfig model, List<ValidationError> errors) {
-        if (Strings.isNullOrEmpty(model.getOutVariableName())) {
+        if (!validateResultVariable(delegable, model.getResultVariableName())) {
             return false;
         }
         for (CalendarOperation operation : model.getOperations()) {
+            if (Strings.isNullOrEmpty(operation.getExpression())) {
+                return false;
+            }
             if (operation.isBusinessTime() && !CalendarConfig.BUSINESS_FIELD_NAMES.contains(operation.getFieldName())) {
                 errors.add(ValidationError.createLocalizedError((GraphElement) delegable, "delegable.calendar.businesstime.error"));
             }
@@ -87,21 +93,35 @@ public class CalendarHandlerProvider extends XmlBasedConstructorProvider<Calenda
         return super.validateModel(delegable, model, errors);
     }
 
+    protected boolean validateResultVariable(Delegable delegable, String resultVariableName) {
+        if (Strings.isNullOrEmpty(resultVariableName)) {
+            return false;
+        }
+        if (!delegable.getVariableNames(false, DATE_TYPES).contains(resultVariableName)) {
+            return false;
+        }
+        return true;
+    }
+
     @Override
     public String getConfigurationOnVariableRename(Delegable delegable, Variable currentVariable, Variable previewVariable) {
-        CalendarConfig model = CalendarConfig.fromXml(delegable.getDelegationConfiguration());
+        CalendarConfig model = fromXml(delegable.getDelegationConfiguration());
         if (model != null) {
-            if (Objects.equal(model.getBaseVariableName(), currentVariable.getName())) {
-                model.setBaseVariableName(previewVariable.getName());
-            }
-            if (Objects.equal(model.getOutVariableName(), currentVariable.getName())) {
-                model.setOutVariableName(previewVariable.getName());
-            }
+            applyConfigurationOnVariableRename(model, currentVariable, previewVariable);
         }
         return model.toString();
     }
 
-    private class ConstructorView extends ConstructorComposite {
+    protected void applyConfigurationOnVariableRename(CalendarConfig model, Variable currentVariable, Variable previewVariable) {
+        if (Objects.equal(model.getBaseVariableName(), currentVariable.getName())) {
+            model.setBaseVariableName(previewVariable.getName());
+        }
+        if (Objects.equal(model.getResultVariableName(), currentVariable.getName())) {
+            model.setResultVariableName(previewVariable.getName());
+        }
+    }
+
+    protected class ConstructorView extends ConstructorComposite {
 
         public ConstructorView(Composite parent, Delegable delegable, CalendarConfig config) {
             super(parent, delegable, config);
@@ -115,7 +135,7 @@ public class CalendarHandlerProvider extends XmlBasedConstructorProvider<Calenda
                 for (Control control : getChildren()) {
                     control.dispose();
                 }
-                addRootSection();
+                addRootSection(true);
                 ((ScrolledComposite) getParent()).setMinSize(computeSize(getSize().x, SWT.DEFAULT));
                 this.layout(true, true);
             } catch (Throwable e) {
@@ -123,19 +143,37 @@ public class CalendarHandlerProvider extends XmlBasedConstructorProvider<Calenda
             }
         }
 
-        private GridData get2GridData() {
+        protected GridData get2GridData() {
             GridData data = new GridData(GridData.FILL_HORIZONTAL);
             data.horizontalSpan = 2;
             return data;
         }
 
-        private void addRootSection() {
+        protected void addRootSection(boolean addResultVariableSection) {
+            if (addResultVariableSection) {
+                Label label = new Label(this, SWT.NONE);
+                label.setText(Localization.getString("ParamBasedProvider.result"));
+                final Combo combo = new Combo(this, SWT.READ_ONLY);
+                for (String variableName : delegable.getVariableNames(false, DATE_TYPES)) {
+                    combo.add(variableName);
+                }
+                combo.setLayoutData(get2GridData());
+                if (model.getResultVariableName() != null) {
+                    combo.setText(model.getResultVariableName());
+                }
+                combo.addSelectionListener(new LoggingSelectionAdapter() {
+                    @Override
+                    public void onSelection(SelectionEvent e) {
+                        model.setResultVariableName(combo.getText());
+                    }
+                });
+            }
             {
                 Label label = new Label(this, SWT.NONE);
                 label.setText(Localization.getString("property.duration.baseDate"));
                 final Combo combo = new Combo(this, SWT.READ_ONLY);
                 combo.add(Duration.CURRENT_DATE_MESSAGE);
-                for (String variableName : delegable.getVariableNames(false, dateFormats)) {
+                for (String variableName : delegable.getVariableNames(false, DATE_TYPES)) {
                     combo.add(variableName);
                 }
                 combo.setLayoutData(get2GridData());
@@ -144,29 +182,13 @@ public class CalendarHandlerProvider extends XmlBasedConstructorProvider<Calenda
                 } else {
                     combo.setText(Duration.CURRENT_DATE_MESSAGE);
                 }
-                combo.addSelectionListener(new SelectionAdapter() {
+                combo.addSelectionListener(new LoggingSelectionAdapter() {
                     @Override
-                    public void widgetSelected(SelectionEvent e) {
+                    public void onSelection(SelectionEvent e) {
                         model.setBaseVariableName(combo.getText());
                         if (Duration.CURRENT_DATE_MESSAGE.equals(model.getBaseVariableName())) {
                             model.setBaseVariableName(null);
                         }
-                    }
-                });
-            }
-            {
-                Label label = new Label(this, SWT.NONE);
-                label.setText(Localization.getString("ParamBasedProvider.result"));
-                final Combo combo = new Combo(this, SWT.READ_ONLY);
-                for (String variableName : delegable.getVariableNames(false, dateFormats)) {
-                    combo.add(variableName);
-                }
-                combo.setLayoutData(get2GridData());
-                combo.setText(model.getOutVariableName());
-                combo.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        model.setOutVariableName(combo.getText());
                     }
                 });
             }
@@ -220,9 +242,9 @@ public class CalendarHandlerProvider extends XmlBasedConstructorProvider<Calenda
                 checkBusinessTimeButton.setText(Localization.getString("label.businessTime"));
                 checkBusinessTimeButton.setEnabled(CalendarOperation.ADD.equals(operation.getType()));
                 checkBusinessTimeButton.setSelection(operation.isBusinessTime());
-                checkBusinessTimeButton.addSelectionListener(new SelectionAdapter() {
+                checkBusinessTimeButton.addSelectionListener(new LoggingSelectionAdapter() {
                     @Override
-                    public void widgetSelected(SelectionEvent e) {
+                    public void onSelection(SelectionEvent e) {
                         operation.setBusinessTime(checkBusinessTimeButton.getSelection());
                     }
                 });
@@ -234,9 +256,9 @@ public class CalendarHandlerProvider extends XmlBasedConstructorProvider<Calenda
                 }
                 combo.setText(operation.getFieldName());
                 combo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-                combo.addSelectionListener(new SelectionAdapter() {
+                combo.addSelectionListener(new LoggingSelectionAdapter() {
                     @Override
-                    public void widgetSelected(SelectionEvent e) {
+                    public void onSelection(SelectionEvent e) {
                         operation.setFieldName(combo.getText());
                     }
                 });
@@ -247,13 +269,13 @@ public class CalendarHandlerProvider extends XmlBasedConstructorProvider<Calenda
                 final Text text = new Text(parent, SWT.BORDER);
                 text.setText(operation.getExpression());
                 text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-                text.addModifyListener(new ModifyListener() {
+                text.addModifyListener(new LoggingModifyTextAdapter() {
                     @Override
-                    public void modifyText(ModifyEvent e) {
+                    public void onTextChanged(ModifyEvent e) {
                         operation.setExpression(text.getText());
                     }
                 });
-                List<String> variableNames = delegable.getVariableNames(false, setFormats);
+                List<String> variableNames = delegable.getVariableNames(false, Date.class.getName(), Long.class.getName());
                 new InsertVariableTextMenuDetectListener(text, variableNames);
             }
             SWTUtils.createLink(parent, "[X]", new LoggingHyperlinkAdapter() {

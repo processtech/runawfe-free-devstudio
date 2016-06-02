@@ -1557,11 +1557,21 @@
             assignmentHandler="false"
             botTaskHandler="true"
             decisionHandler="false"
-            cellEditorProvider="ru.runa.gpd.extension.handler.var.CalendarHandlerProvider"
-            className="ru.runa.wfe.extension.handler.var.CreateCalendarHandler"
+            cellEditorProvider="ru.runa.gpd.extension.handler.var.SetDateVariableHandlerProvider"
+            className="ru.runa.wfe.extension.handler.var.SetDateVariableHandler"
             enabled="true"
-            label="%ru.runa.wfe.extension.handler.var.CreateCalendarHandler">
+            label="%ru.runa.wfe.extension.handler.var.SetDateVariableHandler">
       </handler>
+       <handler
+           actionHandler="true"
+           assignmentHandler="false"
+           botTaskHandler="true"
+           decisionHandler="false"
+           cellEditorProvider="ru.runa.gpd.extension.handler.var.TargetProcessSetDateVariableHandlerProvider"
+           className="ru.runa.wfe.extension.handler.var.TargetProcessSetDateVariableHandler"
+           enabled="true"
+           label="%ru.runa.wfe.extension.handler.var.TargetProcessSetDateVariableHandler">
+       </handler>
       <handler
             actionHandler="true"
             assignmentHandler="false"
