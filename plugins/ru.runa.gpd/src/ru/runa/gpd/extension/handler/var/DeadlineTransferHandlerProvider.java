@@ -1,11 +1,8 @@
 package ru.runa.gpd.extension.handler.var;
 
-import java.awt.event.TextEvent;
-import java.awt.event.TextListener;
 import java.util.Date;
 import java.util.List;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.KeyEvent;
@@ -28,43 +25,39 @@ import org.eclipse.ui.forms.events.HyperlinkEvent;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.handler.XmlBasedConstructorProvider;
-import ru.runa.gpd.extension.handler.XmlBasedConstructorProvider.ConstructorComposite;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.ui.custom.InsertVariableTextMenuDetectListener;
 import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
 import ru.runa.gpd.ui.custom.SWTUtils;
-import ru.runa.gpd.ui.dialog.LongInputDialog;
-import ru.runa.gpd.ui.dialog.UserInputDialog;
 import ru.runa.gpd.util.Duration;
 
 public class DeadlineTransferHandlerProvider extends XmlBasedConstructorProvider<DeadlineTransferConfig> {
-	private static String[] NumberFormats = new String[] { Integer.class.getName(), Long.class.getName() };
-	private static String[] StringFormats = new String[] {String.class.getName()};
+    private static String[] NumberFormats = new String[] { Integer.class.getName(), Long.class.getName() };
+    private static String[] StringFormats = new String[] { String.class.getName() };
     private static String[] setFormats = new String[] { Date.class.getName(), Long.class.getName() };
 
-	@Override
-	protected String getTitle() {
-		return Localization.getString("ru.runa.wfe.extension.handler.var.DeadlineTransferHandler");
-	}
+    @Override
+    protected String getTitle() {
+        return Localization.getString("ru.runa.wfe.extension.handler.var.DeadlineTransferHandler");
+    }
 
-	@Override
-	protected Composite createConstructorComposite(Composite parent,
-			Delegable delegable, DeadlineTransferConfig config) {
-		return new ConstructorView(parent, delegable, config);
-	}
+    @Override
+    protected Composite createConstructorComposite(Composite parent, Delegable delegable, DeadlineTransferConfig config) {
+        return new ConstructorView(parent, delegable, config);
+    }
 
-	@Override
-	protected DeadlineTransferConfig createDefault() {
-		return new DeadlineTransferConfig();
-	}
+    @Override
+    protected DeadlineTransferConfig createDefault() {
+        return new DeadlineTransferConfig();
+    }
 
-	@Override
-	protected DeadlineTransferConfig fromXml(String xml) throws Exception {
-		return DeadlineTransferConfig.fromXml(xml);
-	}
-	
-	private class ConstructorView extends ConstructorComposite {
-		public ConstructorView(Composite parent, Delegable delegable, DeadlineTransferConfig config) {
+    @Override
+    protected DeadlineTransferConfig fromXml(String xml) throws Exception {
+        return DeadlineTransferConfig.fromXml(xml);
+    }
+
+    private class ConstructorView extends ConstructorComposite {
+        public ConstructorView(Composite parent, Delegable delegable, DeadlineTransferConfig config) {
             super(parent, delegable, config);
             setLayout(new GridLayout(3, false));
             buildFromModel();
@@ -128,11 +121,6 @@ public class DeadlineTransferHandlerProvider extends XmlBasedConstructorProvider
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         model.setVariableName(combo.getText());
-                        if (combo.getSelectionIndex() == 0) {
-                        	model.setIsVariableInput(true);
-                        } else {
-                        	model.setIsVariableInput(false);
-                        }
                     }
                 });
                 Button checkBox = new Button(this, SWT.CHECK);
@@ -141,39 +129,42 @@ public class DeadlineTransferHandlerProvider extends XmlBasedConstructorProvider
                 final Text textField = new Text(this, SWT.BORDER);
                 textField.setLayoutData(get2GridData());
                 if (model.getIsVariableInput()) {
-                	textField.setText(model.getVariableName());
+                    textField.setText(model.getVariableName());
                 }
                 textField.setEnabled(model.getIsVariableInput());
                 textField.addKeyListener(new KeyListener() {
-					@Override
-					public void keyReleased(KeyEvent e) {
-						model.setVariableName(textField.getText());
-					}
-					
-					@Override
-					public void keyPressed(KeyEvent e) {}
-				});
+                    @Override
+                    public void keyReleased(KeyEvent e) {
+                        model.setVariableName(textField.getText());
+                    }
+
+                    @Override
+                    public void keyPressed(KeyEvent e) {
+                    }
+                });
                 checkBox.addSelectionListener(new SelectionListener() {
-					
-					@Override
-					public void widgetSelected(SelectionEvent e) {
-						Button button = (Button)e.getSource();
-						if (button.getSelection()) {
-							combo.setEnabled(false);
-							textField.setEnabled(true);
-							model.setIsVariableInput(true);
-							model.setVariableName(textField.getText());
-						} else {
-							textField.setEnabled(false);
-							combo.setEnabled(true);
-							model.setIsVariableInput(false);
-							model.setVariableName(combo.getText());
-						}
-						
-					}
-					@Override
-					public void widgetDefaultSelected(SelectionEvent e) {}
-				});
+
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        Button button = (Button) e.getSource();
+                        if (button.getSelection()) {
+                            combo.setEnabled(false);
+                            textField.setEnabled(true);
+                            model.setIsVariableInput(true);
+                            model.setVariableName(textField.getText());
+                        } else {
+                            textField.setEnabled(false);
+                            combo.setEnabled(true);
+                            model.setIsVariableInput(false);
+                            model.setVariableName(combo.getText());
+                        }
+
+                    }
+
+                    @Override
+                    public void widgetDefaultSelected(SelectionEvent e) {
+                    }
+                });
             }
             Composite paramsComposite = createParametersComposite(this);
             int index = 0;
@@ -269,6 +260,6 @@ public class DeadlineTransferHandlerProvider extends XmlBasedConstructorProvider
                 }
             });
         }
-	}
+    }
 
 }
