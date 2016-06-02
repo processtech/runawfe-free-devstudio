@@ -5,6 +5,7 @@ import java.util.List;
 import org.dom4j.Element;
 
 import ru.runa.gpd.Localization;
+import ru.runa.gpd.util.BackCompatibilityUtils;
 
 import com.google.common.collect.Lists;
 
@@ -55,7 +56,7 @@ public class ParamDef {
         if (formatFilter != null && formatFilter.length() > 0) {
             String[] formats = formatFilter.split(";", -1);
             for (String format : formats) {
-                formatFilters.add(format);
+                formatFilters.add(BackCompatibilityUtils.getClassName(format));
             }
         }
     }
