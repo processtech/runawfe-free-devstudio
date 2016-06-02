@@ -55,7 +55,8 @@ public abstract class ParamBasedProvider extends DelegableProvider {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         Clipboard clipboard = new Clipboard(Display.getCurrent());
-                        clipboard.setContents(new String[] { wizard.getWizardPage().getConfiguration() }, new Transfer[] { TextTransfer.getInstance() });
+                        clipboard.setContents(new String[] { wizard.getWizardPage().getConfiguration() },
+                                new Transfer[] { TextTransfer.getInstance() });
                         clipboard.dispose();
                     }
                 });
@@ -104,7 +105,9 @@ public abstract class ParamBasedProvider extends DelegableProvider {
                 }
             }
         }
-        return paramDefConfig.toConfiguration(delegable.getVariableNames(true), properties);
+        List<String> variableNames = delegable.getVariableNames(true);
+        variableNames.add(previewVariable.getName());
+        return paramDefConfig.toConfiguration(variableNames, properties);
     }
 
     @Override

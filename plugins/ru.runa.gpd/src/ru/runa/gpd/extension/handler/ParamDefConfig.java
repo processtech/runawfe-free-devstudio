@@ -265,7 +265,7 @@ public class ParamDefConfig {
                 if (param.getXmlNodeType() == ParamDef.XML_TYPE_ATTR) {
                     paramElement = DocumentHelper.createElement("param");
                     paramElement.addAttribute("name", paramName);
-                    if (param.isUseVariable()) {
+                    if (param.isUseVariable() && variableNames.contains(value)) {
                         paramElement.addAttribute("variable", value);
                     } else {
                         paramElement.addAttribute("value", value);
