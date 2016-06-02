@@ -5,13 +5,8 @@ import java.util.List;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
-import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -25,39 +20,110 @@ import org.eclipse.ui.forms.events.HyperlinkEvent;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.handler.XmlBasedConstructorProvider;
+import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.Delegable;
+import ru.runa.gpd.lang.model.GraphElement;
+import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.ui.custom.InsertVariableTextMenuDetectListener;
 import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
+import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
+import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.custom.SWTUtils;
 import ru.runa.gpd.util.Duration;
 
-public class DeadlineTransferHandlerProvider extends XmlBasedConstructorProvider<DeadlineTransferConfig> {
-    private static String[] NumberFormats = new String[] { Integer.class.getName(), Long.class.getName() };
-    private static String[] StringFormats = new String[] { String.class.getName() };
-    private static String[] setFormats = new String[] { Date.class.getName(), Long.class.getName() };
+import com.google.common.base.Objects;
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
+
+public class SetDateVariableHandlerProvider<T extends CalendarConfig> extends XmlBasedConstructorProvider<CalendarConfig> {
+    private static String[] DATE_TYPES = new String[] { Date.class.getName() };
 
     @Override
-    protected String getTitle() {
-        return Localization.getString("ru.runa.wfe.extension.handler.var.DeadlineTransferHandler");
+    protected CalendarConfig createDefault() {
+        return new CalendarConfig();
     }
 
     @Override
-    protected Composite createConstructorComposite(Composite parent, Delegable delegable, DeadlineTransferConfig config) {
+    protected CalendarConfig fromXml(String xml) {
+        return new CalendarConfig(xml);
+    }
+
+    @Override
+    protected Composite createConstructorComposite(Composite parent, Delegable delegable, CalendarConfig config) {
         return new ConstructorView(parent, delegable, config);
     }
 
     @Override
-    protected DeadlineTransferConfig createDefault() {
-        return new DeadlineTransferConfig();
+    protected String getTitle() {
+        return Localization.getString("ru.runa.wfe.extension.handler.var.CreateCalendarHandler");
     }
 
     @Override
-    protected DeadlineTransferConfig fromXml(String xml) throws Exception {
-        return DeadlineTransferConfig.fromXml(xml);
+    public List<String> getUsedVariableNames(Delegable delegable) {
+        List<String> result = Lists.newArrayList();
+        CalendarConfig model = fromXml(delegable.getDelegationConfiguration());
+        if (model != null) {
+            fillUserVariableNames(result, (T) model);
+        }
+        return result;
     }
 
-    private class ConstructorView extends ConstructorComposite {
-        public ConstructorView(Composite parent, Delegable delegable, DeadlineTransferConfig config) {
+    protected void fillUserVariableNames(List<String> result, T model) {
+        if (!Strings.isNullOrEmpty(model.getBaseVariableName())) {
+            result.add(model.getBaseVariableName());
+        }
+        if (!Strings.isNullOrEmpty(model.getResultVariableName())) {
+            result.add(model.getResultVariableName());
+        }
+    }
+
+    @Override
+    protected boolean validateModel(Delegable delegable, CalendarConfig model, List<ValidationError> errors) {
+        if (!validateResultVariable(delegable, model.getResultVariableName())) {
+            return false;
+        }
+        for (CalendarOperation operation : model.getOperations()) {
+            if (Strings.isNullOrEmpty(operation.getExpression())) {
+                return false;
+            }
+            if (operation.isBusinessTime() && !CalendarConfig.BUSINESS_FIELD_NAMES.contains(operation.getFieldName())) {
+                errors.add(ValidationError.createLocalizedError((GraphElement) delegable, "delegable.calendar.businesstime.error"));
+            }
+        }
+        return super.validateModel(delegable, model, errors);
+    }
+
+    protected boolean validateResultVariable(Delegable delegable, String resultVariableName) {
+        if (Strings.isNullOrEmpty(resultVariableName)) {
+            return false;
+        }
+        if (!delegable.getVariableNames(false, DATE_TYPES).contains(resultVariableName)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String getConfigurationOnVariableRename(Delegable delegable, Variable currentVariable, Variable previewVariable) {
+        CalendarConfig model = fromXml(delegable.getDelegationConfiguration());
+        if (model != null) {
+            applyConfigurationOnVariableRename(model, currentVariable, previewVariable);
+        }
+        return model.toString();
+    }
+
+    protected void applyConfigurationOnVariableRename(CalendarConfig model, Variable currentVariable, Variable previewVariable) {
+        if (Objects.equal(model.getBaseVariableName(), currentVariable.getName())) {
+            model.setBaseVariableName(previewVariable.getName());
+        }
+        if (Objects.equal(model.getResultVariableName(), currentVariable.getName())) {
+            model.setResultVariableName(previewVariable.getName());
+        }
+    }
+
+    protected class ConstructorView extends ConstructorComposite {
+
+        public ConstructorView(Composite parent, Delegable delegable, CalendarConfig config) {
             super(parent, delegable, config);
             setLayout(new GridLayout(3, false));
             buildFromModel();
@@ -69,7 +135,7 @@ public class DeadlineTransferHandlerProvider extends XmlBasedConstructorProvider
                 for (Control control : getChildren()) {
                     control.dispose();
                 }
-                addRootSection();
+                addRootSection(true);
                 ((ScrolledComposite) getParent()).setMinSize(computeSize(getSize().x, SWT.DEFAULT));
                 this.layout(true, true);
             } catch (Throwable e) {
@@ -77,92 +143,52 @@ public class DeadlineTransferHandlerProvider extends XmlBasedConstructorProvider
             }
         }
 
-        private GridData get2GridData() {
+        protected GridData get2GridData() {
             GridData data = new GridData(GridData.FILL_HORIZONTAL);
             data.horizontalSpan = 2;
             return data;
         }
 
-        private void addRootSection() {
-            {
+        protected void addRootSection(boolean addResultVariableSection) {
+            if (addResultVariableSection) {
                 Label label = new Label(this, SWT.NONE);
-                label.setText(Localization.getString("Param.ProcessId"));
+                label.setText(Localization.getString("ParamBasedProvider.result"));
                 final Combo combo = new Combo(this, SWT.READ_ONLY);
-                combo.setLayoutData(get2GridData());
-                for (String variableName : delegable.getVariableNames(false, NumberFormats)) {
+                for (String variableName : delegable.getVariableNames(false, DATE_TYPES)) {
                     combo.add(variableName);
                 }
-                if (model.getProcessIdVariable() != null) {
-                    combo.setText(model.getProcessIdVariable());
-                } else {
-                    combo.setText(Duration.CURRENT_DATE_MESSAGE);
+                combo.setLayoutData(get2GridData());
+                if (model.getResultVariableName() != null) {
+                    combo.setText(model.getResultVariableName());
                 }
-                combo.addSelectionListener(new SelectionAdapter() {
+                combo.addSelectionListener(new LoggingSelectionAdapter() {
                     @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        model.setProcessIdVariable(combo.getText());
-                        if (Duration.CURRENT_DATE_MESSAGE.equals(model.getProcessIdVariable())) {
-                            model.setProcessIdVariable(null);
-                        }
+                    public void onSelection(SelectionEvent e) {
+                        model.setResultVariableName(combo.getText());
                     }
                 });
             }
             {
                 Label label = new Label(this, SWT.NONE);
-                label.setText(Localization.getString("Param.Variable"));
+                label.setText(Localization.getString("property.duration.baseDate"));
                 final Combo combo = new Combo(this, SWT.READ_ONLY);
-                combo.setLayoutData(get2GridData());
-                for (String variableName : delegable.getVariableNames(false, StringFormats)) {
+                combo.add(Duration.CURRENT_DATE_MESSAGE);
+                for (String variableName : delegable.getVariableNames(false, DATE_TYPES)) {
                     combo.add(variableName);
                 }
-                combo.setText(model.getVariableName());
-                combo.setEnabled(!model.getIsVariableInput());
-                combo.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        model.setVariableName(combo.getText());
-                    }
-                });
-                Button checkBox = new Button(this, SWT.CHECK);
-                checkBox.setText(Localization.getString("ru.runa.wfe.extension.handler.var.DeadlineTransferHandler.isInput"));
-                checkBox.setSelection(model.getIsVariableInput());
-                final Text textField = new Text(this, SWT.BORDER);
-                textField.setLayoutData(get2GridData());
-                if (model.getIsVariableInput()) {
-                    textField.setText(model.getVariableName());
+                combo.setLayoutData(get2GridData());
+                if (model.getBaseVariableName() != null) {
+                    combo.setText(model.getBaseVariableName());
+                } else {
+                    combo.setText(Duration.CURRENT_DATE_MESSAGE);
                 }
-                textField.setEnabled(model.getIsVariableInput());
-                textField.addKeyListener(new KeyListener() {
+                combo.addSelectionListener(new LoggingSelectionAdapter() {
                     @Override
-                    public void keyReleased(KeyEvent e) {
-                        model.setVariableName(textField.getText());
-                    }
-
-                    @Override
-                    public void keyPressed(KeyEvent e) {
-                    }
-                });
-                checkBox.addSelectionListener(new SelectionListener() {
-
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        Button button = (Button) e.getSource();
-                        if (button.getSelection()) {
-                            combo.setEnabled(false);
-                            textField.setEnabled(true);
-                            model.setIsVariableInput(true);
-                            model.setVariableName(textField.getText());
-                        } else {
-                            textField.setEnabled(false);
-                            combo.setEnabled(true);
-                            model.setIsVariableInput(false);
-                            model.setVariableName(combo.getText());
+                    public void onSelection(SelectionEvent e) {
+                        model.setBaseVariableName(combo.getText());
+                        if (Duration.CURRENT_DATE_MESSAGE.equals(model.getBaseVariableName())) {
+                            model.setBaseVariableName(null);
                         }
-
-                    }
-
-                    @Override
-                    public void widgetDefaultSelected(SelectionEvent e) {
                     }
                 });
             }
@@ -216,9 +242,9 @@ public class DeadlineTransferHandlerProvider extends XmlBasedConstructorProvider
                 checkBusinessTimeButton.setText(Localization.getString("label.businessTime"));
                 checkBusinessTimeButton.setEnabled(CalendarOperation.ADD.equals(operation.getType()));
                 checkBusinessTimeButton.setSelection(operation.isBusinessTime());
-                checkBusinessTimeButton.addSelectionListener(new SelectionAdapter() {
+                checkBusinessTimeButton.addSelectionListener(new LoggingSelectionAdapter() {
                     @Override
-                    public void widgetSelected(SelectionEvent e) {
+                    public void onSelection(SelectionEvent e) {
                         operation.setBusinessTime(checkBusinessTimeButton.getSelection());
                     }
                 });
@@ -230,9 +256,9 @@ public class DeadlineTransferHandlerProvider extends XmlBasedConstructorProvider
                 }
                 combo.setText(operation.getFieldName());
                 combo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-                combo.addSelectionListener(new SelectionAdapter() {
+                combo.addSelectionListener(new LoggingSelectionAdapter() {
                     @Override
-                    public void widgetSelected(SelectionEvent e) {
+                    public void onSelection(SelectionEvent e) {
                         operation.setFieldName(combo.getText());
                     }
                 });
@@ -243,13 +269,13 @@ public class DeadlineTransferHandlerProvider extends XmlBasedConstructorProvider
                 final Text text = new Text(parent, SWT.BORDER);
                 text.setText(operation.getExpression());
                 text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-                text.addModifyListener(new ModifyListener() {
+                text.addModifyListener(new LoggingModifyTextAdapter() {
                     @Override
-                    public void modifyText(ModifyEvent e) {
+                    public void onTextChanged(ModifyEvent e) {
                         operation.setExpression(text.getText());
                     }
                 });
-                List<String> variableNames = delegable.getVariableNames(false, setFormats);
+                List<String> variableNames = delegable.getVariableNames(false, Date.class.getName(), Long.class.getName());
                 new InsertVariableTextMenuDetectListener(text, variableNames);
             }
             SWTUtils.createLink(parent, "[X]", new LoggingHyperlinkAdapter() {
@@ -261,5 +287,4 @@ public class DeadlineTransferHandlerProvider extends XmlBasedConstructorProvider
             });
         }
     }
-
 }

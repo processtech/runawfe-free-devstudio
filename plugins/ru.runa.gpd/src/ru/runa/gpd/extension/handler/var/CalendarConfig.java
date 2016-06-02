@@ -16,7 +16,7 @@ import ru.runa.gpd.util.XmlUtil;
 public class CalendarConfig extends Observable {
     private String baseVariableName;
     private final List<CalendarOperation> operations = new ArrayList<CalendarOperation>();
-    private String outVariableName = "";
+    private String resultVariableName;
     public static final List<String> FIELD_NAMES = new ArrayList<String>();
     public static final List<String> BUSINESS_FIELD_NAMES = new ArrayList<String>();
     public static final Map<String, Integer> CALENDAR_FIELDS = new HashMap<String, Integer>();
@@ -48,6 +48,15 @@ public class CalendarConfig extends Observable {
         throw new RuntimeException("No mapping for field " + field);
     }
 
+    public CalendarConfig() {
+    }
+
+    public CalendarConfig(String xml) {
+        Document document = XmlUtil.parseWithoutValidation(xml);
+        Element rootElement = document.getRootElement();
+        deserializeData(rootElement);
+    }
+
     public String getBaseVariableName() {
         return baseVariableName;
     }
@@ -60,12 +69,12 @@ public class CalendarConfig extends Observable {
         return operations;
     }
 
-    public String getOutVariableName() {
-        return outVariableName;
+    public String getResultVariableName() {
+        return resultVariableName;
     }
 
-    public void setOutVariableName(String outVariableName) {
-        this.outVariableName = outVariableName;
+    public void setResultVariableName(String resultVariableName) {
+        this.resultVariableName = resultVariableName;
     }
 
     @Override
@@ -90,27 +99,30 @@ public class CalendarConfig extends Observable {
     public String toString() {
         Document document = DocumentHelper.createDocument();
         Element rootElement = document.addElement("calendar");
-        if (baseVariableName != null) {
-            rootElement.addAttribute("basedOn", baseVariableName);
-        }
-        rootElement.addAttribute("result", outVariableName);
-        for (CalendarOperation operation : operations) {
-            operation.serialize(rootElement);
-        }
+        serializeData(rootElement);
         return XmlUtil.toString(document);
     }
 
-    public static CalendarConfig fromXml(String xml) {
-        CalendarConfig model = new CalendarConfig();
-        Document document = XmlUtil.parseWithoutValidation(xml);
-        Element rootElement = document.getRootElement();
-        model.baseVariableName = rootElement.attributeValue("basedOn");
-        model.outVariableName = rootElement.attributeValue("result");
+    protected void serializeData(Element rootElement) {
+        if (resultVariableName != null) {
+            rootElement.addAttribute("result", resultVariableName);
+        }
+        if (baseVariableName != null) {
+            rootElement.addAttribute("basedOn", baseVariableName);
+        }
+        for (CalendarOperation operation : operations) {
+            operation.serialize(rootElement);
+        }
+    }
+
+    protected void deserializeData(Element rootElement) {
+        this.resultVariableName = rootElement.attributeValue("result");
+        this.baseVariableName = rootElement.attributeValue("basedOn");
         List<Element> operationElements = rootElement.elements("operation");
         for (Element operationElement : operationElements) {
             CalendarOperation mapping = CalendarOperation.deserialize(operationElement);
-            model.operations.add(mapping);
+            operations.add(mapping);
         }
-        return model;
     }
+
 }
