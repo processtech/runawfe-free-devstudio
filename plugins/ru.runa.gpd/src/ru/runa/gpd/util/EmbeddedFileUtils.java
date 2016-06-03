@@ -85,10 +85,10 @@ public class EmbeddedFileUtils {
     }
 
     public static String getBotTaskFileName(String path) {
-        if (!Strings.isNullOrEmpty(path)) {
-            return path.replace(IFileDataProvider.BOT_TASK_FILE_PROTOCOL, "");
+        if (!isBotTaskFile(path)) {
+            throw new IllegalArgumentException(path);
         }
-        return path;
+        return path.replace(IFileDataProvider.BOT_TASK_FILE_PROTOCOL, "");
     }
 
     public static String getBotTaskFilePath(String fileName) {

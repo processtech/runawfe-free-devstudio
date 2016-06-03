@@ -51,7 +51,10 @@ public class BotScriptUtils {
                     DelegableProvider provider = HandlerRegistry.getProvider(task.getDelegationClassName());
                     if (provider instanceof IBotFileSupportProvider) {
                         IBotFileSupportProvider botFileProvider = (IBotFileSupportProvider) provider;
-                        taskElement.addAttribute(EMBEDDED_FILE_ATTRIBUTE_NAME, botFileProvider.getEmbeddedFileName(task));
+                        String embeddedFileName = botFileProvider.getEmbeddedFileName(task);
+                        if (!Strings.isNullOrEmpty(embeddedFileName)) {
+                            taskElement.addAttribute(EMBEDDED_FILE_ATTRIBUTE_NAME, embeddedFileName);
+                        }
                     }
                     taskElement.addAttribute(CONFIGURATION_STRING_ATTRIBUTE_NAME, task.getName() + "." + BotCache.CONFIGURATION_FILE_EXTENSION);
                 }
@@ -64,7 +67,8 @@ public class BotScriptUtils {
      * 
      * @param inputStream
      *            xml script stream
-     * @return map of bot task without configuration set -> configuration file name
+     * @return map of bot task without configuration set -> configuration file
+     *         name
      */
     public static List<BotTask> getBotTasksFromScript(String botStationName, String botName, byte[] scriptXml, Map<String, byte[]> files) {
         List<BotTask> botTasks = Lists.newArrayList();

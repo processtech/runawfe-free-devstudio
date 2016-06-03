@@ -272,7 +272,10 @@ public class MergeDocxHandlerCellEditorProvider extends XmlBasedConstructorProvi
         Element root = document.getRootElement();
         Element inputElement = root.element("input");
         if (inputElement != null) {
-            return EmbeddedFileUtils.getBotTaskFileName(inputElement.attributeValue("path"));
+            String path = inputElement.attributeValue("path");
+            if (EmbeddedFileUtils.isBotTaskFile(path)) {
+                return EmbeddedFileUtils.getBotTaskFileName(path);
+            }
         }
         return null;
     }
