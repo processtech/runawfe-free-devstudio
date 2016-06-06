@@ -1,0 +1,12 @@
+This handler is used to set date in this process.
+
+Result defines variable which value will be changed.
+
+Base date defines variable which value will be used as starting point for applying operations. Value should not be null.
+Date of state execution means current date of handler invocation in running process on the server.
+
+In operations you can "Insert variable" of type Long from context menu.
+
+Business time can be expressed only in DAY_OF_YEAR or MINUTE.
+
+Note. Before version 4.3.0 monthes were numbered as [0 .. 11], now they are [1 .. 12]. 

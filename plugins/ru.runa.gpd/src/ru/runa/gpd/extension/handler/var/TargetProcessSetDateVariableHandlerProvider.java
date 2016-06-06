@@ -17,6 +17,8 @@ import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.ui.custom.InsertVariableTextMenuDetectListener;
 import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
+import ru.runa.gpd.ui.custom.TypedUserInputCombo;
+import ru.runa.gpd.util.Duration;
 import ru.runa.gpd.util.VariableUtils;
 
 import com.google.common.base.Objects;
@@ -26,7 +28,7 @@ public class TargetProcessSetDateVariableHandlerProvider extends SetDateVariable
 
     @Override
     protected String getTitle() {
-        return Localization.getString("ru.runa.wfe.extension.handler.var.TargetProcessCalendarHandler");
+        return Localization.getString("ru.runa.wfe.extension.handler.var.TargetProcessSetDateVariableHandler");
     }
 
     @Override
@@ -85,7 +87,8 @@ public class TargetProcessSetDateVariableHandlerProvider extends SetDateVariable
         }
     }
 
-    private class ConstructorView extends ru.runa.gpd.extension.handler.var.SetDateVariableHandlerProvider<TargetProcessCalendarConfig>.ConstructorView {
+    private class ConstructorView extends
+            ru.runa.gpd.extension.handler.var.SetDateVariableHandlerProvider<TargetProcessCalendarConfig>.ConstructorView {
 
         public ConstructorView(Composite parent, Delegable delegable, TargetProcessCalendarConfig config) {
             super(parent, delegable, config);
@@ -96,7 +99,7 @@ public class TargetProcessSetDateVariableHandlerProvider extends SetDateVariable
         }
 
         @Override
-        protected void addRootSection(boolean addResultVariableSection) {
+        protected void addRootSection() {
             {
                 Label label = new Label(this, SWT.NONE);
                 label.setText(Localization.getString("Param.ProcessId"));
@@ -133,7 +136,42 @@ public class TargetProcessSetDateVariableHandlerProvider extends SetDateVariable
                 List<String> variableNames = delegable.getVariableNames(false, String.class.getName());
                 new InsertVariableTextMenuDetectListener(text, variableNames);
             }
-            super.addRootSection(false);
+            {
+                Label label = new Label(this, SWT.NONE);
+                label.setText(Localization.getString("property.duration.baseDate"));
+                String userInputValue = !getModel().isUseResultVariableAsBase() ? model.getBaseVariableName() : null;
+                final TypedUserInputCombo combo = new TypedUserInputCombo(this, userInputValue);
+                combo.add(Duration.CURRENT_DATE_MESSAGE);
+                combo.add(TargetProcessCalendarConfig.USE_RESULT_DATE_AS_BASE_DATE_MESSAGE);
+                combo.setShowEmptyValue(false);
+                combo.setTypeClassName(String.class.getName());
+                combo.setLayoutData(get2GridData());
+                if (getModel().isUseResultVariableAsBase()) {
+                    combo.setText(TargetProcessCalendarConfig.USE_RESULT_DATE_AS_BASE_DATE_MESSAGE);
+                } else if (model.getBaseVariableName() == null) {
+                    combo.setText(Duration.CURRENT_DATE_MESSAGE);
+                }
+                combo.addSelectionListener(new LoggingSelectionAdapter() {
+                    @Override
+                    public void onSelection(SelectionEvent e) {
+                        getModel().setUseResultVariableAsBase(false);
+                        model.setBaseVariableName(combo.getText());
+                        if (Duration.CURRENT_DATE_MESSAGE.equals(model.getBaseVariableName())) {
+                            model.setBaseVariableName(null);
+                        }
+                        if (TargetProcessCalendarConfig.USE_RESULT_DATE_AS_BASE_DATE_MESSAGE.equals(model.getBaseVariableName())) {
+                            getModel().setUseResultVariableAsBase(true);
+                            model.setBaseVariableName(null);
+                        }
+                    }
+                });
+            }
+            Composite paramsComposite = createParametersComposite(this);
+            int index = 0;
+            for (CalendarOperation operation : model.getOperations()) {
+                addOperationSection(paramsComposite, operation, index, false);
+                index++;
+            }
         }
     }
 

@@ -24,6 +24,7 @@ import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Variable;
+import ru.runa.gpd.ui.custom.HelpDialog;
 import ru.runa.gpd.ui.custom.InsertVariableTextMenuDetectListener;
 import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
 import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
@@ -55,7 +56,7 @@ public class SetDateVariableHandlerProvider<T extends CalendarConfig> extends Xm
 
     @Override
     protected String getTitle() {
-        return Localization.getString("ru.runa.wfe.extension.handler.var.CreateCalendarHandler");
+        return Localization.getString("ru.runa.wfe.extension.handler.var.SetDateVariableHandler");
     }
 
     @Override
@@ -135,12 +136,25 @@ public class SetDateVariableHandlerProvider<T extends CalendarConfig> extends Xm
                 for (Control control : getChildren()) {
                     control.dispose();
                 }
-                addRootSection(true);
+                addHelpSection();
+                addRootSection();
                 ((ScrolledComposite) getParent()).setMinSize(computeSize(getSize().x, SWT.DEFAULT));
                 this.layout(true, true);
             } catch (Throwable e) {
                 PluginLogger.logErrorWithoutDialog("Cannot build model", e);
             }
+        }
+
+        protected void addHelpSection() {
+            Composite strokeComposite = SWTUtils.createStrokeComposite(this, get3GridData(), null, 3);
+            SWTUtils.createLink(strokeComposite, Localization.getString("help"), new LoggingHyperlinkAdapter() {
+
+                @Override
+                protected void onLinkActivated(HyperlinkEvent e) throws Exception {
+                    HelpDialog dialog = new HelpDialog(SetDateVariableHandlerProvider.this.getClass());
+                    dialog.open();
+                }
+            });
         }
 
         protected GridData get2GridData() {
@@ -149,25 +163,14 @@ public class SetDateVariableHandlerProvider<T extends CalendarConfig> extends Xm
             return data;
         }
 
-        protected void addRootSection(boolean addResultVariableSection) {
-            if (addResultVariableSection) {
-                Label label = new Label(this, SWT.NONE);
-                label.setText(Localization.getString("ParamBasedProvider.result"));
-                final Combo combo = new Combo(this, SWT.READ_ONLY);
-                for (String variableName : delegable.getVariableNames(false, DATE_TYPES)) {
-                    combo.add(variableName);
-                }
-                combo.setLayoutData(get2GridData());
-                if (model.getResultVariableName() != null) {
-                    combo.setText(model.getResultVariableName());
-                }
-                combo.addSelectionListener(new LoggingSelectionAdapter() {
-                    @Override
-                    public void onSelection(SelectionEvent e) {
-                        model.setResultVariableName(combo.getText());
-                    }
-                });
-            }
+        protected GridData get3GridData() {
+            GridData data = new GridData(GridData.FILL_HORIZONTAL);
+            data.horizontalSpan = 3;
+            return data;
+        }
+
+        protected void addRootSection() {
+            addResultVariableSection();
             {
                 Label label = new Label(this, SWT.NONE);
                 label.setText(Localization.getString("property.duration.baseDate"));
@@ -195,30 +198,39 @@ public class SetDateVariableHandlerProvider<T extends CalendarConfig> extends Xm
             Composite paramsComposite = createParametersComposite(this);
             int index = 0;
             for (CalendarOperation operation : model.getOperations()) {
-                addOperationSection(paramsComposite, operation, index);
+                addOperationSection(paramsComposite, operation, index, true);
                 index++;
             }
         }
 
-        private Composite createParametersComposite(Composite parent) {
+        protected void addResultVariableSection() {
+            Label label = new Label(this, SWT.NONE);
+            label.setText(Localization.getString("ParamBasedProvider.result"));
+            final Combo combo = new Combo(this, SWT.READ_ONLY);
+            for (String variableName : delegable.getVariableNames(false, DATE_TYPES)) {
+                combo.add(variableName);
+            }
+            combo.setLayoutData(get2GridData());
+            if (model.getResultVariableName() != null) {
+                combo.setText(model.getResultVariableName());
+            }
+            combo.addSelectionListener(new LoggingSelectionAdapter() {
+                @Override
+                public void onSelection(SelectionEvent e) {
+                    model.setResultVariableName(combo.getText());
+                }
+            });
+        }
+
+        protected Composite createParametersComposite(Composite parent) {
             Composite composite = new Composite(parent, SWT.NONE);
             composite.setLayout(new GridLayout(5, false));
             GridData data = new GridData(GridData.FILL_HORIZONTAL);
             data.horizontalSpan = 5;
             composite.setLayoutData(data);
-            Composite strokeComposite = new Composite(composite, SWT.NONE);
             data = new GridData(GridData.FILL_HORIZONTAL);
             data.horizontalSpan = 5;
-            strokeComposite.setLayoutData(data);
-            strokeComposite.setLayout(new GridLayout(5, false));
-            Label strokeLabel = new Label(strokeComposite, SWT.SEPARATOR | SWT.HORIZONTAL);
-            data = new GridData();
-            data.widthHint = 50;
-            strokeLabel.setLayoutData(data);
-            Label headerLabel = new Label(strokeComposite, SWT.NONE);
-            headerLabel.setText(Localization.getString("label.operations"));
-            strokeLabel = new Label(strokeComposite, SWT.SEPARATOR | SWT.HORIZONTAL);
-            strokeLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            Composite strokeComposite = SWTUtils.createStrokeComposite(composite, data, Localization.getString("label.operations"), 5);
             SWTUtils.createLink(strokeComposite, Localization.getString("button.add"), new LoggingHyperlinkAdapter() {
 
                 @Override
@@ -236,7 +248,7 @@ public class SetDateVariableHandlerProvider<T extends CalendarConfig> extends Xm
             return composite;
         }
 
-        private void addOperationSection(Composite parent, final CalendarOperation operation, final int index) {
+        protected void addOperationSection(Composite parent, final CalendarOperation operation, final int index, boolean addContextVariables) {
             {
                 final Button checkBusinessTimeButton = new Button(parent, SWT.CHECK);
                 checkBusinessTimeButton.setText(Localization.getString("label.businessTime"));
@@ -275,8 +287,10 @@ public class SetDateVariableHandlerProvider<T extends CalendarConfig> extends Xm
                         operation.setExpression(text.getText());
                     }
                 });
-                List<String> variableNames = delegable.getVariableNames(false, Date.class.getName(), Long.class.getName());
-                new InsertVariableTextMenuDetectListener(text, variableNames);
+                if (addContextVariables) {
+                    List<String> variableNames = delegable.getVariableNames(false, Date.class.getName(), Long.class.getName());
+                    new InsertVariableTextMenuDetectListener(text, variableNames);
+                }
             }
             SWTUtils.createLink(parent, "[X]", new LoggingHyperlinkAdapter() {
 
