@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import ru.runa.wfe.commons.ftl.AjaxFreemarkerTag;
+import ru.runa.wfe.commons.ftl.AjaxFormComponent;
 import ru.runa.wfe.var.dto.WfVariable;
 import ru.runa.wfe.var.format.StringFormat;
 import freemarker.template.TemplateModelException;
@@ -17,7 +17,7 @@ import freemarker.template.TemplateModelException;
  * @since 4.0.5
  */
 @SuppressWarnings("unchecked")
-public class EditListTag extends AjaxFreemarkerTag {
+public class EditListTag extends AjaxFormComponent {
     private static final long serialVersionUID = 1L;
 
     @Override
