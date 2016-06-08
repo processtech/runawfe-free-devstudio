@@ -1,5 +1,6 @@
 package ru.runa.gpd.extension.handler.var;
 
+import java.util.Calendar;
 import java.util.Observable;
 
 import org.dom4j.Element;
@@ -37,11 +38,11 @@ public class CalendarOperation extends Observable {
     public void setType(String type) {
         this.type = type;
     }
-    
+
     public boolean isBusinessTime() {
         return businessTime;
     }
-    
+
     public void setBusinessTime(boolean businessTime) {
         this.businessTime = businessTime;
     }
@@ -62,6 +63,11 @@ public class CalendarOperation extends Observable {
         String fieldString = element.attributeValue("field");
         if (!Strings.isNullOrEmpty(fieldString)) {
             int field = Integer.parseInt(fieldString);
+            if (Calendar.HOUR == field) {
+                // back compatibility for
+                // https://sourceforge.net/p/runawfe/bugs/1137/
+                field = Calendar.HOUR_OF_DAY;
+            }
             model.fieldName = CalendarConfig.getFieldName(field);
         }
         model.expression = element.attributeValue("expression");
