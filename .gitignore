@@ -1,5 +1,9 @@
-/plugins/ru.altlinux.tnms
-/plugins/ru.altlinux.tnms.maven
 /plugins/*/bin
 /plugins/*/target
+/plugins/ru.altlinux.tnms
+/plugins/ru.altlinux.tnms.maven
 tnms-devstudio-pom.xml
+/plugins/ru.runa.spz
+/plugins/ru.runa.spz.maven
+spz-devstudio-pom.xml
+

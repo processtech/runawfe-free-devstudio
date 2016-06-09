@@ -14,7 +14,6 @@ import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.Variable;
-import ru.runa.gpd.ui.custom.InsertVariableTextMenuDetectListener;
 import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.custom.TypedUserInputCombo;
@@ -133,8 +132,6 @@ public class TargetProcessSetDateVariableHandlerProvider extends SetDateVariable
                     }
 
                 });
-                List<String> variableNames = delegable.getVariableNames(false, String.class.getName());
-                new InsertVariableTextMenuDetectListener(text, variableNames);
             }
             {
                 Label label = new Label(this, SWT.NONE);

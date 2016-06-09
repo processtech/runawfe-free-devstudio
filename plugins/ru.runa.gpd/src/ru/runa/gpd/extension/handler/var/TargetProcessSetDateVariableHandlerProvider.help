@@ -3,7 +3,7 @@ This handler is used to set date in another process.
 Process ID defines process in which variable should be changed.
 
 Result defines variable which value will be changed. It should be defined in target process.
-You can use substitution by context menu from String variable.
+You can use substitution of String variables from another process in the form ${Variable1}.
 
 Base date defines variable which value will be used as starting point for applying operations. Value should not be null.
 Date of state execution means current date of handler invocation in running process on the server.
