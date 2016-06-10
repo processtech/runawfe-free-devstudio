@@ -9,8 +9,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 public class FormNodeValidation {
-    private List<ValidatorConfig> globalConfigs = Lists.newArrayList();
-    private final Map<String, Map<String, ValidatorConfig>> fieldConfigs = Maps.newHashMap();
+    private final List<ValidatorConfig> globalConfigs = Lists.newArrayList();
+    private final Map<String, Map<String, ValidatorConfig>> fieldConfigs = Maps.newTreeMap();
 
     public List<ValidatorConfig> getGlobalConfigs() {
         return globalConfigs;
