@@ -106,19 +106,21 @@ public class StyleUtil {
         GradientColoredAreas defaultGradientColoredAreas = StylesFactory.eINSTANCE.createGradientColoredAreas();
         defaultGradientColoredAreas.setStyleAdaption(IPredefinedRenderingStyle.STYLE_ADAPTATION_DEFAULT);
         EList<GradientColoredArea> gcas = defaultGradientColoredAreas.getGradientColor();
-        addGradientColoredArea(gcas, color, -200, LocationType.LOCATION_TYPE_RELATIVE, color, 0, //$NON-NLS-1$ //$NON-NLS-2$
-                LocationType.LOCATION_TYPE_ABSOLUTE_END, diagram);
-        agca.getAdaptedGradientColoredAreas().add(IPredefinedRenderingStyle.STYLE_ADAPTATION_DEFAULT, defaultGradientColoredAreas);
+        IGaService gaService = Graphiti.getGaService();
+		Color colorEnd = gaService.manageColor(diagram, new ColorConstant(color.getRed() - 1, color.getGreen() - 1, color.getBlue() - 1));
+		addGradientColoredArea(gcas, color, 0, LocationType.LOCATION_TYPE_ABSOLUTE_START, colorEnd, 0,
+				LocationType.LOCATION_TYPE_ABSOLUTE_END, diagram);
+		agca.getAdaptedGradientColoredAreas().add(IPredefinedRenderingStyle.STYLE_ADAPTATION_DEFAULT, defaultGradientColoredAreas);
         GradientColoredAreas primarySelectedGradientColoredAreas = StylesFactory.eINSTANCE.createGradientColoredAreas();
         primarySelectedGradientColoredAreas.setStyleAdaption(IPredefinedRenderingStyle.STYLE_ADAPTATION_DEFAULT);
         EList<GradientColoredArea> selectedGcas = primarySelectedGradientColoredAreas.getGradientColor();
-        addGradientColoredArea(selectedGcas, "E5E5C2", 0, LocationType.LOCATION_TYPE_ABSOLUTE_END, "E5E5C2", 0, //$NON-NLS-1$ //$NON-NLS-2$
-                LocationType.LOCATION_TYPE_ABSOLUTE_START, diagram);
+        addGradientColoredArea(selectedGcas, "E5E5C2", 0, LocationType.LOCATION_TYPE_ABSOLUTE_START, "E5E5C3", 0, //$NON-NLS-1$ //$NON-NLS-2$
+                LocationType.LOCATION_TYPE_ABSOLUTE_END, diagram);
         agca.getAdaptedGradientColoredAreas().add(IPredefinedRenderingStyle.STYLE_ADAPTATION_PRIMARY_SELECTED, primarySelectedGradientColoredAreas);
         GradientColoredAreas secondarySelectedGradientColoredAreas = StylesFactory.eINSTANCE.createGradientColoredAreas();
         secondarySelectedGradientColoredAreas.setStyleAdaption(IPredefinedRenderingStyle.STYLE_ADAPTATION_DEFAULT);
         EList<GradientColoredArea> secondarySelectedGcas = secondarySelectedGradientColoredAreas.getGradientColor();
-        addGradientColoredArea(secondarySelectedGcas, "E5E5C2", 0, LocationType.LOCATION_TYPE_ABSOLUTE_START, "E5E5C2", 0, //$NON-NLS-1$ //$NON-NLS-2$
+        addGradientColoredArea(secondarySelectedGcas, "E5E5C2", 0, LocationType.LOCATION_TYPE_ABSOLUTE_START, "E5E5C3", 0, //$NON-NLS-1$ //$NON-NLS-2$
                 LocationType.LOCATION_TYPE_ABSOLUTE_END, diagram);
         agca.getAdaptedGradientColoredAreas().add(IPredefinedRenderingStyle.STYLE_ADAPTATION_SECONDARY_SELECTED,
                 secondarySelectedGradientColoredAreas);
