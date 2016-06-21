@@ -12,6 +12,7 @@ import org.eclipse.ltk.core.refactoring.CompositeChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.ltk.ui.refactoring.TextEditChangeNode;
 import org.eclipse.text.edits.MultiTextEdit;
+import org.eclipse.text.edits.TextEdit;
 
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.form.FormType;
@@ -31,17 +32,17 @@ public class FormNodePresentation extends VariableRenameProvider<FormNode> {
     }
 
     @Override
-    public List<Change> getChanges(Variable oldVar, Variable newVar) throws Exception {
+    public List<Change> getChanges(Variable oldVariable, Variable newVariable) throws Exception {
         CompositeChange result = new CompositeChange(element.getName());
         if (element.hasForm()) {
             FormType formType = FormTypeProvider.getFormType(element.getFormType());
             IFile fileForm = folder.getFile(element.getFormFileName());
             String formLabel = Localization.getString("Search.formNode.form");
-            result.addAll(processFile(formType, fileForm, formLabel, oldVar, newVar, false));
+            result.addAll(processFile(formType, fileForm, formLabel, oldVariable, newVariable, false));
             if (element.hasFormValidation()) {
                 IFile fileValidation = folder.getFile(element.getValidationFileName());
                 String validationLabel = Localization.getString("Search.formNode.validation");
-                result.addAll(processFile(formType, fileValidation, validationLabel, oldVar, newVar, true));
+                result.addAll(processFile(formType, fileValidation, validationLabel, oldVariable, newVariable, true));
             }
         }
         if (result.getChildren().length > 0) {
@@ -50,11 +51,11 @@ public class FormNodePresentation extends VariableRenameProvider<FormNode> {
         return new ArrayList<Change>();
     }
 
-    private Change[] processFile(FormType formType, IFile file, final String label, Variable oldVar, Variable newVar, boolean checkScriptName)
-            throws Exception {
+    private Change[] processFile(FormType formType, IFile file, final String label, Variable oldVariable, Variable newVariable,
+            boolean checkScriptingName) throws Exception {
         List<Change> changes = new ArrayList<Change>();
-        MultiTextEdit multiEdit = searchReplacements(formType, file, oldVar.getName(), newVar.getName(), oldVar.getScriptingName(),
-                newVar.getScriptingName(), oldVar, checkScriptName);
+        MultiTextEdit multiEdit = searchReplacements(formType, file, oldVariable.getName(), newVariable.getName(), oldVariable.getScriptingName(),
+                newVariable.getScriptingName(), oldVariable, checkScriptingName);
         if (multiEdit.getChildrenSize() > 0) {
             TextFileChange fileChange = new TextFileChange(file.getName(), file) {
                 @SuppressWarnings("rawtypes")
@@ -72,32 +73,37 @@ public class FormNodePresentation extends VariableRenameProvider<FormNode> {
         return changes.toArray(new Change[changes.size()]);
     }
 
-    private MultiTextEdit searchReplacements(FormType formType, IFile file, String oldVarName, String newVarName, String oldVarScriptName,
-            String newVarScriptName, Variable oldVar, boolean checkScriptName) throws Exception {
-        MultiTextEdit multiEdit = formType.searchVariableReplacements(file, oldVarName, newVarName);
-        if (checkScriptName && !Objects.equal(oldVarName, oldVarScriptName)) {
-            MultiTextEdit multiEditScripting = formType.searchVariableReplacements(file, oldVarScriptName, newVarScriptName);
-            if (multiEditScripting.hasChildren()) {
-                multiEdit.addChild(multiEditScripting);
-            }
+    private MultiTextEdit searchReplacements(FormType formType, IFile file, String oldVariableName, String newVariableName,
+            String oldVariableScriptingName, String newVariableScriptingName, Variable oldVariable, boolean checkScriptingName) throws Exception {
+        MultiTextEdit multiEdit = formType.searchVariableReplacements(file, oldVariableName, newVariableName);
+        if (checkScriptingName && !Objects.equal(oldVariableName, oldVariableScriptingName)) {
+            MultiTextEdit multiEditScripting = formType.searchVariableReplacements(file, oldVariableScriptingName, newVariableScriptingName);
+            addChild(multiEdit, multiEditScripting);
         }
         // complex type - search replacement for attributes
-        VariableUserType typ = oldVar.getUserType();
-        if (typ != null) {
-            List<Variable> attrs = typ.getAttributes();
-            if (attrs != null && !attrs.isEmpty()) {
-                Iterator<Variable> i = attrs.iterator();
+        VariableUserType type = oldVariable.getUserType();
+        if (type != null) {
+            List<Variable> attributes = type.getAttributes();
+            if (attributes != null && !attributes.isEmpty()) {
+                Iterator<Variable> i = attributes.iterator();
                 while (i.hasNext()) {
-                    Variable attr = i.next();
-                    MultiTextEdit multiEditAttr = searchReplacements(formType, file, oldVarName + "." + attr.getName(),
-                            newVarName + "." + attr.getName(), oldVarScriptName + "." + attr.getScriptingName(),
-                            newVarScriptName + "." + attr.getScriptingName(), attr, checkScriptName);
-                    if (multiEditAttr.hasChildren()) {
-                        multiEdit.addChild(multiEditAttr);
-                    }
+                    Variable attribute = i.next();
+                    MultiTextEdit multiEditAttribute = searchReplacements(formType, file, oldVariableName + "." + attribute.getName(),
+                            newVariableName + "." + attribute.getName(), oldVariableScriptingName + "." + attribute.getScriptingName(),
+                            newVariableScriptingName + "." + attribute.getScriptingName(), attribute, checkScriptingName);
+                    addChild(multiEdit, multiEditAttribute);
                 }
             }
         }
         return multiEdit;
+    }
+
+    private void addChild(MultiTextEdit multiTextEdit1, MultiTextEdit multiTextEdit2) {
+        if (multiTextEdit2.hasChildren()) {
+            TextEdit[] children = multiTextEdit2.removeChildren();
+            for (TextEdit child : children) {
+                multiTextEdit1.addChild(child);
+            }
+        }
     }
 }
