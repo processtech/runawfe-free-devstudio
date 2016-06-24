@@ -2,6 +2,8 @@ package ru.runa.gpd.ltk;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.eclipse.ltk.core.refactoring.Change;
 
@@ -14,22 +16,26 @@ import ru.runa.gpd.util.VariableUtils;
 public class MessagingNodeRenameProvider extends VariableRenameProvider<MessagingNode> {
 
     @Override
-    public List<Change> getChanges(Variable oldVariable, Variable newVariable) throws Exception {
-        List<VariableMapping> mappingsToChange = new ArrayList<VariableMapping>();
-        for (VariableMapping mapping : element.getVariableMappings()) {
-            if (mapping.isPropertySelector()) {
-                if (mapping.getMappedName().equals(VariableUtils.wrapVariableName(oldVariable.getName()))) {
-                    mappingsToChange.add(mapping);
-                }
-            } else {
-                if (mapping.getName().equals(oldVariable.getName())) {
-                    mappingsToChange.add(mapping);
+    public List<Change> getChanges(Map<Variable, Variable> variablesMap) throws Exception {
+        List<Change> changes = new ArrayList<Change>();
+        for (Entry<Variable, Variable> entry : variablesMap.entrySet()) {
+            Variable oldVariable = entry.getKey();
+            Variable newVariable = entry.getValue();
+            List<VariableMapping> mappingsToChange = new ArrayList<VariableMapping>();
+            for (VariableMapping mapping : element.getVariableMappings()) {
+                if (mapping.isPropertySelector()) {
+                    if (mapping.getMappedName().equals(VariableUtils.wrapVariableName(oldVariable.getName()))) {
+                        mappingsToChange.add(mapping);
+                    }
+                } else {
+                    if (mapping.getName().equals(oldVariable.getName())) {
+                        mappingsToChange.add(mapping);
+                    }
                 }
             }
-        }
-        List<Change> changes = new ArrayList<Change>();
-        if (mappingsToChange.size() > 0) {
-            changes.add(new VariableMappingChange(element, oldVariable, newVariable, mappingsToChange));
+            if (mappingsToChange.size() > 0) {
+                changes.add(new VariableMappingChange(element, oldVariable, newVariable, mappingsToChange));
+            }
         }
         return changes;
     }
@@ -38,7 +44,8 @@ public class MessagingNodeRenameProvider extends VariableRenameProvider<Messagin
 
         private final List<VariableMapping> mappingsToChange;
 
-        public VariableMappingChange(NamedGraphElement element, Variable currentVariable, Variable replacementVariable, List<VariableMapping> mappingsToChange) {
+        public VariableMappingChange(NamedGraphElement element, Variable currentVariable, Variable replacementVariable,
+                List<VariableMapping> mappingsToChange) {
             super(element, currentVariable, replacementVariable);
             this.mappingsToChange = mappingsToChange;
         }

@@ -2,6 +2,8 @@ package ru.runa.gpd.ltk;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.eclipse.ltk.core.refactoring.Change;
 
@@ -19,33 +21,37 @@ public class MultiTaskPresentation extends VariableRenameProvider<MultiTaskState
     }
 
     @Override
-    public List<Change> getChanges(Variable oldVariable, Variable newVariable) throws Exception {
+    public List<Change> getChanges(Map<Variable, Variable> variablesMap) throws Exception {
         List<Change> changes = Lists.newArrayList();
-        VariableMapping discriminatorMapping = element.getDiscriminatorMapping();
-        if (discriminatorMapping.isMultiinstanceLinkByVariable() && Objects.equal(oldVariable.getName(), discriminatorMapping.getName())) {
-            changes.add(new MultiTaskDiscriminatorChange(element, oldVariable, newVariable));
-        }
-        if (discriminatorMapping.isMultiinstanceLinkByGroup() && !discriminatorMapping.isText()
-                && Objects.equal(oldVariable.getName(), discriminatorMapping.getName())) {
-            changes.add(new MultiTaskDiscriminatorChange(element, oldVariable, newVariable));
-        }
-        if (discriminatorMapping.isMultiinstanceLinkByRelation() && discriminatorMapping.getName().contains("(" + oldVariable.getName() + ")")) {
-            changes.add(new MultiTaskDiscriminatorChange(element, oldVariable, newVariable));
-        }
-        List<VariableMapping> mappingsToChange = new ArrayList<VariableMapping>();
-        for (VariableMapping mapping : element.getVariableMappings()) {
-            if (mapping.isMultiinstanceLinkByRelation() && mapping.getName().contains("(" + oldVariable.getName() + ")")) {
-                mappingsToChange.add(mapping);
+        for (Entry<Variable, Variable> entry : variablesMap.entrySet()) {
+            Variable oldVariable = entry.getKey();
+            Variable newVariable = entry.getValue();
+            VariableMapping discriminatorMapping = element.getDiscriminatorMapping();
+            if (discriminatorMapping.isMultiinstanceLinkByVariable() && Objects.equal(oldVariable.getName(), discriminatorMapping.getName())) {
+                changes.add(new MultiTaskDiscriminatorChange(element, oldVariable, newVariable));
             }
-            if (mapping.isText()) {
-                continue;
+            if (discriminatorMapping.isMultiinstanceLinkByGroup() && !discriminatorMapping.isText()
+                    && Objects.equal(oldVariable.getName(), discriminatorMapping.getName())) {
+                changes.add(new MultiTaskDiscriminatorChange(element, oldVariable, newVariable));
             }
-            if (mapping.getName().equals(oldVariable.getName())) {
-                mappingsToChange.add(mapping);
+            if (discriminatorMapping.isMultiinstanceLinkByRelation() && discriminatorMapping.getName().contains("(" + oldVariable.getName() + ")")) {
+                changes.add(new MultiTaskDiscriminatorChange(element, oldVariable, newVariable));
             }
-        }
-        if (mappingsToChange.size() > 0) {
-            changes.add(new VariableMappingsChange(element, oldVariable, newVariable, mappingsToChange));
+            List<VariableMapping> mappingsToChange = new ArrayList<VariableMapping>();
+            for (VariableMapping mapping : element.getVariableMappings()) {
+                if (mapping.isMultiinstanceLinkByRelation() && mapping.getName().contains("(" + oldVariable.getName() + ")")) {
+                    mappingsToChange.add(mapping);
+                }
+                if (mapping.isText()) {
+                    continue;
+                }
+                if (mapping.getName().equals(oldVariable.getName())) {
+                    mappingsToChange.add(mapping);
+                }
+            }
+            if (mappingsToChange.size() > 0) {
+                changes.add(new VariableMappingsChange(element, oldVariable, newVariable, mappingsToChange));
+            }
         }
         return changes;
     }

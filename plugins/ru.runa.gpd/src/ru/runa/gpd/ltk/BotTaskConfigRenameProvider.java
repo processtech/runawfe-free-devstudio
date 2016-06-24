@@ -2,6 +2,8 @@ package ru.runa.gpd.ltk;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
@@ -27,15 +29,19 @@ public class BotTaskConfigRenameProvider extends VariableRenameProvider<BotTask>
     }
 
     @Override
-    public List<Change> getChanges(Variable oldVariable, Variable newVariable) throws Exception {
+    public List<Change> getChanges(Map<Variable, Variable> variablesMap) throws Exception {
         List<Change> changes = new ArrayList<Change>();
         DelegableProvider provider = HandlerRegistry.getProvider(element.getDelegationClassName());
-        try {
-            if (provider.getUsedVariableNames(element).contains(oldVariable.getName())) {
-                changes.add(new ConfigChange(oldVariable, newVariable));
+        for (Entry<Variable, Variable> entry : variablesMap.entrySet()) {
+            Variable oldVariable = entry.getKey();
+            Variable newVariable = entry.getValue();
+            try {
+                if (provider.getUsedVariableNames(element).contains(oldVariable.getName())) {
+                    changes.add(new ConfigChange(oldVariable, newVariable));
+                }
+            } catch (Exception e) {
+                PluginLogger.logErrorWithoutDialog("Unable to get used variables in " + element, e);
             }
-        } catch (Exception e) {
-            PluginLogger.logErrorWithoutDialog("Unable to get used variables in " + element, e);
         }
         return changes;
     }

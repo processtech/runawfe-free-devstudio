@@ -3,6 +3,7 @@ package ru.runa.gpd.ltk;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -25,12 +26,16 @@ public class BotTaskLinkParametersRenameProvider extends VariableRenameProvider<
     }
 
     @Override
-    public List<Change> getChanges(Variable oldVariable, Variable newVariable) throws Exception {
+    public List<Change> getChanges(Map<Variable, Variable> variablesMap) throws Exception {
         List<Change> changes = new ArrayList<Change>();
         Map<String, String> parameters = ParamDefConfig.getAllParameters(element.getDelegationConfiguration());
-        for (Map.Entry<String, String> entry : parameters.entrySet()) {
-            if (Objects.equal(oldVariable.getName(), entry.getValue())) {
-                changes.add(new ParamChange(element, oldVariable, newVariable));
+        for (Entry<Variable, Variable> entry : variablesMap.entrySet()) {
+            Variable oldVariable = entry.getKey();
+            Variable newVariable = entry.getValue();
+            for (Map.Entry<String, String> parameterEntry : parameters.entrySet()) {
+                if (Objects.equal(oldVariable.getName(), parameterEntry.getValue())) {
+                    changes.add(new ParamChange(element, oldVariable, newVariable));
+                }
             }
         }
         return changes;

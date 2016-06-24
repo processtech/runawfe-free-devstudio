@@ -1,6 +1,7 @@
 package ru.runa.gpd.ltk;
 
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.ltk.core.refactoring.Change;
 
@@ -16,5 +17,11 @@ public abstract class VariableRenameProvider<T> {
         this.element = element;
     }
 
-    public abstract List<Change> getChanges(Variable oldVariable, Variable newVariable) throws Exception;
+    /**
+     * @param variablesList
+     *            list of pairs "old variable - new variable"
+     * @return list of changes
+     * @throws Exception
+     */
+    public abstract List<Change> getChanges(Map<Variable, Variable> variablesMap) throws Exception;
 }

@@ -2,6 +2,8 @@ package ru.runa.gpd.ltk;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -18,12 +20,16 @@ public class SwimlanePresentation extends VariableRenameProvider<Swimlane> {
     }
 
     @Override
-    public List<Change> getChanges(Variable oldVariable, Variable newVariable) throws Exception {
+    public List<Change> getChanges(Map<Variable, Variable> variablesMap) throws Exception {
         List<Change> changes = new ArrayList<Change>();
         String config = element.getDelegationConfiguration();
         SwimlaneInitializer swimlaneInitializer = SwimlaneInitializerParser.parse(config);
-        if (swimlaneInitializer.hasReference(oldVariable)) {
-            changes.add(new SwimlaneInitializerChange(element, oldVariable, newVariable));
+        for (Entry<Variable, Variable> entry : variablesMap.entrySet()) {
+            Variable oldVariable = entry.getKey();
+            Variable newVariable = entry.getValue();
+            if (swimlaneInitializer.hasReference(oldVariable)) {
+                changes.add(new SwimlaneInitializerChange(element, oldVariable, newVariable));
+            }
         }
         return changes;
     }

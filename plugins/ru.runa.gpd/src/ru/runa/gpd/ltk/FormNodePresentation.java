@@ -2,8 +2,9 @@ package ru.runa.gpd.ltk;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -19,7 +20,6 @@ import ru.runa.gpd.form.FormType;
 import ru.runa.gpd.form.FormTypeProvider;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.Variable;
-import ru.runa.gpd.lang.model.VariableUserType;
 
 import com.google.common.base.Objects;
 
@@ -32,17 +32,17 @@ public class FormNodePresentation extends VariableRenameProvider<FormNode> {
     }
 
     @Override
-    public List<Change> getChanges(Variable oldVariable, Variable newVariable) throws Exception {
+    public List<Change> getChanges(Map<Variable, Variable> variablesMap) throws Exception {
         CompositeChange result = new CompositeChange(element.getName());
         if (element.hasForm()) {
             FormType formType = FormTypeProvider.getFormType(element.getFormType());
             IFile fileForm = folder.getFile(element.getFormFileName());
+            IFile fileValidation = folder.getFile(element.getValidationFileName());
             String formLabel = Localization.getString("Search.formNode.form");
-            result.addAll(processFile(formType, fileForm, formLabel, oldVariable, newVariable, false));
+            String validationLabel = Localization.getString("Search.formNode.validation");
+            result.addAll(processFile(formType, fileForm, formLabel, variablesMap, false));
             if (element.hasFormValidation()) {
-                IFile fileValidation = folder.getFile(element.getValidationFileName());
-                String validationLabel = Localization.getString("Search.formNode.validation");
-                result.addAll(processFile(formType, fileValidation, validationLabel, oldVariable, newVariable, true));
+                result.addAll(processFile(formType, fileValidation, validationLabel, variablesMap, true));
             }
         }
         if (result.getChildren().length > 0) {
@@ -51,12 +51,19 @@ public class FormNodePresentation extends VariableRenameProvider<FormNode> {
         return new ArrayList<Change>();
     }
 
-    private Change[] processFile(FormType formType, IFile file, final String label, Variable oldVariable, Variable newVariable,
-            boolean checkScriptingName) throws Exception {
+    private Change[] processFile(FormType formType, IFile file, final String label, Map<Variable, Variable> variablesMap, boolean checkScriptingName)
+            throws Exception {
         List<Change> changes = new ArrayList<Change>();
-        MultiTextEdit multiEdit = searchReplacements(formType, file, oldVariable.getName(), newVariable.getName(), oldVariable.getScriptingName(),
-                newVariable.getScriptingName(), oldVariable, checkScriptingName);
-        if (multiEdit.getChildrenSize() > 0) {
+        MultiTextEdit multiEditResult = new MultiTextEdit();
+        for (Entry<Variable, Variable> entry : variablesMap.entrySet()) {
+            Variable oldVariable = entry.getKey();
+            Variable newVariable = entry.getValue();
+            addChild(multiEditResult, formType.searchVariableReplacements(file, oldVariable.getName(), newVariable.getName()));
+            if (checkScriptingName && !Objects.equal(oldVariable.getName(), oldVariable.getScriptingName())) {
+                addChild(multiEditResult, formType.searchVariableReplacements(file, oldVariable.getScriptingName(), newVariable.getScriptingName()));
+            }
+        }
+        if (multiEditResult.getChildrenSize() > 0) {
             TextFileChange fileChange = new TextFileChange(file.getName(), file) {
                 @SuppressWarnings("rawtypes")
                 @Override
@@ -67,35 +74,10 @@ public class FormNodePresentation extends VariableRenameProvider<FormNode> {
                     return super.getAdapter(adapter);
                 }
             };
-            fileChange.setEdit(multiEdit);
+            fileChange.setEdit(multiEditResult);
             changes.add(fileChange);
         }
         return changes.toArray(new Change[changes.size()]);
-    }
-
-    private MultiTextEdit searchReplacements(FormType formType, IFile file, String oldVariableName, String newVariableName,
-            String oldVariableScriptingName, String newVariableScriptingName, Variable oldVariable, boolean checkScriptingName) throws Exception {
-        MultiTextEdit multiEdit = formType.searchVariableReplacements(file, oldVariableName, newVariableName);
-        if (checkScriptingName && !Objects.equal(oldVariableName, oldVariableScriptingName)) {
-            MultiTextEdit multiEditScripting = formType.searchVariableReplacements(file, oldVariableScriptingName, newVariableScriptingName);
-            addChild(multiEdit, multiEditScripting);
-        }
-        // complex type - search replacement for attributes
-        VariableUserType type = oldVariable.getUserType();
-        if (type != null) {
-            List<Variable> attributes = type.getAttributes();
-            if (attributes != null && !attributes.isEmpty()) {
-                Iterator<Variable> i = attributes.iterator();
-                while (i.hasNext()) {
-                    Variable attribute = i.next();
-                    MultiTextEdit multiEditAttribute = searchReplacements(formType, file, oldVariableName + "." + attribute.getName(),
-                            newVariableName + "." + attribute.getName(), oldVariableScriptingName + "." + attribute.getScriptingName(),
-                            newVariableScriptingName + "." + attribute.getScriptingName(), attribute, checkScriptingName);
-                    addChild(multiEdit, multiEditAttribute);
-                }
-            }
-        }
-        return multiEdit;
     }
 
     private void addChild(MultiTextEdit multiTextEdit1, MultiTextEdit multiTextEdit2) {

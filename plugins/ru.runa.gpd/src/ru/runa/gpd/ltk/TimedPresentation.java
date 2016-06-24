@@ -2,6 +2,8 @@ package ru.runa.gpd.ltk;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.eclipse.ltk.core.refactoring.Change;
 
@@ -18,11 +20,15 @@ public class TimedPresentation extends VariableRenameProvider<ITimed> {
     }
 
     @Override
-    public List<Change> getChanges(Variable oldVariable, Variable newVariable) throws Exception {
+    public List<Change> getChanges(Map<Variable, Variable> variablesMap) throws Exception {
         List<Change> changes = new ArrayList<Change>();
         Timer timer = element.getTimer();
-        if (timer != null && Objects.equal(oldVariable.getName(), timer.getDelay().getVariableName())) {
-            changes.add(new TimedChange(element, oldVariable, newVariable));
+        for (Entry<Variable, Variable> entry : variablesMap.entrySet()) {
+            Variable oldVariable = entry.getKey();
+            Variable newVariable = entry.getValue();
+            if (timer != null && Objects.equal(oldVariable.getName(), timer.getDelay().getVariableName())) {
+                changes.add(new TimedChange(element, oldVariable, newVariable));
+            }
         }
         return changes;
     }
