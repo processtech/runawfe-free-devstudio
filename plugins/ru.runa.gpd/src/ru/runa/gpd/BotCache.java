@@ -33,8 +33,8 @@ import com.google.common.io.CharStreams;
  * @since 3.6
  */
 public class BotCache {
-	public final static String CONFIGURATION_FILE_EXTENSION = "conf";
-	public final static String WORD_TEMPLATE_FILE_EXTENSION = "docx";
+    public final static String CONFIGURATION_FILE_EXTENSION = "conf";
+    public final static String WORD_TEMPLATE_FILE_EXTENSION = "docx";
     private static final Map<String, Set<String>> BOT_STATION_BOTS = Maps.newHashMap();
     private static final Map<String, List<BotTask>> BOT_TASKS = Maps.newHashMap();
     private static final Map<BotTask, IFile> BOT_TASK_FILES = Maps.newHashMap();
@@ -58,7 +58,11 @@ public class BotCache {
                         botNames.add(botName);
                         List<BotTask> botTasks = Lists.newArrayList();
                         for (IResource taskResource : botFolder.members()) {
-                            if (taskResource instanceof IFile && (Strings.isNullOrEmpty(taskResource.getFileExtension()) || !taskResource.getFileExtension().equals(CONFIGURATION_FILE_EXTENSION))) {
+                            if (!(taskResource instanceof IFile)) {
+                                continue;
+                            }
+                            String extension = taskResource.getFileExtension();
+                            if (Strings.isNullOrEmpty(extension) || !extension.equals(CONFIGURATION_FILE_EXTENSION)) {
                                 IFile botTaskFile = (IFile) taskResource;
                                 try {
                                     cacheBotTask(botStationProject.getName(), botName, botTaskFile, botTasks);
@@ -155,6 +159,17 @@ public class BotCache {
     }
 
     /**
+     * Get bot names for bot station name
+     * 
+     * @param botStationName
+     *            bot station name
+     * @return set of bot names
+     */
+    public static synchronized Set<String> getBotNames(String botStationName) {
+        return BOT_STATION_BOTS.get(botStationName);
+    }
+
+    /**
      * Gets all bots.
      * 
      * @return not <code>null</code>
@@ -173,11 +188,11 @@ public class BotCache {
     public static synchronized List<BotTask> getBotTasks(String botName) {
         List<BotTask> botTasks = Lists.newArrayList();
         if (BOT_TASKS.containsKey(botName)) {
-        	for(BotTask task: BOT_TASKS.get(botName)){
-        		if (task.getName().indexOf("embedded.docx") == -1){
-        			botTasks.add(task);
-        		}
-        	}
+            for (BotTask task : BOT_TASKS.get(botName)) {
+                if (task.getName().indexOf("embedded.docx") == -1) {
+                    botTasks.add(task);
+                }
+            }
             Collections.sort(botTasks);
         }
         return botTasks;

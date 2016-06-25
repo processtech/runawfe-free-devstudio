@@ -136,7 +136,7 @@ public class NewBotWizardPage extends WizardPage {
     }
 
     private boolean botExists() {
-        return getBotFolder().exists();
+        return BotCache.getAllBotNames().contains(getBotName());
     }
 
     private boolean isBotNameValid() {

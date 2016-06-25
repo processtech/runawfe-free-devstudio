@@ -303,6 +303,28 @@ public class IOUtils {
         }
     }
 
+    public static IProject getBotStationProject(String name) {
+        for (IProject botStationProject : getAllBotStationProjects()) {
+            if (botStationProject.getName().equals(name)) {
+                return botStationProject;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Get bot station project for bot folder
+     * 
+     * @param botFolder
+     *            bot folder
+     * @return bot station project
+     */
+    public static IProject getBotStationProjectForBotFolder(IFolder botFolder) {
+        IContainer container = botFolder.getParent().getParent().getParent();
+        return container instanceof IProject ? (IProject) container : null;
+    }
+
     public static List<IFolder> getAllBotFolders() {
         List<IFolder> folderList = new ArrayList<IFolder>();
         for (IProject botStation : getAllBotStationProjects()) {
@@ -325,6 +347,25 @@ public class IOUtils {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Get bot folder in project by name
+     * 
+     * @param project
+     *            bot station project
+     * @param botName
+     *            bot name
+     * @return bot folder
+     */
+    public static IFolder getBotFolder(IProject project, String botName) {
+        for (IFolder botFolder : getBotFolders(project)) {
+            if (botFolder.getName().equals(botName)) {
+                return botFolder;
+            }
+        }
+
+        return null;
     }
 
     public static List<IFile> getBotTaskFiles(IFolder botFolder) {
