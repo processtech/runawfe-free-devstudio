@@ -155,6 +155,16 @@ public class BotCache {
     }
 
     /**
+     * Get bot names for bot station name
+     *
+     * @param botStationName bot station name
+     * @return set of bot names
+     */
+    public static synchronized Set<String> getBotNames(String botStationName) {
+        return BOT_STATION_BOTS.get(botStationName);
+    }
+
+    /**
      * Gets all bots.
      * 
      * @return not <code>null</code>
