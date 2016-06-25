@@ -1,12 +1,12 @@
 package ru.runa.gpd.ui.wizard;
 
-import java.lang.String;
-import org.eclipse.core.resources.IContainer;
+import java.util.Set;
+
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.WizardPage;
@@ -93,7 +93,9 @@ public class NewBotTaskWizardPage extends WizardPage {
             if (selectedElement instanceof IAdaptable) {
                 IAdaptable adaptable = (IAdaptable) selectedElement;
                 IFolder botFolder = (IFolder) adaptable.getAdapter(IFolder.class);
-                return IOUtils.getBotStationProjectForBotFolder(botFolder);
+                if (botFolder != null) {
+                    return IOUtils.getBotStationProjectForBotFolder(botFolder);
+                }
             }
         }
         return null;
@@ -131,8 +133,11 @@ public class NewBotTaskWizardPage extends WizardPage {
 
     private void fillBotCombo() {
         botCombo.removeAll();
-        for (String botName : BotCache.getBotNames(botStationCombo.getText())) {
-            botCombo.add(botName);
+        Set<String> botNames = BotCache.getBotNames(botStationCombo.getText());
+        if (botNames != null) {
+            for (String botName : botNames) {
+                botCombo.add(botName);
+            }
         }
     }
 

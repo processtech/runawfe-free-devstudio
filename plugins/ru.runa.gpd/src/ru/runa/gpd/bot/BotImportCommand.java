@@ -31,21 +31,20 @@ import com.google.common.base.Preconditions;
 import com.google.common.io.ByteStreams;
 
 public class BotImportCommand extends BotSyncCommand {
-    
-	private InputStream inputStream;
-    
+
+    private InputStream inputStream;
+
     private String botName;
-    
+
     private String botStationName;
 
     public BotImportCommand() {
-    	
     }
-    
+
     public BotImportCommand(InputStream inputStream, String botName, String botStationName) {
-    	init(inputStream, botName, botStationName);
+        init(inputStream, botName, botStationName);
     }
-    
+
     public void init(InputStream inputStream, String botName, String botStationName) {
         this.inputStream = inputStream;
         this.botName = cleanBotName(botName);
@@ -53,10 +52,10 @@ public class BotImportCommand extends BotSyncCommand {
     }
 
     protected void importBot(IProgressMonitor progressMonitor) throws IOException, CoreException {
-    	validateBot();
+        validate();
 
         Map<String, byte[]> files = new HashMap<String, byte[]>();
-    	ZipInputStream botZin = new ZipInputStream(inputStream);
+        ZipInputStream botZin = new ZipInputStream(inputStream);
         ZipEntry botEntry;
 
         while ((botEntry = botZin.getNextEntry()) != null) {
@@ -67,14 +66,14 @@ public class BotImportCommand extends BotSyncCommand {
         byte[] scriptXml = files.remove("script.xml");
         Preconditions.checkNotNull(scriptXml, "No script.xml");
         List<BotTask> botTasks = BotScriptUtils.getBotTasksFromScript(botStationName, botName, scriptXml, files);
-        
+
         // create bot
         IPath path = new Path(botStationName).append("/src/botstation/").append(botName);
         IFolder folder = ResourcesPlugin.getWorkspace().getRoot().getFolder(path);
         if (!folder.exists()) {
             folder.create(true, true, null);
         }
-        
+
         for (BotTask botTask : botTasks) {
             IFile file = folder.getFile(botTask.getName());
             WorkspaceOperations.saveBotTask(file, botTask);
@@ -89,8 +88,8 @@ public class BotImportCommand extends BotSyncCommand {
             botTask.getFilesToSave().clear();
         }
     }
-    
-	@Override
+
+    @Override
     protected void execute(IProgressMonitor progressMonitor) throws InvocationTargetException {
         try {
             importBot(progressMonitor);
@@ -98,25 +97,20 @@ public class BotImportCommand extends BotSyncCommand {
             throw new InvocationTargetException(e);
         }
     }
-	
-    private String cleanBotName(String botName) {
-    	return botName == null ? null : botName.replaceAll(Pattern.quote(".bot"), "");
-	}
-    
-	private void validateBot() {
-		for (String currentBotStationName : BotCache.getAllBotStationNames()) {
-			if (currentBotStationName.equals(botStationName)) {
-				continue;
-			}
 
-			Set<String> botNames = BotCache.getBotNames(currentBotStationName);
-			if (botNames != null && botNames.contains(botName)) {
-				throw new UniqueBotException(
-						Localization
-								.getString(
-										"ImportBotStationWizardPage.error.botWithSameNameExists",
-										botName));
-			}
-		}
-	}
+    private String cleanBotName(String botName) {
+        return botName == null ? null : botName.replaceAll(Pattern.quote(".bot"), "");
+    }
+
+    private void validate() {
+        for (String testBotStationName : BotCache.getAllBotStationNames()) {
+            if (testBotStationName.equals(botStationName)) {
+                continue;
+            }
+            Set<String> botNames = BotCache.getBotNames(testBotStationName);
+            if (botNames != null && botNames.contains(botName)) {
+                throw new UniqueBotException(Localization.getString("ImportBotStationWizardPage.error.botWithSameNameExists", botName));
+            }
+        }
+    }
 }

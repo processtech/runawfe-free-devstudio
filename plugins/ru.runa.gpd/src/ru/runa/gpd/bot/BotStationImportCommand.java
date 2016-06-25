@@ -30,80 +30,67 @@ import com.google.common.io.ByteStreams;
 
 public class BotStationImportCommand extends BotSyncCommand {
 
-	private InputStream inputStream;
+    private final InputStream inputStream;
 
-	private String botStationName;
+    private String botStationName;
 
-	public BotStationImportCommand(InputStream inputStream) {
-		this.inputStream = inputStream;
-	}
+    public BotStationImportCommand(InputStream inputStream) {
+        this.inputStream = inputStream;
+    }
 
-	protected void execute(IProgressMonitor progressMonitor)
-			throws InvocationTargetException {
-		try {
-			ZipInputStream zin = new ZipInputStream(inputStream);
-			ZipEntry entry;
-			StringBuilder messages = new StringBuilder();
+    @Override
+    protected void execute(IProgressMonitor progressMonitor) throws InvocationTargetException {
+        try {
+            ZipInputStream zin = new ZipInputStream(inputStream);
+            ZipEntry entry;
+            StringBuilder messages = new StringBuilder();
 
-			BotImportCommand botImportCommand = new BotImportCommand();
+            BotImportCommand botImportCommand = new BotImportCommand();
 
-			while ((entry = zin.getNextEntry()) != null) {
-				if (entry.getName().equals("botstation")) {
-					importBotStation(zin);
-					continue;
-				}
+            while ((entry = zin.getNextEntry()) != null) {
+                if (entry.getName().equals("botstation")) {
+                    importBotStation(zin);
+                    continue;
+                }
 
-				// deploy bot
-				String botFileName = entry.getName();
+                // deploy bot
+                String botFileName = entry.getName();
 
-				try {
-					botImportCommand.init(
-							new ByteArrayInputStream(ByteStreams
-									.toByteArray(zin)), botFileName,
-							botStationName);
-					botImportCommand.importBot(progressMonitor);
-				} catch (Exception e) {
-					if (messages.length() > 0) {
-						messages.append(System.lineSeparator());
-					}
-					messages.append(e.getMessage());
-				}
-			}
+                try {
+                    botImportCommand.init(new ByteArrayInputStream(ByteStreams.toByteArray(zin)), botFileName, botStationName);
+                    botImportCommand.importBot(progressMonitor);
+                } catch (Exception e) {
+                    if (messages.length() > 0) {
+                        messages.append(System.lineSeparator());
+                    }
+                    messages.append(e.getMessage());
+                }
+            }
 
-			if (messages.length() > 0) {
-				Dialogs.warning(
-						Localization
-								.getString("ImportBotStationWizardPage.warning.botstationImportError"),
-						messages.toString());
-			}
-		} catch (Exception e) {
-			throw new InvocationTargetException(e);
-		}
-	}
+            if (messages.length() > 0) {
+                Dialogs.warning(Localization.getString("ImportBotStationWizardPage.warning.botstationImportError"), messages.toString());
+            }
+        } catch (Exception e) {
+            throw new InvocationTargetException(e);
+        }
+    }
 
-	private void importBotStation(ZipInputStream zin) throws IOException,
-			CoreException {
-		BufferedReader r = new BufferedReader(new InputStreamReader(zin,
-				Charsets.UTF_8));
-		botStationName = r.readLine();
-		String rmiAddress = r.readLine();
-		if (BotCache.getAllBotStationNames().contains(botStationName)) {
-			throw new UniqueBotStationException(
-					Localization
-							.getString("ImportBotStationWizardPage.error.botstationWithSameNameExists"));
-		}
-		IProject newProject = ResourcesPlugin.getWorkspace().getRoot()
-				.getProject(botStationName);
-		IProjectDescription description = ResourcesPlugin.getWorkspace()
-				.newProjectDescription(botStationName);
-		description.setNatureIds(new String[] { BotStationNature.NATURE_ID });
-		newProject.create(description, null);
-		newProject.open(IResource.BACKGROUND_REFRESH, null);
-		newProject.refreshLocal(IResource.DEPTH_INFINITE, null);
-		IFolder folder = newProject.getFolder("/src/botstation/");
-		IOUtils.createFolder(folder);
-		IFile file = folder.getFile("botstation");
-		IOUtils.createOrUpdateFile(file,
-				BotTaskUtils.createBotStationInfo(botStationName, rmiAddress));
-	}
+    private void importBotStation(ZipInputStream zin) throws IOException, CoreException {
+        BufferedReader r = new BufferedReader(new InputStreamReader(zin, Charsets.UTF_8));
+        botStationName = r.readLine();
+        String rmiAddress = r.readLine();
+        if (BotCache.getAllBotStationNames().contains(botStationName)) {
+            throw new UniqueBotStationException(Localization.getString("ImportBotStationWizardPage.error.botstationWithSameNameExists"));
+        }
+        IProject newProject = ResourcesPlugin.getWorkspace().getRoot().getProject(botStationName);
+        IProjectDescription description = ResourcesPlugin.getWorkspace().newProjectDescription(botStationName);
+        description.setNatureIds(new String[] { BotStationNature.NATURE_ID });
+        newProject.create(description, null);
+        newProject.open(IResource.BACKGROUND_REFRESH, null);
+        newProject.refreshLocal(IResource.DEPTH_INFINITE, null);
+        IFolder folder = newProject.getFolder("/src/botstation/");
+        IOUtils.createFolder(folder);
+        IFile file = folder.getFile("botstation");
+        IOUtils.createOrUpdateFile(file, BotTaskUtils.createBotStationInfo(botStationName, rmiAddress));
+    }
 }
