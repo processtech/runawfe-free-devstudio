@@ -321,6 +321,10 @@ public class IOUtils {
      * @return bot station project
      */
     public static IProject getBotStationProjectForBotFolder(IFolder botFolder) {
+        if (botFolder.getParent() == null || botFolder.getParent().getParent() == null) {
+            return null;
+        }
+        
         IContainer container = botFolder.getParent().getParent().getParent();
         return container instanceof IProject ? (IProject) container : null;
     }
@@ -337,12 +341,17 @@ public class IOUtils {
         try {
             List<IFolder> folderList = new ArrayList<IFolder>();
             IFolder botFolder = project.getFolder("src/botstation");
+            if (!botFolder.exists()) {
+                return folderList;
+            }
+            
             IResource[] resources = botFolder.members();
             for (int i = 0; i < resources.length; i++) {
                 if (resources[i] instanceof IFolder) {
                     folderList.add((IFolder) resources[i]);
                 }
             }
+            
             return folderList;
         } catch (Exception e) {
             throw new RuntimeException(e);
