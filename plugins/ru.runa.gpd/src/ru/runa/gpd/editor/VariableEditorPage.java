@@ -55,7 +55,7 @@ import ru.runa.gpd.util.WorkspaceOperations;
 import com.google.common.base.Strings;
 
 public class VariableEditorPage extends EditorPartBase<Variable> {
-    
+
     private TableViewer tableViewer;
     private Button searchButton;
     private Button moveUpButton;
@@ -74,9 +74,9 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
     @Override
     public void createPartControl(Composite parent) {
         SashForm sashForm = createSashForm(parent, SWT.VERTICAL, "DesignerVariableEditorPage.label.variables");
-        
+
         Composite allVariablesComposite = createSection(sashForm, "DesignerVariableEditorPage.label.all_variables");
-        
+
         tableViewer = createMainViewer(allVariablesComposite, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL | SWT.FULL_SELECTION);
         tableViewer.setLabelProvider(new VariableLabelProvider());
         TableViewerLocalDragAndDropSupport.enable(tableViewer, new DragAndDropAdapter<Variable>() {
@@ -87,31 +87,27 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
             }
         });
 
-        createTable(tableViewer, 
-                new DataViewerComparator<>(new ValueComparator<Variable>() {
-                    @Override
-                    public int compare(Variable o1, Variable o2) {
-                        int result = 0;
-                        switch (getColumn()) {
-                        case 0:
-                            result = o1.getName().compareTo(o2.getName());
-                            break;
-                        case 1:
-                            result = o1.getFormatLabel().compareTo(o2.getFormatLabel());
-                            break;
-                        case 3:
-                            result = Strings.nullToEmpty(o1.getDescription()).compareTo(Strings.nullToEmpty(o2.getDescription()));
-                            break;
-                        }
-                        return result;
-                    }
-                }),
-                new TableColumnDescription("property.name", 200, SWT.LEFT),
-                new TableColumnDescription("Variable.property.format", 200, SWT.LEFT),
-                new TableColumnDescription("Variable.property.defaultValue", 200, SWT.LEFT, false),
-                new TableColumnDescription("property.description", 200, SWT.LEFT)
-        );
-        
+        createTable(tableViewer, new DataViewerComparator<>(new ValueComparator<Variable>() {
+            @Override
+            public int compare(Variable o1, Variable o2) {
+                int result = 0;
+                switch (getColumn()) {
+                case 0:
+                    result = o1.getName().compareTo(o2.getName());
+                    break;
+                case 1:
+                    result = o1.getFormatLabel().compareTo(o2.getFormatLabel());
+                    break;
+                case 3:
+                    result = Strings.nullToEmpty(o1.getDescription()).compareTo(Strings.nullToEmpty(o2.getDescription()));
+                    break;
+                }
+                return result;
+            }
+        }), new TableColumnDescription("property.name", 200, SWT.LEFT), new TableColumnDescription("Variable.property.format", 200, SWT.LEFT),
+                new TableColumnDescription("Variable.property.defaultValue", 200, SWT.LEFT, false), new TableColumnDescription(
+                        "property.description", 200, SWT.LEFT));
+
         Composite buttonsBar = createActionBar(allVariablesComposite);
         addButton(buttonsBar, "button.create", new CreateVariableSelectionListener(), false);
         renameButton = addButton(buttonsBar, "button.rename", new RenameVariableSelectionListener(), true);
@@ -123,7 +119,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
         moveDownButton = addButton(buttonsBar, "button.down", new MoveVariableSelectionListener(false), true);
         deleteButton = addButton(buttonsBar, "button.delete", new DeleteVariableSelectionListener(), true);
         moveToTypeAttributeButton = addButton(buttonsBar, "button.move", new MoveToTypeAttributeSelectionListener(), true);
-        
+
         updateViewer();
     }
 
@@ -205,10 +201,10 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
             if (result != IDialogConstants.OK_ID) {
                 return;
             }
-            
+
             IResource projectRoot = editor.getDefinitionFile().getParent();
             IDE.saveAllEditors(new IResource[] { projectRoot }, false);
-            
+
             String newName = dialog.getName();
             String newScriptingName = dialog.getScriptingName();
             RenameVariableRefactoring refactoring = new RenameVariableRefactoring(editor.getDefinitionFile(), editor.getDefinition(), variable,
@@ -226,7 +222,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
             // update variables
             variable.setName(newName);
             variable.setScriptingName(newScriptingName);
-            
+
             if (useLtk) {
                 IDE.saveAllEditors(new IResource[] { projectRoot }, false);
                 for (SubprocessDefinition subprocessDefinition : editor.getDefinition().getEmbeddedSubprocesses().values()) {
@@ -260,7 +256,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
             confirmationInfo.append(Localization.getString("Variable.WillBeRemovedFromFormAuto")).append("\n\n");
             confirmationRequired = true;
         }
-        
+
         VariableSearchQuery query = new VariableSearchQuery(editor.getDefinitionFile(), getDefinition(), variable);
         NewSearchUI.runQueryInForeground(PlatformUI.getWorkbench().getActiveWorkbenchWindow(), query);
         SearchResult searchResult = query.getSearchResult();
@@ -272,7 +268,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
             }
             confirmationRequired = true;
         }
-        
+
         if (!confirmationRequired || Dialogs.confirm(Localization.getString("confirm.delete"), confirmationInfo.toString())) {
             // TODO remove variable from form validations in
             // EmbeddedSubprocesses
@@ -348,7 +344,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
                             newVariable.setScriptingName(dialog.getScriptingName());
                         }
                     }
-                    
+
                     if (nameAllowed) {
                         getDefinition().addChild(newVariable);
                         if (newVariable.isComplex()) {
@@ -413,7 +409,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
                     return;
                 }
                 IDE.saveAllEditors(new IResource[] { projectRoot }, false);
-                
+
                 String newName = substitutionVariable.getName() + VariableUserType.DELIM + variable.getName();
                 String newScriptingName = substitutionVariable.getScriptingName() + VariableUserType.DELIM + variable.getScriptingName();
                 RenameVariableRefactoring refactoring = new RenameVariableRefactoring(editor.getDefinitionFile(), editor.getDefinition(), variable,
@@ -431,7 +427,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
             }
             newType.addAttribute(variable);
             getDefinition().removeChild(variable);
-            
+
             if (useLtk && editor.getDefinition().getEmbeddedSubprocesses().size() > 0) {
                 IDE.saveAllEditors(new IResource[] { projectRoot }, false);
                 for (SubprocessDefinition subprocessDefinition : editor.getDefinition().getEmbeddedSubprocesses().values()) {
@@ -469,5 +465,5 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
             return null;
         }
     }
-    
+
 }

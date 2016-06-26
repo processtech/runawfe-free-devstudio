@@ -202,7 +202,7 @@ public class VariableUtils {
                     + variable.getScriptingName();
             if (Objects.equal(variable.getUserType(), searchType)) {
                 Variable syntheticVariable = new Variable(syntheticName + VariableUserType.DELIM + searchAttribute.getName(), syntheticScriptingName
-                        + VariableUserType.DELIM + searchAttribute.getScriptingName(), variable);
+                        + VariableUserType.DELIM + searchAttribute.getScriptingName(), searchAttribute);
                 result.add(syntheticVariable);
             } else {
                 Variable syntheticVariable = new Variable(syntheticName, syntheticScriptingName, variable);
