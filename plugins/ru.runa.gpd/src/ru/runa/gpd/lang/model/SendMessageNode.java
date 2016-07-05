@@ -22,10 +22,10 @@ public class SendMessageNode extends MessagingNode implements Active {
     }
 
     @Override
-    public List<IPropertyDescriptor> getCustomPropertyDescriptors() {
-        List<IPropertyDescriptor> list = super.getCustomPropertyDescriptors();
-        list.add(new DurationPropertyDescriptor(PROPERTY_TTL, getProcessDefinition(), getTtlDuration(), Localization.getString("property.message.ttl")));
-        return list;
+    public void populateCustomPropertyDescriptors(List<IPropertyDescriptor> descriptors) {
+        super.populateCustomPropertyDescriptors(descriptors);
+        descriptors.add(new DurationPropertyDescriptor(PROPERTY_TTL, getProcessDefinition(), getTtlDuration(), Localization
+                .getString("property.message.ttl")));
     }
 
     @Override
@@ -49,5 +49,5 @@ public class SendMessageNode extends MessagingNode implements Active {
     protected boolean allowLeavingTransition(List<Transition> transitions) {
         return super.allowLeavingTransition(transitions) && transitions.size() == 0;
     }
-    
+
 }

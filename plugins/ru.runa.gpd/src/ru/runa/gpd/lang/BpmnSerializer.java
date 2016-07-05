@@ -18,10 +18,12 @@ import ru.runa.gpd.lang.model.EndState;
 import ru.runa.gpd.lang.model.EndTokenState;
 import ru.runa.gpd.lang.model.ExclusiveGateway;
 import ru.runa.gpd.lang.model.GraphElement;
+import ru.runa.gpd.lang.model.ITimed;
 import ru.runa.gpd.lang.model.MultiSubprocess;
 import ru.runa.gpd.lang.model.MultiTaskState;
 import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.Node;
+import ru.runa.gpd.lang.model.NodeAsyncExecution;
 import ru.runa.gpd.lang.model.ParallelGateway;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.PropertyNames;
@@ -103,6 +105,7 @@ public class BpmnSerializer extends ProcessSerializer {
     private static final String REPEAT = "repeat";
     public static final String START_TEXT_DECORATION = "startTextDecoration";
     public static final String END_TEXT_DECORATION = "endTextDecoration";
+    private static final String NODE_ASYNC_EXECUTION = "asyncExecution";
 
     @Override
     public boolean isSupported(Document document) {
@@ -130,8 +133,8 @@ public class BpmnSerializer extends ProcessSerializer {
     @Override
     public void saveToXML(ProcessDefinition definition, Document document) {
         Element definitionsElement = document.getRootElement();
-        Element process = definitionsElement.element(QName.get(PROCESS, BPMN_NAMESPACE));
-        process.addAttribute(NAME, definition.getName());
+        Element processElement = definitionsElement.element(QName.get(PROCESS, BPMN_NAMESPACE));
+        processElement.addAttribute(NAME, definition.getName());
         Map<String, String> processProperties = Maps.newLinkedHashMap();
         if (definition.getDefaultTaskTimeoutDelay().hasDuration()) {
             processProperties.put(DEFAULT_TASK_DEADLINE, definition.getDefaultTaskTimeoutDelay().getDuration());
@@ -145,14 +148,17 @@ public class BpmnSerializer extends ProcessSerializer {
         processProperties.put(ACCESS_TYPE, definition.getAccessType().name());
         processProperties.put(VERSION, Application.getVersion().toString());
         if (definition.isInvalid()) {
-            process.addAttribute(EXECUTABLE, "false");
+            processElement.addAttribute(EXECUTABLE, "false");
         }
         if (!Strings.isNullOrEmpty(definition.getDescription())) {
             processProperties.put(DOCUMENTATION, definition.getDescription());
         }
-        writeExtensionElements(process, processProperties);
+        if (definition.getDefaultNodeAsyncExecution() != NodeAsyncExecution.DEFAULT) {
+            processProperties.put(NODE_ASYNC_EXECUTION, definition.getDefaultNodeAsyncExecution().getValue());
+        }
+        writeExtensionElements(processElement, processProperties);
         if (definition.getClass() != SubprocessDefinition.class) {
-            Element laneSetElement = process.addElement(LANE_SET).addAttribute(ID, "laneSet1");
+            Element laneSetElement = processElement.addElement(LANE_SET).addAttribute(ID, "laneSet1");
             List<Swimlane> swimlanes = definition.getSwimlanes();
             for (Swimlane swimlane : swimlanes) {
                 Element swimlaneElement = writeElement(laneSetElement, swimlane);
@@ -165,43 +171,36 @@ public class BpmnSerializer extends ProcessSerializer {
         }
         StartState startState = definition.getFirstChild(StartState.class);
         if (startState != null) {
-            writeTaskState(process, startState);
-            writeTransitions(process, startState);
+            writeTaskState(processElement, startState);
+            writeTransitions(processElement, startState);
         }
         List<ExclusiveGateway> exclusiveGateways = definition.getChildren(ExclusiveGateway.class);
         for (ExclusiveGateway gateway : exclusiveGateways) {
-            writeNode(process, gateway);
+            writeNode(processElement, gateway);
         }
         List<TaskState> taskStates = definition.getChildren(TaskState.class);
         for (TaskState taskState : taskStates) {
-            writeTaskState(process, taskState);
-            writeTransitions(process, taskState);
-            Timer timer = taskState.getTimer();
-            if (timer != null) {
-                Element boundaryEventElement = process.addElement(BOUNDARY_EVENT);
-                writeTimer(boundaryEventElement, timer);
-                boundaryEventElement.addAttribute(CANCEL_ACTIVITY, "true");
-                boundaryEventElement.addAttribute(ATTACHED_TO_REF, taskState.getId());
-                writeTransitions(process, timer);
-            }
+            writeTaskState(processElement, taskState);
+            writeTransitions(processElement, taskState);
+            writeBoundaryTimer(processElement, taskState);
         }
         List<Timer> timers = definition.getChildren(Timer.class);
         for (Timer timer : timers) {
-            Element intermediateEventElement = process.addElement(INTERMEDIATE_CATCH_EVENT);
+            Element intermediateEventElement = processElement.addElement(INTERMEDIATE_CATCH_EVENT);
             writeTimer(intermediateEventElement, timer);
-            writeTransitions(process, timer);
+            writeTransitions(processElement, timer);
         }
         List<ScriptTask> scriptTasks = definition.getChildren(ScriptTask.class);
         for (ScriptTask scriptTask : scriptTasks) {
-            writeNode(process, scriptTask);
+            writeNode(processElement, scriptTask);
         }
         List<ParallelGateway> parallelGateways = definition.getChildren(ParallelGateway.class);
         for (ParallelGateway gateway : parallelGateways) {
-            writeNode(process, gateway);
+            writeNode(processElement, gateway);
         }
         List<Subprocess> subprocesses = definition.getChildren(Subprocess.class);
         for (Subprocess subprocess : subprocesses) {
-            Element element = writeNode(process, subprocess);
+            Element element = writeNode(processElement, subprocess);
             element.addAttribute(RUNA_PREFIX + ":" + PROCESS, subprocess.getSubProcessName());
             Map<String, Object> properties = Maps.newLinkedHashMap();
             if (subprocess instanceof MultiSubprocess) {
@@ -221,48 +220,36 @@ public class BpmnSerializer extends ProcessSerializer {
         }
         List<SendMessageNode> sendMessageNodes = definition.getChildren(SendMessageNode.class);
         for (SendMessageNode messageNode : sendMessageNodes) {
-            Element messageElement = writeNode(process, messageNode);
+            Element messageElement = writeNode(processElement, messageNode);
             messageElement.addAttribute(RUNA_PREFIX + ":" + TIME_DURATION, messageNode.getTtlDuration().getDuration());
             writeVariables(messageElement, messageNode.getVariableMappings());
         }
         List<ReceiveMessageNode> receiveMessageNodes = definition.getChildren(ReceiveMessageNode.class);
         for (ReceiveMessageNode messageNode : receiveMessageNodes) {
-            Element messageElement = writeNode(process, messageNode);
+            Element messageElement = writeNode(processElement, messageNode);
             writeVariables(messageElement, messageNode.getVariableMappings());
-            // TODO duplicated
-            Timer timer = messageNode.getTimer();
-            if (timer != null) {
-                Element boundaryEventElement = process.addElement(BOUNDARY_EVENT);
-                writeTimer(boundaryEventElement, timer);
-                boundaryEventElement.addAttribute(CANCEL_ACTIVITY, "true");
-                boundaryEventElement.addAttribute(ATTACHED_TO_REF, messageNode.getId());
-                writeTransitions(process, timer);
-            }
+            writeBoundaryTimer(processElement, messageNode);
         }
         List<EndTokenState> endTokenStates = definition.getChildren(EndTokenState.class);
         for (EndTokenState endTokenState : endTokenStates) {
-            Element element = writeElement(process, endTokenState);
+            Element element = writeNode(processElement, endTokenState);
             Map<String, String> properties = Maps.newLinkedHashMap();
             properties.put(TOKEN, "true");
             writeExtensionElements(element, properties);
         }
         List<EndState> endStates = definition.getChildren(EndState.class);
         for (EndState endState : endStates) {
-            writeElement(process, endState);
+            writeNode(processElement, endState);
         }
         List<TextAnnotation> textAnnotations = definition.getChildren(TextAnnotation.class);
         for (TextAnnotation textAnnotation : textAnnotations) {
-            Element element = process.addElement(textAnnotation.getTypeDefinition().getBpmnElementName());
+            Element element = processElement.addElement(textAnnotation.getTypeDefinition().getBpmnElementName());
             setAttribute(element, ID, textAnnotation.getId());
             String description = textAnnotation.getDescription();
             if (!Strings.isNullOrEmpty(description)) {
                 element.addElement(TEXT).addCDATA(description);
             }
         }
-        // TODO instead of gpd.xml
-        // Element diagramElement =
-        // definitionsElement.addElement("bpmndi:BPMNDiagram");
-        // diagramElement.addAttribute(ID_ATTR, "test");
     }
 
     private void writeVariables(Element element, List<VariableMapping> variableMappings) {
@@ -276,8 +263,17 @@ public class BpmnSerializer extends ProcessSerializer {
         if (node.isDelegable()) {
             writeDelegation(nodeElement, (Delegable) node);
         }
+        writeNodeAsyncExecution(nodeElement, node);
         writeTransitions(parent, node);
         return nodeElement;
+    }
+
+    private void writeNodeAsyncExecution(Element nodeElement, Node node) {
+        if (node.getAsyncExecution() != NodeAsyncExecution.DEFAULT) {
+            Map<String, Object> properties = Maps.newLinkedHashMap();
+            properties.put(NODE_ASYNC_EXECUTION, node.getAsyncExecution().getValue());
+            writeExtensionElements(nodeElement, properties);
+        }
     }
 
     private Element writeTaskState(Element parent, SwimlanedNode swimlanedNode) {
@@ -310,19 +306,33 @@ public class BpmnSerializer extends ProcessSerializer {
             writeVariables(nodeElement, multiTaskNode.getVariableMappings());
         }
         writeExtensionElements(nodeElement, properties);
+        writeNodeAsyncExecution(nodeElement, swimlanedNode);
         return nodeElement;
     }
 
-    private void writeTimer(Element parent, Timer timer) {
+    private void writeBoundaryTimer(Element parentElement, ITimed timed) {
+        Timer timer = timed.getTimer();
         if (timer == null) {
             return;
         }
-        setAttribute(parent, ID, timer.getId());
-        setAttribute(parent, NAME, timer.getName());
-        Element eventElement = parent.addElement(timer.getTypeDefinition().getBpmnElementName());
+        Element boundaryEventElement = parentElement.addElement(BOUNDARY_EVENT);
+        writeTimer(boundaryEventElement, timer);
+        boundaryEventElement.addAttribute(CANCEL_ACTIVITY, "true");
+        boundaryEventElement.addAttribute(ATTACHED_TO_REF, ((GraphElement) timed).getId());
+        writeTransitions(parentElement, timer);
+    }
+
+    private void writeTimer(Element parentElement, Timer timer) {
+        if (timer == null) {
+            return;
+        }
+        setAttribute(parentElement, ID, timer.getId());
+        setAttribute(parentElement, NAME, timer.getName());
+        Element eventElement = parentElement.addElement(timer.getTypeDefinition().getBpmnElementName());
         if (!Strings.isNullOrEmpty(timer.getDescription())) {
             eventElement.addElement(DOCUMENTATION).addCDATA(timer.getDescription());
         }
+        writeNodeAsyncExecution(eventElement, timer);
         TimerAction timerAction = timer.getAction();
         if (timerAction != null) {
             writeDelegation(eventElement, timerAction);
@@ -461,6 +471,9 @@ public class BpmnSerializer extends ProcessSerializer {
             element.setDelegationClassName(properties.get(CLASS));
             element.setDelegationConfiguration(properties.get(CONFIG));
         }
+        if (element instanceof Node && properties.containsKey(NODE_ASYNC_EXECUTION)) {
+            ((Node) element).setAsyncExecution(NodeAsyncExecution.getByValueNotNull(properties.get(NODE_ASYNC_EXECUTION)));
+        }
     }
 
     private Map<String, String> parseExtensionProperties(Element element) {
@@ -518,6 +531,9 @@ public class BpmnSerializer extends ProcessSerializer {
         }
         if (processProperties.containsKey(DOCUMENTATION)) {
             definition.setDescription(processProperties.get(DOCUMENTATION));
+        }
+        if (processProperties.containsKey(NODE_ASYNC_EXECUTION)) {
+            definition.setDefaultNodeAsyncExecution(NodeAsyncExecution.getByValueNotNull(processProperties.get(NODE_ASYNC_EXECUTION)));
         }
         String swimlaneDisplayModeName = processProperties.get(SHOW_SWIMLANE);
         if (swimlaneDisplayModeName != null) {
