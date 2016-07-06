@@ -2,8 +2,8 @@ package ru.runa.gpd.ltk;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
+import java.util.SortedMap;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -22,7 +22,7 @@ public class DelegablePresentation extends VariableRenameProvider<Delegable> {
     }
 
     @Override
-    public List<Change> getChanges(Map<Variable, Variable> variablesMap) throws Exception {
+    public List<Change> getChanges(SortedMap<Variable, Variable> variablesMap) throws Exception {
         List<Change> changes = new ArrayList<Change>();
         DelegableProvider provider = HandlerRegistry.getProvider(element.getDelegationClassName());
         for (Entry<Variable, Variable> entry : variablesMap.entrySet()) {

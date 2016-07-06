@@ -2,8 +2,8 @@ package ru.runa.gpd.ltk;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
+import java.util.SortedMap;
 
 import org.eclipse.ltk.core.refactoring.Change;
 
@@ -17,7 +17,7 @@ public class SubprocessPresentation extends VariableRenameProvider<Subprocess> {
     }
 
     @Override
-    public List<Change> getChanges(Map<Variable, Variable> variablesMap) throws Exception {
+    public List<Change> getChanges(SortedMap<Variable, Variable> variablesMap) throws Exception {
         List<Change> changes = new ArrayList<Change>();
         for (Entry<Variable, Variable> entry : variablesMap.entrySet()) {
             Variable oldVariable = entry.getKey();

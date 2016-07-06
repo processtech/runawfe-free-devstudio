@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.SortedMap;
 
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -26,7 +27,7 @@ public class BotTaskLinkParametersRenameProvider extends VariableRenameProvider<
     }
 
     @Override
-    public List<Change> getChanges(Map<Variable, Variable> variablesMap) throws Exception {
+    public List<Change> getChanges(SortedMap<Variable, Variable> variablesMap) throws Exception {
         List<Change> changes = new ArrayList<Change>();
         Map<String, String> parameters = ParamDefConfig.getAllParameters(element.getDelegationConfiguration());
         for (Entry<Variable, Variable> entry : variablesMap.entrySet()) {

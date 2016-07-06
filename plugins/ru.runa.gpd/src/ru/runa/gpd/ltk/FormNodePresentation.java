@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.SortedMap;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -13,6 +14,7 @@ import org.eclipse.ltk.core.refactoring.CompositeChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.ltk.ui.refactoring.TextEditChangeNode;
 import org.eclipse.text.edits.MultiTextEdit;
+import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.text.edits.TextEdit;
 
 import ru.runa.gpd.Localization;
@@ -32,7 +34,7 @@ public class FormNodePresentation extends VariableRenameProvider<FormNode> {
     }
 
     @Override
-    public List<Change> getChanges(Map<Variable, Variable> variablesMap) throws Exception {
+    public List<Change> getChanges(SortedMap<Variable, Variable> variablesMap) throws Exception {
         CompositeChange result = new CompositeChange(element.getName());
         if (element.hasForm()) {
             FormType formType = FormTypeProvider.getFormType(element.getFormType());
@@ -58,9 +60,10 @@ public class FormNodePresentation extends VariableRenameProvider<FormNode> {
         for (Entry<Variable, Variable> entry : variablesMap.entrySet()) {
             Variable oldVariable = entry.getKey();
             Variable newVariable = entry.getValue();
-            addChild(multiEditResult, formType.searchVariableReplacements(file, oldVariable.getName(), newVariable.getName()));
+            addChildEdit(multiEditResult, formType.searchVariableReplacements(file, oldVariable.getName(), newVariable.getName()));
             if (checkScriptingName && !Objects.equal(oldVariable.getName(), oldVariable.getScriptingName())) {
-                addChild(multiEditResult, formType.searchVariableReplacements(file, oldVariable.getScriptingName(), newVariable.getScriptingName()));
+                addChildEdit(multiEditResult,
+                        formType.searchVariableReplacements(file, oldVariable.getScriptingName(), newVariable.getScriptingName()));
             }
         }
         if (multiEditResult.getChildrenSize() > 0) {
@@ -80,11 +83,31 @@ public class FormNodePresentation extends VariableRenameProvider<FormNode> {
         return changes.toArray(new Change[changes.size()]);
     }
 
-    private void addChild(MultiTextEdit multiTextEdit1, MultiTextEdit multiTextEdit2) {
-        if (multiTextEdit2.hasChildren()) {
-            TextEdit[] children = multiTextEdit2.removeChildren();
+    public static void addChildEdit(MultiTextEdit multiTextEdit1, TextEdit textEdit2) {
+        TextEdit[] children = null;
+        if (textEdit2 instanceof MultiTextEdit) {
+            if (textEdit2.hasChildren()) {
+                children = textEdit2.removeChildren();
+            }
+        } else if (textEdit2 instanceof ReplaceEdit) {
+            children = new TextEdit[] { textEdit2 };
+        }
+        if (children != null) {
             for (TextEdit child : children) {
-                multiTextEdit1.addChild(child);
+                boolean addChild = true;
+                for (TextEdit textEdit : multiTextEdit1.getChildren()) {
+                    if (textEdit.getOffset() == child.getOffset()) {
+                        if (child.getLength() > textEdit.getLength()) {
+                            multiTextEdit1.removeChild(textEdit);
+                        } else {
+                            addChild = false;
+                            break;
+                        }
+                    }
+                }
+                if (addChild) {
+                    multiTextEdit1.addChild(child);
+                }
             }
         }
     }
