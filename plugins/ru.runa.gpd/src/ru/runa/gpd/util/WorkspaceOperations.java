@@ -533,10 +533,10 @@ public class WorkspaceOperations {
 
     public static void renameBotFolder(IStructuredSelection selection) {
         IFolder botFolder = (IFolder) selection.getFirstElement();
-        RenameBotDialog dialog = new RenameBotDialog(botFolder);
-        dialog.setName(botFolder.getName());
-        if (dialog.open() == IDialogConstants.OK_ID) {
-            String newName = dialog.getName();
+        RenameBotDialog renameBotDialog = new RenameBotDialog(botFolder);
+
+        if (renameBotDialog.open() == IDialogConstants.OK_ID) {
+            String newName = renameBotDialog.getValue();
             try {
                 IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
                 List<IFile> botTasks = IOUtils.getBotTaskFiles(botFolder);
