@@ -10,7 +10,7 @@ import ru.runa.gpd.util.Duration;
 
 import com.google.common.base.Objects;
 
-public class TimedPresentation extends VariableRenameProvider<ITimed> {
+public class TimedPresentation extends SimpleVariableRenameProvider<ITimed> {
     private final Timer timer;
 
     public TimedPresentation(ITimed timed) {
@@ -19,7 +19,7 @@ public class TimedPresentation extends VariableRenameProvider<ITimed> {
     }
 
     @Override
-    protected List<TextCompareChange> getChangeList(Variable oldVariable, Variable newVariable) throws Exception {
+    protected List<TextCompareChange> getChangesForVariable(Variable oldVariable, Variable newVariable) throws Exception {
         List<TextCompareChange> changeList = new ArrayList<TextCompareChange>();
         if (timer != null && Objects.equal(oldVariable.getName(), timer.getDelay().getVariableName())) {
             changeList.add(new TimedChange(element, oldVariable, newVariable));

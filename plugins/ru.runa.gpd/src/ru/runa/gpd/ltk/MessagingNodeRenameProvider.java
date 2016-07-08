@@ -9,10 +9,10 @@ import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.util.VariableMapping;
 import ru.runa.gpd.util.VariableUtils;
 
-public class MessagingNodeRenameProvider extends VariableRenameProvider<MessagingNode> {
+public class MessagingNodeRenameProvider extends SimpleVariableRenameProvider<MessagingNode> {
 
     @Override
-    protected List<TextCompareChange> getChangeList(Variable oldVariable, Variable newVariable) throws Exception {
+    protected List<TextCompareChange> getChangesForVariable(Variable oldVariable, Variable newVariable) throws Exception {
         List<TextCompareChange> changeList = new ArrayList<TextCompareChange>();
         List<VariableMapping> mappingsToChange = new ArrayList<VariableMapping>();
         for (VariableMapping mapping : element.getVariableMappings()) {

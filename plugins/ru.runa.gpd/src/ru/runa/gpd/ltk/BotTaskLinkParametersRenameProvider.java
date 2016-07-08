@@ -15,7 +15,7 @@ import ru.runa.gpd.util.XmlUtil;
 import com.google.common.base.Objects;
 
 @SuppressWarnings({ "unchecked" })
-public class BotTaskLinkParametersRenameProvider extends VariableRenameProvider<BotTaskLink> {
+public class BotTaskLinkParametersRenameProvider extends SimpleVariableRenameProvider<BotTaskLink> {
     private static final String PARAM = "param";
     private static final String VARIABLE = "variable";
 
@@ -27,7 +27,7 @@ public class BotTaskLinkParametersRenameProvider extends VariableRenameProvider<
     }
 
     @Override
-    protected List<TextCompareChange> getChangeList(Variable oldVariable, Variable newVariable) throws Exception {
+    protected List<TextCompareChange> getChangesForVariable(Variable oldVariable, Variable newVariable) throws Exception {
         List<TextCompareChange> changeList = new ArrayList<TextCompareChange>();
         for (Map.Entry<String, String> parameterEntry : parameters.entrySet()) {
             if (Objects.equal(oldVariable.getName(), parameterEntry.getValue())) {

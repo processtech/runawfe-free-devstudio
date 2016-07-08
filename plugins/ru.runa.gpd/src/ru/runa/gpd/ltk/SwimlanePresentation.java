@@ -11,7 +11,7 @@ import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.swimlane.SwimlaneInitializer;
 import ru.runa.gpd.swimlane.SwimlaneInitializerParser;
 
-public class SwimlanePresentation extends VariableRenameProvider<Swimlane> {
+public class SwimlanePresentation extends SimpleVariableRenameProvider<Swimlane> {
     private final SwimlaneInitializer swimlaneInitializer;
 
     public SwimlanePresentation(Swimlane swimlane) {
@@ -20,7 +20,7 @@ public class SwimlanePresentation extends VariableRenameProvider<Swimlane> {
     }
 
     @Override
-    protected List<TextCompareChange> getChangeList(Variable oldVariable, Variable newVariable) throws Exception {
+    protected List<TextCompareChange> getChangesForVariable(Variable oldVariable, Variable newVariable) throws Exception {
         List<TextCompareChange> changeList = new ArrayList<TextCompareChange>();
         if (swimlaneInitializer.hasReference(oldVariable)) {
             changeList.add(new SwimlaneInitializerChange(element, oldVariable, newVariable));

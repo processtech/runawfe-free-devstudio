@@ -19,7 +19,7 @@ import ru.runa.gpd.lang.model.BotTask;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.util.WorkspaceOperations;
 
-public class BotTaskConfigRenameProvider extends VariableRenameProvider<BotTask> {
+public class BotTaskConfigRenameProvider extends SimpleVariableRenameProvider<BotTask> {
     private final DelegableProvider provider;
 
     public BotTaskConfigRenameProvider(BotTask botTask) {
@@ -28,7 +28,7 @@ public class BotTaskConfigRenameProvider extends VariableRenameProvider<BotTask>
     }
 
     @Override
-    protected List<TextCompareChange> getChangeList(Variable oldVariable, Variable newVariable) throws Exception {
+    protected List<TextCompareChange> getChangesForVariable(Variable oldVariable, Variable newVariable) throws Exception {
         List<TextCompareChange> changeList = new ArrayList<TextCompareChange>();
         try {
             if (provider.getUsedVariableNames(element).contains(oldVariable.getName())) {

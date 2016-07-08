@@ -12,7 +12,7 @@ import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.Variable;
 
-public class DelegablePresentation extends VariableRenameProvider<Delegable> {
+public class DelegablePresentation extends SimpleVariableRenameProvider<Delegable> {
     private final DelegableProvider provider;
 
     public DelegablePresentation(final Delegable delegable, String name) {
@@ -21,7 +21,7 @@ public class DelegablePresentation extends VariableRenameProvider<Delegable> {
     }
 
     @Override
-    protected List<TextCompareChange> getChangeList(Variable oldVariable, Variable newVariable) throws Exception {
+    protected List<TextCompareChange> getChangesForVariable(Variable oldVariable, Variable newVariable) throws Exception {
         List<TextCompareChange> changeList = new ArrayList<TextCompareChange>();
         try {
             if (provider.getUsedVariableNames(element).contains(oldVariable.getName())) {
