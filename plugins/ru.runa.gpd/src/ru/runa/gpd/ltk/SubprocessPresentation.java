@@ -2,10 +2,6 @@ package ru.runa.gpd.ltk;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.SortedMap;
-
-import org.eclipse.ltk.core.refactoring.Change;
 
 import ru.runa.gpd.lang.model.Subprocess;
 import ru.runa.gpd.lang.model.Variable;
@@ -17,28 +13,24 @@ public class SubprocessPresentation extends VariableRenameProvider<Subprocess> {
     }
 
     @Override
-    public List<Change> getChanges(SortedMap<Variable, Variable> variablesMap) throws Exception {
-        List<Change> changes = new ArrayList<Change>();
-        for (Entry<Variable, Variable> entry : variablesMap.entrySet()) {
-            Variable oldVariable = entry.getKey();
-            Variable newVariable = entry.getValue();
-            List<VariableMapping> mappingsToChange = new ArrayList<VariableMapping>();
-            for (VariableMapping mapping : element.getVariableMappings()) {
-                if (mapping.isMultiinstanceLinkByRelation() && mapping.getName().contains("(" + oldVariable.getName() + ")")) {
-                    mappingsToChange.add(mapping);
-                }
-                if (mapping.isText()) {
-                    continue;
-                }
-                if (mapping.getName().equals(oldVariable.getName())) {
-                    mappingsToChange.add(mapping);
-                }
+    protected List<TextCompareChange> getChangeList(Variable oldVariable, Variable newVariable) throws Exception {
+        List<TextCompareChange> changeList = new ArrayList<TextCompareChange>();
+        List<VariableMapping> mappingsToChange = new ArrayList<VariableMapping>();
+        for (VariableMapping mapping : element.getVariableMappings()) {
+            if (mapping.isMultiinstanceLinkByRelation() && mapping.getName().contains("(" + oldVariable.getName() + ")")) {
+                mappingsToChange.add(mapping);
             }
-            if (mappingsToChange.size() > 0) {
-                changes.add(new VariableMappingsChange(element, oldVariable, newVariable, mappingsToChange));
+            if (mapping.isText()) {
+                continue;
+            }
+            if (mapping.getName().equals(oldVariable.getName())) {
+                mappingsToChange.add(mapping);
             }
         }
-        return changes;
+        if (mappingsToChange.size() > 0) {
+            changeList.add(new VariableMappingsChange(element, oldVariable, newVariable, mappingsToChange));
+        }
+        return changeList;
     }
 
 }

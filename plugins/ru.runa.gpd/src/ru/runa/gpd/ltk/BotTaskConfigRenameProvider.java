@@ -2,13 +2,10 @@ package ru.runa.gpd.ltk;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.SortedMap;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
@@ -23,27 +20,24 @@ import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.util.WorkspaceOperations;
 
 public class BotTaskConfigRenameProvider extends VariableRenameProvider<BotTask> {
+    private final DelegableProvider provider;
 
     public BotTaskConfigRenameProvider(BotTask botTask) {
         setElement(botTask);
+        provider = HandlerRegistry.getProvider(element.getDelegationClassName());
     }
 
     @Override
-    public List<Change> getChanges(SortedMap<Variable, Variable> variablesMap) throws Exception {
-        List<Change> changes = new ArrayList<Change>();
-        DelegableProvider provider = HandlerRegistry.getProvider(element.getDelegationClassName());
-        for (Entry<Variable, Variable> entry : variablesMap.entrySet()) {
-            Variable oldVariable = entry.getKey();
-            Variable newVariable = entry.getValue();
-            try {
-                if (provider.getUsedVariableNames(element).contains(oldVariable.getName())) {
-                    changes.add(new ConfigChange(oldVariable, newVariable));
-                }
-            } catch (Exception e) {
-                PluginLogger.logErrorWithoutDialog("Unable to get used variables in " + element, e);
+    protected List<TextCompareChange> getChangeList(Variable oldVariable, Variable newVariable) throws Exception {
+        List<TextCompareChange> changeList = new ArrayList<TextCompareChange>();
+        try {
+            if (provider.getUsedVariableNames(element).contains(oldVariable.getName())) {
+                changeList.add(new ConfigChange(oldVariable, newVariable));
             }
+        } catch (Exception e) {
+            PluginLogger.logErrorWithoutDialog("Unable to get used variables in " + element, e);
         }
-        return changes;
+        return changeList;
     }
 
     private class ConfigChange extends TextCompareChange {

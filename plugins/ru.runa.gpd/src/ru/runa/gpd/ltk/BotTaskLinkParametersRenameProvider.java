@@ -3,12 +3,9 @@ package ru.runa.gpd.ltk;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.SortedMap;
 
 import org.dom4j.Document;
 import org.dom4j.Element;
-import org.eclipse.ltk.core.refactoring.Change;
 
 import ru.runa.gpd.extension.handler.ParamDefConfig;
 import ru.runa.gpd.lang.model.BotTaskLink;
@@ -22,24 +19,22 @@ public class BotTaskLinkParametersRenameProvider extends VariableRenameProvider<
     private static final String PARAM = "param";
     private static final String VARIABLE = "variable";
 
+    private final Map<String, String> parameters;
+
     public BotTaskLinkParametersRenameProvider(BotTaskLink botTaskLink) {
         setElement(botTaskLink);
+        parameters = ParamDefConfig.getAllParameters(element.getDelegationConfiguration());
     }
 
     @Override
-    public List<Change> getChanges(SortedMap<Variable, Variable> variablesMap) throws Exception {
-        List<Change> changes = new ArrayList<Change>();
-        Map<String, String> parameters = ParamDefConfig.getAllParameters(element.getDelegationConfiguration());
-        for (Entry<Variable, Variable> entry : variablesMap.entrySet()) {
-            Variable oldVariable = entry.getKey();
-            Variable newVariable = entry.getValue();
-            for (Map.Entry<String, String> parameterEntry : parameters.entrySet()) {
-                if (Objects.equal(oldVariable.getName(), parameterEntry.getValue())) {
-                    changes.add(new ParamChange(element, oldVariable, newVariable));
-                }
+    protected List<TextCompareChange> getChangeList(Variable oldVariable, Variable newVariable) throws Exception {
+        List<TextCompareChange> changeList = new ArrayList<TextCompareChange>();
+        for (Map.Entry<String, String> parameterEntry : parameters.entrySet()) {
+            if (Objects.equal(oldVariable.getName(), parameterEntry.getValue())) {
+                changeList.add(new ParamChange(element, oldVariable, newVariable));
             }
         }
-        return changes;
+        return changeList;
     }
 
     private class ParamChange extends TextCompareChange {

@@ -2,10 +2,6 @@ package ru.runa.gpd.ltk;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.SortedMap;
-
-import org.eclipse.ltk.core.refactoring.Change;
 
 import ru.runa.gpd.lang.model.ITimed;
 import ru.runa.gpd.lang.model.Timer;
@@ -15,22 +11,20 @@ import ru.runa.gpd.util.Duration;
 import com.google.common.base.Objects;
 
 public class TimedPresentation extends VariableRenameProvider<ITimed> {
+    private final Timer timer;
+
     public TimedPresentation(ITimed timed) {
         setElement(timed);
+        timer = element.getTimer();
     }
 
     @Override
-    public List<Change> getChanges(SortedMap<Variable, Variable> variablesMap) throws Exception {
-        List<Change> changes = new ArrayList<Change>();
-        Timer timer = element.getTimer();
-        for (Entry<Variable, Variable> entry : variablesMap.entrySet()) {
-            Variable oldVariable = entry.getKey();
-            Variable newVariable = entry.getValue();
-            if (timer != null && Objects.equal(oldVariable.getName(), timer.getDelay().getVariableName())) {
-                changes.add(new TimedChange(element, oldVariable, newVariable));
-            }
+    protected List<TextCompareChange> getChangeList(Variable oldVariable, Variable newVariable) throws Exception {
+        List<TextCompareChange> changeList = new ArrayList<TextCompareChange>();
+        if (timer != null && Objects.equal(oldVariable.getName(), timer.getDelay().getVariableName())) {
+            changeList.add(new TimedChange(element, oldVariable, newVariable));
         }
-        return changes;
+        return changeList;
     }
 
     private class TimedChange extends TextCompareChange {
