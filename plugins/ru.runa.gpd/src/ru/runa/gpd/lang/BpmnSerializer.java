@@ -105,7 +105,6 @@ public class BpmnSerializer extends ProcessSerializer {
     private static final String REPEAT = "repeat";
     public static final String START_TEXT_DECORATION = "startTextDecoration";
     public static final String END_TEXT_DECORATION = "endTextDecoration";
-    private static final String NODE_ASYNC_EXECUTION = "asyncExecution";
 
     @Override
     public boolean isSupported(Document document) {
