@@ -37,6 +37,7 @@ import com.google.common.hash.Hashing;
 @SuppressWarnings("unchecked")
 public class ProcessDefinition extends NamedGraphElement implements Active, Describable {
     private Language language;
+    private NodeAsyncExecution defaultNodeAsyncExecution = NodeAsyncExecution.DEFAULT;
     private Dimension dimension;
     private boolean dirty;
     private boolean showActions;
@@ -131,6 +132,16 @@ public class ProcessDefinition extends NamedGraphElement implements Active, Desc
         Duration old = this.defaultTaskTimeoutDelay;
         this.defaultTaskTimeoutDelay = defaultTaskTimeoutDelay;
         firePropertyChange(PROPERTY_TASK_DEADLINE, old, defaultTaskTimeoutDelay);
+    }
+
+    public NodeAsyncExecution getDefaultNodeAsyncExecution() {
+        return defaultNodeAsyncExecution;
+    }
+
+    public void setDefaultNodeAsyncExecution(NodeAsyncExecution defaultNodeAsyncExecution) {
+        NodeAsyncExecution old = this.defaultNodeAsyncExecution;
+        this.defaultNodeAsyncExecution = defaultNodeAsyncExecution;
+        firePropertyChange(PROPERTY_NODE_ASYNC_EXECUTION, old, this.defaultNodeAsyncExecution);
     }
 
     public boolean isShowActions() {
@@ -350,23 +361,32 @@ public class ProcessDefinition extends NamedGraphElement implements Active, Desc
     }
 
     @Override
-    protected List<IPropertyDescriptor> getCustomPropertyDescriptors() {
-        List<IPropertyDescriptor> list = new ArrayList<IPropertyDescriptor>();
-        list.add(new StartImagePropertyDescriptor("startProcessImage", Localization.getString("ProcessDefinition.property.startImage")));
-        list.add(new PropertyDescriptor(PROPERTY_LANGUAGE, Localization.getString("ProcessDefinition.property.language")));
-        list.add(new DurationPropertyDescriptor(PROPERTY_TASK_DEADLINE, this, getDefaultTaskTimeoutDelay(), Localization
-                .getString("default.task.deadline")));
-        String[] array = { Localization.getString("ProcessDefinition.property.accessType.Process"),
-                Localization.getString("ProcessDefinition.property.accessType.OnlySubprocess") };
-        list.add(new ComboBoxPropertyDescriptor(PROPERTY_ACCESS_TYPE, Localization.getString("ProcessDefinition.property.accessType"), array));
-        return list;
+    protected void populateCustomPropertyDescriptors(List<IPropertyDescriptor> descriptors) {
+        super.populateCustomPropertyDescriptors(descriptors);
+        if (this instanceof SubprocessDefinition) {
+            descriptors.add(new PropertyDescriptor(PROPERTY_LANGUAGE, Localization.getString("ProcessDefinition.property.language")));
+            descriptors.add(new PropertyDescriptor(PROPERTY_TASK_DEADLINE, Localization.getString("default.task.deadline")));
+            descriptors.add(new PropertyDescriptor(PROPERTY_ACCESS_TYPE, Localization.getString("ProcessDefinition.property.accessType")));
+        } else {
+            descriptors.add(new StartImagePropertyDescriptor("startProcessImage", Localization.getString("ProcessDefinition.property.startImage")));
+            descriptors.add(new PropertyDescriptor(PROPERTY_LANGUAGE, Localization.getString("ProcessDefinition.property.language")));
+            descriptors.add(new DurationPropertyDescriptor(PROPERTY_TASK_DEADLINE, this, getDefaultTaskTimeoutDelay(), Localization
+                    .getString("default.task.deadline")));
+            String[] array = { Localization.getString("ProcessDefinition.property.accessType.Process"),
+                    Localization.getString("ProcessDefinition.property.accessType.OnlySubprocess") };
+            descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_ACCESS_TYPE, Localization.getString("ProcessDefinition.property.accessType"),
+                    array));
+            descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_NODE_ASYNC_EXECUTION, Localization
+                    .getString("ProcessDefinition.property.nodeAsyncExecution"), NodeAsyncExecution.LABELS));
+        }
     }
 
     @Override
     public Object getPropertyValue(Object id) {
         if (PROPERTY_LANGUAGE.equals(id)) {
             return language;
-        } else if (PROPERTY_TASK_DEADLINE.equals(id)) {
+        }
+        if (PROPERTY_TASK_DEADLINE.equals(id)) {
             if (defaultTaskTimeoutDelay.hasDuration()) {
                 return defaultTaskTimeoutDelay;
             }
@@ -374,6 +394,9 @@ public class ProcessDefinition extends NamedGraphElement implements Active, Desc
         }
         if (PROPERTY_ACCESS_TYPE.equals(id)) {
             return accessType.ordinal();
+        }
+        if (PROPERTY_NODE_ASYNC_EXECUTION.equals(id)) {
+            return defaultNodeAsyncExecution.ordinal();
         }
         return super.getPropertyValue(id);
     }
@@ -385,6 +408,8 @@ public class ProcessDefinition extends NamedGraphElement implements Active, Desc
         } else if (PROPERTY_ACCESS_TYPE.equals(id)) {
             int i = ((Integer) value).intValue();
             setAccessType(ProcessDefinitionAccessType.values()[i]);
+        } else if (PROPERTY_NODE_ASYNC_EXECUTION.equals(id)) {
+            setDefaultNodeAsyncExecution(NodeAsyncExecution.values()[(Integer) value]);
         } else {
             super.setPropertyValue(id, value);
         }

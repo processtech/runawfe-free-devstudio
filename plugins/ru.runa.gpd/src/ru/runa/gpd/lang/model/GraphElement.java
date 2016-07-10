@@ -356,9 +356,7 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
                 descriptors.add(new PropertyDescriptor(PROPERTY_NAME, Localization.getString("property.name")));
             }
         }
-        // if (this instanceof Describable) {
         descriptors.add(new TextPropertyDescriptor(PROPERTY_DESCRIPTION, Localization.getString("property.description")));
-        // }
         if (isDelegable()) {
             Delegable delegable = (Delegable) this;
             descriptors.add(new DelegableClassPropertyDescriptor(PROPERTY_CLASS, Localization.getString("property.delegation.class"), delegable));
@@ -373,12 +371,11 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
                 descriptors.add(new TimerActionPropertyDescriptor(PROPERTY_TIMER_ACTION, Localization.getString("Timer.action"), timer));
             }
         }
-        descriptors.addAll(getCustomPropertyDescriptors());
+        populateCustomPropertyDescriptors(descriptors);
         return descriptors.toArray(new IPropertyDescriptor[descriptors.size()]);
     }
 
-    protected List<IPropertyDescriptor> getCustomPropertyDescriptors() {
-        return new ArrayList<IPropertyDescriptor>();
+    protected void populateCustomPropertyDescriptors(List<IPropertyDescriptor> descriptors) {
     }
 
     protected String safeStringValue(String canBeNull) {

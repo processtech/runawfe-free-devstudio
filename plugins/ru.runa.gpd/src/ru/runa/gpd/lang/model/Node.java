@@ -6,7 +6,10 @@ import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.ui.views.properties.ComboBoxPropertyDescriptor;
+import org.eclipse.ui.views.properties.IPropertyDescriptor;
 
+import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.lang.ValidationError;
@@ -17,6 +20,7 @@ import com.google.common.collect.Sets;
 
 public abstract class Node extends NamedGraphElement implements Describable {
     private boolean minimizedView = false;
+    private NodeAsyncExecution asyncExecution = NodeAsyncExecution.DEFAULT;
 
     public boolean isMinimizedView() {
         return minimizedView;
@@ -25,6 +29,23 @@ public abstract class Node extends NamedGraphElement implements Describable {
     public void setMinimizedView(boolean minimazedView) {
         this.minimizedView = minimazedView;
         firePropertyChange(PROPERTY_MINIMAZED_VIEW, !minimizedView, minimizedView);
+    }
+
+    public NodeAsyncExecution getAsyncExecution() {
+        return asyncExecution;
+    }
+
+    public void setAsyncExecution(NodeAsyncExecution asyncExecution) {
+        NodeAsyncExecution old = this.asyncExecution;
+        this.asyncExecution = asyncExecution;
+        firePropertyChange(PROPERTY_NODE_ASYNC_EXECUTION, old, this.asyncExecution);
+    }
+
+    @Override
+    protected void populateCustomPropertyDescriptors(List<IPropertyDescriptor> descriptors) {
+        super.populateCustomPropertyDescriptors(descriptors);
+        descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_NODE_ASYNC_EXECUTION, Localization.getString("Node.property.asyncExecution"),
+                NodeAsyncExecution.LABELS));
     }
 
     @Override
@@ -43,6 +64,9 @@ public abstract class Node extends NamedGraphElement implements Describable {
         if (PROPERTY_TIMER_ACTION.equals(id)) {
             return ((ITimed) this).getTimer().getAction();
         }
+        if (PROPERTY_NODE_ASYNC_EXECUTION.equals(id)) {
+            return asyncExecution.ordinal();
+        }
         return super.getPropertyValue(id);
     }
 
@@ -56,6 +80,8 @@ public abstract class Node extends NamedGraphElement implements Describable {
             ((ITimed) this).getTimer().setDelay((Duration) value);
         } else if (PROPERTY_TIMER_ACTION.equals(id)) {
             ((ITimed) this).getTimer().setAction((TimerAction) value);
+        } else if (PROPERTY_NODE_ASYNC_EXECUTION.equals(id)) {
+            setAsyncExecution(NodeAsyncExecution.values()[(Integer) value]);
         } else {
             super.setPropertyValue(id, value);
         }
@@ -241,4 +267,5 @@ public abstract class Node extends NamedGraphElement implements Describable {
         }
         return result;
     }
+
 }

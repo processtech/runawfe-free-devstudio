@@ -31,6 +31,7 @@ import ru.runa.gpd.lang.model.MultiSubprocess;
 import ru.runa.gpd.lang.model.MultiTaskState;
 import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.Node;
+import ru.runa.gpd.lang.model.NodeAsyncExecution;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.PropertyNames;
 import ru.runa.gpd.lang.model.ReceiveMessageNode;
@@ -132,6 +133,9 @@ public class JpdlSerializer extends ProcessSerializer {
         }
         if (definition.isInvalid()) {
             root.addAttribute(INVALID, String.valueOf(definition.isInvalid()));
+        }
+        if (definition.getDefaultNodeAsyncExecution() != NodeAsyncExecution.DEFAULT) {
+            root.addAttribute(NODE_ASYNC_EXECUTION, definition.getDefaultNodeAsyncExecution().getValue());
         }
         if (!Strings.isNullOrEmpty(definition.getDescription())) {
             Element desc = root.addElement(DESCRIPTION);
@@ -334,6 +338,12 @@ public class JpdlSerializer extends ProcessSerializer {
         if (element instanceof NamedGraphElement) {
             setAttribute(result, NAME, ((NamedGraphElement) element).getName());
         }
+        if (element instanceof Node) {
+            Node node = (Node) element;
+            if (node.getAsyncExecution() != NodeAsyncExecution.DEFAULT) {
+                setAttribute(result, NODE_ASYNC_EXECUTION, node.getAsyncExecution().getValue());
+            }
+        }
         if (element instanceof Describable) {
             String description = ((Describable) element).getDescription();
             if (description != null && description.length() > 0) {
@@ -414,6 +424,10 @@ public class JpdlSerializer extends ProcessSerializer {
         if (element instanceof NamedGraphElement) {
             ((NamedGraphElement) element).setName(name);
         }
+        String nodeAsyncExecutionValue = node.attributeValue(NODE_ASYNC_EXECUTION);
+        if (element instanceof Node && !Strings.isNullOrEmpty(nodeAsyncExecutionValue)) {
+            ((Node) element).setAsyncExecution(NodeAsyncExecution.getByValueNotNull(nodeAsyncExecutionValue));
+        }
         List<Element> nodeList = node.elements();
         for (Element childNode : nodeList) {
             if (DESCRIPTION.equals(childNode.getName())) {
@@ -472,6 +486,10 @@ public class JpdlSerializer extends ProcessSerializer {
         String accessTypeString = root.attributeValue(ACCESS_TYPE);
         if (!Strings.isNullOrEmpty(accessTypeString)) {
             definition.setAccessType(ProcessDefinitionAccessType.valueOf(accessTypeString));
+        }
+        String nodeAsyncExecutionValue = root.attributeValue(NODE_ASYNC_EXECUTION);
+        if (!Strings.isNullOrEmpty(nodeAsyncExecutionValue)) {
+            definition.setDefaultNodeAsyncExecution(NodeAsyncExecution.getByValueNotNull(nodeAsyncExecutionValue));
         }
         List<Element> swimlanes = root.elements(SWIMLANE);
         for (Element node : swimlanes) {
