@@ -341,10 +341,8 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
     }
 
     private enum RemoveAction {
-        NONE(""),
-        OK("UserDefinedVariableType.deletion.NoUsageFound"),
-        VAR_USAGE("UserDefinedVariableType.deletion.VariablesWillBeRemoved"),
-        TYPE_USAGE("UserDefinedVariableType.deletion.UserTypeIsUsed");
+        NONE(""), OK("UserDefinedVariableType.deletion.NoUsageFound"), VAR_USAGE("UserDefinedVariableType.deletion.VariablesWillBeRemoved"), TYPE_USAGE(
+                "UserDefinedVariableType.deletion.UserTypeIsUsed");
 
         private final String messageKey;
 
@@ -375,7 +373,8 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             }
 
             for (VariableUserType userType : getDefinition().getVariableUserTypes()) {
-                // Данная проверка выполняется снаружи метода, чтобы избежать ситуации сравнения типа с самим собой.
+                // Данная проверка выполняется снаружи метода, чтобы избежать
+                // ситуации сравнения типа с самим собой.
                 if (!type.equals(userType)) {
                     if (isUserTypeUsed(type, userType)) {
                         action = RemoveAction.TYPE_USAGE;
@@ -836,25 +835,15 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
                     }
                 }
             }
-
             return result;
         }
 
-        /**
-         * Странный метод сравнения типов. Метод выделен для реализации сравнения типов, не затрагивая базовые классы. Если писать в них, то можно
-         * уйти в StackOverflowError.
-         * 
-         * @param leftType
-         *            Тип для сравнения слева от знака равенства.
-         * @param rightType
-         *            Тип для сравнения справа от знака равенства.
-         * @return Признак равенства типов.
-         */
         private boolean isEquals(VariableUserType leftType, VariableUserType rightType) {
             boolean result = Objects.equal(leftType.getName(), rightType.getName());
             result = result && (leftType.getAttributes() == null ? rightType.getAttributes() == null : false);
             if (leftType.getAttributes() != null && rightType.getAttributes() != null) {
-                // не должно быть result && поскольку предыдущая проверка установит false _не верно_ при переходе сюда.
+                // не должно быть result && поскольку предыдущая проверка
+                // установит false _не верно_ при переходе сюда.
                 result = leftType.getAttributes().size() == rightType.getAttributes().size();
                 if (result) {
                     for (int i = 0; i < leftType.getAttributes().size(); i++) {

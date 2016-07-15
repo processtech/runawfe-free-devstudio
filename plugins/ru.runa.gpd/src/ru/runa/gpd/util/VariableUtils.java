@@ -201,6 +201,7 @@ public class VariableUtils {
             String syntheticScriptingName = (parent != null ? (parent.getScriptingName() + VariableUserType.DELIM) : "")
                     + variable.getScriptingName();
             if (Objects.equal(variable.getUserType(), searchType)) {
+                // TODO why not variable in constructor last parameter?
                 Variable syntheticVariable = new Variable(syntheticName + VariableUserType.DELIM + searchAttribute.getName(), syntheticScriptingName
                         + VariableUserType.DELIM + searchAttribute.getScriptingName(), searchAttribute);
                 result.add(syntheticVariable);
