@@ -1,6 +1,8 @@
 package ru.runa.gpd.search;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -14,7 +16,7 @@ import org.eclipse.ui.IEditorPart;
 import ru.runa.gpd.SharedImages;
 
 public class SearchResult extends AbstractTextSearchResult implements IEditorMatchAdapter, IFileMatchAdapter {
-    private BaseSearchQuery query;
+    private final BaseSearchQuery query;
 
     public SearchResult(BaseSearchQuery query) {
         this.query = query;
@@ -66,12 +68,13 @@ public class SearchResult extends AbstractTextSearchResult implements IEditorMat
         return new Match[0];
     }
 
-    private ElementMatch getElementMatch(Object element) {
+    private List<ElementMatch> getElementMatch(Object element) {
         Match[] matches = getMatches(element);
-        if (matches.length == 0) {
-            return new ElementMatch();
+        ArrayList<ElementMatch> elementMatches = new ArrayList<ElementMatch>(matches.length);
+        for (Match match : matches) {
+            elementMatches.add((ElementMatch) match.getElement());
         }
-        return (ElementMatch) matches[0].getElement();
+        return elementMatches;
     }
 
     public void merge(SearchResult searchResult) {
@@ -83,16 +86,30 @@ public class SearchResult extends AbstractTextSearchResult implements IEditorMat
 
     @Override
     public int getMatchCount(Object element) {
-        ElementMatch elementMatch = getElementMatch(element);
-        return elementMatch.getMatchesCount() + elementMatch.getPotentialMatchesCount();
+        List<ElementMatch> elementMatchs = getElementMatch(element);
+        int count = 0;
+        for (ElementMatch elementMatch : elementMatchs) {
+            count += elementMatch.getMatchesCount() + elementMatch.getPotentialMatchesCount();
+        }
+        return count;
     }
 
     public int getPotentialMatchCount(Object element) {
-        return getElementMatch(element).getPotentialMatchesCount();
+        List<ElementMatch> elementMatchs = getElementMatch(element);
+        int count = 0;
+        for (ElementMatch elementMatch : elementMatchs) {
+            count += elementMatch.getPotentialMatchesCount();
+        }
+        return count;
     }
 
     public int getStrictMatchCount(Object element) {
-        return getElementMatch(element).getMatchesCount();
+        List<ElementMatch> elementMatchs = getElementMatch(element);
+        int count = 0;
+        for (ElementMatch elementMatch : elementMatchs) {
+            count += elementMatch.getMatchesCount();
+        }
+        return count;
     }
 
     @Override
