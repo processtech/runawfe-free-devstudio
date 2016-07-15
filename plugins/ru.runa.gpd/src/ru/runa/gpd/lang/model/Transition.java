@@ -1,6 +1,5 @@
 package ru.runa.gpd.lang.model;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -143,15 +142,11 @@ public class Transition extends NamedGraphElement implements Active {
         }
     }
 
-    private static final List<IPropertyDescriptor> DESCRIPTORS = new ArrayList<IPropertyDescriptor>();
-    static {
-        DESCRIPTORS.add(new PropertyDescriptor(PROPERTY_SOURCE, Localization.getString("Transition.property.source")));
-        DESCRIPTORS.add(new PropertyDescriptor(PROPERTY_TARGET, Localization.getString("Transition.property.target")));
-    }
-
     @Override
-    public List<IPropertyDescriptor> getCustomPropertyDescriptors() {
-        return DESCRIPTORS;
+    public void populateCustomPropertyDescriptors(List<IPropertyDescriptor> descriptors) {
+        super.populateCustomPropertyDescriptors(descriptors);
+        descriptors.add(new PropertyDescriptor(PROPERTY_SOURCE, Localization.getString("Transition.property.source")));
+        descriptors.add(new PropertyDescriptor(PROPERTY_TARGET, Localization.getString("Transition.property.target")));
     }
 
     @Override

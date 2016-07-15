@@ -17,7 +17,6 @@ import ru.runa.gpd.util.VariableUtils;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 
-@SuppressWarnings("unchecked")
 public class RenameUserTypeAttributeRefactoring extends Refactoring {
     private final IFile definitionFile;
     private final ProcessDefinition processDefinition;

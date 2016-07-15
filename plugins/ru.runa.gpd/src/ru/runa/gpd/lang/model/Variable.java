@@ -1,6 +1,5 @@
 package ru.runa.gpd.lang.model;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.swt.graphics.Image;
@@ -163,13 +162,12 @@ public class Variable extends NamedGraphElement implements Describable {
     }
 
     @Override
-    public List<IPropertyDescriptor> getCustomPropertyDescriptors() {
-        List<IPropertyDescriptor> list = new ArrayList<IPropertyDescriptor>();
-        list.add(new PropertyDescriptor(PROPERTY_SCRIPTING_NAME, Localization.getString("Variable.property.scriptingName")));
-        list.add(new PropertyDescriptor(PROPERTY_FORMAT, Localization.getString("Variable.property.format")));
-        list.add(new PropertyDescriptor(PROPERTY_PUBLIC_VISIBILITY, Localization.getString("Variable.property.publicVisibility")));
-        list.add(new PropertyDescriptor(PROPERTY_DEFAULT_VALUE, Localization.getString("Variable.property.defaultValue")));
-        return list;
+    public void populateCustomPropertyDescriptors(List<IPropertyDescriptor> descriptors) {
+        super.populateCustomPropertyDescriptors(descriptors);
+        descriptors.add(new PropertyDescriptor(PROPERTY_SCRIPTING_NAME, Localization.getString("Variable.property.scriptingName")));
+        descriptors.add(new PropertyDescriptor(PROPERTY_FORMAT, Localization.getString("Variable.property.format")));
+        descriptors.add(new PropertyDescriptor(PROPERTY_PUBLIC_VISIBILITY, Localization.getString("Variable.property.publicVisibility")));
+        descriptors.add(new PropertyDescriptor(PROPERTY_DEFAULT_VALUE, Localization.getString("Variable.property.defaultValue")));
     }
 
     @Override

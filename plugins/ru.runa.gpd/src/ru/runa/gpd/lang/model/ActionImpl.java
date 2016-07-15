@@ -67,16 +67,15 @@ public class ActionImpl extends Action {
     }
 
     @Override
-    public List<IPropertyDescriptor> getCustomPropertyDescriptors() {
+    public void populateCustomPropertyDescriptors(List<IPropertyDescriptor> descriptors) {
+        super.populateCustomPropertyDescriptors(descriptors);
         List<String> allowedEventTypes = getAllowedEventTypes();
         String[] eventTypes = new String[allowedEventTypes.size()];
         int i = 0;
         for (String string : allowedEventTypes) {
             eventTypes[i++] = Localization.getString(string);
         }
-        List<IPropertyDescriptor> list = super.getCustomPropertyDescriptors();
-        list.add(new ComboBoxPropertyDescriptor(PROPERTY_EVENT_TYPE, Localization.getString("Action.property.eventType"), eventTypes));
-        return list;
+        descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_EVENT_TYPE, Localization.getString("Action.property.eventType"), eventTypes));
     }
 
     @Override
