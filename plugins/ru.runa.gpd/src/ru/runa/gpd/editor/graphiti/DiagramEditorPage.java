@@ -257,4 +257,18 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
         GEFActionBarContributor.createCustomGEFActions(getActionRegistry(), editor, getSelectionActions());
     }
 
+    public void applyStyles() {
+		getEditingDomain().getCommandStack().execute(new RecordingCommand(getEditingDomain()) {
+			@Override
+			protected void doExecute() {
+				StyleUtil.resetStyles(getDiagramTypeProvider().getDiagram());
+			}
+
+			@Override
+			public boolean canUndo() {
+				return false;
+			}
+		});
+        refresh();
+    }
 }

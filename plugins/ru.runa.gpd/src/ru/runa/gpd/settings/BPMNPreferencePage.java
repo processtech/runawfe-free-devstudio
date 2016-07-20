@@ -8,11 +8,16 @@ import org.eclipse.jface.preference.FontFieldEditor;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.eclipse.ui.PlatformUI;
 
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
+import ru.runa.gpd.editor.graphiti.GraphitiProcessEditor;
 
 public class BPMNPreferencePage extends FieldEditorPreferencePage implements PrefConstants, IWorkbenchPreferencePage {
 
@@ -47,4 +52,29 @@ public class BPMNPreferencePage extends FieldEditorPreferencePage implements Pre
     protected void contributeButtons(final Composite buttonBar) {
         applyDialogFont(buttonBar);
     }
+
+	@Override
+	public boolean performOk() {
+		boolean performOk = super.performOk();
+		if(performOk){
+			applyStyles();
+		}
+		return performOk;
+	}
+
+	@Override
+	protected void performApply() {
+		super.performApply();
+		applyStyles();
+	}
+
+	private void applyStyles() {
+		IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+		for (IEditorReference ref : page.getEditorReferences()) {
+			IEditorPart editor = ref.getEditor(true);
+			if (editor instanceof GraphitiProcessEditor) {
+				((GraphitiProcessEditor) editor).getDiagramEditorPage().applyStyles();
+			}
+		}
+	}
 }

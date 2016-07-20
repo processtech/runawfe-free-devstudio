@@ -34,30 +34,46 @@ public class StyleUtil {
     public static final IColorConstant BPMN_CLASS_FOREGROUND = new ColorConstant(0, 0, 0);
 
     public static Style getStyleForEvent(Diagram diagram) {
-        final String styleId = "EVENT"; //$NON-NLS-1$
-        Style style = findStyle(diagram, styleId);
-        if (style == null) { // style not found - create new style
-            IGaService gaService = Graphiti.getGaService();
-            style = gaService.createStyle(diagram, styleId);
-            style.setForeground(getColor(PrefConstants.P_BPMN_COLOR_BASE, FOREGROUND, diagram, gaService));
-            Color color = getColor(PrefConstants.P_BPMN_COLOR_BACKGROUND, new ColorConstant("FAFBFC"), diagram, gaService);
-            gaService.setRenderingStyle(style, getDefaultEventColor(diagram, color));
-        }
-        return style;
+        return getStyleForEvent(diagram, false);
     }
 
-    public static Style getStyleForTask(Diagram diagram) {
-        final String styleId = "TASK"; //$NON-NLS-1$
+	private static Style getStyleForEvent(Diagram diagram, boolean init) {
+		final String styleId = "EVENT"; //$NON-NLS-1$
         Style style = findStyle(diagram, styleId);
         if (style == null) { // style not found - create new style
             IGaService gaService = Graphiti.getGaService();
             style = gaService.createStyle(diagram, styleId);
+            init = true;
+		}
+		if (init) {
+            IGaService gaService = Graphiti.getGaService();
+			style.setForeground(getColor(PrefConstants.P_BPMN_COLOR_BASE, FOREGROUND, diagram, gaService));
+			Color color = getColor(PrefConstants.P_BPMN_COLOR_BACKGROUND, new ColorConstant("FAFBFC"), diagram, gaService);
+			gaService.setRenderingStyle(style, getDefaultEventColor(diagram, color));
+        }
+        return style;
+	}
+
+    public static Style getStyleForTask(Diagram diagram) {
+        return getStyleForTask(diagram, false);
+    }
+
+	private static Style getStyleForTask(Diagram diagram, boolean init) {
+		final String styleId = "TASK"; //$NON-NLS-1$
+        Style style = findStyle(diagram, styleId);
+		if (style == null) { // style not found - create new style
+            IGaService gaService = Graphiti.getGaService();
+            style = gaService.createStyle(diagram, styleId);
+            init = true;
+		}
+		if (init) {
+            IGaService gaService = Graphiti.getGaService();
             style.setForeground(gaService.manageColor(diagram, BPMN_CLASS_FOREGROUND));
             gaService.setRenderingStyle(style, getDefaultTaskColor(diagram));
             style.setLineWidth(2);
         }
         return style;
-    }
+	}
 
     private static AdaptedGradientColoredAreas getDefaultTaskColor(final Diagram diagram) {
         final AdaptedGradientColoredAreas agca = StylesFactory.eINSTANCE.createAdaptedGradientColoredAreas();
@@ -106,8 +122,9 @@ public class StyleUtil {
         GradientColoredAreas defaultGradientColoredAreas = StylesFactory.eINSTANCE.createGradientColoredAreas();
         defaultGradientColoredAreas.setStyleAdaption(IPredefinedRenderingStyle.STYLE_ADAPTATION_DEFAULT);
         EList<GradientColoredArea> gcas = defaultGradientColoredAreas.getGradientColor();
-        IGaService gaService = Graphiti.getGaService();
-		Color colorEnd = gaService.manageColor(diagram, new ColorConstant(color.getRed() - 1, color.getGreen() - 1, color.getBlue() - 1));
+		IGaService gaService = Graphiti.getGaService();
+		Color colorEnd = gaService.manageColor(diagram,
+				new ColorConstant(Math.max(0, color.getRed() - 1), Math.max(0, color.getGreen() - 1), Math.max(0, color.getBlue() - 1)));
 		addGradientColoredArea(gcas, color, 0, LocationType.LOCATION_TYPE_ABSOLUTE_START, colorEnd, 0,
 				LocationType.LOCATION_TYPE_ABSOLUTE_END, diagram);
 		agca.getAdaptedGradientColoredAreas().add(IPredefinedRenderingStyle.STYLE_ADAPTATION_DEFAULT, defaultGradientColoredAreas);
@@ -149,45 +166,69 @@ public class StyleUtil {
     }
 
     public static Style getStyleForTransition(Diagram diagram) {
-        final String styleId = "BPMN-TRANSITION"; //$NON-NLS-1$
+        return getStyleForTransition(diagram, false);
+    }
+
+	private static Style getStyleForTransition(Diagram diagram, boolean init) {
+		final String styleId = "BPMN-TRANSITION"; //$NON-NLS-1$
         Style style = findStyle(diagram, styleId);
-        if (style == null) { // style not found - create new style
+		if (style == null) { // style not found - create new style
             IGaService gaService = Graphiti.getGaService();
             style = gaService.createStyle(diagram, styleId);
+			init = true;
+		}
+		if (init) {
+            IGaService gaService = Graphiti.getGaService();
             Color color = getColor(PrefConstants.P_BPMN_COLOR_TRANSITION, FOREGROUND, diagram, gaService);
             style.setForeground(color);
             style.setBackground(color);
             style.setLineWidth(1);
         }
         return style;
-    }
+	}
 
     public static Style getStyleForPolygonArrow(Diagram diagram) {
-        final String styleId = "BPMN-POLYGON-ARROW"; //$NON-NLS-1$
+        return getStyleForPolygonArrow(diagram, false);
+    }
+
+	private static Style getStyleForPolygonArrow(Diagram diagram, boolean init) {
+		final String styleId = "BPMN-POLYGON-ARROW"; //$NON-NLS-1$
         Style style = findStyle(diagram, styleId);
         if (style == null) { // style not found - create new style
             IGaService gaService = Graphiti.getGaService();
             style = gaService.createStyle(diagram, styleId);
+			init = true;
+		}
+		if (init) {
+            IGaService gaService = Graphiti.getGaService();
             Color color = getColor(PrefConstants.P_BPMN_COLOR_TRANSITION, FOREGROUND, diagram, gaService);
             style.setForeground(color);
             style.setBackground(color);
             style.setLineWidth(1);
         }
         return style;
-    }
+	}
 
     public static Style getStyleForPolygonDiamond(Diagram diagram) {
-        final String styleId = "BPMN-POLYGON-DIAMOND";
+        return getStyleForPolygonDiamond(diagram, false);
+    }
+
+	private static Style getStyleForPolygonDiamond(Diagram diagram, boolean init) {
+		final String styleId = "BPMN-POLYGON-DIAMOND";
         Style style = findStyle(diagram, styleId);
         if (style == null) { // style not found - create new style
             IGaService gaService = Graphiti.getGaService();
             style = gaService.createStyle(diagram, styleId);
+			init = true;
+		}
+		if (init) {
+            IGaService gaService = Graphiti.getGaService();
             style.setForeground(getColor(PrefConstants.P_BPMN_COLOR_TRANSITION, FOREGROUND, diagram, gaService));
             style.setBackground(getColor(PrefConstants.P_BPMN_COLOR_BACKGROUND, BACKGROUND, diagram, gaService));
             style.setLineWidth(1);
         }
         return style;
-    }
+	}
 
     private static Color getColor(String property, IColorConstant color, Diagram diagram, IGaService gaService) {
         if (Activator.getDefault().getPreferenceStore().contains(property)) {
@@ -198,17 +239,24 @@ public class StyleUtil {
     }
 
     public static Style getStyleForText(Diagram diagram) {
-        final String styleId = "BPMN-TEXT";
-        Style style = findStyle(diagram, styleId);
-        if (style == null) { // style not found - create new style
-            IGaService gaService = Graphiti.getGaService();
-            style = gaService.createStyle(diagram, styleId);
-            updateStyleForText(diagram, style);
-        }
-        return style;
+        return getStyleForText(diagram, false);
     }
 
-    public static void updateStyleForText(Diagram diagram, Style style) {
+	private static Style getStyleForText(Diagram diagram, boolean init) {
+		final String styleId = "BPMN-TEXT";
+		Style style = findStyle(diagram, styleId);
+		if (style == null) { // style not found - create new style
+			IGaService gaService = Graphiti.getGaService();
+			style = gaService.createStyle(diagram, styleId);
+			init = true;
+		}
+		if (init) {
+			updateStyleForText(diagram, style);
+		}
+		return style;
+	}
+
+    private static void updateStyleForText(Diagram diagram, Style style) {
         if (Activator.getDefault().getPreferenceStore().contains(PrefConstants.P_BPMN_FONT)) {
             FontData fontData = PreferenceConverter.getFontData(Activator.getDefault().getPreferenceStore(), PrefConstants.P_BPMN_FONT);
             IGaService gaService = Graphiti.getGaService();
@@ -220,5 +268,14 @@ public class StyleUtil {
             style.setForeground(color);
             style.setBackground(color);
         }
-    }
+	}
+
+	public static void resetStyles(Diagram diagram) {
+		getStyleForEvent(diagram, true);
+        getStyleForTask(diagram, true);
+        getStyleForTransition(diagram, true);
+        getStyleForPolygonArrow(diagram, true);
+        getStyleForPolygonDiamond(diagram, true);
+		getStyleForText(diagram, true);
+	}
 }
