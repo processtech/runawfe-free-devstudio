@@ -8,7 +8,14 @@ import org.eclipse.draw2d.geometry.Rectangle;
 import ru.runa.gpd.editor.gef.figure.uml.ForkJoinConnectionAnchor;
 
 public class ForkJoinFigure extends NodeFigure {
-    private static final int HEIGHT = 5;
+    private static final int MIN_SIZE = 5;
+
+    private static enum EDirection {
+        HORIZONTAL,
+        VERTICAL;
+    }
+
+    private EDirection direction = EDirection.HORIZONTAL;
 
     @Override
     public void init() {
@@ -18,12 +25,22 @@ public class ForkJoinFigure extends NodeFigure {
 
     @Override
     public Dimension getDefaultSize() {
-        return new Dimension(GRID_SIZE * 16, 5);
+        if (direction == EDirection.HORIZONTAL) {
+            return new Dimension(GRID_SIZE * 16, MIN_SIZE);
+        } else {
+            return new Dimension(MIN_SIZE, GRID_SIZE * 16);
+        }
     }
 
     @Override
     public void setBounds(Rectangle rect) {
-        rect.height = HEIGHT;
+        if (rect.width < rect.height) {
+            rect.width = MIN_SIZE;
+            direction = EDirection.VERTICAL;
+        } else {
+            rect.height = MIN_SIZE;
+            direction = EDirection.HORIZONTAL;
+        }
         super.setBounds(rect);
     }
 
