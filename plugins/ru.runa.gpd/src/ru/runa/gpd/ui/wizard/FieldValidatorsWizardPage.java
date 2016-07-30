@@ -215,7 +215,7 @@ public class FieldValidatorsWizardPage extends WizardPage {
     }
 
     private void updateVariableSelection() {
-        Map<String, ValidatorConfig> validators = fieldConfigs.get(getCurrentVariableName());
+        Map<String, ValidatorConfig> validators = getCurrentVariableName() != null ? fieldConfigs.get(getCurrentVariableName()) : null;
         validatorsTableViewer.getTable().setEnabled(validators != null);
         infoGroup.setVisible(false);
         updateValidatorsInput(getCurrentSelection());

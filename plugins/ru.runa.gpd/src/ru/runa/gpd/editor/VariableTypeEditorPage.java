@@ -62,13 +62,13 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
-    
+
     private TableViewer typeTableViewer;
     private Button renameTypeButton;
     private Button moveUpTypeButton;
     private Button moveDownTypeButton;
     private Button deleteTypeButton;
-    
+
     private TableViewer attributeTableViewer;
     private Button createAttributeButton;
     private Button changeAttributeButton;
@@ -89,7 +89,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
         SashForm sashForm = createSashForm(parent, SWT.HORIZONTAL, "VariableUserType.collection.desc");
 
         Composite leftComposite = createSection(sashForm, "VariableUserType.collection");
-        
+
         typeTableViewer = createMainViewer(leftComposite, SWT.BORDER | SWT.V_SCROLL | SWT.FULL_SELECTION);
         typeTableViewer.setLabelProvider(new TypeLabelProvider());
         TableViewerLocalDragAndDropSupport.enable(typeTableViewer, new DragAndDropAdapter<VariableUserType>() {
@@ -101,19 +101,16 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             }
         });
 
-        createTable(typeTableViewer, 
-                new DataViewerComparator<>(new ValueComparator<VariableUserType>() {
-                    @Override
-                    public int compare(VariableUserType o1, VariableUserType o2) {
-                        int result = 0;
-                        if (getColumn() == 0) {
-                            result = o1.getName().compareTo(o2.getName());
-                        }
-                        return result;
-                    }
-                }),
-                new TableColumnDescription("property.name", 200, SWT.LEFT)
-        );
+        createTable(typeTableViewer, new DataViewerComparator<>(new ValueComparator<VariableUserType>() {
+            @Override
+            public int compare(VariableUserType o1, VariableUserType o2) {
+                int result = 0;
+                if (getColumn() == 0) {
+                    result = o1.getName().compareTo(o2.getName());
+                }
+                return result;
+            }
+        }), new TableColumnDescription("property.name", 200, SWT.LEFT));
 
         Composite typeButtonsBar = createActionBar(leftComposite);
         addButton(typeButtonsBar, "button.create", new CreateTypeSelectionListener(), false);
@@ -124,9 +121,9 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
         addButton(typeButtonsBar, "button.copy", new CopyTypeSelectionListener(), true);
         addButton(typeButtonsBar, "button.paste", new PasteTypeSelectionListener(), true);
 
-        Composite rightComposite = createSection(sashForm, "VariableUserType.attributes");        
+        Composite rightComposite = createSection(sashForm, "VariableUserType.attributes");
         rightComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
-        
+
         attributeTableViewer = createTableViewer(rightComposite, SWT.BORDER | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.MULTI);
         attributeTableViewer.setLabelProvider(new AttributeLabelProvider());
         TableViewerLocalDragAndDropSupport.enable(attributeTableViewer, new DragAndDropAdapter<Variable>() {
@@ -138,30 +135,26 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             }
         });
 
-        createTable(attributeTableViewer, 
-                new DataViewerComparator<>(new ValueComparator<Variable>() {
-                    @Override
-                    public int compare(Variable o1, Variable o2) {
-                        int result = 0;
-                        switch (getColumn()) {
-                        case 0:
-                            result = o1.getName().compareTo(o2.getName());
-                            break;
-                        case 1:
-                            result = o1.getFormatLabel().compareTo(o2.getFormatLabel());
-                            break;
-                        case 3:
-                            result = Strings.nullToEmpty(o1.getDescription()).compareTo(Strings.nullToEmpty(o2.getDescription()));
-                            break;
-                        }
-                        return result;
-                    }
-                }), 
-                new TableColumnDescription("property.name", 200, SWT.LEFT),
-                new TableColumnDescription("Variable.property.format", 200, SWT.LEFT),
-                new TableColumnDescription("Variable.property.defaultValue", 200, SWT.LEFT, false),
-                new TableColumnDescription("property.description", 200, SWT.LEFT)
-        );
+        createTable(attributeTableViewer, new DataViewerComparator<>(new ValueComparator<Variable>() {
+            @Override
+            public int compare(Variable o1, Variable o2) {
+                int result = 0;
+                switch (getColumn()) {
+                case 0:
+                    result = o1.getName().compareTo(o2.getName());
+                    break;
+                case 1:
+                    result = o1.getFormatLabel().compareTo(o2.getFormatLabel());
+                    break;
+                case 3:
+                    result = Strings.nullToEmpty(o1.getDescription()).compareTo(Strings.nullToEmpty(o2.getDescription()));
+                    break;
+                }
+                return result;
+            }
+        }), new TableColumnDescription("property.name", 200, SWT.LEFT), new TableColumnDescription("Variable.property.format", 200, SWT.LEFT),
+                new TableColumnDescription("Variable.property.defaultValue", 200, SWT.LEFT, false), new TableColumnDescription(
+                        "property.description", 200, SWT.LEFT));
 
         Composite attributeButtonsBar = createActionBar(rightComposite);
         createAttributeButton = addButton(attributeButtonsBar, "button.create", new CreateAttributeSelectionListener(), false);
@@ -210,7 +203,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
         enableAction(moveUpTypeButton, selectedType != null && getDefinition().getVariableUserTypes().indexOf(selectedType) > 0);
         enableAction(moveDownTypeButton, selectedType != null
                 && getDefinition().getVariableUserTypes().indexOf(selectedType) < getDefinition().getVariableUserTypes().size() - 1);
-       
+
         enableAction(createAttributeButton, selectedType != null);
         @SuppressWarnings("unchecked")
         List<Variable> attributes = ((IStructuredSelection) attributeTableViewer.getSelection()).toList();
@@ -225,7 +218,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
                         && selectedType.getAttributes().indexOf(attributes.get(0)) < selectedType.getAttributes().size() - 1);
         enableAction(deleteAttributeButton, attributes.size() > 0);
         enableAction(moveToTypeAttributeButton, attributes.size() == 1);
-        
+
         updateAttributeViewer();
     }
 
@@ -298,7 +291,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
         protected void onSelection(SelectionEvent e) throws Exception {
             Clipboard clipboard = new Clipboard(getDisplay());
             @SuppressWarnings("unchecked")
-            List<VariableUserType> data = (List<VariableUserType>) clipboard.getContents(VariableUserTypeTransfer.getInstance(getDefinition())); 
+            List<VariableUserType> data = (List<VariableUserType>) clipboard.getContents(VariableUserTypeTransfer.getInstance(getDefinition()));
             if (data != null) {
                 for (VariableUserType type : data) {
                     boolean nameAllowed = true;
@@ -348,23 +341,20 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
     }
 
     private enum RemoveAction {
-        NONE(""),
-        OK("UserDefinedVariableType.deletion.NoUsageFound"),
-        VAR_USAGE("UserDefinedVariableType.deletion.VariablesWillBeRemoved"),
-        TYPE_USAGE("UserDefinedVariableType.deletion.UserTypeIsUsed"),
-        ;
-        
+        NONE(""), OK("UserDefinedVariableType.deletion.NoUsageFound"), VAR_USAGE("UserDefinedVariableType.deletion.VariablesWillBeRemoved"), TYPE_USAGE(
+                "UserDefinedVariableType.deletion.UserTypeIsUsed");
+
         private final String messageKey;
-        
+
         RemoveAction(String messageKey) {
             this.messageKey = messageKey;
         }
-        
+
         public String getMessage() {
             return Localization.getString(messageKey);
         }
     }
-    
+
     private class RemoveTypeSelectionListener extends LoggingSelectionAdapter {
         @Override
         protected void onSelection(SelectionEvent e) throws Exception {
@@ -373,7 +363,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
 
             RemoveAction action = RemoveAction.OK;
             String newLine = System.getProperty("line.separator");
-            
+
             List<Variable> variables = getDefinition().getVariables(false, false, type.getName());
             if (variables.size() > 0) {
                 for (Variable variable : variables) {
@@ -381,9 +371,10 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
                 }
                 action = RemoveAction.VAR_USAGE;
             }
-            
+
             for (VariableUserType userType : getDefinition().getVariableUserTypes()) {
-                // Данная проверка выполняется снаружи метода, чтобы избежать ситуации сравнения типа с самим собой.
+                // Данная проверка выполняется снаружи метода, чтобы избежать
+                // ситуации сравнения типа с самим собой.
                 if (!type.equals(userType)) {
                     if (isUserTypeUsed(type, userType)) {
                         action = RemoveAction.TYPE_USAGE;
@@ -391,10 +382,10 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
                     }
                 }
             }
-            
+
             info.insert(0, newLine);
             info.insert(0, action.getMessage());
-            
+
             if (!MessageDialog.openConfirm(Display.getCurrent().getActiveShell(), Localization.getString("confirm.delete"), info.toString())) {
                 action = RemoveAction.NONE;
             }
@@ -504,25 +495,28 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             MultiVariableSearchQuery query = new MultiVariableSearchQuery(searchText, editor.getDefinitionFile(), getDefinition(), result);
             NewSearchUI.runQueryInBackground(query);
         }
+    }
 
-        private void searchInVariables(List<Variable> result, VariableUserType searchType, Variable searchAttribute, Variable parent,
-                List<Variable> children) {
-            for (Variable variable : children) {
-                if (variable.getUserType() == null) {
-                    continue;
+    // same as VariableUtils.searchInVariables, but with expandComplexVariable
+    private void searchInVariables(List<Variable> result, VariableUserType searchType, Variable searchAttribute, Variable parent,
+            List<Variable> children) {
+        for (Variable variable : children) {
+            if (variable.getUserType() == null) {
+                continue;
+            }
+            String syntheticName = (parent != null ? (parent.getName() + VariableUserType.DELIM) : "") + variable.getName();
+            String syntheticScriptingName = (parent != null ? (parent.getScriptingName() + VariableUserType.DELIM) : "")
+                    + variable.getScriptingName();
+            if (Objects.equal(variable.getUserType(), searchType)) {
+                Variable syntheticVariable = new Variable(syntheticName + VariableUserType.DELIM + searchAttribute.getName(), syntheticScriptingName
+                        + VariableUserType.DELIM + searchAttribute.getScriptingName(), searchAttribute);
+                result.add(syntheticVariable);
+                if (searchAttribute.isComplex()) {
+                    result.addAll(VariableUtils.expandComplexVariable(syntheticVariable, searchAttribute));
                 }
-                
-                String syntheticName = (parent != null ? (parent.getName() + VariableUserType.DELIM) : "") + variable.getName();
-                String syntheticScriptingName = (parent != null ? (parent.getScriptingName() + VariableUserType.DELIM) : "")
-                        + variable.getScriptingName();
-                if (Objects.equal(variable.getUserType(), searchType)) {
-                    Variable syntheticVariable = new Variable(syntheticName + VariableUserType.DELIM + searchAttribute.getName(),
-                            syntheticScriptingName + VariableUserType.DELIM + searchAttribute.getScriptingName(), variable);
-                    result.add(syntheticVariable);
-                } else {
-                    Variable syntheticVariable = new Variable(syntheticName, syntheticScriptingName, variable);
-                    searchInVariables(result, searchType, searchAttribute, syntheticVariable, variable.getUserType().getAttributes());
-                }
+            } else {
+                Variable syntheticVariable = new Variable(syntheticName, syntheticScriptingName, variable);
+                searchInVariables(result, searchType, searchAttribute, syntheticVariable, variable.getUserType().getAttributes());
             }
         }
     }
@@ -537,10 +531,10 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             if (result != IDialogConstants.OK_ID) {
                 return;
             }
-            
+
             IResource projectRoot = editor.getDefinitionFile().getParent();
             IDE.saveAllEditors(new IResource[] { projectRoot }, false);
-            
+
             String newAttributeName = dialog.getName();
             String newAttributeScriptingName = dialog.getScriptingName();
             RenameUserTypeAttributeRefactoring refactoring = new RenameUserTypeAttributeRefactoring(editor.getDefinitionFile(),
@@ -558,10 +552,10 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             // update attribute
             attribute.setName(newAttributeName);
             attribute.setScriptingName(newAttributeScriptingName);
-            
+
             getDefinition().setDirty();
             updateAttributeViewer(attribute);
-            
+
             if (useLtk && editor.getDefinition().getEmbeddedSubprocesses().size() > 0) {
                 IDE.saveAllEditors(new IResource[] { projectRoot }, false);
                 for (SubprocessDefinition subprocessDefinition : editor.getDefinition().getEmbeddedSubprocesses().values()) {
@@ -594,9 +588,9 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             }
             // delete attribute
             type.removeAttribute(attributes.get(1));
-            
+
             updateAttributeViewer(attributes.get(0));
-            
+
             if (useLtk && editor.getDefinition().getEmbeddedSubprocesses().size() > 0) {
                 IDE.saveAllEditors(new IResource[] { projectRoot }, false);
                 for (SubprocessDefinition subprocessDefinition : editor.getDefinition().getEmbeddedSubprocesses().values()) {
@@ -693,7 +687,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
 
             IResource projectRoot = editor.getDefinitionFile().getParent();
             IDE.saveAllEditors(new IResource[] { projectRoot }, false);
-            
+
             MoveUserTypeAttributeRefactoring refactoring = new MoveUserTypeAttributeRefactoring(editor.getDefinitionFile(), editor.getDefinition(),
                     oldType, attribute);
             boolean useLtk = refactoring.isUserInteractionNeeded();
@@ -708,7 +702,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             }
             getDefinition().addChild(attribute);
             getSelection().removeAttribute(attribute);
-            
+
             if (useLtk && editor.getDefinition().getEmbeddedSubprocesses().size() > 0) {
                 IDE.saveAllEditors(new IResource[] { projectRoot }, false);
                 for (SubprocessDefinition subprocessDefinition : editor.getDefinition().getEmbeddedSubprocesses().values()) {
@@ -722,9 +716,9 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
                 ErrorDialog.open(Localization.getString("VariableTypeEditorPage.error.attribute.move.loop"));
                 return;
             }
-            
+
             IResource projectRoot = editor.getDefinitionFile().getParent();
-            
+
             List<Variable> variables = editor.getDefinition().getVariables(false, false, newType.getName());
             if (variables.size() == 0) {
                 List<Variable> result = VariableUtils.findVariablesOfTypeWithAttributeExpanded(getDefinition(), oldType, attribute);
@@ -746,9 +740,9 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
                 if (substitutionVariable == null) {
                     return;
                 }
-                
+
                 IDE.saveAllEditors(new IResource[] { projectRoot }, false);
-                
+
                 MoveUserTypeAttributeRefactoring refactoring = new MoveUserTypeAttributeRefactoring(editor.getDefinitionFile(),
                         editor.getDefinition(), oldType, attribute, substitutionVariable);
                 useLtk = refactoring.isUserInteractionNeeded();
@@ -763,9 +757,9 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
                 }
             }
             newType.addAttribute(attribute);
-            
+
             getSelection().removeAttribute(attribute);
-            
+
             if (useLtk && editor.getDefinition().getEmbeddedSubprocesses().size() > 0) {
                 IDE.saveAllEditors(new IResource[] { projectRoot }, false);
                 for (SubprocessDefinition subprocessDefinition : editor.getDefinition().getEmbeddedSubprocesses().values()) {
@@ -808,9 +802,9 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
                                 newVariable.setScriptingName(dialog.getScriptingName());
                             }
                         }
-                        
+
                         boolean typeAllowed = isCurrentTypeAllowedForInsert(type, variable.getUserType());
-                        
+
                         if (nameAllowed && typeAllowed) {
                             type.addAttribute(newVariable);
                             if (newVariable.isComplex()) {
@@ -818,14 +812,13 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
                                 newVariable.setUserType(getDefinition().getVariableUserTypeNotNull(newVariable.getUserType().getName()));
                             }
                         }
-                        
+
                         attributeTableViewer.setSelection(new StructuredSelection(variable));
                     }
                 }
                 clipboard.dispose();
             }
         }
-
 
         private boolean isCurrentTypeAllowedForInsert(VariableUserType selectedType, VariableUserType variableType) {
             boolean result = true;
@@ -842,22 +835,15 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
                     }
                 }
             }
-            
             return result;
         }
 
-        /**
-         * Странный метод сравнения типов.
-         * Метод выделен для реализации сравнения типов, не затрагивая базовые классы. Если писать в них, то можно уйти в StackOverflowError.
-         * @param leftType Тип для сравнения слева от знака равенства.
-         * @param rightType Тип для сравнения справа от знака равенства.
-         * @return Признак равенства типов.
-         */
         private boolean isEquals(VariableUserType leftType, VariableUserType rightType) {
             boolean result = Objects.equal(leftType.getName(), rightType.getName());
             result = result && (leftType.getAttributes() == null ? rightType.getAttributes() == null : false);
             if (leftType.getAttributes() != null && rightType.getAttributes() != null) {
-                // не должно быть result && поскольку предыдущая проверка установит false _не верно_ при переходе сюда.
+                // не должно быть result && поскольку предыдущая проверка
+                // установит false _не верно_ при переходе сюда.
                 result = leftType.getAttributes().size() == rightType.getAttributes().size();
                 if (result) {
                     for (int i = 0; i < leftType.getAttributes().size(); i++) {

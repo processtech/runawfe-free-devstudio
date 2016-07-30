@@ -125,10 +125,9 @@ public abstract class FormNode extends SwimlanedNode {
     }
 
     @Override
-    protected List<IPropertyDescriptor> getCustomPropertyDescriptors() {
-        List<IPropertyDescriptor> list = super.getCustomPropertyDescriptors();
-        list.add(new FormFilesPropertyDescriptor("formFiles", Localization.getString("FormNode.property.formFiles"), this));
-        return list;
+    protected void populateCustomPropertyDescriptors(List<IPropertyDescriptor> descriptors) {
+        super.populateCustomPropertyDescriptors(descriptors);
+        descriptors.add(new FormFilesPropertyDescriptor("formFiles", Localization.getString("FormNode.property.formFiles"), this));
     }
 
     @Override

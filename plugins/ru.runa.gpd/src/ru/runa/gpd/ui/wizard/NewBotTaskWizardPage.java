@@ -1,6 +1,9 @@
 package ru.runa.gpd.ui.wizard;
 
+import java.util.Set;
+
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdaptable;
@@ -24,6 +27,7 @@ import ru.runa.gpd.Localization;
 import ru.runa.gpd.util.IOUtils;
 
 public class NewBotTaskWizardPage extends WizardPage {
+    private Combo botStationCombo;
     private Combo botCombo;
     private Text nameText;
     private String startName;
@@ -53,6 +57,7 @@ public class NewBotTaskWizardPage extends WizardPage {
         layout.marginHeight = 0;
         layout.numColumns = 2;
         composite.setLayout(layout);
+        createBotStationField(composite);
         createBotField(composite);
         createNameField(composite);
         setControl(composite);
@@ -61,13 +66,46 @@ public class NewBotTaskWizardPage extends WizardPage {
         nameText.setFocus();
     }
 
+    private void createBotStationField(Composite parent) {
+        Label label = new Label(parent, SWT.NONE);
+        label.setText(Localization.getString("NewBotTaskWizardPage.botstation.name"));
+        botStationCombo = new Combo(parent, SWT.SINGLE | SWT.READ_ONLY | SWT.BORDER);
+        for (String botName : BotCache.getAllBotStationNames()) {
+            botStationCombo.add(botName);
+        }
+        botStationCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        final IProject botStationProject = getInitialBotStationElement(selection);
+        if (botStationProject != null) {
+            botStationCombo.setText(botStationProject.getName());
+        }
+        botStationCombo.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                NewBotTaskWizardPage.this.fillBotCombo();
+                verifyContentsValid();
+            }
+        });
+    }
+
+    private IProject getInitialBotStationElement(IStructuredSelection selection) {
+        if (selection != null && !selection.isEmpty()) {
+            Object selectedElement = selection.getFirstElement();
+            if (selectedElement instanceof IAdaptable) {
+                IAdaptable adaptable = (IAdaptable) selectedElement;
+                IFolder botFolder = (IFolder) adaptable.getAdapter(IFolder.class);
+                if (botFolder != null) {
+                    return IOUtils.getBotStationProjectForBotFolder(botFolder);
+                }
+            }
+        }
+        return null;
+    }
+
     private void createBotField(Composite parent) {
         Label label = new Label(parent, SWT.NONE);
         label.setText(Localization.getString("NewBotTaskWizardPage.bot.name"));
         botCombo = new Combo(parent, SWT.SINGLE | SWT.READ_ONLY | SWT.BORDER);
-        for (String botName : BotCache.getAllBotNames()) {
-            botCombo.add(botName);
-        }
+        fillBotCombo();
         botCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         IFolder resource = getInitialBotElement(selection);
         if (resource != null) {
@@ -91,6 +129,16 @@ public class NewBotTaskWizardPage extends WizardPage {
             }
         }
         return null;
+    }
+
+    private void fillBotCombo() {
+        botCombo.removeAll();
+        Set<String> botNames = BotCache.getBotNames(botStationCombo.getText());
+        if (botNames != null) {
+            for (String botName : botNames) {
+                botCombo.add(botName);
+            }
+        }
     }
 
     private void createNameField(Composite parent) {
@@ -135,12 +183,12 @@ public class NewBotTaskWizardPage extends WizardPage {
     }
 
     public IFolder getBotFolder() {
-        for (IFolder folder : IOUtils.getAllBotFolders()) {
-            if (botCombo.getText().equals(folder.getName())) {
-                return folder;
-            }
+        IProject botStationProject = IOUtils.getBotStationProject(botStationCombo.getText());
+        if (botStationProject == null) {
+            return null;
         }
-        return null;
+
+        return IOUtils.getBotFolder(botStationProject, botCombo.getText());
     }
 
     private boolean isBotFolderContainsBotTask() {

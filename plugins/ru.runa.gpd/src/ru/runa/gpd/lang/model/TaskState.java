@@ -1,6 +1,5 @@
 package ru.runa.gpd.lang.model;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -208,21 +207,20 @@ public class TaskState extends FormNode implements Active, ITimed, Synchronizabl
     }
 
     @Override
-    public List<IPropertyDescriptor> getCustomPropertyDescriptors() {
-        List<IPropertyDescriptor> list = super.getCustomPropertyDescriptors();
-        list.add(new PropertyDescriptor(PROPERTY_IGNORE_SUBSTITUTION_RULES, Localization.getString("property.ignoreSubstitution")));
-        list.add(new DurationPropertyDescriptor(PROPERTY_TASK_DEADLINE, getProcessDefinition(), getTimeOutDelay(), Localization
+    public void populateCustomPropertyDescriptors(List<IPropertyDescriptor> descriptors) {
+        super.populateCustomPropertyDescriptors(descriptors);
+        descriptors.add(new PropertyDescriptor(PROPERTY_IGNORE_SUBSTITUTION_RULES, Localization.getString("property.ignoreSubstitution")));
+        descriptors.add(new DurationPropertyDescriptor(PROPERTY_TASK_DEADLINE, getProcessDefinition(), getTimeOutDelay(), Localization
                 .getString("property.deadline")));
         if (useEscalation) {
-            list.add(new EscalationActionPropertyDescriptor(PROPERTY_ESCALATION_ACTION, Localization.getString("escalation.action"), this));
-            list.add(new DurationPropertyDescriptor(PROPERTY_ESCALATION_DURATION, getProcessDefinition(), getEscalationDelay(), Localization
+            descriptors.add(new EscalationActionPropertyDescriptor(PROPERTY_ESCALATION_ACTION, Localization.getString("escalation.action"), this));
+            descriptors.add(new DurationPropertyDescriptor(PROPERTY_ESCALATION_DURATION, getProcessDefinition(), getEscalationDelay(), Localization
                     .getString("escalation.duration")));
         }
         if (botTaskLink != null) {
-            list.add(new PropertyDescriptor(PROPERTY_BOT_TASK_NAME, Localization.getString("property.botTaskName")));
+            descriptors.add(new PropertyDescriptor(PROPERTY_BOT_TASK_NAME, Localization.getString("property.botTaskName")));
         }
-        list.add(new PropertyDescriptor(PROPERTY_ASYNC, Localization.getString("property.execution.async")));
-        return list;
+        descriptors.add(new PropertyDescriptor(PROPERTY_ASYNC, Localization.getString("property.execution.async")));
     }
 
     @Override
@@ -392,7 +390,7 @@ public class TaskState extends FormNode implements Active, ITimed, Synchronizabl
                 }
             } catch (Exception e) {
                 PluginLogger.logError(e);
-            }            
+            }
         }
     }
 }
