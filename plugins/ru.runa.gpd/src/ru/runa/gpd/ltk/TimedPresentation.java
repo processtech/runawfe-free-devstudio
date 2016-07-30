@@ -3,8 +3,6 @@ package ru.runa.gpd.ltk;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.ltk.core.refactoring.Change;
-
 import ru.runa.gpd.lang.model.ITimed;
 import ru.runa.gpd.lang.model.Timer;
 import ru.runa.gpd.lang.model.Variable;
@@ -12,19 +10,21 @@ import ru.runa.gpd.util.Duration;
 
 import com.google.common.base.Objects;
 
-public class TimedPresentation extends VariableRenameProvider<ITimed> {
+public class TimedPresentation extends SimpleVariableRenameProvider<ITimed> {
+    private final Timer timer;
+
     public TimedPresentation(ITimed timed) {
         setElement(timed);
+        timer = element.getTimer();
     }
 
     @Override
-    public List<Change> getChanges(Variable oldVariable, Variable newVariable) throws Exception {
-        List<Change> changes = new ArrayList<Change>();
-        Timer timer = element.getTimer();
+    protected List<TextCompareChange> getChangesForVariable(Variable oldVariable, Variable newVariable) throws Exception {
+        List<TextCompareChange> changeList = new ArrayList<TextCompareChange>();
         if (timer != null && Objects.equal(oldVariable.getName(), timer.getDelay().getVariableName())) {
-            changes.add(new TimedChange(element, oldVariable, newVariable));
+            changeList.add(new TimedChange(element, oldVariable, newVariable));
         }
-        return changes;
+        return changeList;
     }
 
     private class TimedChange extends TextCompareChange {

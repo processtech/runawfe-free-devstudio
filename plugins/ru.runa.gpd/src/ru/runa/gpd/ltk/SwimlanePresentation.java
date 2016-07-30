@@ -5,27 +5,27 @@ import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.ltk.core.refactoring.Change;
 
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.swimlane.SwimlaneInitializer;
 import ru.runa.gpd.swimlane.SwimlaneInitializerParser;
 
-public class SwimlanePresentation extends VariableRenameProvider<Swimlane> {
+public class SwimlanePresentation extends SimpleVariableRenameProvider<Swimlane> {
+    private final SwimlaneInitializer swimlaneInitializer;
+
     public SwimlanePresentation(Swimlane swimlane) {
         setElement(swimlane);
+        swimlaneInitializer = SwimlaneInitializerParser.parse(element.getDelegationConfiguration());
     }
 
     @Override
-    public List<Change> getChanges(Variable oldVariable, Variable newVariable) throws Exception {
-        List<Change> changes = new ArrayList<Change>();
-        String config = element.getDelegationConfiguration();
-        SwimlaneInitializer swimlaneInitializer = SwimlaneInitializerParser.parse(config);
+    protected List<TextCompareChange> getChangesForVariable(Variable oldVariable, Variable newVariable) throws Exception {
+        List<TextCompareChange> changeList = new ArrayList<TextCompareChange>();
         if (swimlaneInitializer.hasReference(oldVariable)) {
-            changes.add(new SwimlaneInitializerChange(element, oldVariable, newVariable));
+            changeList.add(new SwimlaneInitializerChange(element, oldVariable, newVariable));
         }
-        return changes;
+        return changeList;
     }
 
     private class SwimlaneInitializerChange extends TextCompareChange {

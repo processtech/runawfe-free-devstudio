@@ -1,7 +1,10 @@
 package ru.runa.gpd.ltk;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -31,20 +34,34 @@ import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Timer;
 import ru.runa.gpd.lang.model.Variable;
+import ru.runa.gpd.util.VariableUtils;
 
 @SuppressWarnings("unchecked")
 public class RenameVariableRefactoring extends Refactoring {
     private final List<VariableRenameProvider<?>> cache = new ArrayList<VariableRenameProvider<?>>();
     private final IFolder definitionFolder;
     private final ProcessDefinition mainProcessDefinition;
-    private final Variable oldVariable;
-    private final Variable newVariable;
+    private final SortedMap<Variable, Variable> variablesMap; // variable map sorted by name
 
     public RenameVariableRefactoring(IFile definitionFile, ProcessDefinition definition, Variable oldVariable, String newName, String newScriptingName) {
         this.definitionFolder = (IFolder) definitionFile.getParent();
         this.mainProcessDefinition = definition.getMainProcessDefinition();
-        this.oldVariable = oldVariable;
-        this.newVariable = new Variable(newName, newScriptingName, oldVariable);
+        this.variablesMap = new TreeMap<Variable, Variable>(new Comparator<Variable>() {
+            @Override
+            public int compare(Variable o1, Variable o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
+        Variable newVariable = new Variable(newName, newScriptingName, oldVariable);
+        this.variablesMap.put(oldVariable, newVariable);
+        if (oldVariable.isComplex()) {
+            for (Variable oldVariableAttribute : VariableUtils.expandComplexVariable(oldVariable, oldVariable)) {
+                String newVariableName = oldVariableAttribute.getName().replaceFirst(oldVariable.getName() + ".", newVariable.getName() + ".");
+                String newVariableScriptingName = oldVariableAttribute.getScriptingName().replaceFirst(oldVariable.getScriptingName() + ".",
+                        newVariable.getScriptingName() + ".");
+                variablesMap.put(oldVariableAttribute, new Variable(newVariableName, newVariableScriptingName, oldVariableAttribute));
+            }
+        }
     }
 
     @Override
@@ -140,7 +157,7 @@ public class RenameVariableRefactoring extends Refactoring {
             cashedChange = new CompositeChange(getName());
             for (VariableRenameProvider<?> classPresentation : cache) {
                 try {
-                    List<Change> changes = classPresentation.getChanges(oldVariable, newVariable);
+                    List<Change> changes = classPresentation.getChanges(variablesMap);
                     cashedChange.addAll(changes.toArray(new Change[changes.size()]));
                 } catch (Exception e) {
                     PluginLogger.logErrorWithoutDialog(e.getMessage(), e);

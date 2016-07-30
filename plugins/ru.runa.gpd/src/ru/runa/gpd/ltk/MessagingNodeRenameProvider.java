@@ -3,18 +3,17 @@ package ru.runa.gpd.ltk;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.ltk.core.refactoring.Change;
-
 import ru.runa.gpd.lang.model.MessagingNode;
 import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.util.VariableMapping;
 import ru.runa.gpd.util.VariableUtils;
 
-public class MessagingNodeRenameProvider extends VariableRenameProvider<MessagingNode> {
+public class MessagingNodeRenameProvider extends SimpleVariableRenameProvider<MessagingNode> {
 
     @Override
-    public List<Change> getChanges(Variable oldVariable, Variable newVariable) throws Exception {
+    protected List<TextCompareChange> getChangesForVariable(Variable oldVariable, Variable newVariable) throws Exception {
+        List<TextCompareChange> changeList = new ArrayList<TextCompareChange>();
         List<VariableMapping> mappingsToChange = new ArrayList<VariableMapping>();
         for (VariableMapping mapping : element.getVariableMappings()) {
             if (mapping.isPropertySelector()) {
@@ -27,18 +26,18 @@ public class MessagingNodeRenameProvider extends VariableRenameProvider<Messagin
                 }
             }
         }
-        List<Change> changes = new ArrayList<Change>();
         if (mappingsToChange.size() > 0) {
-            changes.add(new VariableMappingChange(element, oldVariable, newVariable, mappingsToChange));
+            changeList.add(new VariableMappingChange(element, oldVariable, newVariable, mappingsToChange));
         }
-        return changes;
+        return changeList;
     }
 
     private class VariableMappingChange extends TextCompareChange {
 
         private final List<VariableMapping> mappingsToChange;
 
-        public VariableMappingChange(NamedGraphElement element, Variable currentVariable, Variable replacementVariable, List<VariableMapping> mappingsToChange) {
+        public VariableMappingChange(NamedGraphElement element, Variable currentVariable, Variable replacementVariable,
+                List<VariableMapping> mappingsToChange) {
             super(element, currentVariable, replacementVariable);
             this.mappingsToChange = mappingsToChange;
         }
