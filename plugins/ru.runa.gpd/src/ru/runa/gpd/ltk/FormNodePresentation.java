@@ -44,15 +44,15 @@ public class FormNodePresentation extends VariableRenameProvider<FormNode> {
         CompositeChange result = new CompositeChange(element.getName());
         if (element.hasForm()) {
             FormType formType = FormTypeProvider.getFormType(element.getFormType());
-            IFile fileForm = folder.getFile(element.getFormFileName());
+            IFile formFile = folder.getFile(element.getFormFileName());
             String formLabel = Localization.getString("Search.formNode.form");
-            result.addAll(textEditToChangeArray(fileForm, formLabel, processFile(formType, fileForm, variablesMap, false)));
+            result.addAll(textEditToChangeArray(formFile, formLabel, processFile(formType, formFile, variablesMap, false)));
             if (element.hasFormValidation()) {
-                IFile fileValidation = folder.getFile(element.getValidationFileName());
-                MultiTextEdit multiEdit = processFile(formType, fileValidation, variablesMap, true);
-                processGlobalValidators(fileValidation, variablesMap, multiEdit);
+                IFile validationFile = folder.getFile(element.getValidationFileName());
+                MultiTextEdit multiEdit = processFile(formType, validationFile, variablesMap, true);
+                processGlobalValidators(validationFile, variablesMap, multiEdit);
                 String validationLabel = Localization.getString("Search.formNode.validation");
-                result.addAll(textEditToChangeArray(fileValidation, validationLabel, multiEdit));
+                result.addAll(textEditToChangeArray(validationFile, validationLabel, multiEdit));
             }
         }
         if (result.getChildren().length > 0) {
@@ -92,20 +92,17 @@ public class FormNodePresentation extends VariableRenameProvider<FormNode> {
                 for (Entry<Variable, Variable> entry : variablesMap.entrySet()) {
                     Variable oldVariable = entry.getKey();
                     Variable newVariable = entry.getValue();
-                    replaceVariableNameInScript(groovyCode, oldVariable.getName(), newVariable.getName(), matcher.start(), multiEdit);
+                    replaceVariableNameInGroovyScript(groovyCode, oldVariable.getName(), newVariable.getName(), matcher.start(), multiEdit);
                     if (!Objects.equal(oldVariable.getName(), oldVariable.getScriptingName())) {
-                        replaceVariableNameInScript(groovyCode, oldVariable.getScriptingName(), newVariable.getScriptingName(), matcher.start(),
-                                multiEdit);
+                        replaceVariableNameInGroovyScript(groovyCode, oldVariable.getScriptingName(), newVariable.getScriptingName(),
+                                matcher.start(), multiEdit);
                     }
                 }
             }
         }
     }
 
-    /**
-     * Rename variable name/scriptingName in script (Groovy code)
-     */
-    private void replaceVariableNameInScript(String script, String variableName, String replacement, int startPosition, MultiTextEdit multiEdit) {
+    private void replaceVariableNameInGroovyScript(String script, String variableName, String replacement, int startPosition, MultiTextEdit multiEdit) {
         Pattern pattern = Pattern.compile("^" + Pattern.quote(variableName) + "|[!\\s(]" + Pattern.quote(variableName));
         Matcher matcher = pattern.matcher(script);
         while (matcher.find()) {

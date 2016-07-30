@@ -17,6 +17,7 @@ import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.wfe.var.format.ListFormat;
 
 import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -201,9 +202,8 @@ public class VariableUtils {
             String syntheticScriptingName = (parent != null ? (parent.getScriptingName() + VariableUserType.DELIM) : "")
                     + variable.getScriptingName();
             if (Objects.equal(variable.getUserType(), searchType)) {
-                // TODO why not variable in constructor last parameter?
                 Variable syntheticVariable = new Variable(syntheticName + VariableUserType.DELIM + searchAttribute.getName(), syntheticScriptingName
-                        + VariableUserType.DELIM + searchAttribute.getScriptingName(), searchAttribute);
+                        + VariableUserType.DELIM + searchAttribute.getScriptingName(), variable);
                 result.add(syntheticVariable);
             } else {
                 Variable syntheticVariable = new Variable(syntheticName, syntheticScriptingName, variable);
@@ -220,6 +220,7 @@ public class VariableUtils {
     }
 
     public static List<Variable> expandComplexVariable(Variable superVariable, Variable complexVariable) {
+        Preconditions.checkArgument(complexVariable.isComplex(), "User type variable expected");
         List<Variable> result = Lists.newArrayList();
         for (Variable attribute : complexVariable.getUserType().getAttributes()) {
             String name = superVariable.getName() + VariableUserType.DELIM + attribute.getName();

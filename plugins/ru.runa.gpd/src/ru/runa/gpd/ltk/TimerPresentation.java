@@ -3,6 +3,9 @@ package ru.runa.gpd.ltk;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.ltk.core.refactoring.Change;
+
+import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.Timer;
 import ru.runa.gpd.lang.model.Variable;
@@ -10,7 +13,7 @@ import ru.runa.gpd.util.Duration;
 
 import com.google.common.base.Objects;
 
-public class TimerPresentation extends SimpleVariableRenameProvider<Timer> {
+public class TimerPresentation extends SingleVariableRenameProvider<Timer> {
     private final String durationVariableName;
 
     public TimerPresentation(Timer timer) {
@@ -19,12 +22,12 @@ public class TimerPresentation extends SimpleVariableRenameProvider<Timer> {
     }
 
     @Override
-    protected List<TextCompareChange> getChangesForVariable(Variable oldVariable, Variable newVariable) throws Exception {
-        List<TextCompareChange> changeList = new ArrayList<TextCompareChange>();
+    protected List<Change> getChanges(Variable oldVariable, Variable newVariable) throws Exception {
+        List<Change> changes = new ArrayList<>();
         if (Objects.equal(oldVariable.getName(), durationVariableName)) {
-            changeList.add(new TimedChange(element, oldVariable, newVariable));
+            changes.add(new TimedChange(element, oldVariable, newVariable));
         }
-        return changeList;
+        return changes;
     }
 
     private class TimedChange extends TextCompareChange {
@@ -35,7 +38,12 @@ public class TimerPresentation extends SimpleVariableRenameProvider<Timer> {
 
         @Override
         protected void performInUIThread() {
-            element.getDelay().setVariableName(replacementVariable.getName());
+            try {
+                element.getDelay().setVariableName(replacementVariable.getName());
+            } catch (Exception e) {
+                // TODO notify user
+                PluginLogger.logErrorWithoutDialog("Unable to perform change in " + element, e);
+            }
         }
 
         @Override

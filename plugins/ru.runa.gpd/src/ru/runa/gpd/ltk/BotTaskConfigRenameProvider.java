@@ -6,6 +6,7 @@ import java.util.List;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
@@ -19,7 +20,7 @@ import ru.runa.gpd.lang.model.BotTask;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.util.WorkspaceOperations;
 
-public class BotTaskConfigRenameProvider extends SimpleVariableRenameProvider<BotTask> {
+public class BotTaskConfigRenameProvider extends SingleVariableRenameProvider<BotTask> {
     private final DelegableProvider provider;
 
     public BotTaskConfigRenameProvider(BotTask botTask) {
@@ -28,16 +29,12 @@ public class BotTaskConfigRenameProvider extends SimpleVariableRenameProvider<Bo
     }
 
     @Override
-    protected List<TextCompareChange> getChangesForVariable(Variable oldVariable, Variable newVariable) throws Exception {
-        List<TextCompareChange> changeList = new ArrayList<TextCompareChange>();
-        try {
-            if (provider.getUsedVariableNames(element).contains(oldVariable.getName())) {
-                changeList.add(new ConfigChange(oldVariable, newVariable));
-            }
-        } catch (Exception e) {
-            PluginLogger.logErrorWithoutDialog("Unable to get used variables in " + element, e);
+    protected List<Change> getChanges(Variable oldVariable, Variable newVariable) throws Exception {
+        List<Change> changes = new ArrayList<>();
+        if (provider.getUsedVariableNames(element).contains(oldVariable.getName())) {
+            changes.add(new ConfigChange(oldVariable, newVariable));
         }
-        return changeList;
+        return changes;
     }
 
     private class ConfigChange extends TextCompareChange {
@@ -50,18 +47,23 @@ public class BotTaskConfigRenameProvider extends SimpleVariableRenameProvider<Bo
 
         @Override
         protected void performInUIThread() {
-            String newConfiguration = getConfigurationReplacement();
-            element.setDelegationConfiguration(newConfiguration);
-            IFile botTaskFile = BotCache.getBotTaskFile(element);
-            IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-            if (page != null) {
-                IEditorPart editor = page.findEditor(new FileEditorInput(botTaskFile));
-                if (editor != null) {
-                    page.closeEditor(editor, false);
+            try {
+                String newConfiguration = getConfigurationReplacement();
+                element.setDelegationConfiguration(newConfiguration);
+                IFile botTaskFile = BotCache.getBotTaskFile(element);
+                IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+                if (page != null) {
+                    IEditorPart editor = page.findEditor(new FileEditorInput(botTaskFile));
+                    if (editor != null) {
+                        page.closeEditor(editor, false);
+                    }
                 }
+                WorkspaceOperations.saveBotTask(botTaskFile, element);
+                BotCache.invalidateBotTask(botTaskFile, element);
+            } catch (Exception e) {
+                // TODO notify user
+                PluginLogger.logErrorWithoutDialog("Unable to perform change in " + element, e);
             }
-            WorkspaceOperations.saveBotTask(botTaskFile, element);
-            BotCache.invalidateBotTask(botTaskFile, element);
         }
 
         private String getConfigurationReplacement() {

@@ -3,31 +3,34 @@ package ru.runa.gpd.ltk;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.ltk.core.refactoring.Change;
+
+import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.MultiTaskState;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.util.VariableMapping;
 
 import com.google.common.base.Objects;
 
-public class MultiTaskPresentation extends SimpleVariableRenameProvider<MultiTaskState> {
+public class MultiTaskPresentation extends SingleVariableRenameProvider<MultiTaskState> {
 
     public MultiTaskPresentation(MultiTaskState timed) {
         setElement(timed);
     }
 
     @Override
-    protected List<TextCompareChange> getChangesForVariable(Variable oldVariable, Variable newVariable) throws Exception {
-        List<TextCompareChange> changeList = new ArrayList<TextCompareChange>();
+    protected List<Change> getChanges(Variable oldVariable, Variable newVariable) throws Exception {
+        List<Change> changes = new ArrayList<>();
         VariableMapping discriminatorMapping = element.getDiscriminatorMapping();
         if (discriminatorMapping.isMultiinstanceLinkByVariable() && Objects.equal(oldVariable.getName(), discriminatorMapping.getName())) {
-            changeList.add(new MultiTaskDiscriminatorChange(element, oldVariable, newVariable));
+            changes.add(new MultiTaskDiscriminatorChange(element, oldVariable, newVariable));
         }
         if (discriminatorMapping.isMultiinstanceLinkByGroup() && !discriminatorMapping.isText()
                 && Objects.equal(oldVariable.getName(), discriminatorMapping.getName())) {
-            changeList.add(new MultiTaskDiscriminatorChange(element, oldVariable, newVariable));
+            changes.add(new MultiTaskDiscriminatorChange(element, oldVariable, newVariable));
         }
         if (discriminatorMapping.isMultiinstanceLinkByRelation() && discriminatorMapping.getName().contains("(" + oldVariable.getName() + ")")) {
-            changeList.add(new MultiTaskDiscriminatorChange(element, oldVariable, newVariable));
+            changes.add(new MultiTaskDiscriminatorChange(element, oldVariable, newVariable));
         }
         List<VariableMapping> mappingsToChange = new ArrayList<VariableMapping>();
         for (VariableMapping mapping : element.getVariableMappings()) {
@@ -42,9 +45,9 @@ public class MultiTaskPresentation extends SimpleVariableRenameProvider<MultiTas
             }
         }
         if (mappingsToChange.size() > 0) {
-            changeList.add(new VariableMappingsChange(element, oldVariable, newVariable, mappingsToChange));
+            changes.add(new VariableMappingsChange(element, oldVariable, newVariable, mappingsToChange));
         }
-        return changeList;
+        return changes;
     }
 
     private class MultiTaskDiscriminatorChange extends TextCompareChange {
@@ -55,17 +58,22 @@ public class MultiTaskPresentation extends SimpleVariableRenameProvider<MultiTas
 
         @Override
         protected void performInUIThread() {
-            VariableMapping discriminatorMapping = element.getDiscriminatorMapping();
-            if (discriminatorMapping.isMultiinstanceLinkByVariable()) {
-                element.setDiscriminatorValue(replacementVariable.getName());
-            }
-            if (discriminatorMapping.isMultiinstanceLinkByGroup() && !discriminatorMapping.isText()) {
-                element.setDiscriminatorValue(replacementVariable.getName());
-            }
-            if (discriminatorMapping.isMultiinstanceLinkByRelation()) {
-                String s = element.getDiscriminatorValue();
-                s = s.replace("(" + currentVariable.getName() + ")", "(" + replacementVariable.getName() + ")");
-                element.setDiscriminatorValue(s);
+            try {
+                VariableMapping discriminatorMapping = element.getDiscriminatorMapping();
+                if (discriminatorMapping.isMultiinstanceLinkByVariable()) {
+                    element.setDiscriminatorValue(replacementVariable.getName());
+                }
+                if (discriminatorMapping.isMultiinstanceLinkByGroup() && !discriminatorMapping.isText()) {
+                    element.setDiscriminatorValue(replacementVariable.getName());
+                }
+                if (discriminatorMapping.isMultiinstanceLinkByRelation()) {
+                    String s = element.getDiscriminatorValue();
+                    s = s.replace("(" + currentVariable.getName() + ")", "(" + replacementVariable.getName() + ")");
+                    element.setDiscriminatorValue(s);
+                }
+            } catch (Exception e) {
+                // TODO notify user
+                PluginLogger.logErrorWithoutDialog("Unable to perform change in " + element, e);
             }
         }
 

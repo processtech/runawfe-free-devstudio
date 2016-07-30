@@ -5,13 +5,15 @@ import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.ltk.core.refactoring.Change;
 
+import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.swimlane.SwimlaneInitializer;
 import ru.runa.gpd.swimlane.SwimlaneInitializerParser;
 
-public class SwimlanePresentation extends SimpleVariableRenameProvider<Swimlane> {
+public class SwimlanePresentation extends SingleVariableRenameProvider<Swimlane> {
     private final SwimlaneInitializer swimlaneInitializer;
 
     public SwimlanePresentation(Swimlane swimlane) {
@@ -20,12 +22,12 @@ public class SwimlanePresentation extends SimpleVariableRenameProvider<Swimlane>
     }
 
     @Override
-    protected List<TextCompareChange> getChangesForVariable(Variable oldVariable, Variable newVariable) throws Exception {
-        List<TextCompareChange> changeList = new ArrayList<TextCompareChange>();
+    protected List<Change> getChanges(Variable oldVariable, Variable newVariable) throws Exception {
+        List<Change> changes = new ArrayList<>();
         if (swimlaneInitializer.hasReference(oldVariable)) {
-            changeList.add(new SwimlaneInitializerChange(element, oldVariable, newVariable));
+            changes.add(new SwimlaneInitializerChange(element, oldVariable, newVariable));
         }
-        return changeList;
+        return changes;
     }
 
     private class SwimlaneInitializerChange extends TextCompareChange {
@@ -36,7 +38,12 @@ public class SwimlanePresentation extends SimpleVariableRenameProvider<Swimlane>
 
         @Override
         protected void performInUIThread() {
-            element.setDelegationConfiguration(getReplacementConfig());
+            try {
+                element.setDelegationConfiguration(getReplacementConfig());
+            } catch (Exception e) {
+                // TODO notify user
+                PluginLogger.logErrorWithoutDialog("Unable to perform change in " + element, e);
+            }
         }
 
         private String getReplacementConfig() {

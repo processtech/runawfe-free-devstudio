@@ -3,17 +3,20 @@ package ru.runa.gpd.ltk;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.ltk.core.refactoring.Change;
+
+import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.MessagingNode;
 import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.util.VariableMapping;
 import ru.runa.gpd.util.VariableUtils;
 
-public class MessagingNodeRenameProvider extends SimpleVariableRenameProvider<MessagingNode> {
+public class MessagingNodeRenameProvider extends SingleVariableRenameProvider<MessagingNode> {
 
     @Override
-    protected List<TextCompareChange> getChangesForVariable(Variable oldVariable, Variable newVariable) throws Exception {
-        List<TextCompareChange> changeList = new ArrayList<TextCompareChange>();
+    protected List<Change> getChanges(Variable oldVariable, Variable newVariable) throws Exception {
+        List<Change> changes = new ArrayList<>();
         List<VariableMapping> mappingsToChange = new ArrayList<VariableMapping>();
         for (VariableMapping mapping : element.getVariableMappings()) {
             if (mapping.isPropertySelector()) {
@@ -27,9 +30,9 @@ public class MessagingNodeRenameProvider extends SimpleVariableRenameProvider<Me
             }
         }
         if (mappingsToChange.size() > 0) {
-            changeList.add(new VariableMappingChange(element, oldVariable, newVariable, mappingsToChange));
+            changes.add(new VariableMappingChange(element, oldVariable, newVariable, mappingsToChange));
         }
-        return changeList;
+        return changes;
     }
 
     private class VariableMappingChange extends TextCompareChange {
@@ -44,12 +47,17 @@ public class MessagingNodeRenameProvider extends SimpleVariableRenameProvider<Me
 
         @Override
         protected void performInUIThread() {
-            for (VariableMapping mapping : mappingsToChange) {
-                if (mapping.isPropertySelector()) {
-                    mapping.setMappedName(VariableUtils.wrapVariableName(replacementVariable.getName()));
-                } else {
-                    mapping.setName(replacementVariable.getName());
+            try {
+                for (VariableMapping mapping : mappingsToChange) {
+                    if (mapping.isPropertySelector()) {
+                        mapping.setMappedName(VariableUtils.wrapVariableName(replacementVariable.getName()));
+                    } else {
+                        mapping.setName(replacementVariable.getName());
+                    }
                 }
+            } catch (Exception e) {
+                // TODO notify user
+                PluginLogger.logErrorWithoutDialog("Unable to perform change in " + element, e);
             }
         }
 

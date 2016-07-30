@@ -67,7 +67,6 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
     private Button changeButton;
     private Button deleteButton;
     private Button copyButton;
-    private Button pasteButton;
     private Button moveToTypeAttributeButton;
 
     private static Function<Variable, String> joinVariableNamesFunction = new Function<Variable, String>() {
@@ -125,7 +124,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
         renameButton = addButton(buttonsBar, "button.rename", new RenameVariableSelectionListener(), true);
         changeButton = addButton(buttonsBar, "button.change", new ChangeVariableSelectionListener(), true);
         copyButton = addButton(buttonsBar, "button.copy", new CopyVariableSelectionListener(), true);
-        pasteButton = addButton(buttonsBar, "button.paste", new PasteVariableSelectionListener(), true);
+        addButton(buttonsBar, "button.paste", new PasteVariableSelectionListener(), true);
         searchButton = addButton(buttonsBar, "button.search", new SearchVariableUsageSelectionListener(), true);
         moveUpButton = addButton(buttonsBar, "button.up", new MoveVariableSelectionListener(true), true);
         moveDownButton = addButton(buttonsBar, "button.down", new MoveVariableSelectionListener(false), true);
@@ -203,7 +202,9 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
             List<Variable> result = Lists.newArrayList();
             Variable variable = getSelection();
             result.add(variable);
-            result.addAll(VariableUtils.expandComplexVariable(variable, variable));
+            if (variable.isComplex()) {
+                result.addAll(VariableUtils.expandComplexVariable(variable, variable));
+            }
             String searchText = Joiner.on(", ").join(Lists.transform(result, joinVariableNamesFunction));
             MultiVariableSearchQuery query = new MultiVariableSearchQuery(searchText, editor.getDefinitionFile(), getDefinition(), result);
             NewSearchUI.runQueryInBackground(query);
@@ -277,7 +278,9 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
 
         List<Variable> result = Lists.newArrayList();
         result.add(variable);
-        result.addAll(VariableUtils.expandComplexVariable(variable, variable));
+        if (variable.isComplex()) {
+            result.addAll(VariableUtils.expandComplexVariable(variable, variable));
+        }
         String searchText = Joiner.on(", ").join(Lists.transform(result, joinVariableNamesFunction));
         MultiVariableSearchQuery query = new MultiVariableSearchQuery(searchText, editor.getDefinitionFile(), getDefinition(), result);
         NewSearchUI.runQueryInForeground(PlatformUI.getWorkbench().getActiveWorkbenchWindow(), query);

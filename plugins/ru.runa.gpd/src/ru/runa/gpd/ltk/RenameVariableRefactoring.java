@@ -41,7 +41,7 @@ public class RenameVariableRefactoring extends Refactoring {
     private final List<VariableRenameProvider<?>> cache = new ArrayList<VariableRenameProvider<?>>();
     private final IFolder definitionFolder;
     private final ProcessDefinition mainProcessDefinition;
-    private final SortedMap<Variable, Variable> variablesMap; // variable map sorted by name
+    private final SortedMap<Variable, Variable> variablesMap;
 
     public RenameVariableRefactoring(IFile definitionFile, ProcessDefinition definition, Variable oldVariable, String newName, String newScriptingName) {
         this.definitionFolder = (IFolder) definitionFile.getParent();
@@ -160,7 +160,8 @@ public class RenameVariableRefactoring extends Refactoring {
                     List<Change> changes = classPresentation.getChanges(variablesMap);
                     cashedChange.addAll(changes.toArray(new Change[changes.size()]));
                 } catch (Exception e) {
-                    PluginLogger.logErrorWithoutDialog(e.getMessage(), e);
+                    // TODO notify user
+                    PluginLogger.logErrorWithoutDialog("Unable to get used variables in " + classPresentation.element, e);
                 }
             }
         }

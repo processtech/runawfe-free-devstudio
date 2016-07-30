@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.ltk.core.refactoring.Change;
 
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.DelegableProvider;
@@ -12,7 +13,7 @@ import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.Variable;
 
-public class DelegablePresentation extends SimpleVariableRenameProvider<Delegable> {
+public class DelegablePresentation extends SingleVariableRenameProvider<Delegable> {
     private final DelegableProvider provider;
 
     public DelegablePresentation(final Delegable delegable, String name) {
@@ -21,16 +22,12 @@ public class DelegablePresentation extends SimpleVariableRenameProvider<Delegabl
     }
 
     @Override
-    protected List<TextCompareChange> getChangesForVariable(Variable oldVariable, Variable newVariable) throws Exception {
-        List<TextCompareChange> changeList = new ArrayList<TextCompareChange>();
-        try {
-            if (provider.getUsedVariableNames(element).contains(oldVariable.getName())) {
-                changeList.add(new ConfigChange(oldVariable, newVariable));
-            }
-        } catch (Exception e) {
-            PluginLogger.logErrorWithoutDialog("Unable to get used variables in " + element, e);
+    protected List<Change> getChanges(Variable oldVariable, Variable newVariable) throws Exception {
+        List<Change> changes = new ArrayList<>();
+        if (provider.getUsedVariableNames(element).contains(oldVariable.getName())) {
+            changes.add(new ConfigChange(oldVariable, newVariable));
         }
-        return changeList;
+        return changes;
     }
 
     private class ConfigChange extends TextCompareChange {
@@ -41,8 +38,13 @@ public class DelegablePresentation extends SimpleVariableRenameProvider<Delegabl
 
         @Override
         protected void performInUIThread() {
-            String newConfiguration = getConfigurationReplacement();
-            element.setDelegationConfiguration(newConfiguration);
+            try {
+                String newConfiguration = getConfigurationReplacement();
+                element.setDelegationConfiguration(newConfiguration);
+            } catch (Exception e) {
+                // TODO notify user
+                PluginLogger.logErrorWithoutDialog("Unable to perform change in " + element, e);
+            }
         }
 
         private String getConfigurationReplacement() {
