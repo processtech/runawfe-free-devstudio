@@ -35,7 +35,7 @@ public class BPMNPreferencePage extends FieldEditorPreferencePage implements Pre
     @Override
     public void createFieldEditors() {
         final IPreferenceStore store = Activator.getDefault().getPreferenceStore();
-        store.setDefault(P_BPMN_FONT, new FontData("Verdana", 8, Font.PLAIN).toString());
+        store.setDefault(P_BPMN_FONT, new FontData("Arial", 8, Font.PLAIN).toString());
         addField(new FontFieldEditor(P_BPMN_FONT, Localization.getString(PREF_COMMON_BPMN + P_BPMN_FONT), getFieldEditorParent()));
 
         addColorField(store, P_BPMN_COLOR_FONT);

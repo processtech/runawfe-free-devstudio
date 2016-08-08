@@ -33,6 +33,7 @@ public class AddTextAnnotationFeature extends AddElementFeature {
         Polyline polyline = Graphiti.getGaService().createPolyline(lineShape, new int[] { LayoutTextAnnotationFeature.EDGE, 0, 0, 0, 0, 0, LayoutTextAnnotationFeature.EDGE, 0 });
         polyline.getProperties().add(new GaProperty(GaProperty.ID, LayoutTextAnnotationFeature.POLYLINE));
         polyline.setStyle(StyleUtil.getStyleForTask(getDiagram()));
+        polyline.setLineWidth(2);
         final Shape textShape = Graphiti.getPeCreateService().createShape(containerShape, false);
         MultiText text = Graphiti.getGaService().createMultiText(textShape, annotation.getDescription());
         text.getProperties().add(new GaProperty(GaProperty.ID, GaProperty.DESCRIPTION));

@@ -19,8 +19,8 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer impleme
     public void initializeDefaultPreferences() {
         IPreferenceStore store = Activator.getDefault().getPreferenceStore();
         store.setDefault(P_BPMN_SHOW_SWIMLANE, true);
-        store.setDefault(P_BPMN_FONT, new FontData("Verdana", 8, Font.PLAIN).toString());
-        store.setDefault(P_BPMN_COLOR_FONT, "0,0,0");
+        store.setDefault(P_BPMN_FONT, new FontData("Arial", 8, Font.PLAIN).toString());
+        store.setDefault(P_BPMN_COLOR_FONT, "100,100,100");
         store.setDefault(P_BPMN_COLOR_BACKGROUND, "246, 247, 255");
         store.setDefault(P_BPMN_COLOR_BASE, "3, 104, 154");
         store.setDefault(P_BPMN_COLOR_TRANSITION, "0,0,0");
