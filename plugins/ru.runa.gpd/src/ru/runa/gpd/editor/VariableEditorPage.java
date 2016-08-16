@@ -233,7 +233,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
                 RenameRefactoringWizard wizard = new RenameRefactoringWizard(refactoring);
                 wizard.setDefaultPageTitle(Localization.getString("Refactoring.variable.name"));
                 RefactoringWizardOpenOperation operation = new RefactoringWizardOpenOperation(wizard);
-                result = operation.run(Display.getCurrent().getActiveShell(), "");
+                result = operation.run(Display.getCurrent().getActiveShell(), Localization.getString("VariableEditorPage.variable.rename.title"));
                 if (result != IDialogConstants.OK_ID) {
                     return;
                 }
@@ -444,7 +444,8 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
                     RenameRefactoringWizard wizard = new RenameRefactoringWizard(refactoring);
                     wizard.setDefaultPageTitle(Localization.getString("Refactoring.variable.name"));
                     RefactoringWizardOpenOperation operation = new RefactoringWizardOpenOperation(wizard);
-                    int result = operation.run(Display.getCurrent().getActiveShell(), "");
+                    int result = operation.run(Display.getCurrent().getActiveShell(),
+                            Localization.getString("VariableEditorPage.variable.move.title"));
                     if (result != IDialogConstants.OK_ID) {
                         return;
                     }

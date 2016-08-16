@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.eclipse.ltk.core.refactoring.Change;
 
-import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.MessagingNode;
 import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.Variable;
@@ -47,17 +46,12 @@ public class MessagingNodeRenameProvider extends SingleVariableRenameProvider<Me
 
         @Override
         protected void performInUIThread() {
-            try {
-                for (VariableMapping mapping : mappingsToChange) {
-                    if (mapping.isPropertySelector()) {
-                        mapping.setMappedName(VariableUtils.wrapVariableName(replacementVariable.getName()));
-                    } else {
-                        mapping.setName(replacementVariable.getName());
-                    }
+            for (VariableMapping mapping : mappingsToChange) {
+                if (mapping.isPropertySelector()) {
+                    mapping.setMappedName(VariableUtils.wrapVariableName(replacementVariable.getName()));
+                } else {
+                    mapping.setName(replacementVariable.getName());
                 }
-            } catch (Exception e) {
-                // TODO notify user
-                PluginLogger.logErrorWithoutDialog("Unable to perform change in " + element, e);
             }
         }
 
