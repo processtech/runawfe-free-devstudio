@@ -7,7 +7,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.ltk.core.refactoring.Change;
 
-import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.lang.model.Delegable;
@@ -38,13 +37,8 @@ public class DelegablePresentation extends SingleVariableRenameProvider<Delegabl
 
         @Override
         protected void performInUIThread() {
-            try {
-                String newConfiguration = getConfigurationReplacement();
-                element.setDelegationConfiguration(newConfiguration);
-            } catch (Exception e) {
-                // TODO notify user
-                PluginLogger.logErrorWithoutDialog("Unable to perform change in " + element, e);
-            }
+            String newConfiguration = getConfigurationReplacement();
+            element.setDelegationConfiguration(newConfiguration);
         }
 
         private String getConfigurationReplacement() {

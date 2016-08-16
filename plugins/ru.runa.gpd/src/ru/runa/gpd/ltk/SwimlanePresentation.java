@@ -7,7 +7,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.ltk.core.refactoring.Change;
 
-import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.swimlane.SwimlaneInitializer;
@@ -38,12 +37,7 @@ public class SwimlanePresentation extends SingleVariableRenameProvider<Swimlane>
 
         @Override
         protected void performInUIThread() {
-            try {
-                element.setDelegationConfiguration(getReplacementConfig());
-            } catch (Exception e) {
-                // TODO notify user
-                PluginLogger.logErrorWithoutDialog("Unable to perform change in " + element, e);
-            }
+            element.setDelegationConfiguration(getReplacementConfig());
         }
 
         private String getReplacementConfig() {

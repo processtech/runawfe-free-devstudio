@@ -13,7 +13,6 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 
 import ru.runa.gpd.BotCache;
-import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.lang.model.BotTask;
@@ -47,23 +46,18 @@ public class BotTaskConfigRenameProvider extends SingleVariableRenameProvider<Bo
 
         @Override
         protected void performInUIThread() {
-            try {
-                String newConfiguration = getConfigurationReplacement();
-                element.setDelegationConfiguration(newConfiguration);
-                IFile botTaskFile = BotCache.getBotTaskFile(element);
-                IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-                if (page != null) {
-                    IEditorPart editor = page.findEditor(new FileEditorInput(botTaskFile));
-                    if (editor != null) {
-                        page.closeEditor(editor, false);
-                    }
+            String newConfiguration = getConfigurationReplacement();
+            element.setDelegationConfiguration(newConfiguration);
+            IFile botTaskFile = BotCache.getBotTaskFile(element);
+            IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+            if (page != null) {
+                IEditorPart editor = page.findEditor(new FileEditorInput(botTaskFile));
+                if (editor != null) {
+                    page.closeEditor(editor, false);
                 }
-                WorkspaceOperations.saveBotTask(botTaskFile, element);
-                BotCache.invalidateBotTask(botTaskFile, element);
-            } catch (Exception e) {
-                // TODO notify user
-                PluginLogger.logErrorWithoutDialog("Unable to perform change in " + element, e);
             }
+            WorkspaceOperations.saveBotTask(botTaskFile, element);
+            BotCache.invalidateBotTask(botTaskFile, element);
         }
 
         private String getConfigurationReplacement() {

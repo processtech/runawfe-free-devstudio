@@ -42,6 +42,7 @@ public class RenameVariableRefactoring extends Refactoring {
     private final IFolder definitionFolder;
     private final ProcessDefinition mainProcessDefinition;
     private final SortedMap<Variable, Variable> variablesMap;
+    private final RefactoringStatus finalStatus;
 
     public RenameVariableRefactoring(IFile definitionFile, ProcessDefinition definition, Variable oldVariable, String newName, String newScriptingName) {
         this.definitionFolder = (IFolder) definitionFile.getParent();
@@ -62,6 +63,7 @@ public class RenameVariableRefactoring extends Refactoring {
                 variablesMap.put(oldVariableAttribute, new Variable(newVariableName, newVariableScriptingName, oldVariableAttribute));
             }
         }
+        this.finalStatus = new RefactoringStatus();
     }
 
     @Override
@@ -76,7 +78,7 @@ public class RenameVariableRefactoring extends Refactoring {
             }
         } catch (Exception e) {
             PluginLogger.logErrorWithoutDialog(e.getMessage(), e);
-            result.addFatalError(Localization.getString("UnhandledException"));
+            result.addFatalError(Localization.getString("UnhandledException") + ": " + e.getLocalizedMessage());
         }
         return result;
     }
@@ -146,7 +148,7 @@ public class RenameVariableRefactoring extends Refactoring {
 
     @Override
     public RefactoringStatus checkFinalConditions(IProgressMonitor pm) {
-        return new RefactoringStatus();
+        return finalStatus;
     }
 
     private CompositeChange cashedChange = null;
@@ -160,8 +162,9 @@ public class RenameVariableRefactoring extends Refactoring {
                     List<Change> changes = classPresentation.getChanges(variablesMap);
                     cashedChange.addAll(changes.toArray(new Change[changes.size()]));
                 } catch (Exception e) {
-                    // TODO notify user
-                    PluginLogger.logErrorWithoutDialog("Unable to get used variables in " + classPresentation.element, e);
+                    PluginLogger.logErrorWithoutDialog("Unable to get used variabes in " + classPresentation.element, e);
+                    finalStatus.addWarning(Localization.getString("RenameVariableException") + classPresentation.element + ": "
+                            + e.getLocalizedMessage());
                 }
             }
         }

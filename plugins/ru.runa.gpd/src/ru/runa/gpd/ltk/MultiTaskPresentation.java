@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.eclipse.ltk.core.refactoring.Change;
 
-import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.MultiTaskState;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.util.VariableMapping;
@@ -58,22 +57,17 @@ public class MultiTaskPresentation extends SingleVariableRenameProvider<MultiTas
 
         @Override
         protected void performInUIThread() {
-            try {
-                VariableMapping discriminatorMapping = element.getDiscriminatorMapping();
-                if (discriminatorMapping.isMultiinstanceLinkByVariable()) {
-                    element.setDiscriminatorValue(replacementVariable.getName());
-                }
-                if (discriminatorMapping.isMultiinstanceLinkByGroup() && !discriminatorMapping.isText()) {
-                    element.setDiscriminatorValue(replacementVariable.getName());
-                }
-                if (discriminatorMapping.isMultiinstanceLinkByRelation()) {
-                    String s = element.getDiscriminatorValue();
-                    s = s.replace("(" + currentVariable.getName() + ")", "(" + replacementVariable.getName() + ")");
-                    element.setDiscriminatorValue(s);
-                }
-            } catch (Exception e) {
-                // TODO notify user
-                PluginLogger.logErrorWithoutDialog("Unable to perform change in " + element, e);
+            VariableMapping discriminatorMapping = element.getDiscriminatorMapping();
+            if (discriminatorMapping.isMultiinstanceLinkByVariable()) {
+                element.setDiscriminatorValue(replacementVariable.getName());
+            }
+            if (discriminatorMapping.isMultiinstanceLinkByGroup() && !discriminatorMapping.isText()) {
+                element.setDiscriminatorValue(replacementVariable.getName());
+            }
+            if (discriminatorMapping.isMultiinstanceLinkByRelation()) {
+                String s = element.getDiscriminatorValue();
+                s = s.replace("(" + currentVariable.getName() + ")", "(" + replacementVariable.getName() + ")");
+                element.setDiscriminatorValue(s);
             }
         }
 
