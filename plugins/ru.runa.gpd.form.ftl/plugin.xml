@@ -938,6 +938,20 @@
                variableTypeFilter="java.lang.String">
          </param>
       </component>
+      <component
+            enabled="true"
+            id="EditUserTypeList"
+            imageProvider="ru.runa.gpd.formeditor.ftl.image.VariableComponentImageProvider"
+            name="%Method.EditUserTypeList"
+            order="-81">
+         <param
+               name="%Param.Variable"
+               optional="false"
+               type="uservarlistcombo"
+               variableAccess="WRITE"
+               variableTypeFilter="java.util.List">
+         </param>
+      </component>
    </extension>
     
 </plugin>
