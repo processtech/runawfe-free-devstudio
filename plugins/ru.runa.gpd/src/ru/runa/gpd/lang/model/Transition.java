@@ -7,12 +7,14 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
+import org.eclipse.ui.views.properties.TextPropertyDescriptor;
 
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.extension.decision.IDecisionProvider;
 import ru.runa.gpd.util.EditorUtils;
+import ru.runa.gpd.util.TransitionOrderNumCellEditorValidator;
 import ru.runa.gpd.validation.FormNodeValidation;
 import ru.runa.gpd.validation.ValidationUtil;
 import ru.runa.gpd.validation.ValidatorConfig;
@@ -26,6 +28,7 @@ public class Transition extends NamedGraphElement implements Active {
     private boolean exclusiveFlow;
     private boolean defaultFlow;
     private Point labelLocation;
+    private int orderNum;
 
     public Point getLabelLocation() {
         return labelLocation;
@@ -147,6 +150,20 @@ public class Transition extends NamedGraphElement implements Active {
         super.populateCustomPropertyDescriptors(descriptors);
         descriptors.add(new PropertyDescriptor(PROPERTY_SOURCE, Localization.getString("Transition.property.source")));
         descriptors.add(new PropertyDescriptor(PROPERTY_TARGET, Localization.getString("Transition.property.target")));
+        if (getSource().getLeavingTransitions().size() == 1) {
+            descriptors.add(new PropertyDescriptor(PROPERTY_ORDERNUM, Localization.getString("Transition.property.orderNum")));
+        } else {
+            TextPropertyDescriptor orderNumPropertyDescriptor = new TextPropertyDescriptor(PROPERTY_ORDERNUM,
+                    Localization.getString("Transition.property.orderNum"));
+            int maxOrderNum = 0;
+            for (Transition leavingTransition : getSource().getLeavingTransitions()) {
+                if (leavingTransition.getOrderNum() > maxOrderNum) {
+                    maxOrderNum = leavingTransition.getOrderNum();
+                }
+            }
+            orderNumPropertyDescriptor.setValidator(new TransitionOrderNumCellEditorValidator(maxOrderNum));
+            descriptors.add(orderNumPropertyDescriptor);
+        }
     }
 
     @Override
@@ -155,6 +172,8 @@ public class Transition extends NamedGraphElement implements Active {
             return getSource().getName();
         } else if (PROPERTY_TARGET.equals(id) && getTarget() != null) {
             return target != null ? target.getName() : "";
+        } else if (PROPERTY_ORDERNUM.equals(id)) {
+            return Integer.toString(orderNum);
         }
         return super.getPropertyValue(id);
     }
@@ -168,13 +187,14 @@ public class Transition extends NamedGraphElement implements Active {
     }
 
     public String getLabel() {
+        StringBuilder result = new StringBuilder();
         if (getSource() instanceof ExclusiveGateway) {
-            return ((ExclusiveGateway) getSource()).isDecision() ? getName() : "";
-        }
-        if (getSource() instanceof Decision) {
-            return getName();
-        }
-        if (PluginConstants.TIMER_TRANSITION_NAME.equals(getName())) {
+            if (((ExclusiveGateway) getSource()).isDecision()) {
+                result.append(getName());
+            }
+        } else if (getSource() instanceof Decision) {
+            result.append(getName());
+        } else if (PluginConstants.TIMER_TRANSITION_NAME.equals(getName())) {
             Timer timer = null;
             if (getSource() instanceof Timer) {
                 timer = (Timer) getSource();
@@ -182,9 +202,10 @@ public class Transition extends NamedGraphElement implements Active {
             if (getSource() instanceof ITimed) {
                 timer = ((ITimed) getSource()).getTimer();
             }
-            return timer != null ? timer.getDelay().toString() : "";
-        }
-        if (getSource() instanceof TaskState) {
+            if (timer != null) {
+                result.append(timer.getDelay().toString());
+            }
+        } else if (getSource() instanceof TaskState) {
             int count = 0;
             for (Transition transition : getSource().getLeavingTransitions()) {
                 if (!PluginConstants.TIMER_TRANSITION_NAME.equals(transition.getName())) {
@@ -192,10 +213,13 @@ public class Transition extends NamedGraphElement implements Active {
                 }
             }
             if (count > 1) {
-                return getName();
+                result.append(getName());
             }
         }
-        return "";
+        if (result.length() > 0) {
+            result.append(" (#" + Integer.toString(orderNum) + ")");
+        }
+        return result.toString();
     }
 
     @Override
@@ -208,4 +232,33 @@ public class Transition extends NamedGraphElement implements Active {
         return copy;
     }
 
+    public int getOrderNum() {
+        return orderNum;
+    }
+
+    public void setOrderNum(int orderNum) {
+        int oldOrderNum = this.orderNum;
+        Transition swapTransition = null;
+        List<Transition> leavingTransitions = getSource().getLeavingTransitions();
+        for (Transition leavingTransition : leavingTransitions) {
+            if (!leavingTransition.equals(this) && orderNum != 0 && leavingTransition.getOrderNum() == orderNum) {
+                swapTransition = leavingTransition;
+                break;
+            }
+        }
+        this.orderNum = orderNum;
+        firePropertyChange(PROPERTY_ORDERNUM, oldOrderNum, this.orderNum);
+        if (swapTransition != null) {
+            swapTransition.setOrderNum(oldOrderNum);
+        }
+    }
+
+    @Override
+    public void setPropertyValue(Object id, Object value) {
+        if (PROPERTY_ORDERNUM.equals(id)) {
+            setOrderNum(Integer.parseInt((String) value));
+        } else {
+            super.setPropertyValue(id, value);
+        }
+    }
 }
