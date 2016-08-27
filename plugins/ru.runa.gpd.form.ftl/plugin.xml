@@ -80,10 +80,6 @@
             id="varlist">
       </type>
       <type
-            class="ru.runa.gpd.formeditor.ftl.parameter.VariableListParameter"
-            id="varlist">
-      </type>
-      <type
             class="ru.runa.gpd.formeditor.ftl.parameter.TextListParameter"
             id="textlist">
       </type>
