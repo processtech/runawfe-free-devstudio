@@ -18,6 +18,7 @@ public interface PropertyNames {
     public static final String PROPERTY_FORM_TEMPLATE_FILE = "formTemplate";
     public static final String PROPERTY_SOURCE = "source";
     public static final String PROPERTY_TARGET = "target";
+    public static final String PROPERTY_ORDERNUM = "orderNum";
     public static final String PROPERTY_SCRIPTING_NAME = "scriptingName";
     public static final String PROPERTY_FORMAT = "format";
     public static final String PROPERTY_PUBLIC_VISIBILITY = "publicVisibility";

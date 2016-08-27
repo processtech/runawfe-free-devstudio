@@ -325,6 +325,7 @@ public class PropertiesView extends ViewPart implements ISelectionListener, Prop
                 return;
             }
             if (!cellEditor.isValueValid()) {
+                cellEditor.setValue(initialValue);
                 return;
             }
 

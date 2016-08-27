@@ -1,6 +1,7 @@
 package ru.runa.gpd.lang;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +50,8 @@ import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.util.Duration;
 import ru.runa.gpd.util.MultiinstanceParameters;
+import ru.runa.gpd.util.TransitionComparatorByOrderNum;
+import ru.runa.gpd.util.TransitionOrderNumUtils;
 import ru.runa.gpd.util.VariableMapping;
 import ru.runa.gpd.util.XmlUtil;
 import ru.runa.wfe.commons.BackCompatibilityClassNames;
@@ -86,6 +89,7 @@ public class JpdlSerializer extends ProcessSerializer {
     private static final String START_STATE = "start-state";
     private static final String TO = "to";
     private static final String ACTION = "action";
+    private static final String ORDER_NUM = "orderNum";
     private static final String EVENT = "event";
     private static final String HANDLER = "handler";
     private static final String DESCRIPTION = "description";
@@ -356,12 +360,14 @@ public class JpdlSerializer extends ProcessSerializer {
 
     private void writeTransitions(Element parent, Node node) {
         List<Transition> transitions = node.getLeavingTransitions();
+        Collections.sort(transitions, new TransitionComparatorByOrderNum());
         for (Transition transition : transitions) {
             Element transitionElement = writeElement(parent, transition);
             transitionElement.addAttribute(TO, transition.getTarget().getId());
             for (Action action : transition.getActions()) {
                 writeDelegation(transitionElement, ACTION, action);
             }
+            transitionElement.addAttribute(ORDER_NUM, Integer.toString(transition.getOrderNum()));
         }
     }
 
@@ -459,6 +465,7 @@ public class JpdlSerializer extends ProcessSerializer {
         Transition transition = create(node, parent);
         String targetName = node.attributeValue(TO);
         TRANSITION_TARGETS.put(transition, targetName);
+        transition.setOrderNum(TransitionOrderNumUtils.parseOrderNum(node.attributeValue(ORDER_NUM), parent, transition));
     }
 
     private void parseAction(Element node, GraphElement parent, String eventType) {
