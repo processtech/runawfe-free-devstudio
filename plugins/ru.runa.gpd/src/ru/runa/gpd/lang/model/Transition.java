@@ -28,7 +28,7 @@ public class Transition extends NamedGraphElement implements Active {
     private boolean exclusiveFlow;
     private boolean defaultFlow;
     private Point labelLocation;
-    private int orderNum;
+    private int orderNum; // set only if source is TaskState
 
     public Point getLabelLocation() {
         return labelLocation;
@@ -150,19 +150,21 @@ public class Transition extends NamedGraphElement implements Active {
         super.populateCustomPropertyDescriptors(descriptors);
         descriptors.add(new PropertyDescriptor(PROPERTY_SOURCE, Localization.getString("Transition.property.source")));
         descriptors.add(new PropertyDescriptor(PROPERTY_TARGET, Localization.getString("Transition.property.target")));
-        if (getSource().getLeavingTransitions().size() == 1) {
-            descriptors.add(new PropertyDescriptor(PROPERTY_ORDERNUM, Localization.getString("Transition.property.orderNum")));
-        } else {
-            TextPropertyDescriptor orderNumPropertyDescriptor = new TextPropertyDescriptor(PROPERTY_ORDERNUM,
-                    Localization.getString("Transition.property.orderNum"));
-            int maxOrderNum = 0;
-            for (Transition leavingTransition : getSource().getLeavingTransitions()) {
-                if (leavingTransition.getOrderNum() > maxOrderNum) {
-                    maxOrderNum = leavingTransition.getOrderNum();
+        if (getSource() instanceof TaskState) {
+            if (getSource().getLeavingTransitions().size() == 1) {
+                descriptors.add(new PropertyDescriptor(PROPERTY_ORDERNUM, Localization.getString("Transition.property.orderNum")));
+            } else {
+                TextPropertyDescriptor orderNumPropertyDescriptor = new TextPropertyDescriptor(PROPERTY_ORDERNUM,
+                        Localization.getString("Transition.property.orderNum"));
+                int maxOrderNum = 0;
+                for (Transition leavingTransition : getSource().getLeavingTransitions()) {
+                    if (leavingTransition.getOrderNum() > maxOrderNum) {
+                        maxOrderNum = leavingTransition.getOrderNum();
+                    }
                 }
+                orderNumPropertyDescriptor.setValidator(new TransitionOrderNumCellEditorValidator(maxOrderNum));
+                descriptors.add(orderNumPropertyDescriptor);
             }
-            orderNumPropertyDescriptor.setValidator(new TransitionOrderNumCellEditorValidator(maxOrderNum));
-            descriptors.add(orderNumPropertyDescriptor);
         }
     }
 
@@ -215,9 +217,9 @@ public class Transition extends NamedGraphElement implements Active {
             if (count > 1) {
                 result.append(getName());
             }
-        }
-        if (result.length() > 0) {
-            result.append(" (#" + Integer.toString(orderNum) + ")");
+            if (result.length() > 0) {
+                result.append(" (#" + Integer.toString(orderNum) + ")");
+            }
         }
         return result.toString();
     }
@@ -237,19 +239,21 @@ public class Transition extends NamedGraphElement implements Active {
     }
 
     public void setOrderNum(int orderNum) {
-        int oldOrderNum = this.orderNum;
-        Transition swapTransition = null;
-        List<Transition> leavingTransitions = getSource().getLeavingTransitions();
-        for (Transition leavingTransition : leavingTransitions) {
-            if (!leavingTransition.equals(this) && orderNum != 0 && leavingTransition.getOrderNum() == orderNum) {
-                swapTransition = leavingTransition;
-                break;
+        if (getSource() instanceof TaskState) {
+            int oldOrderNum = this.orderNum;
+            Transition swapTransition = null;
+            List<Transition> leavingTransitions = getSource().getLeavingTransitions();
+            for (Transition leavingTransition : leavingTransitions) {
+                if (!leavingTransition.equals(this) && orderNum != 0 && leavingTransition.getOrderNum() == orderNum) {
+                    swapTransition = leavingTransition;
+                    break;
+                }
             }
-        }
-        this.orderNum = orderNum;
-        firePropertyChange(PROPERTY_ORDERNUM, oldOrderNum, this.orderNum);
-        if (swapTransition != null) {
-            swapTransition.setOrderNum(oldOrderNum);
+            this.orderNum = orderNum;
+            firePropertyChange(PROPERTY_ORDERNUM, oldOrderNum, this.orderNum);
+            if (swapTransition != null) {
+                swapTransition.setOrderNum(oldOrderNum);
+            }
         }
     }
 

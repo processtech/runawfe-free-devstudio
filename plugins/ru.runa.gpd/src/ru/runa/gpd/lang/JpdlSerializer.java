@@ -360,14 +360,18 @@ public class JpdlSerializer extends ProcessSerializer {
 
     private void writeTransitions(Element parent, Node node) {
         List<Transition> transitions = node.getLeavingTransitions();
-        Collections.sort(transitions, new TransitionComparatorByOrderNum());
+        if (node instanceof TaskState) {
+            Collections.sort(transitions, new TransitionComparatorByOrderNum());
+        }
         for (Transition transition : transitions) {
             Element transitionElement = writeElement(parent, transition);
             transitionElement.addAttribute(TO, transition.getTarget().getId());
             for (Action action : transition.getActions()) {
                 writeDelegation(transitionElement, ACTION, action);
             }
-            transitionElement.addAttribute(ORDER_NUM, Integer.toString(transition.getOrderNum()));
+            if (node instanceof TaskState) {
+                transitionElement.addAttribute(ORDER_NUM, Integer.toString(transition.getOrderNum()));
+            }
         }
     }
 
@@ -465,7 +469,9 @@ public class JpdlSerializer extends ProcessSerializer {
         Transition transition = create(node, parent);
         String targetName = node.attributeValue(TO);
         TRANSITION_TARGETS.put(transition, targetName);
-        transition.setOrderNum(TransitionOrderNumUtils.parseOrderNum(node.attributeValue(ORDER_NUM), parent, transition));
+        if (parent instanceof TaskState) {
+            transition.setOrderNum(TransitionOrderNumUtils.parseOrderNum(node.attributeValue(ORDER_NUM), parent, transition));
+        }
     }
 
     private void parseAction(Element node, GraphElement parent, String eventType) {

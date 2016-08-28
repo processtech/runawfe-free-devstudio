@@ -375,7 +375,9 @@ public class BpmnSerializer extends ProcessSerializer {
 
     private void writeTransitions(Element parent, Node node) {
         List<Transition> transitions = node.getLeavingTransitions();
-        Collections.sort(transitions, new TransitionComparatorByOrderNum());
+        if (node instanceof TaskState) {
+            Collections.sort(transitions, new TransitionComparatorByOrderNum());
+        }
         for (Transition transition : transitions) {
             Element transitionElement = parent.addElement(SEQUENCE_FLOW);
             transitionElement.addAttribute(ID, transition.getId());
@@ -387,10 +389,9 @@ public class BpmnSerializer extends ProcessSerializer {
             }
             transitionElement.addAttribute(SOURCE_REF, sourceNodeId);
             transitionElement.addAttribute(TARGET_REF, targetNodeId);
-            if (transition.getOrderNum() < 0) {
-                throw new IllegalArgumentException("Invalid orderNum in transition " + transition);
+            if (node instanceof TaskState) {
+                transitionElement.addAttribute(ORDER_NUM, Integer.toString(transition.getOrderNum()));
             }
-            transitionElement.addAttribute(ORDER_NUM, Integer.toString(transition.getOrderNum()));
         }
     }
 
@@ -738,7 +739,9 @@ public class BpmnSerializer extends ProcessSerializer {
             transition.setId(transitionElement.attributeValue(ID));
             transition.setName(transitionElement.attributeValue(NAME));
             transition.setTarget(target);
-            transition.setOrderNum(TransitionOrderNumUtils.parseOrderNum(transitionElement.attributeValue(ORDER_NUM), source, transition));
+            if (source instanceof TaskState) {
+                transition.setOrderNum(TransitionOrderNumUtils.parseOrderNum(transitionElement.attributeValue(ORDER_NUM), source, transition));
+            }
             source.addLeavingTransition(transition);
         }
         for (Map.Entry<Swimlane, List<String>> entry : swimlaneElementIds.entrySet()) {
