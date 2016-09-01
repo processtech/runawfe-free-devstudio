@@ -37,7 +37,7 @@ public class TimedPresentation extends SingleVariableRenameProvider<ITimed> {
 
         @Override
         protected void performInUIThread() {
-            element.getTimer().getDelay().setVariableName(replacementVariable.getName());
+            element.getTimer().setDelayVariableName(replacementVariable.getName());
         }
 
         @Override

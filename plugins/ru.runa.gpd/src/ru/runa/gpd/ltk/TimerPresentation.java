@@ -37,7 +37,7 @@ public class TimerPresentation extends SingleVariableRenameProvider<Timer> {
 
         @Override
         protected void performInUIThread() {
-            element.getDelay().setVariableName(replacementVariable.getName());
+            element.setDelayVariableName(replacementVariable.getName());
         }
 
         @Override

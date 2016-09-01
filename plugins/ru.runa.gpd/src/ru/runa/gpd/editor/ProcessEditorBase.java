@@ -59,7 +59,7 @@ import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.WorkspaceOperations;
 
 public abstract class ProcessEditorBase extends MultiPageEditorPart implements ISelectionListener, IResourceChangeListener, PropertyChangeListener {
-    
+
     protected ProcessDefinition definition;
     protected IFile definitionFile;
     protected GraphicalEditor graphPage;
@@ -75,12 +75,12 @@ public abstract class ProcessEditorBase extends MultiPageEditorPart implements I
 
         getSite().getPage().addSelectionListener(this);
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this, IResourceChangeEvent.POST_CHANGE);
-        
+
         definitionFile = ((FileEditorInput) input).getFile();
         definition = ProcessCache.getProcessDefinition(definitionFile);
         definition.setDirty(false);
         definition.addPropertyChangeListener(this);
-        
+
         setPartName(definition.getName());
     }
 
@@ -347,7 +347,7 @@ public abstract class ProcessEditorBase extends MultiPageEditorPart implements I
         }
     }
 
-   private <T extends IEditorPart> T addNewPage(T editorPart, String title) throws PartInitException {
+    private <T extends IEditorPart> T addNewPage(T editorPart, String title) throws PartInitException {
         int pageIndex = addPage(editorPart, getEditorInput());
         setPageText(pageIndex, Localization.getString(title));
         return editorPart;
