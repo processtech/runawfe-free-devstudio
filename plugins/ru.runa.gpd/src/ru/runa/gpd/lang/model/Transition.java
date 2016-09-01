@@ -28,7 +28,6 @@ public class Transition extends NamedGraphElement implements Active {
     private boolean exclusiveFlow;
     private boolean defaultFlow;
     private Point labelLocation;
-    private int orderNum; // set only if source is TaskState
 
     public Point getLabelLocation() {
         return labelLocation;
@@ -156,13 +155,7 @@ public class Transition extends NamedGraphElement implements Active {
             } else {
                 TextPropertyDescriptor orderNumPropertyDescriptor = new TextPropertyDescriptor(PROPERTY_ORDERNUM,
                         Localization.getString("Transition.property.orderNum"));
-                int maxOrderNum = 0;
-                for (Transition leavingTransition : getSource().getLeavingTransitions()) {
-                    if (leavingTransition.getOrderNum() > maxOrderNum) {
-                        maxOrderNum = leavingTransition.getOrderNum();
-                    }
-                }
-                orderNumPropertyDescriptor.setValidator(new TransitionOrderNumCellEditorValidator(maxOrderNum));
+                orderNumPropertyDescriptor.setValidator(new TransitionOrderNumCellEditorValidator(getSource().getLeavingTransitions().size()));
                 descriptors.add(orderNumPropertyDescriptor);
             }
         }
@@ -175,7 +168,7 @@ public class Transition extends NamedGraphElement implements Active {
         } else if (PROPERTY_TARGET.equals(id) && getTarget() != null) {
             return target != null ? target.getName() : "";
         } else if (PROPERTY_ORDERNUM.equals(id)) {
-            return Integer.toString(orderNum);
+            return getSource() instanceof TaskState ? Integer.toString(getSource().getLeavingTransitions().indexOf(this) + 1) : "";
         }
         return super.getPropertyValue(id);
     }
@@ -217,9 +210,6 @@ public class Transition extends NamedGraphElement implements Active {
             if (count > 1) {
                 result.append(getName());
             }
-            if (result.length() > 0) {
-                result.append(" (#" + Integer.toString(orderNum) + ")");
-            }
         }
         return result.toString();
     }
@@ -234,33 +224,14 @@ public class Transition extends NamedGraphElement implements Active {
         return copy;
     }
 
-    public int getOrderNum() {
-        return orderNum;
-    }
-
-    public void setOrderNum(int orderNum) {
-        if (getSource() instanceof TaskState) {
-            int oldOrderNum = this.orderNum;
-            Transition swapTransition = null;
-            List<Transition> leavingTransitions = getSource().getLeavingTransitions();
-            for (Transition leavingTransition : leavingTransitions) {
-                if (!leavingTransition.equals(this) && orderNum != 0 && leavingTransition.getOrderNum() == orderNum) {
-                    swapTransition = leavingTransition;
-                    break;
-                }
-            }
-            this.orderNum = orderNum;
-            firePropertyChange(PROPERTY_ORDERNUM, oldOrderNum, this.orderNum);
-            if (swapTransition != null) {
-                swapTransition.setOrderNum(oldOrderNum);
-            }
-        }
-    }
-
     @Override
     public void setPropertyValue(Object id, Object value) {
         if (PROPERTY_ORDERNUM.equals(id)) {
-            setOrderNum(Integer.parseInt((String) value));
+            Object oldOrderNum = getPropertyValue(PROPERTY_ORDERNUM);
+            Transition anotherTransition = getSource().getLeavingTransitions().get(Integer.parseInt((String) value) - 1);
+            getSource().swapChilds(this, anotherTransition);
+            firePropertyChange(PROPERTY_ORDERNUM, oldOrderNum, value);
+            anotherTransition.firePropertyChange(PROPERTY_ORDERNUM, value, oldOrderNum);
         } else {
             super.setPropertyValue(id, value);
         }

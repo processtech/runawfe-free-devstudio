@@ -195,18 +195,6 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
         } else {
             getProcessDefinition().setNextNodeIdIfApplicable(nodeId);
         }
-        if (this instanceof TaskState && child instanceof Transition) {
-            Transition transition = (Transition) child;
-            if (transition.getOrderNum() == 0) {
-                int maxOrderNum = 0;
-                for (Transition leavingTransition : getChildren(Transition.class)) {
-                    if (leavingTransition.getOrderNum() > maxOrderNum) {
-                        maxOrderNum = leavingTransition.getOrderNum();
-                    }
-                }
-                transition.setOrderNum(maxOrderNum + 1);
-            }
-        }
     }
 
     public void swapChilds(GraphElement child1, GraphElement child2) {

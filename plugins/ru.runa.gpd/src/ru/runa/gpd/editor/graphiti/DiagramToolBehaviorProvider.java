@@ -8,12 +8,15 @@ import org.eclipse.graphiti.features.context.IPictogramElementContext;
 import org.eclipse.graphiti.features.context.impl.CreateConnectionContext;
 import org.eclipse.graphiti.features.context.impl.CreateContext;
 import org.eclipse.graphiti.features.custom.ICustomFeature;
+import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
+import org.eclipse.graphiti.mm.algorithms.Polyline;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.tb.ContextButtonEntry;
 import org.eclipse.graphiti.tb.DefaultToolBehaviorProvider;
 import org.eclipse.graphiti.tb.IContextButtonPadData;
 
+import ru.runa.gpd.Localization;
 import ru.runa.gpd.editor.graphiti.create.CreateAnnotationFeature;
 import ru.runa.gpd.editor.graphiti.create.CreateElementFeature;
 import ru.runa.gpd.editor.graphiti.create.CreateSwimlaneFeature;
@@ -65,7 +68,8 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
         CreateConnectionContext createConnectionContext = new CreateConnectionContext();
         createConnectionContext.setSourcePictogramElement(pe);
         boolean allowTargetNodeCreation = !(element instanceof EndState) && !(element instanceof EndTokenState)
-                && !(element instanceof Timer && element.getParent() instanceof ITimed) && !(element instanceof Swimlane) && !(element instanceof TextAnnotation);
+                && !(element instanceof Timer && element.getParent() instanceof ITimed) && !(element instanceof Swimlane)
+                && !(element instanceof TextAnnotation);
         //
         CreateContext createContext = new CreateContext();
         createContext.setTargetContainer((ContainerShape) pe.eContainer());
@@ -119,4 +123,19 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
         return data;
     }
 
+    @Override
+    public String getToolTip(GraphicsAlgorithm ga) {
+        if (ga instanceof Polyline) {
+            Object element = getFeatureProvider().getBusinessObjectForPictogramElement(ga.getPictogramElement());
+            if (element instanceof Transition) {
+                Transition transition = (Transition) element;
+                StringBuilder orderNum = new StringBuilder(transition.getPropertyValue(Transition.PROPERTY_ORDERNUM).toString());
+                if (orderNum.length() > 0) {
+                    orderNum.insert(0, Localization.getString("Transition.property.orderNum") + ": ");
+                }
+                return orderNum.toString();
+            }
+        }
+        return super.getToolTip(ga);
+    }
 }

@@ -1,7 +1,6 @@
 package ru.runa.gpd.lang;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -45,8 +44,6 @@ import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.util.Duration;
 import ru.runa.gpd.util.MultiinstanceParameters;
 import ru.runa.gpd.util.SwimlaneDisplayMode;
-import ru.runa.gpd.util.TransitionComparatorByOrderNum;
-import ru.runa.gpd.util.TransitionOrderNumUtils;
 import ru.runa.gpd.util.VariableMapping;
 import ru.runa.gpd.util.XmlUtil;
 import ru.runa.wfe.definition.ProcessDefinitionAccessType;
@@ -80,7 +77,6 @@ public class BpmnSerializer extends ProcessSerializer {
     private static final String VARIABLES = "variables";
     private static final String SOURCE_REF = "sourceRef";
     private static final String TARGET_REF = "targetRef";
-    private static final String ORDER_NUM = "orderNum";
     private static final String SUBPROCESS = "subProcess";
     private static final String MULTI_INSTANCE = "multiInstance";
     private static final String EXCLUSIVE_GATEWAY = "exclusiveGateway";
@@ -375,9 +371,6 @@ public class BpmnSerializer extends ProcessSerializer {
 
     private void writeTransitions(Element parent, Node node) {
         List<Transition> transitions = node.getLeavingTransitions();
-        if (node instanceof TaskState) {
-            Collections.sort(transitions, new TransitionComparatorByOrderNum());
-        }
         for (Transition transition : transitions) {
             Element transitionElement = parent.addElement(SEQUENCE_FLOW);
             transitionElement.addAttribute(ID, transition.getId());
@@ -389,9 +382,6 @@ public class BpmnSerializer extends ProcessSerializer {
             }
             transitionElement.addAttribute(SOURCE_REF, sourceNodeId);
             transitionElement.addAttribute(TARGET_REF, targetNodeId);
-            if (node instanceof TaskState) {
-                transitionElement.addAttribute(ORDER_NUM, Integer.toString(transition.getOrderNum()));
-            }
         }
     }
 
@@ -739,9 +729,6 @@ public class BpmnSerializer extends ProcessSerializer {
             transition.setId(transitionElement.attributeValue(ID));
             transition.setName(transitionElement.attributeValue(NAME));
             transition.setTarget(target);
-            if (source instanceof TaskState) {
-                transition.setOrderNum(TransitionOrderNumUtils.parseOrderNum(transitionElement.attributeValue(ORDER_NUM), source, transition));
-            }
             source.addLeavingTransition(transition);
         }
         for (Map.Entry<Swimlane, List<String>> entry : swimlaneElementIds.entrySet()) {
