@@ -172,7 +172,11 @@ public class RenameVariableRefactoring extends Refactoring {
     }
 
     public boolean isUserInteractionNeeded() {
-        checkInitialConditions(null);
+        RefactoringStatus initialStatus = checkInitialConditions(null);
+        if (initialStatus.hasFatalError()) {
+            finalStatus.merge(initialStatus);
+            return true;
+        }
         return createChange(null).getChildren().length > 0;
     }
 
