@@ -14,17 +14,20 @@ import ru.runa.gpd.swimlane.SwimlaneInitializer;
 import ru.runa.gpd.swimlane.SwimlaneInitializerParser;
 
 public class SwimlanePresentation extends SingleVariableRenameProvider<Swimlane> {
-    private final SwimlaneInitializer swimlaneInitializer;
+    private SwimlaneInitializer swimlaneInitializer;
 
     public SwimlanePresentation(Swimlane swimlane) {
         setElement(swimlane);
-        swimlaneInitializer = SwimlaneInitializerParser.parse(element.getDelegationConfiguration());
+        if (swimlane != null && swimlane.getDelegationConfiguration() != null
+                && Swimlane.DEFAULT_DELEGATION_CLASS_NAME.equals(swimlane.getDelegationClassName())) {
+            swimlaneInitializer = SwimlaneInitializerParser.parse(element.getDelegationConfiguration());
+        }
     }
 
     @Override
     protected List<Change> getChanges(Variable oldVariable, Variable newVariable) throws Exception {
         List<Change> changes = new ArrayList<>();
-        if (swimlaneInitializer.hasReference(oldVariable)) {
+        if (swimlaneInitializer != null && swimlaneInitializer.hasReference(oldVariable)) {
             changes.add(new SwimlaneInitializerChange(element, oldVariable, newVariable));
         }
         return changes;
