@@ -177,7 +177,11 @@ public class RenameVariableRefactoring extends Refactoring {
             finalStatus.merge(initialStatus);
             return true;
         }
-        return createChange(null).getChildren().length > 0;
+        CompositeChange change = createChange(null);
+        if (finalStatus.hasWarning() || finalStatus.hasError() || finalStatus.hasFatalError()) {
+            return true;
+        }
+        return change.getChildren().length > 0;
     }
 
     @Override
