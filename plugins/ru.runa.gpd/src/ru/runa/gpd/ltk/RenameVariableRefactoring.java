@@ -163,8 +163,8 @@ public class RenameVariableRefactoring extends Refactoring {
                     cashedChange.addAll(changes.toArray(new Change[changes.size()]));
                 } catch (Exception e) {
                     PluginLogger.logErrorWithoutDialog("Unable to get used variabes in " + classPresentation.element, e);
-                    finalStatus.addWarning(Localization.getString("RenameVariableException") + classPresentation.element + ": "
-                            + e.getLocalizedMessage());
+                    RenameVariableRefactoringStatusContext context = new RenameVariableRefactoringStatusContext(e);
+                    finalStatus.addWarning(Localization.getString("RenameVariableException") + classPresentation.element, context);
                 }
             }
         }
