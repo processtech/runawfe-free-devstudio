@@ -44,16 +44,18 @@ public class RenameUserTypeAttributeRefactoring extends Refactoring {
     public RefactoringStatus checkInitialConditions(IProgressMonitor progressMonitor) {
         RefactoringStatus status = new RefactoringStatus();
         try {
-            List<Variable> result = VariableUtils.findVariablesOfTypeWithAttributeExpanded(processDefinition, type, oldAttribute);
-            for (Variable variable : result) {
-                String newName = variable.getName().replace(VariableUserType.DELIM + oldAttribute.getName(),
-                        VariableUserType.DELIM + newAttributeName);
-                String newScriptingName = variable.getScriptingName().replace(VariableUserType.DELIM + oldAttribute.getScriptingName(),
-                        VariableUserType.DELIM + newAttributeScriptingName);
-                RenameVariableRefactoring refactoring = new RenameVariableRefactoring(definitionFile, processDefinition, variable, newName,
-                        newScriptingName);
-                status.merge(refactoring.checkInitialConditions(progressMonitor));
-                refactorings.add(refactoring);
+            if (refactorings.size() == 0) {
+                List<Variable> result = VariableUtils.findVariablesOfTypeWithAttributeExpanded(processDefinition, type, oldAttribute);
+                for (Variable variable : result) {
+                    String newName = variable.getName().replace(VariableUserType.DELIM + oldAttribute.getName(),
+                            VariableUserType.DELIM + newAttributeName);
+                    String newScriptingName = variable.getScriptingName().replace(VariableUserType.DELIM + oldAttribute.getScriptingName(),
+                            VariableUserType.DELIM + newAttributeScriptingName);
+                    RenameVariableRefactoring refactoring = new RenameVariableRefactoring(definitionFile, processDefinition, variable, newName,
+                            newScriptingName);
+                    status.merge(refactoring.checkInitialConditions(progressMonitor));
+                    refactorings.add(refactoring);
+                }
             }
         } catch (Exception e) {
             PluginLogger.logErrorWithoutDialog(e.getMessage(), e);
@@ -69,12 +71,7 @@ public class RenameUserTypeAttributeRefactoring extends Refactoring {
 
     @Override
     public CompositeChange createChange(IProgressMonitor progressMonitor) throws CoreException {
-        CompositeChange compositeChange = new CompositeChange(getName());
-        for (RenameVariableRefactoring refactoring : refactorings) {
-            compositeChange.merge(refactoring.createChange(progressMonitor));
-            finalStatus.merge(refactoring.checkFinalConditions(null));
-        }
-        return compositeChange;
+        return RefactoringUtils.createChangeUserTypeAttribute(getName(), progressMonitor, refactorings, finalStatus);
     }
 
     public boolean isUserInteractionNeeded() {

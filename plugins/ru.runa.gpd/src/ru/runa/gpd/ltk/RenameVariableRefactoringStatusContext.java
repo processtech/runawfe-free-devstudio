@@ -1,17 +1,24 @@
 package ru.runa.gpd.ltk;
 
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.ltk.core.refactoring.RefactoringStatusContext;
 
 public class RenameVariableRefactoringStatusContext extends RefactoringStatusContext {
-    private final Exception exception;
+    private final VariableRenameProvider<?> provider;
+    private final IFolder definitionFolder;
 
-    public RenameVariableRefactoringStatusContext(Exception exception) {
+    public RenameVariableRefactoringStatusContext(VariableRenameProvider<?> provider, IFolder definitionFolder) {
         super();
-        this.exception = exception;
+        this.provider = provider;
+        this.definitionFolder = definitionFolder;
     }
 
     @Override
     public Object getCorrespondingElement() {
-        return exception;
+        return provider;
+    }
+
+    public IFolder getDefinitionFolder() {
+        return definitionFolder;
     }
 }
