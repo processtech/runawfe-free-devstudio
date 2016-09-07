@@ -341,8 +341,10 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
     }
 
     private enum RemoveAction {
-        NONE(""), OK("UserDefinedVariableType.deletion.NoUsageFound"), VAR_USAGE("UserDefinedVariableType.deletion.VariablesWillBeRemoved"), TYPE_USAGE(
-                "UserDefinedVariableType.deletion.UserTypeIsUsed");
+        NONE(""),
+        OK("UserDefinedVariableType.deletion.NoUsageFound"),
+        VAR_USAGE("UserDefinedVariableType.deletion.VariablesWillBeRemoved"),
+        TYPE_USAGE("UserDefinedVariableType.deletion.UserTypeIsUsed");
 
         private final String messageKey;
 
@@ -544,7 +546,8 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
                 RenameRefactoringWizard wizard = new RenameRefactoringWizard(refactoring);
                 wizard.setDefaultPageTitle(Localization.getString("Refactoring.variable.name"));
                 RefactoringWizardOpenOperation operation = new RefactoringWizardOpenOperation(wizard);
-                result = operation.run(Display.getCurrent().getActiveShell(), "");
+                result = operation
+                        .run(Display.getCurrent().getActiveShell(), Localization.getString("VariableTypeEditorPage.attribute.rename.title"));
                 if (result != IDialogConstants.OK_ID) {
                     return;
                 }
@@ -581,7 +584,8 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
                 RenameRefactoringWizard wizard = new RenameRefactoringWizard(refactoring);
                 wizard.setDefaultPageTitle(Localization.getString("Refactoring.variable.name"));
                 RefactoringWizardOpenOperation operation = new RefactoringWizardOpenOperation(wizard);
-                int result = operation.run(Display.getCurrent().getActiveShell(), "");
+                int result = operation.run(Display.getCurrent().getActiveShell(),
+                        Localization.getString("VariableTypeEditorPage.attribute.merge.title"));
                 if (result != IDialogConstants.OK_ID) {
                     return;
                 }
@@ -695,7 +699,8 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
                 RenameRefactoringWizard wizard = new RenameRefactoringWizard(refactoring);
                 wizard.setDefaultPageTitle(Localization.getString("Refactoring.variable.name"));
                 RefactoringWizardOpenOperation operation = new RefactoringWizardOpenOperation(wizard);
-                int result = operation.run(Display.getCurrent().getActiveShell(), "");
+                int result = operation.run(Display.getCurrent().getActiveShell(),
+                        Localization.getString("VariableTypeEditorPage.attribute.move.title"));
                 if (result != IDialogConstants.OK_ID) {
                     return;
                 }
@@ -750,7 +755,8 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
                     RenameRefactoringWizard wizard = new RenameRefactoringWizard(refactoring);
                     wizard.setDefaultPageTitle(Localization.getString("Refactoring.variable.name"));
                     RefactoringWizardOpenOperation operation = new RefactoringWizardOpenOperation(wizard);
-                    int result = operation.run(Display.getCurrent().getActiveShell(), "");
+                    int result = operation.run(Display.getCurrent().getActiveShell(),
+                            Localization.getString("VariableTypeEditorPage.attribute.move.title"));
                     if (result != IDialogConstants.OK_ID) {
                         return;
                     }

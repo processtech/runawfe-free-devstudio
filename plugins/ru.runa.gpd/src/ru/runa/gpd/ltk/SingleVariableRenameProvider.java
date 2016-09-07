@@ -29,6 +29,7 @@ public abstract class SingleVariableRenameProvider<T> extends VariableRenameProv
      *            new variable
      * @return list of changes or empty list
      * @throws Exception
+     *             TODO
      */
     protected abstract List<Change> getChanges(Variable oldVariable, Variable newVariable) throws Exception;
 }

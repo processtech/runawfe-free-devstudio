@@ -14,6 +14,8 @@ import org.eclipse.ui.IEditorPart;
 import ru.runa.gpd.SharedImages;
 
 public class SearchResult extends AbstractTextSearchResult implements IEditorMatchAdapter, IFileMatchAdapter {
+    private static final int MAX_LABEL_LENGTH = 66;
+
     private final BaseSearchQuery query;
 
     public SearchResult(BaseSearchQuery query) {
@@ -27,7 +29,12 @@ public class SearchResult extends AbstractTextSearchResult implements IEditorMat
 
     @Override
     public String getLabel() {
-        Object[] args = { query.getSearchText(), query.getContext(), getMatchCount() };
+        StringBuilder label = new StringBuilder(query.getSearchText());
+        if (label.length() > MAX_LABEL_LENGTH) {
+            label.delete(MAX_LABEL_LENGTH + 1, label.length() + 1);
+            label.append("...");
+        }
+        Object[] args = { label.toString(), query.getContext(), getMatchCount() };
         return MessageFormat.format("\"{0}\" - \"{1}\":{2}", args);
     }
 

@@ -26,4 +26,8 @@ public abstract class VariableRenameProvider<T> {
      * @throws Exception
      */
     public abstract List<Change> getChanges(SortedMap<Variable, Variable> variablesMap) throws Exception;
+
+    public T getElement() {
+        return element;
+    }
 }
