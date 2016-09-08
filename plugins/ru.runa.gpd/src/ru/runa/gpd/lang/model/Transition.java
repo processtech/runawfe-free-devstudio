@@ -197,10 +197,9 @@ public class Transition extends NamedGraphElement implements Active {
             if (getSource() instanceof ITimed) {
                 timer = ((ITimed) getSource()).getTimer();
             }
-            if (timer != null) {
-                result.append(timer.getDelay().toString());
-            }
-        } else if (getSource() instanceof TaskState) {
+            return timer != null ? timer.getDelay().toString() : "";
+        }
+        if (getSource() instanceof TaskState || getSource() instanceof StartState) {
             int count = 0;
             for (Transition transition : getSource().getLeavingTransitions()) {
                 if (!PluginConstants.TIMER_TRANSITION_NAME.equals(transition.getName())) {
