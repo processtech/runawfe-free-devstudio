@@ -168,7 +168,7 @@ public class Transition extends NamedGraphElement implements Active {
         } else if (PROPERTY_TARGET.equals(id) && getTarget() != null) {
             return target != null ? target.getName() : "";
         } else if (PROPERTY_ORDERNUM.equals(id)) {
-            return getSource() instanceof TaskState ? Integer.toString(getSource().getLeavingTransitions().indexOf(this) + 1) : "";
+            return getSource() instanceof TaskState ? Integer.toString(getSource().getLeavingTransitions().indexOf(this) + 1) : null;
         }
         return super.getPropertyValue(id);
     }
