@@ -23,16 +23,12 @@ import ru.runa.gpd.editor.graphiti.create.CreateSwimlaneFeature;
 import ru.runa.gpd.editor.graphiti.update.OpenSubProcessFeature;
 import ru.runa.gpd.lang.NodeRegistry;
 import ru.runa.gpd.lang.NodeTypeDefinition;
-import ru.runa.gpd.lang.model.EndState;
-import ru.runa.gpd.lang.model.EndTokenState;
 import ru.runa.gpd.lang.model.GraphElement;
-import ru.runa.gpd.lang.model.ITimed;
+import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.Subprocess;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.TaskState;
-import ru.runa.gpd.lang.model.TextAnnotation;
 import ru.runa.gpd.lang.model.TextDecorationNode;
-import ru.runa.gpd.lang.model.Timer;
 import ru.runa.gpd.lang.model.Transition;
 
 public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
@@ -67,9 +63,7 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
         //
         CreateConnectionContext createConnectionContext = new CreateConnectionContext();
         createConnectionContext.setSourcePictogramElement(pe);
-        boolean allowTargetNodeCreation = !(element instanceof EndState) && !(element instanceof EndTokenState)
-                && !(element instanceof Timer && element.getParent() instanceof ITimed) && !(element instanceof Swimlane)
-                && !(element instanceof TextAnnotation);
+        boolean allowTargetNodeCreation = (element instanceof Node) && ((Node) element).canAddLeavingTransition();
         //
         CreateContext createContext = new CreateContext();
         createContext.setTargetContainer((ContainerShape) pe.eContainer());
@@ -129,11 +123,10 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
             Object element = getFeatureProvider().getBusinessObjectForPictogramElement(ga.getPictogramElement());
             if (element instanceof Transition) {
                 Transition transition = (Transition) element;
-                StringBuilder orderNum = new StringBuilder(transition.getPropertyValue(Transition.PROPERTY_ORDERNUM).toString());
-                if (orderNum.length() > 0) {
-                    orderNum.insert(0, Localization.getString("Transition.property.orderNum") + ": ");
+                Object orderNum = transition.getPropertyValue(Transition.PROPERTY_ORDERNUM);
+                if (orderNum != null) {
+                    return Localization.getString("Transition.property.orderNum") + ": " + orderNum;
                 }
-                return orderNum.toString();
             }
         }
         return super.getToolTip(ga);
