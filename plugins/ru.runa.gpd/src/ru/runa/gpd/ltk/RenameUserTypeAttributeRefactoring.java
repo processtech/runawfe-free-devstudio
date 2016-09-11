@@ -69,9 +69,14 @@ public class RenameUserTypeAttributeRefactoring extends Refactoring {
         return finalStatus;
     }
 
+    private CompositeChange cashedChange = null;
+
     @Override
     public CompositeChange createChange(IProgressMonitor progressMonitor) throws CoreException {
-        return RefactoringUtils.createChangeUserTypeAttribute(getName(), progressMonitor, refactorings, finalStatus);
+        if (cashedChange == null) {
+            cashedChange = RefactoringUtils.createChangeUserTypeAttribute(getName(), progressMonitor, refactorings, finalStatus);
+        }
+        return cashedChange;
     }
 
     public boolean isUserInteractionNeeded() {
