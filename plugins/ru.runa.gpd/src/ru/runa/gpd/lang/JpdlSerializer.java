@@ -26,6 +26,7 @@ import ru.runa.gpd.lang.model.Event;
 import ru.runa.gpd.lang.model.Fork;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.ITimed;
+import ru.runa.gpd.lang.model.InterruptingNode;
 import ru.runa.gpd.lang.model.Join;
 import ru.runa.gpd.lang.model.MultiSubprocess;
 import ru.runa.gpd.lang.model.MultiTaskState;
@@ -319,6 +320,7 @@ public class JpdlSerializer extends ProcessSerializer {
         Element timerElement = parent.addElement(TIMER);
         setAttribute(timerElement, ID, timer.getId());
         setAttribute(timerElement, DUEDATE, timer.getDelay().getDuration());
+        setAttribute(timerElement, INTERRUPTING, timer.isInterrupting() ? "true" : "false");
         if (timer.getAction() != null) {
             if (timer.getAction().getRepeatDelay().hasDuration()) {
                 setAttribute(timerElement, REPEAT, timer.getAction().getRepeatDelay().getDuration());
@@ -350,6 +352,9 @@ public class JpdlSerializer extends ProcessSerializer {
                 Element desc = result.addElement(DESCRIPTION);
                 setNodeValue(desc, description);
             }
+        }
+        if (element instanceof InterruptingNode) {
+            result.addAttribute(INTERRUPTING, ((InterruptingNode) element).isInterrupting() ? "true" : "false");
         }
         return result;
     }
@@ -427,6 +432,10 @@ public class JpdlSerializer extends ProcessSerializer {
         String nodeAsyncExecutionValue = node.attributeValue(NODE_ASYNC_EXECUTION);
         if (element instanceof Node && !Strings.isNullOrEmpty(nodeAsyncExecutionValue)) {
             ((Node) element).setAsyncExecution(NodeAsyncExecution.getByValueNotNull(nodeAsyncExecutionValue));
+        }
+        String interrupting = node.attributeValue(INTERRUPTING);
+        if (element instanceof InterruptingNode && !Strings.isNullOrEmpty(interrupting)) {
+            ((InterruptingNode) element).setInterrupting(Boolean.parseBoolean(interrupting));
         }
         List<Element> nodeList = node.elements();
         for (Element childNode : nodeList) {
@@ -637,6 +646,10 @@ public class JpdlSerializer extends ProcessSerializer {
                             if (dueDate != null) {
                                 timer.setDelay(new Duration(dueDate));
                             }
+                            String interrupting = stateNodeChild.attributeValue(INTERRUPTING);
+                            if (!Strings.isNullOrEmpty(interrupting)) {
+                                timer.setInterrupting(Boolean.parseBoolean(interrupting));
+                            }
                             state.addChild(timer);
                         }
                         if (state instanceof Timer) {
@@ -758,6 +771,10 @@ public class JpdlSerializer extends ProcessSerializer {
                 }
             }
             messageNode.setVariableMappings(variablesList);
+            String interrupting = node.attributeValue(INTERRUPTING);
+            if (!Strings.isNullOrEmpty(interrupting)) {
+                messageNode.setInterrupting(Boolean.parseBoolean(interrupting));
+            }
         }
         List<Element> receiveMessageNodes = root.elements(RECEIVE_MESSAGE);
         for (Element node : receiveMessageNodes) {
@@ -788,6 +805,10 @@ public class JpdlSerializer extends ProcessSerializer {
                 }
             }
             messageNode.setVariableMappings(variablesList);
+            String interrupting = node.attributeValue(INTERRUPTING);
+            if (!Strings.isNullOrEmpty(interrupting)) {
+                messageNode.setInterrupting(Boolean.parseBoolean(interrupting));
+            }
         }
         List<Element> endTokenStates = root.elements(END_TOKEN);
         for (Element node : endTokenStates) {

@@ -24,6 +24,7 @@ public abstract class ProcessSerializer {
     public static final String IGNORE_SUBSTITUTION_RULES = "ignoreSubstitutionRules";
     public static final String EMBEDDED = "embedded";
     public static final String NODE_ASYNC_EXECUTION = "asyncExecution";
+    public static final String INTERRUPTING = "interrupting";
 
     public abstract boolean isSupported(Document document);
 

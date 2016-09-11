@@ -11,6 +11,7 @@ import org.eclipse.graphiti.services.IGaService;
 import org.eclipse.graphiti.services.IPeCreateService;
 
 import ru.runa.gpd.editor.GEFConstants;
+import ru.runa.gpd.editor.graphiti.IconUtil;
 import ru.runa.gpd.lang.model.ITimed;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.Timer;
@@ -43,7 +44,11 @@ public class AddTimerFeature extends AddNodeFeature implements GEFConstants {
         IPeCreateService createService = Graphiti.getPeCreateService();
         ContainerShape containerShape = createService.createContainerShape(parentShape, true);
         IGaService gaService = Graphiti.getGaService();
-        Image image = gaService.createImage(containerShape, "graph/" + imageName);
+        String imageId = "graph/" + imageName;
+        if (!timer.isInterrupting()) {
+            imageId = IconUtil.getIconNameNotInterrupting(imageId);
+        }
+        Image image = gaService.createImage(containerShape, imageId);
         gaService.setLocationAndSize(image, context.getX(), context.getY(), bounds.width, bounds.height);
         link(containerShape, timer);
         createService.createChopboxAnchor(containerShape);
