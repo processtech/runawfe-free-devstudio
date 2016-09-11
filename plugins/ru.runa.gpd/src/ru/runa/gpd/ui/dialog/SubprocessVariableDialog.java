@@ -22,13 +22,15 @@ import org.eclipse.swt.widgets.Shell;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.util.VariableMapping;
 
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
+
 public class SubprocessVariableDialog extends Dialog {
     private final List<String> processVariables;
     private final List<String> subprocessVariables;
     private String processVariable = "variable";
     private String subprocessVariable = "variable";
-    private boolean usageRead = true;
-    private boolean usageWrite = false;
+    private final List<String> usages = Lists.newArrayList();
     private final VariableMapping oldMapping;
 
     protected SubprocessVariableDialog(List<String> processVariables, List<String> subprocessVariables, VariableMapping oldMapping) {
@@ -39,15 +41,25 @@ public class SubprocessVariableDialog extends Dialog {
         if (oldMapping != null) {
             this.processVariable = oldMapping.getName();
             this.subprocessVariable = oldMapping.getMappedName();
-            this.usageRead = oldMapping.isReadable();
-            this.usageWrite = oldMapping.isWritable();
+            if (oldMapping.isReadable()) {
+                this.usages.add(VariableMapping.USAGE_READ);
+            }
+            if (oldMapping.isWritable()) {
+                this.usages.add(VariableMapping.USAGE_WRITE);
+            }
+            if (oldMapping.isSyncable()) {
+                this.usages.add(VariableMapping.USAGE_SYNC);
+            }
+        } else {
+            this.usages.add(VariableMapping.USAGE_READ);
         }
     }
 
     @Override
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
-        String message = oldMapping != null ? Localization.getString("Subprocess.UpdateVariableMapping") : Localization.getString("Subprocess.CreateVariableMapping");
+        String message = oldMapping != null ? Localization.getString("Subprocess.UpdateVariableMapping") : Localization
+                .getString("Subprocess.CreateVariableMapping");
         newShell.setText(message);
     }
 
@@ -73,6 +85,7 @@ public class SubprocessVariableDialog extends Dialog {
         processVariableField.setLayoutData(processVariableTextData);
         processVariableField.setText(getProcessVariable());
         processVariableField.addModifyListener(new ModifyListener() {
+            @Override
             public void modifyText(ModifyEvent e) {
                 processVariable = processVariableField.getText();
             }
@@ -87,11 +100,12 @@ public class SubprocessVariableDialog extends Dialog {
         subprocessVariableField.setLayoutData(subprocessVariableTextData);
         subprocessVariableField.setText(getSubprocessVariable());
         subprocessVariableField.addModifyListener(new ModifyListener() {
+            @Override
             public void modifyText(ModifyEvent e) {
                 subprocessVariable = subprocessVariableField.getText();
             }
         });
-        
+
         Group g = new Group(composite, SWT.NONE);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 2;
@@ -100,43 +114,45 @@ public class SubprocessVariableDialog extends Dialog {
         g.setText(Localization.getString("VariableMapping.Usage"));
         final Button readCheckbox = new Button(g, SWT.CHECK);
         readCheckbox.setText(Localization.getString("VariableMapping.Usage.Read"));
-        readCheckbox.setSelection(usageRead);
+        readCheckbox.setSelection(usages.contains(VariableMapping.USAGE_READ));
         final Button writeCheckbox = new Button(g, SWT.CHECK);
         writeCheckbox.setText(Localization.getString("VariableMapping.Usage.Write"));
-        writeCheckbox.setSelection(usageWrite);
+        writeCheckbox.setSelection(usages.contains(VariableMapping.USAGE_WRITE));
+        final Button syncCheckbox = new Button(g, SWT.CHECK);
+        syncCheckbox.setText(Localization.getString("VariableMapping.Usage.Sync"));
+        syncCheckbox.setSelection(usages.contains(VariableMapping.USAGE_SYNC));
         readCheckbox.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                usageRead = readCheckbox.getSelection();
-                updateButtons();
+                updateButtons(readCheckbox.getSelection(), VariableMapping.USAGE_READ);
             }
         });
         writeCheckbox.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                usageWrite = writeCheckbox.getSelection();
-                updateButtons();
+                updateButtons(writeCheckbox.getSelection(), VariableMapping.USAGE_WRITE);
+            }
+        });
+        syncCheckbox.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                updateButtons(syncCheckbox.getSelection(), VariableMapping.USAGE_SYNC);
             }
         });
         return area;
     }
-    
-    private void updateButtons() {
-        getButton(OK).setEnabled(usageRead || usageWrite);
+
+    private void updateButtons(boolean selected, String usage) {
+        if (selected) {
+            usages.add(usage);
+        } else {
+            usages.remove(usage);
+        }
+        getButton(OK).setEnabled(!usages.isEmpty());
     }
 
     public String getAccess() {
-        StringBuffer buf = new StringBuffer();
-        if (usageRead) {
-            buf.append(VariableMapping.USAGE_READ);
-        }
-        if (usageWrite) {
-            if (buf.length() > 0) {
-                buf.append(",");
-            }
-            buf.append(VariableMapping.USAGE_WRITE);
-        }
-        return buf.toString();
+        return Joiner.on(",").join(usages);
     }
 
     public String getProcessVariable() {
