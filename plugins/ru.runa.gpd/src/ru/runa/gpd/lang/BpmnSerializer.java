@@ -328,7 +328,9 @@ public class BpmnSerializer extends ProcessSerializer {
         }
         setAttribute(parentElement, ID, timer.getId());
         setAttribute(parentElement, NAME, timer.getName());
-        setAttribute(parentElement, INTERRUPTING, timer.isInterrupting() ? "true" : "false");
+        if (BOUNDARY_EVENT.equals(parentElement.getName()) && !timer.isInterrupting()) {
+            setAttribute(parentElement, INTERRUPTING, Boolean.FALSE.toString());
+        }
         Element eventElement = parentElement.addElement(timer.getTypeDefinition().getBpmnElementName());
         if (!Strings.isNullOrEmpty(timer.getDescription())) {
             eventElement.addElement(DOCUMENTATION).addCDATA(timer.getDescription());
@@ -368,8 +370,10 @@ public class BpmnSerializer extends ProcessSerializer {
                 result.addElement(DOCUMENTATION).addCDATA(description);
             }
         }
-        if (element instanceof InterruptingNode) {
-            result.addAttribute(INTERRUPTING, ((InterruptingNode) element).isInterrupting() ? "true" : "false");
+        if (BOUNDARY_EVENT.equals(bpmnElementName) && element instanceof InterruptingNode) {
+            if (!((InterruptingNode) element).isInterrupting()) {
+                result.addAttribute(INTERRUPTING, Boolean.FALSE.toString());
+            }
         }
         return result;
     }
@@ -661,19 +665,11 @@ public class BpmnSerializer extends ProcessSerializer {
             String duration = messageElement.attributeValue(TIME_DURATION, "1 days");
             messageNode.setTtlDuration(new Duration(duration));
             messageNode.setVariableMappings(parseVariableMappings(messageElement));
-            String interrupting = messageElement.attributeValue(INTERRUPTING);
-            if (!Strings.isNullOrEmpty(interrupting)) {
-                messageNode.setInterrupting(Boolean.parseBoolean(interrupting));
-            }
         }
         List<Element> receiveMessageElements = process.elements(RECEIVE_TASK);
         for (Element messageElement : receiveMessageElements) {
             ReceiveMessageNode messageNode = create(messageElement, definition);
             messageNode.setVariableMappings(parseVariableMappings(messageElement));
-            String interrupting = messageElement.attributeValue(INTERRUPTING);
-            if (!Strings.isNullOrEmpty(interrupting)) {
-                messageNode.setInterrupting(Boolean.parseBoolean(interrupting));
-            }
         }
         List<Element> intermediateEventElements = process.elements(INTERMEDIATE_CATCH_EVENT);
         for (Element intermediateEventElement : intermediateEventElements) {
@@ -682,10 +678,6 @@ public class BpmnSerializer extends ProcessSerializer {
                 Timer timer = create(eventElement, definition);
                 timer.setId(intermediateEventElement.attributeValue(ID));
                 timer.setName(intermediateEventElement.attributeValue(NAME));
-                String interrupting = intermediateEventElement.attributeValue(INTERRUPTING);
-                if (!Strings.isNullOrEmpty(interrupting)) {
-                    timer.setInterrupting(Boolean.parseBoolean(interrupting));
-                }
 
                 Map<String, String> properties = parseExtensionProperties(eventElement);
                 String delegationClassName = properties.get(CLASS);

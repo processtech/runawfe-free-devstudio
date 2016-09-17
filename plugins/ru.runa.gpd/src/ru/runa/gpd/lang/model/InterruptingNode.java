@@ -25,8 +25,10 @@ public abstract class InterruptingNode extends Node {
     @Override
     protected void populateCustomPropertyDescriptors(List<IPropertyDescriptor> descriptors) {
         super.populateCustomPropertyDescriptors(descriptors);
-        descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_INTERRUPTING, Localization.getString("property.interrupting"),
-                BooleanPropertyComboBoxTransformer.LABELS));
+        if (getParent() instanceof ITimed) {
+            descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_INTERRUPTING, Localization.getString("property.interrupting"),
+                    BooleanPropertyComboBoxTransformer.LABELS));
+        }
     }
 
     @Override
