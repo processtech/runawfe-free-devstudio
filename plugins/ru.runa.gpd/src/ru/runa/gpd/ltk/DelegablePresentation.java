@@ -15,7 +15,7 @@ import ru.runa.gpd.lang.model.Variable;
 public class DelegablePresentation extends SingleVariableRenameProvider<Delegable> {
     private final DelegableProvider provider;
 
-    public DelegablePresentation(final Delegable delegable, String name) {
+    public DelegablePresentation(final Delegable delegable) {
         setElement(delegable);
         provider = HandlerRegistry.getProvider(element.getDelegationClassName());
     }
