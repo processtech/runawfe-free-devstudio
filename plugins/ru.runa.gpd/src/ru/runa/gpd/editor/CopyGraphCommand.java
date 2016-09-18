@@ -20,6 +20,7 @@ import ru.runa.gpd.editor.CopyBuffer.ExtraCopyAction;
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.lang.model.Delegable;
+import ru.runa.gpd.lang.model.EndState;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.Node;
@@ -77,6 +78,8 @@ public class CopyGraphCommand extends Command {
             // add nodes
             for (NamedGraphElement node : sourceNodeList) {
                 if (node instanceof StartState && targetDefinition.getChildren(StartState.class).size() != 0) {
+                    continue;
+                } else if (node instanceof EndState && targetDefinition instanceof SubprocessDefinition) {
                     continue;
                     // if swimlane is copied as graph element twice
                 } else if (node instanceof Swimlane && targetDefinition.getSwimlaneByName(node.getName()) != null) {
