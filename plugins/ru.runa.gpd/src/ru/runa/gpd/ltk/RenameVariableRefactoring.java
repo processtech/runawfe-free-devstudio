@@ -117,15 +117,15 @@ public class RenameVariableRefactoring extends Refactoring {
         }
         List<Action> actions = processDefinition.getChildrenRecursive(Action.class);
         for (Action action : actions) {
-            cache.add(new DelegablePresentation(action, action.getLabel()));
+            cache.add(new DelegablePresentation(action));
         }
         List<ScriptTask> scriptTasks = processDefinition.getChildrenRecursive(ScriptTask.class);
         for (ScriptTask scriptTask : scriptTasks) {
-            cache.add(new DelegablePresentation(scriptTask, scriptTask.getLabel()));
+            cache.add(new DelegablePresentation(scriptTask));
         }
         List<Decision> decisions = processDefinition.getChildren(Decision.class);
         for (Decision decision : decisions) {
-            cache.add(new DelegablePresentation(decision, decision.getName()));
+            cache.add(new DelegablePresentation(decision));
         }
         List<Subprocess> subprocesses = processDefinition.getChildren(Subprocess.class);
         for (Subprocess subprocess : subprocesses) {
