@@ -11,7 +11,7 @@ import ru.runa.gpd.util.VariableUtils;
 
 import com.google.common.collect.Lists;
 
-public class MessagingNode extends Node implements Active {
+public class MessagingNode extends InterruptingNode implements Active {
     protected final List<VariableMapping> variableMappings = new ArrayList<VariableMapping>();
     private static final List<String> SELECTOR_SPECIAL_NAMES = Lists.newArrayList(VariableUtils.CURRENT_PROCESS_ID,
             VariableUtils.CURRENT_PROCESS_DEFINITION_NAME, VariableUtils.CURRENT_NODE_NAME, VariableUtils.CURRENT_NODE_ID);

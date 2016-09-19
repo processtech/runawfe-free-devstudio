@@ -19,6 +19,7 @@ import ru.runa.gpd.lang.model.EndTokenState;
 import ru.runa.gpd.lang.model.ExclusiveGateway;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.ITimed;
+import ru.runa.gpd.lang.model.InterruptingNode;
 import ru.runa.gpd.lang.model.MultiSubprocess;
 import ru.runa.gpd.lang.model.MultiTaskState;
 import ru.runa.gpd.lang.model.NamedGraphElement;
@@ -327,6 +328,9 @@ public class BpmnSerializer extends ProcessSerializer {
         }
         setAttribute(parentElement, ID, timer.getId());
         setAttribute(parentElement, NAME, timer.getName());
+        if (BOUNDARY_EVENT.equals(parentElement.getName()) && !timer.isInterrupting()) {
+            setAttribute(parentElement, INTERRUPTING, Boolean.FALSE.toString());
+        }
         Element eventElement = parentElement.addElement(timer.getTypeDefinition().getBpmnElementName());
         if (!Strings.isNullOrEmpty(timer.getDescription())) {
             eventElement.addElement(DOCUMENTATION).addCDATA(timer.getDescription());
@@ -364,6 +368,11 @@ public class BpmnSerializer extends ProcessSerializer {
             String description = ((Describable) element).getDescription();
             if (!Strings.isNullOrEmpty(description)) {
                 result.addElement(DOCUMENTATION).addCDATA(description);
+            }
+        }
+        if (BOUNDARY_EVENT.equals(bpmnElementName) && element instanceof InterruptingNode) {
+            if (!((InterruptingNode) element).isInterrupting()) {
+                result.addAttribute(INTERRUPTING, Boolean.FALSE.toString());
             }
         }
         return result;
@@ -693,6 +702,10 @@ public class BpmnSerializer extends ProcessSerializer {
                 timer.setId(boundaryEventElement.attributeValue(ID));
                 timer.setName(boundaryEventElement.attributeValue(NAME));
                 timer.setParentContainer(parent);
+                String interrupting = boundaryEventElement.attributeValue(INTERRUPTING);
+                if (!Strings.isNullOrEmpty(interrupting)) {
+                    timer.setInterrupting(Boolean.parseBoolean(interrupting));
+                }
 
                 Map<String, String> properties = parseExtensionProperties(eventElement);
                 String delegationClassName = properties.get(CLASS);

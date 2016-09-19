@@ -15,7 +15,7 @@ import ru.runa.gpd.property.TimerActionPropertyDescriptor;
 import ru.runa.gpd.util.Duration;
 import ru.runa.gpd.util.VariableUtils;
 
-public class Timer extends Node {
+public class Timer extends InterruptingNode {
     private Duration duration = new Duration();
     private TimerAction action;
 
