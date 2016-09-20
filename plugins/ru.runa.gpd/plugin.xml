@@ -962,7 +962,6 @@
                create="ru.runa.gpd.editor.graphiti.create.CreateElementFeature"
                height="4"
                fixedSize="true"
-               update="ru.runa.gpd.editor.graphiti.update.UpdateInterruptingNodeFeature"
                width="4">
          </graphiti>
       </element>
@@ -987,7 +986,6 @@
                create="ru.runa.gpd.editor.graphiti.create.CreateElementFeature"
                height="4"
                fixedSize="true"
-               update="ru.runa.gpd.editor.graphiti.update.UpdateInterruptingNodeFeature"
                width="4">
          </graphiti>
       </element>

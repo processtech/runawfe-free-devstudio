@@ -115,7 +115,6 @@
 			<xsd:extension base="tCatchEvent">
 				<xsd:attribute name="cancelActivity" type="xsd:boolean" default="true"/>
 				<xsd:attribute name="attachedToRef" type="xsd:QName" use="required"/>
-				<xsd:attribute name="interrupting" type="xsd:boolean" use="optional"/>
 			</xsd:extension>
 		</xsd:complexContent>
 	</xsd:complexType>			
