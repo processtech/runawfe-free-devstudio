@@ -15,6 +15,7 @@ import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
 import org.eclipse.ui.views.properties.TextPropertyDescriptor;
 
+import ru.runa.gpd.IPropertyNames;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.editor.GEFConstants;
@@ -24,6 +25,8 @@ import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.NodeRegistry;
 import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.lang.ValidationError;
+import ru.runa.gpd.lang.model.jpdl.Action;
+import ru.runa.gpd.lang.model.jpdl.ActionContainer;
 import ru.runa.gpd.property.DelegableClassPropertyDescriptor;
 import ru.runa.gpd.property.DelegableConfPropertyDescriptor;
 import ru.runa.gpd.property.DurationPropertyDescriptor;
@@ -35,7 +38,7 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
 @SuppressWarnings("unchecked")
-public abstract class GraphElement extends EventSupport implements IPropertySource, PropertyNames, IActionFilter, VariableContainer {
+public abstract class GraphElement extends EventSupport implements IPropertySource, IPropertyNames, IActionFilter, IVariableContainer {
     private PropertyChangeListener delegatedListener;
     private GraphElement parent;
     private GraphElement parentContainer;
@@ -121,15 +124,15 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
 
     public void validate(List<ValidationError> errors, IFile definitionFile) {
         if (isDelegable()) {
-            Delegable delegable = (Delegable) this;
+            IDelegable iDelegable = (IDelegable) this;
             DelegableProvider provider = HandlerRegistry.getProvider(delegationClassName);
             if (delegationClassName == null || delegationClassName.length() == 0) {
                 errors.add(ValidationError.createLocalizedError(this, "delegationClassName.empty"));
-            } else if (!HandlerRegistry.getInstance().isArtifactRegistered(delegable.getDelegationType(), delegationClassName)) {
+            } else if (!HandlerRegistry.getInstance().isArtifactRegistered(iDelegable.getDelegationType(), delegationClassName)) {
                 errors.add(ValidationError.createLocalizedWarning(this, "delegationClassName.classNotFound"));
             } else {
                 try {
-                    if (!provider.validateValue(delegable, errors)) {
+                    if (!provider.validateValue(iDelegable, errors)) {
                         errors.add(ValidationError.createLocalizedError(this, "delegable.invalidConfiguration"));
                     }
                 } catch (Exception e) {
@@ -161,9 +164,9 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
     }
 
     public void removeChild(GraphElement child) {
-        if (child instanceof Delegable) {
+        if (child instanceof IDelegable) {
             DelegableProvider provider = HandlerRegistry.getProvider(child.getDelegationClassName());
-            provider.onDelete((Delegable) child);
+            provider.onDelete((IDelegable) child);
         }
         childs.remove(child);
         firePropertyChange(NODE_REMOVED, child, null);
@@ -252,7 +255,7 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
 
     // Active implementation
     public void addAction(Action action, int index) {
-        if (!(this instanceof Active)) {
+        if (!(this instanceof ActionContainer)) {
             throw new IllegalStateException("It's not Active class ... " + this.getClass());
         }
         if (index == -1) {
@@ -290,7 +293,7 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
     public void setDelegationClassName(String delegationClassName) {
         String old = getDelegationClassName();
         this.delegationClassName = delegationClassName;
-        firePropertyChange(PropertyNames.PROPERTY_CLASS, old, this.delegationClassName);
+        firePropertyChange(IPropertyNames.PROPERTY_CLASS, old, this.delegationClassName);
     }
 
     public String getDelegationConfiguration() {
@@ -342,7 +345,7 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
     }
 
     public boolean isDelegable() {
-        return this instanceof Delegable;
+        return this instanceof IDelegable;
     }
 
     @Override
@@ -358,9 +361,9 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
         }
         descriptors.add(new TextPropertyDescriptor(PROPERTY_DESCRIPTION, Localization.getString("property.description")));
         if (isDelegable()) {
-            Delegable delegable = (Delegable) this;
-            descriptors.add(new DelegableClassPropertyDescriptor(PROPERTY_CLASS, Localization.getString("property.delegation.class"), delegable));
-            descriptors.add(new DelegableConfPropertyDescriptor(PROPERTY_CONFIGURATION, (Delegable) this, Localization
+            IDelegable iDelegable = (IDelegable) this;
+            descriptors.add(new DelegableClassPropertyDescriptor(PROPERTY_CLASS, Localization.getString("property.delegation.class"), iDelegable));
+            descriptors.add(new DelegableConfPropertyDescriptor(PROPERTY_CONFIGURATION, (IDelegable) this, Localization
                     .getString("property.delegation.configuration")));
         }
         if (this instanceof ITimed && getProcessDefinition().getLanguage() == Language.JPDL) {
@@ -418,11 +421,11 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
 
     public GraphElement getCopy(GraphElement parent) {
         GraphElement copy = getTypeDefinition().createElement(parent, false);
-        if (this instanceof Describable) {
+        if (this instanceof IDescribable) {
             copy.setDescription(getDescription());
         }
-        if (this instanceof Active) {
-            List<? extends Action> actions = ((Active) this).getActions();
+        if (this instanceof ActionContainer) {
+            List<? extends Action> actions = ((ActionContainer) this).getActions();
             for (Action action : actions) {
                 copy.addAction(action.getCopy(copy), -1);
             }
@@ -447,16 +450,16 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
 
     public List<Variable> getUsedVariables(IFolder processFolder) {
         List<String> variableNames = Lists.newArrayList();
-        if (this instanceof Delegable) {
+        if (this instanceof IDelegable) {
             try {
                 DelegableProvider provider = HandlerRegistry.getProvider(getDelegationClassName());
-                variableNames.addAll(provider.getUsedVariableNames((Delegable) this));
+                variableNames.addAll(provider.getUsedVariableNames((IDelegable) this));
             } catch (Exception e) {
                 PluginLogger.logErrorWithoutDialog("Unable to get used variables in " + this, e);
             }
         }
-        if (this instanceof Active) {
-            List<? extends Action> actions = ((Active) this).getActions();
+        if (this instanceof ActionContainer) {
+            List<? extends Action> actions = ((ActionContainer) this).getActions();
             for (Action action : actions) {
                 try {
                     DelegableProvider provider = HandlerRegistry.getProvider(action.getDelegationClassName());

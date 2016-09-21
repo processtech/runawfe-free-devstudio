@@ -8,7 +8,7 @@ import org.eclipse.graphiti.services.Graphiti;
 
 import ru.runa.gpd.editor.graphiti.GaProperty;
 import ru.runa.gpd.lang.model.Node;
-import ru.runa.gpd.lang.model.Synchronizable;
+import ru.runa.gpd.lang.model.ISynchronizable;
 
 public class AddSubProcessFeature extends AddStateNodeFeature {
     @Override
@@ -23,7 +23,7 @@ public class AddSubProcessFeature extends AddStateNodeFeature {
         Image asyncImage = Graphiti.getGaService().createImage(container, "graph/async.png");
         asyncImage.getProperties().add(new GaProperty(GaProperty.ID, GaProperty.ASYNC));
         Graphiti.getGaService().setLocation(asyncImage, node.getConstraint().width - 2 * GRID_SIZE, node.getConstraint().height - 2 * GRID_SIZE - 1);
-        boolean async = ((Synchronizable) node).isAsync();
+        boolean async = ((ISynchronizable) node).isAsync();
         containerShape.getProperties().add(new GaProperty(GaProperty.ASYNC, String.valueOf(async)));
     }
 }

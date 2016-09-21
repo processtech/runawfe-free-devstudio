@@ -26,7 +26,7 @@ import ru.runa.gpd.extension.bot.IBotFileSupportProvider;
 import ru.runa.gpd.extension.handler.XmlBasedConstructorProvider;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.BotTask;
-import ru.runa.gpd.lang.model.Delegable;
+import ru.runa.gpd.lang.model.IDelegable;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.office.FilesSupplierMode;
 import ru.runa.gpd.office.InputOutputComposite;
@@ -43,8 +43,8 @@ import com.google.common.base.Strings;
 public class DocxHandlerCellEditorProvider extends XmlBasedConstructorProvider<DocxModel> implements IBotFileSupportProvider {
 
     @Override
-    protected Composite createConstructorComposite(Composite parent, Delegable delegable, DocxModel model) {
-        return new ConstructorView(parent, delegable, model);
+    protected Composite createConstructorComposite(Composite parent, IDelegable iDelegable, DocxModel model) {
+        return new ConstructorView(parent, iDelegable, model);
     }
 
     @Override
@@ -53,10 +53,10 @@ public class DocxHandlerCellEditorProvider extends XmlBasedConstructorProvider<D
     }
 
     @Override
-    protected boolean validateModel(Delegable delegable, DocxModel model, List<ValidationError> errors) {
-        GraphElement graphElement = ((GraphElement) delegable);
+    protected boolean validateModel(IDelegable iDelegable, DocxModel model, List<ValidationError> errors) {
+        GraphElement graphElement = ((GraphElement) iDelegable);
         model.validate(graphElement, errors);
-        return super.validateModel(delegable, model, errors);
+        return super.validateModel(iDelegable, model, errors);
     }
 
     @Override
@@ -71,17 +71,17 @@ public class DocxHandlerCellEditorProvider extends XmlBasedConstructorProvider<D
     }
 
     @Override
-    public void onDelete(Delegable delegable) {
+    public void onDelete(IDelegable iDelegable) {
         try {
-            DocxModel model = fromXml(delegable.getDelegationConfiguration());
+            DocxModel model = fromXml(iDelegable.getDelegationConfiguration());
             EmbeddedFileUtils.deleteProcessFile(model.getInOutModel().inputPath);
         } catch (Exception e) {
-            PluginLogger.logErrorWithoutDialog("Failed to delete embedded file in " + delegable, e);
+            PluginLogger.logErrorWithoutDialog("Failed to delete embedded file in " + iDelegable, e);
         }
     }
 
     @Override
-    public void onCopy(IFolder sourceFolder, Delegable source, String sourceName, IFolder targetFolder, Delegable target, String targetName) {
+    public void onCopy(IFolder sourceFolder, IDelegable source, String sourceName, IFolder targetFolder, IDelegable target, String targetName) {
         super.onCopy(sourceFolder, source, sourceName, targetFolder, target, targetName);
         try {
             DocxModel model = fromXml(source.getDelegationConfiguration());
@@ -99,8 +99,8 @@ public class DocxHandlerCellEditorProvider extends XmlBasedConstructorProvider<D
 
     private class ConstructorView extends ConstructorComposite {
 
-        public ConstructorView(Composite parent, Delegable delegable, DocxModel model) {
-            super(parent, delegable, model);
+        public ConstructorView(Composite parent, IDelegable iDelegable, DocxModel model) {
+            super(parent, iDelegable, model);
             setLayout(new GridLayout(2, false));
             buildFromModel();
         }
@@ -122,7 +122,7 @@ public class DocxHandlerCellEditorProvider extends XmlBasedConstructorProvider<D
                     }
                 });
                 new Label(this, SWT.NONE);
-                new InputOutputComposite(this, delegable, model.getInOutModel(), FilesSupplierMode.BOTH, "docx");
+                new InputOutputComposite(this, iDelegable, model.getInOutModel(), FilesSupplierMode.BOTH, "docx");
                 int i = 0;
                 for (DocxTableModel table : model.getTables()) {
                     addTableSection(table, i++);
@@ -225,7 +225,7 @@ public class DocxHandlerCellEditorProvider extends XmlBasedConstructorProvider<D
 
         private void addColumnSection(Composite parent, final DocxColumnModel columnModel, final int tableIndex, final int columnIndex) {
             final Combo combo = new Combo(parent, SWT.READ_ONLY);
-            for (String variableName : delegable.getVariableNames(true, List.class.getName())) {
+            for (String variableName : iDelegable.getVariableNames(true, List.class.getName())) {
                 combo.add(variableName);
             }
             combo.setText(columnModel.variable);

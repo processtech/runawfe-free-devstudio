@@ -16,28 +16,28 @@ import org.eclipse.swt.widgets.Text;
 
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.model.Variable;
-import ru.runa.gpd.lang.model.VariableContainer;
+import ru.runa.gpd.lang.model.IVariableContainer;
 import ru.runa.gpd.ui.custom.VariableNameChecker;
 import ru.runa.gpd.util.VariableUtils;
 
 import com.google.common.base.Strings;
 
 public class UpdateVariableNameDialog extends Dialog {
-    private final VariableContainer variableContainer;
+    private final IVariableContainer iVariableContainer;
     private final Variable variable;
     private Text scriptingNameField;
     private String scriptingName;
     private String name;
 
-    public UpdateVariableNameDialog(VariableContainer variableContainer, Variable variable) {
+    public UpdateVariableNameDialog(IVariableContainer iVariableContainer, Variable variable) {
         super(Display.getDefault().getActiveShell());
-        this.variableContainer = variableContainer;
+        this.iVariableContainer = iVariableContainer;
         this.variable = variable;
         this.name = variable.getName();
         if (variable.getScriptingName() != null) {
             this.scriptingName = variable.getScriptingName();
         } else {
-            this.scriptingName = VariableUtils.generateNameForScripting(variableContainer, name, variable);
+            this.scriptingName = VariableUtils.generateNameForScripting(iVariableContainer, name, variable);
         }
     }
 
@@ -78,7 +78,7 @@ public class UpdateVariableNameDialog extends Dialog {
             public void modifyText(ModifyEvent e) {
                 name = nameField.getText();
 
-                scriptingName = VariableUtils.generateNameForScripting(variableContainer, name, variable);
+                scriptingName = VariableUtils.generateNameForScripting(iVariableContainer, name, variable);
                 scriptingNameField.setText(scriptingName);
 
                 updateButtons();
@@ -111,7 +111,7 @@ public class UpdateVariableNameDialog extends Dialog {
 
     private void updateButtons() {
         boolean allowCreation = !Strings.isNullOrEmpty(name)
-                && !VariableUtils.getVariableNames(variableContainer.getVariables(false, true)).contains(name) && VariableNameChecker.isValid(name);
+                && !VariableUtils.getVariableNames(iVariableContainer.getVariables(false, true)).contains(name) && VariableNameChecker.isValid(name);
         getButton(IDialogConstants.OK_ID).setEnabled(allowCreation);
     }
 

@@ -6,7 +6,7 @@ import org.eclipse.core.runtime.CoreException;
 
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.BotTask;
-import ru.runa.gpd.lang.model.Delegable;
+import ru.runa.gpd.lang.model.IDelegable;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.wfe.definition.IFileDataProvider;
 
@@ -115,13 +115,13 @@ public class EmbeddedFileUtils {
         }
     }
 
-    public static String generateEmbeddedFileName(Delegable delegable, String fileExtension) {
-        if (delegable instanceof GraphElement) {
-            String id = ((GraphElement) delegable).getId();
+    public static String generateEmbeddedFileName(IDelegable iDelegable, String fileExtension) {
+        if (iDelegable instanceof GraphElement) {
+            String id = ((GraphElement) iDelegable).getId();
             return id + ".template." + fileExtension;
         }
-        if (delegable instanceof BotTask) {
-            String name = ((BotTask) delegable).getName();
+        if (iDelegable instanceof BotTask) {
+            String name = ((BotTask) iDelegable).getName();
             name = generateBotTaskEmbeddedFileName(name);
             return name + BotTaskUtils.EMBEDDED_SUFFIX + "." + fileExtension;
         }

@@ -20,7 +20,7 @@ import org.eclipse.swt.widgets.Text;
 
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.extension.handler.ParamDef.Presentation;
-import ru.runa.gpd.lang.model.Delegable;
+import ru.runa.gpd.lang.model.IDelegable;
 import ru.runa.gpd.ui.custom.InsertVariableTextMenuDetectListener;
 import ru.runa.gpd.ui.custom.SWTUtils;
 import ru.runa.gpd.ui.custom.TypedUserInputCombo;
@@ -32,17 +32,17 @@ public class ParamDefComposite extends Composite {
     protected final ParamDefConfig config;
     private final Map<String, List<String>> comboItems = new HashMap<String, List<String>>();
     private final Map<String, String> properties;
-    private final Delegable delegable;
+    private final IDelegable iDelegable;
     private MessageDisplay messageDisplay;
     private boolean helpInlined = false;
     private boolean menuForSettingVariable = false;
     private final String[] booleanValues = { Localization.getString("yes"), Localization.getString("no") };
 
-    public ParamDefComposite(Composite parent, Delegable delegable, ParamDefConfig config, Map<String, String> properties) {
+    public ParamDefComposite(Composite parent, IDelegable iDelegable, ParamDefConfig config, Map<String, String> properties) {
         super(parent, SWT.NONE);
         this.config = config;
         this.properties = properties != null ? properties : new HashMap<String, String>();
-        this.delegable = delegable;
+        this.iDelegable = iDelegable;
         GridLayout layout = new GridLayout(2, false);
         setLayout(layout);
     }
@@ -88,7 +88,7 @@ public class ParamDefComposite extends Composite {
     }
 
     protected List<String> getMenuVariables(ParamDef paramDef) {
-        List<String> variableNames = VariableUtils.getVariableNamesForScripting(delegable, paramDef.getFormatFiltersAsArray());
+        List<String> variableNames = VariableUtils.getVariableNamesForScripting(iDelegable, paramDef.getFormatFiltersAsArray());
         return variableNames;
     }
 
@@ -130,7 +130,7 @@ public class ParamDefComposite extends Composite {
         }
         List<String> variableNames = new ArrayList<String>();
         if (paramDef.isUseVariable()) {
-            variableNames.addAll(delegable.getVariableNames(true, paramDef.getFormatFiltersAsArray()));
+            variableNames.addAll(iDelegable.getVariableNames(true, paramDef.getFormatFiltersAsArray()));
         }
         boolean localizeTextValue = false;
         for (String option : paramDef.getComboItems()) {

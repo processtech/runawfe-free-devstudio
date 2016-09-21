@@ -10,42 +10,42 @@ import org.dom4j.Element;
 import org.eclipse.core.resources.IFile;
 
 import ru.runa.gpd.Application;
+import ru.runa.gpd.IPropertyNames;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.PluginLogger;
-import ru.runa.gpd.lang.model.Action;
-import ru.runa.gpd.lang.model.ActionImpl;
-import ru.runa.gpd.lang.model.ActionNode;
-import ru.runa.gpd.lang.model.Conjunction;
 import ru.runa.gpd.lang.model.Decision;
-import ru.runa.gpd.lang.model.Delegable;
-import ru.runa.gpd.lang.model.Describable;
+import ru.runa.gpd.lang.model.IDelegable;
+import ru.runa.gpd.lang.model.IDescribable;
 import ru.runa.gpd.lang.model.EndState;
 import ru.runa.gpd.lang.model.EndTokenState;
-import ru.runa.gpd.lang.model.Event;
-import ru.runa.gpd.lang.model.Fork;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.ITimed;
-import ru.runa.gpd.lang.model.Join;
 import ru.runa.gpd.lang.model.MultiSubprocess;
 import ru.runa.gpd.lang.model.MultiTaskState;
 import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.NodeAsyncExecution;
 import ru.runa.gpd.lang.model.ProcessDefinition;
-import ru.runa.gpd.lang.model.PropertyNames;
-import ru.runa.gpd.lang.model.ReceiveMessageNode;
-import ru.runa.gpd.lang.model.SendMessageNode;
 import ru.runa.gpd.lang.model.StartState;
 import ru.runa.gpd.lang.model.Subprocess;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.SwimlanedNode;
-import ru.runa.gpd.lang.model.Synchronizable;
+import ru.runa.gpd.lang.model.ISynchronizable;
 import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Timer;
 import ru.runa.gpd.lang.model.TimerAction;
 import ru.runa.gpd.lang.model.Transition;
+import ru.runa.gpd.lang.model.bpmn.Conjunction;
+import ru.runa.gpd.lang.model.jpdl.Action;
+import ru.runa.gpd.lang.model.jpdl.ActionEventType;
+import ru.runa.gpd.lang.model.jpdl.ActionImpl;
+import ru.runa.gpd.lang.model.jpdl.ActionNode;
+import ru.runa.gpd.lang.model.jpdl.Fork;
+import ru.runa.gpd.lang.model.jpdl.Join;
+import ru.runa.gpd.lang.model.jpdl.ReceiveMessageNode;
+import ru.runa.gpd.lang.model.jpdl.SendMessageNode;
 import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.util.Duration;
 import ru.runa.gpd.util.MultiinstanceParameters;
@@ -159,8 +159,8 @@ public class JpdlSerializer extends ProcessSerializer {
             Element actionNodeElement = writeNode(root, actionNode, null);
             for (Action action : actionNode.getActions()) {
                 ActionImpl actionImpl = (ActionImpl) action;
-                if (!Event.NODE_ACTION.equals(actionImpl.getEventType())) {
-                    writeEvent(actionNodeElement, new Event(actionImpl.getEventType()), actionImpl);
+                if (!ActionEventType.NODE_ACTION.equals(actionImpl.getEventType())) {
+                    writeEvent(actionNodeElement, new ActionEventType(actionImpl.getEventType()), actionImpl);
                 }
             }
         }
@@ -177,7 +177,7 @@ public class JpdlSerializer extends ProcessSerializer {
             Element stateElement = writeTaskState(root, state);
             if (state instanceof MultiTaskState) {
                 MultiTaskState multiTaskNode = (MultiTaskState) state;
-                stateElement.addAttribute(PropertyNames.PROPERTY_MULTI_TASK_CREATION_MODE, multiTaskNode.getCreationMode().name());
+                stateElement.addAttribute(IPropertyNames.PROPERTY_MULTI_TASK_CREATION_MODE, multiTaskNode.getCreationMode().name());
                 stateElement.addAttribute(TASK_EXECUTION_MODE, multiTaskNode.getSynchronizationMode().name());
                 stateElement.addAttribute(TASK_EXECUTORS_USAGE, multiTaskNode.getDiscriminatorUsage());
                 stateElement.addAttribute(TASK_EXECUTORS_VALUE, multiTaskNode.getDiscriminatorValue());
@@ -275,7 +275,7 @@ public class JpdlSerializer extends ProcessSerializer {
     private Element writeNode(Element parent, Node node, String delegationNodeName) {
         Element nodeElement = writeElement(parent, node);
         if (delegationNodeName != null) {
-            writeDelegation(nodeElement, delegationNodeName, (Delegable) node);
+            writeDelegation(nodeElement, delegationNodeName, (IDelegable) node);
         }
         writeTransitions(nodeElement, node);
         return nodeElement;
@@ -301,7 +301,7 @@ public class JpdlSerializer extends ProcessSerializer {
         }
         for (Action action : swimlanedNode.getActions()) {
             ActionImpl actionImpl = (ActionImpl) action;
-            writeEvent(taskElement, new Event(actionImpl.getEventType()), actionImpl);
+            writeEvent(taskElement, new ActionEventType(actionImpl.getEventType()), actionImpl);
         }
         return nodeElement;
     }
@@ -344,8 +344,8 @@ public class JpdlSerializer extends ProcessSerializer {
                 setAttribute(result, NODE_ASYNC_EXECUTION, node.getAsyncExecution().getValue());
             }
         }
-        if (element instanceof Describable) {
-            String description = ((Describable) element).getDescription();
+        if (element instanceof IDescribable) {
+            String description = ((IDescribable) element).getDescription();
             if (description != null && description.length() > 0) {
                 Element desc = result.addElement(DESCRIPTION);
                 setNodeValue(desc, description);
@@ -365,30 +365,30 @@ public class JpdlSerializer extends ProcessSerializer {
         }
     }
 
-    private void writeEvent(Element parent, Event event, ActionImpl action) {
-        Element eventElement = writeElement(parent, event, EVENT);
-        setAttribute(eventElement, TYPE, event.getType());
+    private void writeEvent(Element parent, ActionEventType actionEventType, ActionImpl action) {
+        Element eventElement = writeElement(parent, actionEventType, EVENT);
+        setAttribute(eventElement, TYPE, actionEventType.getType());
         writeDelegation(eventElement, ACTION, action);
     }
 
-    private void writeDelegation(Element parent, String elementName, Delegable delegable) {
+    private void writeDelegation(Element parent, String elementName, IDelegable iDelegable) {
         Element delegationElement = parent.addElement(elementName);
-        if (delegable instanceof Action) {
-            setAttribute(delegationElement, ID, ((Action) delegable).getId());
+        if (iDelegable instanceof Action) {
+            setAttribute(delegationElement, ID, ((Action) iDelegable).getId());
         }
-        setAttribute(delegationElement, CLASS, delegable.getDelegationClassName());
-        if (delegable instanceof Describable) {
-            Describable describable = (Describable) delegable;
-            if (!Strings.isNullOrEmpty(describable.getDescription())) {
-                setAttribute(delegationElement, DESCRIPTION, describable.getDescription());
+        setAttribute(delegationElement, CLASS, iDelegable.getDelegationClassName());
+        if (iDelegable instanceof IDescribable) {
+            IDescribable iDescribable = (IDescribable) iDelegable;
+            if (!Strings.isNullOrEmpty(iDescribable.getDescription())) {
+                setAttribute(delegationElement, DESCRIPTION, iDescribable.getDescription());
             }
         }
-        setNodeValue(delegationElement, delegable.getDelegationConfiguration());
+        setNodeValue(delegationElement, iDelegable.getDelegationConfiguration());
     }
 
-    private void setDelegableClassName(Delegable delegable, String className) {
+    private void setDelegableClassName(IDelegable iDelegable, String className) {
         className = BackCompatibilityClassNames.getClassName(className);
-        delegable.setDelegationClassName(className);
+        iDelegable.setDelegationClassName(className);
     }
 
     @Override
@@ -431,19 +431,19 @@ public class JpdlSerializer extends ProcessSerializer {
         List<Element> nodeList = node.elements();
         for (Element childNode : nodeList) {
             if (DESCRIPTION.equals(childNode.getName())) {
-                ((Describable) element).setDescription(childNode.getTextTrim());
+                ((IDescribable) element).setDescription(childNode.getTextTrim());
             }
             if (HANDLER.equals(childNode.getName()) || ASSIGNMENT.equals(childNode.getName())) {
-                setDelegableClassName((Delegable) element, childNode.attributeValue(CLASS));
+                setDelegableClassName((IDelegable) element, childNode.attributeValue(CLASS));
                 element.setDelegationConfiguration(childNode.getText());
             }
             if (ACTION.equals(childNode.getName())) {
                 // only transition actions loaded here
                 String eventType;
                 if (element instanceof Transition) {
-                    eventType = Event.TRANSITION;
+                    eventType = ActionEventType.TRANSITION;
                 } else if (element instanceof ActionNode) {
-                    eventType = Event.NODE_ACTION;
+                    eventType = ActionEventType.NODE_ACTION;
                 } else {
                     throw new RuntimeException("Unexpected action in XML, context of " + element);
                 }
@@ -557,16 +557,16 @@ public class JpdlSerializer extends ProcessSerializer {
             } else {
                 state = create(node, definition);
             }
-            if (state instanceof Synchronizable) {
-                ((Synchronizable) state).setAsync(Boolean.parseBoolean(node.attributeValue(ASYNC, "false")));
+            if (state instanceof ISynchronizable) {
+                ((ISynchronizable) state).setAsync(Boolean.parseBoolean(node.attributeValue(ASYNC, "false")));
                 String asyncCompletionMode = node.attributeValue(ASYNC_COMPLETION_MODE);
                 if (asyncCompletionMode != null) {
-                    ((Synchronizable) state).setAsyncCompletionMode(AsyncCompletionMode.valueOf(asyncCompletionMode));
+                    ((ISynchronizable) state).setAsyncCompletionMode(AsyncCompletionMode.valueOf(asyncCompletionMode));
                 }
             }
             if (state instanceof MultiTaskState) {
                 MultiTaskState multiTaskState = (MultiTaskState) state;
-                multiTaskState.setCreationMode(MultiTaskCreationMode.valueOf(node.attributeValue(PropertyNames.PROPERTY_MULTI_TASK_CREATION_MODE,
+                multiTaskState.setCreationMode(MultiTaskCreationMode.valueOf(node.attributeValue(IPropertyNames.PROPERTY_MULTI_TASK_CREATION_MODE,
                         MultiTaskCreationMode.BY_EXECUTORS.name())));
                 multiTaskState.setSynchronizationMode(MultiTaskSynchronizationMode.valueOf(node.attributeValue(TASK_EXECUTION_MODE)));
                 multiTaskState.setDiscriminatorUsage(node.attributeValue(TASK_EXECUTORS_USAGE, MultiTaskState.USAGE_DEFAULT));

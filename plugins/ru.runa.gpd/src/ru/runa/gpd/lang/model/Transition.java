@@ -13,6 +13,8 @@ import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.extension.decision.IDecisionProvider;
+import ru.runa.gpd.lang.model.bpmn.ExclusiveGateway;
+import ru.runa.gpd.lang.model.jpdl.ActionContainer;
 import ru.runa.gpd.util.EditorUtils;
 import ru.runa.gpd.util.TransitionOrderNumCellEditorValidator;
 import ru.runa.gpd.validation.FormNodeValidation;
@@ -22,7 +24,7 @@ import ru.runa.gpd.validation.ValidatorConfig;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
-public class Transition extends NamedGraphElement implements Active {
+public class Transition extends NamedGraphElement implements ActionContainer {
     private Node target;
     private List<Point> bendpoints = Lists.newArrayList();
     private boolean exclusiveFlow;

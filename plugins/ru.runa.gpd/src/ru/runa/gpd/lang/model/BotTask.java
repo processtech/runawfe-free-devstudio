@@ -14,7 +14,7 @@ import ru.runa.gpd.util.XmlUtil;
 
 import com.google.common.collect.Lists;
 
-public class BotTask implements Delegable, Comparable<BotTask> {
+public class BotTask implements IDelegable, Comparable<BotTask> {
     private BotTaskType type = BotTaskType.SIMPLE;
     private String id;
     private String name;

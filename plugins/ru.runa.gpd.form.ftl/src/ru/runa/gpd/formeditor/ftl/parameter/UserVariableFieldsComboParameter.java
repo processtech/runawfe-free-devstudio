@@ -11,12 +11,12 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 
+import ru.runa.gpd.IPropertyNames;
 import ru.runa.gpd.formeditor.ftl.Component;
 import ru.runa.gpd.formeditor.ftl.ComponentParameter;
 import ru.runa.gpd.formeditor.ftl.parameter.interfaces.IParameterChangeConsumer;
 import ru.runa.gpd.formeditor.ftl.parameter.interfaces.IParameterChangeCustomer;
 import ru.runa.gpd.formeditor.wysiwyg.FormEditor;
-import ru.runa.gpd.lang.model.PropertyNames;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
@@ -105,7 +105,7 @@ public class UserVariableFieldsComboParameter extends ComboParameter {
                 @Override
                 protected void onSelection(SelectionEvent e) throws Exception {
                     selected.set(combo.getText());
-                    listener.propertyChange(new PropertyChangeEvent(combo, PropertyNames.PROPERTY_VALUE, oldValue, combo.getText()));
+                    listener.propertyChange(new PropertyChangeEvent(combo, IPropertyNames.PROPERTY_VALUE, oldValue, combo.getText()));
                 }
             });
         }

@@ -22,7 +22,7 @@ import org.eclipse.ui.forms.events.HyperlinkEvent;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.handler.XmlBasedConstructorProvider;
 import ru.runa.gpd.lang.ValidationError;
-import ru.runa.gpd.lang.model.Delegable;
+import ru.runa.gpd.lang.model.IDelegable;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.office.FilesSupplierMode;
 import ru.runa.gpd.office.InputOutputComposite;
@@ -37,15 +37,15 @@ public abstract class BaseExcelHandlerCellEditorProvider extends XmlBasedConstru
     protected abstract FilesSupplierMode getMode();
 
     @Override
-    protected Composite createConstructorComposite(Composite parent, Delegable delegable, ExcelModel model) {
-        return new ConstructorView(parent, delegable, model);
+    protected Composite createConstructorComposite(Composite parent, IDelegable iDelegable, ExcelModel model) {
+        return new ConstructorView(parent, iDelegable, model);
     }
 
     @Override
-    protected boolean validateModel(Delegable delegable, ExcelModel model, List<ValidationError> errors) {
-        GraphElement graphElement = ((GraphElement) delegable);
+    protected boolean validateModel(IDelegable iDelegable, ExcelModel model, List<ValidationError> errors) {
+        GraphElement graphElement = ((GraphElement) iDelegable);
         model.validate(graphElement, errors);
-        return super.validateModel(delegable, model, errors);
+        return super.validateModel(iDelegable, model, errors);
     }
 
     @Override
@@ -59,9 +59,9 @@ public abstract class BaseExcelHandlerCellEditorProvider extends XmlBasedConstru
     }
 
     @Override
-    public void onDelete(Delegable delegable) {
+    public void onDelete(IDelegable iDelegable) {
         try {
-            ExcelModel model = fromXml(delegable.getDelegationConfiguration());
+            ExcelModel model = fromXml(iDelegable.getDelegationConfiguration());
             EmbeddedFileUtils.deleteProcessFile(model.getInOutModel().inputPath);
         } catch (Exception e) {
             PluginLogger.logErrorWithoutDialog("Template file deletion", e);
@@ -70,8 +70,8 @@ public abstract class BaseExcelHandlerCellEditorProvider extends XmlBasedConstru
 
     private class ConstructorView extends ConstructorComposite {
 
-        public ConstructorView(Composite parent, Delegable delegable, ExcelModel model) {
-            super(parent, delegable, model);
+        public ConstructorView(Composite parent, IDelegable iDelegable, ExcelModel model) {
+            super(parent, iDelegable, model);
             setLayout(new GridLayout(3, false));
             buildFromModel();
         }
@@ -106,7 +106,7 @@ public abstract class BaseExcelHandlerCellEditorProvider extends XmlBasedConstru
                         buildFromModel();
                     }
                 }).setLayoutData(new GridData(GridData.GRAB_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
-                new InputOutputComposite(this, delegable, model.getInOutModel(), getMode(), "xlsx");
+                new InputOutputComposite(this, iDelegable, model.getInOutModel(), getMode(), "xlsx");
                 for (ConstraintsModel c : model.constraints) {
                     switch (c.type) {
                     case ConstraintsModel.CELL:
@@ -144,7 +144,7 @@ public abstract class BaseExcelHandlerCellEditorProvider extends XmlBasedConstru
                 Label l = new Label(group, SWT.NONE);
                 l.setText(Messages.getString("label.variable"));
                 final Combo combo = new Combo(group, SWT.READ_ONLY);
-                for (String variableName : delegable.getVariableNames(true, getTypeFilters())) {
+                for (String variableName : iDelegable.getVariableNames(true, getTypeFilters())) {
                     combo.add(variableName);
                 }
                 combo.setText(cmodel.variableName);

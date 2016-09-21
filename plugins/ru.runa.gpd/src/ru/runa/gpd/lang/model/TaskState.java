@@ -22,6 +22,8 @@ import ru.runa.gpd.form.FormVariableAccess;
 import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.lang.ValidationError;
+import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
+import ru.runa.gpd.lang.model.jpdl.ActionContainer;
 import ru.runa.gpd.property.DurationPropertyDescriptor;
 import ru.runa.gpd.property.EscalationActionPropertyDescriptor;
 import ru.runa.gpd.settings.PrefConstants;
@@ -34,7 +36,7 @@ import ru.runa.wfe.lang.AsyncCompletionMode;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 
-public class TaskState extends FormNode implements Active, ITimed, Synchronizable {
+public class TaskState extends FormNode implements ActionContainer, ITimed, ISynchronizable, IBoundaryEventContainer {
     private TimerAction escalationAction;
     private boolean ignoreSubstitutionRules;
     private boolean useEscalation;

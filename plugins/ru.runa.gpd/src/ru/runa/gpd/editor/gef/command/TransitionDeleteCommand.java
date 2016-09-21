@@ -2,8 +2,8 @@ package ru.runa.gpd.editor.gef.command;
 
 import org.eclipse.gef.commands.Command;
 
+import ru.runa.gpd.IPropertyNames;
 import ru.runa.gpd.lang.model.Node;
-import ru.runa.gpd.lang.model.PropertyNames;
 import ru.runa.gpd.lang.model.Transition;
 
 public class TransitionDeleteCommand extends Command {
@@ -30,7 +30,7 @@ public class TransitionDeleteCommand extends Command {
     public void undo() {
         if (source.getLeavingTransitions().contains(transition)) {
             // refresh visuals
-            transition.getTarget().firePropertyChange(PropertyNames.NODE_ARRIVING_TRANSITION_ADDED, null, transition);
+            transition.getTarget().firePropertyChange(IPropertyNames.NODE_ARRIVING_TRANSITION_ADDED, null, transition);
         } else {
             source.addLeavingTransition(transition);
         }

@@ -12,6 +12,7 @@ import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.extension.VariableFormatArtifact;
 import ru.runa.gpd.extension.VariableFormatRegistry;
 import ru.runa.gpd.lang.ValidationError;
+import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 import ru.runa.gpd.util.VariableMapping;
 import ru.runa.gpd.util.VariableUtils;
 import ru.runa.wfe.lang.AsyncCompletionMode;
@@ -19,7 +20,7 @@ import ru.runa.wfe.lang.AsyncCompletionMode;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
-public class Subprocess extends Node implements Active, Synchronizable {
+public class Subprocess extends Node implements ISynchronizable, IBoundaryEventContainer {
     protected String subProcessName = "";
     protected List<VariableMapping> variableMappings = Lists.newArrayList();
     private boolean embedded;

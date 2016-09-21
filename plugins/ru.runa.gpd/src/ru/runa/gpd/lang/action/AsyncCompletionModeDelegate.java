@@ -7,22 +7,22 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.widgets.Menu;
 
 import ru.runa.gpd.Localization;
-import ru.runa.gpd.lang.model.Synchronizable;
+import ru.runa.gpd.lang.model.ISynchronizable;
 import ru.runa.wfe.lang.AsyncCompletionMode;
 
 import com.google.common.base.Objects;
 
 public class AsyncCompletionModeDelegate extends BaseModelDropDownActionDelegate {
     private AsyncCompletionMode selectedMode;
-    private Synchronizable synchronizable;
+    private ISynchronizable iSynchronizable;
 
     @Override
     public void selectionChanged(IAction action, ISelection selection) {
         super.selectionChanged(action, selection);
-        synchronizable = (Synchronizable) getSelection();
-        if (synchronizable != null) {
-            action.setEnabled(synchronizable.isAsync());
-            selectedMode = synchronizable.getAsyncCompletionMode();
+        iSynchronizable = (ISynchronizable) getSelection();
+        if (iSynchronizable != null) {
+            action.setEnabled(iSynchronizable.isAsync());
+            selectedMode = iSynchronizable.getAsyncCompletionMode();
         }
     }
 
@@ -54,7 +54,7 @@ public class AsyncCompletionModeDelegate extends BaseModelDropDownActionDelegate
 
         @Override
         public void run() {
-            synchronizable.setAsyncCompletionMode(mode);
+            iSynchronizable.setAsyncCompletionMode(mode);
         }
     }
 }

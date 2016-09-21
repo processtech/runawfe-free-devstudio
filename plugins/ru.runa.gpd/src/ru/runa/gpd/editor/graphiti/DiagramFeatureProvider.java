@@ -50,7 +50,7 @@ import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
-import ru.runa.gpd.lang.model.TextAnnotation;
+import ru.runa.gpd.lang.model.bpmn.TextAnnotation;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.SwimlaneDisplayMode;
 
@@ -208,20 +208,4 @@ public class DiagramFeatureProvider extends DefaultFeatureProvider {
         }
         return super.getUpdateFeature(context);
     }
-    //
-    // @Override
-    // public IFeature[] getDragAndDropFeatures(IPictogramElementContext
-    // context) {
-    // // simply return all create connection features
-    // return getCreateConnectionFeatures();
-    // }
-    // @Override
-    // public ICopyFeature getCopyFeature(ICopyContext context) {
-    // return new CopyFlowElementFeature(this);
-    // }
-    // @Override
-    // public IPasteFeature getPasteFeature(IPasteContext context) {
-    // return new PasteFlowElementFeature(this);
-    // }
-    //
 }

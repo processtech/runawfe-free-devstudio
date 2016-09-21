@@ -24,12 +24,12 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 
+import ru.runa.gpd.IPropertyNames;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.editor.clipboard.VariableTransfer;
 import ru.runa.gpd.editor.gef.command.ProcessDefinitionRemoveVariablesCommand;
 import ru.runa.gpd.lang.model.FormNode;
-import ru.runa.gpd.lang.model.PropertyNames;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableUserType;
@@ -145,11 +145,11 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         String type = evt.getPropertyName();
-        if (PropertyNames.PROPERTY_CHILDS_CHANGED.equals(type)) {
+        if (IPropertyNames.PROPERTY_CHILDS_CHANGED.equals(type)) {
             updateViewer();
         } else if (evt.getSource() instanceof Variable) {
-            if (PropertyNames.PROPERTY_NAME.equals(type) || PropertyNames.PROPERTY_FORMAT.equals(type)
-                    || PropertyNames.PROPERTY_DEFAULT_VALUE.equals(type)) {
+            if (IPropertyNames.PROPERTY_NAME.equals(type) || IPropertyNames.PROPERTY_FORMAT.equals(type)
+                    || IPropertyNames.PROPERTY_DEFAULT_VALUE.equals(type)) {
                 tableViewer.refresh(evt.getSource());
             }
         }

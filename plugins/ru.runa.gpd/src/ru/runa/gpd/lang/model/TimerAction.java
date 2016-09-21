@@ -1,15 +1,16 @@
 package ru.runa.gpd.lang.model;
 
 import ru.runa.gpd.Localization;
+import ru.runa.gpd.extension.HandlerArtifact;
 import ru.runa.gpd.util.Duration;
 import ru.runa.wfe.extension.handler.EscalationActionHandler;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 
-public class TimerAction extends Action {
-    private Duration repeatDelay = new Duration();
+public class TimerAction extends GraphElement implements IDelegable {
     private final ProcessDefinition processDefinition;
+    private Duration repeatDelay = new Duration();
 
     public TimerAction(ProcessDefinition processDefinition) {
         this.processDefinition = processDefinition;
@@ -20,13 +21,13 @@ public class TimerAction extends Action {
     }
 
     @Override
-    public void setDirty() {
-        // stub
+    public ProcessDefinition getProcessDefinition() {
+        return processDefinition;
     }
 
     @Override
-    public ProcessDefinition getProcessDefinition() {
-        return processDefinition;
+    public String getDelegationType() {
+        return HandlerArtifact.ACTION;
     }
 
     public void setRepeatDuration(String duration) {
@@ -43,15 +44,14 @@ public class TimerAction extends Action {
     public int hashCode() {
         return Objects.hashCode(getDelegationClassName(), getDelegationConfiguration(), repeatDelay);
     }
-    
+
     @Override
     public boolean equals(Object obj) {
         TimerAction t = (TimerAction) obj;
-        return Objects.equal(getDelegationClassName(), t.getDelegationClassName()) && 
-                Objects.equal(getDelegationConfiguration(), t.getDelegationConfiguration()) && 
-                Objects.equal(repeatDelay, t.repeatDelay);
+        return Objects.equal(getDelegationClassName(), t.getDelegationClassName())
+                && Objects.equal(getDelegationConfiguration(), t.getDelegationConfiguration()) && Objects.equal(repeatDelay, t.repeatDelay);
     }
-    
+
     @Override
     public String toString() {
         if (Strings.isNullOrEmpty(getDelegationClassName())) {
@@ -71,11 +71,10 @@ public class TimerAction extends Action {
         buffer.append(repeatDelay.hasDuration() ? repeatDelay : Localization.getString("duration.norepeat"));
         return buffer.toString();
     }
-    
+
     @Override
     public TimerAction getCopy(GraphElement parent) {
         TimerAction copy = new TimerAction((ProcessDefinition) parent);
-        copy.setDescription(getDescription());
         copy.setDelegationClassName(getDelegationClassName());
         copy.setDelegationConfiguration(getDelegationConfiguration());
         copy.setRepeatDuration(getRepeatDelay().getDuration());

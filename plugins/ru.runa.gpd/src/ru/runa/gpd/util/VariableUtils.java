@@ -9,10 +9,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import ru.runa.gpd.PluginLogger;
-import ru.runa.gpd.lang.model.Delegable;
+import ru.runa.gpd.lang.model.IDelegable;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Variable;
-import ru.runa.gpd.lang.model.VariableContainer;
+import ru.runa.gpd.lang.model.IVariableContainer;
 import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.wfe.var.format.ListFormat;
 
@@ -77,14 +77,14 @@ public class VariableUtils {
         return scriptingName;
     }
 
-    public static String generateNameForScripting(VariableContainer variableContainer, String variableName, Variable excludedVariable) {
+    public static String generateNameForScripting(IVariableContainer iVariableContainer, String variableName, Variable excludedVariable) {
         String scriptingName = toScriptingName(variableName);
         if (excludedVariable != null) {
             if (excludedVariable.getScriptingName() == null || Objects.equal(excludedVariable.getScriptingName(), scriptingName)) {
                 return scriptingName;
             }
         }
-        while (getVariableByScriptingName(variableContainer.getVariables(false, true), scriptingName) != null) {
+        while (getVariableByScriptingName(iVariableContainer.getVariables(false, true), scriptingName) != null) {
             scriptingName += "_";
         }
         return scriptingName;
@@ -103,12 +103,12 @@ public class VariableUtils {
         return result;
     }
 
-    public static List<String> getVariableNamesForScripting(Delegable delegable, String... typeClassNameFilters) {
-        if (delegable instanceof GraphElement) {
-            List<Variable> variables = ((GraphElement) delegable).getVariables(true, true, typeClassNameFilters);
+    public static List<String> getVariableNamesForScripting(IDelegable iDelegable, String... typeClassNameFilters) {
+        if (iDelegable instanceof GraphElement) {
+            List<Variable> variables = ((GraphElement) iDelegable).getVariables(true, true, typeClassNameFilters);
             return getVariableNamesForScripting(variables);
         } else {
-            List<String> list = delegable.getVariableNames(true, typeClassNameFilters);
+            List<String> list = iDelegable.getVariableNames(true, typeClassNameFilters);
             for (Iterator<String> iterator = list.iterator(); iterator.hasNext();) {
                 String string = iterator.next();
                 if (!isValidScriptingName(string)) {
@@ -142,8 +142,8 @@ public class VariableUtils {
     /**
      * @return variable or <code>null</code>
      */
-    public static Variable getVariableByName(VariableContainer variableContainer, String name) {
-        List<Variable> variables = variableContainer.getVariables(false, true);
+    public static Variable getVariableByName(IVariableContainer iVariableContainer, String name) {
+        List<Variable> variables = iVariableContainer.getVariables(false, true);
         for (Variable variable : variables) {
             if (Objects.equal(variable.getName(), name)) {
                 return variable;
@@ -152,7 +152,7 @@ public class VariableUtils {
         if (name != null && name.contains(VariableUserType.DELIM)) {
             int index = name.indexOf(VariableUserType.DELIM);
             String complexVariableName = name.substring(0, index);
-            Variable complexVariable = getVariableByName(variableContainer, complexVariableName);
+            Variable complexVariable = getVariableByName(iVariableContainer, complexVariableName);
             if (complexVariable == null) {
                 return null;
             }
@@ -212,10 +212,10 @@ public class VariableUtils {
         }
     }
 
-    public static List<Variable> findVariablesOfTypeWithAttributeExpanded(VariableContainer variableContainer, VariableUserType searchType,
+    public static List<Variable> findVariablesOfTypeWithAttributeExpanded(IVariableContainer iVariableContainer, VariableUserType searchType,
             Variable searchAttribute) {
         List<Variable> result = Lists.newArrayList();
-        searchInVariables(result, searchType, searchAttribute, null, variableContainer.getVariables(false, false));
+        searchInVariables(result, searchType, searchAttribute, null, iVariableContainer.getVariables(false, false));
         return result;
     }
 
@@ -234,22 +234,22 @@ public class VariableUtils {
         return result;
     }
 
-    public static Set<VariableUserType> getUsedUserTypes(VariableContainer variableContainer, String variableName) {
+    public static Set<VariableUserType> getUsedUserTypes(IVariableContainer iVariableContainer, String variableName) {
         String[] nameParts = variableName.split(Pattern.quote(VariableUserType.DELIM));
         Set<VariableUserType> variableUserTypes = Sets.newHashSet();
         for (int i = 0; i < nameParts.length; i++) {
-            Variable variablePart = getVariableByName(variableContainer, nameParts[i]);
+            Variable variablePart = getVariableByName(iVariableContainer, nameParts[i]);
             VariableUserType variableUserType = variablePart.getUserType();
             if (variableUserType != null) {
                 variableUserTypes.add(variableUserType);
-                variableContainer = variableUserType;
+                iVariableContainer = variableUserType;
             }
         }
         return variableUserTypes;
     }
 
-    public static Variable getComplexVariableByExpandedAttribute(VariableContainer variableContainer, String variableName) {
-        return getVariableByName(variableContainer, variableName.split(Pattern.quote(VariableUserType.DELIM))[0]);
+    public static Variable getComplexVariableByExpandedAttribute(IVariableContainer iVariableContainer, String variableName) {
+        return getVariableByName(iVariableContainer, variableName.split(Pattern.quote(VariableUserType.DELIM))[0]);
     }
 
 }

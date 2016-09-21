@@ -2,13 +2,13 @@ package ru.runa.gpd.swimlane;
 
 import java.util.List;
 
+import ru.runa.gpd.IPropertyNames;
 import ru.runa.gpd.lang.ValidationError;
-import ru.runa.gpd.lang.model.PropertyNames;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.util.EventSupport;
 
-public abstract class SwimlaneInitializer extends EventSupport implements PropertyNames {
+public abstract class SwimlaneInitializer extends EventSupport implements IPropertyNames {
     public static final String LEFT_BRACKET = "(";
     public static final String RIGHT_BRACKET = ")";
 

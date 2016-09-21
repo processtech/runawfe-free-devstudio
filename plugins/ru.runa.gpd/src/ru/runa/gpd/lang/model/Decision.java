@@ -11,7 +11,7 @@ import ru.runa.gpd.extension.decision.IDecisionProvider;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.wfe.extension.decision.GroovyDecisionHandler;
 
-public class Decision extends Node implements Delegable, Active {
+public class Decision extends Node implements IDelegable {
     public Decision() {
         setDelegationClassName(GroovyDecisionHandler.class.getName());
     }

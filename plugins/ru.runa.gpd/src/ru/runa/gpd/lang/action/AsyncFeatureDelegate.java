@@ -5,7 +5,7 @@ import org.eclipse.jface.viewers.ISelection;
 
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Subprocess;
-import ru.runa.gpd.lang.model.Synchronizable;
+import ru.runa.gpd.lang.model.ISynchronizable;
 
 public class AsyncFeatureDelegate extends BaseModelActionDelegate {
     @Override
@@ -16,15 +16,15 @@ public class AsyncFeatureDelegate extends BaseModelActionDelegate {
             Subprocess subprocess = (Subprocess) elem;
             action.setEnabled(!subprocess.isEmbedded() || subprocess.getEmbeddedSubprocess() == null);
         }
-        Synchronizable synchronizable = (Synchronizable) elem;
-        if (synchronizable != null) {
-            action.setChecked(synchronizable.isAsync());
+        ISynchronizable iSynchronizable = (ISynchronizable) elem;
+        if (iSynchronizable != null) {
+            action.setChecked(iSynchronizable.isAsync());
         }
     }
 
     @Override
     public void run(IAction action) {
-        Synchronizable synchronizable = (Synchronizable) getSelection();
-        synchronizable.setAsync(!synchronizable.isAsync());
+        ISynchronizable iSynchronizable = (ISynchronizable) getSelection();
+        iSynchronizable.setAsync(!iSynchronizable.isAsync());
     }
 }

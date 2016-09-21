@@ -23,9 +23,9 @@ import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.SwimlanedNode;
-import ru.runa.gpd.lang.model.TextDecorationNode;
 import ru.runa.gpd.lang.model.Timer;
 import ru.runa.gpd.lang.model.Transition;
+import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
 
 import com.google.common.collect.Lists;
 

@@ -15,7 +15,7 @@ import ru.runa.wfe.var.UserTypeMap;
 import com.google.common.base.Objects;
 import com.google.common.base.Objects.ToStringHelper;
 
-public class Variable extends NamedGraphElement implements Describable {
+public class Variable extends NamedGraphElement implements IDescribable {
     public static final String FORMAT_COMPONENT_TYPE_START = "(";
     public static final String FORMAT_COMPONENT_TYPE_END = ")";
     public static final String FORMAT_COMPONENT_TYPE_CONCAT = ", ";

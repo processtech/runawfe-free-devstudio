@@ -17,7 +17,7 @@ import ru.runa.gpd.extension.HandlerArtifact;
 import ru.runa.gpd.extension.decision.GroovyDecisionModel.IfExpr;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.Decision;
-import ru.runa.gpd.lang.model.Delegable;
+import ru.runa.gpd.lang.model.IDelegable;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Transition;
@@ -29,17 +29,17 @@ import com.google.common.collect.Lists;
 
 public class GroovyDecisionProvider extends DelegableProvider implements IDecisionProvider {
     @Override
-    public String showConfigurationDialog(Delegable delegable) {
-        if (!HandlerArtifact.DECISION.equals(delegable.getDelegationType())) {
+    public String showConfigurationDialog(IDelegable iDelegable) {
+        if (!HandlerArtifact.DECISION.equals(iDelegable.getDelegationType())) {
             throw new IllegalArgumentException("For decision handler only");
         }
-        ProcessDefinition definition = ((GraphElement) delegable).getProcessDefinition();
-        List<Transition> transitions = ((Decision) delegable).getLeavingTransitions();
+        ProcessDefinition definition = ((GraphElement) iDelegable).getProcessDefinition();
+        List<Transition> transitions = ((Decision) iDelegable).getLeavingTransitions();
         List<String> transitionNames = new ArrayList<String>();
         for (Transition transition : transitions) {
             transitionNames.add(transition.getName());
         }
-        GroovyEditorDialog dialog = new GroovyEditorDialog(definition, transitionNames, delegable.getDelegationConfiguration());
+        GroovyEditorDialog dialog = new GroovyEditorDialog(definition, transitionNames, iDelegable.getDelegationConfiguration());
         if (dialog.open() == Window.OK) {
             return dialog.getResult();
         }
@@ -47,10 +47,10 @@ public class GroovyDecisionProvider extends DelegableProvider implements IDecisi
     }
 
     @Override
-    public boolean validateValue(Delegable delegable, List<ValidationError> errors) {
-        String configuration = delegable.getDelegationConfiguration();
+    public boolean validateValue(IDelegable iDelegable, List<ValidationError> errors) {
+        String configuration = iDelegable.getDelegationConfiguration();
         if (configuration.trim().length() == 0) {
-            errors.add(ValidationError.createLocalizedError((GraphElement) delegable, "delegable.invalidConfiguration.empty"));
+            errors.add(ValidationError.createLocalizedError((GraphElement) iDelegable, "delegable.invalidConfiguration.empty"));
         } else {
             Binding binding = new Binding();
             GroovyShell shell = new GroovyShell(binding);
@@ -88,9 +88,9 @@ public class GroovyDecisionProvider extends DelegableProvider implements IDecisi
     }
 
     @Override
-    public List<String> getUsedVariableNames(Delegable delegable) throws Exception {
-        List<Variable> variables = ((GraphElement) delegable).getProcessDefinition().getVariables(true, true);
-        GroovyDecisionModel model = new GroovyDecisionModel(delegable.getDelegationConfiguration(), variables);
+    public List<String> getUsedVariableNames(IDelegable iDelegable) throws Exception {
+        List<Variable> variables = ((GraphElement) iDelegable).getProcessDefinition().getVariables(true, true);
+        GroovyDecisionModel model = new GroovyDecisionModel(iDelegable.getDelegationConfiguration(), variables);
         List<String> result = Lists.newArrayList();
         for (IfExpr expr : model.getIfExprs()) {
             if (expr.getVariable1() != null) {
@@ -104,10 +104,10 @@ public class GroovyDecisionProvider extends DelegableProvider implements IDecisi
     }
 
     @Override
-    public String getConfigurationOnVariableRename(Delegable delegable, Variable currentVariable, Variable previewVariable) {
+    public String getConfigurationOnVariableRename(IDelegable iDelegable, Variable currentVariable, Variable previewVariable) {
         try {
-            List<Variable> variables = ((GraphElement) delegable).getProcessDefinition().getVariables(true, true);
-            GroovyDecisionModel model = new GroovyDecisionModel(delegable.getDelegationConfiguration(), variables);
+            List<Variable> variables = ((GraphElement) iDelegable).getProcessDefinition().getVariables(true, true);
+            GroovyDecisionModel model = new GroovyDecisionModel(iDelegable.getDelegationConfiguration(), variables);
             for (IfExpr expr : model.getIfExprs()) {
                 if (Objects.equal(expr.getVariable1(), currentVariable)) {
                     expr.setVariable1(previewVariable);

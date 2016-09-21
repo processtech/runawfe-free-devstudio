@@ -19,7 +19,7 @@ import ru.runa.gpd.lang.model.ITimed;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.Timer;
 
-public class AddTimerFeature extends AddNodeFeature implements GEFConstants {
+public class AddTimerFeature extends AddNodeWithImageFeature implements GEFConstants {
     @Override
     public boolean canAdd(IAddContext context) {
         if (super.canAdd(context)) {
@@ -32,39 +32,36 @@ public class AddTimerFeature extends AddNodeFeature implements GEFConstants {
     @Override
     public PictogramElement add(IAddContext context) {
         Object parent = getBusinessObjectForPictogramElement(context.getTargetContainer());
-        Timer timer = (Timer) context.getNewObject();
-        String imageName = timer.getTypeDefinition().getIcon();
-        Dimension bounds = adjustBounds(context);
         if (parent instanceof ITimed) {
+            Timer timer = (Timer) context.getNewObject();
+            String imageName = "boundary_" + timer.getTypeDefinition().getIcon();
+            Dimension bounds = adjustBounds(context);
             ((LocationContext) context).setX(1);
             ((LocationContext) context).setY(((Node) parent).getConstraint().height - 2 * GRID_SIZE);
-            imageName = "boundary_" + imageName;
             bounds.scale(0.5);
+            ContainerShape parentShape = context.getTargetContainer();
+            IPeCreateService createService = Graphiti.getPeCreateService();
+            IGaService gaService = Graphiti.getGaService();
+            ContainerShape containerShape = createService.createContainerShape(parentShape, true);
+
+            Image image = gaService.createImage(containerShape, "graph/" + imageName);
+            gaService.setLocationAndSize(image, context.getX(), context.getY(), bounds.width, bounds.height);
+            link(containerShape, timer);
+            createService.createChopboxAnchor(containerShape);
+
+            Shape ellipseShape = createService.createShape(containerShape, true);
+            Ellipse ellipse = gaService.createEllipse(ellipseShape);
+            ellipse.setFilled(Boolean.FALSE);
+            ellipse.setLineStyle(LineStyle.DASH);
+            ellipse.setLineWidth(2);
+            ellipse.setForeground(Graphiti.getGaService().manageColor(getDiagram(), StyleUtil.LIGHT_BLUE));
+            gaService.setLocationAndSize(ellipse, 0, 0, bounds.width, bounds.height);
+            ellipseShape.setVisible(!timer.isInterruptingBoundaryEvent());
+            link(ellipseShape, timer);
+
+            layoutPictogramElement(containerShape);
+            return containerShape;
         }
-        ContainerShape parentShape = context.getTargetContainer();
-        IPeCreateService createService = Graphiti.getPeCreateService();
-        IGaService gaService = Graphiti.getGaService();
-        ContainerShape containerShape = createService.createContainerShape(parentShape, true);
-
-        Image image = gaService.createImage(containerShape, "graph/" + imageName);
-        image.setLineVisible(Boolean.TRUE);
-        image.setLineStyle(LineStyle.DASH);
-        image.setLineWidth(1);
-        gaService.setLocationAndSize(image, context.getX(), context.getY(), bounds.width, bounds.height);
-        link(containerShape, timer);
-        createService.createChopboxAnchor(containerShape);
-
-        Shape ellipseShape = createService.createShape(containerShape, true);
-        Ellipse ellipse = gaService.createEllipse(ellipseShape);
-        ellipse.setFilled(Boolean.FALSE);
-        ellipse.setLineStyle(LineStyle.DASH);
-        ellipse.setLineWidth(2);
-        ellipse.setForeground(Graphiti.getGaService().manageColor(getDiagram(), StyleUtil.LIGHT_BLUE));
-        gaService.setLocationAndSize(ellipse, 0, 0, bounds.width, bounds.height);
-        ellipseShape.setVisible(!timer.isInterrupting());
-        link(ellipseShape, timer);
-
-        layoutPictogramElement(containerShape);
-        return containerShape;
+        return super.add(context);
     }
 }

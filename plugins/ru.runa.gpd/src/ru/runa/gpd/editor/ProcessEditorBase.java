@@ -37,6 +37,7 @@ import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.views.contentoutline.ContentOutline;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
+import ru.runa.gpd.IPropertyNames;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
@@ -47,7 +48,6 @@ import ru.runa.gpd.editor.graphiti.DiagramEditorPage;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.ProcessDefinition;
-import ru.runa.gpd.lang.model.PropertyNames;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.Variable;
@@ -238,10 +238,10 @@ public abstract class ProcessEditorBase extends MultiPageEditorPart implements I
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if (PropertyNames.PROPERTY_DIRTY.equals(evt.getPropertyName())) {
+        if (IPropertyNames.PROPERTY_DIRTY.equals(evt.getPropertyName())) {
             firePropertyChange(IEditorPart.PROP_DIRTY);
         }
-        if (PropertyNames.PROPERTY_SHOW_GRID.equals(evt.getPropertyName())) {
+        if (IPropertyNames.PROPERTY_SHOW_GRID.equals(evt.getPropertyName())) {
             updateGridLayerVisibility(definition.isShowGrid());
         }
     }

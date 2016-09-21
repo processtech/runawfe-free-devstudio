@@ -4,9 +4,9 @@ import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-import ru.runa.gpd.lang.model.Active;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Node;
+import ru.runa.gpd.lang.model.jpdl.ActionContainer;
 
 public class NodeTreeEditPart extends ElementTreeEditPart {
 
@@ -18,8 +18,8 @@ public class NodeTreeEditPart extends ElementTreeEditPart {
     protected List<GraphElement> getModelChildren() {
         List<GraphElement> result = new ArrayList<GraphElement>();
         result.addAll(getNode().getLeavingTransitions());
-        if (getNode() instanceof Active) {
-            result.addAll(((Active) getNode()).getActions());
+        if (getNode() instanceof ActionContainer) {
+            result.addAll(((ActionContainer) getNode()).getActions());
         }
         return result;
     }

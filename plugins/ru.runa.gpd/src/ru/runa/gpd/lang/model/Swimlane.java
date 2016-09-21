@@ -14,7 +14,7 @@ import ru.runa.gpd.swimlane.SwimlaneInitializerParser;
 import ru.runa.wfe.extension.assign.DefaultAssignmentHandler;
 import ru.runa.wfe.var.format.ExecutorFormat;
 
-public class Swimlane extends Variable implements Delegable {
+public class Swimlane extends Variable implements IDelegable {
     public static final String DEFAULT_DELEGATION_CLASS_NAME = DefaultAssignmentHandler.class.getName();
     private String editorPath;
 

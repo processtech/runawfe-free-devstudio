@@ -23,7 +23,7 @@ import ru.runa.gpd.Localization;
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.LocalizationRegistry;
 import ru.runa.gpd.lang.ValidationError;
-import ru.runa.gpd.lang.model.Delegable;
+import ru.runa.gpd.lang.model.IDelegable;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.ui.wizard.CompactWizardDialog;
 
@@ -32,20 +32,20 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
 public abstract class ParamBasedProvider extends DelegableProvider {
-    protected abstract ParamDefConfig getParamConfig(Delegable delegable);
+    protected abstract ParamDefConfig getParamConfig(IDelegable iDelegable);
 
     protected ImageDescriptor getLogo() {
         return null;
     }
 
     @Override
-    public String showConfigurationDialog(Delegable delegable) {
-        ParamDefConfig config = getParamConfig(delegable);
-        return showConfigurationDialog(delegable, config, getLogo());
+    public String showConfigurationDialog(IDelegable iDelegable) {
+        ParamDefConfig config = getParamConfig(iDelegable);
+        return showConfigurationDialog(iDelegable, config, getLogo());
     }
 
-    public static String showConfigurationDialog(Delegable delegable, ParamDefConfig config, ImageDescriptor logo) {
-        ConfigurationWizardPage page = new ConfigurationWizardPage(delegable, config, logo);
+    public static String showConfigurationDialog(IDelegable iDelegable, ParamDefConfig config, ImageDescriptor logo) {
+        ConfigurationWizardPage page = new ConfigurationWizardPage(iDelegable, config, logo);
         final ConfigurationWizard wizard = new ConfigurationWizard(page);
         CompactWizardDialog dialog = new CompactWizardDialog(wizard) {
             @Override
@@ -70,13 +70,13 @@ public abstract class ParamBasedProvider extends DelegableProvider {
     }
 
     @Override
-    public List<String> getUsedVariableNames(Delegable delegable) {
-        String configuration = delegable.getDelegationConfiguration();
+    public List<String> getUsedVariableNames(IDelegable iDelegable) {
+        String configuration = iDelegable.getDelegationConfiguration();
         if (Strings.isNullOrEmpty(configuration)) {
             return Lists.newArrayList();
         }
         List<String> result = Lists.newArrayList();
-        ParamDefConfig paramDefConfig = getParamConfig(delegable);
+        ParamDefConfig paramDefConfig = getParamConfig(iDelegable);
         Map<String, String> props = paramDefConfig.parseConfiguration(configuration);
         for (ParamDefGroup group : paramDefConfig.getGroups()) {
             for (ParamDef paramDef : group.getParameters()) {
@@ -90,12 +90,12 @@ public abstract class ParamBasedProvider extends DelegableProvider {
     }
 
     @Override
-    public String getConfigurationOnVariableRename(Delegable delegable, Variable currentVariable, Variable previewVariable) {
-        String configuration = delegable.getDelegationConfiguration();
+    public String getConfigurationOnVariableRename(IDelegable iDelegable, Variable currentVariable, Variable previewVariable) {
+        String configuration = iDelegable.getDelegationConfiguration();
         if (Strings.isNullOrEmpty(configuration)) {
             return configuration;
         }
-        ParamDefConfig paramDefConfig = getParamConfig(delegable);
+        ParamDefConfig paramDefConfig = getParamConfig(iDelegable);
         Map<String, String> properties = paramDefConfig.parseConfiguration(configuration);
         for (ParamDefGroup group : paramDefConfig.getGroups()) {
             for (ParamDef paramDef : group.getParameters()) {
@@ -105,14 +105,14 @@ public abstract class ParamBasedProvider extends DelegableProvider {
                 }
             }
         }
-        List<String> variableNames = delegable.getVariableNames(true);
+        List<String> variableNames = iDelegable.getVariableNames(true);
         variableNames.add(previewVariable.getName());
         return paramDefConfig.toConfiguration(variableNames, properties);
     }
 
     @Override
-    public boolean validateValue(Delegable delegable, List<ValidationError> errors) {
-        return getParamConfig(delegable).validate(delegable, errors);
+    public boolean validateValue(IDelegable iDelegable, List<ValidationError> errors) {
+        return getParamConfig(iDelegable).validate(iDelegable, errors);
     }
 
     public static class ConfigurationWizard extends Wizard {
@@ -147,13 +147,13 @@ public abstract class ParamBasedProvider extends DelegableProvider {
     public static class ConfigurationWizardPage extends WizardPage {
         private ParamDefComposite paramDefComposite;
         private final ParamDefConfig config;
-        private final Delegable delegable;
+        private final IDelegable iDelegable;
         private final Map<String, String> properties;
 
-        protected ConfigurationWizardPage(Delegable delegable, ParamDefConfig config, ImageDescriptor logo) {
-            super("config", LocalizationRegistry.getLabel(delegable.getDelegationClassName()), logo);
-            this.delegable = delegable;
-            this.properties = config.parseConfiguration(delegable.getDelegationConfiguration());
+        protected ConfigurationWizardPage(IDelegable iDelegable, ParamDefConfig config, ImageDescriptor logo) {
+            super("config", LocalizationRegistry.getLabel(iDelegable.getDelegationClassName()), logo);
+            this.iDelegable = iDelegable;
+            this.properties = config.parseConfiguration(iDelegable.getDelegationConfiguration());
             this.config = config;
         }
 
@@ -163,7 +163,7 @@ public abstract class ParamBasedProvider extends DelegableProvider {
             scrolledComposite.setExpandHorizontal(true);
             scrolledComposite.setExpandVertical(true);
             scrolledComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
-            paramDefComposite = new ParamDefComposite(scrolledComposite, delegable, config, properties);
+            paramDefComposite = new ParamDefComposite(scrolledComposite, iDelegable, config, properties);
             paramDefComposite.createUI();
             scrolledComposite.setMinSize(paramDefComposite.computeSize(paramDefComposite.getSize().x, SWT.DEFAULT));
             scrolledComposite.setContent(paramDefComposite);
@@ -172,7 +172,7 @@ public abstract class ParamBasedProvider extends DelegableProvider {
 
         public String getConfiguration() {
             Map<String, String> properties = paramDefComposite.readUserInput();
-            return config.toConfiguration(delegable.getVariableNames(true), properties);
+            return config.toConfiguration(iDelegable.getVariableNames(true), properties);
         }
     }
 }

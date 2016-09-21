@@ -3,14 +3,14 @@ package ru.runa.gpd.extension.handler;
 import java.util.List;
 
 import ru.runa.gpd.Localization;
-import ru.runa.gpd.lang.model.Delegable;
+import ru.runa.gpd.lang.model.IDelegable;
 import ru.runa.wfe.user.Executor;
 
 public class AddReadProcessPermissionsProvider extends ParamBasedProvider {
     private static Config config = new Config();
 
     @Override
-    protected ParamDefConfig getParamConfig(Delegable delegable) {
+    protected ParamDefConfig getParamConfig(IDelegable iDelegable) {
         return config;
     }
 

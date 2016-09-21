@@ -10,7 +10,7 @@ import org.eclipse.graphiti.services.Graphiti;
 import ru.runa.gpd.editor.graphiti.GaProperty;
 import ru.runa.gpd.editor.graphiti.PropertyUtil;
 import ru.runa.gpd.lang.model.Node;
-import ru.runa.gpd.lang.model.Synchronizable;
+import ru.runa.gpd.lang.model.ISynchronizable;
 
 public class LayoutStateNodeFeature extends ElementLayoutFeature {
     public static final String MAIN_RECT = "mainRect";
@@ -76,7 +76,7 @@ public class LayoutStateNodeFeature extends ElementLayoutFeature {
         }
         GraphicsAlgorithm asyncImage = PropertyUtil.findGaRecursiveByName(ga, GaProperty.ASYNC);
         if (asyncImage != null) {
-            int size = ((Synchronizable) node).isAsync() ? 14 : 1;
+            int size = ((ISynchronizable) node).isAsync() ? 14 : 1;
             Graphiti.getGaService().setLocationAndSize(asyncImage, bounds.width - 2 * GRID_SIZE, bounds.height - 2 * GRID_SIZE - 1, size, size);
         }
         return true;

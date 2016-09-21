@@ -13,14 +13,17 @@ import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.lang.ValidationError;
+import ru.runa.gpd.lang.model.bpmn.IBoundaryEvent;
+import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 import ru.runa.gpd.util.Duration;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Sets;
 
-public abstract class Node extends NamedGraphElement implements Describable {
+public abstract class Node extends NamedGraphElement implements IDescribable {
     private boolean minimizedView = false;
     private NodeAsyncExecution asyncExecution = NodeAsyncExecution.DEFAULT;
+    private boolean interruptingBoundaryEvent = true;
 
     public boolean isMinimizedView() {
         return minimizedView;
@@ -41,11 +44,27 @@ public abstract class Node extends NamedGraphElement implements Describable {
         firePropertyChange(PROPERTY_NODE_ASYNC_EXECUTION, old, this.asyncExecution);
     }
 
+    public boolean isInterruptingBoundaryEvent() {
+        return interruptingBoundaryEvent;
+    }
+
+    public void setInterruptingBoundaryEvent(boolean interruptingBoundaryEvent) {
+        if (this.interruptingBoundaryEvent != interruptingBoundaryEvent) {
+            boolean old = this.interruptingBoundaryEvent;
+            this.interruptingBoundaryEvent = interruptingBoundaryEvent;
+            firePropertyChange(PROPERTY_INTERRUPTING_BOUNDARY_EVENT, old, interruptingBoundaryEvent);
+        }
+    }
+
     @Override
     protected void populateCustomPropertyDescriptors(List<IPropertyDescriptor> descriptors) {
         super.populateCustomPropertyDescriptors(descriptors);
         descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_NODE_ASYNC_EXECUTION, Localization.getString("Node.property.asyncExecution"),
                 NodeAsyncExecution.LABELS));
+        if (this instanceof IBoundaryEvent && getParent() instanceof Node) {
+            descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_INTERRUPTING_BOUNDARY_EVENT, Localization.getString("property.interrupting"),
+                    YesNoComboBoxTransformer.LABELS));
+        }
     }
 
     @Override
@@ -67,6 +86,9 @@ public abstract class Node extends NamedGraphElement implements Describable {
         if (PROPERTY_NODE_ASYNC_EXECUTION.equals(id)) {
             return asyncExecution.ordinal();
         }
+        if (PROPERTY_INTERRUPTING_BOUNDARY_EVENT.equals(id)) {
+            return YesNoComboBoxTransformer.getPropertyValue(interruptingBoundaryEvent);
+        }
         return super.getPropertyValue(id);
     }
 
@@ -82,6 +104,8 @@ public abstract class Node extends NamedGraphElement implements Describable {
             ((ITimed) this).getTimer().setAction((TimerAction) value);
         } else if (PROPERTY_NODE_ASYNC_EXECUTION.equals(id)) {
             setAsyncExecution(NodeAsyncExecution.values()[(Integer) value]);
+        } else if (PROPERTY_INTERRUPTING_BOUNDARY_EVENT.equals(id)) {
+            setInterruptingBoundaryEvent(YesNoComboBoxTransformer.setPropertyValue(value));
         } else {
             super.setPropertyValue(id, value);
         }
@@ -101,7 +125,8 @@ public abstract class Node extends NamedGraphElement implements Describable {
     @Override
     public void validate(List<ValidationError> errors, IFile definitionFile) {
         super.validate(errors, definitionFile);
-        if (!(this instanceof StartState) && !(this instanceof Timer && getParent() instanceof ITimed)) {
+        if (!(this instanceof StartState) && !(this instanceof Timer && getParent() instanceof ITimed)
+                && !(this instanceof IBoundaryEvent && getParent() instanceof IBoundaryEventContainer)) {
             if (getArrivingTransitions().size() == 0) {
                 errors.add(ValidationError.createLocalizedError(this, "noInputTransitions"));
             }
@@ -268,4 +293,23 @@ public abstract class Node extends NamedGraphElement implements Describable {
         return result;
     }
 
+    private static class YesNoComboBoxTransformer {
+        private static String[] LABELS = new String[] { Localization.getString("yes"), Localization.getString("no") };
+
+        private static Object getPropertyValue(boolean value) {
+            if (value) {
+                return Integer.valueOf(0);
+            } else {
+                return Integer.valueOf(1);
+            }
+        }
+
+        private static boolean setPropertyValue(Object value) {
+            if (Integer.valueOf(0).equals(value)) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
 }

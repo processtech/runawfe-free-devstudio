@@ -10,7 +10,7 @@ import ru.runa.gpd.editor.graphiti.PropertyUtil;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.SwimlanedNode;
-import ru.runa.gpd.lang.model.Synchronizable;
+import ru.runa.gpd.lang.model.ISynchronizable;
 
 import com.google.common.base.Objects;
 
@@ -34,7 +34,7 @@ public class UpdateStateNodeFeature extends UpdateFeature {
             return Reason.createTrueReason();
         }
         String async = PropertyUtil.getPropertyValue(pe, GaProperty.ASYNC);
-        if (async != null && !Objects.equal(async, String.valueOf(((Synchronizable)bo).isAsync()))) {
+        if (async != null && !Objects.equal(async, String.valueOf(((ISynchronizable)bo).isAsync()))) {
             return Reason.createTrueReason();
         }
         return Reason.createFalseReason();
@@ -56,8 +56,8 @@ public class UpdateStateNodeFeature extends UpdateFeature {
             layoutPictogramElement(pe);
         }
         String async = PropertyUtil.getPropertyValue(pe, GaProperty.ASYNC);
-        if (async !=null && !Objects.equal(async, String.valueOf(((Synchronizable)bo).isAsync()))) {
-            PropertyUtil.setPropertyValue(pe, GaProperty.ASYNC, String.valueOf(((Synchronizable)bo).isAsync()));
+        if (async !=null && !Objects.equal(async, String.valueOf(((ISynchronizable)bo).isAsync()))) {
+            PropertyUtil.setPropertyValue(pe, GaProperty.ASYNC, String.valueOf(((ISynchronizable)bo).isAsync()));
             layoutPictogramElement(pe);
         }
         return true;

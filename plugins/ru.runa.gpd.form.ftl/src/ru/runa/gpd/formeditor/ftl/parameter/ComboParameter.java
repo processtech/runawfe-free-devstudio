@@ -16,9 +16,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.properties.ComboBoxPropertyDescriptor;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
 
+import ru.runa.gpd.IPropertyNames;
 import ru.runa.gpd.formeditor.ftl.ComboOption;
 import ru.runa.gpd.formeditor.ftl.ComponentParameter;
-import ru.runa.gpd.lang.model.PropertyNames;
 import ru.runa.gpd.ui.custom.LoggingSelectionChangedAdapter;
 
 import com.google.common.base.Function;
@@ -86,7 +86,7 @@ public class ComboParameter extends ParameterType {
                 protected void onSelectionChanged(SelectionChangedEvent e) throws Exception {
                     IStructuredSelection selection = (IStructuredSelection) e.getSelection();
                     ComboOption option = (ComboOption) selection.getFirstElement();
-                    listener.propertyChange(new PropertyChangeEvent(viewer, PropertyNames.PROPERTY_VALUE, oldValue, option.getValue()));
+                    listener.propertyChange(new PropertyChangeEvent(viewer, IPropertyNames.PROPERTY_VALUE, oldValue, option.getValue()));
                 }
             });
         }

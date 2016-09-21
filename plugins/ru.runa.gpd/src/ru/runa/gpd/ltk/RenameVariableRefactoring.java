@@ -19,7 +19,6 @@ import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.NodeRegistry;
 import ru.runa.gpd.lang.NodeTypeDefinition;
-import ru.runa.gpd.lang.model.Action;
 import ru.runa.gpd.lang.model.BotTask;
 import ru.runa.gpd.lang.model.BotTaskType;
 import ru.runa.gpd.lang.model.Decision;
@@ -27,13 +26,14 @@ import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.MultiTaskState;
 import ru.runa.gpd.lang.model.ProcessDefinition;
-import ru.runa.gpd.lang.model.ScriptTask;
 import ru.runa.gpd.lang.model.Subprocess;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Timer;
 import ru.runa.gpd.lang.model.Variable;
+import ru.runa.gpd.lang.model.bpmn.ScriptTask;
+import ru.runa.gpd.lang.model.jpdl.Action;
 import ru.runa.gpd.util.VariableUtils;
 
 @SuppressWarnings("unchecked")

@@ -25,7 +25,7 @@ import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.bot.IBotFileSupportProvider;
 import ru.runa.gpd.extension.handler.XmlBasedConstructorProvider;
 import ru.runa.gpd.lang.model.BotTask;
-import ru.runa.gpd.lang.model.Delegable;
+import ru.runa.gpd.lang.model.IDelegable;
 import ru.runa.gpd.office.Messages;
 import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
 import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
@@ -39,8 +39,8 @@ import com.google.common.base.Strings;
 public class MergeDocxHandlerCellEditorProvider extends XmlBasedConstructorProvider<DocxModel> implements IBotFileSupportProvider {
 
     @Override
-    protected Composite createConstructorComposite(Composite parent, Delegable delegable, DocxModel model) {
-        return new MergeConstructorView(parent, delegable, model);
+    protected Composite createConstructorComposite(Composite parent, IDelegable iDelegable, DocxModel model) {
+        return new MergeConstructorView(parent, iDelegable, model);
     }
 
     @Override
@@ -63,19 +63,19 @@ public class MergeDocxHandlerCellEditorProvider extends XmlBasedConstructorProvi
     }
 
     @Override
-    public void onDelete(Delegable delegable) {
+    public void onDelete(IDelegable iDelegable) {
         try {
-            DocxModel model = fromXml(delegable.getDelegationConfiguration());
+            DocxModel model = fromXml(iDelegable.getDelegationConfiguration());
             for (String inputPath : ((MergeInputOutputModel) model.getInOutModel()).getInputPathList()) {
                 EmbeddedFileUtils.deleteProcessFile(inputPath);
             }
         } catch (Exception e) {
-            PluginLogger.logErrorWithoutDialog("Failed to delete embedded file in " + delegable, e);
+            PluginLogger.logErrorWithoutDialog("Failed to delete embedded file in " + iDelegable, e);
         }
     }
 
     @Override
-    public void onCopy(IFolder sourceFolder, Delegable source, String sourceName, IFolder targetFolder, Delegable target, String targetName) {
+    public void onCopy(IFolder sourceFolder, IDelegable source, String sourceName, IFolder targetFolder, IDelegable target, String targetName) {
         super.onCopy(sourceFolder, source, sourceName, targetFolder, target, targetName);
         try {
             MergeDocxModel model = (MergeDocxModel) fromXml(source.getDelegationConfiguration());
@@ -101,8 +101,8 @@ public class MergeDocxHandlerCellEditorProvider extends XmlBasedConstructorProvi
 
     private class MergeConstructorView extends ConstructorComposite {
 
-        public MergeConstructorView(Composite parent, Delegable delegable, DocxModel model) {
-            super(parent, delegable, model);
+        public MergeConstructorView(Composite parent, IDelegable iDelegable, DocxModel model) {
+            super(parent, iDelegable, model);
             setLayout(new GridLayout(2, false));
             buildFromModel();
         }
@@ -124,7 +124,7 @@ public class MergeDocxHandlerCellEditorProvider extends XmlBasedConstructorProvi
                     }
                 });
                 new Label(this, SWT.NONE);
-                new MergeInputOutputComposite(this, delegable, (MergeInputOutputModel) model.getInOutModel(), "docx");
+                new MergeInputOutputComposite(this, iDelegable, (MergeInputOutputModel) model.getInOutModel(), "docx");
                 int i = 0;
                 for (DocxTableModel table : model.getTables()) {
                     addTableSection(table, i++);
@@ -227,7 +227,7 @@ public class MergeDocxHandlerCellEditorProvider extends XmlBasedConstructorProvi
 
         private void addColumnSection(Composite parent, final DocxColumnModel columnModel, final int tableIndex, final int columnIndex) {
             final Combo combo = new Combo(parent, SWT.READ_ONLY);
-            for (String variableName : delegable.getVariableNames(true, List.class.getName())) {
+            for (String variableName : iDelegable.getVariableNames(true, List.class.getName())) {
                 combo.add(variableName);
             }
             combo.setText(columnModel.variable);

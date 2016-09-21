@@ -3,7 +3,7 @@ package ru.runa.gpd.editor.gef.part.graph;
 import java.util.List;
 
 import ru.runa.gpd.editor.gef.figure.ConjunctionFigure;
-import ru.runa.gpd.lang.model.Conjunction;
+import ru.runa.gpd.lang.model.bpmn.Conjunction;
 
 public class ConjunctionGraphicalEditPart extends LabeledNodeGraphicalEditPart {
 

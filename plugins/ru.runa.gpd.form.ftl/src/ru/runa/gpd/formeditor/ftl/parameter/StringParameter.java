@@ -11,8 +11,8 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
 import org.eclipse.ui.views.properties.TextPropertyDescriptor;
 
+import ru.runa.gpd.IPropertyNames;
 import ru.runa.gpd.formeditor.ftl.ComponentParameter;
-import ru.runa.gpd.lang.model.PropertyNames;
 import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
 
 public class StringParameter extends ParameterType {
@@ -34,7 +34,7 @@ public class StringParameter extends ParameterType {
 
                 @Override
                 protected void onTextChanged(ModifyEvent e) throws Exception {
-                    listener.propertyChange(new PropertyChangeEvent(text, PropertyNames.PROPERTY_VALUE, oldValue, text.getText()));
+                    listener.propertyChange(new PropertyChangeEvent(text, IPropertyNames.PROPERTY_VALUE, oldValue, text.getText()));
                 }
             });
         }

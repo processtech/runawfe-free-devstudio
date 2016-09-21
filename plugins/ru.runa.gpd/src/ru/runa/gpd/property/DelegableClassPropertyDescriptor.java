@@ -8,15 +8,15 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
 
 import ru.runa.gpd.extension.LocalizationLabelProvider;
-import ru.runa.gpd.lang.model.Delegable;
+import ru.runa.gpd.lang.model.IDelegable;
 import ru.runa.gpd.ui.dialog.ChooseHandlerClassDialog;
 
 public class DelegableClassPropertyDescriptor extends PropertyDescriptor {
-    private final Delegable delegable;
+    private final IDelegable iDelegable;
 
-    public DelegableClassPropertyDescriptor(Object id, String label, Delegable delegable) {
+    public DelegableClassPropertyDescriptor(Object id, String label, IDelegable iDelegable) {
         super(id, label);
-        this.delegable = delegable;
+        this.iDelegable = iDelegable;
         setLabelProvider(new LocalizationLabelProvider(true));
     }
 
@@ -32,7 +32,7 @@ public class DelegableClassPropertyDescriptor extends PropertyDescriptor {
 
         @Override
         protected Object openDialogBox(Control cellEditorWindow) {
-            ChooseHandlerClassDialog dialog = new ChooseHandlerClassDialog(delegable.getDelegationType(), delegable.getDelegationClassName());
+            ChooseHandlerClassDialog dialog = new ChooseHandlerClassDialog(iDelegable.getDelegationType(), iDelegable.getDelegationClassName());
             return dialog.openDialog();
         }
 

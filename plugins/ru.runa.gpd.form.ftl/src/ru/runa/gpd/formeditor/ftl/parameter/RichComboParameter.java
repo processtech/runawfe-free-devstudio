@@ -14,10 +14,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
 
+import ru.runa.gpd.IPropertyNames;
 import ru.runa.gpd.formeditor.ftl.ComponentParameter;
 import ru.runa.gpd.formeditor.ftl.ui.RichComboDialog;
 import ru.runa.gpd.formeditor.wysiwyg.FormEditor;
-import ru.runa.gpd.lang.model.PropertyNames;
 
 public class RichComboParameter extends ParameterType {
     public static final String VALUE_PREFIX = "value@";
@@ -57,7 +57,7 @@ public class RichComboParameter extends ParameterType {
                             textValue = textValue.substring(RichComboParameter.VALUE_PREFIX.length());
                         }
                         text.setText(textValue);
-                        listener.propertyChange(new PropertyChangeEvent(text, PropertyNames.PROPERTY_VALUE, oldValue, result));
+                        listener.propertyChange(new PropertyChangeEvent(text, IPropertyNames.PROPERTY_VALUE, oldValue, result));
                     }
                 }
             });

@@ -15,7 +15,7 @@ import ru.runa.gpd.extension.VariableFormatArtifact;
 import ru.runa.gpd.extension.VariableFormatRegistry;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Variable;
-import ru.runa.gpd.lang.model.VariableContainer;
+import ru.runa.gpd.lang.model.IVariableContainer;
 import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.gpd.ui.custom.DynaContentWizardPage;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
@@ -28,7 +28,7 @@ import ru.runa.wfe.var.format.UserTypeFormat;
 import com.google.common.collect.Maps;
 
 public class VariableFormatPage extends DynaContentWizardPage {
-    private final VariableContainer variableContainer;
+    private final IVariableContainer iVariableContainer;
     private VariableFormatArtifact type;
     private VariableUserType userType;
     private String[] componentClassNames;
@@ -41,9 +41,9 @@ public class VariableFormatPage extends DynaContentWizardPage {
                 new String[] { Localization.getString("VariableFormatPage.components.map.key"), Localization.getString("VariableFormatPage.components.map.value") });
     }
 
-    public VariableFormatPage(ProcessDefinition processDefinition, VariableContainer variableContainer, Variable variable, boolean editFormat) {
+    public VariableFormatPage(ProcessDefinition processDefinition, IVariableContainer iVariableContainer, Variable variable, boolean editFormat) {
     	this.processDefinition = processDefinition;
-    	this.variableContainer = variableContainer;
+    	this.iVariableContainer = iVariableContainer;
         if (variable != null) {
             if (variable.getUserType() != null) {
                 this.userType = variable.getUserType();
@@ -114,7 +114,7 @@ public class VariableFormatPage extends DynaContentWizardPage {
             }
         }
         for (VariableUserType userType : processDefinition.getVariableUserTypes()) {
-            if (!(variableContainer instanceof VariableUserType) || ((VariableUserType) variableContainer).canUseAsAttributeType(userType)) {
+            if (!(iVariableContainer instanceof VariableUserType) || ((VariableUserType) iVariableContainer).canUseAsAttributeType(userType)) {
                 combo.add(userType.getName());
             }
         }

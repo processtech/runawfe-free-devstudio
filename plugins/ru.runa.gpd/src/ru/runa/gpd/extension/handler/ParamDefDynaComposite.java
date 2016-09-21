@@ -25,7 +25,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 
 import ru.runa.gpd.Localization;
-import ru.runa.gpd.lang.model.Delegable;
+import ru.runa.gpd.lang.model.IDelegable;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.custom.SWTUtils;
 import ru.runa.gpd.ui.dialog.EditPropertyDialog;
@@ -35,8 +35,8 @@ public class ParamDefDynaComposite extends ParamDefComposite {
     private final Map<String, String> aProperties;
     private final String dynaParamsDescription;
 
-    public ParamDefDynaComposite(Composite parent, Delegable delegable, ParamDefConfig config, Map<String, String> properties, ParamDefGroup group, String dynaParamsDescription) {
-        super(parent, delegable, config, properties);
+    public ParamDefDynaComposite(Composite parent, IDelegable iDelegable, ParamDefConfig config, Map<String, String> properties, ParamDefGroup group, String dynaParamsDescription) {
+        super(parent, iDelegable, config, properties);
         aProperties = group.getDynaProperties();
         this.dynaParamsDescription = dynaParamsDescription;
     }

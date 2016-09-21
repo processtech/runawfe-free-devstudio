@@ -28,7 +28,7 @@ import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.lang.ValidationError;
-import ru.runa.gpd.lang.model.Delegable;
+import ru.runa.gpd.lang.model.IDelegable;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.ui.custom.XmlHighlightTextStyling;
 import ru.runa.gpd.util.XmlUtil;
@@ -39,8 +39,8 @@ import com.google.common.collect.Lists;
 public abstract class XmlBasedConstructorProvider<T extends Observable> extends DelegableProvider {
 
     @Override
-    public String showConfigurationDialog(Delegable delegable) {
-        XmlBasedConstructorDialog dialog = new XmlBasedConstructorDialog(delegable);
+    public String showConfigurationDialog(IDelegable iDelegable) {
+        XmlBasedConstructorDialog dialog = new XmlBasedConstructorDialog(iDelegable);
         if (dialog.open() == Window.OK) {
             return dialog.getResult();
         }
@@ -48,13 +48,13 @@ public abstract class XmlBasedConstructorProvider<T extends Observable> extends 
     }
 
     @Override
-    public List<String> getUsedVariableNames(Delegable delegable) {
-        String configuration = delegable.getDelegationConfiguration();
+    public List<String> getUsedVariableNames(IDelegable iDelegable) {
+        String configuration = iDelegable.getDelegationConfiguration();
         if (Strings.isNullOrEmpty(configuration)) {
             return Lists.newArrayList();
         }
         List<String> result = Lists.newArrayList();
-        for (String variableName : delegable.getVariableNames(true)) {
+        for (String variableName : iDelegable.getVariableNames(true)) {
             if (configuration.contains("\"" + variableName + "\"")) {
                 result.add(variableName);
             }
@@ -63,42 +63,42 @@ public abstract class XmlBasedConstructorProvider<T extends Observable> extends 
     }
 
     @Override
-    public String getConfigurationOnVariableRename(Delegable delegable, Variable currentVariable, Variable previewVariable) {
+    public String getConfigurationOnVariableRename(IDelegable iDelegable, Variable currentVariable, Variable previewVariable) {
         String oldString = Pattern.quote("\"" + currentVariable.getName() + "\"");
         String newString = Matcher.quoteReplacement("\"" + previewVariable.getName() + "\"");
-        return delegable.getDelegationConfiguration().replaceAll(oldString, newString);
+        return iDelegable.getDelegationConfiguration().replaceAll(oldString, newString);
     }
 
     @Override
-    public boolean validateValue(Delegable delegable, List<ValidationError> errors) throws Exception {
-        String configuration = delegable.getDelegationConfiguration();
+    public boolean validateValue(IDelegable iDelegable, List<ValidationError> errors) throws Exception {
+        String configuration = iDelegable.getDelegationConfiguration();
         T model = fromXml(configuration);
-        return validateModel(delegable, model, errors);
+        return validateModel(iDelegable, model, errors);
     }
 
-    protected boolean validateModel(Delegable delegable, T model, List<ValidationError> errors) {
+    protected boolean validateModel(IDelegable iDelegable, T model, List<ValidationError> errors) {
         return true;
     }
 
     protected abstract String getTitle();
 
-    protected abstract Composite createConstructorComposite(Composite parent, Delegable delegable, T model);
+    protected abstract Composite createConstructorComposite(Composite parent, IDelegable iDelegable, T model);
 
     protected abstract T createDefault();
 
     protected abstract T fromXml(String xml) throws Exception;
 
-    protected int getSelectedTabIndex(Delegable delegable, T model) {
+    protected int getSelectedTabIndex(IDelegable iDelegable, T model) {
         return 0;
     }
 
     public abstract class ConstructorComposite extends Composite implements Observer {
         protected T model;
-        protected final Delegable delegable;
+        protected final IDelegable iDelegable;
 
-        public ConstructorComposite(Composite parent, Delegable delegable, T model) {
+        public ConstructorComposite(Composite parent, IDelegable iDelegable, T model) {
             super(parent, SWT.NONE);
-            this.delegable = delegable;
+            this.iDelegable = iDelegable;
             this.model = model;
         }
 
@@ -119,13 +119,13 @@ public abstract class XmlBasedConstructorProvider<T extends Observable> extends 
         private Composite constructorView;
         private final String initialValue;
         private String result;
-        protected final Delegable delegable;
+        protected final IDelegable iDelegable;
 
-        public XmlBasedConstructorDialog(Delegable delegable) {
+        public XmlBasedConstructorDialog(IDelegable iDelegable) {
             super(Display.getCurrent().getActiveShell());
             setShellStyle(getShellStyle() | SWT.RESIZE);
-            this.delegable = delegable;
-            this.initialValue = delegable.getDelegationConfiguration();
+            this.iDelegable = iDelegable;
+            this.initialValue = iDelegable.getDelegationConfiguration();
         }
 
         @Override
@@ -157,7 +157,7 @@ public abstract class XmlBasedConstructorProvider<T extends Observable> extends 
                 PluginLogger.logError(Localization.getString("config.error.parse"), ex);
                 model = createDefault();
             }
-            constructorView = createConstructorComposite(scrolledComposite, delegable, model);
+            constructorView = createConstructorComposite(scrolledComposite, iDelegable, model);
             constructorView.setLayoutData(new GridData(GridData.FILL_BOTH));
             if (constructorView instanceof Observer) {
                 model.addObserver((Observer) constructorView);
@@ -169,7 +169,7 @@ public abstract class XmlBasedConstructorProvider<T extends Observable> extends 
             TabItem tabItem2 = new TabItem(tabFolder, SWT.NONE);
             tabItem2.setText(" XML ");
             tabItem2.setControl(xmlContentView);
-            tabFolder.setSelection(getSelectedTabIndex(delegable, model));
+            tabFolder.setSelection(getSelectedTabIndex(iDelegable, model));
             tabFolder.addSelectionListener(new TabSelectionHandler());
             return tabFolder;
         }

@@ -28,8 +28,8 @@ import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.Subprocess;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.TaskState;
-import ru.runa.gpd.lang.model.TextDecorationNode;
 import ru.runa.gpd.lang.model.Transition;
+import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
 
 public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
     public DiagramToolBehaviorProvider(IDiagramTypeProvider provider) {
