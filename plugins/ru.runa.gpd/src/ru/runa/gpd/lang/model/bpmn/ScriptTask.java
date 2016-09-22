@@ -7,7 +7,7 @@ import ru.runa.gpd.lang.model.IDelegable;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.Transition;
 
-public class ScriptTask extends Node implements IDelegable {
+public class ScriptTask extends Node implements IDelegable, IBoundaryEventContainer {
 
     @Override
     public String getDelegationType() {

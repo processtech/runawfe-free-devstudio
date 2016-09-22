@@ -200,6 +200,7 @@ public class BpmnSerializer extends ProcessSerializer {
         List<ScriptTask> scriptTasks = definition.getChildren(ScriptTask.class);
         for (ScriptTask scriptTask : scriptTasks) {
             writeNode(processElement, scriptTask);
+            writeBoundaryEvents(processElement, scriptTask);
         }
         List<ParallelGateway> parallelGateways = definition.getChildren(ParallelGateway.class);
         for (ParallelGateway gateway : parallelGateways) {

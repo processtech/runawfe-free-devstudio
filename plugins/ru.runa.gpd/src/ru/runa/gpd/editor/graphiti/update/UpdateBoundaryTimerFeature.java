@@ -15,7 +15,8 @@ public class UpdateBoundaryTimerFeature extends UpdateFeature {
         if (context.getPictogramElement() instanceof ContainerShape) {
             ContainerShape containerShape = (ContainerShape) context.getPictogramElement();
             Timer timer = (Timer) getBusinessObjectForPictogramElement(containerShape);
-            if (timer.getParent() instanceof ITimed && timer.isInterruptingBoundaryEvent() == containerShape.getChildren().get(0).isVisible()) {
+            if (!containerShape.getChildren().isEmpty() && timer.getParent() instanceof ITimed
+                    && timer.isInterruptingBoundaryEvent() == containerShape.getChildren().get(0).isVisible()) {
                 return Reason.createTrueReason();
             }
         }

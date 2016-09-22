@@ -272,6 +272,7 @@ public abstract class Node extends NamedGraphElement implements IDescribable {
     public Node getCopy(GraphElement parent) {
         Node copy = (Node) super.getCopy(parent);
         copy.setMinimizedView(isMinimizedView());
+        copy.setInterruptingBoundaryEvent(isInterruptingBoundaryEvent());
         if (this instanceof ITimed) {
             Timer timer = ((ITimed) this).getTimer();
             if (timer != null) {

@@ -183,10 +183,11 @@ public class GpdXmlContentProvider extends AuxContentProvider {
             Rectangle constraint = graphElement.getConstraint().getCopy();
             GraphElement parentGraphElement = graphElement.getParentContainer();
             Rectangle parentConstraint = null;
-            if (parentGraphElement != null && !parentGraphElement.equals(definition)) {
+            while (parentGraphElement != null && !parentGraphElement.equals(definition)) {
                 parentConstraint = parentGraphElement.getConstraint();
                 constraint.x += parentConstraint.x;
                 constraint.y += parentConstraint.y;
+                parentGraphElement = parentGraphElement.getParentContainer();
             }
             if (constraint.isEmpty()) {
                 throw new Exception("Invalid figure size: " + constraint.getSize());
