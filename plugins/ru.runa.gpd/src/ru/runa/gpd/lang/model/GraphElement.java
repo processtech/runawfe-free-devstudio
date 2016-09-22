@@ -476,4 +476,8 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
         return result;
     }
 
+    public String getLabel() {
+        return id;
+    }
+
 }
