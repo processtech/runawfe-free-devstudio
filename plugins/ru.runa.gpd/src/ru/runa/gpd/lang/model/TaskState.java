@@ -378,14 +378,14 @@ public class TaskState extends FormNode implements ActionContainer, ITimed, ISyn
                 }
             }
         }
-        if (isAsync() && getTimer() != null) {
-            errors.add(ValidationError.createLocalizedError(this, "taskState.timerInAsyncTask"));
-        }
         if (isAsync()) {
+            if (getTimer() != null) {
+                errors.add(ValidationError.createLocalizedError(this, "taskState.timerInAsyncTask"));
+            }
             try {
                 Map<String, FormVariableAccess> formVariables = getFormVariables((IFolder) definitionFile.getParent());
                 for (FormVariableAccess access : formVariables.values()) {
-                    if (access != FormVariableAccess.READ) {
+                    if (access == FormVariableAccess.WRITE) {
                         errors.add(ValidationError.createLocalizedError(this, "taskState.variablesInputInAsyncTask"));
                         break;
                     }
