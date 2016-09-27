@@ -20,7 +20,7 @@ import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.handler.XmlBasedConstructorProvider;
 import ru.runa.gpd.lang.model.BotTask;
-import ru.runa.gpd.lang.model.IDelegable;
+import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.office.Messages;
 import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
@@ -44,13 +44,13 @@ public class MSWordTaskHandlerConfigurator extends XmlBasedConstructorProvider<M
     }
 
     @Override
-    protected Composite createConstructorComposite(Composite parent, IDelegable iDelegable, MSWordConfig model) {
-        return new ConstructorView(parent, iDelegable, model);
+    protected Composite createConstructorComposite(Composite parent, Delegable delegable, MSWordConfig model) {
+        return new ConstructorView(parent, delegable, model);
     }
 
     @Override
-    protected int getSelectedTabIndex(IDelegable iDelegable, MSWordConfig model) {
-        return iDelegable instanceof BotTask ? 1 : 0;
+    protected int getSelectedTabIndex(Delegable delegable, MSWordConfig model) {
+        return delegable instanceof BotTask ? 1 : 0;
     }
 
     @Override
@@ -59,9 +59,9 @@ public class MSWordTaskHandlerConfigurator extends XmlBasedConstructorProvider<M
     }
 
     @Override
-    public List<String> getUsedVariableNames(IDelegable iDelegable) {
+    public List<String> getUsedVariableNames(Delegable delegable) {
         List<String> result = Lists.newArrayList();
-        MSWordConfig model = MSWordConfig.fromXml(iDelegable.getDelegationConfiguration());
+        MSWordConfig model = MSWordConfig.fromXml(delegable.getDelegationConfiguration());
         if (model != null) {
             if (model.getResultVariableName() != null) {
                 result.add(model.getResultVariableName());
@@ -74,8 +74,8 @@ public class MSWordTaskHandlerConfigurator extends XmlBasedConstructorProvider<M
     }
 
     @Override
-    public String getConfigurationOnVariableRename(IDelegable iDelegable, Variable currentVariable, Variable previewVariable) {
-        MSWordConfig model = MSWordConfig.fromXml(iDelegable.getDelegationConfiguration());
+    public String getConfigurationOnVariableRename(Delegable delegable, Variable currentVariable, Variable previewVariable) {
+        MSWordConfig model = MSWordConfig.fromXml(delegable.getDelegationConfiguration());
         if (model != null) {
             if (Objects.equal(model.getResultVariableName(), currentVariable.getName())) {
                 model.setResultVariableName(previewVariable.getName());
@@ -91,8 +91,8 @@ public class MSWordTaskHandlerConfigurator extends XmlBasedConstructorProvider<M
 
     private class ConstructorView extends ConstructorComposite {
 
-        public ConstructorView(Composite parent, IDelegable iDelegable, MSWordConfig model) {
-            super(parent, iDelegable, model);
+        public ConstructorView(Composite parent, Delegable delegable, MSWordConfig model) {
+            super(parent, delegable, model);
             setLayout(new GridLayout(3, false));
             buildFromModel();
         }
@@ -163,7 +163,7 @@ public class MSWordTaskHandlerConfigurator extends XmlBasedConstructorProvider<M
                 Label label = new Label(this, SWT.NONE);
                 label.setText(Messages.getString("MSWordConfig.label.resultVariableName"));
                 final Combo combo = new Combo(this, SWT.READ_ONLY);
-                for (String variableName : iDelegable.getVariableNames(true, FileVariable.class.getName())) {
+                for (String variableName : delegable.getVariableNames(true, FileVariable.class.getName())) {
                     combo.add(variableName);
                 }
                 combo.setLayoutData(getGridData(2));
@@ -205,7 +205,7 @@ public class MSWordTaskHandlerConfigurator extends XmlBasedConstructorProvider<M
 
         private void addParamSection(Composite parent, final MSWordVariableMapping mapping, final int index) {
             final Combo combo = new Combo(parent, SWT.READ_ONLY);
-            for (String variableName : iDelegable.getVariableNames(true)) {
+            for (String variableName : delegable.getVariableNames(true)) {
                 combo.add(variableName);
             }
             combo.setText(mapping.getVariableName());

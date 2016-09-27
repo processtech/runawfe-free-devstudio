@@ -24,7 +24,7 @@ import ru.runa.gpd.extension.DelegableConfigurationDialog;
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.HandlerArtifact;
 import ru.runa.gpd.lang.ValidationError;
-import ru.runa.gpd.lang.model.IDelegable;
+import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
@@ -37,17 +37,17 @@ public class SwimlaneAssignerCellEditorProvider extends DelegableProvider {
     private ProcessDefinition definition;
 
     @Override
-    protected DelegableConfigurationDialog createConfigurationDialog(IDelegable iDelegable) {
-        if (!HandlerArtifact.ACTION.equals(iDelegable.getDelegationType())) {
+    protected DelegableConfigurationDialog createConfigurationDialog(Delegable delegable) {
+        if (!HandlerArtifact.ACTION.equals(delegable.getDelegationType())) {
             throw new IllegalArgumentException("For action handler only");
         }
-        definition = ((GraphElement) iDelegable).getProcessDefinition();
-        return new SwimlaneAssignerConfigurationDialog(iDelegable.getDelegationConfiguration(), definition.getSwimlanes());
+        definition = ((GraphElement) delegable).getProcessDefinition();
+        return new SwimlaneAssignerConfigurationDialog(delegable.getDelegationConfiguration(), definition.getSwimlanes());
     }
 
     @Override
-    public boolean validateValue(IDelegable iDelegable, List<ValidationError> errors) {
-        return XmlUtil.isXml(iDelegable.getDelegationConfiguration());
+    public boolean validateValue(Delegable delegable, List<ValidationError> errors) {
+        return XmlUtil.isXml(delegable.getDelegationConfiguration());
     }
 
     public class SwimlaneAssignerConfigurationDialog extends DelegableConfigurationDialog {

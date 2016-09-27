@@ -22,7 +22,7 @@ import org.eclipse.ui.forms.events.HyperlinkEvent;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.handler.XmlBasedConstructorProvider;
 import ru.runa.gpd.lang.ValidationError;
-import ru.runa.gpd.lang.model.IDelegable;
+import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.office.FilesSupplierMode;
 import ru.runa.gpd.office.InputOutputComposite;
@@ -39,15 +39,15 @@ public abstract class BaseCommonStorageHandlerCellEditorProvider extends XmlBase
     protected abstract FilesSupplierMode getMode();
 
     @Override
-    protected Composite createConstructorComposite(Composite parent, IDelegable iDelegable, DataModel model) {
-        return new ConstructorView(parent, iDelegable, model);
+    protected Composite createConstructorComposite(Composite parent, Delegable delegable, DataModel model) {
+        return new ConstructorView(parent, delegable, model);
     }
 
     @Override
-    protected boolean validateModel(IDelegable iDelegable, DataModel model, List<ValidationError> errors) {
-        GraphElement graphElement = ((GraphElement) iDelegable);
+    protected boolean validateModel(Delegable delegable, DataModel model, List<ValidationError> errors) {
+        GraphElement graphElement = ((GraphElement) delegable);
         model.validate(graphElement, errors);
-        return super.validateModel(iDelegable, model, errors);
+        return super.validateModel(delegable, model, errors);
     }
 
     @Override
@@ -61,9 +61,9 @@ public abstract class BaseCommonStorageHandlerCellEditorProvider extends XmlBase
     }
 
     @Override
-    public void onDelete(IDelegable iDelegable) {
+    public void onDelete(Delegable delegable) {
         try {
-            DataModel model = fromXml(iDelegable.getDelegationConfiguration());
+            DataModel model = fromXml(delegable.getDelegationConfiguration());
             EmbeddedFileUtils.deleteProcessFile(model.getInOutModel().inputPath);
         } catch (Exception e) {
             PluginLogger.logErrorWithoutDialog("Template file deletion", e);
@@ -72,8 +72,8 @@ public abstract class BaseCommonStorageHandlerCellEditorProvider extends XmlBase
 
     private class ConstructorView extends ConstructorComposite {
 
-        public ConstructorView(Composite parent, IDelegable iDelegable, DataModel model) {
-            super(parent, iDelegable, model);
+        public ConstructorView(Composite parent, Delegable delegable, DataModel model) {
+            super(parent, delegable, model);
             setLayout(new GridLayout(3, false));
             buildFromModel();
         }
@@ -119,7 +119,7 @@ public abstract class BaseCommonStorageHandlerCellEditorProvider extends XmlBase
                         buildFromModel();
                     }
                 }).setLayoutData(new GridData(GridData.GRAB_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
-                new InputOutputComposite(this, iDelegable, model.getInOutModel(), getMode(), "xlsx");
+                new InputOutputComposite(this, delegable, model.getInOutModel(), getMode(), "xlsx");
                 for (StorageConstraintsModel c : model.constraints) {
                     new ArrtibuteComposite(c);
                 }
@@ -189,7 +189,7 @@ public abstract class BaseCommonStorageHandlerCellEditorProvider extends XmlBase
                 Label l = new Label(group, SWT.NONE);
                 l.setText(Messages.getString("label.variable"));
                 final Combo combo = new Combo(group, SWT.READ_ONLY);
-                for (String variableName : iDelegable.getVariableNames(true, getTypeFilters())) {
+                for (String variableName : delegable.getVariableNames(true, getTypeFilters())) {
                     combo.add(variableName);
                 }
                 combo.setText(cmodel.variableName);

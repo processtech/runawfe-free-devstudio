@@ -47,7 +47,7 @@ import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.part.FileEditorInput;
 
 import ru.runa.gpd.BotCache;
-import ru.runa.gpd.IPropertyNames;
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.SharedImages;
@@ -515,7 +515,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if (IPropertyNames.PROPERTY_DIRTY.equals(evt.getPropertyName())) {
+        if (PropertyNames.PROPERTY_DIRTY.equals(evt.getPropertyName())) {
             firePropertyChange(IEditorPart.PROP_DIRTY);
         }
     }

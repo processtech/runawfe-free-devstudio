@@ -20,7 +20,7 @@ import ru.runa.gpd.util.Duration;
 import com.google.common.base.Objects;
 import com.google.common.collect.Sets;
 
-public abstract class Node extends NamedGraphElement implements IDescribable {
+public abstract class Node extends NamedGraphElement implements Describable {
     private boolean minimizedView = false;
     private NodeAsyncExecution asyncExecution = NodeAsyncExecution.DEFAULT;
     private boolean interruptingBoundaryEvent = true;

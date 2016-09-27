@@ -32,7 +32,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 
-import ru.runa.gpd.IPropertyNames;
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.ProcessEditorBase;
 import ru.runa.gpd.editor.ProcessEditorContributor;
 import ru.runa.gpd.editor.gef.GEFActionBarContributor;
@@ -71,7 +71,7 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
         if (pe != null) {
             BOUpdateContext context = new BOUpdateContext(pe, event.getSource());
             getDiagramTypeProvider().getFeatureProvider().updateIfPossibleAndNeeded(context);
-        } else if (event.getSource() instanceof Swimlane && IPropertyNames.PROPERTY_NAME.equals(event.getPropertyName())) {
+        } else if (event.getSource() instanceof Swimlane && PropertyNames.PROPERTY_NAME.equals(event.getPropertyName())) {
             for (SwimlanedNode swimlanedNode : editor.getDefinition().getChildren(SwimlanedNode.class)) {
                 if (Objects.equal(swimlanedNode.getSwimlane(), event.getSource())) {
                     pe = getDiagramTypeProvider().getFeatureProvider().getPictogramElementForBusinessObject(swimlanedNode);
@@ -83,9 +83,9 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
             }
         }
         if (event.getSource() instanceof Node) {
-            if (IPropertyNames.PROPERTY_TIMER_DELAY.equals(event.getPropertyName())
-                    || IPropertyNames.NODE_LEAVING_TRANSITION_ADDED.equals(event.getPropertyName())
-                    || IPropertyNames.NODE_LEAVING_TRANSITION_REMOVED.equals(event.getPropertyName())) {
+            if (PropertyNames.PROPERTY_TIMER_DELAY.equals(event.getPropertyName())
+                    || PropertyNames.NODE_LEAVING_TRANSITION_ADDED.equals(event.getPropertyName())
+                    || PropertyNames.NODE_LEAVING_TRANSITION_REMOVED.equals(event.getPropertyName())) {
                 updateLeavingTransitions((Node) event.getSource());
             }
         }

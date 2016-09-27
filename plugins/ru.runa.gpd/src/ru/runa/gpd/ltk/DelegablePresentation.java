@@ -9,14 +9,14 @@ import org.eclipse.ltk.core.refactoring.Change;
 
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.HandlerRegistry;
-import ru.runa.gpd.lang.model.IDelegable;
+import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.Variable;
 
-public class DelegablePresentation extends SingleVariableRenameProvider<IDelegable> {
+public class DelegablePresentation extends SingleVariableRenameProvider<Delegable> {
     private final DelegableProvider provider;
 
-    public DelegablePresentation(final IDelegable iDelegable) {
-        setElement(iDelegable);
+    public DelegablePresentation(final Delegable delegable) {
+        setElement(delegable);
         provider = HandlerRegistry.getProvider(element.getDelegationClassName());
     }
 

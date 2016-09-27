@@ -33,7 +33,7 @@ import org.osgi.framework.Bundle;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.extension.handler.ParamDefComposite.MessageDisplay;
-import ru.runa.gpd.lang.model.IDelegable;
+import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Variable;
@@ -73,7 +73,7 @@ public class EmailConfigWizardPage extends WizardPage implements MessageDisplay 
     private final ParamDefConfig messageConfig;
     private final ParamDefConfig contentConfig;
     private final ParamDefConfig ftlSyntaxConfig;
-    private final IDelegable iDelegable;
+    private final Delegable delegable;
     private String result;
 
     private ParamDefConfig getParamConfig(Bundle bundle, String path) {
@@ -87,13 +87,13 @@ public class EmailConfigWizardPage extends WizardPage implements MessageDisplay 
         }
     }
 
-    public EmailConfigWizardPage(Bundle bundle, IDelegable iDelegable) {
+    public EmailConfigWizardPage(Bundle bundle, Delegable delegable) {
         super("email", Localization.getString("EmailDialog.title"), SharedImages.getImageDescriptor("/icons/send_email.png"));
-        this.initValue = iDelegable.getDelegationConfiguration();
-        this.iDelegable = iDelegable;
-        if (iDelegable instanceof GraphElement) {
+        this.initValue = delegable.getDelegationConfiguration();
+        this.delegable = delegable;
+        if (delegable instanceof GraphElement) {
             this.isBotTask = false;
-            GraphElement parent = ((GraphElement) iDelegable).getParent();
+            GraphElement parent = ((GraphElement) delegable).getParent();
             this.bodyInlinedEnabled = (parent instanceof FormNode) && ((FormNode) parent).hasForm();
         } else {
             this.isBotTask = true;
@@ -118,12 +118,12 @@ public class EmailConfigWizardPage extends WizardPage implements MessageDisplay 
         tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
         ScrolledComposite scrolledComposite;
         scrolledComposite = createScrolledTab(Localization.getString("EmailDialog.title.common"));
-        commonComposite = new ParamDefComposite(scrolledComposite, iDelegable, commonConfig, commonConfig.parseConfiguration(initValue));
+        commonComposite = new ParamDefComposite(scrolledComposite, delegable, commonConfig, commonConfig.parseConfiguration(initValue));
         commonComposite.setHelpInlined(true);
         commonComposite.createUI();
         scrolledComposite.setContent(commonComposite);
         scrolledComposite = createScrolledTab(Localization.getString("EmailDialog.title.connection"));
-        connectionComposite = new ParamDefDynaComposite(scrolledComposite, iDelegable, connectionConfig,
+        connectionComposite = new ParamDefDynaComposite(scrolledComposite, delegable, connectionConfig,
                 connectionConfig.parseConfiguration(initValue), connectionConfig.getGroups().get(0),
                 Localization.getString("EmailDialog.connection.descDynaParams"));
         connectionComposite.setMenuForSettingVariable(true);
@@ -131,13 +131,13 @@ public class EmailConfigWizardPage extends WizardPage implements MessageDisplay 
         connectionComposite.setMessageDisplay(this);
         scrolledComposite.setContent(connectionComposite);
         scrolledComposite = createScrolledTab(Localization.getString("EmailDialog.title.message"));
-        messageComposite = new ParamDefDynaComposite(scrolledComposite, iDelegable, messageConfig, messageConfig.parseConfiguration(initValue),
+        messageComposite = new ParamDefDynaComposite(scrolledComposite, delegable, messageConfig, messageConfig.parseConfiguration(initValue),
                 messageConfig.getGroups().get(0), Localization.getString("EmailDialog.message.descDynaParams")) {
             @Override
             protected List<String> getMenuVariables(ParamDef paramDef) {
                 if (paramDef.getFormatFilters().contains("emailAddress")) {
-                    List<String> variableNames = VariableUtils.getVariableNamesForScripting(iDelegable, String.class.getName());
-                    List<String> executorVariableNames = VariableUtils.getVariableNamesForScripting(iDelegable, Executor.class.getName());
+                    List<String> variableNames = VariableUtils.getVariableNamesForScripting(delegable, String.class.getName());
+                    List<String> executorVariableNames = VariableUtils.getVariableNamesForScripting(delegable, Executor.class.getName());
                     for (String executorVariableName : executorVariableNames) {
                         variableNames.add("GetExecutorEmails(" + executorVariableName + ")");
                     }
@@ -260,7 +260,7 @@ public class EmailConfigWizardPage extends WizardPage implements MessageDisplay 
             SWTUtils.createLink(this, Localization.getString("button.insert_variable"), new LoggingHyperlinkAdapter() {
                 @Override
                 protected void onLinkActivated(HyperlinkEvent e) throws Exception {
-                    List<String> variableNames = VariableUtils.getVariableNamesForScripting(iDelegable);
+                    List<String> variableNames = VariableUtils.getVariableNamesForScripting(delegable);
                     ChooseVariableNameDialog dialog = new ChooseVariableNameDialog(variableNames);
                     String variableName = dialog.openDialog();
                     if (variableName != null) {
@@ -341,7 +341,7 @@ public class EmailConfigWizardPage extends WizardPage implements MessageDisplay 
         private class AddSelectionAdapter extends LoggingSelectionAdapter {
             @Override
             protected void onSelection(SelectionEvent e) throws Exception {
-                List<String> fileVariableNames = iDelegable.getVariableNames(true, FileVariable.class.getName());
+                List<String> fileVariableNames = delegable.getVariableNames(true, FileVariable.class.getName());
                 ChooseVariableNameDialog dialog = new ChooseVariableNameDialog(fileVariableNames);
                 String variableName = dialog.openDialog();
                 if (variableName != null) {
@@ -376,7 +376,7 @@ public class EmailConfigWizardPage extends WizardPage implements MessageDisplay 
         summaryProperties.putAll(messageComposite.readUserInput());
         summaryProperties.put("bodyInlined", String.valueOf(contentComposite.isUseFormFromTaskForm()));
         summaryProperties.put("body", contentComposite.getMessage());
-        Document document = summaryConfig.toConfigurationXml(iDelegable.getVariableNames(true), summaryProperties);
+        Document document = summaryConfig.toConfigurationXml(delegable.getVariableNames(true), summaryProperties);
         EmailAttachmentsConfig.addAttachments(document, contentComposite.getAttachments());
         String c = XmlUtil.toString(document);
         styledText.setText(c);

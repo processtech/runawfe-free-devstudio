@@ -19,7 +19,7 @@ import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.editor.CopyBuffer.ExtraCopyAction;
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.HandlerRegistry;
-import ru.runa.gpd.lang.model.IDelegable;
+import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.EndState;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.NamedGraphElement;
@@ -116,8 +116,8 @@ public class CopyGraphCommand extends Command {
                         nodeToSwimlaneNameMap.put(node.getId(), swimlane.getName());
                     }
                 }
-                if (node instanceof IDelegable) {
-                    IDelegable source = (IDelegable) node;
+                if (node instanceof Delegable) {
+                    Delegable source = (Delegable) node;
                     if (source.getDelegationClassName() != null) {
                         CopyDelegableElementAction copyAction = new CopyDelegableElementAction(node, copy);
                         copyAction.setSourceFolder(copyBuffer.getSourceFolder());
@@ -326,13 +326,13 @@ public class CopyGraphCommand extends Command {
         @Override
         public void execute() throws CoreException {
             DelegableProvider provider = HandlerRegistry.getProvider(source.getDelegationClassName());
-            provider.onCopy(sourceFolder, (IDelegable) source, source.getId(), targetFolder, (IDelegable) target, target.getId());
+            provider.onCopy(sourceFolder, (Delegable) source, source.getId(), targetFolder, (Delegable) target, target.getId());
         }
 
         @Override
         public void undo() throws CoreException {
             DelegableProvider provider = HandlerRegistry.getProvider(source.getDelegationClassName());
-            provider.onDelete((IDelegable) target);
+            provider.onDelete((Delegable) target);
         }
 
     }

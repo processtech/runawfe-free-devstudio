@@ -18,7 +18,7 @@ import org.eclipse.ui.forms.widgets.Hyperlink;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.extension.DelegableConfigurationDialog;
 import ru.runa.gpd.extension.DelegableProvider;
-import ru.runa.gpd.lang.model.IDelegable;
+import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.ui.custom.HelpDialog;
@@ -34,18 +34,18 @@ import com.google.common.collect.Lists;
 public class FormulaCellEditorProvider extends DelegableProvider {
 
     @Override
-    protected DelegableConfigurationDialog createConfigurationDialog(IDelegable iDelegable) {
-        return new ConfigurationDialog(iDelegable.getDelegationConfiguration(), iDelegable.getVariableNames(true));
+    protected DelegableConfigurationDialog createConfigurationDialog(Delegable delegable) {
+        return new ConfigurationDialog(delegable.getDelegationConfiguration(), delegable.getVariableNames(true));
     }
 
     @Override
-    public List<String> getUsedVariableNames(IDelegable iDelegable) {
-        String configuration = iDelegable.getDelegationConfiguration();
+    public List<String> getUsedVariableNames(Delegable delegable) {
+        String configuration = delegable.getDelegationConfiguration();
         if (Strings.isNullOrEmpty(configuration)) {
             return Lists.newArrayList();
         }
         List<String> result = Lists.newArrayList();
-        for (Variable variable : ((GraphElement) iDelegable).getProcessDefinition().getVariables(true, true)) {
+        for (Variable variable : ((GraphElement) delegable).getProcessDefinition().getVariables(true, true)) {
             String variableName = variable.getName();
             if (variableName.indexOf(" ") != -1 || variableName.indexOf("-") != -1) {
                 variableName = "'" + variableName + "'";
@@ -58,7 +58,7 @@ public class FormulaCellEditorProvider extends DelegableProvider {
     }
 
     @Override
-    public String getConfigurationOnVariableRename(IDelegable iDelegable, Variable currentVariable, Variable previewVariable) {
+    public String getConfigurationOnVariableRename(Delegable delegable, Variable currentVariable, Variable previewVariable) {
         String currentVariableName = currentVariable.getName();
         if (currentVariableName.indexOf(" ") != -1 || currentVariableName.indexOf("-") != -1) {
             currentVariableName = "'" + currentVariableName + "'";
@@ -67,7 +67,7 @@ public class FormulaCellEditorProvider extends DelegableProvider {
         if (previewVariableName.indexOf(" ") != -1 || previewVariableName.indexOf("-") != -1) {
             previewVariableName = "'" + previewVariableName + "'";
         }
-        return iDelegable.getDelegationConfiguration().replaceAll(Pattern.quote(currentVariableName), Matcher.quoteReplacement(previewVariableName));
+        return delegable.getDelegationConfiguration().replaceAll(Pattern.quote(currentVariableName), Matcher.quoteReplacement(previewVariableName));
     }
 
     private static class ConfigurationDialog extends DelegableConfigurationDialog {

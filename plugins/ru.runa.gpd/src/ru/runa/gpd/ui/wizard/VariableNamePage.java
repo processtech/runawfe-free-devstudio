@@ -11,7 +11,7 @@ import org.eclipse.swt.widgets.Text;
 
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.model.Variable;
-import ru.runa.gpd.lang.model.IVariableContainer;
+import ru.runa.gpd.lang.model.VariableContainer;
 import ru.runa.gpd.ui.custom.ContentWizardPage;
 import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
 import ru.runa.gpd.ui.custom.VariableNameChecker;
@@ -20,22 +20,22 @@ import ru.runa.gpd.util.VariableUtils;
 import com.google.common.base.Objects;
 
 public class VariableNamePage extends ContentWizardPage {
-    private final IVariableContainer iVariableContainer;
+    private final VariableContainer variableContainer;
     private final String initialVariableName;
     private String variableName;
     private String variableDesc;
     private Text scriptingNameField;
     private String scriptingVariableName;
 
-    public VariableNamePage(IVariableContainer iVariableContainer, Variable variable) {
-        this.iVariableContainer = iVariableContainer;
+    public VariableNamePage(VariableContainer variableContainer, Variable variable) {
+        this.variableContainer = variableContainer;
         if (variable != null && variable.getName() != null) {
             this.initialVariableName = variable.getName();
             this.variableName = variable.getName();
             this.scriptingVariableName = variable.getScriptingName();
         } else {
             initialVariableName = null;
-            List<String> variableNames = VariableUtils.getVariableNames(iVariableContainer.getVariables(false, true));
+            List<String> variableNames = VariableUtils.getVariableNames(variableContainer.getVariables(false, true));
             int runner = 1;
             while (true) {
                 String candidate = Localization.getString("default.variable.name") + runner;
@@ -45,7 +45,7 @@ public class VariableNamePage extends ContentWizardPage {
                 }
                 runner++;
             }
-            this.scriptingVariableName = VariableUtils.generateNameForScripting(iVariableContainer, variableName, variable);
+            this.scriptingVariableName = VariableUtils.generateNameForScripting(variableContainer, variableName, variable);
         }
         this.variableDesc = variable != null && variable.getDescription() != null ? variable.getDescription() : "";
     }
@@ -65,7 +65,7 @@ public class VariableNamePage extends ContentWizardPage {
             @Override
             protected void onTextChanged(ModifyEvent e) throws Exception {
                 variableName = nameField.getText();
-                scriptingVariableName = VariableUtils.generateNameForScripting(iVariableContainer, variableName, null);
+                scriptingVariableName = VariableUtils.generateNameForScripting(variableContainer, variableName, null);
                 verifyContentIsValid();
                 scriptingNameField.setText(scriptingVariableName);
             }
@@ -96,7 +96,7 @@ public class VariableNamePage extends ContentWizardPage {
         if (variableName.length() == 0) {
             setErrorMessage(Localization.getString("VariableNamePage.error.empty"));
         } else if (!Objects.equal(initialVariableName, variableName) && 
-                VariableUtils.getVariableNames(iVariableContainer.getVariables(false, true)).contains(variableName)) {
+                VariableUtils.getVariableNames(variableContainer.getVariables(false, true)).contains(variableName)) {
             setErrorMessage(Localization.getString("VariableNamePage.error.duplicated"));
         } else if (!VariableNameChecker.isValid(variableName)) {
             setErrorMessage(Localization.getString("VariableNamePage.error.invalidName"));

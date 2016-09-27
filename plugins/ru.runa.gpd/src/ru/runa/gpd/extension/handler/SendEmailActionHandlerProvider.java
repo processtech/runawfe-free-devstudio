@@ -24,7 +24,7 @@ import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.lang.ValidationError;
-import ru.runa.gpd.lang.model.IDelegable;
+import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Variable;
@@ -38,8 +38,8 @@ import com.google.common.collect.Lists;
 
 public class SendEmailActionHandlerProvider extends DelegableProvider {
     @Override
-    public String showConfigurationDialog(IDelegable iDelegable) {
-        final EmailConfigWizardPage wizardPage = new EmailConfigWizardPage(bundle, iDelegable);
+    public String showConfigurationDialog(Delegable delegable) {
+        final EmailConfigWizardPage wizardPage = new EmailConfigWizardPage(bundle, delegable);
         final ConfigurationWizard wizard = new ConfigurationWizard(wizardPage);
         CompactWizardDialog wizardDialog = new CompactWizardDialog(wizard) {
             @Override
@@ -98,13 +98,13 @@ public class SendEmailActionHandlerProvider extends DelegableProvider {
     }
 
     @Override
-    public List<String> getUsedVariableNames(IDelegable iDelegable) {
-        String configuration = iDelegable.getDelegationConfiguration();
+    public List<String> getUsedVariableNames(Delegable delegable) {
+        String configuration = delegable.getDelegationConfiguration();
         if (Strings.isNullOrEmpty(configuration)) {
             return Lists.newArrayList();
         }
         List<String> result = Lists.newArrayList();
-        for (String variableName : iDelegable.getVariableNames(true)) {
+        for (String variableName : delegable.getVariableNames(true)) {
             if (configuration.contains("\"" + variableName + "\"")) {
                 result.add(variableName);
             }
@@ -113,28 +113,28 @@ public class SendEmailActionHandlerProvider extends DelegableProvider {
     }
 
     @Override
-    public String getConfigurationOnVariableRename(IDelegable iDelegable, Variable currentVariable, Variable previewVariable) {
+    public String getConfigurationOnVariableRename(Delegable delegable, Variable currentVariable, Variable previewVariable) {
         String oldString = Pattern.quote("\"" + currentVariable.getName() + "\"");
         String newString = Matcher.quoteReplacement("\"" + previewVariable.getName() + "\"");
-        return iDelegable.getDelegationConfiguration().replaceAll(oldString, newString);
+        return delegable.getDelegationConfiguration().replaceAll(oldString, newString);
     }
 
     @Override
-    public boolean validateValue(IDelegable iDelegable, List<ValidationError> errors) {
-        String configuration = iDelegable.getDelegationConfiguration();
+    public boolean validateValue(Delegable delegable, List<ValidationError> errors) {
+        String configuration = delegable.getDelegationConfiguration();
         if (configuration.trim().length() > 0) {
             EmailConfig config = EmailConfigParser.parse(configuration, false);
-            GraphElement parent = ((GraphElement) iDelegable).getParent();
+            GraphElement parent = ((GraphElement) delegable).getParent();
             if (config.isUseMessageFromTaskForm()) {
                 if (parent instanceof TaskState) {
                     TaskState taskState = (TaskState) parent;
                     if (!taskState.hasForm()) {
-                        errors.add(ValidationError.createLocalizedError((GraphElement) iDelegable, "delegable.email.taskform.empty"));
+                        errors.add(ValidationError.createLocalizedError((GraphElement) delegable, "delegable.email.taskform.empty"));
                     } else if (!"ftl".equals(taskState.getFormType())) {
-                        errors.add(ValidationError.createLocalizedError((GraphElement) iDelegable, "delegable.email.taskform.notftl"));
+                        errors.add(ValidationError.createLocalizedError((GraphElement) delegable, "delegable.email.taskform.notftl"));
                     }
                 } else {
-                    errors.add(ValidationError.createLocalizedError((GraphElement) iDelegable, "delegable.email.taskform.nocontext"));
+                    errors.add(ValidationError.createLocalizedError((GraphElement) delegable, "delegable.email.taskform.nocontext"));
                 }
             }
         }

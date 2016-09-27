@@ -13,7 +13,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 
-import ru.runa.gpd.IPropertyNames;
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.formeditor.ftl.ComponentParameter;
 import ru.runa.gpd.formeditor.ftl.parameter.interfaces.IParameterChangeConsumer;
 import ru.runa.gpd.formeditor.ftl.parameter.interfaces.IParameterChangeCustomer;
@@ -134,7 +134,7 @@ public class UserVariablesListComboParameter extends ComboParameter implements I
             @Override
             protected void onSelection(SelectionEvent e) throws Exception {
                 if (listener != null) {
-                    listener.propertyChange(new PropertyChangeEvent(combo, IPropertyNames.PROPERTY_VALUE, oldValue, combo.getText()));
+                    listener.propertyChange(new PropertyChangeEvent(combo, PropertyNames.PROPERTY_VALUE, oldValue, combo.getText()));
                 }
                 for (IParameterChangeConsumer consumer : new ArrayList<IParameterChangeConsumer>(consumers)) {
                     consumer.onParameterChange(UserVariablesListComboParameter.this, parameter);

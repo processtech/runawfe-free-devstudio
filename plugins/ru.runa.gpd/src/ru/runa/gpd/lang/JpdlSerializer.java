@@ -10,13 +10,13 @@ import org.dom4j.Element;
 import org.eclipse.core.resources.IFile;
 
 import ru.runa.gpd.Application;
-import ru.runa.gpd.IPropertyNames;
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.Decision;
-import ru.runa.gpd.lang.model.IDelegable;
-import ru.runa.gpd.lang.model.IDescribable;
+import ru.runa.gpd.lang.model.Delegable;
+import ru.runa.gpd.lang.model.Describable;
 import ru.runa.gpd.lang.model.EndState;
 import ru.runa.gpd.lang.model.EndTokenState;
 import ru.runa.gpd.lang.model.GraphElement;
@@ -32,7 +32,7 @@ import ru.runa.gpd.lang.model.Subprocess;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.SwimlanedNode;
-import ru.runa.gpd.lang.model.ISynchronizable;
+import ru.runa.gpd.lang.model.Synchronizable;
 import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Timer;
 import ru.runa.gpd.lang.model.TimerAction;
@@ -177,7 +177,7 @@ public class JpdlSerializer extends ProcessSerializer {
             Element stateElement = writeTaskState(root, state);
             if (state instanceof MultiTaskState) {
                 MultiTaskState multiTaskNode = (MultiTaskState) state;
-                stateElement.addAttribute(IPropertyNames.PROPERTY_MULTI_TASK_CREATION_MODE, multiTaskNode.getCreationMode().name());
+                stateElement.addAttribute(PropertyNames.PROPERTY_MULTI_TASK_CREATION_MODE, multiTaskNode.getCreationMode().name());
                 stateElement.addAttribute(TASK_EXECUTION_MODE, multiTaskNode.getSynchronizationMode().name());
                 stateElement.addAttribute(TASK_EXECUTORS_USAGE, multiTaskNode.getDiscriminatorUsage());
                 stateElement.addAttribute(TASK_EXECUTORS_VALUE, multiTaskNode.getDiscriminatorValue());
@@ -275,7 +275,7 @@ public class JpdlSerializer extends ProcessSerializer {
     private Element writeNode(Element parent, Node node, String delegationNodeName) {
         Element nodeElement = writeElement(parent, node);
         if (delegationNodeName != null) {
-            writeDelegation(nodeElement, delegationNodeName, (IDelegable) node);
+            writeDelegation(nodeElement, delegationNodeName, (Delegable) node);
         }
         writeTransitions(nodeElement, node);
         return nodeElement;
@@ -344,8 +344,8 @@ public class JpdlSerializer extends ProcessSerializer {
                 setAttribute(result, NODE_ASYNC_EXECUTION, node.getAsyncExecution().getValue());
             }
         }
-        if (element instanceof IDescribable) {
-            String description = ((IDescribable) element).getDescription();
+        if (element instanceof Describable) {
+            String description = ((Describable) element).getDescription();
             if (description != null && description.length() > 0) {
                 Element desc = result.addElement(DESCRIPTION);
                 setNodeValue(desc, description);
@@ -371,24 +371,24 @@ public class JpdlSerializer extends ProcessSerializer {
         writeDelegation(eventElement, ACTION, action);
     }
 
-    private void writeDelegation(Element parent, String elementName, IDelegable iDelegable) {
+    private void writeDelegation(Element parent, String elementName, Delegable delegable) {
         Element delegationElement = parent.addElement(elementName);
-        if (iDelegable instanceof Action) {
-            setAttribute(delegationElement, ID, ((Action) iDelegable).getId());
+        if (delegable instanceof Action) {
+            setAttribute(delegationElement, ID, ((Action) delegable).getId());
         }
-        setAttribute(delegationElement, CLASS, iDelegable.getDelegationClassName());
-        if (iDelegable instanceof IDescribable) {
-            IDescribable iDescribable = (IDescribable) iDelegable;
-            if (!Strings.isNullOrEmpty(iDescribable.getDescription())) {
-                setAttribute(delegationElement, DESCRIPTION, iDescribable.getDescription());
+        setAttribute(delegationElement, CLASS, delegable.getDelegationClassName());
+        if (delegable instanceof Describable) {
+            Describable describable = (Describable) delegable;
+            if (!Strings.isNullOrEmpty(describable.getDescription())) {
+                setAttribute(delegationElement, DESCRIPTION, describable.getDescription());
             }
         }
-        setNodeValue(delegationElement, iDelegable.getDelegationConfiguration());
+        setNodeValue(delegationElement, delegable.getDelegationConfiguration());
     }
 
-    private void setDelegableClassName(IDelegable iDelegable, String className) {
+    private void setDelegableClassName(Delegable delegable, String className) {
         className = BackCompatibilityClassNames.getClassName(className);
-        iDelegable.setDelegationClassName(className);
+        delegable.setDelegationClassName(className);
     }
 
     @Override
@@ -431,10 +431,10 @@ public class JpdlSerializer extends ProcessSerializer {
         List<Element> nodeList = node.elements();
         for (Element childNode : nodeList) {
             if (DESCRIPTION.equals(childNode.getName())) {
-                ((IDescribable) element).setDescription(childNode.getTextTrim());
+                ((Describable) element).setDescription(childNode.getTextTrim());
             }
             if (HANDLER.equals(childNode.getName()) || ASSIGNMENT.equals(childNode.getName())) {
-                setDelegableClassName((IDelegable) element, childNode.attributeValue(CLASS));
+                setDelegableClassName((Delegable) element, childNode.attributeValue(CLASS));
                 element.setDelegationConfiguration(childNode.getText());
             }
             if (ACTION.equals(childNode.getName())) {
@@ -557,16 +557,16 @@ public class JpdlSerializer extends ProcessSerializer {
             } else {
                 state = create(node, definition);
             }
-            if (state instanceof ISynchronizable) {
-                ((ISynchronizable) state).setAsync(Boolean.parseBoolean(node.attributeValue(ASYNC, "false")));
+            if (state instanceof Synchronizable) {
+                ((Synchronizable) state).setAsync(Boolean.parseBoolean(node.attributeValue(ASYNC, "false")));
                 String asyncCompletionMode = node.attributeValue(ASYNC_COMPLETION_MODE);
                 if (asyncCompletionMode != null) {
-                    ((ISynchronizable) state).setAsyncCompletionMode(AsyncCompletionMode.valueOf(asyncCompletionMode));
+                    ((Synchronizable) state).setAsyncCompletionMode(AsyncCompletionMode.valueOf(asyncCompletionMode));
                 }
             }
             if (state instanceof MultiTaskState) {
                 MultiTaskState multiTaskState = (MultiTaskState) state;
-                multiTaskState.setCreationMode(MultiTaskCreationMode.valueOf(node.attributeValue(IPropertyNames.PROPERTY_MULTI_TASK_CREATION_MODE,
+                multiTaskState.setCreationMode(MultiTaskCreationMode.valueOf(node.attributeValue(PropertyNames.PROPERTY_MULTI_TASK_CREATION_MODE,
                         MultiTaskCreationMode.BY_EXECUTORS.name())));
                 multiTaskState.setSynchronizationMode(MultiTaskSynchronizationMode.valueOf(node.attributeValue(TASK_EXECUTION_MODE)));
                 multiTaskState.setDiscriminatorUsage(node.attributeValue(TASK_EXECUTORS_USAGE, MultiTaskState.USAGE_DEFAULT));

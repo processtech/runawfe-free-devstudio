@@ -12,7 +12,7 @@ import org.eclipse.swt.widgets.Text;
 
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.ValidationError;
-import ru.runa.gpd.lang.model.IDelegable;
+import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
@@ -31,8 +31,8 @@ public class TargetProcessSetDateVariableHandlerProvider extends SetDateVariable
     }
 
     @Override
-    protected Composite createConstructorComposite(Composite parent, IDelegable iDelegable, CalendarConfig config) {
-        return new ConstructorView(parent, iDelegable, (TargetProcessCalendarConfig) config);
+    protected Composite createConstructorComposite(Composite parent, Delegable delegable, CalendarConfig config) {
+        return new ConstructorView(parent, delegable, (TargetProcessCalendarConfig) config);
     }
 
     @Override
@@ -54,24 +54,24 @@ public class TargetProcessSetDateVariableHandlerProvider extends SetDateVariable
     }
 
     @Override
-    protected boolean validateModel(IDelegable iDelegable, CalendarConfig model, List<ValidationError> errors) {
+    protected boolean validateModel(Delegable delegable, CalendarConfig model, List<ValidationError> errors) {
         String processIdVariableName = ((TargetProcessCalendarConfig) model).getProcessIdVariableName();
         if (Strings.isNullOrEmpty(processIdVariableName)) {
             return false;
         }
-        if (!iDelegable.getVariableNames(false, Long.class.getName()).contains(processIdVariableName)) {
+        if (!delegable.getVariableNames(false, Long.class.getName()).contains(processIdVariableName)) {
             return false;
         }
-        return super.validateModel(iDelegable, model, errors);
+        return super.validateModel(delegable, model, errors);
     }
 
     @Override
-    protected boolean validateResultVariable(IDelegable iDelegable, String resultVariableName) {
+    protected boolean validateResultVariable(Delegable delegable, String resultVariableName) {
         if (Strings.isNullOrEmpty(resultVariableName)) {
             return false;
         }
         if (VariableUtils.isVariableNameWrapped(resultVariableName)) {
-            if (!iDelegable.getVariableNames(false, String.class.getName()).contains(VariableUtils.unwrapVariableName(resultVariableName))) {
+            if (!delegable.getVariableNames(false, String.class.getName()).contains(VariableUtils.unwrapVariableName(resultVariableName))) {
                 return false;
             }
         }
@@ -89,8 +89,8 @@ public class TargetProcessSetDateVariableHandlerProvider extends SetDateVariable
     private class ConstructorView extends
             ru.runa.gpd.extension.handler.var.SetDateVariableHandlerProvider<TargetProcessCalendarConfig>.ConstructorView {
 
-        public ConstructorView(Composite parent, IDelegable iDelegable, TargetProcessCalendarConfig config) {
-            super(parent, iDelegable, config);
+        public ConstructorView(Composite parent, Delegable delegable, TargetProcessCalendarConfig config) {
+            super(parent, delegable, config);
         }
 
         private TargetProcessCalendarConfig getModel() {
@@ -104,7 +104,7 @@ public class TargetProcessSetDateVariableHandlerProvider extends SetDateVariable
                 label.setText(Localization.getString("Param.ProcessId"));
                 final Combo combo = new Combo(this, SWT.READ_ONLY);
                 combo.setLayoutData(get2GridData());
-                for (String variableName : iDelegable.getVariableNames(false, Long.class.getName())) {
+                for (String variableName : delegable.getVariableNames(false, Long.class.getName())) {
                     combo.add(variableName);
                 }
                 if (getModel().getProcessIdVariableName() != null) {

@@ -10,14 +10,14 @@ import org.eclipse.ui.views.properties.PropertyDescriptor;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.HandlerRegistry;
-import ru.runa.gpd.lang.model.IDelegable;
+import ru.runa.gpd.lang.model.Delegable;
 
 public class DelegableConfPropertyDescriptor extends PropertyDescriptor {
-    private final IDelegable iDelegable;
+    private final Delegable delegable;
 
-    public DelegableConfPropertyDescriptor(Object id, IDelegable iDelegable, String label) {
+    public DelegableConfPropertyDescriptor(Object id, Delegable delegable, String label) {
         super(id, label);
-        this.iDelegable = iDelegable;
+        this.delegable = delegable;
     }
 
     @Override
@@ -33,10 +33,10 @@ public class DelegableConfPropertyDescriptor extends PropertyDescriptor {
         @Override
         protected Object openDialogBox(Control cellEditorWindow) {
             try {
-                DelegableProvider provider = HandlerRegistry.getProvider(iDelegable.getDelegationClassName());
-                return provider.showConfigurationDialog(iDelegable);
+                DelegableProvider provider = HandlerRegistry.getProvider(delegable.getDelegationClassName());
+                return provider.showConfigurationDialog(delegable);
             } catch (Exception e) {
-                PluginLogger.logError("Unable to open configuration dialog for " + iDelegable.getDelegationClassName(), e);
+                PluginLogger.logError("Unable to open configuration dialog for " + delegable.getDelegationClassName(), e);
                 return null;
             }
         }

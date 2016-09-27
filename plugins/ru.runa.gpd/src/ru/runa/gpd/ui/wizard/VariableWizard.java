@@ -5,7 +5,7 @@ import org.eclipse.jface.wizard.Wizard;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Variable;
-import ru.runa.gpd.lang.model.IVariableContainer;
+import ru.runa.gpd.lang.model.VariableContainer;
 
 public class VariableWizard extends Wizard {
     private VariableNamePage namePage;
@@ -18,12 +18,12 @@ public class VariableWizard extends Wizard {
         this(processDefinition, processDefinition, variable, showNamePage, editFormat, true);
     }
 
-    public VariableWizard(ProcessDefinition processDefinition, IVariableContainer iVariableContainer, Variable variable, boolean showNamePage, boolean editFormat,
+    public VariableWizard(ProcessDefinition processDefinition, VariableContainer variableContainer, Variable variable, boolean showNamePage, boolean editFormat,
             boolean showAccessPage) {
         if (showNamePage) {
-            namePage = new VariableNamePage(iVariableContainer, variable);
+            namePage = new VariableNamePage(variableContainer, variable);
         }
-        formatPage = new VariableFormatPage(processDefinition, iVariableContainer, variable, editFormat);
+        formatPage = new VariableFormatPage(processDefinition, variableContainer, variable, editFormat);
         defaultValuePage = new VariableDefaultValuePage(variable);
         if (showAccessPage) {
             accessPage = new VariableAccessPage(variable);

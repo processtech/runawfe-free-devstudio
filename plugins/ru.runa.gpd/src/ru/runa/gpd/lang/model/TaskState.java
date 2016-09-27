@@ -38,7 +38,7 @@ import ru.runa.wfe.lang.AsyncCompletionMode;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 
-public class TaskState extends FormNode implements ActionContainer, ITimed, ISynchronizable, IBoundaryEventContainer {
+public class TaskState extends FormNode implements ActionContainer, ITimed, Synchronizable, IBoundaryEventContainer {
     private TimerAction escalationAction;
     private boolean ignoreSubstitutionRules;
     private boolean useEscalation;

@@ -21,7 +21,7 @@ import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.handler.SQLTasksModel.SQLQueryModel;
 import ru.runa.gpd.extension.handler.SQLTasksModel.SQLQueryParameterModel;
 import ru.runa.gpd.extension.handler.SQLTasksModel.SQLTaskModel;
-import ru.runa.gpd.lang.model.IDelegable;
+import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
 import ru.runa.gpd.ui.custom.SWTUtils;
 import ru.runa.wfe.user.Executor;
@@ -38,8 +38,8 @@ public class SQLHandlerCellEditorProvider extends XmlBasedConstructorProvider<SQ
     }
 
     @Override
-    protected Composite createConstructorComposite(Composite parent, IDelegable iDelegable, SQLTasksModel model) {
-        return new ConstructorView(parent, iDelegable, model);
+    protected Composite createConstructorComposite(Composite parent, Delegable delegable, SQLTasksModel model) {
+        return new ConstructorView(parent, delegable, model);
     }
 
     @Override
@@ -48,14 +48,14 @@ public class SQLHandlerCellEditorProvider extends XmlBasedConstructorProvider<SQ
     }
 
     @Override
-    protected int getSelectedTabIndex(IDelegable iDelegable, SQLTasksModel model) {
+    protected int getSelectedTabIndex(Delegable delegable, SQLTasksModel model) {
         return model.hasFields() ? 1 : 0;
     }
 
     private class ConstructorView extends ConstructorComposite {
 
-        public ConstructorView(Composite parent, IDelegable iDelegable, SQLTasksModel model) {
-            super(parent, iDelegable, model);
+        public ConstructorView(Composite parent, Delegable delegable, SQLTasksModel model) {
+            super(parent, delegable, model);
             setLayout(new GridLayout(3, false));
             buildFromModel();
         }
@@ -169,7 +169,7 @@ public class SQLHandlerCellEditorProvider extends XmlBasedConstructorProvider<SQ
         private void addParamSection(Composite parent, final SQLQueryParameterModel parameterModel, final int queryIndex, final int paramIndex,
                 boolean input) {
             final Combo combo = new Combo(parent, SWT.READ_ONLY);
-            for (String variableName : iDelegable.getVariableNames(true)) {
+            for (String variableName : delegable.getVariableNames(true)) {
                 combo.add(variableName);
             }
             combo.setText(parameterModel.varName);
@@ -178,7 +178,7 @@ public class SQLHandlerCellEditorProvider extends XmlBasedConstructorProvider<SQ
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     parameterModel.varName = combo.getText();
-                    parameterModel.swimlaneVar = iDelegable.getVariableNames(true, Executor.class.getName()).contains(parameterModel.varName);
+                    parameterModel.swimlaneVar = delegable.getVariableNames(true, Executor.class.getName()).contains(parameterModel.varName);
                 }
             });
             if (paramIndex != 0) {

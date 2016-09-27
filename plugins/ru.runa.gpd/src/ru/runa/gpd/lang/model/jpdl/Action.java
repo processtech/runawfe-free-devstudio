@@ -3,11 +3,11 @@ package ru.runa.gpd.lang.model.jpdl;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.extension.HandlerArtifact;
 import ru.runa.gpd.extension.LocalizationRegistry;
-import ru.runa.gpd.lang.model.IDelegable;
-import ru.runa.gpd.lang.model.IDescribable;
+import ru.runa.gpd.lang.model.Delegable;
+import ru.runa.gpd.lang.model.Describable;
 import ru.runa.gpd.lang.model.GraphElement;
 
-public class Action extends GraphElement implements IDelegable, IDescribable {
+public class Action extends GraphElement implements Delegable, Describable {
     @Override
     public String getDelegationType() {
         return HandlerArtifact.ACTION;

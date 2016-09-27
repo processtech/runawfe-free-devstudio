@@ -2,7 +2,7 @@ package ru.runa.gpd.lang.model;
 
 import java.util.List;
 
-public interface IDelegable {
+public interface Delegable {
     public String getDelegationClassName();
 
     public void setDelegationClassName(String delegateClassName);

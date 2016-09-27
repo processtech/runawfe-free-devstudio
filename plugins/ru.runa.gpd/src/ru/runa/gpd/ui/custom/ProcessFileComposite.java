@@ -14,7 +14,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.ide.IDE;
 
-import ru.runa.gpd.IPropertyNames;
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.util.EmbeddedFileUtils;
 import ru.runa.gpd.util.EventSupport;
@@ -42,7 +42,7 @@ public abstract class ProcessFileComposite extends Composite {
                     @Override
                     protected void onLinkActivated(HyperlinkEvent e) throws Exception {
                         IOUtils.copyFile(getTemplateInputStream(), file);
-                        eventSupport.firePropertyChange(IPropertyNames.PROPERTY_VALUE, null, file.getName());
+                        eventSupport.firePropertyChange(PropertyNames.PROPERTY_VALUE, null, file.getName());
                         rebuild();
                     }
                 });
@@ -60,7 +60,7 @@ public abstract class ProcessFileComposite extends Composite {
                         return;
                     }
                     IOUtils.copyFile(path, file);
-                    eventSupport.firePropertyChange(IPropertyNames.PROPERTY_VALUE, null, file.getName());
+                    eventSupport.firePropertyChange(PropertyNames.PROPERTY_VALUE, null, file.getName());
                     rebuild();
                 }
             });
@@ -96,7 +96,7 @@ public abstract class ProcessFileComposite extends Composite {
                     protected void onLinkActivated(HyperlinkEvent e) throws Exception {
                         EmbeddedFileUtils.deleteProcessFile(file);
                         rebuild();
-                        eventSupport.firePropertyChange(IPropertyNames.PROPERTY_VALUE, file.getName(), null);
+                        eventSupport.firePropertyChange(PropertyNames.PROPERTY_VALUE, file.getName(), null);
                     }
                 });
             }

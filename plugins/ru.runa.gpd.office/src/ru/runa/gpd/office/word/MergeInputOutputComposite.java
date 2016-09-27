@@ -20,7 +20,7 @@ import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.widgets.Hyperlink;
 
 import ru.runa.gpd.Localization;
-import ru.runa.gpd.lang.model.IDelegable;
+import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.office.FilesSupplierMode;
 import ru.runa.gpd.office.Messages;
@@ -38,7 +38,7 @@ import com.google.common.collect.Lists;
 
 public class MergeInputOutputComposite extends Composite {
     public final MergeInputOutputModel model;
-    private final IDelegable iDelegable;
+    private final Delegable delegable;
     private final String fileExtension;
     private final int size = 1;
     private Group inputGroup;
@@ -47,10 +47,10 @@ public class MergeInputOutputComposite extends Composite {
     private final List<Integer> typeInputList = Lists.newArrayList();
     private Integer outputType = null;
 
-    public MergeInputOutputComposite(Composite parent, IDelegable iDelegable, final MergeInputOutputModel model, String fileExtension) {
+    public MergeInputOutputComposite(Composite parent, Delegable delegable, final MergeInputOutputModel model, String fileExtension) {
         super(parent, SWT.BORDER);
         this.model = model;
-        this.iDelegable = iDelegable;
+        this.delegable = delegable;
         this.fileExtension = fileExtension;
         GridData data = new GridData(GridData.FILL_HORIZONTAL);
         data.horizontalSpan = 3;
@@ -277,7 +277,7 @@ public class MergeInputOutputComposite extends Composite {
             }
             final Combo combo = new Combo(composite, SWT.READ_ONLY);
             combo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            for (String variableName : iDelegable.getVariableNames(false, FileVariable.class.getName())) {
+            for (String variableName : delegable.getVariableNames(false, FileVariable.class.getName())) {
                 combo.add(variableName);
             }
             if (variable != null) {
@@ -311,15 +311,15 @@ public class MergeInputOutputComposite extends Composite {
             }
             String fileName;
 
-            if (iDelegable instanceof GraphElement) {
+            if (delegable instanceof GraphElement) {
                 if (EmbeddedFileUtils.isProcessFile(path)) {
                     fileName = EmbeddedFileUtils.getProcessFileName(path);
                 } else {
                     final String dotExt = "." + fileExtension;
-                    fileName = EmbeddedFileUtils.generateEmbeddedFileName(iDelegable, fileExtension).replace(dotExt, index + dotExt);
+                    fileName = EmbeddedFileUtils.generateEmbeddedFileName(delegable, fileExtension).replace(dotExt, index + dotExt);
                 }
             } else {
-                throw new InternalApplicationException("Unexpected classtype " + iDelegable);
+                throw new InternalApplicationException("Unexpected classtype " + delegable);
             }
 
             // http://sourceforge.net/p/runawfe/bugs/628/
@@ -336,10 +336,10 @@ public class MergeInputOutputComposite extends Composite {
         }
 
         private void updateEmbeddedFileName(String fileName) {
-            if (iDelegable instanceof GraphElement) {
+            if (delegable instanceof GraphElement) {
                 setFileName(EmbeddedFileUtils.getProcessFilePath(fileName), index);
             } else {
-                throw new InternalApplicationException("Unexpected classtype " + iDelegable);
+                throw new InternalApplicationException("Unexpected classtype " + delegable);
             }
         }
 

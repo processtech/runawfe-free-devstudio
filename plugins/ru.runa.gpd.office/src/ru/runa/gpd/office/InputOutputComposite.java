@@ -17,7 +17,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 import ru.runa.gpd.lang.model.BotTask;
-import ru.runa.gpd.lang.model.IDelegable;
+import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
@@ -29,13 +29,13 @@ import com.google.common.base.Strings;
 
 public class InputOutputComposite extends Composite {
     public final InputOutputModel model;
-    private final IDelegable iDelegable;
+    private final Delegable delegable;
     private final String fileExtension;
 
-    public InputOutputComposite(Composite parent, IDelegable iDelegable, final InputOutputModel model, FilesSupplierMode mode, String fileExtension) {
+    public InputOutputComposite(Composite parent, Delegable delegable, final InputOutputModel model, FilesSupplierMode mode, String fileExtension) {
         super(parent, SWT.NONE);
         this.model = model;
-        this.iDelegable = iDelegable;
+        this.delegable = delegable;
         this.fileExtension = fileExtension;
         GridData data = new GridData(GridData.FILL_HORIZONTAL);
         data.horizontalSpan = 3;
@@ -113,8 +113,8 @@ public class InputOutputComposite extends Composite {
             if (!Strings.isNullOrEmpty(variableName)) {
                 combo.select(1);
                 showVariable(variableName);
-            } else if ((iDelegable instanceof GraphElement && EmbeddedFileUtils.isProcessFile(fileName))
-                    || (iDelegable instanceof BotTask && EmbeddedFileUtils.isBotTaskFile(fileName))) {
+            } else if ((delegable instanceof GraphElement && EmbeddedFileUtils.isProcessFile(fileName))
+                    || (delegable instanceof BotTask && EmbeddedFileUtils.isBotTaskFile(fileName))) {
                 combo.select(2);
                 showEmbeddedFile(fileName);
             } else {
@@ -170,7 +170,7 @@ public class InputOutputComposite extends Composite {
             }
             final Combo combo = new Combo(composite, SWT.READ_ONLY);
             combo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            for (String variableName : iDelegable.getVariableNames(false, FileVariable.class.getName())) {
+            for (String variableName : delegable.getVariableNames(false, FileVariable.class.getName())) {
                 combo.add(variableName);
             }
             if (variable != null) {
@@ -204,20 +204,20 @@ public class InputOutputComposite extends Composite {
             }
             String fileName;
 
-            if (iDelegable instanceof GraphElement) {
+            if (delegable instanceof GraphElement) {
                 if (EmbeddedFileUtils.isProcessFile(path)) {
                     fileName = EmbeddedFileUtils.getProcessFileName(path);
                 } else {
-                    fileName = EmbeddedFileUtils.generateEmbeddedFileName(iDelegable, fileExtension);
+                    fileName = EmbeddedFileUtils.generateEmbeddedFileName(delegable, fileExtension);
                 }
-            } else if (iDelegable instanceof BotTask) {
+            } else if (delegable instanceof BotTask) {
                 if (EmbeddedFileUtils.isBotTaskFile(path)) {
                     fileName = EmbeddedFileUtils.getBotTaskFileName(path);
                 } else {
-                    fileName = EmbeddedFileUtils.generateEmbeddedFileName(iDelegable, fileExtension);
+                    fileName = EmbeddedFileUtils.generateEmbeddedFileName(delegable, fileExtension);
                 }
             } else {
-                throw new InternalApplicationException("Unexpected classtype " + iDelegable);
+                throw new InternalApplicationException("Unexpected classtype " + delegable);
             }
 
             // http://sourceforge.net/p/runawfe/bugs/628/
@@ -234,12 +234,12 @@ public class InputOutputComposite extends Composite {
         }
 
         private void updateEmbeddedFileName(String fileName) {
-            if (iDelegable instanceof GraphElement) {
+            if (delegable instanceof GraphElement) {
                 setFileName(EmbeddedFileUtils.getProcessFilePath(fileName));
-            } else if (iDelegable instanceof BotTask) {
+            } else if (delegable instanceof BotTask) {
                 setFileName(EmbeddedFileUtils.getBotTaskFilePath(fileName));
             } else {
-                throw new InternalApplicationException("Unexpected classtype " + iDelegable);
+                throw new InternalApplicationException("Unexpected classtype " + delegable);
             }
         }
 

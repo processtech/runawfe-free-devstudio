@@ -10,14 +10,14 @@ import org.dom4j.QName;
 import org.eclipse.core.resources.IFile;
 
 import ru.runa.gpd.Application;
-import ru.runa.gpd.IPropertyNames;
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.EndState;
 import ru.runa.gpd.lang.model.EndTokenState;
 import ru.runa.gpd.lang.model.GraphElement;
-import ru.runa.gpd.lang.model.IDelegable;
-import ru.runa.gpd.lang.model.IDescribable;
+import ru.runa.gpd.lang.model.Delegable;
+import ru.runa.gpd.lang.model.Describable;
 import ru.runa.gpd.lang.model.ISendMessageNode;
 import ru.runa.gpd.lang.model.ITimed;
 import ru.runa.gpd.lang.model.MultiSubprocess;
@@ -266,7 +266,7 @@ public class BpmnSerializer extends ProcessSerializer {
     private Element writeNode(Element processElement, Node node) {
         Element nodeElement = writeElement(processElement, node);
         if (node.isDelegable()) {
-            writeDelegation(nodeElement, (IDelegable) node);
+            writeDelegation(nodeElement, (Delegable) node);
         }
         writeNodeAsyncExecution(nodeElement, node);
         writeTransitions(processElement, node);
@@ -303,11 +303,11 @@ public class BpmnSerializer extends ProcessSerializer {
         }
         if (swimlanedNode instanceof MultiTaskState) {
             MultiTaskState multiTaskNode = (MultiTaskState) swimlanedNode;
-            properties.put(IPropertyNames.PROPERTY_MULTI_TASK_CREATION_MODE, multiTaskNode.getCreationMode().name());
-            properties.put(IPropertyNames.PROPERTY_MULTI_TASK_SYNCHRONIZATION_MODE, multiTaskNode.getSynchronizationMode().name());
-            properties.put(IPropertyNames.PROPERTY_DISCRIMINATOR_USAGE, multiTaskNode.getDiscriminatorUsage());
-            properties.put(IPropertyNames.PROPERTY_DISCRIMINATOR_VALUE, multiTaskNode.getDiscriminatorValue());
-            properties.put(IPropertyNames.PROPERTY_DISCRIMINATOR_CONDITION, multiTaskNode.getDiscriminatorCondition());
+            properties.put(PropertyNames.PROPERTY_MULTI_TASK_CREATION_MODE, multiTaskNode.getCreationMode().name());
+            properties.put(PropertyNames.PROPERTY_MULTI_TASK_SYNCHRONIZATION_MODE, multiTaskNode.getSynchronizationMode().name());
+            properties.put(PropertyNames.PROPERTY_DISCRIMINATOR_USAGE, multiTaskNode.getDiscriminatorUsage());
+            properties.put(PropertyNames.PROPERTY_DISCRIMINATOR_VALUE, multiTaskNode.getDiscriminatorValue());
+            properties.put(PropertyNames.PROPERTY_DISCRIMINATOR_CONDITION, multiTaskNode.getDiscriminatorCondition());
             writeVariables(nodeElement, multiTaskNode.getVariableMappings());
         }
         writeExtensionElements(nodeElement, properties);
@@ -400,8 +400,8 @@ public class BpmnSerializer extends ProcessSerializer {
         if (graphElement instanceof NamedGraphElement) {
             setAttribute(element, NAME, ((NamedGraphElement) graphElement).getName());
         }
-        if (graphElement instanceof IDescribable) {
-            String description = ((IDescribable) graphElement).getDescription();
+        if (graphElement instanceof Describable) {
+            String description = ((Describable) graphElement).getDescription();
             if (!Strings.isNullOrEmpty(description)) {
                 element.addElement(DOCUMENTATION).addCDATA(description);
             }
@@ -452,11 +452,11 @@ public class BpmnSerializer extends ProcessSerializer {
         return extensionsElement;
     }
 
-    private void writeDelegation(Element parent, IDelegable iDelegable) {
+    private void writeDelegation(Element parent, Delegable delegable) {
         Map<String, Object> properties = Maps.newLinkedHashMap();
-        properties.put(CLASS, iDelegable.getDelegationClassName());
+        properties.put(CLASS, delegable.getDelegationClassName());
         Element extensionsElement = writeExtensionElements(parent, properties);
-        extensionsElement.addElement(RUNA_PREFIX + ":" + PROPERTY).addAttribute(NAME, CONFIG).addCDATA(iDelegable.getDelegationConfiguration());
+        extensionsElement.addElement(RUNA_PREFIX + ":" + PROPERTY).addAttribute(NAME, CONFIG).addCDATA(delegable.getDelegationConfiguration());
     }
 
     @Override
@@ -508,13 +508,13 @@ public class BpmnSerializer extends ProcessSerializer {
         List<Element> nodeList = node.elements();
         for (Element childNode : nodeList) {
             if (DOCUMENTATION.equals(childNode.getName())) {
-                ((IDescribable) element).setDescription(childNode.getTextTrim());
+                ((Describable) element).setDescription(childNode.getTextTrim());
             }
             if (TIME_DURATION.equals(childNode.getName())) {
                 ((Timer) element).setDelay(new Duration(childNode.getTextTrim()));
             }
         }
-        if (element instanceof IDelegable) {
+        if (element instanceof Delegable) {
             element.setDelegationClassName(properties.get(CLASS));
             element.setDelegationConfiguration(properties.get(CONFIG));
         }
@@ -648,12 +648,12 @@ public class BpmnSerializer extends ProcessSerializer {
                 }
                 if (state instanceof MultiTaskState) {
                     MultiTaskState multiTaskState = (MultiTaskState) state;
-                    multiTaskState.setCreationMode(MultiTaskCreationMode.valueOf(properties.get(IPropertyNames.PROPERTY_MULTI_TASK_CREATION_MODE)));
+                    multiTaskState.setCreationMode(MultiTaskCreationMode.valueOf(properties.get(PropertyNames.PROPERTY_MULTI_TASK_CREATION_MODE)));
                     multiTaskState.setSynchronizationMode(MultiTaskSynchronizationMode.valueOf(properties
-                            .get(IPropertyNames.PROPERTY_MULTI_TASK_SYNCHRONIZATION_MODE)));
-                    multiTaskState.setDiscriminatorUsage(properties.get(IPropertyNames.PROPERTY_DISCRIMINATOR_USAGE));
-                    multiTaskState.setDiscriminatorValue(properties.get(IPropertyNames.PROPERTY_DISCRIMINATOR_VALUE));
-                    multiTaskState.setDiscriminatorCondition(properties.get(IPropertyNames.PROPERTY_DISCRIMINATOR_CONDITION));
+                            .get(PropertyNames.PROPERTY_MULTI_TASK_SYNCHRONIZATION_MODE)));
+                    multiTaskState.setDiscriminatorUsage(properties.get(PropertyNames.PROPERTY_DISCRIMINATOR_USAGE));
+                    multiTaskState.setDiscriminatorValue(properties.get(PropertyNames.PROPERTY_DISCRIMINATOR_VALUE));
+                    multiTaskState.setDiscriminatorCondition(properties.get(PropertyNames.PROPERTY_DISCRIMINATOR_CONDITION));
                     multiTaskState.setVariableMappings(parseVariableMappings(taskStateElement));
                 }
             }

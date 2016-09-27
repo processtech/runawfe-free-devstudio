@@ -21,7 +21,7 @@ import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.handler.XmlBasedConstructorProvider;
 import ru.runa.gpd.lang.ValidationError;
-import ru.runa.gpd.lang.model.IDelegable;
+import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.ui.custom.HelpDialog;
@@ -50,8 +50,8 @@ public class SetDateVariableHandlerProvider<T extends CalendarConfig> extends Xm
     }
 
     @Override
-    protected Composite createConstructorComposite(Composite parent, IDelegable iDelegable, CalendarConfig config) {
-        return new ConstructorView(parent, iDelegable, config);
+    protected Composite createConstructorComposite(Composite parent, Delegable delegable, CalendarConfig config) {
+        return new ConstructorView(parent, delegable, config);
     }
 
     @Override
@@ -60,9 +60,9 @@ public class SetDateVariableHandlerProvider<T extends CalendarConfig> extends Xm
     }
 
     @Override
-    public List<String> getUsedVariableNames(IDelegable iDelegable) {
+    public List<String> getUsedVariableNames(Delegable delegable) {
         List<String> result = Lists.newArrayList();
-        CalendarConfig model = fromXml(iDelegable.getDelegationConfiguration());
+        CalendarConfig model = fromXml(delegable.getDelegationConfiguration());
         if (model != null) {
             fillUserVariableNames(result, (T) model);
         }
@@ -79,8 +79,8 @@ public class SetDateVariableHandlerProvider<T extends CalendarConfig> extends Xm
     }
 
     @Override
-    protected boolean validateModel(IDelegable iDelegable, CalendarConfig model, List<ValidationError> errors) {
-        if (!validateResultVariable(iDelegable, model.getResultVariableName())) {
+    protected boolean validateModel(Delegable delegable, CalendarConfig model, List<ValidationError> errors) {
+        if (!validateResultVariable(delegable, model.getResultVariableName())) {
             return false;
         }
         for (CalendarOperation operation : model.getOperations()) {
@@ -88,25 +88,25 @@ public class SetDateVariableHandlerProvider<T extends CalendarConfig> extends Xm
                 return false;
             }
             if (operation.isBusinessTime() && !CalendarConfig.BUSINESS_FIELD_NAMES.contains(operation.getFieldName())) {
-                errors.add(ValidationError.createLocalizedError((GraphElement) iDelegable, "delegable.calendar.businesstime.error"));
+                errors.add(ValidationError.createLocalizedError((GraphElement) delegable, "delegable.calendar.businesstime.error"));
             }
         }
-        return super.validateModel(iDelegable, model, errors);
+        return super.validateModel(delegable, model, errors);
     }
 
-    protected boolean validateResultVariable(IDelegable iDelegable, String resultVariableName) {
+    protected boolean validateResultVariable(Delegable delegable, String resultVariableName) {
         if (Strings.isNullOrEmpty(resultVariableName)) {
             return false;
         }
-        if (!iDelegable.getVariableNames(false, DATE_TYPES).contains(resultVariableName)) {
+        if (!delegable.getVariableNames(false, DATE_TYPES).contains(resultVariableName)) {
             return false;
         }
         return true;
     }
 
     @Override
-    public String getConfigurationOnVariableRename(IDelegable iDelegable, Variable currentVariable, Variable previewVariable) {
-        CalendarConfig model = fromXml(iDelegable.getDelegationConfiguration());
+    public String getConfigurationOnVariableRename(Delegable delegable, Variable currentVariable, Variable previewVariable) {
+        CalendarConfig model = fromXml(delegable.getDelegationConfiguration());
         if (model != null) {
             applyConfigurationOnVariableRename(model, currentVariable, previewVariable);
         }
@@ -124,8 +124,8 @@ public class SetDateVariableHandlerProvider<T extends CalendarConfig> extends Xm
 
     protected class ConstructorView extends ConstructorComposite {
 
-        public ConstructorView(Composite parent, IDelegable iDelegable, CalendarConfig config) {
-            super(parent, iDelegable, config);
+        public ConstructorView(Composite parent, Delegable delegable, CalendarConfig config) {
+            super(parent, delegable, config);
             setLayout(new GridLayout(3, false));
             buildFromModel();
         }
@@ -176,7 +176,7 @@ public class SetDateVariableHandlerProvider<T extends CalendarConfig> extends Xm
                 label.setText(Localization.getString("property.duration.baseDate"));
                 final Combo combo = new Combo(this, SWT.READ_ONLY);
                 combo.add(Duration.CURRENT_DATE_MESSAGE);
-                for (String variableName : iDelegable.getVariableNames(false, DATE_TYPES)) {
+                for (String variableName : delegable.getVariableNames(false, DATE_TYPES)) {
                     combo.add(variableName);
                 }
                 combo.setLayoutData(get2GridData());
@@ -207,7 +207,7 @@ public class SetDateVariableHandlerProvider<T extends CalendarConfig> extends Xm
             Label label = new Label(this, SWT.NONE);
             label.setText(Localization.getString("ParamBasedProvider.result"));
             final Combo combo = new Combo(this, SWT.READ_ONLY);
-            for (String variableName : iDelegable.getVariableNames(false, DATE_TYPES)) {
+            for (String variableName : delegable.getVariableNames(false, DATE_TYPES)) {
                 combo.add(variableName);
             }
             combo.setLayoutData(get2GridData());
@@ -288,7 +288,7 @@ public class SetDateVariableHandlerProvider<T extends CalendarConfig> extends Xm
                     }
                 });
                 if (addContextVariables) {
-                    List<String> variableNames = iDelegable.getVariableNames(false, Date.class.getName(), Long.class.getName());
+                    List<String> variableNames = delegable.getVariableNames(false, Date.class.getName(), Long.class.getName());
                     new InsertVariableTextMenuDetectListener(text, variableNames);
                 }
             }

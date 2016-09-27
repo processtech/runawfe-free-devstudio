@@ -117,7 +117,7 @@
     <objectContribution
           adaptable="false"
           id="synchronizable.async"
-          objectClass="ru.runa.gpd.lang.model.ISynchronizable">
+          objectClass="ru.runa.gpd.lang.model.Synchronizable">
        <action
              class="ru.runa.gpd.lang.action.AsyncFeatureDelegate"
              id="feature.async"
@@ -441,7 +441,7 @@
     <objectContribution
           adaptable="false"
           id="delegable.configuration"
-          objectClass="ru.runa.gpd.lang.model.IDelegable">
+          objectClass="ru.runa.gpd.lang.model.Delegable">
        <filter
              name="delegable"
              value="true">

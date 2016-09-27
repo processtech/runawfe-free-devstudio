@@ -9,7 +9,7 @@ import org.eclipse.jface.window.Window;
 import org.osgi.framework.Bundle;
 
 import ru.runa.gpd.lang.ValidationError;
-import ru.runa.gpd.lang.model.IDelegable;
+import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.Variable;
 
 import com.google.common.base.Strings;
@@ -26,12 +26,12 @@ public class DelegableProvider {
         this.bundle = bundle;
     }
 
-    protected DelegableConfigurationDialog createConfigurationDialog(IDelegable iDelegable) {
-        return new DelegableConfigurationDialog(iDelegable.getDelegationConfiguration());
+    protected DelegableConfigurationDialog createConfigurationDialog(Delegable delegable) {
+        return new DelegableConfigurationDialog(delegable.getDelegationConfiguration());
     }
 
-    public String showConfigurationDialog(IDelegable iDelegable) {
-        DelegableConfigurationDialog dialog = createConfigurationDialog(iDelegable);
+    public String showConfigurationDialog(Delegable delegable) {
+        DelegableConfigurationDialog dialog = createConfigurationDialog(delegable);
         if (dialog.open() == Window.OK) {
             return dialog.getResult();
         }
@@ -44,26 +44,26 @@ public class DelegableProvider {
      * 
      * @return <code>false</code> for raising default invalid configuration message
      */
-    public boolean validateValue(IDelegable iDelegable, List<ValidationError> errors) throws Exception {
+    public boolean validateValue(Delegable delegable, List<ValidationError> errors) throws Exception {
         return true;
     }
 
     /**
      * Callback is invoked when delegable is deleted from process definition.
      * 
-     * @param iDelegable
+     * @param delegable
      */
-    public void onDelete(IDelegable iDelegable) {
+    public void onDelete(Delegable delegable) {
     }
 
     /**
      * Callback is invoked when delegable is renamed in process definition.
      * 
-     * @param iDelegable
+     * @param delegable
      * @param oldName
      * @param newName
      */
-    public void onRename(IDelegable iDelegable, String oldName, String newName) {
+    public void onRename(Delegable delegable, String oldName, String newName) {
     }
 
     /**
@@ -76,18 +76,18 @@ public class DelegableProvider {
      * @param targetFolder
      * @param targetName
      */
-    public void onCopy(IFolder sourceFolder, IDelegable source, String sourceName, IFolder targetFolder, IDelegable target, String targetName) {
+    public void onCopy(IFolder sourceFolder, Delegable source, String sourceName, IFolder targetFolder, Delegable target, String targetName) {
         target.setDelegationClassName(source.getDelegationClassName());
         target.setDelegationConfiguration(source.getDelegationConfiguration());
     }
 
-    public List<String> getUsedVariableNames(IDelegable iDelegable) throws Exception {
-        String configuration = iDelegable.getDelegationConfiguration();
+    public List<String> getUsedVariableNames(Delegable delegable) throws Exception {
+        String configuration = delegable.getDelegationConfiguration();
         if (Strings.isNullOrEmpty(configuration)) {
             return Lists.newArrayList();
         }
         List<String> result = Lists.newArrayList();
-        for (String variableName : iDelegable.getVariableNames(true)) {
+        for (String variableName : delegable.getVariableNames(true)) {
             Matcher matcher = Pattern.compile(variableName + "[^\\.]").matcher(configuration);
             if (matcher.find()) {
                 result.add(variableName);
@@ -96,8 +96,8 @@ public class DelegableProvider {
         return result;
     }
 
-    public String getConfigurationOnVariableRename(IDelegable iDelegable, Variable currentVariable, Variable previewVariable) {
-        return iDelegable.getDelegationConfiguration().replaceAll(Pattern.quote(currentVariable.getName()),
+    public String getConfigurationOnVariableRename(Delegable delegable, Variable currentVariable, Variable previewVariable) {
+        return delegable.getDelegationConfiguration().replaceAll(Pattern.quote(currentVariable.getName()),
                 Matcher.quoteReplacement(previewVariable.getName()));
     }
 }

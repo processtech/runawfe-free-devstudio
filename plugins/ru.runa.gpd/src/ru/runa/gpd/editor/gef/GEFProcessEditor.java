@@ -5,7 +5,7 @@ import java.beans.PropertyChangeEvent;
 import org.eclipse.gef.SnapToGrid;
 import org.eclipse.gef.ui.parts.GraphicalEditor;
 
-import ru.runa.gpd.IPropertyNames;
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.ProcessEditorBase;
 import ru.runa.gpd.lang.model.GraphElement;
 
@@ -25,7 +25,7 @@ public class GEFProcessEditor extends ProcessEditorBase {
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         super.propertyChange(evt);
-        if (IPropertyNames.PROPERTY_SHOW_ACTIONS.equals(evt.getPropertyName())) {
+        if (PropertyNames.PROPERTY_SHOW_ACTIONS.equals(evt.getPropertyName())) {
             ((DesignerGraphicalEditorPart) graphPage).getPaletteRoot().refreshElementsVisibility();
         }
     }

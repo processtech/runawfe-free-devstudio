@@ -31,7 +31,7 @@ import ru.runa.gpd.lang.model.BotTask;
 import ru.runa.gpd.lang.model.BotTaskType;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.GraphElement;
-import ru.runa.gpd.lang.model.IDelegable;
+import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.ITimed;
 import ru.runa.gpd.lang.model.MessageNode;
 import ru.runa.gpd.lang.model.MultiTaskState;
@@ -141,8 +141,8 @@ public class VariableSearchVisitor {
             if (graphElement instanceof FormNode) {
                 processFormNode(definitionFile, (FormNode) graphElement);
             }
-            if (graphElement instanceof IDelegable) {
-                processDelegableNode(definitionFile, (IDelegable) graphElement);
+            if (graphElement instanceof Delegable) {
+                processDelegableNode(definitionFile, (Delegable) graphElement);
             }
             if (graphElement instanceof ITimed) {
                 processTimedNode(definitionFile, (ITimed) graphElement);
@@ -166,15 +166,15 @@ public class VariableSearchVisitor {
         }
     }
 
-    private void processDelegableNode(IFile definitionFile, IDelegable iDelegable) throws Exception {
+    private void processDelegableNode(IFile definitionFile, Delegable delegable) throws Exception {
         Matcher delegableMatcher;
-        if (matcherScriptingName != null && HandlerRegistry.SCRIPT_HANDLER_CLASS_NAMES.contains(iDelegable.getDelegationClassName())) {
+        if (matcherScriptingName != null && HandlerRegistry.SCRIPT_HANDLER_CLASS_NAMES.contains(delegable.getDelegationClassName())) {
             delegableMatcher = matcherScriptingName;
         } else {
             delegableMatcher = matcher;
         }
-        String conf = iDelegable.getDelegationConfiguration();
-        ElementMatch elementMatch = new ElementMatch((GraphElement) iDelegable, definitionFile);
+        String conf = delegable.getDelegationConfiguration();
+        ElementMatch elementMatch = new ElementMatch((GraphElement) delegable, definitionFile);
         List<Match> matches = findInString(elementMatch, conf, delegableMatcher);
         elementMatch.setPotentialMatchesCount(matches.size());
         for (Match match : matches) {

@@ -15,7 +15,7 @@ import com.google.common.collect.Lists;
  * @author Dofs
  * @since 3.6
  */
-public class BotTaskLink implements IDelegable {
+public class BotTaskLink implements Delegable {
     private String botTaskName;
     private String delegationClassName;
     private String delegationConfiguration = "";

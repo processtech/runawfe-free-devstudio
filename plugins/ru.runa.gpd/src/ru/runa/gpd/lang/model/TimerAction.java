@@ -8,7 +8,7 @@ import ru.runa.wfe.extension.handler.EscalationActionHandler;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 
-public class TimerAction extends GraphElement implements IDelegable {
+public class TimerAction extends GraphElement implements Delegable {
     private final ProcessDefinition processDefinition;
     private Duration repeatDelay = new Duration();
 

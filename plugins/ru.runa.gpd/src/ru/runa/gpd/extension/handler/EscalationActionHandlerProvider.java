@@ -21,7 +21,7 @@ import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.orgfunction.OrgFunctionDefinition;
 import ru.runa.gpd.extension.orgfunction.OrgFunctionsRegistry;
 import ru.runa.gpd.lang.ValidationError;
-import ru.runa.gpd.lang.model.IDelegable;
+import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.swimlane.RelationComposite;
 import ru.runa.gpd.swimlane.RelationSwimlaneInitializer;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
@@ -29,13 +29,13 @@ import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 public class EscalationActionHandlerProvider extends DelegableProvider {
 
     @Override
-    protected DelegableConfigurationDialog createConfigurationDialog(IDelegable iDelegable) {
-        return new EscalationConfigurationDialog(iDelegable.getDelegationConfiguration());
+    protected DelegableConfigurationDialog createConfigurationDialog(Delegable delegable) {
+        return new EscalationConfigurationDialog(delegable.getDelegationConfiguration());
     }
 
     @Override
-    public boolean validateValue(IDelegable iDelegable, List<ValidationError> errors) {
-        String configuration = iDelegable.getDelegationConfiguration();
+    public boolean validateValue(Delegable delegable, List<ValidationError> errors) {
+        String configuration = delegable.getDelegationConfiguration();
         if (!configuration.startsWith(RelationSwimlaneInitializer.RELATION_BEGIN)) {
             OrgFunctionsRegistry.getInstance().getArtifact(configuration);
         }

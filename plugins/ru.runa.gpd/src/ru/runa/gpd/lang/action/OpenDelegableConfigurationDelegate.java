@@ -4,17 +4,17 @@ import org.eclipse.jface.action.IAction;
 
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.HandlerRegistry;
-import ru.runa.gpd.lang.model.IDelegable;
+import ru.runa.gpd.lang.model.Delegable;
 
 public class OpenDelegableConfigurationDelegate extends BaseModelActionDelegate {
     
     @Override
     public void run(IAction action) {
-        IDelegable iDelegable = (IDelegable) getSelection();
-        DelegableProvider provider = HandlerRegistry.getProvider(iDelegable.getDelegationClassName());
-        String newConfig = provider.showConfigurationDialog(iDelegable);
+        Delegable delegable = (Delegable) getSelection();
+        DelegableProvider provider = HandlerRegistry.getProvider(delegable.getDelegationClassName());
+        String newConfig = provider.showConfigurationDialog(delegable);
         if (newConfig != null) {
-            iDelegable.setDelegationConfiguration(newConfig);
+            delegable.setDelegationConfiguration(newConfig);
         }
     }
 }

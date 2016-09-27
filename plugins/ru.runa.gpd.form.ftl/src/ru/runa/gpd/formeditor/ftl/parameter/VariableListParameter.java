@@ -14,7 +14,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
 
-import ru.runa.gpd.IPropertyNames;
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.formeditor.ftl.ComponentParameter;
 import ru.runa.gpd.formeditor.ftl.ui.VariableListDialog;
 import ru.runa.gpd.formeditor.wysiwyg.FormEditor;
@@ -58,7 +58,7 @@ public class VariableListParameter extends ParameterType {
                     if (result != null) {
                         text.setText(Joiner.on(VALUES_DELIM).join(result));
                         text.setData(result);
-                        listener.propertyChange(new PropertyChangeEvent(text, IPropertyNames.PROPERTY_VALUE, oldValue, result));
+                        listener.propertyChange(new PropertyChangeEvent(text, PropertyNames.PROPERTY_VALUE, oldValue, result));
                     }
                 }
             });

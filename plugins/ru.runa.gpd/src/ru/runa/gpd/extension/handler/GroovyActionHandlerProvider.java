@@ -14,7 +14,7 @@ import ru.runa.gpd.Localization;
 import ru.runa.gpd.extension.DelegableConfigurationDialog;
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.HandlerArtifact;
-import ru.runa.gpd.lang.model.IDelegable;
+import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Variable;
@@ -29,23 +29,23 @@ import com.google.common.collect.Lists;
 
 public class GroovyActionHandlerProvider extends DelegableProvider {
     @Override
-    protected DelegableConfigurationDialog createConfigurationDialog(IDelegable iDelegable) {
-        if (!HandlerArtifact.ACTION.equals(iDelegable.getDelegationType())) {
-            return super.createConfigurationDialog(iDelegable);
+    protected DelegableConfigurationDialog createConfigurationDialog(Delegable delegable) {
+        if (!HandlerArtifact.ACTION.equals(delegable.getDelegationType())) {
+            return super.createConfigurationDialog(delegable);
         }
-        ProcessDefinition definition = ((GraphElement) iDelegable).getProcessDefinition();
-        return new ConfigurationDialog(iDelegable.getDelegationConfiguration(), definition.getVariables(true, true));
+        ProcessDefinition definition = ((GraphElement) delegable).getProcessDefinition();
+        return new ConfigurationDialog(delegable.getDelegationConfiguration(), definition.getVariables(true, true));
     }
 
     @Override
-    public List<String> getUsedVariableNames(IDelegable iDelegable) {
-        String configuration = iDelegable.getDelegationConfiguration();
+    public List<String> getUsedVariableNames(Delegable delegable) {
+        String configuration = delegable.getDelegationConfiguration();
         if (Strings.isNullOrEmpty(configuration)) {
             return Lists.newArrayList();
         }
         List<String> result = Lists.newArrayList();
-        if (iDelegable instanceof GraphElement) {
-            for (Variable variable : ((GraphElement) iDelegable).getProcessDefinition().getVariables(true, true)) {
+        if (delegable instanceof GraphElement) {
+            for (Variable variable : ((GraphElement) delegable).getProcessDefinition().getVariables(true, true)) {
                 if (configuration.contains(variable.getScriptingName())) {
                     result.add(variable.getName());
                 }
@@ -55,8 +55,8 @@ public class GroovyActionHandlerProvider extends DelegableProvider {
     }
 
     @Override
-    public String getConfigurationOnVariableRename(IDelegable iDelegable, Variable currentVariable, Variable previewVariable) {
-        return iDelegable.getDelegationConfiguration().replaceAll(Pattern.quote(currentVariable.getScriptingName()),
+    public String getConfigurationOnVariableRename(Delegable delegable, Variable currentVariable, Variable previewVariable) {
+        return delegable.getDelegationConfiguration().replaceAll(Pattern.quote(currentVariable.getScriptingName()),
                 Matcher.quoteReplacement(previewVariable.getScriptingName()));
     }
 

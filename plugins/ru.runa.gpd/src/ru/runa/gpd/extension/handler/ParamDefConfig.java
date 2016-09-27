@@ -17,7 +17,7 @@ import org.dom4j.io.OutputFormat;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.handler.ParamDef.Presentation;
 import ru.runa.gpd.lang.ValidationError;
-import ru.runa.gpd.lang.model.IDelegable;
+import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.util.XmlUtil;
 
@@ -200,9 +200,9 @@ public class ParamDefConfig {
         return null;
     }
 
-    public boolean validate(IDelegable iDelegable, List<ValidationError> errors) {
-        String configuration = iDelegable.getDelegationConfiguration();
-        GraphElement graphElement = ((GraphElement) iDelegable);
+    public boolean validate(Delegable delegable, List<ValidationError> errors) {
+        String configuration = delegable.getDelegationConfiguration();
+        GraphElement graphElement = ((GraphElement) delegable);
         Map<String, String> props = parseConfiguration(configuration);
         for (ParamDefGroup group : groups) {
             for (ParamDef paramDef : group.getParameters()) {

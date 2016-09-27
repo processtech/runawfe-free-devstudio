@@ -50,7 +50,7 @@ import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.part.FileEditorInput;
 import org.osgi.framework.Bundle;
 
-import ru.runa.gpd.IPropertyNames;
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.extension.Artifact;
@@ -679,7 +679,7 @@ public class QuickFormEditor extends EditorPart implements ISelectionListener, I
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if (IPropertyNames.PROPERTY_DIRTY.equals(evt.getPropertyName())) {
+        if (PropertyNames.PROPERTY_DIRTY.equals(evt.getPropertyName())) {
             firePropertyChange(IEditorPart.PROP_DIRTY);
         }
     }

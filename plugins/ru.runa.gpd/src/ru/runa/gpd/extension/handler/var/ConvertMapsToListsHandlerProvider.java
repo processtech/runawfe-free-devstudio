@@ -18,7 +18,7 @@ import org.eclipse.ui.forms.events.HyperlinkEvent;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.handler.XmlBasedConstructorProvider;
-import ru.runa.gpd.lang.model.IDelegable;
+import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
 import ru.runa.gpd.ui.custom.SWTUtils;
 import ru.runa.wfe.extension.handler.var.ConvertMapToListOperation;
@@ -37,8 +37,8 @@ public class ConvertMapsToListsHandlerProvider extends XmlBasedConstructorProvid
     }
 
     @Override
-    protected Composite createConstructorComposite(Composite parent, IDelegable iDelegable, ConvertMapsToListsConfig model) {
-        return new ConstructorView(parent, iDelegable, model);
+    protected Composite createConstructorComposite(Composite parent, Delegable delegable, ConvertMapsToListsConfig model) {
+        return new ConstructorView(parent, delegable, model);
     }
 
     @Override
@@ -48,8 +48,8 @@ public class ConvertMapsToListsHandlerProvider extends XmlBasedConstructorProvid
 
     private class ConstructorView extends ConstructorComposite {
 
-        public ConstructorView(Composite parent, IDelegable iDelegable, ConvertMapsToListsConfig model) {
-            super(parent, iDelegable, model);
+        public ConstructorView(Composite parent, Delegable delegable, ConvertMapsToListsConfig model) {
+            super(parent, delegable, model);
             setLayout(new GridLayout(3, false));
             buildFromModel();
         }
@@ -164,7 +164,7 @@ public class ConvertMapsToListsHandlerProvider extends XmlBasedConstructorProvid
         private void addOperationSection(Composite parent, final ConvertMapToListOperation operation, final int index) {
             {
                 final Combo combo = new Combo(parent, SWT.READ_ONLY);
-                for (String variableName : iDelegable.getVariableNames(false, Map.class.getName())) {
+                for (String variableName : delegable.getVariableNames(false, Map.class.getName())) {
                     combo.add(variableName);
                 }
                 combo.setText(operation.getMapVariableName());
@@ -178,7 +178,7 @@ public class ConvertMapsToListsHandlerProvider extends XmlBasedConstructorProvid
             }
             {
                 final Combo combo = new Combo(parent, SWT.READ_ONLY);
-                for (String variableName : iDelegable.getVariableNames(false, List.class.getName())) {
+                for (String variableName : delegable.getVariableNames(false, List.class.getName())) {
                     combo.add(variableName);
                 }
                 combo.setText(operation.getListVariableName());

@@ -24,7 +24,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 
-import ru.runa.gpd.IPropertyNames;
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.editor.gef.command.ProcessDefinitionRemoveSwimlaneCommand;
@@ -124,10 +124,10 @@ public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
     @Override
     public void propertyChange(PropertyChangeEvent event) {
         String type = event.getPropertyName();
-        if (IPropertyNames.PROPERTY_CHILDS_CHANGED.equals(type)) {
+        if (PropertyNames.PROPERTY_CHILDS_CHANGED.equals(type)) {
             updateViewer();
         } else if (event.getSource() instanceof Swimlane) {
-            if (IPropertyNames.PROPERTY_NAME.equals(type) || IPropertyNames.PROPERTY_CONFIGURATION.equals(type)) {
+            if (PropertyNames.PROPERTY_NAME.equals(type) || PropertyNames.PROPERTY_CONFIGURATION.equals(type)) {
                 tableViewer.refresh(event.getSource());
             }
         }

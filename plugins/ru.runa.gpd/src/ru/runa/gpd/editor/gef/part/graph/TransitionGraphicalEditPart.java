@@ -13,7 +13,7 @@ import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.gef.EditPolicy;
 import org.eclipse.gef.editparts.AbstractConnectionEditPart;
 
-import ru.runa.gpd.IPropertyNames;
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.editor.gef.figure.TransitionFigure;
 import ru.runa.gpd.editor.gef.policy.ActionContainerLayoutEditPolicy;
@@ -24,7 +24,7 @@ import ru.runa.gpd.lang.model.ITimed;
 import ru.runa.gpd.lang.model.Timer;
 import ru.runa.gpd.lang.model.Transition;
 
-public class TransitionGraphicalEditPart extends AbstractConnectionEditPart implements IPropertyNames, PropertyChangeListener, ActionsHost {
+public class TransitionGraphicalEditPart extends AbstractConnectionEditPart implements PropertyNames, PropertyChangeListener, ActionsHost {
     @Override
     public Transition getModel() {
         return (Transition) super.getModel();

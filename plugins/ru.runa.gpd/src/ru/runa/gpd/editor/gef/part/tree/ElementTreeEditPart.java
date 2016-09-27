@@ -5,10 +5,10 @@ import java.beans.PropertyChangeListener;
 
 import org.eclipse.gef.editparts.AbstractTreeEditPart;
 
-import ru.runa.gpd.IPropertyNames;
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.lang.model.GraphElement;
 
-public class ElementTreeEditPart extends AbstractTreeEditPart implements PropertyChangeListener, IPropertyNames {
+public class ElementTreeEditPart extends AbstractTreeEditPart implements PropertyChangeListener, PropertyNames {
 
     public ElementTreeEditPart() {
 

@@ -6,7 +6,7 @@ import java.util.Map;
 
 import org.eclipse.gef.commands.Command;
 
-import ru.runa.gpd.IPropertyNames;
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Transition;
@@ -46,7 +46,7 @@ public class NodeDeleteCommand extends Command {
         Node source = transitionSources.get(transition);
         if (source.getLeavingTransitions().contains(transition)) {
             // refresh visuals
-            transition.getTarget().firePropertyChange(IPropertyNames.NODE_ARRIVING_TRANSITION_ADDED, null, transition);
+            transition.getTarget().firePropertyChange(PropertyNames.NODE_ARRIVING_TRANSITION_ADDED, null, transition);
         } else {
             source.addLeavingTransition(transition);
         }

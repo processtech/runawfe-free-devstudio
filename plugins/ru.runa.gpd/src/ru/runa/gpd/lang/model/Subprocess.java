@@ -20,7 +20,7 @@ import ru.runa.wfe.lang.AsyncCompletionMode;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
-public class Subprocess extends Node implements ISynchronizable, IBoundaryEventContainer {
+public class Subprocess extends Node implements Synchronizable, IBoundaryEventContainer {
     protected String subProcessName = "";
     protected List<VariableMapping> variableMappings = Lists.newArrayList();
     private boolean embedded;
