@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
 
@@ -26,6 +27,7 @@ import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 import ru.runa.gpd.lang.model.jpdl.ActionContainer;
 import ru.runa.gpd.property.DurationPropertyDescriptor;
 import ru.runa.gpd.property.EscalationActionPropertyDescriptor;
+import ru.runa.gpd.settings.LanguageElementPreferenceNode;
 import ru.runa.gpd.settings.PrefConstants;
 import ru.runa.gpd.util.BotTaskUtils;
 import ru.runa.gpd.util.Duration;
@@ -382,16 +384,22 @@ public class TaskState extends FormNode implements ActionContainer, ITimed, ISyn
             if (getTimer() != null) {
                 errors.add(ValidationError.createLocalizedError(this, "taskState.timerInAsyncTask"));
             }
-            try {
-                Map<String, FormVariableAccess> formVariables = getFormVariables((IFolder) definitionFile.getParent());
-                for (FormVariableAccess access : formVariables.values()) {
-                    if (access == FormVariableAccess.WRITE) {
-                        errors.add(ValidationError.createLocalizedError(this, "taskState.variablesInputInAsyncTask"));
-                        break;
+            String propertyName = LanguageElementPreferenceNode.getId(this.getTypeDefinition(), getProcessDefinition().getLanguage()) + '.'
+                    + PrefConstants.P_LANGUAGE_TASK_STATE_ASYNC_INPUT_DATA;
+            IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+            boolean inputDataAllowedInAsyncTaskNode = store.contains(propertyName) ? store.getBoolean(propertyName) : false;
+            if (!inputDataAllowedInAsyncTaskNode) {
+                try {
+                    Map<String, FormVariableAccess> formVariables = getFormVariables((IFolder) definitionFile.getParent());
+                    for (FormVariableAccess access : formVariables.values()) {
+                        if (access == FormVariableAccess.WRITE) {
+                            errors.add(ValidationError.createLocalizedWarning(this, "taskState.variablesInputInAsyncTask"));
+                            break;
+                        }
                     }
+                } catch (Exception e) {
+                    PluginLogger.logError(e);
                 }
-            } catch (Exception e) {
-                PluginLogger.logError(e);
             }
         }
     }
