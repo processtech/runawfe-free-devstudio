@@ -28,6 +28,16 @@
             actionHandler="true"
             assignmentHandler="false"
             botTaskHandler="true"
+            cellEditorProvider="ru.runa.gpd.extension.handler.ConfigBasedProvider"
+            className="ru.runa.wfe.office.excel.handler.ExcelFormulaHandler"
+            decisionHandler="false"
+            enabled="true"
+            label="%ru.runa.wfe.office.excel.handler.ExcelFormulaHandler">
+      </handler>
+      <handler
+            actionHandler="true"
+            assignmentHandler="false"
+            botTaskHandler="true"
             decisionHandler="false"
             cellEditorProvider="ru.runa.gpd.office.word.DocxHandlerCellEditorProvider"
             className="ru.runa.wfe.office.doc.DocxHandler"
