@@ -58,15 +58,18 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
                 errors.add(ValidationError.createLocalizedError(this, "subprocess.processVariableDoesNotExist", mapping.getName()));
                 continue;
             }
+            if (mapping.isSyncable()) {
+                checkSyncModeUsage(errors, mapping, subprocessDefinition);
+            }
             Variable subprocessVariable = VariableUtils.getVariableByName(subprocessDefinition, mapping.getMappedName());
             if (subprocessVariable == null) {
-                errors.add(ValidationError.createLocalizedError(this, "subprocess.subProcessVariableDoesNotExist", mapping.getMappedName()));
+                errors.add(ValidationError.createLocalizedWarning(this, "subprocess.subProcessVariableDoesNotExist", mapping.getMappedName()));
                 continue;
             }
             if (!isCompatibleVariables(mapping, processVariable, subprocessVariable)) {
                 VariableFormatArtifact artifact1 = VariableFormatRegistry.getInstance().getArtifactNotNull(processVariable.getFormatClassName());
                 VariableFormatArtifact artifact2 = VariableFormatRegistry.getInstance().getArtifactNotNull(subprocessVariable.getFormatClassName());
-                errors.add(ValidationError.createLocalizedError(this, "subprocess.variableMappingIncompatibleTypes", processVariable.getName(),
+                errors.add(ValidationError.createLocalizedWarning(this, "subprocess.variableMappingIncompatibleTypes", processVariable.getName(),
                         artifact1.getLabel(), subprocessVariable.getName(), artifact2.getLabel()));
             }
         }
@@ -77,6 +80,12 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
                     break;
                 }
             }
+        }
+    }
+
+    protected void checkSyncModeUsage(List<ValidationError> errors, VariableMapping mapping, ProcessDefinition subprocessDefinition) {
+        if (subprocessDefinition.getSwimlaneByName(mapping.getMappedName()) != null) {
+            errors.add(ValidationError.createLocalizedWarning(this, "subprocess.subProcessSwimlaneSyncNotSupported", mapping.getMappedName()));
         }
     }
 
