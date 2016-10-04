@@ -7,7 +7,12 @@ import org.dom4j.Element;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.graphiti.datatypes.ILocation;
+import org.eclipse.graphiti.mm.pictograms.Connection;
+import org.eclipse.graphiti.services.Graphiti;
+import org.eclipse.ui.PlatformUI;
 
+import ru.runa.gpd.editor.graphiti.GraphitiProcessEditor;
 import ru.runa.gpd.editor.graphiti.HasTextDecorator;
 import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.model.GraphElement;
@@ -151,6 +156,21 @@ public class GpdXmlContentProvider extends AuxContentProvider {
             if (graphElement instanceof Node) {
                 Node node = (Node) graphElement;
                 for (Transition transition : node.getLeavingTransitions()) {
+                    Point relativeLabelLocation = transition.getLabelLocation();
+                    if (relativeLabelLocation != null) {
+                        // label location relative to transition midpoint
+                        ILocation midpoint = Graphiti.getPeService().getConnectionMidpoint(
+                                (Connection) ((GraphitiProcessEditor) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
+                                        .getActiveEditor()).getDiagramEditorPage().getDiagramTypeProvider().getFeatureProvider()
+                                        .getPictogramElementForBusinessObject(transition), 0.5d);
+                        Point absoluteLabelLocation = new Point(relativeLabelLocation.x + midpoint.getX(), relativeLabelLocation.y + midpoint.getY());
+                        if (absoluteLabelLocation.x < xOffset) {
+                            xOffset = absoluteLabelLocation.x;
+                        }
+                        if (absoluteLabelLocation.y < yOffset) {
+                            yOffset = absoluteLabelLocation.y;
+                        }
+                    }
                     for (Point bendpoint : transition.getBendpoints()) {
                         // canvasShift for BPMN connections = 0;
                         if (bendpoint.x < xOffset) {
@@ -208,8 +228,8 @@ public class GpdXmlContentProvider extends AuxContentProvider {
                     }
                     if (transition.getLabelLocation() != null) {
                         Element labelElement = transitionElement.addElement(LABEL);
-                        addAttribute(labelElement, X, String.valueOf(transition.getLabelLocation().x));
-                        addAttribute(labelElement, Y, String.valueOf(transition.getLabelLocation().y));
+                        addAttribute(labelElement, X, String.valueOf(transition.getLabelLocation().x - xOffset));
+                        addAttribute(labelElement, Y, String.valueOf(transition.getLabelLocation().y - yOffset));
                     }
                     for (Point bendpoint : transition.getBendpoints()) {
                         Element bendpointElement = transitionElement.addElement(BENDPOINT);
