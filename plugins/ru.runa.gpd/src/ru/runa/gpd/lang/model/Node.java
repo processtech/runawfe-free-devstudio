@@ -279,6 +279,10 @@ public abstract class Node extends NamedGraphElement implements Describable {
                 timer.getCopy(copy);
             }
         }
+        if (this instanceof Synchronizable) {
+            ((Synchronizable) copy).setAsync(((Synchronizable) this).isAsync());
+            ((Synchronizable) copy).setAsyncCompletionMode(((Synchronizable) this).getAsyncCompletionMode());
+        }
         return copy;
     }
 

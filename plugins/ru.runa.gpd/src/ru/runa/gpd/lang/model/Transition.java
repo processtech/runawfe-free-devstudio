@@ -11,6 +11,7 @@ import org.eclipse.ui.views.properties.TextPropertyDescriptor;
 
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginConstants;
+import ru.runa.gpd.editor.GEFConstants;
 import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.extension.decision.IDecisionProvider;
 import ru.runa.gpd.lang.model.bpmn.ExclusiveGateway;
@@ -220,7 +221,15 @@ public class Transition extends NamedGraphElement implements ActionContainer {
     public Transition getCopy(GraphElement parent) {
         Transition copy = (Transition) super.getCopy(parent);
         for (Point bp : getBendpoints()) {
-            copy.getBendpoints().add(bp.getCopy());
+            // a little shift for making visible copy on same diagram
+            // synchronized with ru.runa.gpd.lang.model.GraphElement.getCopy(GraphElement)
+            Point pointCopy = bp.getCopy();
+            pointCopy.x += GEFConstants.GRID_SIZE;
+            pointCopy.y += GEFConstants.GRID_SIZE;
+            copy.getBendpoints().add(pointCopy);
+        }
+        if (labelLocation != null) {
+            copy.setLabelLocation(labelLocation.getCopy());
         }
         ((Node) parent).onLeavingTransitionAdded(copy);
         return copy;
