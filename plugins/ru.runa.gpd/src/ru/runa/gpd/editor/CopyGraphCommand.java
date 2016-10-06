@@ -187,7 +187,8 @@ public class CopyGraphCommand extends Command {
                         // this crazy line created because
                         // element.getConstraint() == null is checking of
                         // visibility for swimlane in many places
-                        if (targetDefinition.getSwimlaneDisplayMode().equals(SwimlaneDisplayMode.none) && swimlane != null) {
+                        // TODO copy/paste eliminate swimlane.getConstraint() == null as logic base
+                        if (swimlane != null && targetDefinition.getSwimlaneDisplayMode() == SwimlaneDisplayMode.none) {
                             swimlane.setConstraint(null);
                         }
                         ((SwimlanedNode) entry.getValue()).setSwimlane(swimlane);
