@@ -273,8 +273,6 @@ public class TaskState extends FormNode implements Active, ITimed, Synchronizabl
     @Override
     public TaskState getCopy(GraphElement parent) {
         TaskState copy = (TaskState) super.getCopy(parent);
-        copy.setAsync(async);
-        copy.setAsyncCompletionMode(copy.getAsyncCompletionMode());
         if (getBotTaskLink() != null) {
             copy.setBotTaskLink(getBotTaskLink().getCopy(copy));
         }

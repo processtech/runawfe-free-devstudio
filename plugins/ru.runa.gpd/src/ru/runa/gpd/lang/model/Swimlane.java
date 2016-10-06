@@ -69,4 +69,13 @@ public class Swimlane extends Variable implements Delegable {
     public Image getEntryImage() {
         return SharedImages.getImage("icons/obj/swimlane.gif");
     }
+
+    @Override
+    public NamedGraphElement getCopy(GraphElement parent) {
+        Swimlane copy = (Swimlane) super.getCopy(parent);
+        copy.setDelegationClassName(getDelegationClassName());
+        copy.setDelegationConfiguration(getDelegationConfiguration());
+        return copy;
+    }
+
 }
