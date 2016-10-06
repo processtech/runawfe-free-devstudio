@@ -144,21 +144,21 @@ public class SubprocessDialog extends Dialog {
             Table table = tableViewer.getTable();
             table.setHeaderVisible(true);
             table.setLinesVisible(true);
-            String[] columnNames = new String[] { "VariableMapping.Usage.Read", "VariableMapping.Usage.Write", "Subprocess.ProcessVariableName",
-                    "Subprocess.SubprocessVariableName" };
-            int[] columnWidths = new int[] { 50, 50, 250, 250 };
-            int[] columnAlignments = new int[] { SWT.CENTER, SWT.CENTER, SWT.LEFT, SWT.LEFT };
-            for (int i = 0; i < columnNames.length; i++) {
-                TableColumn tableColumn = new TableColumn(table, columnAlignments[i]);
-                tableColumn.setText(Localization.getString(columnNames[i]));
-                tableColumn.setToolTipText(Localization.getString(columnNames[i] + ".description"));
-                tableColumn.setWidth(columnWidths[i]);
-            }
+            String[] columnNames = new String[] { "VariableMapping.Usage.Read", "VariableMapping.Usage.Write", "VariableMapping.Usage.Sync",
+                    "Subprocess.ProcessVariableName", "Subprocess.SubprocessVariableName" };
+            int[] columnWidths = new int[] { 50, 50, 50, 250, 250 };
+            int[] columnAlignments = new int[] { SWT.CENTER, SWT.CENTER, SWT.CENTER, SWT.LEFT, SWT.LEFT };
             if (multiinstance) {
                 TableColumn tableColumn = new TableColumn(table, SWT.CENTER);
                 tableColumn.setText(Localization.getString("VariableMapping.Usage.MultiinstanceLink"));
                 tableColumn.setWidth(50);
                 tableColumn.setToolTipText(Localization.getString("VariableMapping.Usage.MultiinstanceLink.description"));
+            }
+            for (int i = 0; i < columnNames.length; i++) {
+                TableColumn tableColumn = new TableColumn(table, columnAlignments[i]);
+                tableColumn.setText(Localization.getString(columnNames[i]));
+                tableColumn.setToolTipText(Localization.getString(columnNames[i] + ".description"));
+                tableColumn.setWidth(columnWidths[i]);
             }
             tableViewer.setLabelProvider(new VariableMappingTableLabelProvider());
             tableViewer.setContentProvider(new ArrayContentProvider());
@@ -292,21 +292,26 @@ public class SubprocessDialog extends Dialog {
         return variableMappings;
     }
 
-    private static class VariableMappingTableLabelProvider extends LabelProvider implements ITableLabelProvider {
+    private class VariableMappingTableLabelProvider extends LabelProvider implements ITableLabelProvider {
         @Override
         public String getColumnText(Object element, int index) {
             VariableMapping mapping = (VariableMapping) element;
+            if (!multiinstance) {
+                index++;
+            }
             switch (index) {
             case 0:
-                return mapping.isReadable() ? "+" : "";
-            case 1:
-                return mapping.isWritable() ? "+" : "";
-            case 2:
-                return mapping.getName();
-            case 3:
-                return mapping.getMappedName();
-            case 4:
                 return mapping.isMultiinstanceLink() ? "+" : "";
+            case 1:
+                return mapping.isReadable() ? "+" : "";
+            case 2:
+                return mapping.isWritable() ? "+" : "";
+            case 3:
+                return mapping.isSyncable() ? "+" : "";
+            case 4:
+                return mapping.getName();
+            case 5:
+                return mapping.getMappedName();
             default:
                 return "unknown " + index;
             }
