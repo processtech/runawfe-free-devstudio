@@ -98,7 +98,6 @@ public class BpmnSerializer extends ProcessSerializer {
     private static final String SEND_TASK = "sendTask";
     private static final String RECEIVE_TASK = "receiveTask";
     private static final String BOUNDARY_EVENT = "boundaryEvent";
-    private static final String ESCALATION_EVENT_DEFINITION = "escalationEventDefinition";
     private static final String INTERMEDIATE_CATCH_EVENT = "intermediateCatchEvent";
     private static final String CANCEL_ACTIVITY = "cancelActivity";
     private static final String ATTACHED_TO_REF = "attachedToRef";
@@ -106,10 +105,6 @@ public class BpmnSerializer extends ProcessSerializer {
     private static final String REPEAT = "repeat";
     public static final String START_TEXT_DECORATION = "startTextDecoration";
     public static final String END_TEXT_DECORATION = "endTextDecoration";
-    private static final String TIMER = "timer";
-    private static final String ACTION = "action";
-    private static final String DUEDATE = "duedate";
-    private static final String TIMER_ESCALATION = "__ESCALATION";
 
     @Override
     public boolean isSupported(Document document) {
@@ -187,7 +182,6 @@ public class BpmnSerializer extends ProcessSerializer {
             writeTaskState(processElement, taskState);
             writeTransitions(processElement, taskState);
             writeBoundaryTimer(processElement, taskState);
-            writeEscalation(processElement, taskState);            
         }
         List<Timer> timers = definition.getChildren(Timer.class);
         for (Timer timer : timers) {
@@ -327,36 +321,6 @@ public class BpmnSerializer extends ProcessSerializer {
         writeTransitions(parentElement, timer);
     }
 
-    private void writeEscalation(Element parentElement, TaskState taskState) {
-        if (taskState.isUseEscalation()) {
-            Element boundaryEventElement = parentElement.addElement(BOUNDARY_EVENT);
-            setAttribute(boundaryEventElement, ID, taskState.getId() + TIMER_ESCALATION);
-            setAttribute(boundaryEventElement, NAME, TIMER_ESCALATION);
-            setAttribute(boundaryEventElement, ATTACHED_TO_REF, taskState.getId());
-
-            Element escalationEventDefinitionElement = boundaryEventElement.addElement(ESCALATION_EVENT_DEFINITION);
-
-            TimerAction escalationAction = taskState.getEscalationAction();
-            if (escalationAction != null) {
-                writeDelegation(escalationEventDefinitionElement, escalationAction);
-                if (escalationAction.getRepeatDelay().hasDuration()) {
-                    Element extensionsElement = escalationEventDefinitionElement.element(EXTENSION_ELEMENTS);
-                    Element propertyElement = extensionsElement.addElement(RUNA_PREFIX + ":" + PROPERTY);
-                    propertyElement.addAttribute(NAME, REPEAT);
-                    propertyElement.addAttribute(VALUE, escalationAction.getRepeatDelay().getDuration());
-                }
-            }
-
-            Duration escalationDuration = taskState.getEscalationDelay();
-            if (escalationDuration != null && escalationDuration.hasDuration()) {
-                Element extensionsElement = escalationEventDefinitionElement.element(EXTENSION_ELEMENTS);
-                Element propertyElement = extensionsElement.addElement(RUNA_PREFIX + ":" + PROPERTY);
-                propertyElement.addAttribute(NAME, TIME_DURATION);
-                propertyElement.addAttribute(VALUE, escalationDuration.getDuration());
-            }
-        }
-    }
-    
     private void writeTimer(Element parentElement, Timer timer) {
         if (timer == null) {
             return;
@@ -547,22 +511,6 @@ public class BpmnSerializer extends ProcessSerializer {
         return list;
     }
 
-    private TimerAction parseTimerAction(Element element, ProcessDefinition processDefinition) {
-        Map<String, String> properties = parseExtensionProperties(element);
-        String delegationClassName = properties.get(CLASS);
-        if (delegationClassName == null) {
-            return null;
-        }
-
-        String delegationConfiguration = properties.get(CONFIG);
-        String repeat = properties.get(REPEAT);
-        TimerAction timerAction = new TimerAction(processDefinition);
-        timerAction.setRepeatDuration(repeat);
-        timerAction.setDelegationClassName(delegationClassName);
-        timerAction.setDelegationConfiguration(delegationConfiguration);
-        return timerAction;
-    }
-
     @Override
     public void parseXML(Document document, ProcessDefinition definition) {
         Element definitionsElement = document.getRootElement();
@@ -650,7 +598,6 @@ public class BpmnSerializer extends ProcessSerializer {
                 if (taskDeadline != null) {
                     state.setTimeOutDelay(new Duration(taskDeadline));
                 }
-
                 if (state instanceof MultiTaskState) {
                     MultiTaskState multiTaskState = (MultiTaskState) state;
                     multiTaskState.setCreationMode(MultiTaskCreationMode.valueOf(properties.get(PropertyNames.PROPERTY_MULTI_TASK_CREATION_MODE)));
@@ -723,8 +670,17 @@ public class BpmnSerializer extends ProcessSerializer {
                 timer.setId(intermediateEventElement.attributeValue(ID));
                 timer.setName(intermediateEventElement.attributeValue(NAME));
 
-                TimerAction timerAction = parseTimerAction(eventElement, definition);
-                timer.setAction(timerAction);
+                Map<String, String> properties = parseExtensionProperties(eventElement);
+                String delegationClassName = properties.get(CLASS);
+                if (delegationClassName != null) {
+                    String delegationConfiguration = properties.get(CONFIG);
+                    String repeat = properties.get(REPEAT);
+                    TimerAction timerAction = new TimerAction(definition);
+                    timerAction.setRepeatDuration(repeat);
+                    timerAction.setDelegationClassName(delegationClassName);
+                    timerAction.setDelegationConfiguration(delegationConfiguration);
+                    timer.setAction(timerAction);
+                }
             }
         }
         List<Element> boundaryEventElements = process.elements(BOUNDARY_EVENT);
@@ -732,27 +688,21 @@ public class BpmnSerializer extends ProcessSerializer {
             List<Element> eventElements = boundaryEventElement.elements();
             String parentNodeId = boundaryEventElement.attributeValue(ATTACHED_TO_REF);
             GraphElement parent = definition.getGraphElementByIdNotNull(parentNodeId);
+            for (Element eventElement : eventElements) {
+                Timer timer = create(eventElement, parent);
+                timer.setId(boundaryEventElement.attributeValue(ID));
+                timer.setName(boundaryEventElement.attributeValue(NAME));
+                timer.setParentContainer(parent);
 
-            Element escalationEventDefinitionElement = boundaryEventElement.element(ESCALATION_EVENT_DEFINITION);
-
-            if (parent instanceof TaskState && escalationEventDefinitionElement != null) {
-                TaskState taskState = (TaskState) parent;
-                taskState.setUseEscalation(true);
-
-                TimerAction timerAction = parseTimerAction(escalationEventDefinitionElement, definition);
-                taskState.setEscalationAction(timerAction);
-                
-                Map<String, String> properties = parseExtensionProperties(escalationEventDefinitionElement);                
-                if (properties.containsKey(TIME_DURATION)) {
-                    taskState.setEscalationDelay(new Duration(properties.get(TIME_DURATION)));
-                }
-            } else {
-                for (Element eventElement : eventElements) {
-                    Timer timer = create(eventElement, parent);
-                    timer.setId(boundaryEventElement.attributeValue(ID));
-                    timer.setName(boundaryEventElement.attributeValue(NAME));
-                    timer.setParentContainer(parent);
-                    TimerAction timerAction = parseTimerAction(eventElement, definition);
+                Map<String, String> properties = parseExtensionProperties(eventElement);
+                String delegationClassName = properties.get(CLASS);
+                if (delegationClassName != null) {
+                    String delegationConfiguration = properties.get(CONFIG);
+                    String repeat = properties.get(REPEAT);
+                    TimerAction timerAction = new TimerAction(definition);
+                    timerAction.setRepeatDuration(repeat);
+                    timerAction.setDelegationClassName(delegationClassName);
+                    timerAction.setDelegationConfiguration(delegationConfiguration);
                     timer.setAction(timerAction);
                 }
             }
