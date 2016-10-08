@@ -37,8 +37,8 @@ import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.ltk.RenameRefactoringWizard;
 import ru.runa.gpd.ltk.RenameVariableRefactoring;
 import ru.runa.gpd.search.ElementMatch;
+import ru.runa.gpd.search.MultiVariableSearchQuery;
 import ru.runa.gpd.search.SearchResult;
-import ru.runa.gpd.search.VariableSearchQuery;
 import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.ui.custom.DragAndDropAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
@@ -52,7 +52,10 @@ import ru.runa.gpd.ui.wizard.VariableWizard;
 import ru.runa.gpd.util.VariableUtils;
 import ru.runa.gpd.util.WorkspaceOperations;
 
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 
 public class VariableEditorPage extends EditorPartBase<Variable> {
 
@@ -64,8 +67,16 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
     private Button changeButton;
     private Button deleteButton;
     private Button copyButton;
-    private Button pasteButton;
     private Button moveToTypeAttributeButton;
+
+    private static Function<Variable, String> joinVariableNamesFunction = new Function<Variable, String>() {
+
+        @Override
+        public String apply(Variable variable) {
+            return variable.getName();
+        }
+
+    };
 
     public VariableEditorPage(ProcessEditorBase editor) {
         super(editor);
@@ -113,7 +124,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
         renameButton = addButton(buttonsBar, "button.rename", new RenameVariableSelectionListener(), true);
         changeButton = addButton(buttonsBar, "button.change", new ChangeVariableSelectionListener(), true);
         copyButton = addButton(buttonsBar, "button.copy", new CopyVariableSelectionListener(), true);
-        pasteButton = addButton(buttonsBar, "button.paste", new PasteVariableSelectionListener(), true);
+        addButton(buttonsBar, "button.paste", new PasteVariableSelectionListener(), true);
         searchButton = addButton(buttonsBar, "button.search", new SearchVariableUsageSelectionListener(), true);
         moveUpButton = addButton(buttonsBar, "button.up", new MoveVariableSelectionListener(true), true);
         moveDownButton = addButton(buttonsBar, "button.down", new MoveVariableSelectionListener(false), true);
@@ -188,7 +199,15 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
     private class SearchVariableUsageSelectionListener extends LoggingSelectionAdapter {
         @Override
         protected void onSelection(SelectionEvent e) throws Exception {
-            NewSearchUI.runQueryInBackground(new VariableSearchQuery(editor.getDefinitionFile(), getDefinition(), getSelection()));
+            List<Variable> result = Lists.newArrayList();
+            Variable variable = getSelection();
+            result.add(variable);
+            if (variable.isComplex()) {
+                result.addAll(VariableUtils.expandComplexVariable(variable, variable));
+            }
+            String searchText = Joiner.on(", ").join(Lists.transform(result, joinVariableNamesFunction));
+            MultiVariableSearchQuery query = new MultiVariableSearchQuery(searchText, editor.getDefinitionFile(), getDefinition(), result);
+            NewSearchUI.runQueryInBackground(query);
         }
     }
 
@@ -214,7 +233,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
                 RenameRefactoringWizard wizard = new RenameRefactoringWizard(refactoring);
                 wizard.setDefaultPageTitle(Localization.getString("Refactoring.variable.name"));
                 RefactoringWizardOpenOperation operation = new RefactoringWizardOpenOperation(wizard);
-                result = operation.run(Display.getCurrent().getActiveShell(), "");
+                result = operation.run(Display.getCurrent().getActiveShell(), Localization.getString("VariableEditorPage.variable.rename.title"));
                 if (result != IDialogConstants.OK_ID) {
                     return;
                 }
@@ -257,7 +276,13 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
             confirmationRequired = true;
         }
 
-        VariableSearchQuery query = new VariableSearchQuery(editor.getDefinitionFile(), getDefinition(), variable);
+        List<Variable> result = Lists.newArrayList();
+        result.add(variable);
+        if (variable.isComplex()) {
+            result.addAll(VariableUtils.expandComplexVariable(variable, variable));
+        }
+        String searchText = Joiner.on(", ").join(Lists.transform(result, joinVariableNamesFunction));
+        MultiVariableSearchQuery query = new MultiVariableSearchQuery(searchText, editor.getDefinitionFile(), getDefinition(), result);
         NewSearchUI.runQueryInForeground(PlatformUI.getWorkbench().getActiveWorkbenchWindow(), query);
         SearchResult searchResult = query.getSearchResult();
         if (searchResult.getMatchCount() > 0) {
@@ -419,7 +444,8 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
                     RenameRefactoringWizard wizard = new RenameRefactoringWizard(refactoring);
                     wizard.setDefaultPageTitle(Localization.getString("Refactoring.variable.name"));
                     RefactoringWizardOpenOperation operation = new RefactoringWizardOpenOperation(wizard);
-                    int result = operation.run(Display.getCurrent().getActiveShell(), "");
+                    int result = operation.run(Display.getCurrent().getActiveShell(),
+                            Localization.getString("VariableEditorPage.variable.move.title"));
                     if (result != IDialogConstants.OK_ID) {
                         return;
                     }

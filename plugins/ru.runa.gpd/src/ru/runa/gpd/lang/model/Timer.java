@@ -132,4 +132,10 @@ public class Timer extends Node {
         }
         return result;
     }
+
+    public void setDelayVariableName(String variableName) {
+        Duration newDuration = new Duration(duration);
+        newDuration.setVariableName(variableName);
+        setDelay(newDuration);
+    }
 }

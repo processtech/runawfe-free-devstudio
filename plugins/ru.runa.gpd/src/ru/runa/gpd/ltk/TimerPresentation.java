@@ -12,15 +12,18 @@ import ru.runa.gpd.util.Duration;
 
 import com.google.common.base.Objects;
 
-public class TimerPresentation extends VariableRenameProvider<Timer> {
+public class TimerPresentation extends SingleVariableRenameProvider<Timer> {
+    private final String durationVariableName;
+
     public TimerPresentation(Timer timer) {
         setElement(timer);
+        durationVariableName = element.getDelay().getVariableName();
     }
 
     @Override
-    public List<Change> getChanges(Variable oldVariable, Variable newVariable) throws Exception {
-        List<Change> changes = new ArrayList<Change>();
-        if (Objects.equal(oldVariable.getName(), element.getDelay().getVariableName())) {
+    protected List<Change> getChanges(Variable oldVariable, Variable newVariable) throws Exception {
+        List<Change> changes = new ArrayList<>();
+        if (Objects.equal(oldVariable.getName(), durationVariableName)) {
             changes.add(new TimedChange(element, oldVariable, newVariable));
         }
         return changes;
@@ -34,7 +37,7 @@ public class TimerPresentation extends VariableRenameProvider<Timer> {
 
         @Override
         protected void performInUIThread() {
-            element.getDelay().setVariableName(replacementVariable.getName());
+            element.setDelayVariableName(replacementVariable.getName());
         }
 
         @Override

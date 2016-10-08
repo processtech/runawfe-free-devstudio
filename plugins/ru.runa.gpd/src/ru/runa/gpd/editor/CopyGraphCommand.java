@@ -79,7 +79,7 @@ public class CopyGraphCommand extends Command {
             for (NamedGraphElement node : sourceNodeList) {
                 if (node instanceof StartState && targetDefinition.getChildren(StartState.class).size() != 0) {
                     continue;
-                } else if (node instanceof EndState && targetDefinition.getChildren(EndState.class).size() != 0) {
+                } else if (node instanceof EndState && targetDefinition instanceof SubprocessDefinition) {
                     continue;
                     // if swimlane is copied as graph element twice
                 } else if (node instanceof Swimlane && targetDefinition.getSwimlaneByName(node.getName()) != null) {
@@ -187,7 +187,8 @@ public class CopyGraphCommand extends Command {
                         // this crazy line created because
                         // element.getConstraint() == null is checking of
                         // visibility for swimlane in many places
-                        if (targetDefinition.getSwimlaneDisplayMode().equals(SwimlaneDisplayMode.none) && swimlane != null) {
+                        // TODO copy/paste eliminate swimlane.getConstraint() == null as logic base
+                        if (swimlane != null && targetDefinition.getSwimlaneDisplayMode() == SwimlaneDisplayMode.none) {
                             swimlane.setConstraint(null);
                         }
                         ((SwimlanedNode) entry.getValue()).setSwimlane(swimlane);

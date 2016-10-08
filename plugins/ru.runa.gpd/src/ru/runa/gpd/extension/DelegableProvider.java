@@ -39,12 +39,10 @@ public class DelegableProvider {
     }
 
     /**
-     * Validates configuration. Implementors can return <code>false</code> to
-     * raise default invalid configuration message. Or can invoke
+     * Validates configuration. Implementors can return <code>false</code> to raise default invalid configuration message. Or can invoke
      * delegable.addError.
      * 
-     * @return <code>false</code> for raising default invalid configuration
-     *         message
+     * @return <code>false</code> for raising default invalid configuration message
      */
     public boolean validateValue(Delegable delegable, List<ValidationError> errors) throws Exception {
         return true;
@@ -90,7 +88,8 @@ public class DelegableProvider {
         }
         List<String> result = Lists.newArrayList();
         for (String variableName : delegable.getVariableNames(true)) {
-            if (configuration.contains(variableName)) {
+            Matcher matcher = Pattern.compile(variableName + "[^\\.]").matcher(configuration);
+            if (matcher.find()) {
                 result.add(variableName);
             }
         }

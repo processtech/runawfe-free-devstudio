@@ -1,7 +1,10 @@
 package ru.runa.gpd.ltk;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -31,20 +34,36 @@ import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Timer;
 import ru.runa.gpd.lang.model.Variable;
+import ru.runa.gpd.util.VariableUtils;
 
 @SuppressWarnings("unchecked")
 public class RenameVariableRefactoring extends Refactoring {
     private final List<VariableRenameProvider<?>> cache = new ArrayList<VariableRenameProvider<?>>();
     private final IFolder definitionFolder;
     private final ProcessDefinition mainProcessDefinition;
-    private final Variable oldVariable;
-    private final Variable newVariable;
+    private final SortedMap<Variable, Variable> variablesMap;
+    private final RefactoringStatus finalStatus;
 
     public RenameVariableRefactoring(IFile definitionFile, ProcessDefinition definition, Variable oldVariable, String newName, String newScriptingName) {
         this.definitionFolder = (IFolder) definitionFile.getParent();
         this.mainProcessDefinition = definition.getMainProcessDefinition();
-        this.oldVariable = oldVariable;
-        this.newVariable = new Variable(newName, newScriptingName, oldVariable);
+        this.variablesMap = new TreeMap<Variable, Variable>(new Comparator<Variable>() {
+            @Override
+            public int compare(Variable o1, Variable o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
+        Variable newVariable = new Variable(newName, newScriptingName, oldVariable);
+        this.variablesMap.put(oldVariable, newVariable);
+        if (oldVariable.isComplex()) {
+            for (Variable oldVariableAttribute : VariableUtils.expandComplexVariable(oldVariable, oldVariable)) {
+                String newVariableName = oldVariableAttribute.getName().replaceFirst(oldVariable.getName() + ".", newVariable.getName() + ".");
+                String newVariableScriptingName = oldVariableAttribute.getScriptingName().replaceFirst(oldVariable.getScriptingName() + ".",
+                        newVariable.getScriptingName() + ".");
+                variablesMap.put(oldVariableAttribute, new Variable(newVariableName, newVariableScriptingName, oldVariableAttribute));
+            }
+        }
+        this.finalStatus = new RefactoringStatus();
     }
 
     @Override
@@ -59,7 +78,7 @@ public class RenameVariableRefactoring extends Refactoring {
             }
         } catch (Exception e) {
             PluginLogger.logErrorWithoutDialog(e.getMessage(), e);
-            result.addFatalError(Localization.getString("UnhandledException"));
+            result.addFatalError(Localization.getString("UnhandledException") + ": " + e.getLocalizedMessage());
         }
         return result;
     }
@@ -98,15 +117,15 @@ public class RenameVariableRefactoring extends Refactoring {
         }
         List<Action> actions = processDefinition.getChildrenRecursive(Action.class);
         for (Action action : actions) {
-            cache.add(new DelegablePresentation(action, action.getLabel()));
+            cache.add(new DelegablePresentation(action));
         }
         List<ScriptTask> scriptTasks = processDefinition.getChildrenRecursive(ScriptTask.class);
         for (ScriptTask scriptTask : scriptTasks) {
-            cache.add(new DelegablePresentation(scriptTask, scriptTask.getLabel()));
+            cache.add(new DelegablePresentation(scriptTask));
         }
         List<Decision> decisions = processDefinition.getChildren(Decision.class);
         for (Decision decision : decisions) {
-            cache.add(new DelegablePresentation(decision, decision.getName()));
+            cache.add(new DelegablePresentation(decision));
         }
         List<Subprocess> subprocesses = processDefinition.getChildren(Subprocess.class);
         for (Subprocess subprocess : subprocesses) {
@@ -129,7 +148,7 @@ public class RenameVariableRefactoring extends Refactoring {
 
     @Override
     public RefactoringStatus checkFinalConditions(IProgressMonitor pm) {
-        return new RefactoringStatus();
+        return finalStatus;
     }
 
     private CompositeChange cashedChange = null;
@@ -140,10 +159,13 @@ public class RenameVariableRefactoring extends Refactoring {
             cashedChange = new CompositeChange(getName());
             for (VariableRenameProvider<?> classPresentation : cache) {
                 try {
-                    List<Change> changes = classPresentation.getChanges(oldVariable, newVariable);
+                    List<Change> changes = classPresentation.getChanges(variablesMap);
                     cashedChange.addAll(changes.toArray(new Change[changes.size()]));
                 } catch (Exception e) {
-                    PluginLogger.logErrorWithoutDialog(e.getMessage(), e);
+                    PluginLogger.logErrorWithoutDialog("Unable to get used variabes in " + classPresentation.element, e);
+                    RenameVariableRefactoringStatusContext context = new RenameVariableRefactoringStatusContext(classPresentation, definitionFolder);
+                    finalStatus.addWarning(
+                            Localization.getString("RenameVariableException") + classPresentation.element + ": " + e.getLocalizedMessage(), context);
                 }
             }
         }
@@ -151,8 +173,16 @@ public class RenameVariableRefactoring extends Refactoring {
     }
 
     public boolean isUserInteractionNeeded() {
-        checkInitialConditions(null);
-        return createChange(null).getChildren().length > 0;
+        RefactoringStatus initialStatus = checkInitialConditions(null);
+        if (initialStatus.hasFatalError()) {
+            finalStatus.merge(initialStatus);
+            return true;
+        }
+        CompositeChange change = createChange(null);
+        if (finalStatus.hasWarning() || finalStatus.hasError() || finalStatus.hasFatalError()) {
+            return true;
+        }
+        return change.getChildren().length > 0;
     }
 
     @Override

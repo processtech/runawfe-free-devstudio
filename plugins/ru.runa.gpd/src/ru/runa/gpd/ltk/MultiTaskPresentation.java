@@ -10,17 +10,16 @@ import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.util.VariableMapping;
 
 import com.google.common.base.Objects;
-import com.google.common.collect.Lists;
 
-public class MultiTaskPresentation extends VariableRenameProvider<MultiTaskState> {
+public class MultiTaskPresentation extends SingleVariableRenameProvider<MultiTaskState> {
 
     public MultiTaskPresentation(MultiTaskState timed) {
         setElement(timed);
     }
 
     @Override
-    public List<Change> getChanges(Variable oldVariable, Variable newVariable) throws Exception {
-        List<Change> changes = Lists.newArrayList();
+    protected List<Change> getChanges(Variable oldVariable, Variable newVariable) throws Exception {
+        List<Change> changes = new ArrayList<>();
         VariableMapping discriminatorMapping = element.getDiscriminatorMapping();
         if (discriminatorMapping.isMultiinstanceLinkByVariable() && Objects.equal(oldVariable.getName(), discriminatorMapping.getName())) {
             changes.add(new MultiTaskDiscriminatorChange(element, oldVariable, newVariable));

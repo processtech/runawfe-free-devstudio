@@ -11,13 +11,21 @@ import ru.runa.gpd.util.MultiinstanceParameters;
 import ru.runa.gpd.util.VariableMapping;
 
 public class MultiSubprocess extends Subprocess implements IMultiInstancesContainer {
-    
+
     @Override
     public void validate(List<ValidationError> errors, IFile definitionFile) {
         super.validate(errors, definitionFile);
         MultiinstanceParameters parameters = new MultiinstanceParameters(variableMappings);
         if (!parameters.isValid(true)) {
             errors.add(ValidationError.createLocalizedError(this, "multiinstance.noMultiinstanceLink"));
+        }
+    }
+
+    @Override
+    protected void checkSyncModeUsage(List<ValidationError> errors, VariableMapping mapping, ProcessDefinition subprocessDefinition) {
+        super.checkSyncModeUsage(errors, mapping, subprocessDefinition);
+        if (!mapping.isMultiinstanceLink()) {
+            errors.add(ValidationError.createLocalizedWarning(this, "multiinstance.syncIsNotSupportedWithoutMultiinstanceLink", mapping.getName()));
         }
     }
 

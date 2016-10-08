@@ -16,20 +16,22 @@ import ru.runa.gpd.util.XmlUtil;
 import com.google.common.base.Objects;
 
 @SuppressWarnings({ "unchecked" })
-public class BotTaskLinkParametersRenameProvider extends VariableRenameProvider<BotTaskLink> {
+public class BotTaskLinkParametersRenameProvider extends SingleVariableRenameProvider<BotTaskLink> {
     private static final String PARAM = "param";
     private static final String VARIABLE = "variable";
 
+    private final Map<String, String> parameters;
+
     public BotTaskLinkParametersRenameProvider(BotTaskLink botTaskLink) {
         setElement(botTaskLink);
+        parameters = ParamDefConfig.getAllParameters(element.getDelegationConfiguration());
     }
 
     @Override
-    public List<Change> getChanges(Variable oldVariable, Variable newVariable) throws Exception {
-        List<Change> changes = new ArrayList<Change>();
-        Map<String, String> parameters = ParamDefConfig.getAllParameters(element.getDelegationConfiguration());
-        for (Map.Entry<String, String> entry : parameters.entrySet()) {
-            if (Objects.equal(oldVariable.getName(), entry.getValue())) {
+    protected List<Change> getChanges(Variable oldVariable, Variable newVariable) throws Exception {
+        List<Change> changes = new ArrayList<>();
+        for (Map.Entry<String, String> parameterEntry : parameters.entrySet()) {
+            if (Objects.equal(oldVariable.getName(), parameterEntry.getValue())) {
                 changes.add(new ParamChange(element, oldVariable, newVariable));
             }
         }

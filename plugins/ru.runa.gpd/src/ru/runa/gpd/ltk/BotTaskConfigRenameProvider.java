@@ -13,29 +13,25 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 
 import ru.runa.gpd.BotCache;
-import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.lang.model.BotTask;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.util.WorkspaceOperations;
 
-public class BotTaskConfigRenameProvider extends VariableRenameProvider<BotTask> {
+public class BotTaskConfigRenameProvider extends SingleVariableRenameProvider<BotTask> {
+    private final DelegableProvider provider;
 
     public BotTaskConfigRenameProvider(BotTask botTask) {
         setElement(botTask);
+        provider = HandlerRegistry.getProvider(element.getDelegationClassName());
     }
 
     @Override
-    public List<Change> getChanges(Variable oldVariable, Variable newVariable) throws Exception {
-        List<Change> changes = new ArrayList<Change>();
-        DelegableProvider provider = HandlerRegistry.getProvider(element.getDelegationClassName());
-        try {
-            if (provider.getUsedVariableNames(element).contains(oldVariable.getName())) {
-                changes.add(new ConfigChange(oldVariable, newVariable));
-            }
-        } catch (Exception e) {
-            PluginLogger.logErrorWithoutDialog("Unable to get used variables in " + element, e);
+    protected List<Change> getChanges(Variable oldVariable, Variable newVariable) throws Exception {
+        List<Change> changes = new ArrayList<>();
+        if (provider.getUsedVariableNames(element).contains(oldVariable.getName())) {
+            changes.add(new ConfigChange(oldVariable, newVariable));
         }
         return changes;
     }
