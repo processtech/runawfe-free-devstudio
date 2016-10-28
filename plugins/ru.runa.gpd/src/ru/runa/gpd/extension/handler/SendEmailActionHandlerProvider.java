@@ -105,7 +105,7 @@ public class SendEmailActionHandlerProvider extends DelegableProvider {
         }
         List<String> result = Lists.newArrayList();
         for (String variableName : delegable.getVariableNames(true)) {
-            if (configuration.contains("\"" + variableName + "\"")) {
+            if (configuration.contains("${" + variableName + "}")) {
                 result.add(variableName);
             }
         }
@@ -114,8 +114,8 @@ public class SendEmailActionHandlerProvider extends DelegableProvider {
 
     @Override
     public String getConfigurationOnVariableRename(Delegable delegable, Variable currentVariable, Variable previewVariable) {
-        String oldString = Pattern.quote("\"" + currentVariable.getName() + "\"");
-        String newString = Matcher.quoteReplacement("\"" + previewVariable.getName() + "\"");
+        String oldString = Pattern.quote("${" + currentVariable.getName() + "}");
+        String newString = Matcher.quoteReplacement("${" + previewVariable.getName() + "}");
         return delegable.getDelegationConfiguration().replaceAll(oldString, newString);
     }
 
