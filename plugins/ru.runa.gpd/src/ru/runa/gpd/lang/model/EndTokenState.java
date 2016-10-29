@@ -7,47 +7,50 @@ import org.eclipse.ui.views.properties.IPropertyDescriptor;
 
 import ru.runa.gpd.Localization;
 
-import ru.runa.wfe.definition.ProcessDefinitionAccessType;
-
-
 public class EndTokenState extends AbstractEndTextDecorated {
-    
-    private EndProcessBehavior endProcessBehavior = EndProcessBehavior.BACK_TO_BASE_PROCESS;
-            
+
+    private EndTokenSubprocessDefinitionBehavior subprocessDefinitionBehavior = EndTokenSubprocessDefinitionBehavior.BACK_TO_BASE_PROCESS;
+
     @Override
     protected void populateCustomPropertyDescriptors(List<IPropertyDescriptor> descriptors) {
         super.populateCustomPropertyDescriptors(descriptors);
-        if (ProcessDefinitionAccessType.EmbeddedSubprocess == getProcessDefinition().getAccessType()) {
-            descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_END_PROCESS_BEHAVIOR, 
-                    Localization.getString("EndState.property." + PROPERTY_END_PROCESS_BEHAVIOR), 
-                    EndProcessBehavior.getLabels()));
+        if (getProcessDefinition() instanceof SubprocessDefinition) {
+            descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_END_TOKEN_BEHAVIOR, Localization.getString("EndTokenState.property.behaviour"),
+                    EndTokenSubprocessDefinitionBehavior.getLabels()));
         }
     }
-    
+
     @Override
     public Object getPropertyValue(Object id) {
-        if (PROPERTY_END_PROCESS_BEHAVIOR.equals(id)) {
-            return endProcessBehavior.ordinal();
+        if (PROPERTY_END_TOKEN_BEHAVIOR.equals(id)) {
+            return subprocessDefinitionBehavior.ordinal();
         }
         return super.getPropertyValue(id);
     }
-    
+
     @Override
     public void setPropertyValue(Object id, Object value) {
-        if (PROPERTY_END_PROCESS_BEHAVIOR.equals(id)) {
-        setEndProcessBehavior(EndProcessBehavior.values()[(Integer) value]);
+        if (PROPERTY_END_TOKEN_BEHAVIOR.equals(id)) {
+            setSubprocessDefinitionBehavior(EndTokenSubprocessDefinitionBehavior.values()[(Integer) value]);
         } else {
             super.setPropertyValue(id, value);
-        }        
-    }
-    
-    public EndProcessBehavior getEndProcessBehavior() {
-        return endProcessBehavior;
+        }
     }
 
-    public void setEndProcessBehavior(EndProcessBehavior endProcessBehavior) {
-        EndProcessBehavior old = this.endProcessBehavior;
-        this.endProcessBehavior = endProcessBehavior;
-        firePropertyChange(PROPERTY_END_PROCESS_BEHAVIOR, old, this.endProcessBehavior);
+    public EndTokenSubprocessDefinitionBehavior getSubprocessDefinitionBehavior() {
+        return subprocessDefinitionBehavior;
+    }
+
+    public void setSubprocessDefinitionBehavior(EndTokenSubprocessDefinitionBehavior subprocessDefinitionBehavior) {
+        EndTokenSubprocessDefinitionBehavior old = this.subprocessDefinitionBehavior;
+        this.subprocessDefinitionBehavior = subprocessDefinitionBehavior;
+        firePropertyChange(PROPERTY_END_TOKEN_BEHAVIOR, old, this.subprocessDefinitionBehavior);
+    }
+
+    @Override
+    public Node getCopy(GraphElement parent) {
+        EndTokenState copy = (EndTokenState) super.getCopy(parent);
+        copy.setSubprocessDefinitionBehavior(getSubprocessDefinitionBehavior());
+        return copy;
     }
 }

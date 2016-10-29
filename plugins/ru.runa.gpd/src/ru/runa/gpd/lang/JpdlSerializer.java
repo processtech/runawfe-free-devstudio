@@ -20,9 +20,9 @@ import ru.runa.gpd.lang.model.Conjunction;
 import ru.runa.gpd.lang.model.Decision;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.Describable;
-import ru.runa.gpd.lang.model.EndProcessBehavior;
 import ru.runa.gpd.lang.model.EndState;
 import ru.runa.gpd.lang.model.EndTokenState;
+import ru.runa.gpd.lang.model.EndTokenSubprocessDefinitionBehavior;
 import ru.runa.gpd.lang.model.Event;
 import ru.runa.gpd.lang.model.Fork;
 import ru.runa.gpd.lang.model.GraphElement;
@@ -97,7 +97,6 @@ public class JpdlSerializer extends ProcessSerializer {
     private static final String ACTION_NODE = "node";
     private static final String TIMER_ESCALATION = "__ESCALATION";
     private static final String END_TOKEN = "end-token-state";
-    private static final String BEHAVIOR = "behavior";
     private static final String MULTI_TASK_NODE = "multi-task-node";
     private static final String TASK_EXECUTORS_USAGE = "taskExecutorsUsage";
     private static final String TASK_EXECUTORS_VALUE = "taskExecutors";
@@ -267,18 +266,16 @@ public class JpdlSerializer extends ProcessSerializer {
         List<EndTokenState> endTokenStates = definition.getChildren(EndTokenState.class);
         for (EndTokenState state : endTokenStates) {
             Element element = writeElement(root, state);
-            EndProcessBehavior endProcessBehavior = state.getEndProcessBehavior();
-            if (endProcessBehavior == null) {
-                endProcessBehavior = EndProcessBehavior.BACK_TO_BASE_PROCESS;
+            if (definition instanceof SubprocessDefinition) {
+                element.addAttribute(BEHAVIOR, state.getSubprocessDefinitionBehavior().name());
             }
-            element.addAttribute(BEHAVIOR, endProcessBehavior.name());
         }
         List<EndState> endStates = definition.getChildren(EndState.class);
         for (EndState state : endStates) {
             writeElement(root, state);
         }
     }
-    
+
     private Element writeNode(Element parent, Node node, String delegationNodeName) {
         Element nodeElement = writeElement(parent, node);
         if (delegationNodeName != null) {
@@ -435,19 +432,6 @@ public class JpdlSerializer extends ProcessSerializer {
         if (element instanceof Node && !Strings.isNullOrEmpty(nodeAsyncExecutionValue)) {
             ((Node) element).setAsyncExecution(NodeAsyncExecution.getByValueNotNull(nodeAsyncExecutionValue));
         }
-
-        if (element instanceof EndTokenState) {
-            EndProcessBehavior endProcessBehavior = EndProcessBehavior.BACK_TO_BASE_PROCESS;
-            if (!Strings.isNullOrEmpty(node.attributeValue(BEHAVIOR))) {
-                try {
-                    endProcessBehavior = EndProcessBehavior.valueOf(node.attributeValue(BEHAVIOR));
-                } catch (IllegalArgumentException e) {
-                    PluginLogger.logErrorWithoutDialog("Illegal value \"" + node.attributeValue(BEHAVIOR) + "\" for end token state behavior");
-                }
-            }
-            ((EndTokenState) element).setEndProcessBehavior(endProcessBehavior);
-        }
-
         List<Element> nodeList = node.elements();
         for (Element childNode : nodeList) {
             if (DESCRIPTION.equals(childNode.getName())) {
@@ -815,7 +799,10 @@ public class JpdlSerializer extends ProcessSerializer {
         }
         List<Element> endStates = root.elements(END_STATE);
         for (Element node : endStates) {
-            create(node, definition);
+            EndTokenState endTokenState = create(node, definition);
+            if (!Strings.isNullOrEmpty(node.attributeValue(BEHAVIOR))) {
+                endTokenState.setSubprocessDefinitionBehavior(EndTokenSubprocessDefinitionBehavior.valueOf(node.attributeValue(BEHAVIOR)));
+            }
         }
         List<Transition> tmpTransitions = new ArrayList<Transition>(TRANSITION_TARGETS.keySet());
         for (Transition transition : tmpTransitions) {

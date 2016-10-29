@@ -1,5 +1,7 @@
 package ru.runa.gpd.lang;
 
+import static ru.runa.gpd.lang.ProcessSerializer.BEHAVIOR;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -14,9 +16,9 @@ import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.Describable;
-import ru.runa.gpd.lang.model.EndProcessBehavior;
 import ru.runa.gpd.lang.model.EndState;
 import ru.runa.gpd.lang.model.EndTokenState;
+import ru.runa.gpd.lang.model.EndTokenSubprocessDefinitionBehavior;
 import ru.runa.gpd.lang.model.ExclusiveGateway;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.ITimed;
@@ -71,7 +73,6 @@ public class BpmnSerializer extends ProcessSerializer {
     private static final String PROPERTY = "property";
     private static final String END_EVENT = "endEvent";
     private static final String TOKEN = "token";
-    private static final String BEHAVIOR = "behavior";
     private static final String TEXT_ANNOTATION = "textAnnotation";
     private static final String TEXT = "text";
     private static final String SERVICE_TASK = "serviceTask";
@@ -236,14 +237,12 @@ public class BpmnSerializer extends ProcessSerializer {
             Element element = writeNode(processElement, endTokenState);
             Map<String, String> properties = Maps.newLinkedHashMap();
             properties.put(TOKEN, "true");
-            EndProcessBehavior endProcessBehavior = endTokenState.getEndProcessBehavior();
-            if (endProcessBehavior == null) {
-                endProcessBehavior = EndProcessBehavior.BACK_TO_BASE_PROCESS;
+            if (definition instanceof SubprocessDefinition) {
+                properties.put(BEHAVIOR, endTokenState.getSubprocessDefinitionBehavior().name());
             }
-            properties.put(BEHAVIOR, endProcessBehavior.name());
             writeExtensionElements(element, properties);
         }
-        
+
         List<EndState> endStates = definition.getChildren(EndState.class);
         for (EndState endState : endStates) {
             writeNode(processElement, endState);
@@ -481,18 +480,6 @@ public class BpmnSerializer extends ProcessSerializer {
         if (element instanceof Node && properties.containsKey(NODE_ASYNC_EXECUTION)) {
             ((Node) element).setAsyncExecution(NodeAsyncExecution.getByValueNotNull(properties.get(NODE_ASYNC_EXECUTION)));
         }
-        
-        if (element instanceof EndTokenState) {
-            EndProcessBehavior endProcessBehavior = EndProcessBehavior.BACK_TO_BASE_PROCESS;
-            if (properties.containsKey(BEHAVIOR)) {
-                try {
-                    endProcessBehavior = EndProcessBehavior.valueOf(properties.get(BEHAVIOR));
-                } catch(IllegalArgumentException e) {
-                    PluginLogger.logErrorWithoutDialog("Illegal value \"" + node.attributeValue(BEHAVIOR) + "\" for end token state behavior");
-                }
-            }
-            ((EndTokenState) element).setEndProcessBehavior(endProcessBehavior);
-        }
     }
 
     private Map<String, String> parseExtensionProperties(Element element) {
@@ -728,8 +715,14 @@ public class BpmnSerializer extends ProcessSerializer {
             }
         }
         List<Element> endStates = process.elements(END_EVENT);
-        for (Element node : endStates) {
-            create(node, definition);
+        for (Element element : endStates) {
+            Node endNode = create(element, definition);
+            if (endNode instanceof EndTokenState) {
+                Map<String, String> properties = parseExtensionProperties(element);
+                if (properties.containsKey(BEHAVIOR)) {
+                    ((EndTokenState) endNode).setSubprocessDefinitionBehavior(EndTokenSubprocessDefinitionBehavior.valueOf(properties.get(BEHAVIOR)));
+                }
+            }
         }
         List<Element> textAnnotationElements = process.elements(TEXT_ANNOTATION);
         for (Element textAnnotationElement : textAnnotationElements) {
