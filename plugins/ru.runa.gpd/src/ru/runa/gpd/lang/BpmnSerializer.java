@@ -14,6 +14,7 @@ import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.Describable;
+import ru.runa.gpd.lang.model.EndProcessBehavior;
 import ru.runa.gpd.lang.model.EndState;
 import ru.runa.gpd.lang.model.EndTokenState;
 import ru.runa.gpd.lang.model.ExclusiveGateway;
@@ -70,6 +71,7 @@ public class BpmnSerializer extends ProcessSerializer {
     private static final String PROPERTY = "property";
     private static final String END_EVENT = "endEvent";
     private static final String TOKEN = "token";
+    private static final String BEHAVIOR = "behavior";
     private static final String TEXT_ANNOTATION = "textAnnotation";
     private static final String TEXT = "text";
     private static final String SERVICE_TASK = "serviceTask";
@@ -234,8 +236,14 @@ public class BpmnSerializer extends ProcessSerializer {
             Element element = writeNode(processElement, endTokenState);
             Map<String, String> properties = Maps.newLinkedHashMap();
             properties.put(TOKEN, "true");
+            EndProcessBehavior endProcessBehavior = endTokenState.getEndProcessBehavior();
+            if (endProcessBehavior == null) {
+                endProcessBehavior = EndProcessBehavior.BACK_TO_BASE_PROCESS;
+            }
+            properties.put(BEHAVIOR, endProcessBehavior.name());
             writeExtensionElements(element, properties);
         }
+        
         List<EndState> endStates = definition.getChildren(EndState.class);
         for (EndState endState : endStates) {
             writeNode(processElement, endState);
@@ -472,6 +480,18 @@ public class BpmnSerializer extends ProcessSerializer {
         }
         if (element instanceof Node && properties.containsKey(NODE_ASYNC_EXECUTION)) {
             ((Node) element).setAsyncExecution(NodeAsyncExecution.getByValueNotNull(properties.get(NODE_ASYNC_EXECUTION)));
+        }
+        
+        if (element instanceof EndTokenState) {
+            EndProcessBehavior endProcessBehavior = EndProcessBehavior.BACK_TO_BASE_PROCESS;
+            if (properties.containsKey(BEHAVIOR)) {
+                try {
+                    endProcessBehavior = EndProcessBehavior.valueOf(properties.get(BEHAVIOR));
+                } catch(IllegalArgumentException e) {
+                    PluginLogger.logErrorWithoutDialog("Illegal value \"" + node.attributeValue(BEHAVIOR) + "\" for end token state behavior");
+                }
+            }
+            ((EndTokenState) element).setEndProcessBehavior(endProcessBehavior);
         }
     }
 
