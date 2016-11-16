@@ -795,14 +795,14 @@ public class JpdlSerializer extends ProcessSerializer {
         }
         List<Element> endTokenStates = root.elements(END_TOKEN);
         for (Element node : endTokenStates) {
-            create(node, definition);
-        }
-        List<Element> endStates = root.elements(END_STATE);
-        for (Element node : endStates) {
             EndTokenState endTokenState = create(node, definition);
             if (!Strings.isNullOrEmpty(node.attributeValue(BEHAVIOR))) {
                 endTokenState.setSubprocessDefinitionBehavior(EndTokenSubprocessDefinitionBehavior.valueOf(node.attributeValue(BEHAVIOR)));
             }
+        }
+        List<Element> endStates = root.elements(END_STATE);
+        for (Element node : endStates) {
+            create(node, definition);
         }
         List<Transition> tmpTransitions = new ArrayList<Transition>(TRANSITION_TARGETS.keySet());
         for (Transition transition : tmpTransitions) {
