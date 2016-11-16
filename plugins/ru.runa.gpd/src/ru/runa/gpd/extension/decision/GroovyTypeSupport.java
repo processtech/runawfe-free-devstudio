@@ -12,6 +12,8 @@ import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.ui.dialog.DoubleInputDialog;
 import ru.runa.gpd.ui.dialog.UserInputDialog;
 
+import com.google.common.base.Objects;
+
 public abstract class GroovyTypeSupport {
     private static final Map<String, GroovyTypeSupport> TYPES_MAP = new HashMap<String, GroovyTypeSupport>();
     static {
@@ -49,7 +51,8 @@ public abstract class GroovyTypeSupport {
 
     public List<String> getPredefinedValues(Operation operation) {
         List<String> v = new ArrayList<String>();
-        if (operation == Operation.EQ || operation == Operation.NOT_EQ) {
+        if (Objects.equal(Operation.EQ.getOperator(), operation.getOperator())
+                || Objects.equal(Operation.NOT_EQ.getOperator(), operation.getOperator())) {
             v.add("null");
         }
         return v;
@@ -209,6 +212,14 @@ public abstract class GroovyTypeSupport {
 
             @Override
             public String generateCode(Variable variable, Object lexem2) {
+                if (NULL.equals(lexem2)) {
+                    if (Objects.equal(Operation.EQ.getOperator(), getOperator())) {
+                        return variable.getScriptingName() + " == " + NULL;
+                    }
+                    if (Objects.equal(Operation.NOT_EQ.getOperator(), getOperator())) {
+                        return variable.getScriptingName() + " != " + NULL;
+                    }
+                }
                 boolean needZeroTime = isDateFormatVariable(variable);
                 boolean lexem2isVariable = lexem2 instanceof Variable;
                 if (!needZeroTime && lexem2isVariable) {
