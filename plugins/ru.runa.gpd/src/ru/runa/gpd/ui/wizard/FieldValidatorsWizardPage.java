@@ -1,6 +1,7 @@
 package ru.runa.gpd.ui.wizard;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -15,10 +16,14 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -118,7 +123,8 @@ public class FieldValidatorsWizardPage extends WizardPage {
         GridData data = new GridData(GridData.FILL_BOTH);
         data.minimumHeight = 300;
         tabFolder.setLayoutData(data);
-        variablesTableViewer = createTableViewer(tabFolder, 200, 300, Localization.getString("property.name"));
+
+        variablesTableViewer = createTableViewer(tabFolder, SWT.BORDER | SWT.V_SCROLL | SWT.FULL_SELECTION);
         variablesTableViewer.setLabelProvider(new VariableTableLabelProvider());
         variablesTableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
             @Override
@@ -139,10 +145,30 @@ public class FieldValidatorsWizardPage extends WizardPage {
                 updateVariableSelection();
             }
         });
+
+        createTable(variablesTableViewer, new DataViewerComparator<>(new ValueComparator<Variable>() {
+            @Override
+            public int compare(Variable o1, Variable o2) {
+                int result = 0;
+
+                switch (getColumn()) {
+                case 0:
+                    result = fieldConfigs.containsKey(o1.getName()) ? -1 : 1;
+                    break;
+                case 1:
+                    result = o1.getName().compareToIgnoreCase(o2.getName());
+                    break;
+                }
+
+                return result;
+            }
+        }), new TableColumnDescription("#", 20, SWT.LEFT), new TableColumnDescription("property.name", 200, SWT.LEFT));
+
         TabItem tabItem1 = new TabItem(tabFolder, SWT.NONE);
         tabItem1.setText(Localization.getString("FieldValidatorsWizardPage.Variables"));
         tabItem1.setControl(variablesTableViewer.getControl());
-        swimlanesTableViewer = createTableViewer(tabFolder, 200, 300, Localization.getString("property.name"));
+
+        swimlanesTableViewer = createTableViewer(tabFolder, SWT.BORDER | SWT.V_SCROLL | SWT.FULL_SELECTION);
         swimlanesTableViewer.setLabelProvider(new VariableTableLabelProvider());
         swimlanesTableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
             @Override
@@ -163,6 +189,25 @@ public class FieldValidatorsWizardPage extends WizardPage {
                 updateVariableSelection();
             }
         });
+
+        createTable(swimlanesTableViewer, new DataViewerComparator<>(new ValueComparator<Variable>() {
+            @Override
+            public int compare(Variable o1, Variable o2) {
+                int result = 0;
+
+                switch (getColumn()) {
+                case 0:
+                    result = fieldConfigs.containsKey(o1.getName()) ? -1 : 1;
+                    break;
+                case 1:
+                    result = o1.getName().compareToIgnoreCase(o2.getName());
+                    break;
+                }
+
+                return result;
+            }
+        }), new TableColumnDescription("#", 20, SWT.LEFT), new TableColumnDescription("property.name", 200, SWT.LEFT));
+
         TabItem tabItem2 = new TabItem(tabFolder, SWT.NONE);
         tabItem2.setText(Localization.getString("FieldValidatorsWizardPage.Swimlanes"));
         tabItem2.setControl(swimlanesTableViewer.getControl());
@@ -171,8 +216,13 @@ public class FieldValidatorsWizardPage extends WizardPage {
         data.minimumHeight = 300;
         right.setLayoutData(data);
         right.setLayout(new GridLayout(1, true));
-        validatorsTableViewer = createTableViewer(right, 300, 100, Localization.getString("FieldValidatorsWizardPage.Validators"));
+
+        Label validatorsLabel = new Label(right, SWT.NONE);
+        validatorsLabel.setText(Localization.getString("FieldValidatorsWizardPage.Validators"));
+        validatorsTableViewer = createTableViewer(right, SWT.BORDER | SWT.V_SCROLL | SWT.FULL_SELECTION);
         validatorsTableViewer.setLabelProvider(new ValidatorDefinitionTableLabelProvider());
+        validatorsTableViewer.getControl().setLayoutData(data);
+
         GridData groupData = new GridData(GridData.FILL_BOTH);
         groupData.minimumHeight = 200;
         infoGroup = new DefaultValidatorInfoControl(right);
@@ -197,6 +247,26 @@ public class FieldValidatorsWizardPage extends WizardPage {
                 updateValidatorSelection();
             }
         });
+
+        createTable(validatorsTableViewer, new DataViewerComparator<>(new ValueComparator<ValidatorDefinition>() {
+            @Override
+            public int compare(ValidatorDefinition o1, ValidatorDefinition o2) {
+                int result = 0;
+
+                Map<String, ValidatorConfig> configs = fieldConfigs.get(getCurrentVariableName());
+                switch (getColumn()) {
+                case 0:
+                    result = configs.containsKey(o1.getName()) ? -1 : 1;
+                    break;
+                case 1:
+                    result = o1.getLabel().compareToIgnoreCase(o2.getLabel());
+                    break;
+                }
+
+                return result;
+            }
+        }), new TableColumnDescription("#", 20, SWT.LEFT), new TableColumnDescription("property.name", 200, SWT.LEFT));
+
         List<Variable> taskVariables = formNode.getVariables(true, false);
         variablesTableViewer.setInput(taskVariables);
         swimlanesTableViewer.setInput(processDefinition.getSwimlanes());
@@ -208,6 +278,52 @@ public class FieldValidatorsWizardPage extends WizardPage {
         warningLabel.setText(warningMessage);
         mainComposite.pack(true);
         setControl(pageControl);
+    }
+
+    private <S> void createTable(TableViewer viewer, DataViewerComparator<S> comparator, TableColumnDescription... column) {
+        viewer.setComparator(comparator);
+
+        Table table = viewer.getTable();
+        table.setHeaderVisible(true);
+        table.setLinesVisible(true);
+        int index = 0;
+        for (TableColumnDescription col : column) {
+            TableColumn tableColumn = new TableColumn(table, col.style);
+            tableColumn.setText(Localization.getString(col.titleKey));
+            tableColumn.setWidth(col.width);
+            if (col.sort) {
+                tableColumn.addSelectionListener(createSelectionListener(viewer, comparator, tableColumn, index));
+            }
+            index++;
+        }
+    }
+
+    private <S> SelectionListener createSelectionListener(final TableViewer viewer, final DataViewerComparator<S> comparator,
+            final TableColumn column, final int index) {
+        SelectionAdapter selectionAdapter = new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                comparator.setColumn(index);
+                viewer.getTable().setSortDirection(comparator.getDirection());
+                viewer.getTable().setSortColumn(column);
+                viewer.refresh();
+            }
+        };
+        return selectionAdapter;
+    }
+
+    private TableViewer createTableViewer(Composite parent, int style) {
+        TableViewer result = new TableViewer(parent, style);
+        result.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
+        result.setContentProvider(new ArrayContentProvider());
+        result.addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
+            public void selectionChanged(SelectionChangedEvent event) {
+                updateVariableSelection();
+            }
+        });
+
+        return result;
     }
 
     public void performFinish() {
@@ -299,23 +415,6 @@ public class FieldValidatorsWizardPage extends WizardPage {
         }
     }
 
-    private TableViewer createTableViewer(Composite parent, int width, int height, String text) {
-        TableViewer tableViewer = new TableViewer(parent, SWT.SINGLE | SWT.BORDER | SWT.V_SCROLL | SWT.FULL_SELECTION);
-        GridData data = new GridData(GridData.FILL_BOTH);
-        data.minimumHeight = height;
-        tableViewer.getControl().setLayoutData(data);
-        Table table = tableViewer.getTable();
-        table.setLinesVisible(true);
-        TableColumn tableColumn = new TableColumn(table, SWT.LEFT);
-        if (text != null) {
-            table.setHeaderVisible(true);
-            tableColumn.setText(text);
-        }
-        tableColumn.setWidth(width);
-        tableViewer.setContentProvider(new ArrayContentProvider());
-        return tableViewer;
-    }
-
     private void addField(String variableName) {
         Map<String, ValidatorConfig> validators = new HashMap<String, ValidatorConfig>();
         ValidatorDefinition requiredDef = ValidatorDefinitionRegistry.getDefinition(ValidatorDefinition.REQUIRED_VALIDATOR_NAME);
@@ -348,37 +447,107 @@ public class FieldValidatorsWizardPage extends WizardPage {
     private class VariableTableLabelProvider extends LabelProvider implements ITableLabelProvider {
         @Override
         public String getColumnText(Object element, int index) {
+            String result = "";
             NamedGraphElement variable = (NamedGraphElement) element;
-            return variable.getName();
+
+            switch (index) {
+            case 0: {
+                result = "";
+            }
+                break;
+            case 1: {
+                result = variable.getName();
+            }
+                break;
+            default:
+                result = "unknown " + index;
+            }
+
+            return result;
+        }
+
+        @Override
+        public String getText(Object element) {
+            return getColumnText(element, 0);
         }
 
         @Override
         public Image getColumnImage(Object element, int columnIndex) {
-            NamedGraphElement variable = (NamedGraphElement) element;
-            String imagePath = fieldConfigs.containsKey(variable.getName()) ? CHECKED_IMG : UNCHECKED_IMG;
-            return SharedImages.getImage(imagePath);
+            Image result = null;
+            switch (columnIndex) {
+            case 0: {
+                NamedGraphElement variable = (NamedGraphElement) element;
+                String imagePath = fieldConfigs.containsKey(variable.getName()) ? CHECKED_IMG : UNCHECKED_IMG;
+                result = SharedImages.getImage(imagePath);
+            }
+                break;
+            case 1: {
+                result = null;
+            }
+                break;
+            }
+            return result;
         }
+
     }
 
     private class ValidatorDefinitionTableLabelProvider extends LabelProvider implements ITableLabelProvider {
         @Override
         public String getColumnText(Object element, int index) {
+            String result = "";
             ValidatorDefinition variable = (ValidatorDefinition) element;
-            return variable.getLabel();
+
+            switch (index) {
+            case 0: {
+                result = "";
+            }
+                break;
+            case 1: {
+                result = variable.getLabel();
+            }
+                break;
+            default:
+                result = "unknown " + index;
+            }
+
+            return result;
         }
 
         @Override
         public Image getColumnImage(Object element, int columnIndex) {
+            Image result = null;
             ValidatorDefinition definition = (ValidatorDefinition) element;
             Map<String, ValidatorConfig> configs = fieldConfigs.get(getCurrentVariableName());
             String imagePath;
             if (configs != null) {
-                imagePath = configs.containsKey(definition.getName()) ? CHECKED_IMG : UNCHECKED_IMG;
+                switch (columnIndex) {
+                case 0: {
+                    imagePath = configs.containsKey(definition.getName()) ? CHECKED_IMG : UNCHECKED_IMG;
+                    result = SharedImages.getImage(imagePath);
+                }
+                    break;
+                case 1: {
+                    result = null;
+                }
+                    break;
+                }
             } else {
-                imagePath = UNCHECKED_IMG;
+                switch (columnIndex) {
+                case 0: {
+                    imagePath = UNCHECKED_IMG;
+                    result = SharedImages.getImage(imagePath);
+                }
+                    break;
+                case 1: {
+                    result = null;
+                }
+                    break;
+                }
+
             }
-            return SharedImages.getImage(imagePath);
+            return result;
         }
+
     }
 
     private class DefaultParamsComposite extends ParametersComposite {
@@ -449,4 +618,92 @@ public class FieldValidatorsWizardPage extends WizardPage {
             }
         }
     }
+
+    final static class DataViewerComparator<V> extends ViewerComparator {
+        private int propertyIndex;
+        private int direction;
+        private final ValueComparator<V> comparable;
+
+        protected DataViewerComparator(ValueComparator<V> comparable) {
+            this.propertyIndex = 0;
+            this.comparable = comparable;
+            direction = SWT.NONE;
+        }
+
+        private int getDirection() {
+            return direction;
+        }
+
+        private void setColumn(int column) {
+            if (column == propertyIndex) {
+                switch (direction) {
+                case SWT.UP:
+                    direction = SWT.DOWN;
+                    break;
+                case SWT.DOWN:
+                    direction = SWT.NONE;
+                    break;
+                case SWT.NONE:
+                    direction = SWT.UP;
+                    break;
+                }
+            } else {
+                propertyIndex = column;
+                direction = SWT.UP;
+            }
+            comparable.setColumn(column);
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public int compare(Viewer viewer, Object e1, Object e2) {
+            int result = 0;
+
+            switch (direction) {
+            case SWT.NONE:
+                break;
+            case SWT.UP:
+                result = comparable.compare((V) e1, (V) e2);
+                break;
+            case SWT.DOWN:
+                result = -comparable.compare((V) e1, (V) e2);
+                break;
+            }
+
+            return result;
+        }
+    }
+
+    abstract static class ValueComparator<V> implements Comparator<V> {
+
+        private int column;
+
+        public int getColumn() {
+            return column;
+        }
+
+        public void setColumn(int column) {
+            this.column = column;
+        }
+
+    }
+
+    final static class TableColumnDescription {
+        private final String titleKey;
+        private final int width;
+        private final int style;
+        private final boolean sort;
+
+        TableColumnDescription(String titleKey, int width, int style) {
+            this(titleKey, width, style, true);
+        }
+
+        TableColumnDescription(String titleKey, int width, int style, boolean sort) {
+            this.titleKey = titleKey;
+            this.width = width;
+            this.style = style;
+            this.sort = sort;
+        }
+    }
+
 }
