@@ -25,6 +25,10 @@ public abstract class ProcessSerializer {
     public static final String EMBEDDED = "embedded";
     public static final String NODE_ASYNC_EXECUTION = "asyncExecution";
     public static final String BEHAVIOR = "behavior";
+    public static final String PROCESS_UUID = "UUID";
+    public static final String PROCESS_VERSION_NUMBER = "versionNumber";
+    public static final String PROCESS_VERSION_DATE = "versionDate";
+    public static final String PROCESS_VERSION_COMMENT = "versionComment";
 
     public abstract boolean isSupported(Document document);
 

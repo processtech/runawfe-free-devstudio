@@ -1,6 +1,7 @@
 package ru.runa.gpd.lang.model;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
@@ -51,6 +52,10 @@ public class ProcessDefinition extends NamedGraphElement implements Active, Desc
     private final List<VariableUserType> types = Lists.newArrayList();
     private final IFile file;
     private int hash32 = -1;
+    private String uuid = "";
+    private String versionNumber = "";
+    private Calendar versionDate = Calendar.getInstance();
+    private String versionComment = "";
 
     public ProcessDefinition(IFile file) {
         this.file = file;
@@ -479,5 +484,37 @@ public class ProcessDefinition extends NamedGraphElement implements Active, Desc
             return false;
         }
         return hashCode() == o.hashCode();
+    }
+
+    public String getUUID() {
+        return uuid;
+    }
+
+    public void setUUID(String uuid) {
+        this.uuid = uuid;
+    }
+
+    public String getVersionNumber() {
+        return versionNumber;
+    }
+
+    public void setVersionNumber(String versionNumber) {
+        this.versionNumber = versionNumber;
+    }
+
+    public Calendar getVersionDate() {
+        return versionDate;
+    }
+
+    public void setVersionDate(Calendar versionDate) {
+        this.versionDate = versionDate;
+    }
+
+    public String getVersionComment() {
+        return versionComment;
+    }
+
+    public void setVersionComment(String versionComment) {
+        this.versionComment = versionComment;
     }
 }

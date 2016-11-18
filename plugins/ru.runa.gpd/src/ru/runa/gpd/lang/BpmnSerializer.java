@@ -1,10 +1,12 @@
 package ru.runa.gpd.lang;
 
-import static ru.runa.gpd.lang.ProcessSerializer.BEHAVIOR;
-
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -157,6 +159,18 @@ public class BpmnSerializer extends ProcessSerializer {
         }
         if (definition.getDefaultNodeAsyncExecution() != NodeAsyncExecution.DEFAULT) {
             processProperties.put(NODE_ASYNC_EXECUTION, definition.getDefaultNodeAsyncExecution().getValue());
+        }
+        if (definition.getUUID().isEmpty()) {
+            definition.setUUID(UUID.randomUUID().toString());
+        }
+        processProperties.put(PROCESS_UUID, definition.getUUID());
+
+        if (definition.getVersionNumber().length() > 0) {
+            processProperties.put(PROCESS_VERSION_NUMBER, definition.getVersionNumber());
+        }
+        processProperties.put(PROCESS_VERSION_DATE, new SimpleDateFormat("dd-MM-yyyy").format(definition.getVersionDate().getTime()));
+        if (definition.getVersionComment().length() > 0) {
+            processProperties.put(PROCESS_VERSION_COMMENT, definition.getVersionComment());
         }
         writeExtensionElements(processElement, processProperties);
         if (definition.getClass() != SubprocessDefinition.class) {
@@ -540,6 +554,24 @@ public class BpmnSerializer extends ProcessSerializer {
         }
         if (processProperties.containsKey(NODE_ASYNC_EXECUTION)) {
             definition.setDefaultNodeAsyncExecution(NodeAsyncExecution.getByValueNotNull(processProperties.get(NODE_ASYNC_EXECUTION)));
+        }
+        if (processProperties.containsKey(PROCESS_UUID)) {
+            definition.setUUID(processProperties.get(PROCESS_UUID));
+        }
+        if (processProperties.containsKey(PROCESS_VERSION_NUMBER)) {
+            definition.setVersionNumber(processProperties.get(PROCESS_VERSION_NUMBER));
+        }
+        if (processProperties.containsKey(PROCESS_VERSION_DATE)) {
+            try {
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(new SimpleDateFormat("dd-MM-yyyy").parse(processProperties.get(PROCESS_VERSION_DATE)));
+                definition.setVersionDate(cal);
+            } catch (ParseException e) {
+
+            }
+        }
+        if (processProperties.containsKey(PROCESS_VERSION_COMMENT)) {
+            definition.setVersionComment(processProperties.get(PROCESS_VERSION_COMMENT));
         }
         String swimlaneDisplayModeName = processProperties.get(SHOW_SWIMLANE);
         if (swimlaneDisplayModeName != null) {
