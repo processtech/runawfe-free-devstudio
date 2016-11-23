@@ -1,13 +1,9 @@
 package ru.runa.gpd.lang;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -142,18 +138,6 @@ public class JpdlSerializer extends ProcessSerializer {
         if (definition.getDefaultNodeAsyncExecution() != NodeAsyncExecution.DEFAULT) {
             root.addAttribute(NODE_ASYNC_EXECUTION, definition.getDefaultNodeAsyncExecution().getValue());
         }
-        if (definition.getUUID().isEmpty()) {
-            definition.setUUID(UUID.randomUUID().toString());
-        }
-        root.addAttribute(PROCESS_UUID, definition.getUUID());
-        if (definition.getVersionNumber().length() > 0) {
-            root.addAttribute(PROCESS_VERSION_NUMBER, definition.getVersionNumber());
-        }
-        root.addAttribute(PROCESS_VERSION_DATE, new SimpleDateFormat("dd-MM-yyyy").format(definition.getVersionDate().getTime()));
-        if (definition.getVersionComment().length() > 0) {
-            root.addAttribute(PROCESS_VERSION_COMMENT, definition.getVersionComment());
-        }
-
         if (!Strings.isNullOrEmpty(definition.getDescription())) {
             Element desc = root.addElement(DESCRIPTION);
             setNodeValue(desc, definition.getDescription());
@@ -510,28 +494,6 @@ public class JpdlSerializer extends ProcessSerializer {
         String nodeAsyncExecutionValue = root.attributeValue(NODE_ASYNC_EXECUTION);
         if (!Strings.isNullOrEmpty(nodeAsyncExecutionValue)) {
             definition.setDefaultNodeAsyncExecution(NodeAsyncExecution.getByValueNotNull(nodeAsyncExecutionValue));
-        }
-        String uuidString = root.attributeValue(PROCESS_UUID);
-        if (!Strings.isNullOrEmpty(uuidString)) {
-            definition.setUUID(uuidString);
-        }
-        String versionNumberString = root.attributeValue(PROCESS_VERSION_NUMBER);
-        if (!Strings.isNullOrEmpty(versionNumberString)) {
-            definition.setVersionNumber(versionNumberString);
-        }
-        String versionDateString = root.attributeValue(PROCESS_VERSION_DATE);
-        if (!Strings.isNullOrEmpty(versionDateString)) {
-            try {
-                Calendar cal = Calendar.getInstance();
-                cal.setTime(new SimpleDateFormat("dd-MM-yyyy").parse(versionDateString));
-                definition.setVersionDate(cal);
-            } catch (ParseException e) {
-
-            }
-        }
-        String versionCommentString = root.attributeValue(PROCESS_VERSION_COMMENT);
-        if (!Strings.isNullOrEmpty(versionCommentString)) {
-            definition.setVersionComment(versionCommentString);
         }
         List<Element> swimlanes = root.elements(SWIMLANE);
         for (Element node : swimlanes) {

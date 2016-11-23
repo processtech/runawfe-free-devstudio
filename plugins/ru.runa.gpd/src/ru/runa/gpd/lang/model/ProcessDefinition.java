@@ -1,9 +1,9 @@
 package ru.runa.gpd.lang.model;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -53,12 +53,12 @@ public class ProcessDefinition extends NamedGraphElement implements Active, Desc
     private final IFile file;
     private int hash32 = -1;
     private String uuid = "";
-    private String versionNumber = "";
-    private Calendar versionDate = Calendar.getInstance();
-    private String versionComment = "";
+
+    private final ArrayList<VersionInfo> versionInfoList;
 
     public ProcessDefinition(IFile file) {
         this.file = file;
+        versionInfoList = new ArrayList<>();
     }
 
     public ProcessDefinitionAccessType getAccessType() {
@@ -487,34 +487,50 @@ public class ProcessDefinition extends NamedGraphElement implements Active, Desc
     }
 
     public String getUUID() {
-        return uuid;
+        if (this.uuid.isEmpty()) {
+            this.uuid = UUID.randomUUID().toString();
+        }
+        return this.uuid;
     }
 
     public void setUUID(String uuid) {
         this.uuid = uuid;
     }
 
-    public String getVersionNumber() {
-        return versionNumber;
+    public void addToVersionInfoList(VersionInfo versionInfo) {
+        this.versionInfoList.add(versionInfo);
     }
 
-    public void setVersionNumber(String versionNumber) {
-        this.versionNumber = versionNumber;
+    public ArrayList<VersionInfo> getVersionInfoList() {
+        return versionInfoList;
     }
 
-    public Calendar getVersionDate() {
-        return versionDate;
+    public boolean isVersionInfoExists(VersionInfo versionInfo) {
+        boolean result = false;
+        for (VersionInfo vi : this.getVersionInfoList()) {
+            if (versionInfo.equals(vi)) {
+                result = true;
+                break;
+            }
+        }
+        return result;
     }
 
-    public void setVersionDate(Calendar versionDate) {
-        this.versionDate = versionDate;
+    public int getVersionInfoListIndex(VersionInfo versionInfo) {
+        int result = -1;
+        int i = 0;
+        for (VersionInfo vi : this.getVersionInfoList()) {
+            if (versionInfo.equals(vi)) {
+                result = i;
+                break;
+            }
+            i++;
+        }
+        return result;
     }
 
-    public String getVersionComment() {
-        return versionComment;
+    public void setVersionInfoByIndex(int index, VersionInfo versionInfo) {
+        versionInfoList.set(index, versionInfo);
     }
 
-    public void setVersionComment(String versionComment) {
-        this.versionComment = versionComment;
-    }
 }
