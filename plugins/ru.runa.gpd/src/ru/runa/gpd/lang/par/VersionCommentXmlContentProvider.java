@@ -15,10 +15,9 @@ public class VersionCommentXmlContentProvider extends AuxContentProvider {
     private static final String UUID = "UUID";
     private static final String VERSIONS = "versions";
     private static final String VERSION = "version";
-    private static final String VERSION_NUMBER = "versionNumber";
-    private static final String VERSION_DATE = "versionDate";
-    private static final String VERSION_AUTHOR = "versionAuthor";
-    private static final String VERSION_COMMENT = "versionComment";
+    private static final String VERSION_DATE = "date";
+    private static final String VERSION_AUTHOR = "author";
+    private static final String VERSION_COMMENT = "comment";
 
     @Override
     public String getFileName() {
@@ -31,10 +30,9 @@ public class VersionCommentXmlContentProvider extends AuxContentProvider {
         definition.setUUID(document.getRootElement().attributeValue(UUID));
         for (Element versionInfoElement : versionList) {
             VersionInfo versionInfo = new VersionInfo();
-            versionInfo.setNumber(fromXMLSafeText(versionInfoElement.attributeValue(VERSION_NUMBER)));
-            versionInfo.setDate(fromXMLSafeText(versionInfoElement.attributeValue(VERSION_DATE)));
-            versionInfo.setAuthor(fromXMLSafeText(versionInfoElement.attributeValue(VERSION_AUTHOR)));
-            versionInfo.setComment(fromXMLSafeText(versionInfoElement.attributeValue(VERSION_COMMENT)));
+            versionInfo.setDate(versionInfoElement.elementText(VERSION_DATE));
+            versionInfo.setAuthor(versionInfoElement.elementText(VERSION_AUTHOR));
+            versionInfo.setComment(versionInfoElement.elementText(VERSION_COMMENT));
             versionInfo.setSavedToFile(true);
             definition.addToVersionInfoList(versionInfo);
         }
@@ -48,24 +46,13 @@ public class VersionCommentXmlContentProvider extends AuxContentProvider {
         ArrayList<VersionInfo> versionInfoList = definition.getVersionInfoList();
         for (int i = 0; i < versionInfoList.size(); i++) {
             Element versionInfoElement = root.addElement(VERSION);
-            versionInfoElement.addAttribute(VERSION_NUMBER, toXMLSafeText(versionInfoList.get(i).getNumber()));
-            versionInfoElement.addAttribute(VERSION_DATE, toXMLSafeText(versionInfoList.get(i).getDateAsString()));
-            versionInfoElement.addAttribute(VERSION_AUTHOR, toXMLSafeText(versionInfoList.get(i).getAuthor()));
-            versionInfoElement.addAttribute(VERSION_COMMENT, toXMLSafeText(versionInfoList.get(i).getComment()));
+            versionInfoElement.addElement(VERSION_DATE).addText(versionInfoList.get(i).getDateAsString());
+            versionInfoElement.addElement(VERSION_AUTHOR).addCDATA(versionInfoList.get(i).getAuthor());
+            versionInfoElement.addElement(VERSION_COMMENT).addCDATA(versionInfoList.get(i).getComment());
             versionInfoList.get(i).setSavedToFile(true);
         }
 
         return document;
-    }
-
-    protected String toXMLSafeText(String text) {
-        return text.replace("<", "&lt;").replace(">", "&gt;").replace("\'", "&rsquo;").replace("\"", "&quot;").replace("/", "&frasl;")
-                .replace("\r\n", "&013;");
-    }
-
-    protected String fromXMLSafeText(String text) {
-        return text.replace("&lt;", "<").replace("&gt;", ">").replace("&rsquo;", "\'").replace("&quot;", "\"").replace("&frasl;", "/")
-                .replace("&013;", "\r\n").replace("&amp;", "&");
     }
 
 }

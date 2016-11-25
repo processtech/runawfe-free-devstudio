@@ -1,6 +1,5 @@
 package ru.runa.gpd.ui.dialog;
 
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -8,6 +7,7 @@ import java.util.Date;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -18,9 +18,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.DateTime;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
@@ -30,13 +28,14 @@ import org.eclipse.swt.widgets.Text;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.VersionInfo;
+import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
+import ru.runa.wfe.commons.CalendarUtil;
 
 public class VersionCommentDialog extends Dialog {
 
     private Button addButton;
     private Button saveButton;
     private Button cancelButton;
-    private Text numberText;
     private DateTime dateControl;
     private Text authorText;
     private Text commentText;
@@ -61,26 +60,19 @@ public class VersionCommentDialog extends Dialog {
     protected void createButtonsForButtonBar(Composite parent) {
         addButton = createButton(parent, IDialogConstants.NO_ID, Localization.getString("button.add"), false);
 
-        addButton.addListener(SWT.Selection, new Listener() {
+        addButton.addSelectionListener(new LoggingSelectionAdapter() {
             @Override
-            public void handleEvent(Event e) {
-                switch (e.type) {
-                case SWT.Selection: {
-                    TableItem tableItem = new TableItem(historyTable, SWT.NONE, 0);
-                    tableItem.setText(0, "0.0.0");
-                    tableItem.setText(1, VersionInfo.getSimpleDateFormat().format(new Date()));
-                    tableItem.setText(2, "New author");
-                    tableItem.setText(3, "New description.");
-                    setInputFieldsEnabled(true);
-                    historyTable.setEnabled(true);
-                    historyTable.setSelection(tableItem);
-                    fillDialogFields(tableItem);
-                    getButton(IDialogConstants.OK_ID).setEnabled(true);
-                    setDefaultButton(saveButton);
-                }
-                    break;
-
-                }
+            protected void onSelection(SelectionEvent e) throws Exception {
+                TableItem tableItem = new TableItem(historyTable, SWT.NONE, 0);
+                tableItem.setText(0, CalendarUtil.format(new Date(), CalendarUtil.DATE_WITHOUT_TIME_FORMAT));
+                tableItem.setText(1, System.getProperty("user.name").isEmpty() != true ? System.getProperty("user.name") : "New author");
+                tableItem.setText(2, "New description.");
+                setInputFieldsEnabled(true);
+                historyTable.setEnabled(true);
+                historyTable.setSelection(tableItem);
+                fillDialogFields(tableItem);
+                getButton(IDialogConstants.OK_ID).setEnabled(true);
+                setDefaultButton(saveButton);
             }
         });
 
@@ -95,7 +87,6 @@ public class VersionCommentDialog extends Dialog {
         setButtonLayoutData(cancelButton);
 
         VersionInfo versionInfo = new VersionInfo();
-        versionInfo.setNumber(this.getVersionNumber());
         versionInfo.setDate(this.getVersionDateAsString());
         versionInfo.setAuthor(this.getVersionAuthor());
         versionInfo.setComment(this.getVersionComment());
@@ -128,11 +119,6 @@ public class VersionCommentDialog extends Dialog {
         compositeTable.setLayout(gridLayoutTable);
         compositeTable.setLayoutData(new RowData(500, 300));
 
-        Label numberLabel = new Label(composite, SWT.NONE);
-        numberLabel.setText(Localization.getString("VersionCommentDialog.number"));
-        numberText = new Text(composite, SWT.SINGLE | SWT.BORDER);
-        numberText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
         Label dateLabel = new Label(composite, SWT.None);
         dateLabel.setText(Localization.getString("VersionCommentDialog.date"));
         dateControl = new DateTime(composite, SWT.DATE | SWT.BORDER);
@@ -147,7 +133,7 @@ public class VersionCommentDialog extends Dialog {
         commentLabel.setText(Localization.getString("VersionCommentDialog.comment"));
         commentText = new Text(composite, SWT.MULTI | SWT.WRAP | SWT.BORDER);
         GridData gridData = new GridData(SWT.FILL, SWT.CENTER, true, false);
-        gridData.heightHint = 123;
+        gridData.heightHint = 169;
         gridData.horizontalAlignment = SWT.FILL;
         commentText.setLayoutData(gridData);
 
@@ -162,9 +148,8 @@ public class VersionCommentDialog extends Dialog {
         gridDataHistoryTable.verticalAlignment = SWT.FILL;
         historyTable.setLayoutData(gridDataHistoryTable);
 
-        String[] headers = { Localization.getString("VersionCommentDialog.history.number"),
-                Localization.getString("VersionCommentDialog.history.date"), Localization.getString("VersionCommentDialog.history.author"),
-                Localization.getString("VersionCommentDialog.history.comment") };
+        String[] headers = { Localization.getString("VersionCommentDialog.history.date"),
+                Localization.getString("VersionCommentDialog.history.author"), Localization.getString("VersionCommentDialog.history.comment") };
 
         for (String header : headers) {
             TableColumn column = new TableColumn(historyTable, SWT.NONE);
@@ -172,20 +157,18 @@ public class VersionCommentDialog extends Dialog {
         }
 
         historyTable.getColumn(0).setWidth(80);
-        historyTable.getColumn(1).setWidth(80);
-        historyTable.getColumn(2).setWidth(120);
-        historyTable.getColumn(3).setWidth(200);
+        historyTable.getColumn(1).setWidth(120);
+        historyTable.getColumn(2).setWidth(280);
 
-        historyTable.addListener(SWT.Selection, new Listener() {
+        historyTable.addSelectionListener(new LoggingSelectionAdapter() {
             @Override
-            public void handleEvent(Event event) {
+            protected void onSelection(SelectionEvent e) throws Exception {
                 TableItem[] selectedItems = historyTable.getSelection();
                 fillDialogFields(selectedItems[0]);
                 VersionInfo versionInfo = new VersionInfo();
-                versionInfo.setNumber(selectedItems[0].getText(0));
-                versionInfo.setDate(selectedItems[0].getText(1));
-                versionInfo.setAuthor(selectedItems[0].getText(2));
-                versionInfo.setComment(selectedItems[0].getText(3));
+                versionInfo.setDate(selectedItems[0].getText(0));
+                versionInfo.setAuthor(selectedItems[0].getText(1));
+                versionInfo.setComment(selectedItems[0].getText(2));
 
                 int indexOfVersionInfo = definition.getVersionInfoListIndex(versionInfo);
                 if (indexOfVersionInfo != -1 && definition.getVersionInfoList().get(indexOfVersionInfo).isSavedToFile()) {
@@ -206,10 +189,9 @@ public class VersionCommentDialog extends Dialog {
             historyTable.setEnabled(true);
             for (int i = versionInfoList.size() - 1; i >= 0; --i) {
                 TableItem item = new TableItem(historyTable, SWT.NONE);
-                item.setText(0, versionInfoList.get(i).getNumber());
-                item.setText(1, versionInfoList.get(i).getDateAsString());
-                item.setText(2, versionInfoList.get(i).getAuthor());
-                item.setText(3, versionInfoList.get(i).getComment());
+                item.setText(0, versionInfoList.get(i).getDateAsString());
+                item.setText(1, versionInfoList.get(i).getAuthor());
+                item.setText(2, versionInfoList.get(i).getComment());
             }
             historyTable.setSelection(0);
             fillDialogFields(historyTable.getItem(0));
@@ -223,12 +205,10 @@ public class VersionCommentDialog extends Dialog {
     }
 
     protected void fillDialogFields(TableItem item) {
-        String number = item.getText(0);
-        String date = item.getText(1);
-        String author = item.getText(2);
-        String comment = item.getText(3);
+        String date = item.getText(0);
+        String author = item.getText(1);
+        String comment = item.getText(2);
 
-        setVersionNumber(number);
         setVersionDate(date);
         setVersionAuthor(author);
         setVersionComment(comment);
@@ -244,37 +224,27 @@ public class VersionCommentDialog extends Dialog {
     protected void saveTableItemsToDefinition() {
         int selectionIndex = historyTable.getSelectionIndex();
         TableItem tableItem = historyTable.getItem(selectionIndex);
-        VersionInfo previousVersionInfo = new VersionInfo(tableItem.getText(0), tableItem.getText(1), tableItem.getText(2), tableItem.getText(3));
+        VersionInfo previousVersionInfo = new VersionInfo(tableItem.getText(0), tableItem.getText(1), tableItem.getText(2));
         int indexOfPreviousVersionInfo = definition.getVersionInfoListIndex(previousVersionInfo);
 
-        tableItem.setText(0, this.getVersionNumber());
-        tableItem.setText(1, this.getVersionDateAsString());
-        tableItem.setText(2, this.getVersionAuthor());
-        tableItem.setText(3, this.getVersionComment());
+        tableItem.setText(0, this.getVersionDateAsString());
+        tableItem.setText(1, this.getVersionAuthor());
+        tableItem.setText(2, this.getVersionComment());
 
         for (int i = 0; i < historyTable.getItems().length; i++) {
             VersionInfo versionInfo = new VersionInfo();
-            versionInfo.setNumber(historyTable.getItems()[i].getText(0));
-            versionInfo.setDate(historyTable.getItems()[i].getText(1));
-            versionInfo.setAuthor(historyTable.getItems()[i].getText(2));
-            versionInfo.setComment(historyTable.getItems()[i].getText(3));
+            versionInfo.setDate(historyTable.getItems()[i].getText(0));
+            versionInfo.setAuthor(historyTable.getItems()[i].getText(1));
+            versionInfo.setComment(historyTable.getItems()[i].getText(2));
 
             if (indexOfPreviousVersionInfo != -1 && i == selectionIndex) {
                 definition.setVersionInfoByIndex(indexOfPreviousVersionInfo, versionInfo);
             } else {
-                if (definition.isVersionInfoExists(versionInfo) != true) {
+                if (definition.getVersionInfoListIndex(versionInfo) == -1) {
                     definition.addToVersionInfoList(versionInfo);
                 }
             }
         }
-    }
-
-    protected void setVersionNumber(String text) {
-        numberText.setText(text);
-    }
-
-    protected String getVersionNumber() {
-        return numberText.getText();
     }
 
     protected void setVersionDate(Calendar cal) {
@@ -283,11 +253,7 @@ public class VersionCommentDialog extends Dialog {
 
     protected void setVersionDate(String stringCal) {
         Calendar cal = Calendar.getInstance();
-        try {
-            cal.setTime(VersionInfo.getSimpleDateFormat().parse(stringCal));
-        } catch (ParseException e) {
-
-        }
+        cal.setTime(CalendarUtil.convertToDate(stringCal, CalendarUtil.DATE_WITHOUT_TIME_FORMAT));
         dateControl.setDate(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
     }
 
@@ -306,7 +272,7 @@ public class VersionCommentDialog extends Dialog {
         cal.set(Calendar.YEAR, dateControl.getYear());
         cal.set(Calendar.MONTH, dateControl.getMonth());
         cal.set(Calendar.DAY_OF_MONTH, dateControl.getDay());
-        result = VersionInfo.getSimpleDateFormat().format(cal.getTime());
+        result = CalendarUtil.format(cal, CalendarUtil.DATE_WITHOUT_TIME_FORMAT);
         return result;
     }
 
@@ -327,7 +293,6 @@ public class VersionCommentDialog extends Dialog {
     }
 
     protected void setInputFieldsEnabled(boolean isEnabled) {
-        numberText.setEnabled(isEnabled);
         dateControl.setEnabled(isEnabled);
         authorText.setEnabled(isEnabled);
         commentText.setEnabled(isEnabled);

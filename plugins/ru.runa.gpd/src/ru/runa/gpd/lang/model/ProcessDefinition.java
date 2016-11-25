@@ -505,21 +505,12 @@ public class ProcessDefinition extends NamedGraphElement implements Active, Desc
         return versionInfoList;
     }
 
-    public boolean isVersionInfoExists(VersionInfo versionInfo) {
-        boolean result = false;
-        for (VersionInfo vi : this.getVersionInfoList()) {
-            if (versionInfo.equals(vi)) {
-                result = true;
-                break;
-            }
-        }
-        return result;
-    }
-
     public int getVersionInfoListIndex(VersionInfo versionInfo) {
         int result = -1;
         int i = 0;
+        versionInfo = new VersionInfo(versionInfo.getDateAsString(), versionInfo.getAuthor(), versionInfo.getComment().replaceAll("\r\n", "\n"));
         for (VersionInfo vi : this.getVersionInfoList()) {
+            vi = new VersionInfo(vi.getDateAsString(), vi.getAuthor(), vi.getComment().replaceAll("\r\n", "\n"));
             if (versionInfo.equals(vi)) {
                 result = i;
                 break;

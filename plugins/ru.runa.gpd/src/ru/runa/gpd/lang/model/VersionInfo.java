@@ -1,43 +1,24 @@
 package ru.runa.gpd.lang.model;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
+import ru.runa.wfe.commons.CalendarUtil;
+
 public class VersionInfo {
-    private String number = "";
     private Calendar date = Calendar.getInstance();
     private String author = "";
     private String comment = "";
     private boolean savedToFile = false;
-    final static private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy");
 
     public VersionInfo() {
     }
 
-    public VersionInfo(String number, String dateAsString, String author, String comment) {
-        this.number = number;
+    public VersionInfo(String dateAsString, String author, String comment) {
         Calendar cal = Calendar.getInstance();
-        try {
-            cal.setTime(simpleDateFormat.parse(dateAsString));
-        } catch (ParseException e) {
-
-        }
+        cal.setTime(CalendarUtil.convertToDate(dateAsString, CalendarUtil.DATE_WITHOUT_TIME_FORMAT));
         this.date = cal;
         this.author = author;
         this.comment = comment;
-    }
-
-    static public SimpleDateFormat getSimpleDateFormat() {
-        return simpleDateFormat;
-    }
-
-    public String getNumber() {
-        return number;
-    }
-
-    public void setNumber(String number) {
-        this.number = number;
     }
 
     public Calendar getDate() {
@@ -45,7 +26,7 @@ public class VersionInfo {
     }
 
     public String getDateAsString() {
-        return getSimpleDateFormat().format(date.getTime());
+        return CalendarUtil.format(date, CalendarUtil.DATE_WITHOUT_TIME_FORMAT);
     }
 
     public void setDate(Calendar date) {
@@ -53,11 +34,7 @@ public class VersionInfo {
     }
 
     public void setDate(String dateAsString) {
-        try {
-            this.date.setTime(getSimpleDateFormat().parse(dateAsString));
-        } catch (ParseException e) {
-
-        }
+        this.date.setTime(CalendarUtil.convertToDate(dateAsString, CalendarUtil.DATE_WITHOUT_TIME_FORMAT));
     }
 
     public String getAuthor() {
@@ -97,8 +74,8 @@ public class VersionInfo {
         }
 
         VersionInfo versionInfo = (VersionInfo) other;
-        if (versionInfo.getNumber().equals(this.getNumber()) && versionInfo.getDateAsString().equals(this.getDateAsString())
-                && versionInfo.getAuthor().equals(this.getAuthor()) && versionInfo.getComment().equals(this.getComment())) {
+        if (versionInfo.getDateAsString().equals(this.getDateAsString()) && versionInfo.getAuthor().equals(this.getAuthor())
+                && versionInfo.getComment().equals(this.getComment())) {
             return true;
         }
 
@@ -108,6 +85,6 @@ public class VersionInfo {
 
     @Override
     public int hashCode() {
-        return this.getNumber().concat(this.getDateAsString()).concat(this.getAuthor()).concat(this.getComment()).hashCode();
+        return this.getDateAsString().concat(this.getAuthor()).concat(this.getComment()).hashCode();
     }
 }
