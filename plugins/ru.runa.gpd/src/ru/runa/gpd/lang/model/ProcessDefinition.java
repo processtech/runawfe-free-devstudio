@@ -3,7 +3,6 @@ package ru.runa.gpd.lang.model;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -52,7 +51,6 @@ public class ProcessDefinition extends NamedGraphElement implements Active, Desc
     private final List<VariableUserType> types = Lists.newArrayList();
     private final IFile file;
     private int hash32 = -1;
-    private String uuid = "";
 
     private final ArrayList<VersionInfo> versionInfoList;
 
@@ -486,17 +484,6 @@ public class ProcessDefinition extends NamedGraphElement implements Active, Desc
         return hashCode() == o.hashCode();
     }
 
-    public String getUUID() {
-        if (this.uuid.isEmpty()) {
-            this.uuid = UUID.randomUUID().toString();
-        }
-        return this.uuid;
-    }
-
-    public void setUUID(String uuid) {
-        this.uuid = uuid;
-    }
-
     public void addToVersionInfoList(VersionInfo versionInfo) {
         this.versionInfoList.add(versionInfo);
     }
@@ -508,9 +495,9 @@ public class ProcessDefinition extends NamedGraphElement implements Active, Desc
     public int getVersionInfoListIndex(VersionInfo versionInfo) {
         int result = -1;
         int i = 0;
-        versionInfo = new VersionInfo(versionInfo.getDateAsString(), versionInfo.getAuthor(), versionInfo.getComment().replaceAll("\r\n", "\n"));
+        versionInfo = new VersionInfo(versionInfo.getDateTimeAsString(), versionInfo.getAuthor(), versionInfo.getComment().replaceAll("\r\n", "\n"));
         for (VersionInfo vi : this.getVersionInfoList()) {
-            vi = new VersionInfo(vi.getDateAsString(), vi.getAuthor(), vi.getComment().replaceAll("\r\n", "\n"));
+            vi = new VersionInfo(vi.getDateTimeAsString(), vi.getAuthor(), vi.getComment().replaceAll("\r\n", "\n"));
             if (versionInfo.equals(vi)) {
                 result = i;
                 break;

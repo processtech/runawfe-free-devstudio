@@ -1,6 +1,7 @@
 package ru.runa.gpd.lang.model;
 
 import java.util.Calendar;
+import java.util.Date;
 
 import ru.runa.wfe.commons.CalendarUtil;
 
@@ -13,10 +14,8 @@ public class VersionInfo {
     public VersionInfo() {
     }
 
-    public VersionInfo(String dateAsString, String author, String comment) {
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(CalendarUtil.convertToDate(dateAsString, CalendarUtil.DATE_WITHOUT_TIME_FORMAT));
-        this.date = cal;
+    public VersionInfo(String dateTimeAsString, String author, String comment) {
+        this.date = CalendarUtil.convertToCalendar(dateTimeAsString, CalendarUtil.DATE_WITH_HOUR_MINUTES_FORMAT);
         this.author = author;
         this.comment = comment;
     }
@@ -29,12 +28,24 @@ public class VersionInfo {
         return CalendarUtil.format(date, CalendarUtil.DATE_WITHOUT_TIME_FORMAT);
     }
 
+    public String getDateTimeAsString() {
+        return CalendarUtil.format(date, CalendarUtil.DATE_WITH_HOUR_MINUTES_FORMAT);
+    }
+
     public void setDate(Calendar date) {
         this.date = date;
     }
 
     public void setDate(String dateAsString) {
         this.date.setTime(CalendarUtil.convertToDate(dateAsString, CalendarUtil.DATE_WITHOUT_TIME_FORMAT));
+    }
+
+    public void setDateTime(Date dateTime) {
+        this.date = CalendarUtil.dateToCalendar(dateTime);
+    }
+
+    public void setDateTime(String dateTimeAsString) {
+        this.date.setTime(CalendarUtil.convertToDate(dateTimeAsString, CalendarUtil.DATE_WITH_HOUR_MINUTES_FORMAT));
     }
 
     public String getAuthor() {
@@ -74,7 +85,7 @@ public class VersionInfo {
         }
 
         VersionInfo versionInfo = (VersionInfo) other;
-        if (versionInfo.getDateAsString().equals(this.getDateAsString()) && versionInfo.getAuthor().equals(this.getAuthor())
+        if (versionInfo.getDateTimeAsString().equals(this.getDateTimeAsString()) && versionInfo.getAuthor().equals(this.getAuthor())
                 && versionInfo.getComment().equals(this.getComment())) {
             return true;
         }
@@ -85,6 +96,6 @@ public class VersionInfo {
 
     @Override
     public int hashCode() {
-        return this.getDateAsString().concat(this.getAuthor()).concat(this.getComment()).hashCode();
+        return this.getDateTimeAsString().concat(this.getAuthor()).concat(this.getComment()).hashCode();
     }
 }

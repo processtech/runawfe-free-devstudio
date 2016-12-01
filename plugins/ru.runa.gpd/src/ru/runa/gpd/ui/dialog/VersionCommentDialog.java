@@ -41,6 +41,7 @@ public class VersionCommentDialog extends Dialog {
     private Text commentText;
     private Table historyTable;
     private final ProcessDefinition definition;
+    private Date currentDateTime;
 
     public VersionCommentDialog(ProcessDefinition definition) {
         super(Display.getCurrent().getActiveShell());
@@ -64,7 +65,7 @@ public class VersionCommentDialog extends Dialog {
             @Override
             protected void onSelection(SelectionEvent e) throws Exception {
                 TableItem tableItem = new TableItem(historyTable, SWT.NONE, 0);
-                tableItem.setText(0, CalendarUtil.format(new Date(), CalendarUtil.DATE_WITHOUT_TIME_FORMAT));
+                tableItem.setText(0, CalendarUtil.format(new Date(), CalendarUtil.DATE_WITH_HOUR_MINUTES_FORMAT));
                 tableItem.setText(1, System.getProperty("user.name").isEmpty() != true ? System.getProperty("user.name") : "New author");
                 tableItem.setText(2, "New description.");
                 setInputFieldsEnabled(true);
@@ -87,7 +88,7 @@ public class VersionCommentDialog extends Dialog {
         setButtonLayoutData(cancelButton);
 
         VersionInfo versionInfo = new VersionInfo();
-        versionInfo.setDate(this.getVersionDateAsString());
+        versionInfo.setDateTime(currentDateTime);
         versionInfo.setAuthor(this.getVersionAuthor());
         versionInfo.setComment(this.getVersionComment());
         int indexOfVersionInfo = definition.getVersionInfoListIndex(versionInfo);
@@ -156,9 +157,9 @@ public class VersionCommentDialog extends Dialog {
             column.setText(header);
         }
 
-        historyTable.getColumn(0).setWidth(80);
+        historyTable.getColumn(0).setWidth(100);
         historyTable.getColumn(1).setWidth(120);
-        historyTable.getColumn(2).setWidth(280);
+        historyTable.getColumn(2).setWidth(260);
 
         historyTable.addSelectionListener(new LoggingSelectionAdapter() {
             @Override
@@ -166,10 +167,9 @@ public class VersionCommentDialog extends Dialog {
                 TableItem[] selectedItems = historyTable.getSelection();
                 fillDialogFields(selectedItems[0]);
                 VersionInfo versionInfo = new VersionInfo();
-                versionInfo.setDate(selectedItems[0].getText(0));
+                versionInfo.setDateTime(selectedItems[0].getText(0));
                 versionInfo.setAuthor(selectedItems[0].getText(1));
                 versionInfo.setComment(selectedItems[0].getText(2));
-
                 int indexOfVersionInfo = definition.getVersionInfoListIndex(versionInfo);
                 if (indexOfVersionInfo != -1 && definition.getVersionInfoList().get(indexOfVersionInfo).isSavedToFile()) {
                     getButton(IDialogConstants.OK_ID).setEnabled(false);
@@ -189,13 +189,13 @@ public class VersionCommentDialog extends Dialog {
             historyTable.setEnabled(true);
             for (int i = versionInfoList.size() - 1; i >= 0; --i) {
                 TableItem item = new TableItem(historyTable, SWT.NONE);
-                item.setText(0, versionInfoList.get(i).getDateAsString());
+                item.setText(0, versionInfoList.get(i).getDateTimeAsString());
                 item.setText(1, versionInfoList.get(i).getAuthor());
                 item.setText(2, versionInfoList.get(i).getComment());
             }
             historyTable.setSelection(0);
             fillDialogFields(historyTable.getItem(0));
-
+            currentDateTime = versionInfoList.get(versionInfoList.size() - 1).getDate().getTime();
         } else {
             setDefaultButton(getButton(IDialogConstants.CANCEL_ID));
         }
@@ -227,13 +227,13 @@ public class VersionCommentDialog extends Dialog {
         VersionInfo previousVersionInfo = new VersionInfo(tableItem.getText(0), tableItem.getText(1), tableItem.getText(2));
         int indexOfPreviousVersionInfo = definition.getVersionInfoListIndex(previousVersionInfo);
 
-        tableItem.setText(0, this.getVersionDateAsString());
+        tableItem.setText(0, this.getVersionDateTimeAsString());
         tableItem.setText(1, this.getVersionAuthor());
         tableItem.setText(2, this.getVersionComment());
 
         for (int i = 0; i < historyTable.getItems().length; i++) {
             VersionInfo versionInfo = new VersionInfo();
-            versionInfo.setDate(historyTable.getItems()[i].getText(0));
+            versionInfo.setDateTime(historyTable.getItems()[i].getText(0));
             versionInfo.setAuthor(historyTable.getItems()[i].getText(1));
             versionInfo.setComment(historyTable.getItems()[i].getText(2));
 
@@ -266,13 +266,13 @@ public class VersionCommentDialog extends Dialog {
         return cal;
     }
 
-    protected String getVersionDateAsString() {
+    protected String getVersionDateTimeAsString() {
         String result = "";
         Calendar cal = Calendar.getInstance();
         cal.set(Calendar.YEAR, dateControl.getYear());
         cal.set(Calendar.MONTH, dateControl.getMonth());
         cal.set(Calendar.DAY_OF_MONTH, dateControl.getDay());
-        result = CalendarUtil.format(cal, CalendarUtil.DATE_WITHOUT_TIME_FORMAT);
+        result = CalendarUtil.format(cal, CalendarUtil.DATE_WITH_HOUR_MINUTES_FORMAT);
         return result;
     }
 

@@ -12,7 +12,6 @@ import ru.runa.gpd.util.XmlUtil;
 
 public class VersionCommentXmlContentProvider extends AuxContentProvider {
     private static final String XML_FILE_NAME = "comments.xml";
-    private static final String UUID = "UUID";
     private static final String VERSIONS = "versions";
     private static final String VERSION = "version";
     private static final String VERSION_DATE = "date";
@@ -27,10 +26,9 @@ public class VersionCommentXmlContentProvider extends AuxContentProvider {
     @Override
     public void read(Document document, ProcessDefinition definition) throws Exception {
         List<Element> versionList = document.getRootElement().elements(VERSION);
-        definition.setUUID(document.getRootElement().attributeValue(UUID));
         for (Element versionInfoElement : versionList) {
             VersionInfo versionInfo = new VersionInfo();
-            versionInfo.setDate(versionInfoElement.elementText(VERSION_DATE));
+            versionInfo.setDateTime(versionInfoElement.elementText(VERSION_DATE));
             versionInfo.setAuthor(versionInfoElement.elementText(VERSION_AUTHOR));
             versionInfo.setComment(versionInfoElement.elementText(VERSION_COMMENT));
             versionInfo.setSavedToFile(true);
@@ -42,12 +40,11 @@ public class VersionCommentXmlContentProvider extends AuxContentProvider {
     public Document save(ProcessDefinition definition) throws Exception {
         Document document = XmlUtil.createDocument(VERSIONS);
         Element root = document.getRootElement();
-        root.addAttribute(UUID, definition.getUUID());
         ArrayList<VersionInfo> versionInfoList = definition.getVersionInfoList();
         for (int i = 0; i < versionInfoList.size(); i++) {
             Element versionInfoElement = root.addElement(VERSION);
-            versionInfoElement.addElement(VERSION_DATE).addText(versionInfoList.get(i).getDateAsString());
-            versionInfoElement.addElement(VERSION_AUTHOR).addCDATA(versionInfoList.get(i).getAuthor());
+            versionInfoElement.addElement(VERSION_DATE).addText(versionInfoList.get(i).getDateTimeAsString());
+            versionInfoElement.addElement(VERSION_AUTHOR).addText(versionInfoList.get(i).getAuthor());
             versionInfoElement.addElement(VERSION_COMMENT).addCDATA(versionInfoList.get(i).getComment());
             versionInfoList.get(i).setSavedToFile(true);
         }
