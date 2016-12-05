@@ -149,11 +149,20 @@ public class FieldValidatorsWizardPage extends WizardPage {
         createTable(variablesTableViewer, new DataViewerComparator<>(new ValueComparator<Variable>() {
             @Override
             public int compare(Variable o1, Variable o2) {
+                int resultVariable1 = 0;
+                int resultVariable2 = 0;
                 int result = 0;
-
                 switch (getColumn()) {
                 case 0:
-                    result = fieldConfigs.containsKey(o1.getName()) ? -1 : 1;
+                    resultVariable1 = fieldConfigs.containsKey(o1.getName()) ? -1 : 1;
+                    resultVariable2 = fieldConfigs.containsKey(o2.getName()) ? -1 : 1;
+                    if (resultVariable1 == resultVariable2) {
+                        result = 0;
+                    } else if (resultVariable1 < resultVariable2) {
+                        result = -1;
+                    } else {
+                        result = 1;
+                    }
                     break;
                 case 1:
                     result = o1.getName().compareToIgnoreCase(o2.getName());
@@ -190,14 +199,24 @@ public class FieldValidatorsWizardPage extends WizardPage {
             }
         });
 
-        createTable(swimlanesTableViewer, new DataViewerComparator<>(new ValueComparator<Variable>() {
+        createTable(swimlanesTableViewer, new DataViewerComparator<>(new ValueComparator<Swimlane>() {
             @Override
-            public int compare(Variable o1, Variable o2) {
+            public int compare(Swimlane o1, Swimlane o2) {
+                int resultSwimlane1 = 0;
+                int resultSwimlane2 = 0;
                 int result = 0;
 
                 switch (getColumn()) {
                 case 0:
-                    result = fieldConfigs.containsKey(o1.getName()) ? -1 : 1;
+                    resultSwimlane1 = fieldConfigs.containsKey(o1.getName()) ? -1 : 1;
+                    resultSwimlane2 = fieldConfigs.containsKey(o2.getName()) ? -1 : 1;
+                    if (resultSwimlane1 == resultSwimlane2) {
+                        result = 0;
+                    } else if (resultSwimlane1 < resultSwimlane2) {
+                        result = -1;
+                    } else {
+                        result = 1;
+                    }
                     break;
                 case 1:
                     result = o1.getName().compareToIgnoreCase(o2.getName());
@@ -251,12 +270,22 @@ public class FieldValidatorsWizardPage extends WizardPage {
         createTable(validatorsTableViewer, new DataViewerComparator<>(new ValueComparator<ValidatorDefinition>() {
             @Override
             public int compare(ValidatorDefinition o1, ValidatorDefinition o2) {
+                int resultValidator1 = 0;
+                int resultValidator2 = 0;
                 int result = 0;
 
                 Map<String, ValidatorConfig> configs = fieldConfigs.get(getCurrentVariableName());
                 switch (getColumn()) {
                 case 0:
-                    result = configs.containsKey(o1.getName()) ? -1 : 1;
+                    resultValidator1 = configs.containsKey(o1.getName()) ? 1 : -1;
+                    resultValidator2 = configs.containsKey(o2.getName()) ? 1 : -1;
+                    if (resultValidator1 == resultValidator2) {
+                        result = 0;
+                    } else if (resultValidator1 < resultValidator2) {
+                        result = 1;
+                    } else {
+                        result = -1;
+                    }
                     break;
                 case 1:
                     result = o1.getLabel().compareToIgnoreCase(o2.getLabel());
