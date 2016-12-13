@@ -10,14 +10,15 @@ import org.dom4j.QName;
 import org.eclipse.core.resources.IFile;
 
 import ru.runa.gpd.Application;
-import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
-import ru.runa.gpd.lang.model.EndState;
-import ru.runa.gpd.lang.model.EndTokenState;
-import ru.runa.gpd.lang.model.GraphElement;
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.Describable;
+import ru.runa.gpd.lang.model.EndState;
+import ru.runa.gpd.lang.model.EndTokenState;
+import ru.runa.gpd.lang.model.EndTokenSubprocessDefinitionBehavior;
+import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.ISendMessageNode;
 import ru.runa.gpd.lang.model.ITimed;
 import ru.runa.gpd.lang.model.MultiSubprocess;
@@ -240,8 +241,12 @@ public class BpmnSerializer extends ProcessSerializer {
             Element element = writeNode(processElement, endTokenState);
             Map<String, String> properties = Maps.newLinkedHashMap();
             properties.put(TOKEN, "true");
+            if (definition instanceof SubprocessDefinition) {
+                properties.put(BEHAVIOR, endTokenState.getSubprocessDefinitionBehavior().name());
+            }
             writeExtensionElements(element, properties);
         }
+
         List<EndState> endStates = definition.getChildren(EndState.class);
         for (EndState endState : endStates) {
             writeNode(processElement, endState);
@@ -733,8 +738,14 @@ public class BpmnSerializer extends ProcessSerializer {
             }
         }
         List<Element> endStates = processElement.elements(END_EVENT);
-        for (Element node : endStates) {
-            create(node, definition);
+        for (Element element : endStates) {
+            Node endNode = create(element, definition);
+            if (endNode instanceof EndTokenState) {
+                Map<String, String> properties = parseExtensionProperties(element);
+                if (properties.containsKey(BEHAVIOR)) {
+                    ((EndTokenState) endNode).setSubprocessDefinitionBehavior(EndTokenSubprocessDefinitionBehavior.valueOf(properties.get(BEHAVIOR)));
+                }
+            }
         }
         List<Element> textAnnotationElements = processElement.elements(TEXT_ANNOTATION);
         for (Element textAnnotationElement : textAnnotationElements) {
