@@ -137,7 +137,7 @@ public class RenameVariableRefactoring extends Refactoring {
         }
         List<NodeTypeDefinition> typesWithProvider = NodeRegistry.getTypesWithVariableRenameProvider();
         for (NodeTypeDefinition elementTypeDefinition : typesWithProvider) {
-            List<? extends GraphElement> list = processDefinition.getChildren(elementTypeDefinition.getModelClass());
+            List<? extends GraphElement> list = processDefinition.getChildrenRecursive(elementTypeDefinition.getModelClass());
             for (GraphElement graphElement : list) {
                 VariableRenameProvider provider = elementTypeDefinition.createVariableRenameProvider();
                 provider.setElement(graphElement);

@@ -62,6 +62,6 @@ public interface PropertyNames {
     public static final String PROPERTY_RELATION_PARAMETER = "relationParameter";
     public static final String PROPERTY_RELATION_INVERSED = "relationInversed";
     public static final String PROPERTY_EDITOR_PATH = "editorPath";
-    public static final String PROPERTY_INTERRUPTING_BOUNDARY_EVENT = "interruptingBoundaryEvent";
     public static final String PROPERTY_END_TOKEN_BEHAVIOR = "endTokenBehavior";
+    public static final String PROPERTY_INTERRUPTING_BOUNDARY_EVENT = "interruptingBoundaryEvent";
 }
