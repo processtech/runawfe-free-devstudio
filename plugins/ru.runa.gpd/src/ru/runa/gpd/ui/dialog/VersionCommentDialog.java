@@ -198,6 +198,7 @@ public class VersionCommentDialog extends Dialog {
             currentDateTime = versionInfoList.get(versionInfoList.size() - 1).getDate().getTime();
         } else {
             setDefaultButton(getButton(IDialogConstants.CANCEL_ID));
+            currentDateTime = new Date();
         }
 
         return parent;
