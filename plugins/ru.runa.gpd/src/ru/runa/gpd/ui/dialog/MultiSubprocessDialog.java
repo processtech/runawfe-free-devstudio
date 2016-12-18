@@ -11,6 +11,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
 
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.ProcessCache;
@@ -30,6 +31,12 @@ public class MultiSubprocessDialog extends SubprocessDialog {
     }
 
     @Override
+    protected void configureShell(Shell newShell) {
+        super.configureShell(newShell);
+        newShell.setSize(800, 700);
+    }
+
+    @Override
     protected void onSubprocessChanged() {
         super.onSubprocessChanged();
         updateIteratorComboVariables();
@@ -43,7 +50,7 @@ public class MultiSubprocessDialog extends SubprocessDialog {
         data.minimumHeight = 240;
         group.setLayoutData(data);
         group.setText(Localization.getString("Feature.Multiinstance"));
-        new MultiinstanceComposite(group, subprocess, parameters);
+        new MultiinstanceComposite(group, subprocess, parameters).setLayoutData(new GridData(GridData.FILL_BOTH));
         Composite composite = new Composite(group, SWT.NONE);
         composite.setLayout(new GridLayout(2, false));
         composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));

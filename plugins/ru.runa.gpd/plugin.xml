@@ -464,7 +464,9 @@
              class="ru.runa.gpd.lang.action.SubprocessDelegate"
              id="subprocess"
              label="%label.action.subprocess"
-             menubarPath="additions"/>
+             menubarPath="additions"
+             style="push"
+             />
        <action
              class="ru.runa.gpd.lang.action.EmbeddedSubprocessActionsDelegate"
              id="embeddedSubprocessActions"
