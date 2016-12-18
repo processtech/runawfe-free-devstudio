@@ -173,6 +173,17 @@
     </objectContribution>
     <objectContribution
           adaptable="false"
+          id="subprocess.compactview"
+          objectClass="ru.runa.gpd.lang.model.Subprocess">
+       <action
+             class="ru.runa.gpd.lang.action.CompactViewFeatureDelegate"
+             id="feature.compactView"
+             label="%label.action.feature.compactView"
+             menubarPath="features/sp1">
+       </action>
+    </objectContribution>
+    <objectContribution
+          adaptable="false"
           id="node.swimlanes"
           objectClass="ru.runa.gpd.lang.model.SwimlanedNode">
        <filter
