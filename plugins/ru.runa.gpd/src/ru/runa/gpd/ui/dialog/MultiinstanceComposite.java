@@ -175,7 +175,7 @@ public class MultiinstanceComposite extends Composite {
                 parameters.setDiscriminatorCondition(conditionText.getText());
             }
         });
-        updateTaskCreationSettingsComposite();
+        updateSubprocessCreationSettingsComposite();
     }
 
     private List<String> getConditionVariableNames() {
@@ -205,6 +205,10 @@ public class MultiinstanceComposite extends Composite {
             createSubprocessesByDiscriminatorComposite.setVisible(true);
         }
         getParent().layout(true);
+    }
+
+    private void updateSubprocessCreationSettingsComposite() {
+    	conditionText.setText(parameters.getDiscriminatorCondition() != null ? parameters.getDiscriminatorCondition() : "");
     }
 
     private Composite createTabVariable(CTabFolder parent, String variableLabelText) {

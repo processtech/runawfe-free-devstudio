@@ -28,6 +28,7 @@ public class MultiSubprocessDialog extends SubprocessDialog {
     public MultiSubprocessDialog(MultiSubprocess multiSubprocess) {
         super(multiSubprocess);
         parameters = new MultiinstanceParameters(multiSubprocess.getVariableMappings());
+        parameters.setDiscriminatorCondition(multiSubprocess.getDiscriminatorCondition());
     }
 
     @Override
@@ -88,6 +89,10 @@ public class MultiSubprocessDialog extends SubprocessDialog {
             parameters.mergeTo(variableMappings);
         }
         return variableMappings;
+    }
+
+    public MultiinstanceParameters getParameters() {
+        return parameters;
     }
 
 }
