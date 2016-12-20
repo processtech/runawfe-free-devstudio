@@ -22,6 +22,7 @@ import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.Describable;
 import ru.runa.gpd.lang.model.EndState;
 import ru.runa.gpd.lang.model.EndTokenState;
+import ru.runa.gpd.lang.model.EndTokenSubprocessDefinitionBehavior;
 import ru.runa.gpd.lang.model.Event;
 import ru.runa.gpd.lang.model.Fork;
 import ru.runa.gpd.lang.model.GraphElement;
@@ -264,7 +265,10 @@ public class JpdlSerializer extends ProcessSerializer {
         }
         List<EndTokenState> endTokenStates = definition.getChildren(EndTokenState.class);
         for (EndTokenState state : endTokenStates) {
-            writeElement(root, state);
+            Element element = writeElement(root, state);
+            if (definition instanceof SubprocessDefinition) {
+                element.addAttribute(BEHAVIOR, state.getSubprocessDefinitionBehavior().name());
+            }
         }
         List<EndState> endStates = definition.getChildren(EndState.class);
         for (EndState state : endStates) {
@@ -791,7 +795,10 @@ public class JpdlSerializer extends ProcessSerializer {
         }
         List<Element> endTokenStates = root.elements(END_TOKEN);
         for (Element node : endTokenStates) {
-            create(node, definition);
+            EndTokenState endTokenState = create(node, definition);
+            if (!Strings.isNullOrEmpty(node.attributeValue(BEHAVIOR))) {
+                endTokenState.setSubprocessDefinitionBehavior(EndTokenSubprocessDefinitionBehavior.valueOf(node.attributeValue(BEHAVIOR)));
+            }
         }
         List<Element> endStates = root.elements(END_STATE);
         for (Element node : endStates) {
