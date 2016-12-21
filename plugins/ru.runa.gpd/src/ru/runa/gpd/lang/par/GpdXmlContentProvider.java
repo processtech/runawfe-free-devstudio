@@ -156,19 +156,22 @@ public class GpdXmlContentProvider extends AuxContentProvider {
             if (graphElement instanceof Node) {
                 Node node = (Node) graphElement;
                 for (Transition transition : node.getLeavingTransitions()) {
-                    Point relativeLabelLocation = transition.getLabelLocation();
-                    if (relativeLabelLocation != null) {
-                        // label location relative to transition midpoint
-                        ILocation midpoint = Graphiti.getPeService().getConnectionMidpoint(
-                                (Connection) ((GraphitiProcessEditor) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
-                                        .getActiveEditor()).getDiagramEditorPage().getDiagramTypeProvider().getFeatureProvider()
-                                        .getPictogramElementForBusinessObject(transition), 0.5d);
-                        Point absoluteLabelLocation = new Point(relativeLabelLocation.x + midpoint.getX(), relativeLabelLocation.y + midpoint.getY());
-                        if (absoluteLabelLocation.x < xOffset) {
-                            xOffset = absoluteLabelLocation.x;
-                        }
-                        if (absoluteLabelLocation.y < yOffset) {
-                            yOffset = absoluteLabelLocation.y;
+                    if (definition.getLanguage() == Language.BPMN) {
+                        Point relativeLabelLocation = transition.getLabelLocation();
+                        if (relativeLabelLocation != null) {
+                            // label location relative to transition midpoint
+                            ILocation midpoint = Graphiti.getPeService().getConnectionMidpoint(
+                                    (Connection) ((GraphitiProcessEditor) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
+                                            .getActiveEditor()).getDiagramEditorPage().getDiagramTypeProvider().getFeatureProvider()
+                                            .getPictogramElementForBusinessObject(transition), 0.5d);
+                            Point absoluteLabelLocation = new Point(relativeLabelLocation.x + midpoint.getX(), relativeLabelLocation.y
+                                    + midpoint.getY());
+                            if (absoluteLabelLocation.x < xOffset) {
+                                xOffset = absoluteLabelLocation.x;
+                            }
+                            if (absoluteLabelLocation.y < yOffset) {
+                                yOffset = absoluteLabelLocation.y;
+                            }
                         }
                     }
                     for (Point bendpoint : transition.getBendpoints()) {
