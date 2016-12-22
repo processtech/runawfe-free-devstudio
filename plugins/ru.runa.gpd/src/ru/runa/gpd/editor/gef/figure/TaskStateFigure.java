@@ -50,7 +50,7 @@ public class TaskStateFigure extends StateFigure<TaskState> {
         if (model.isMinimizedView()) {
             return new Rectangle(origin.x + GRID_SIZE / 2, origin.y + GRID_SIZE / 2, origin.width - GRID_SIZE, origin.height - GRID_SIZE);
         } else {
-            return new Rectangle(origin.x + GRID_SIZE, origin.y, origin.width - GRID_SIZE, origin.height - GRID_SIZE);
+            return origin;
         }
     }
 

@@ -16,14 +16,17 @@ public class MultiSubprocessFigure extends SubprocessFigure {
     @Override
     protected void paintFigure(Graphics g, Dimension dim) {
         super.paintFigure(g, dim);
-        Utils.paintSurroudingBoxes(g, dim);
+        if (!model.isMinimizedView()) {
+            Utils.paintSurroudingBoxes(g, dim);
+        }
     }
 
     @Override
-    public Rectangle getClientArea(Rectangle rect) {
-        Rectangle r = super.getClientArea(rect);
-        Rectangle borderRect = r.getCopy();
-        borderRect.expand(-GRID_SIZE / 2, 0);
-        return borderRect;
+    protected Rectangle getFrameArea(Rectangle origin) {
+        if (!model.isMinimizedView()) {
+            return new Rectangle(origin.x + GRID_SIZE / 2, origin.y, origin.width - GRID_SIZE, origin.height);
+        }
+        return super.getFrameArea(origin);
     }
+
 }
