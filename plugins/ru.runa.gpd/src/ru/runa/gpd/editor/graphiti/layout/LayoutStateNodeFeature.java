@@ -39,6 +39,10 @@ public class LayoutStateNodeFeature extends ElementLayoutFeature {
             if (scriptImage != null) {
                 Graphiti.getGaService().setLocationAndSize(scriptImage, 10, 10, 16, 16);
             }
+            GraphicsAlgorithm iconImage = PropertyUtil.findGaRecursiveByName(ga, GaProperty.ICON);
+            if (iconImage != null) {
+                iconImage.setTransparency(.0);
+            }
             return true;
         }
 
@@ -69,6 +73,10 @@ public class LayoutStateNodeFeature extends ElementLayoutFeature {
                 x -= 14 / 2;
             }
             Graphiti.getGaService().setLocationAndSize(multipleInstancesImage, x, y, 16, 12);
+        }
+        GraphicsAlgorithm iconImage = PropertyUtil.findGaRecursiveByName(ga, GaProperty.ICON);
+        if (iconImage != null) {
+            iconImage.setTransparency(1.0);
         }
         GraphicsAlgorithm scriptImage = PropertyUtil.findGaRecursiveByName(ga, GaProperty.SCRIPT);
         if (scriptImage != null) {

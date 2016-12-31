@@ -9,6 +9,8 @@ import org.eclipse.draw2d.geometry.Rectangle;
 import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.editor.GEFConstants;
 import ru.runa.gpd.editor.gef.figure.uml.TimerAnchor;
+import ru.runa.gpd.lang.Language;
+import ru.runa.gpd.lang.NodeRegistry;
 import ru.runa.gpd.lang.model.TaskState;
 
 public class TaskStateFigure extends StateFigure<TaskState> {
@@ -33,6 +35,7 @@ public class TaskStateFigure extends StateFigure<TaskState> {
         Dimension border = dim.getExpanded(-1, -1);
         if (model.isMinimizedView()) {
             g.drawRectangle(new Rectangle(new Point(0, 0), border));
+            g.drawImage(NodeRegistry.getNodeTypeDefinition(model.getClass()).getImage(Language.JPDL.getNotation()), (getClientArea().width - ICON_WIDTH) / 2, (getClientArea().height - ICON_HEIGHT) / 2);
         } else {
             g.drawRoundRectangle(new Rectangle(new Point(0, 0), border), 20, 10);
         }
@@ -47,11 +50,7 @@ public class TaskStateFigure extends StateFigure<TaskState> {
     }
 
     protected Rectangle getFrameArea(Rectangle origin) {
-        if (model.isMinimizedView()) {
-            return new Rectangle(origin.x + GRID_SIZE / 2, origin.y + GRID_SIZE / 2, origin.width - GRID_SIZE, origin.height - GRID_SIZE);
-        } else {
-            return origin;
-        }
+        return origin;
     }
 
     @Override
@@ -82,7 +81,7 @@ public class TaskStateFigure extends StateFigure<TaskState> {
 
     @Override
     public void setBounds(Rectangle rect) {
-        int minimizedSize = 2 * GEFConstants.GRID_SIZE;
+        int minimizedSize = 3 * GEFConstants.GRID_SIZE;
         if (model.isMinimizedView()) {
             rect.width = minimizedSize;
             rect.height = minimizedSize;

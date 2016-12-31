@@ -10,6 +10,7 @@ import ru.runa.gpd.editor.graphiti.GaProperty;
 import ru.runa.gpd.lang.model.Node;
 
 public class AddMultiTaskFeature extends AddTaskStateNodeFeature {
+
     @Override
     protected void addCustomGraphics(Node node, IAddContext context, GraphicsAlgorithmContainer container, ContainerShape containerShape) {
         super.addCustomGraphics(node, context, container, containerShape);
@@ -17,4 +18,5 @@ public class AddMultiTaskFeature extends AddTaskStateNodeFeature {
         image.getProperties().add(new GaProperty(GaProperty.ID, GaProperty.MULTIPLE_INSTANCES));
         Graphiti.getGaService().setLocation(image, node.getConstraint().width / 2 - 8, node.getConstraint().height - 2 * GRID_SIZE);
     }
+
 }

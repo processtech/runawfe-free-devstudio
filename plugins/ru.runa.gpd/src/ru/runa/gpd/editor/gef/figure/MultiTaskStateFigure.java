@@ -32,9 +32,14 @@ public class MultiTaskStateFigure extends TaskStateFigure {
 
     @Override
     protected Rectangle getBox() {
-        Rectangle r = super.getBox();
-        Rectangle borderRect = r.getCopy();
-        borderRect.expand(GRID_SIZE / 2, 0);
-        return borderRect;
+        if (model.isMinimizedView()) {
+            return super.getBox();
+        } else {
+            Rectangle r = super.getBox();
+            Rectangle borderRect = r.getCopy();
+            borderRect.expand(GRID_SIZE / 2, 0);
+            return borderRect;
+        }
     }
+
 }

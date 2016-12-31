@@ -29,4 +29,16 @@ public class MultiSubprocessFigure extends SubprocessFigure {
         return super.getFrameArea(origin);
     }
 
+    @Override
+    protected Rectangle getBox() {
+        if (model.isMinimizedView()) {
+            return super.getBox();
+        } else {
+            Rectangle r = super.getBox();
+            Rectangle borderRect = r.getCopy();
+            borderRect.expand(GRID_SIZE / 2, 0);
+            return borderRect;
+        }
+    }
+
 }
