@@ -344,6 +344,15 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
             Clipboard clipboard = new Clipboard(getDisplay());
             @SuppressWarnings("unchecked")
             List<Variable> list = ((IStructuredSelection) tableViewer.getSelection()).toList();
+            for (int i = 0; i < list.size(); i++) {
+                String[] variableUserTypeNameArray = list.get(i).getFormatComponentClassNames();
+                if (variableUserTypeNameArray.length > 0) {
+                    VariableUserType variableUserType = getDefinition().getVariableUserTypeNotNull(variableUserTypeNameArray[0]);
+                    String formatName = list.get(i).getFormat();
+                    list.get(i).setUserType(variableUserType, false);
+                    list.get(i).setFormat(formatName, false);
+                }
+            }
             clipboard.setContents(new Object[] { list }, new Transfer[] { VariableTransfer.getInstance() });
         }
     }
@@ -374,7 +383,10 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
                         getDefinition().addChild(newVariable);
                         if (newVariable.isComplex()) {
                             copyUserTypeRecursive(newVariable.getUserType());
-                            newVariable.setUserType(getDefinition().getVariableUserTypeNotNull(newVariable.getUserType().getName()));
+                            if (newVariable.getFormatClassName().equals("ru.runa.wfe.var.format.UserTypeFormat")
+                                    || newVariable.getFormat().startsWith("usertype:")) {
+                                newVariable.setUserType(getDefinition().getVariableUserTypeNotNull(newVariable.getUserType().getName()));
+                            }
                         }
                     }
                 }

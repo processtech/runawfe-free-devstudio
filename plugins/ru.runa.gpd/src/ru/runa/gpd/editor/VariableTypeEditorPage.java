@@ -3,6 +3,7 @@ package ru.runa.gpd.editor;
 import java.beans.PropertyChangeEvent;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -270,7 +271,28 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             VariableUserType type = getSelection();
             VariableUserTypeDialog dialog = new VariableUserTypeDialog(getDefinition(), type);
             if (dialog.open() == Window.OK) {
-                type.setName(dialog.getName());
+                String oldTypeName = type.getName();
+                String newTypeName = dialog.getName();
+                List<Variable> variables = getDefinition().getChildren(Variable.class);
+                List<Variable> resultVariables = Lists.newArrayList();
+                Pattern pattern = Pattern.compile("ru\\.runa\\.wfe\\.var\\.format\\.ListFormat\\(" + oldTypeName + "\\)");
+                for (Variable currentVariable : variables) {
+                    if ((currentVariable.getFormat().equals("ru.runa.wfe.var.format.UserTypeFormat") && currentVariable.getUserType().getName()
+                            .equals(oldTypeName))
+                            || currentVariable.getFormat().equals("usertype:" + oldTypeName)) {
+                        resultVariables.add(currentVariable);
+                    } else if (pattern.matcher(currentVariable.getFormat()).matches()) {
+                        String replacedUserTypeFormat = pattern.matcher(currentVariable.getFormat()).replaceFirst(
+                                "ru.runa.wfe.var.format.ListFormat(" + newTypeName + ")");
+                        currentVariable.setFormat(replacedUserTypeFormat);
+                    }
+                }
+                if (resultVariables.size() > 0) {
+                    type.setName(newTypeName);
+                    for (Variable currentVariable : resultVariables) {
+                        currentVariable.setUserType(type);
+                    }
+                }
             }
         }
     }

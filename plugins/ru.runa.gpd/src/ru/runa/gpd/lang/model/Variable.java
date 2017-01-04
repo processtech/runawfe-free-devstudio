@@ -57,6 +57,13 @@ public class Variable extends NamedGraphElement implements Describable {
         }
     }
 
+    public void setUserType(VariableUserType userType, boolean isFirePropertyChange) {
+        this.userType = userType;
+        if (userType != null) {
+            setFormat(VariableUserType.PREFIX + userType.getName(), isFirePropertyChange);
+        }
+    }
+
     public boolean isUserTypeAttribute() {
         return getName().contains(VariableUserType.DELIM);
     }
@@ -107,9 +114,6 @@ public class Variable extends NamedGraphElement implements Describable {
     }
 
     public String getFormatLabel() {
-        if (isComplex()) {
-            return getUserType().getName();
-        }
         if (format.contains(FORMAT_COMPONENT_TYPE_START)) {
             String label = LocalizationRegistry.getLabel(getFormatClassName()) + FORMAT_COMPONENT_TYPE_START;
             String[] componentClassNames = getFormatComponentClassNames();
@@ -120,6 +124,9 @@ public class Variable extends NamedGraphElement implements Describable {
                 label += LocalizationRegistry.getLabel(componentClassNames[i]);
             }
             return label + FORMAT_COMPONENT_TYPE_END;
+        }
+        if (isComplex()) {
+            return getUserType().getName();
         }
         return LocalizationRegistry.getLabel(format);
     }
@@ -139,6 +146,14 @@ public class Variable extends NamedGraphElement implements Describable {
         String old = this.format;
         this.format = format;
         firePropertyChange(PROPERTY_FORMAT, old, this.format);
+    }
+
+    public void setFormat(String format, boolean isFirePropertyChange) {
+        String old = this.format;
+        this.format = format;
+        if (isFirePropertyChange) {
+            firePropertyChange(PROPERTY_FORMAT, old, this.format);
+        }
     }
 
     public boolean isPublicVisibility() {
