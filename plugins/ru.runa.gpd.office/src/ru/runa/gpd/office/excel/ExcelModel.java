@@ -9,12 +9,14 @@ import org.dom4j.Element;
 
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.GraphElement;
+import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.office.FilesSupplierMode;
 import ru.runa.gpd.office.InputOutputModel;
 import ru.runa.gpd.office.Messages;
 import ru.runa.gpd.util.XmlUtil;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 
 public class ExcelModel extends Observable {
     private final FilesSupplierMode mode;
@@ -65,9 +67,18 @@ public class ExcelModel extends Observable {
     }
 
     public void validate(GraphElement graphElement, List<ValidationError> errors) {
+        List<Variable> variables = graphElement.getProcessDefinition().getChildren(Variable.class);
         for (ConstraintsModel constraintsModel : constraints) {
             if (Strings.isNullOrEmpty(constraintsModel.variableName)) {
                 errors.add(ValidationError.createError(graphElement, Messages.getString("model.validation.xlsx.constraint.variable.empty")));
+                break;
+            }
+            List<String> variablesNames = Lists.newArrayList();
+            for (int i = 0; i < variables.size(); i++) {
+                variablesNames.add(variables.get(i).getName());
+            }
+            if (variablesNames.contains(constraintsModel.variableName) != true) {
+                errors.add(ValidationError.createError(graphElement, Messages.getString("model.validation.xlsx.constraint.variable.nonexistent")));
                 break;
             }
         }
