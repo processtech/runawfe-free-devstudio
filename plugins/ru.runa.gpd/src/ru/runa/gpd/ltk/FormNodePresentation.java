@@ -55,6 +55,12 @@ public class FormNodePresentation extends VariableRenameProvider<FormNode> {
                 result.addAll(textEditToChangeArray(validationFile, validationLabel, multiEdit));
             }
         }
+        if (element.hasFormScript()) {
+            FormType formType = FormTypeProvider.getFormType(element.getFormType());
+            IFile scriptFile = folder.getFile(element.getScriptFileName());
+            String scriptLabel = Localization.getString("Search.formNode.script");
+            result.addAll(textEditToChangeArray(scriptFile, scriptLabel, processFile(formType, scriptFile, variablesMap, false)));
+        }
         if (result.getChildren().length > 0) {
             return Arrays.asList((Change) result);
         }

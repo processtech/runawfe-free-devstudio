@@ -250,7 +250,7 @@ public class VariableSearchVisitor {
                     matchesCount++;
                 }
                 elementMatch.setMatchesCount(matchesCount);
-                List<Match> matches = findInFile(elementMatch, file, matcherWithBrackets);
+                List<Match> matches = findInFile(elementMatch, file, matcher);
                 elementMatch.setPotentialMatchesCount(matches.size() - matchesCount);
                 for (Match match : matches) {
                     query.getSearchResult().addMatch(match);
@@ -274,6 +274,22 @@ public class VariableSearchVisitor {
                 elementMatch.setMatchesCount(matchesCount);
                 if (matchesCount > 0) {
                     query.getSearchResult().addMatch(new Match(elementMatch, 0, 0));
+                }
+            }
+            if (formNode.hasFormScript()) {
+                IFile file = IOUtils.getAdjacentFile(definitionFile, formNode.getScriptFileName());
+                Map<String, FormVariableAccess> formVariables = formNode.getFormVariables((IFolder) definitionFile.getParent());
+                ElementMatch elementMatch = new ElementMatch(formNode, file, ElementMatch.CONTEXT_FORM_SCRIPT);
+                elementMatch.setParent(nodeElementMatch);
+                int matchesCount = 0;
+                if (formVariables.keySet().contains(query.getSearchText())) {
+                    matchesCount++;
+                }
+                elementMatch.setMatchesCount(matchesCount);
+                List<Match> matches = findInFile(elementMatch, file, matcher);
+                elementMatch.setPotentialMatchesCount(matches.size() - matchesCount);
+                for (Match match : matches) {
+                    query.getSearchResult().addMatch(match);
                 }
             }
             String swimlaneName = ((SwimlanedNode) formNode).getSwimlaneName();

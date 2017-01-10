@@ -79,6 +79,8 @@ public class SearchPage extends AbstractTextSearchViewPage {
             FormNode formNode = (FormNode) elementMatch.getGraphElement();
             OpenFormValidationDelegate delegate = new OpenFormValidationDelegate();
             delegate.openValidationFile(formNode, elementMatch.getFile());
+        } else if (ElementMatch.CONTEXT_FORM_SCRIPT.equals(elementMatch.getContext())) {
+            editor = IDE.openEditor(getSite().getPage(), elementMatch.getFile());
         } else if (ElementMatch.CONTEXT_BOT_TASK_LINK.equals(elementMatch.getContext())) {
             BotTaskUtils.editBotTaskLinkConfiguration((TaskState) elementMatch.getGraphElement());
         } else if (ElementMatch.CONTEXT_BOT_TASK.equals(elementMatch.getContext())) {
