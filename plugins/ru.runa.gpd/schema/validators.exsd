@@ -113,6 +113,8 @@
                   </enumeration>
                   <enumeration value="java.lang.Number">
                   </enumeration>
+                  <enumeration value="java.math.BigDecimal">
+                  </enumeration>
                   <enumeration value="java.lang.Boolean">
                   </enumeration>
                   <enumeration value="java.util.Date">
