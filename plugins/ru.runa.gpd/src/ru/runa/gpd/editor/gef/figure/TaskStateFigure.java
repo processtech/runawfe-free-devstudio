@@ -6,6 +6,8 @@ import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 
+import com.google.common.base.Strings;
+
 import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.editor.GEFConstants;
 import ru.runa.gpd.editor.gef.figure.uml.TimerAnchor;
@@ -75,7 +77,7 @@ public class TaskStateFigure extends StateFigure<TaskState> {
         String tooltip = null;
         if (model.isMinimizedView()) {
             tooltip = model.getSwimlaneLabel();
-            tooltip += "\n" + model.getName();
+            tooltip = (Strings.isNullOrEmpty(tooltip) ? "" : tooltip + "\n") + model.getName();
         }
         return tooltip;
     }

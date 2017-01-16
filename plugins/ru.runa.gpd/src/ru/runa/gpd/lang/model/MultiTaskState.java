@@ -32,7 +32,9 @@ public class MultiTaskState extends TaskState implements IMultiInstancesContaine
 
     @Override
     protected boolean isSwimlaneDisabled() {
-        return creationMode == MultiTaskCreationMode.BY_EXECUTORS;
+        return creationMode == MultiTaskCreationMode.BY_EXECUTORS
+                || discriminatorUsage.contains(VariableMapping.USAGE_DISCRIMINATOR_GROUP)
+                || discriminatorUsage.contains(VariableMapping.USAGE_DISCRIMINATOR_RELATION);
     }
 
     public VariableMapping getDiscriminatorMapping() {
@@ -84,6 +86,9 @@ public class MultiTaskState extends TaskState implements IMultiInstancesContaine
     @Override
     public String getSwimlaneLabel() {
         if (isSwimlaneDisabled()) {
+            if (discriminatorUsage.contains(VariableMapping.USAGE_DISCRIMINATOR_VARIABLE)) {
+                return "";
+            }
             return discriminatorValue != null ? "(" + discriminatorValue + ")" : "";
         }
         return super.getSwimlaneLabel();
