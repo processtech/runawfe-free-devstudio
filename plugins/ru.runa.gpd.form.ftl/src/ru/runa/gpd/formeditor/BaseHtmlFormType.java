@@ -30,6 +30,7 @@ public abstract class BaseHtmlFormType extends FormType {
     private static final String READONLY_ATTR = "readonly";
     private static final String DISABLED_ATTR = "disabled";
     private static final String NAME_ATTR = "name";
+    private static final String FORMAT_OTHER = "\"%s\"";
     protected FormEditor editor;
 
     @Override
@@ -95,6 +96,6 @@ public abstract class BaseHtmlFormType extends FormType {
      */
     @Override
     public MultiTextEdit searchVariableReplacements(IFile file, String variableName, String replacement) throws Exception {
-        return super.searchVariableReplacements(file, variableName, replacement);
+        return super.searchVariableReplacements(file, String.format(FORMAT_OTHER, variableName), String.format(FORMAT_OTHER, replacement));
     }
 }

@@ -46,7 +46,7 @@ public class FormNodePresentation extends VariableRenameProvider<FormNode> {
             FormType formType = FormTypeProvider.getFormType(element.getFormType());
             IFile formFile = folder.getFile(element.getFormFileName());
             String formLabel = Localization.getString("Search.formNode.form");
-            result.addAll(textEditToChangeArray(formFile, formLabel, processFile(formType, formFile, variablesMap, false)));
+            result.addAll(textEditToChangeArray(formFile, formLabel, processFile(formType, formFile, variablesMap, true)));
             if (element.hasFormValidation()) {
                 IFile validationFile = folder.getFile(element.getValidationFileName());
                 MultiTextEdit multiEdit = processFile(formType, validationFile, variablesMap, true);
@@ -59,7 +59,7 @@ public class FormNodePresentation extends VariableRenameProvider<FormNode> {
             FormType formType = FormTypeProvider.getFormType(element.getFormType());
             IFile scriptFile = folder.getFile(element.getScriptFileName());
             String scriptLabel = Localization.getString("Search.formNode.script");
-            result.addAll(textEditToChangeArray(scriptFile, scriptLabel, processFile(formType, scriptFile, variablesMap, false)));
+            result.addAll(textEditToChangeArray(scriptFile, scriptLabel, processScriptFile(formType, scriptFile, variablesMap)));
         }
         if (result.getChildren().length > 0) {
             return Arrays.asList((Change) result);
@@ -80,6 +80,20 @@ public class FormNodePresentation extends VariableRenameProvider<FormNode> {
             if (checkScriptingName && !Objects.equal(oldVariable.getName(), oldVariable.getScriptingName())) {
                 addChildEdit(multiEdit, formType.searchVariableReplacements(file, oldVariable.getScriptingName(), newVariable.getScriptingName()));
             }
+        }
+        return multiEdit;
+    }
+
+    /**
+     * Rename variables in script file
+     */
+    private MultiTextEdit processScriptFile(FormType formType, IFile file, SortedMap<Variable, Variable> variablesMap)
+            throws Exception {
+        MultiTextEdit multiEdit = new MultiTextEdit();
+        for (Entry<Variable, Variable> entry : variablesMap.entrySet()) {
+            Variable oldVariable = entry.getKey();
+            Variable newVariable = entry.getValue();
+            addChildEdit(multiEdit, formType.searchVariableReplacementsInScript(file, oldVariable.getScriptingName(), newVariable.getScriptingName()));
         }
         return multiEdit;
     }

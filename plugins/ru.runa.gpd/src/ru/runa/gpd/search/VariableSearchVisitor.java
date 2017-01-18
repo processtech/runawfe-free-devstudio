@@ -67,9 +67,7 @@ public class VariableSearchVisitor {
         this.query = query;
         this.status = new MultiStatus(NewSearchUI.PLUGIN_ID, IStatus.OK, SearchMessages.TextSearchEngine_statusMessage, null);
         this.matcher = Pattern.compile(Pattern.quote(query.getSearchText())).matcher("");
-        if (!Objects.equal(query.getVariable().getScriptingName(), query.getSearchText())) {
-            this.matcherScriptingName = Pattern.compile(Pattern.quote(query.getVariable().getScriptingName())).matcher("");
-        }
+        this.matcherScriptingName = Pattern.compile(Pattern.quote(query.getVariable().getScriptingName())).matcher("");
         this.matcherWithBrackets = Pattern.compile(Pattern.quote("\"" + query.getSearchText() + "\"")).matcher("");
     }
 
@@ -250,7 +248,7 @@ public class VariableSearchVisitor {
                     matchesCount++;
                 }
                 elementMatch.setMatchesCount(matchesCount);
-                List<Match> matches = findInFile(elementMatch, file, matcher);
+                List<Match> matches = findInFile(elementMatch, file, matcherWithBrackets);
                 elementMatch.setPotentialMatchesCount(matches.size() - matchesCount);
                 for (Match match : matches) {
                     query.getSearchResult().addMatch(match);
@@ -286,7 +284,7 @@ public class VariableSearchVisitor {
                     matchesCount++;
                 }
                 elementMatch.setMatchesCount(matchesCount);
-                List<Match> matches = findInFile(elementMatch, file, matcher);
+                List<Match> matches = findInFile(elementMatch, file, matcherScriptingName);
                 elementMatch.setPotentialMatchesCount(matches.size() - matchesCount);
                 for (Match match : matches) {
                     query.getSearchResult().addMatch(match);
