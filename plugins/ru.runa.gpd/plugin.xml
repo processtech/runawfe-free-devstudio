@@ -173,6 +173,16 @@
     </objectContribution>
     <objectContribution
           adaptable="false"
+          id="propertiesForRegulation"
+          objectClass="ru.runa.gpd.lang.model.Node">
+          <action
+             class="ru.runa.gpd.lang.action.OpenEditPropertiesForRegulationDialogDelegate"
+             id="editPropertiesForRegulation"
+             label="%label.action.editPropertiesForRegulation">
+          </action>
+    </objectContribution>
+    <objectContribution
+          adaptable="false"
           id="node.swimlanes"
           objectClass="ru.runa.gpd.lang.model.SwimlanedNode">
        <filter

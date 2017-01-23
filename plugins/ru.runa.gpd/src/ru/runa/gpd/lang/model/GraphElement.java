@@ -42,6 +42,10 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
     private final List<GraphElement> childs = new ArrayList<GraphElement>();
     private Rectangle constraint;
     private String id;
+    private GraphElement previousNodeInRegulation;
+    private GraphElement nextNodeInRegulation;
+    private boolean isEnabledInRegulation = true;
+    private String descriptionForUserInRegulation = "";
 
     public String getId() {
         return id;
@@ -480,4 +484,35 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
         return id;
     }
 
+    public GraphElement getPreviousNodeInRegulation() {
+        return previousNodeInRegulation;
+    }
+
+    public void setPreviousNodeInRegulation(GraphElement previousNodeInRegulation) {
+        this.previousNodeInRegulation = previousNodeInRegulation;
+    }
+
+    public GraphElement getNextNodeInRegulation() {
+        return nextNodeInRegulation;
+    }
+
+    public void setNextNodeInRegulation(GraphElement nextNodeInRegulation) {
+        this.nextNodeInRegulation = nextNodeInRegulation;
+    }
+
+    public boolean getIsEnabledInRegulation() {
+        return isEnabledInRegulation;
+    }
+
+    public void setIsEnabledInRegulation(boolean isEnabledInRegulation) {
+        this.isEnabledInRegulation = isEnabledInRegulation;
+    }
+
+    public String getDescriptionForUserInRegulation() {
+        return descriptionForUserInRegulation;
+    }
+
+    public void setDescriptionForUserInRegulation(String descriptionForUserInRegulation) {
+        this.descriptionForUserInRegulation = descriptionForUserInRegulation;
+    }
 }

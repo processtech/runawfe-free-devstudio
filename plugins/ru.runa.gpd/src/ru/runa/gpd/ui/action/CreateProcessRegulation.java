@@ -7,6 +7,7 @@ import java.io.Writer;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.FileLocator;
@@ -32,6 +33,7 @@ import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.TextEditorInput;
 
 import com.google.common.base.Charsets;
+import com.google.common.collect.Lists;
 
 import freemarker.template.Configuration;
 import freemarker.template.ObjectWrapper;
@@ -71,11 +73,14 @@ public class CreateProcessRegulation extends BaseModelActionDelegate {
         URL fileUrl = FileLocator.toFileURL(url);
         InputStream input = fileUrl.openConnection().getInputStream();
         Template template = new Template("regulation", new StringReader(IOUtils.readStream(input)), config);
-
+        List<Node> listOfNodes = Lists.newArrayList();
+        listOfNodes = makeSequenceList(definition);
         HashMap<String, Object> map = new HashMap<String, Object>();
         map.put("proc", definition);
+        map.put("listOfNodes", listOfNodes);
 
-        IFile htmlDefinition = IOUtils.getAdjacentFile(getActiveDesignerEditor().getDefinitionFile(), ParContentProvider.PROCESS_DEFINITION_DESCRIPTION_FILE_NAME);
+        IFile htmlDefinition = IOUtils.getAdjacentFile(getActiveDesignerEditor().getDefinitionFile(),
+                ParContentProvider.PROCESS_DEFINITION_DESCRIPTION_FILE_NAME);
         if (htmlDefinition.exists()) {
             map.put("brief", IOUtils.readStream(htmlDefinition.getContents()));
         }
@@ -101,10 +106,22 @@ public class CreateProcessRegulation extends BaseModelActionDelegate {
     public void selectionChanged(IAction action, ISelection selection) {
         super.selectionChanged(action, selection);
         if (getSelection() != null && getSelection().getClass().equals(ProcessDefinition.class)) {
-            action.setEnabled(!getActiveDesignerEditor().getDefinition().isInvalid());
+            action.setEnabled(!getActiveDesignerEditor().getDefinition().isInvalid()
+                    && getActiveDesignerEditor().getDefinition().getIsReadyToCreateRegulation());
         } else {
             action.setEnabled(false);
         }
     }
 
+    private List<Node> makeSequenceList(ProcessDefinition definition) {
+        List<Node> result = Lists.newArrayList();
+        StartState startState = definition.getChildren(StartState.class).get(0);
+        Node curNode = startState;
+
+        do {
+            result.add(curNode);
+            curNode = (Node) curNode.getNextNodeInRegulation();
+        } while (curNode != null);
+        return result;
+    }
 }
