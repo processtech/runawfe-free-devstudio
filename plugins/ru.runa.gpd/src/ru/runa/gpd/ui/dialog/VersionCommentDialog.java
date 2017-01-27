@@ -11,8 +11,6 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.RowData;
-import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -46,15 +44,18 @@ public class VersionCommentDialog extends Dialog {
     public VersionCommentDialog(ProcessDefinition definition) {
         super(Display.getCurrent().getActiveShell());
         this.definition = definition;
+        setShellStyle(getShellStyle() | SWT.RESIZE);
     }
 
     @Override
     protected void configureShell(Shell shell) {
         super.configureShell(shell);
         shell.setText(Localization.getString("label.menu.versionCommentAction"));
-        shell.setSize(720, 400);
         Rectangle displayRectangle = shell.getDisplay().getPrimaryMonitor().getBounds();
+        shell.setSize(displayRectangle.width - (displayRectangle.width / 100 * 33), displayRectangle.height - (displayRectangle.height / 100 * 25));
         shell.setLocation((displayRectangle.width - shell.getBounds().width) / 2, (displayRectangle.height - shell.getBounds().height) / 2);
+        shell.setMinimumSize(640, 480);
+
     }
 
     @Override
@@ -108,43 +109,66 @@ public class VersionCommentDialog extends Dialog {
 
     @Override
     protected Control createDialogArea(Composite parent) {
+        Rectangle displayRectangle = Display.getCurrent().getPrimaryMonitor().getBounds();
         parent = (Composite) super.createDialogArea(parent);
-        parent.setLayout(new RowLayout(2));
+        parent.setLayout(new GridLayout(1, false));
 
-        Composite composite = new Composite(parent, SWT.NONE);
-        Composite compositeTable = new Composite(parent, SWT.NONE);
-        GridLayout gridLayout = new GridLayout(1, false);
-        composite.setLayout(gridLayout);
-        composite.setLayoutData(new RowData(200, 300));
-        GridLayout gridLayoutTable = new GridLayout(1, false);
-        compositeTable.setLayout(gridLayoutTable);
-        compositeTable.setLayoutData(new RowData(500, 300));
+        Composite composite0 = new Composite(parent, SWT.NONE);
+        Composite composite1 = new Composite(parent, SWT.NONE);
 
-        Label dateLabel = new Label(composite, SWT.None);
+        GridLayout gridLayout = new GridLayout(2, false);
+        composite0.setLayout(gridLayout);
+        GridData gridData0 = new GridData(SWT.FILL, SWT.FILL, true, false);
+        composite0.setLayoutData(gridData0);
+
+        composite1.setLayout(new GridLayout(1, false));
+        GridData gridData1 = new GridData(SWT.FILL, SWT.FILL, true, true);
+        composite1.setLayoutData(gridData1);
+
+        Composite composite2 = new Composite(composite0, SWT.NONE);
+        composite2.setLayout(new GridLayout(1, false));
+        GridData gridData2 = new GridData(SWT.FILL, SWT.CENTER, false, false);
+        gridData2.widthHint = 150;
+        composite2.setLayoutData(gridData2);
+
+        Composite composite3 = new Composite(composite0, SWT.NONE);
+        composite3.setLayout(new GridLayout(1, false));
+        GridData gridData3 = new GridData(SWT.FILL, SWT.FILL, true, true);
+        composite3.setLayoutData(gridData3);
+
+        Label dateLabel = new Label(composite2, SWT.None);
         dateLabel.setText(Localization.getString("VersionCommentDialog.date"));
-        dateControl = new DateTime(composite, SWT.DATE | SWT.BORDER);
-        dateControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        dateControl = new DateTime(composite2, SWT.DATE);
+        GridData dateGridData = new GridData(SWT.FILL, SWT.NONE, true, false);
+        dateControl.setLayoutData(dateGridData);
 
-        Label authorLabel = new Label(composite, SWT.NONE);
+        Label authorLabel = new Label(composite2, SWT.NONE);
         authorLabel.setText(Localization.getString("VersionCommentDialog.author"));
-        authorText = new Text(composite, SWT.SINGLE | SWT.BORDER);
-        authorText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        authorText = new Text(composite2, SWT.SINGLE | SWT.BORDER);
+        authorText.setLayoutData(new GridData(SWT.FILL, SWT.NONE, true, false));
 
-        Label commentLabel = new Label(composite, SWT.None);
+        Composite compositePadding = new Composite(composite2, SWT.NONE);
+        compositePadding.setLayout(new GridLayout(1, false));
+        GridData gridDataPadding = new GridData(SWT.FILL, SWT.NONE, false, true);
+        gridDataPadding.widthHint = displayRectangle.width / 100 * 15;
+        composite2.setLayoutData(gridDataPadding);
+
+        Label commentLabel = new Label(composite3, SWT.None);
         commentLabel.setText(Localization.getString("VersionCommentDialog.comment"));
-        commentText = new Text(composite, SWT.MULTI | SWT.WRAP | SWT.BORDER);
-        GridData gridData = new GridData(SWT.FILL, SWT.CENTER, true, false);
-        gridData.heightHint = 169;
+        commentText = new Text(composite3, SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | SWT.BORDER);
+        GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
+        gridData.heightHint = commentText.getLineHeight() * 10;
         gridData.horizontalAlignment = SWT.FILL;
         commentText.setLayoutData(gridData);
 
-        Label historyLabel = new Label(compositeTable, SWT.None);
+        Label historyLabel = new Label(composite1, SWT.None);
         historyLabel.setText(Localization.getString("VersionCommentDialog.history"));
 
-        historyTable = new Table(compositeTable, SWT.BORDER | SWT.FULL_SELECTION);
+        historyTable = new Table(composite1, SWT.BORDER | SWT.FULL_SELECTION | SWT.V_SCROLL);
         historyTable.setLinesVisible(true);
         historyTable.setHeaderVisible(true);
-        GridData gridDataHistoryTable = new GridData(SWT.FILL, SWT.CENTER, true, true);
+
+        GridData gridDataHistoryTable = new GridData(SWT.FILL, SWT.FILL, true, true);
         gridDataHistoryTable.horizontalAlignment = SWT.FILL;
         gridDataHistoryTable.verticalAlignment = SWT.FILL;
         historyTable.setLayoutData(gridDataHistoryTable);
@@ -157,9 +181,9 @@ public class VersionCommentDialog extends Dialog {
             column.setText(header);
         }
 
-        historyTable.getColumn(0).setWidth(100);
-        historyTable.getColumn(1).setWidth(120);
-        historyTable.getColumn(2).setWidth(260);
+        historyTable.getColumn(0).setWidth(displayRectangle.width / 100 * 10);
+        historyTable.getColumn(1).setWidth(displayRectangle.width / 100 * 10);
+        historyTable.getColumn(2).setWidth(displayRectangle.width / 100 * 50);
 
         historyTable.addSelectionListener(new LoggingSelectionAdapter() {
             @Override
@@ -173,8 +197,14 @@ public class VersionCommentDialog extends Dialog {
                 int indexOfVersionInfo = definition.getVersionInfoListIndex(versionInfo);
                 if (indexOfVersionInfo != -1 && definition.getVersionInfoList().get(indexOfVersionInfo).isSavedToFile()) {
                     getButton(IDialogConstants.OK_ID).setEnabled(false);
+                    dateControl.setEnabled(false);
+                    authorText.setEnabled(false);
+                    commentText.setEnabled(false);
                 } else {
                     getButton(IDialogConstants.OK_ID).setEnabled(true);
+                    dateControl.setEnabled(true);
+                    authorText.setEnabled(true);
+                    commentText.setEnabled(true);
 
                 }
             }
@@ -196,6 +226,11 @@ public class VersionCommentDialog extends Dialog {
             historyTable.setSelection(0);
             fillDialogFields(historyTable.getItem(0));
             currentDateTime = versionInfoList.get(versionInfoList.size() - 1).getDate().getTime();
+            if (definition.getVersionInfoList().get(versionInfoList.size() - 1).isSavedToFile()) {
+                dateControl.setEnabled(false);
+                authorText.setEnabled(false);
+                commentText.setEnabled(false);
+            }
         } else {
             setDefaultButton(getButton(IDialogConstants.CANCEL_ID));
             currentDateTime = new Date();
