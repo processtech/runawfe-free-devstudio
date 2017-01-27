@@ -37,7 +37,7 @@ public class ParContentProvider {
         contentProviders.add(new ActionDescriptionContentProvider());
         contentProviders.add(new SubstitutionExceptionsXmlContentProvider());
         contentProviders.add(new BotsXmlContentProvider());
-        contentProviders.add(new RegulationXmlContentProvider());
+        contentProviders.add(new RegulationsXmlContentProvider());
     }
 
     public static void readAuxInfo(IFile definitionFile, ProcessDefinition definition) throws Exception {

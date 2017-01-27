@@ -45,7 +45,6 @@ public class ProcessDefinition extends NamedGraphElement implements Active, Desc
     private boolean showGrid;
     private Duration defaultTaskTimeoutDelay = new Duration();
     private boolean invalid;
-    private boolean isReadyToCreateRegulation = true;
     private int nextNodeIdCounter;
     private SwimlaneDisplayMode swimlaneDisplayMode = SwimlaneDisplayMode.none;
     private final Map<String, SubprocessDefinition> embeddedSubprocesses = Maps.newHashMap();
@@ -257,7 +256,6 @@ public class ProcessDefinition extends NamedGraphElement implements Active, Desc
         if (startStates.size() > 1) {
             errors.add(ValidationError.createLocalizedError(this, "multipleStartStatesNotAllowed"));
         }
-        this.isReadyToCreateRegulation = validateRegulation(errors);
         this.invalid = false;
         for (ValidationError validationError : errors) {
             if (validationError.getSeverity() == IMarker.SEVERITY_ERROR) {
@@ -484,27 +482,19 @@ public class ProcessDefinition extends NamedGraphElement implements Active, Desc
         return hashCode() == o.hashCode();
     }
 
-    public boolean getIsReadyToCreateRegulation() {
-        return isReadyToCreateRegulation;
-    }
-
-    public void setIsReadyToCreateRegulation(boolean isReadyToCreateRegulation) {
-        this.isReadyToCreateRegulation = isReadyToCreateRegulation;
-    }
-
-    private boolean validateRegulation(List<ValidationError> errors) {
+    public boolean validateRegulations(List<ValidationError> errors) {
         boolean result = true;
         List<StartState> listOfStartStates = this.getChildren(StartState.class);
         if (listOfStartStates.size() > 1) {
             result = false;
-            errors.add(ValidationError.createLocalizedWarning(this, "regulation.multipleStartStateNodesWarning"));
+            errors.add(ValidationError.createLocalizedWarning(this, "regulations.multipleStartStateNodesWarning"));
         }
         List<Node> listOfNodes = this.getNodes();
         if (result) {
             for (Node node : listOfNodes) {
-                if (node.getPreviousNodeInRegulation() == null && node.getNextNodeInRegulation() == null) {
+                if (node.getNodeRegulationsProperties().getPreviousNode() == null && node.getNodeRegulationsProperties().getNextNode() == null) {
                     result = false;
-                    errors.add(ValidationError.createLocalizedWarning(node, "regulation.nodeWithoutPreviousAndNextNodesWarning", node.getName()));
+                    errors.add(ValidationError.createLocalizedWarning(node, "regulations.nodeWithoutPreviousAndNextNodesWarning", node.getName()));
                     break;
                 }
             }
@@ -513,31 +503,49 @@ public class ProcessDefinition extends NamedGraphElement implements Active, Desc
         int countOfNodesWithoutNext = 0;
         if (result) {
             for (Node node : listOfNodes) {
-                if (node.getPreviousNodeInRegulation() == null) {
+                if (node.getNodeRegulationsProperties().getPreviousNode() == null) {
                     countOfNodesWithoutPrev++;
                 }
-                if (node.getNextNodeInRegulation() == null) {
+                if (node.getNodeRegulationsProperties().getNextNode() == null) {
                     countOfNodesWithoutNext++;
                 }
             }
             if (countOfNodesWithoutPrev > 1 || countOfNodesWithoutNext > 1) {
                 result = false;
-                errors.add(ValidationError.createLocalizedWarning(this, "regulation.nodesDoesntAppearsSequenceForRegulationWarning"));
+                errors.add(ValidationError.createLocalizedWarning(this, "regulations.nodesDoesntAppearsSequenceForRegulationsWarning"));
             }
         }
-        if (result) {
-            if (listOfStartStates.size() > 0) {
-                Node curNode = listOfStartStates.get(0);
-                List<String> listOfIds = Lists.newArrayList();
-                do {
-                    listOfIds.add(curNode.getId());
-                    curNode = (Node) curNode.getNextNodeInRegulation();
-                    if (curNode != null && listOfIds.contains(curNode.getId())) {
-                        result = false;
-                        errors.add(ValidationError.createLocalizedWarning(this, "regulation.loopsInRegulationSettingsWarning"));
-                    }
-                } while (result && curNode != null);
-            }
+
+        if (result && listOfStartStates.size() > 0) {
+            Node curNode = listOfStartStates.get(0);
+            do {
+                if (curNode.getNodeRegulationsProperties().getIsEnabled() && curNode.getNodeRegulationsProperties().getPreviousNode() == null
+                        && curNode.getNodeRegulationsProperties().getNextNode() == null) {
+                    result = false;
+                    errors.add(ValidationError.createLocalizedWarning(curNode, "regulations.neitherPreviousNorNextNodeAreNotSpecified"));
+                } else if (curNode.getNodeRegulationsProperties().getPreviousNode() != null
+                        && curNode.getNodeRegulationsProperties().getNextNode() != null
+                        && curNode.getNodeRegulationsProperties().getPreviousNode().getId()
+                                .equals(curNode.getNodeRegulationsProperties().getNextNode().getId())) {
+                    result = false;
+                    errors.add(ValidationError.createLocalizedWarning(curNode, "regulations.previousAndNextNodesAreTheSame"));
+                }
+                curNode = (Node) curNode.getNodeRegulationsProperties().getNextNode();
+            } while (curNode != null && result);
+        }
+
+        if (result && listOfStartStates.size() > 0) {
+            Node curNode = listOfStartStates.get(0);
+            List<String> listOfIds = Lists.newArrayList();
+            do {
+                listOfIds.add(curNode.getId());
+                curNode = (Node) curNode.getNodeRegulationsProperties().getNextNode();
+                if (curNode != null && listOfIds.contains(curNode.getId())) {
+                    result = false;
+                    errors.add(ValidationError.createLocalizedWarning(this, "regulations.loopsInRegulationsSettingsWarning", curNode.getName(),
+                            curNode.getId()));
+                }
+            } while (result && curNode != null);
         }
 
         if (result) {
@@ -546,27 +554,33 @@ public class ProcessDefinition extends NamedGraphElement implements Active, Desc
             for (Node curNode : listOfNodes) {
                 for (Node node : listOfNodes) {
                     if (curNode != null && node != null) {
-                        if (curNode != node && curNode.getPreviousNodeInRegulation() != null && node.getPreviousNodeInRegulation() != null
-                                && curNode.getPreviousNodeInRegulation().getId().equals(node.getPreviousNodeInRegulation().getId())) {
+                        if (curNode != node
+                                && curNode.getNodeRegulationsProperties().getPreviousNode() != null
+                                && node.getNodeRegulationsProperties().getPreviousNode() != null
+                                && curNode.getNodeRegulationsProperties().getPreviousNode().getId()
+                                        .equals(node.getNodeRegulationsProperties().getPreviousNode().getId())) {
                             HashSet<String> set = new HashSet<String>();
                             set.add(curNode.getId());
                             set.add(node.getId());
                             if (listOfSamePreviousElements.contains(set) != true) {
                                 result = false;
-                                errors.add(ValidationError.createLocalizedWarning(this, "regulation.duplicatePreviousNodeWarning", curNode.getName(),
-                                        node.getName()));
+                                errors.add(ValidationError.createLocalizedWarning(this, "regulations.duplicatePreviousNodeWarning",
+                                        curNode.getName(), node.getName()));
 
                                 listOfSamePreviousElements.add(set);
                             }
                         }
-                        if (curNode != node && curNode.getNextNodeInRegulation() != null && node.getNextNodeInRegulation() != null
-                                && curNode.getNextNodeInRegulation().getId().equals(node.getNextNodeInRegulation().getId())) {
+                        if (curNode != node
+                                && curNode.getNodeRegulationsProperties().getNextNode() != null
+                                && node.getNodeRegulationsProperties().getNextNode() != null
+                                && curNode.getNodeRegulationsProperties().getNextNode().getId()
+                                        .equals(node.getNodeRegulationsProperties().getNextNode().getId())) {
                             HashSet<String> set = new HashSet<String>();
                             set.add(curNode.getId());
                             set.add(node.getId());
                             if (listOfSameNextElements.contains(set) != true) {
                                 result = false;
-                                errors.add(ValidationError.createLocalizedWarning(this, "regulation.duplicateNextNodeWarning", curNode.getName(),
+                                errors.add(ValidationError.createLocalizedWarning(this, "regulations.duplicateNextNodeWarning", curNode.getName(),
                                         node.getName()));
                                 listOfSameNextElements.add(set);
                             }
@@ -576,29 +590,14 @@ public class ProcessDefinition extends NamedGraphElement implements Active, Desc
             }
         }
 
-        if (result) {
+        if (result && listOfStartStates.size() > 0) {
             Node curNode = listOfStartStates.get(0);
             do {
-                if (curNode.getIsEnabledInRegulation() && curNode.getPreviousNodeInRegulation() == null && curNode.getNextNodeInRegulation() == null) {
-                    result = false;
-                    errors.add(ValidationError.createLocalizedWarning(curNode, "regulation.neitherPreviousNorNextNodeAreNotSpecified"));
-                } else if (curNode.getPreviousNodeInRegulation() != null && curNode.getNextNodeInRegulation() != null
-                        && curNode.getPreviousNodeInRegulation().getId().equals(curNode.getNextNodeInRegulation().getId())) {
-                    result = false;
-                    errors.add(ValidationError.createLocalizedWarning(curNode, "regulation.previousAndNextNodesAreTheSame"));
-                }
-                curNode = (Node) curNode.getNextNodeInRegulation();
-            } while (curNode != null && result);
-        }
+                Node nextNode = (Node) curNode.getNodeRegulationsProperties().getNextNode();
 
-        if (result) {
-            Node curNode = listOfStartStates.get(0);
-            do {
-                Node nextNode = (Node) curNode.getNextNodeInRegulation();
-
-                if (nextNode != null && nextNode.getPreviousNodeInRegulation().getId().equals(curNode.getId()) != true) {
+                if (nextNode != null && nextNode.getNodeRegulationsProperties().getPreviousNode().getId().equals(curNode.getId()) != true) {
                     result = false;
-                    errors.add(ValidationError.createLocalizedWarning(this, "regulation.nextPreviousNodeMismatch", nextNode.getName(),
+                    errors.add(ValidationError.createLocalizedWarning(this, "regulations.nextPreviousNodeMismatch", nextNode.getName(),
                             curNode.getName()));
                 }
                 curNode = nextNode;

@@ -10,8 +10,8 @@ import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.util.XmlUtil;
 
-public class RegulationXmlContentProvider extends AuxContentProvider {
-    private static final String XML_FILE_NAME = "regulation.xml";
+public class RegulationsXmlContentProvider extends AuxContentProvider {
+    private static final String XML_FILE_NAME = "regulations.xml";
     private static final String NODES_SETTINGS = "nodes_settings";
     private static final String NODE_SETTINGS = "node_settings";
     private static final String NODE_ID = "node_id";
@@ -40,21 +40,21 @@ public class RegulationXmlContentProvider extends AuxContentProvider {
                 previousNode = definition.getGraphElementById(previousNodeId);
             }
             if (previousNode != null) {
-                graphElement.setPreviousNodeInRegulation(previousNode);
+                graphElement.getNodeRegulationsProperties().setPreviousNode(previousNode);
             }
             if (nextNodeId.isEmpty() != true) {
                 nextNode = definition.getGraphElementById(nextNodeId);
             }
             if (nextNode != null) {
-                graphElement.setNextNodeInRegulation(nextNode);
+                graphElement.getNodeRegulationsProperties().setNextNode(nextNode);
             }
             String isEnabledInRegulation = nodeSetting.elementText(IS_ENABLED);
             if (isEnabledInRegulation.equals("true")) {
-                graphElement.setIsEnabledInRegulation(true);
+                graphElement.getNodeRegulationsProperties().setIsEnabled(true);
             } else {
-                graphElement.setIsEnabledInRegulation(false);
+                graphElement.getNodeRegulationsProperties().setIsEnabled(false);
             }
-            graphElement.setDescriptionForUserInRegulation(nodeSetting.elementText(DESCRIPTION));
+            graphElement.getNodeRegulationsProperties().setDescriptionForUser(nodeSetting.elementText(DESCRIPTION));
         }
     }
 
@@ -67,8 +67,8 @@ public class RegulationXmlContentProvider extends AuxContentProvider {
             if (graphElement instanceof Node) {
                 Element nodeSettingElement = root.addElement(NODE_SETTINGS);
                 nodeSettingElement.addElement(NODE_ID).addText(graphElement.getId());
-                GraphElement previousNodeInRegulation = graphElement.getPreviousNodeInRegulation();
-                GraphElement nextNodeInRegulation = graphElement.getNextNodeInRegulation();
+                GraphElement previousNodeInRegulation = graphElement.getNodeRegulationsProperties().getPreviousNode();
+                GraphElement nextNodeInRegulation = graphElement.getNodeRegulationsProperties().getNextNode();
                 if (previousNodeInRegulation != null) {
                     nodeSettingElement.addElement(PREVIOUS_NODE_ID).addText(previousNodeInRegulation.getId());
                 } else {
@@ -79,12 +79,12 @@ public class RegulationXmlContentProvider extends AuxContentProvider {
                 } else {
                     nodeSettingElement.addElement(NEXT_NODE_ID).addText("");
                 }
-                if (graphElement.getIsEnabledInRegulation()) {
+                if (graphElement.getNodeRegulationsProperties().getIsEnabled()) {
                     nodeSettingElement.addElement(IS_ENABLED).addText("true");
                 } else {
                     nodeSettingElement.addElement(IS_ENABLED).addText("false");
                 }
-                nodeSettingElement.addElement(DESCRIPTION).addCDATA(graphElement.getDescriptionForUserInRegulation());
+                nodeSettingElement.addElement(DESCRIPTION).addCDATA(graphElement.getNodeRegulationsProperties().getDescriptionForUser());
             }
         }
         return document;

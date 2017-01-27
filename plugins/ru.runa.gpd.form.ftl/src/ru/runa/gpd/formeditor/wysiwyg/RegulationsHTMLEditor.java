@@ -30,14 +30,14 @@ import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.formeditor.WebServerUtils;
 import ru.runa.gpd.formeditor.resources.Messages;
 
-public class RegulationHTMLEditor extends MultiPageEditorPart implements IResourceChangeListener {
+public class RegulationsHTMLEditor extends MultiPageEditorPart implements IResourceChangeListener {
     public static final int CLOSED = 197;
-    public static final String ID = "ru.runa.gpd.wysiwyg.RegulationHTMLEditor";
+    public static final String ID = "ru.runa.gpd.wysiwyg.RegulationsHTMLEditor";
     private Text sourceEditor;
     private Browser browser;
     private boolean browserLoaded = false;
     private static final Pattern pattern = Pattern.compile("^(.*?<(body|BODY).*?>)(.*?)(</(body|BODY)>.*?)$", Pattern.DOTALL);
-    private static RegulationHTMLEditor lastInitializedInstance;
+    private static RegulationsHTMLEditor lastInitializedInstance;
 
     private synchronized boolean isBrowserLoaded() {
         return browserLoaded;
@@ -151,10 +151,10 @@ public class RegulationHTMLEditor extends MultiPageEditorPart implements IResour
     }
 
     // Used from servlets
-    public static RegulationHTMLEditor getCurrent() {
+    public static RegulationsHTMLEditor getCurrent() {
         IEditorPart editor = EditorsPlugin.getDefault().getWorkbench().getWorkbenchWindows()[0].getActivePage().getActiveEditor();
         if (editor instanceof FormEditor) {
-            return (RegulationHTMLEditor) editor;
+            return (RegulationsHTMLEditor) editor;
         }
         if (lastInitializedInstance != null) {
             return lastInitializedInstance;

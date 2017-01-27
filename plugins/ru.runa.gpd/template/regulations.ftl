@@ -61,19 +61,19 @@
 		<#-- NODES -->
 		<#-- proc.getChildren(model.node) as node-->
 		<#list listOfNodes as node>
-			<#if node.getIsEnabledInRegulation() == true>
+			<#if node.getNodeRegulationsProperties().getIsEnabled() == true>
 				<#-- START POINT -->
 				<#if node.class.simpleName == "StartState">
 					<tr><td><br/><p> Начало выполнения бизнес-процесса: ${node.getName()} <br/>
 					<#if node.getSwimlane() ?? >
 						 <span class="node-swimlane-text-1">Роль:</span> ${node.getSwimlane().getName()} <br/>
 					</#if>
-					<#if node.getDescriptionForUserInRegulation()?length != 0 >
+					<#if node.getNodeRegulationsProperties().getDescriptionForUser()?length != 0 >
 						<span class="node-description-text-1">Описание:</span> <br/>
-						${node.getDescriptionForUserInRegulation()?replace("\n","<br />")}
+						${node.getNodeRegulationsProperties().getDescriptionForUser()?replace("\n","<br />")}
 						<br/><br/>
 					</#if>
-					<#assign afterStart = node.getNextNodeInRegulation() >
+					<#assign afterStart = node.getNodeRegulationsProperties().getNextNode() >
 					Далее управление переходит к шагу <a href="#${afterStart.getId()}">${afterStart.getName()}</a></p>
 					<br/></td></tr>
 				</#if>
@@ -101,9 +101,9 @@
 						<span class="node-swimlane-text-1">Роль:</span> ${node.getSwimlane().getName()}<br/>
 					</#if>
 					
-					<#if node.getDescriptionForUserInRegulation()?length != 0 >
+					<#if node.getNodeRegulationsProperties().getDescriptionForUser()?length != 0 >
 						<span class="node-description-text-1">Описание:</span> <br/>
-						${node.getDescriptionForUserInRegulation()?replace("\n","<br />")}
+						${node.getNodeRegulationsProperties().getDescriptionForUser()?replace("\n","<br />")}
 						<br/><br/>
 					</#if>
 					
@@ -151,9 +151,9 @@
 						<p><span class="node-type-text-1">Тип шага:</span> Слияние<br/>
 					</#if>
 					
-					<#if node.getDescriptionForUserInRegulation()?length != 0 >
+					<#if node.getNodeRegulationsProperties().getDescriptionForUser()?length != 0 >
 						<span class="node-description-text-1">Описание:</span> <br/>
-						${node.getDescriptionForUserInRegulation()?replace("\n","<br />")}
+						${node.getNodeRegulationsProperties().getDescriptionForUser()?replace("\n","<br />")}
 						<br/><br/>
 					</#if>
 					
@@ -182,9 +182,9 @@
 					<#-- type -->
 					<p><span class="node-type-text-1">Тип шага:</span> Соединение<br/>
 					
-					<#if node.getDescriptionForUserInRegulation()?length != 0 >
+					<#if node.getNodeRegulationsProperties().getDescriptionForUser()?length != 0 >
 						<span class="node-description-text-1">Описание:</span> <br/>
-						${node.getDescriptionForUserInRegulation()?replace("\n","<br />")}
+						${node.getNodeRegulationsProperties().getDescriptionForUser()?replace("\n","<br />")}
 						<br/><br/>
 					</#if>
 					
@@ -206,9 +206,9 @@
 					<#-- type -->
 					<p><span class="node-type-text-1">Тип шага:</span> Исключающий шлюз<br/>
 					
-					<#if node.getDescriptionForUserInRegulation()?length != 0 >
+					<#if node.getNodeRegulationsProperties().getDescriptionForUser()?length != 0 >
 						<span class="node-description-text-1">Описание:</span> <br/>
-						${node.getDescriptionForUserInRegulation()?replace("\n","<br />")}
+						${node.getNodeRegulationsProperties().getDescriptionForUser()?replace("\n","<br />")}
 						<br/><br/>
 					</#if>
 					
@@ -219,7 +219,7 @@
 								<p>в случае ${transition.getName()} <a href="#${transition.getTarget().getId()}">${transition.getTarget().getName()}</a> </p>
 							</#list> 
 						</ul>
-					</p>    
+					<!--/p-->    
 				</#if>
 				
 				<#-- Timer -->
@@ -233,9 +233,9 @@
 					<#-- type -->
 					<p><span class="node-type-text-1">Тип шага:</span> Таймер<br/>
 					
-					<#if node.getDescriptionForUserInRegulation()?length != 0 >
+					<#if node.getNodeRegulationsProperties().getDescriptionForUser()?length != 0 >
 						<span class="node-description-text-1">Описание:</span> <br/>
-						${node.getDescriptionForUserInRegulation()?replace("\n","<br />")}
+						${node.getNodeRegulationsProperties().getDescriptionForUser()?replace("\n","<br />")}
 						<br/><br/>
 					</#if>
 							
@@ -267,9 +267,9 @@
 						<span class="node-type-text-1">Тип шага:</span> Отправка сообщения <br/>
 					</#if>
 					
-					<#if node.getDescriptionForUserInRegulation()?length != 0 >
+					<#if node.getNodeRegulationsProperties().getDescriptionForUser()?length != 0 >
 						<span class="node-description-text-1">Описание:</span> <br/>
-						${node.getDescriptionForUserInRegulation()?replace("\n","<br />")}
+						${node.getNodeRegulationsProperties().getDescriptionForUser()?replace("\n","<br />")}
 						<br/><br/>
 					</#if>
 					
@@ -315,9 +315,9 @@
 						<span class="node-type-text-1">Тип шага:</span> Запуск мультиподпроцесса <br/>
 					</#if>
 					
-					<#if node.getDescriptionForUserInRegulation()?length != 0 >
+					<#if node.getNodeRegulationsProperties().getDescriptionForUser()?length != 0 >
 						<span class="node-description-text-1">Описание:</span> <br/>
-						${node.getDescriptionForUserInRegulation()?replace("\n","<br />")}
+						${node.getNodeRegulationsProperties().getDescriptionForUser()?replace("\n","<br />")}
 						<br/><br/>
 					</#if>
 					
@@ -340,9 +340,9 @@
 						<span class="node-type-text-1">Тип шага:</span> Запуск мультидействия <br/>
 					</p>
 					
-					<#if node.getDescriptionForUserInRegulation()?length != 0 >
+					<#if node.getNodeRegulationsProperties().getDescriptionForUser()?length != 0 >
 						<span class="node-description-text-1">Описание:</span> <br/>
-						${node.getDescriptionForUserInRegulation()?replace("\n","<br />")}
+						${node.getNodeRegulationsProperties().getDescriptionForUser()?replace("\n","<br />")}
 						<br/><br/>
 					</#if>
 					
@@ -372,9 +372,9 @@
 					<#-- type -->
 					<p><span class="node-type-text-1">Тип шага:</span> Выполнение сценария</p>
 					
-					<#if node.getDescriptionForUserInRegulation()?length != 0 >
+					<#if node.getNodeRegulationsProperties().getDescriptionForUser()?length != 0 >
 						<span class="node-description-text-1">Описание:</span> <br/>
-						${node.getDescriptionForUserInRegulation()?replace("\n","<br />")}
+						${node.getNodeRegulationsProperties().getDescriptionForUser()?replace("\n","<br />")}
 						<br/><br/>
 					</#if>
 					
@@ -396,9 +396,9 @@
 				<#if node.class.simpleName == "EndTokenState">
 					<tr><td><hr color="#e3f4ff">
 					<p id="${node.getId()}"> Завершение потока  выполнения бизнес-процесса: ${node.getName()} </p>
-					<#if node.getDescriptionForUserInRegulation()?length != 0 >
+					<#if node.getNodeRegulationsProperties().getDescriptionForUser()?length != 0 >
 						<span class="node-description-text-1">Описание:</span> <br/>
-						${node.getDescriptionForUserInRegulation()?replace("\n","<br />")}
+						${node.getNodeRegulationsProperties().getDescriptionForUser()?replace("\n","<br />")}
 						<br/><br/>
 					</#if>
 					</td></tr>
@@ -408,9 +408,9 @@
 				<#if node.class.simpleName == "EndState">
 					<tr><td><hr color="#e3f4ff">
 					<p id="${node.getId()}"> Завершение процесса выполнения бизнес-процесса: ${node.getName()} </p>
-					<#if node.getDescriptionForUserInRegulation()?length != 0 >
+					<#if node.getNodeRegulationsProperties().getDescriptionForUser()?length != 0 >
 						<span class="node-description-text-1">Описание:</span> <br/>
-						${node.getDescriptionForUserInRegulation()?replace("\n","<br />")}
+						${node.getNodeRegulationsProperties().getDescriptionForUser()?replace("\n","<br />")}
 						<br/><br/>
 					</#if>
 					</td></tr>
