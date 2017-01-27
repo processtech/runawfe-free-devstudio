@@ -130,6 +130,9 @@ public class Timer extends Node {
                 result.add(variable);
             }
         }
+        if (action != null) {
+            result.addAll(action.getUsedVariables(processFolder));
+        }
         return result;
     }
 

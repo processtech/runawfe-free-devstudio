@@ -50,4 +50,11 @@ public class SendMessageNode extends MessagingNode implements Active {
         return super.allowLeavingTransition(transitions) && transitions.size() == 0;
     }
 
+    @Override
+    public MessagingNode getCopy(GraphElement parent) {
+        SendMessageNode copy = (SendMessageNode) super.getCopy(parent);
+        copy.setTtlDuration(getTtlDuration());
+        return copy;
+    }
+
 }

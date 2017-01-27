@@ -247,6 +247,7 @@ public abstract class Node extends NamedGraphElement implements Describable {
     public Node getCopy(GraphElement parent) {
         Node copy = (Node) super.getCopy(parent);
         copy.setMinimizedView(isMinimizedView());
+        copy.setAsyncExecution(getAsyncExecution());
         if (this instanceof ITimed) {
             Timer timer = ((ITimed) this).getTimer();
             if (timer != null) {
