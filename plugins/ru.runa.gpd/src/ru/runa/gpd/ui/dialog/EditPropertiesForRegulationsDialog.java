@@ -199,8 +199,13 @@ public class EditPropertiesForRegulationsDialog extends Dialog {
             browser = new Browser(composite2, SWT.NONE);
             Bundle bundle = Platform.getBundle("ru.runa.gpd.form.ftl");
             URL url = FileLocator.find(bundle, new Path("/CKeditor4/editor.html"), null);
-            URL fileURL = FileLocator.toFileURL(url);
-            browser.setUrl(fileURL.toString());
+            URL fileURL = FileLocator.resolve(url);
+            String fileURLAsString = fileURL.toString().replace("file:/", "file:///");
+            if (fileURLAsString.indexOf(".jar!") != -1) {
+                String tillJar = fileURLAsString.substring(0, fileURLAsString.indexOf(".jar!"));
+                fileURLAsString = tillJar.substring(4, tillJar.lastIndexOf("/")) + "/CKeditor4/editor.html";
+            }
+            browser.setUrl(fileURLAsString);
             dateGridData7.minimumHeight = 400;
             dateGridData7.heightHint = 400;
             browser.setLayoutData(dateGridData7);
