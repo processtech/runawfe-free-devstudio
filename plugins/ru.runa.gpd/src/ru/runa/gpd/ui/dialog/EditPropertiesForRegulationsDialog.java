@@ -276,7 +276,7 @@ public class EditPropertiesForRegulationsDialog extends Dialog {
 
     @Override
     protected void okPressed() {
-        Pattern pattern = Pattern.compile("\\[ID[0-9]+\\]$");
+        Pattern pattern = Pattern.compile("\\[([A-Za-z0-9_]*\\.)*ID[0-9]+\\]$");
         Matcher matcher;
         if (previousNodeCombo.getSelectionIndex() > 0) {
             matcher = pattern.matcher(previousNodeCombo.getText());

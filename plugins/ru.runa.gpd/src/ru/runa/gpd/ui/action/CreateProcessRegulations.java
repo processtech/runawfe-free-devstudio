@@ -34,6 +34,8 @@ import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.StartState;
+import ru.runa.gpd.lang.model.Subprocess;
+import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Timer;
@@ -75,7 +77,8 @@ public class CreateProcessRegulations extends BaseModelActionDelegate {
                 IDE.openEditor(getWorkbenchPage(), input, "ru.runa.gpd.wysiwyg.RegulationsHTMLEditor");
             } else {
                 for (ValidationError regulationsNote : regulationsValidationErrors) {
-                    addRegulationsNote(getActiveDesignerEditor().getDefinitionFile(), proccDefinition, regulationsNote);
+                    addRegulationsNote(getActiveDesignerEditor().getDefinitionFile(), regulationsNote.getSource().getProcessDefinition(),
+                            regulationsNote);
                 }
                 PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(RegulationsNotesView.ID);
             }
@@ -182,12 +185,25 @@ public class CreateProcessRegulations extends BaseModelActionDelegate {
 
     private List<Node> makeSequenceList(ProcessDefinition definition) {
         List<Node> result = Lists.newArrayList();
-        if (definition.getChildren(StartState.class).size() > 0) {
+        if (definition != null && definition.getChildren(StartState.class).size() > 0) {
             StartState startState = definition.getChildren(StartState.class).get(0);
             Node curNode = startState;
+            boolean isAppend = true;
             do {
-                result.add(curNode);
+                if (isAppend) {
+                    result.add(curNode);
+                }
                 curNode = (Node) curNode.getNodeRegulationsProperties().getNextNode();
+                isAppend = true;
+                if (curNode != null && curNode.getClass().equals(Subprocess.class)) {
+                    result.add(curNode);
+                    isAppend = false;
+                    SubprocessDefinition subprocessDefinition = ((Subprocess) curNode).getEmbeddedSubprocess();
+                    List<Node> sequenceNodeList = makeSequenceList(subprocessDefinition);
+                    for (Node nodeInSequenceList : sequenceNodeList) {
+                        result.add(nodeInSequenceList);
+                    }
+                }
             } while (curNode != null);
         }
         return result;

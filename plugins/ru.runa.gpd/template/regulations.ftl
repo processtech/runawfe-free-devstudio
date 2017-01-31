@@ -14,6 +14,11 @@
 			.node-type-text-1 { font-weight: 700; }
 			.node-swimlane-text-1 { font-weight: 700; }
 			.node-description-text-1 { font-weight: 700; }
+			.subprocess-name-text-1 { font-weight: 700; }
+			.subprocess-node-header-text {	font-family: Geneva, Arial, Helvetica, monospace;
+											font-weight: 400;
+											text-align: center;}
+			.subprocess-node-header-td {background-color: #e3f4ff;}
 		</style>
 		<h1 class="definition-header-1">Регламент выполнения бизнес-процесса </h1>
 		<h1 class="definition-header-1">${proc.getName()}</h1>
@@ -64,7 +69,11 @@
 			<#if node.getNodeRegulationsProperties().getIsEnabled() == true>
 				<#-- START POINT -->
 				<#if node.class.simpleName == "StartState">
-					<tr><td><br/><p> Начало выполнения бизнес-процесса: ${node.getName()} <br/>
+					<tr>
+					<#if node.getParent().getName() != proc.getName()>
+						<tr><td  class="subprocess-node-header-td"><div class="subprocess-node-header-text">Действие в рамках подпроцесса "${node.getParent().getName()}"</div></td></tr>
+					</#if>
+					<td><br/><p> Начало выполнения бизнес-процесса: ${node.getName()} <br/>
 					<#if node.getSwimlane() ?? >
 						 <span class="node-swimlane-text-1">Роль:</span> ${node.getSwimlane().getName()} <br/>
 					</#if>
@@ -73,15 +82,20 @@
 						${node.getNodeRegulationsProperties().getDescriptionForUser()?replace("\n","<br />")}
 						<br/><br/>
 					</#if>
-					<#assign afterStart = node.getNodeRegulationsProperties().getNextNode() >
-					Далее управление переходит к шагу <a href="#${afterStart.getId()}">${afterStart.getName()}</a></p>
-					<br/></td></tr>
+					<#assign afterStart = node.getLeavingTransitions()?first >
+					Далее управление переходит к шагу <a href="#${afterStart.getTarget().getId()}">${afterStart.getTarget().getName()}</a></p>
+					<br/></td>
+					</tr>
 				</#if>
 			
 				<#-- TaskState -->
 				<#if node.class.simpleName == "TaskState" || node.class.simpleName == "Decision"  || node.class.simpleName == "Conjunction">
-					<tr><td>
-					<hr color="#e3f4ff"><br/>
+					<tr>
+					<#if node.getParent().getName() != proc.getName()>
+						<tr><td  class="subprocess-node-header-td"><div class="subprocess-node-header-text">Действие в рамках подпроцесса "${node.getParent().getName()}"</div></td></tr>
+					</#if>
+					<td>
+					<hr color="#e3f4ff">
 					
 					<#-- name -->
 					<p id="${node.getId()}"> <font color="#005D85" size="3" face="Verdana, Geneva, sans-serif"> <strong> Шаг: ${node.getName()} </strong> </font> </p>
@@ -108,17 +122,19 @@
 					</#if>
 					
 					<#-- transitions -->
+					<p> 
 					<#if node.getLeavingTransitions()?size == 1>
 						<#assign afterTask = node.getLeavingTransitions()?first >
-						Далее управление переходит к шагу <a href="#${afterTask.getTarget().getId()}">${afterTask.getTarget().getName()}</a></p>
+						Далее управление переходит к шагу <a href="#${afterTask.getTarget().getId()}">${afterTask.getTarget().getName()}</a>
 					<#else>
-						Далее управление переходит:</p>    
+						Далее управление переходит:   
 						<ul>
 							<#list node.getLeavingTransitions() as transition>
-								<p>в случае ${transition.getName()} <a href="#${transition.getTarget().getId()}">${transition.getTarget().getName()}</a> </p>
+								<li>в случае ${transition.getName()} <a href="#${transition.getTarget().getId()}">${transition.getTarget().getName()}</a> </li>
 							</#list> 
 						</ul>
 					</#if>
+					</p> 
 					
 					<#-- timer option -->
 					<#if node.getTimer()?? >
@@ -138,8 +154,12 @@
 				
 				<#-- ParallelGateway -->
 				<#if node.class.simpleName == "ParallelGateway" || node.class.simpleName == "Fork">
-					<tr><td>
-					<hr color="#e3f4ff"><br/>
+					<tr>
+					<#if node.getParent().getName() != proc.getName()>
+						<tr><td  class="subprocess-node-header-td"><div class="subprocess-node-header-text">Действие в рамках подпроцесса "${node.getParent().getName()}"</div></td></tr>
+					</#if>
+					<td>
+					<hr color="#e3f4ff">
 				
 					<#-- name -->
 					<p id="${node.getId()}" > <font color="#005D85" size="3" face="Verdana, Geneva, sans-serif"> <strong> Шаг: Параллельный шлюз ${node.getName()} </strong> </font> </p>
@@ -173,8 +193,12 @@
 				
 				<#-- Join -->
 				<#if node.class.simpleName == "Join">
-					<tr><td>
-					<hr color="#e3f4ff"><br/>
+					<tr>
+					<#if node.getParent().getName() != proc.getName()>
+						<tr><td  class="subprocess-node-header-td"><div class="subprocess-node-header-text">Действие в рамках подпроцесса "${node.getParent().getName()}"</div></td></tr>
+					</#if>
+					<td>
+					<hr color="#e3f4ff">
 					
 					<#-- name -->
 					<p id="${node.getId()}" > <font color="#005D85" size="3" face="Verdana, Geneva, sans-serif"> <strong> Шаг: Соединение ${node.getName()} </strong> </font> </p>
@@ -197,14 +221,18 @@
 				
 				<#-- ExclusiveGateway -->
 				<#if node.class.simpleName == "ExclusiveGateway">
-					<tr><td>
-					<hr color="#e3f4ff"><br/>
+					<tr>
+					<#if node.getParent().getName() != proc.getName()>
+						<tr><td  class="subprocess-node-header-td"><div class="subprocess-node-header-text">Действие в рамках подпроцесса "${node.getParent().getName()}"</div></td></tr>
+					</#if>
+					<td>
+					<hr color="#e3f4ff">
 					
 					<#-- name -->
 					<p id="${node.getId()}" > <font color="#005D85" size="3" face="Verdana, Geneva, sans-serif"> <strong> Шаг:  ${node.getName()} </strong> </font> </p>
 					
 					<#-- type -->
-					<p><span class="node-type-text-1">Тип шага:</span> Исключающий шлюз<br/>
+					<span class="node-type-text-1">Тип шага:</span> Исключающий шлюз<br/>
 					
 					<#if node.getNodeRegulationsProperties().getDescriptionForUser()?length != 0 >
 						<span class="node-description-text-1">Описание:</span> <br/>
@@ -213,19 +241,25 @@
 					</#if>
 					
 					<#-- transitions -->
-					Далее управление переходит:</p>    
+					<p> 
+					Далее управление переходит:   
 						<ul>
 							<#list node.getLeavingTransitions() as transition>
-								<p>в случае ${transition.getName()} <a href="#${transition.getTarget().getId()}">${transition.getTarget().getName()}</a> </p>
+								<li>в случае ${transition.getName()} <a href="#${transition.getTarget().getId()}">${transition.getTarget().getName()}</a> </li>
 							</#list> 
 						</ul>
-					<!--/p-->    
+					</p> 
+					</td>
 				</#if>
 				
 				<#-- Timer -->
 				<#if node.class.simpleName == "Timer" >
-					<tr><td>
-					<hr color="#e3f4ff"><br/>
+					<tr>
+					<#if node.getParent().getName() != proc.getName()>
+						<tr><td  class="subprocess-node-header-td"><div class="subprocess-node-header-text">Действие в рамках подпроцесса "${node.getParent().getName()}"</div></td></tr>
+					</#if>
+					<td>
+					<hr color="#e3f4ff">
 					
 					<#-- name -->
 					<p id="${node.getId()}" > <font color="#005D85" size="3" face="Verdana, Geneva, sans-serif"> <strong> Шаг: ${node.getName()} </strong> </font> </p>
@@ -253,8 +287,12 @@
 				
 				<#-- Receive & Send message -->
 				<#if node.class.simpleName == "ReceiveMessageNode" || node.class.simpleName == "SendMessageNode">
-					<tr><td>
-					<hr color="#e3f4ff"><br/>
+					<tr>
+					<#if node.getParent().getName() != proc.getName()>
+						<tr><td  class="subprocess-node-header-td"><div class="subprocess-node-header-text">Действие в рамках подпроцесса "${node.getParent().getName()}"</div></td></tr>
+					</#if>					
+					<td>
+					<hr color="#e3f4ff">
 					
 					<#-- name -->
 					<p id="${node.getId()}" > <font color="#005D85" size="3" face="Verdana, Geneva, sans-serif"> <strong> Шаг: ${node.getName()} </strong> </font> </p>
@@ -301,36 +339,43 @@
 				
 				<#-- Subprocess & Multisubprocess -->
 				<#if node.class.simpleName == "Subprocess" || node.class.simpleName == "MultiSubprocess">
-					<tr><td>
-					<hr color="#e3f4ff"><br/>
+					<tr>
+					<hr color="#e3f4ff">
+					<#if node.getParent().getName() != proc.getName()>
+						<tr><td  class="subprocess-node-header-td"><div class="subprocess-node-header-text">Действие в рамках подпроцесса "${node.getParent().getName()}"</div></td></tr>
+					</#if>					
+					<td>
 					
 					<#-- name -->
 					<p id="${node.getId()}" > <font color="#005D85" size="3" face="Verdana, Geneva, sans-serif"> <strong> Шаг: ${node.getName()} </strong> </font> </p>
 					
 					<#-- type -->
-					<p>
 					<#if node.class.simpleName == "Subprocess">
-						<span class="node-type-text-1">Тип шага:</span> Запуск подпроцесса<br/>
+						<span class="node-type-text-1">Тип шага:</span> Запуск подпроцесса
 					<#else>
-						<span class="node-type-text-1">Тип шага:</span> Запуск мультиподпроцесса <br/>
+						<span class="node-type-text-1">Тип шага:</span> Запуск мультиподпроцесса
 					</#if>
 					
 					<#if node.getNodeRegulationsProperties().getDescriptionForUser()?length != 0 >
 						<span class="node-description-text-1">Описание:</span> <br/>
 						${node.getNodeRegulationsProperties().getDescriptionForUser()?replace("\n","<br />")}
-						<br/><br/>
 					</#if>
 					
 					<#-- suprocess name -->
 					<#if node.getSubProcessName() != "">
-						<p> Имя подпроцесса ${node.getSubProcessName()} </p>
+					<br/><br/>
+					 <span class="subprocess-name-text-1">Имя подпроцесса:</span> ${node.getSubProcessName()}
 					</#if>
 				</#if>
 				
 				<#-- Multi task state -->
 				<#if node.class.simpleName == "MultiTaskState">
-					<tr><td>
-					<hr color="#e3f4ff"><br/>
+					<tr>
+					<#if node.getParent().getName() != proc.getName()>
+						<tr><td  class="subprocess-node-header-td"><div class="subprocess-node-header-text">Действие в рамках подпроцесса "${node.getParent().getName()}"</div></td></tr>
+					</#if>					
+					<td>
+					<hr color="#e3f4ff">
 					
 					<#-- name -->
 					<p id="${node.getId()}" > <font color="#005D85" size="3" face="Verdana, Geneva, sans-serif"> <strong> Шаг: ${node.getName()} </strong> </font> </p>
@@ -347,24 +392,30 @@
 					</#if>
 					
 					<#-- transitions -->
+					<p>
 					<#if node.getLeavingTransitions()?size == 1>
 						<#assign afterTask = node.getLeavingTransitions()?first >
-						Далее управление переходит к шагу <a href="#${afterTask.getTarget().getId()}">${afterTask.getTarget().getName()}</a></p>
+						Далее управление переходит к шагу <a href="#${afterTask.getTarget().getId()}">${afterTask.getTarget().getName()}</a>
 					<#else>
-						Далее управление переходит:</p>    
+						Далее управление переходит: 
 						<ul>
 							<#list node.getLeavingTransitions() as transition>
-								<p>в случае ${transition.getName()} <a href="#${transition.getTarget().getId()}">${transition.getTarget().getName()}</a> </p>
+								<li>в случае ${transition.getName()} <a href="#${transition.getTarget().getId()}">${transition.getTarget().getName()}</a> </li>
 							</#list> 
 						</ul>
-					</#if>	
+					</#if>
+					</p>	
 					
 				</#if>
 				
 				<#--  ScriptTask -->
 				<#if node.class.simpleName == "ScriptTask">
-					<tr><td>
-					<hr color="#e3f4ff"><br/>
+					<tr>
+					<#if node.getParent().getName() != proc.getName()>
+						<tr><td  class="subprocess-node-header-td"><div class="subprocess-node-header-text">Действие в рамках подпроцесса "${node.getParent().getName()}"</div></td></tr>
+					</#if>					
+					<td>
+					<hr color="#e3f4ff">
 					
 					<#-- name -->
 					<p id="${node.getId()}" > <font color="#005D85" size="3" face="Verdana, Geneva, sans-serif"> <strong> Шаг: ${node.getName()} </strong> </font> </p>
@@ -379,23 +430,29 @@
 					</#if>
 					
 					<#-- transitions -->
+					<p>
 					<#if node.getLeavingTransitions()?size == 1>
 						<#assign afterTask = node.getLeavingTransitions()?first >
-						Далее управление переходит к шагу <a href="#${afterTask.getTarget().getId()}">${afterTask.getTarget().getName()}</a></p>
+						Далее управление переходит к шагу <a href="#${afterTask.getTarget().getId()}">${afterTask.getTarget().getName()}</a>
 					<#else>
-						Далее управление переходит:</p>    
+						Далее управление переходит:  
 						<ul>
 							<#list node.getLeavingTransitions() as transition>
-								<p>в случае ${transition.getName()} <a href="#${transition.getTarget().getId()}">${transition.getTarget().getName()}</a> </p>
+								<li>в случае ${transition.getName()} <a href="#${transition.getTarget().getId()}">${transition.getTarget().getName()}</a> </li>
 							</#list> 
 						</ul>
 					</#if>
+					</p>
 				</#if>
 				
 				<#--  EndTokenState -->
 				<#if node.class.simpleName == "EndTokenState">
-					<tr><td><hr color="#e3f4ff">
-					<p id="${node.getId()}"> Завершение потока  выполнения бизнес-процесса: ${node.getName()} </p>
+					<tr>
+					<#if node.getParent().getName() != proc.getName()>
+						<tr><td  class="subprocess-node-header-td"><div class="subprocess-node-header-text">Действие в рамках подпроцесса "${node.getParent().getName()}"</div></td></tr>
+					</#if>					
+					<td><hr color="#e3f4ff">
+					<p id="${node.getId()}"> Завершение потока  выполнения бизнес-процесса "${node.getParent().getName()}": ${node.getName()} </p>
 					<#if node.getNodeRegulationsProperties().getDescriptionForUser()?length != 0 >
 						<span class="node-description-text-1">Описание:</span> <br/>
 						${node.getNodeRegulationsProperties().getDescriptionForUser()?replace("\n","<br />")}
@@ -406,8 +463,12 @@
 				
 			    <#--  EndState -->
 				<#if node.class.simpleName == "EndState">
-					<tr><td><hr color="#e3f4ff">
-					<p id="${node.getId()}"> Завершение процесса выполнения бизнес-процесса: ${node.getName()} </p>
+					<tr>
+					<#if node.getParent().getName() != proc.getName()>
+						<tr><td  class="subprocess-node-header-td"><div class="subprocess-node-header-text">Действие в рамках подпроцесса "${node.getParent().getName()}"</div></td></tr>
+					</#if>					
+					<td><hr color="#e3f4ff">
+					<p id="${node.getId()}"> Завершение процесса выполнения бизнес-процесса "${node.getParent().getName()}": ${node.getName()} </p>
 					<#if node.getNodeRegulationsProperties().getDescriptionForUser()?length != 0 >
 						<span class="node-description-text-1">Описание:</span> <br/>
 						${node.getNodeRegulationsProperties().getDescriptionForUser()?replace("\n","<br />")}

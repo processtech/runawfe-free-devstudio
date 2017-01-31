@@ -1,6 +1,7 @@
 package ru.runa.gpd.ui.view;
 
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -34,6 +35,7 @@ import org.eclipse.ui.part.ViewPart;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.PluginLogger;
+import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.editor.ProcessEditorBase;
 import ru.runa.gpd.lang.model.Action;
@@ -42,6 +44,8 @@ import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
+import ru.runa.gpd.lang.model.Subprocess;
+import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.util.WorkspaceOperations;
 
@@ -107,6 +111,24 @@ public class RegulationsNotesView extends ViewPart implements ISelectionChangedL
                         break;
                     }
                 }
+                if (graphElement == null) {
+                    List<GraphElement> listOfElements = editor.getDefinition().getElements();
+                    for (GraphElement curGraphElement : listOfElements) {
+                        if (curGraphElement != null && curGraphElement.getClass().equals(Subprocess.class)
+                                && ((Subprocess) curGraphElement).isEmbedded()) {
+                            Subprocess subprocess = (Subprocess) curGraphElement;
+                            SubprocessDefinition subprocessDefinition = subprocess.getEmbeddedSubprocess();
+                            List<GraphElement> listOfSubprocessElements = subprocessDefinition.getElements();
+                            for (GraphElement curSubprocessGraphElement : listOfSubprocessElements) {
+                                if (Objects.equal(elementId, curSubprocessGraphElement.getId())) {
+                                    graphElement = curSubprocessGraphElement;
+                                    editor = WorkspaceOperations.openProcessDefinition(ProcessCache.getProcessDefinitionFile(subprocessDefinition));
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
             }
             String swimlaneName = marker.getAttribute(PluginConstants.SWIMLANE_LINK_KEY, null);
             if (swimlaneName != null) {
@@ -127,6 +149,14 @@ public class RegulationsNotesView extends ViewPart implements ISelectionChangedL
                 }
                 List<? extends Action> activeActions = active.getActions();
                 graphElement = activeActions.get(actionIndex);
+            }
+            String nameOfSourceProcess = marker.getAttribute(PluginConstants.PROCESS_NAME_KEY).toString();
+            Set<ProcessDefinition> setOfProcessDefinitions = ProcessCache.getAllProcessDefinitions();
+            for (ProcessDefinition curProcessDefinition : setOfProcessDefinitions) {
+                if (curProcessDefinition.getName().equals(nameOfSourceProcess)) {
+                    IFile fileCurProcessDefinition = ProcessCache.getProcessDefinitionFile(curProcessDefinition);
+                    editor = WorkspaceOperations.openProcessDefinition(fileCurProcessDefinition);
+                }
             }
             if (graphElement != null) {
                 editor.select(graphElement);

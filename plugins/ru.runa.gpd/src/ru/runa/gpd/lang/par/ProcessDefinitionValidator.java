@@ -22,6 +22,10 @@ import com.google.common.collect.Lists;
 
 public class ProcessDefinitionValidator {
 
+    public static int NO_ERRORS = 0;
+    public static int WARNINGS = 1;
+    public static int ERRORS = 2;
+
     /**
      * 0 = no errors 1 = only warnings 2 = errors
      */
@@ -42,15 +46,15 @@ public class ProcessDefinitionValidator {
                 }
             }
             if (hasErrors) {
-                return 2;
+                return ERRORS;
             }
             if (hasWarnings) {
-                return 1;
+                return WARNINGS;
             }
-            return 0;
+            return NO_ERRORS;
         } catch (Throwable e) {
             PluginLogger.logError(e);
-            return 2;
+            return ERRORS;
         }
     }
 

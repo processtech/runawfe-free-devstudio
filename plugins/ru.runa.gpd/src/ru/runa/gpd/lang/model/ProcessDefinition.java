@@ -21,6 +21,7 @@ import ru.runa.gpd.extension.VariableFormatRegistry;
 import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.par.ParContentProvider;
+import ru.runa.gpd.lang.par.ProcessDefinitionValidator;
 import ru.runa.gpd.property.DurationPropertyDescriptor;
 import ru.runa.gpd.property.StartImagePropertyDescriptor;
 import ru.runa.gpd.util.Duration;
@@ -518,6 +519,20 @@ public class ProcessDefinition extends NamedGraphElement implements Active, Desc
 
         if (result && listOfStartStates.size() > 0) {
             Node curNode = listOfStartStates.get(0);
+            List<String> listOfIds = Lists.newArrayList();
+            do {
+                listOfIds.add(curNode.getId());
+                curNode = (Node) curNode.getNodeRegulationsProperties().getNextNode();
+                if (curNode != null && listOfIds.contains(curNode.getId())) {
+                    result = false;
+                    errors.add(ValidationError.createLocalizedWarning(this, "regulations.loopsInRegulationsSettingsWarning", curNode.getName(),
+                            curNode.getId()));
+                }
+            } while (result && curNode != null);
+        }
+
+        if (result && listOfStartStates.size() > 0) {
+            Node curNode = listOfStartStates.get(0);
             do {
                 if (curNode.getNodeRegulationsProperties().getIsEnabled() && curNode.getNodeRegulationsProperties().getPreviousNode() == null
                         && curNode.getNodeRegulationsProperties().getNextNode() == null) {
@@ -532,20 +547,6 @@ public class ProcessDefinition extends NamedGraphElement implements Active, Desc
                 }
                 curNode = (Node) curNode.getNodeRegulationsProperties().getNextNode();
             } while (curNode != null && result);
-        }
-
-        if (result && listOfStartStates.size() > 0) {
-            Node curNode = listOfStartStates.get(0);
-            List<String> listOfIds = Lists.newArrayList();
-            do {
-                listOfIds.add(curNode.getId());
-                curNode = (Node) curNode.getNodeRegulationsProperties().getNextNode();
-                if (curNode != null && listOfIds.contains(curNode.getId())) {
-                    result = false;
-                    errors.add(ValidationError.createLocalizedWarning(this, "regulations.loopsInRegulationsSettingsWarning", curNode.getName(),
-                            curNode.getId()));
-                }
-            } while (result && curNode != null);
         }
 
         if (result) {
@@ -599,6 +600,29 @@ public class ProcessDefinition extends NamedGraphElement implements Active, Desc
                     result = false;
                     errors.add(ValidationError.createLocalizedWarning(this, "regulations.nextPreviousNodeMismatch", nextNode.getName(),
                             curNode.getName()));
+                }
+                curNode = nextNode;
+            } while (curNode != null && result);
+        }
+
+        if (result && listOfStartStates.size() > 0) {
+            Node curNode = listOfStartStates.get(0);
+            do {
+                Node nextNode = (Node) curNode.getNodeRegulationsProperties().getNextNode();
+                if (nextNode != null && nextNode.getClass().equals(Subprocess.class) && ((Subprocess) nextNode).isEmbedded()) {
+                    SubprocessDefinition subprocessDefinition = ((Subprocess) nextNode).getEmbeddedSubprocess();
+                    int resultOfDefinitionValidation = ProcessDefinitionValidator.validateDefinition(
+                            ProcessCache.getProcessDefinitionFile(subprocessDefinition), subprocessDefinition);
+                    if (resultOfDefinitionValidation != ProcessDefinitionValidator.ERRORS) {
+                        boolean resultOfRegulationsValidation = subprocessDefinition.validateRegulations(errors);
+                        if (resultOfRegulationsValidation != true) {
+                            result = false;
+                        }
+                    } else {
+                        result = false;
+                        errors.add(ValidationError.createLocalizedWarning(subprocessDefinition, "regulations.subprocessContainsErrors",
+                                subprocessDefinition.getName()));
+                    }
                 }
                 curNode = nextNode;
             } while (curNode != null && result);
