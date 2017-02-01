@@ -1,7 +1,5 @@
 package ru.runa.gpd.lang;
 
-import static ru.runa.gpd.lang.ProcessSerializer.BEHAVIOR;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
