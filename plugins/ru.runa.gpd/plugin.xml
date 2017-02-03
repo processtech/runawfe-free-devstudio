@@ -428,6 +428,11 @@
              </and>
           </enablement>
        </action>
+       <action
+             class="ru.runa.gpd.ui.action.VersionCommentAction"
+             id="ru.runa.gpd.versionCommentAction"
+             label="%label.menu.versionCommentAction">
+       </action>
     </objectContribution>
     <objectContribution
           adaptable="false"

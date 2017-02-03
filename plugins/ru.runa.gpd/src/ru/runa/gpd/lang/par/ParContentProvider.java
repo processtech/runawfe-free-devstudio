@@ -37,6 +37,7 @@ public class ParContentProvider {
         contentProviders.add(new ActionDescriptionContentProvider());
         contentProviders.add(new SubstitutionExceptionsXmlContentProvider());
         contentProviders.add(new BotsXmlContentProvider());
+        contentProviders.add(new VersionCommentXmlContentProvider());
         contentProviders.add(new RegulationsXmlContentProvider());
     }
 
