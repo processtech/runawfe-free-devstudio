@@ -53,6 +53,9 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
 
 public class VariableSearchVisitor {
+
+    public static final String REGEX_SCRIPT_VARIABLE = "[^\\p{Alnum}_]%s[^\\p{Alnum}_]";
+
     private final VariableSearchQuery query;
     private IProgressMonitor progressMonitor;
     private int numberOfScannedElements;
@@ -66,8 +69,8 @@ public class VariableSearchVisitor {
     public VariableSearchVisitor(VariableSearchQuery query) {
         this.query = query;
         this.status = new MultiStatus(NewSearchUI.PLUGIN_ID, IStatus.OK, SearchMessages.TextSearchEngine_statusMessage, null);
-        this.matcher = Pattern.compile(Pattern.quote(query.getSearchText())).matcher("");
-        this.matcherScriptingName = Pattern.compile(Pattern.quote(query.getVariable().getScriptingName())).matcher("");
+        this.matcher = Pattern.compile(String.format(REGEX_SCRIPT_VARIABLE, query.getSearchText())).matcher("");
+        this.matcherScriptingName = Pattern.compile(String.format(REGEX_SCRIPT_VARIABLE, query.getVariable().getScriptingName())).matcher("");
         this.matcherWithBrackets = Pattern.compile(Pattern.quote("\"" + query.getSearchText() + "\"")).matcher("");
     }
 

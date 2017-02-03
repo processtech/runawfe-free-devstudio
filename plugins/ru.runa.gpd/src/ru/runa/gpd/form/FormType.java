@@ -13,12 +13,11 @@ import org.eclipse.ui.IEditorPart;
 
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.FormNode;
+import ru.runa.gpd.search.VariableSearchVisitor;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.validation.FormNodeValidation;
 
 public abstract class FormType {
-
-    private static final String SCRIPT_VARIABLE_REGEX = "['\"\\[(-+/*=\\s]%s['\"\\])-+/*=\\s.;]";
 
     private String type;
     private String name;
@@ -95,7 +94,7 @@ public abstract class FormType {
 
     public MultiTextEdit searchVariableReplacementsInScript(IFile file, String variableName, String replacement) throws Exception {
         String text = IOUtils.readStream(file.getContents());
-        Pattern pattern = Pattern.compile(String.format(SCRIPT_VARIABLE_REGEX, variableName));
+        Pattern pattern = Pattern.compile(String.format(VariableSearchVisitor.REGEX_SCRIPT_VARIABLE, variableName));
         Matcher matcher = pattern.matcher(text);
         MultiTextEdit multiEdit = new MultiTextEdit();
         int len = variableName.length();
