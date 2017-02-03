@@ -1193,6 +1193,38 @@
    <extension
          point="ru.runa.gpd.handlers">
       <handler
+            actionHandler="true"
+            assignmentHandler="false"
+            botTaskHandler="true"
+            decisionHandler="false"
+            cellEditorProvider="ru.runa.gpd.extension.handler.ConfigBasedProvider"
+            className="ru.runa.wfe.redmine.CreateIssueHandler"
+            enabled="true"
+            label="%ru.runa.wfe.redmine.CreateIssueHandler" />
+
+      <handler
+            actionHandler="true"
+            assignmentHandler="false"
+            botTaskHandler="true"
+            decisionHandler="false"
+            cellEditorProvider="ru.runa.gpd.extension.handler.ConfigBasedProvider"
+            className="ru.runa.wfe.redmine.UpdateIssueHandler"
+            enabled="true"
+            label="%ru.runa.wfe.redmine.UpdateIssueHandler" />
+
+
+      <handler
+            actionHandler="true"
+            assignmentHandler="false"
+            botTaskHandler="true"
+            decisionHandler="false"
+            cellEditorProvider="ru.runa.gpd.extension.handler.ConfigBasedProvider"
+            className="ru.runa.wfe.redmine.LoadIssueHandler"
+            enabled="true"
+            label="%ru.runa.wfe.redmine.LoadIssueHandler" />
+
+
+      <handler
             actionHandler="false"
             assignmentHandler="false"
             botTaskHandler="false"
@@ -1201,6 +1233,8 @@
             className="ru.runa.wfe.extension.decision.BSFDecisionHandler"
             enabled="false"
             label="%ru.runa.wfe.extension.decision.BSHDecisionHandler" />
+
+
       <handler
             actionHandler="false"
             assignmentHandler="false"
