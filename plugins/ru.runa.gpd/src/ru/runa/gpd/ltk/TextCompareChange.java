@@ -11,7 +11,10 @@ import org.eclipse.ltk.core.refactoring.TextEditBasedChangeGroup;
 import org.eclipse.ltk.ui.refactoring.TextEditChangeNode;
 import org.eclipse.swt.widgets.Display;
 
+import ru.runa.gpd.Localization;
+import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.Variable;
+import ru.runa.gpd.ui.dialog.ErrorDialog;
 
 public abstract class TextCompareChange extends TextEditBasedChange {
     protected final Object object;
@@ -49,7 +52,8 @@ public abstract class TextCompareChange extends TextEditBasedChange {
     }
 
     @Override
-    public String getPreviewContent(TextEditBasedChangeGroup[] groups, IRegion region, boolean arg2, int arg3, IProgressMonitor pm) throws CoreException {
+    public String getPreviewContent(TextEditBasedChangeGroup[] groups, IRegion region, boolean arg2, int arg3, IProgressMonitor pm)
+            throws CoreException {
         throw new UnsupportedOperationException();
     }
 
@@ -75,7 +79,12 @@ public abstract class TextCompareChange extends TextEditBasedChange {
 
             @Override
             public void run() {
-                performInUIThread();
+                try {
+                    performInUIThread();
+                } catch (Exception e) {
+                    PluginLogger.logErrorWithoutDialog("Unable to perform change in " + object, e);
+                    ErrorDialog.open(Localization.getString("RenameVariableException") + object + ": " + e.getLocalizedMessage(), e);
+                }
             }
         });
         return new NullChange();

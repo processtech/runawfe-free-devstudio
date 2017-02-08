@@ -42,6 +42,7 @@ public class RenameVariableRefactoring extends Refactoring {
     private final IFolder definitionFolder;
     private final ProcessDefinition mainProcessDefinition;
     private final SortedMap<Variable, Variable> variablesMap;
+    private final RefactoringStatus finalStatus;
 
     public RenameVariableRefactoring(IFile definitionFile, ProcessDefinition definition, Variable oldVariable, String newName, String newScriptingName) {
         this.definitionFolder = (IFolder) definitionFile.getParent();
@@ -62,6 +63,7 @@ public class RenameVariableRefactoring extends Refactoring {
                 variablesMap.put(oldVariableAttribute, new Variable(newVariableName, newVariableScriptingName, oldVariableAttribute));
             }
         }
+        this.finalStatus = new RefactoringStatus();
     }
 
     @Override
@@ -76,7 +78,7 @@ public class RenameVariableRefactoring extends Refactoring {
             }
         } catch (Exception e) {
             PluginLogger.logErrorWithoutDialog(e.getMessage(), e);
-            result.addFatalError(Localization.getString("UnhandledException"));
+            result.addFatalError(Localization.getString("UnhandledException") + ": " + e.getLocalizedMessage());
         }
         return result;
     }
@@ -115,15 +117,15 @@ public class RenameVariableRefactoring extends Refactoring {
         }
         List<Action> actions = processDefinition.getChildrenRecursive(Action.class);
         for (Action action : actions) {
-            cache.add(new DelegablePresentation(action, action.getLabel()));
+            cache.add(new DelegablePresentation(action));
         }
         List<ScriptTask> scriptTasks = processDefinition.getChildrenRecursive(ScriptTask.class);
         for (ScriptTask scriptTask : scriptTasks) {
-            cache.add(new DelegablePresentation(scriptTask, scriptTask.getLabel()));
+            cache.add(new DelegablePresentation(scriptTask));
         }
         List<Decision> decisions = processDefinition.getChildren(Decision.class);
         for (Decision decision : decisions) {
-            cache.add(new DelegablePresentation(decision, decision.getName()));
+            cache.add(new DelegablePresentation(decision));
         }
         List<Subprocess> subprocesses = processDefinition.getChildren(Subprocess.class);
         for (Subprocess subprocess : subprocesses) {
@@ -146,7 +148,7 @@ public class RenameVariableRefactoring extends Refactoring {
 
     @Override
     public RefactoringStatus checkFinalConditions(IProgressMonitor pm) {
-        return new RefactoringStatus();
+        return finalStatus;
     }
 
     private CompositeChange cashedChange = null;
@@ -160,8 +162,10 @@ public class RenameVariableRefactoring extends Refactoring {
                     List<Change> changes = classPresentation.getChanges(variablesMap);
                     cashedChange.addAll(changes.toArray(new Change[changes.size()]));
                 } catch (Exception e) {
-                    // TODO notify user
-                    PluginLogger.logErrorWithoutDialog("Unable to get used variables in " + classPresentation.element, e);
+                    PluginLogger.logErrorWithoutDialog("Unable to get used variabes in " + classPresentation.element, e);
+                    RenameVariableRefactoringStatusContext context = new RenameVariableRefactoringStatusContext(classPresentation, definitionFolder);
+                    finalStatus.addWarning(
+                            Localization.getString("RenameVariableException") + classPresentation.element + ": " + e.getLocalizedMessage(), context);
                 }
             }
         }
@@ -169,8 +173,16 @@ public class RenameVariableRefactoring extends Refactoring {
     }
 
     public boolean isUserInteractionNeeded() {
-        checkInitialConditions(null);
-        return createChange(null).getChildren().length > 0;
+        RefactoringStatus initialStatus = checkInitialConditions(null);
+        if (initialStatus.hasFatalError()) {
+            finalStatus.merge(initialStatus);
+            return true;
+        }
+        CompositeChange change = createChange(null);
+        if (finalStatus.hasWarning() || finalStatus.hasError() || finalStatus.hasFatalError()) {
+            return true;
+        }
+        return change.getChildren().length > 0;
     }
 
     @Override

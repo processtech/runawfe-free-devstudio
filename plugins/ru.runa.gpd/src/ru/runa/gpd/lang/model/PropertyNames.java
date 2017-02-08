@@ -18,6 +18,7 @@ public interface PropertyNames {
     public static final String PROPERTY_FORM_TEMPLATE_FILE = "formTemplate";
     public static final String PROPERTY_SOURCE = "source";
     public static final String PROPERTY_TARGET = "target";
+    public static final String PROPERTY_ORDERNUM = "orderNum";
     public static final String PROPERTY_SCRIPTING_NAME = "scriptingName";
     public static final String PROPERTY_FORMAT = "format";
     public static final String PROPERTY_PUBLIC_VISIBILITY = "publicVisibility";
@@ -61,4 +62,9 @@ public interface PropertyNames {
     public static final String PROPERTY_RELATION_PARAMETER = "relationParameter";
     public static final String PROPERTY_RELATION_INVERSED = "relationInversed";
     public static final String PROPERTY_EDITOR_PATH = "editorPath";
+    public static final String PROPERTY_END_TOKEN_BEHAVIOR = "endTokenBehavior";
+    public static final String PROPERTY_PROCESS_VERSION_NUMBER = "versionNumber";
+    public static final String PROPERTY_PROCESS_VERSION_DATE = "versionDate";
+    public static final String PROPERTY_PROCESS_VERSION_COMMENT = "versionComment";
+
 }

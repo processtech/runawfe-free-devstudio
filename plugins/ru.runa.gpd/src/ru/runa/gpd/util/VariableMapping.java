@@ -5,6 +5,7 @@ import com.google.common.base.Objects;
 public class VariableMapping {
     public static final String USAGE_READ = "read";
     public static final String USAGE_WRITE = "write";
+    public static final String USAGE_SYNC = "sync";
     public static final String USAGE_MULTIINSTANCE_LINK = "multiinstancelink";
     public static final String USAGE_SELECTOR = "selector";
     public static final String USAGE_TEXT = "text";
@@ -55,6 +56,10 @@ public class VariableMapping {
 
     public boolean isWritable() {
         return hasUsage(USAGE_WRITE);
+    }
+
+    public boolean isSyncable() {
+        return hasUsage(USAGE_SYNC);
     }
 
     public boolean isMultiinstanceLink() {

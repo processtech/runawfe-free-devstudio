@@ -147,6 +147,9 @@ public class VariableSearchVisitor {
             if (graphElement instanceof ITimed) {
                 processTimedNode(definitionFile, (ITimed) graphElement);
             }
+            if (graphElement instanceof Timer) {
+                processTimer(definitionFile, (Timer) graphElement, graphElement);
+            }
             if (graphElement instanceof Subprocess) {
                 processSubprocessNode(definitionFile, (Subprocess) graphElement);
             }
@@ -184,8 +187,12 @@ public class VariableSearchVisitor {
         if (timer == null) {
             return;
         }
+        processTimer(definitionFile, timer, (GraphElement) timedNode);
+    }
+
+    private void processTimer(IFile definitionFile, Timer timer, GraphElement node) throws Exception {
         if (query.getSearchText().equals(timer.getDelay().getVariableName())) {
-            ElementMatch elementMatch = new ElementMatch((GraphElement) timedNode, definitionFile, ElementMatch.CONTEXT_TIMED_VARIABLE);
+            ElementMatch elementMatch = new ElementMatch(node, definitionFile, ElementMatch.CONTEXT_TIMED_VARIABLE);
             elementMatch.setMatchesCount(1);
             query.getSearchResult().addMatch(new Match(elementMatch, 0, 0));
         }

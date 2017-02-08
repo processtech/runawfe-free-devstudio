@@ -41,7 +41,7 @@ public class ElementTreeEditPart extends AbstractTreeEditPart implements Propert
 
     @Override
     protected void refreshVisuals() {
-        setWidgetText(getModel().toString());
+        setWidgetText(getModel().getLabel());
         setWidgetImage(getModel().getEntryImage());
     }
 

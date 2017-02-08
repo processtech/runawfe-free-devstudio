@@ -418,6 +418,11 @@
              </and>
           </enablement>
        </action>
+       <action
+             class="ru.runa.gpd.ui.action.VersionCommentAction"
+             id="ru.runa.gpd.versionCommentAction"
+             label="%label.menu.versionCommentAction">
+       </action>
     </objectContribution>
     <objectContribution
           adaptable="false"
@@ -2605,7 +2610,15 @@
           label="demo processes style (based on div container)"
           path="/template/divContainer.css">
     </template>
- </extension>	
-
+ </extension>
+ <extension point="org.eclipse.ltk.ui.refactoring.statusContextViewers">
+    <statusContextViewer
+          class="ru.runa.gpd.ltk.RenameVariableRefactoringStatusContextViewer"
+          id="ru.runa.gpd.ltk.renameVariableRefactoringStatusContextViewer">
+       <enablement>
+          <instanceof value="ru.runa.gpd.ltk.RenameVariableRefactoringStatusContext"/>
+       </enablement>
+    </statusContextViewer>
+ </extension>
 
 </plugin>

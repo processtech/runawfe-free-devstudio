@@ -52,8 +52,11 @@ public class ProcessDefinition extends NamedGraphElement implements Active, Desc
     private final IFile file;
     private int hash32 = -1;
 
+    private final ArrayList<VersionInfo> versionInfoList;
+
     public ProcessDefinition(IFile file) {
         this.file = file;
+        versionInfoList = new ArrayList<>();
     }
 
     public ProcessDefinitionAccessType getAccessType() {
@@ -480,4 +483,32 @@ public class ProcessDefinition extends NamedGraphElement implements Active, Desc
         }
         return hashCode() == o.hashCode();
     }
+
+    public void addToVersionInfoList(VersionInfo versionInfo) {
+        this.versionInfoList.add(versionInfo);
+    }
+
+    public ArrayList<VersionInfo> getVersionInfoList() {
+        return versionInfoList;
+    }
+
+    public int getVersionInfoListIndex(VersionInfo versionInfo) {
+        int result = -1;
+        int i = 0;
+        versionInfo = new VersionInfo(versionInfo.getDateTimeAsString(), versionInfo.getAuthor(), versionInfo.getComment().replaceAll("\r\n", "\n"));
+        for (VersionInfo vi : this.getVersionInfoList()) {
+            vi = new VersionInfo(vi.getDateTimeAsString(), vi.getAuthor(), vi.getComment().replaceAll("\r\n", "\n"));
+            if (versionInfo.equals(vi)) {
+                result = i;
+                break;
+            }
+            i++;
+        }
+        return result;
+    }
+
+    public void setVersionInfoByIndex(int index, VersionInfo versionInfo) {
+        versionInfoList.set(index, versionInfo);
+    }
+
 }

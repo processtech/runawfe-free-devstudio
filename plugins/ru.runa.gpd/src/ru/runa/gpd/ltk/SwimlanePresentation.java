@@ -7,24 +7,26 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.ltk.core.refactoring.Change;
 
-import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.swimlane.SwimlaneInitializer;
 import ru.runa.gpd.swimlane.SwimlaneInitializerParser;
 
 public class SwimlanePresentation extends SingleVariableRenameProvider<Swimlane> {
-    private final SwimlaneInitializer swimlaneInitializer;
+    private SwimlaneInitializer swimlaneInitializer;
 
     public SwimlanePresentation(Swimlane swimlane) {
         setElement(swimlane);
-        swimlaneInitializer = SwimlaneInitializerParser.parse(element.getDelegationConfiguration());
+        if (swimlane != null && swimlane.getDelegationConfiguration() != null
+                && Swimlane.DEFAULT_DELEGATION_CLASS_NAME.equals(swimlane.getDelegationClassName())) {
+            swimlaneInitializer = SwimlaneInitializerParser.parse(element.getDelegationConfiguration());
+        }
     }
 
     @Override
     protected List<Change> getChanges(Variable oldVariable, Variable newVariable) throws Exception {
         List<Change> changes = new ArrayList<>();
-        if (swimlaneInitializer.hasReference(oldVariable)) {
+        if (swimlaneInitializer != null && swimlaneInitializer.hasReference(oldVariable)) {
             changes.add(new SwimlaneInitializerChange(element, oldVariable, newVariable));
         }
         return changes;
@@ -38,12 +40,7 @@ public class SwimlanePresentation extends SingleVariableRenameProvider<Swimlane>
 
         @Override
         protected void performInUIThread() {
-            try {
-                element.setDelegationConfiguration(getReplacementConfig());
-            } catch (Exception e) {
-                // TODO notify user
-                PluginLogger.logErrorWithoutDialog("Unable to perform change in " + element, e);
-            }
+            element.setDelegationConfiguration(getReplacementConfig());
         }
 
         private String getReplacementConfig() {

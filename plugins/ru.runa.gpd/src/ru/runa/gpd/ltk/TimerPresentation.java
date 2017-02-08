@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.eclipse.ltk.core.refactoring.Change;
 
-import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.Timer;
 import ru.runa.gpd.lang.model.Variable;
@@ -38,12 +37,7 @@ public class TimerPresentation extends SingleVariableRenameProvider<Timer> {
 
         @Override
         protected void performInUIThread() {
-            try {
-                element.getDelay().setVariableName(replacementVariable.getName());
-            } catch (Exception e) {
-                // TODO notify user
-                PluginLogger.logErrorWithoutDialog("Unable to perform change in " + element, e);
-            }
+            element.setDelayVariableName(replacementVariable.getName());
         }
 
         @Override

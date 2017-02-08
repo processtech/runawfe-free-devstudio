@@ -178,7 +178,6 @@ public class OutlineViewer extends ContentOutlinePage implements ISelectionListe
             if (gefEntry != null) {
                 return gefEntry.createTreeEditPart(element);
             }
-            // TODO throw new RuntimeException("No tree part defined for " + element);
             return new ElementTreeEditPart(element);
         }
     }
