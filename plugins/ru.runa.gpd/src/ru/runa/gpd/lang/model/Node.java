@@ -13,6 +13,8 @@ import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.lang.ValidationError;
+import ru.runa.gpd.property.IncludeInRegulationsPropertyDescriptor;
+import ru.runa.gpd.property.NodeInRegulationsPropertyDescriptor;
 import ru.runa.gpd.util.Duration;
 
 import com.google.common.base.Objects;
@@ -46,6 +48,11 @@ public abstract class Node extends NamedGraphElement implements Describable {
         super.populateCustomPropertyDescriptors(descriptors);
         descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_NODE_ASYNC_EXECUTION, Localization.getString("Node.property.asyncExecution"),
                 NodeAsyncExecution.LABELS));
+        descriptors.add(new IncludeInRegulationsPropertyDescriptor(PROPERTY_NODE_INCLUDE_IN_REGULATIONS, this));
+        descriptors.add(new NodeInRegulationsPropertyDescriptor(PROPERTY_PREVIOUS_NODE_IN_REGULATIONS, this,
+                NodeInRegulationsPropertyDescriptor.PREVIOUS_NODE_MODE));
+        descriptors.add(new NodeInRegulationsPropertyDescriptor(PROPERTY_NEXT_NODE_IN_REGULATIONS, this,
+                NodeInRegulationsPropertyDescriptor.NEXT_NODE_MODE));
     }
 
     @Override
@@ -67,6 +74,23 @@ public abstract class Node extends NamedGraphElement implements Describable {
         if (PROPERTY_NODE_ASYNC_EXECUTION.equals(id)) {
             return asyncExecution.ordinal();
         }
+        if (PROPERTY_NODE_INCLUDE_IN_REGULATIONS.equals(id)) {
+            return String.valueOf(getNodeRegulationsProperties().getIsEnabled());
+        }
+        if (PROPERTY_PREVIOUS_NODE_IN_REGULATIONS.equals(id)) {
+            if (getNodeRegulationsProperties().getPreviousNode() != null) {
+                return String.valueOf(getNodeRegulationsProperties().getPreviousNode().getLabel());
+            } else {
+                return String.valueOf(Localization.getString("Node.property.previousNodeInRegulations.notSet"));
+            }
+        }
+        if (PROPERTY_NEXT_NODE_IN_REGULATIONS.equals(id)) {
+            if (getNodeRegulationsProperties().getNextNode() != null) {
+                return String.valueOf(getNodeRegulationsProperties().getNextNode().getLabel());
+            } else {
+                return String.valueOf(Localization.getString("Node.property.nextNodeInRegulations.notSet"));
+            }
+        }
         return super.getPropertyValue(id);
     }
 
@@ -82,6 +106,14 @@ public abstract class Node extends NamedGraphElement implements Describable {
             ((ITimed) this).getTimer().setAction((TimerAction) value);
         } else if (PROPERTY_NODE_ASYNC_EXECUTION.equals(id)) {
             setAsyncExecution(NodeAsyncExecution.values()[(Integer) value]);
+        } else if (PROPERTY_NODE_INCLUDE_IN_REGULATIONS.equals(id)) {
+            getNodeRegulationsProperties().setIsEnabled(Boolean.valueOf((String) value));
+        } else if (PROPERTY_PREVIOUS_NODE_IN_REGULATIONS.equals(id)) {
+            getNodeRegulationsProperties().setPreviousNode(
+                    getProcessDefinition().getGraphElementByIdNotNull(String.valueOf(getNodeRegulationsProperties().getPreviousNode().getId())));
+        } else if (PROPERTY_NEXT_NODE_IN_REGULATIONS.equals(id)) {
+            getNodeRegulationsProperties().setNextNode(
+                    getProcessDefinition().getGraphElementByIdNotNull(String.valueOf(getNodeRegulationsProperties().getNextNode().getId())));
         } else {
             super.setPropertyValue(id, value);
         }

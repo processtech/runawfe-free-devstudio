@@ -42,7 +42,7 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
     private final List<GraphElement> childs = new ArrayList<GraphElement>();
     private Rectangle constraint;
     private String id;
-    private NodeRegulationsProperties nodeRegulationsProperties = new NodeRegulationsProperties();
+    protected NodeRegulationsProperties nodeRegulationsProperties = new NodeRegulationsProperties(this);
 
     public String getId() {
         return id;

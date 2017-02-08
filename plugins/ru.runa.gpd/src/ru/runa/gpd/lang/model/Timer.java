@@ -19,6 +19,11 @@ public class Timer extends Node {
     private Duration duration = new Duration();
     private TimerAction action;
 
+    public Timer() {
+        super();
+        nodeRegulationsProperties.setIsEnabled(false);
+    }
+
     public Duration getDelay() {
         return duration;
     }

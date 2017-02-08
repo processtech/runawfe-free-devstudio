@@ -32,6 +32,9 @@ public interface PropertyNames {
     public static final String PROPERTY_IGNORE_SUBSTITUTION_RULES = "ignoreSubstitutionRules";
     public static final String PROPERTY_SUBPROCESS = "subprocess";
     public static final String PROPERTY_NODE_ASYNC_EXECUTION = "asyncExecution";
+    public static final String PROPERTY_NODE_INCLUDE_IN_REGULATIONS = "includeInRegulations";
+    public static final String PROPERTY_PREVIOUS_NODE_IN_REGULATIONS = "previousNodeInRegulations";
+    public static final String PROPERTY_NEXT_NODE_IN_REGULATIONS = "nextNodeInRegulations";
     public static final String NODE_REMOVED = "NODE_REMOVED";
     public static final String PROPERTY_CHILDS_CHANGED = "NODE_CHILDS_CHANGED";
     public static final String NODE_LEAVING_TRANSITION_ADDED = "LEAVING_TRANSITION_ADDED";

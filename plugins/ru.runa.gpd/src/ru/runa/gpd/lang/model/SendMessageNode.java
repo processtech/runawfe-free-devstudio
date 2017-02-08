@@ -11,6 +11,11 @@ import ru.runa.gpd.util.Duration;
 public class SendMessageNode extends MessagingNode implements Active {
     private Duration ttlDuration = new Duration("1 days");
 
+    public SendMessageNode() {
+        super();
+        nodeRegulationsProperties.setIsEnabled(false);
+    }
+
     public Duration getTtlDuration() {
         return ttlDuration;
     }

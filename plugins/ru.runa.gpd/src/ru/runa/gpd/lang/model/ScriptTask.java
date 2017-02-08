@@ -6,6 +6,11 @@ import ru.runa.gpd.extension.HandlerArtifact;
 
 public class ScriptTask extends Node implements Delegable {
 
+    public ScriptTask() {
+        super();
+        nodeRegulationsProperties.setIsEnabled(false);
+    }
+
     @Override
     public String getDelegationType() {
         return HandlerArtifact.ACTION;

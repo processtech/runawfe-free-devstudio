@@ -8,6 +8,11 @@ import ru.runa.gpd.lang.NodeTypeDefinition;
 
 public class ReceiveMessageNode extends MessagingNode implements ITimed {
 
+    public ReceiveMessageNode() {
+        super();
+        nodeRegulationsProperties.setIsEnabled(false);
+    }
+
     @Override
     protected boolean allowLeavingTransition(List<Transition> transitions) {
         return super.allowLeavingTransition(transitions) && (transitions.size() == 0 || (transitions.size() == 1 && getTimer() != null));

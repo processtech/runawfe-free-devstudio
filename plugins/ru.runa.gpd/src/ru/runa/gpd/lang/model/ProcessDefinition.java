@@ -513,138 +513,141 @@ public class ProcessDefinition extends NamedGraphElement implements Active, Desc
         versionInfoList.set(index, versionInfo);
     }
 
-    public boolean validateRegulations(List<ValidationError> errors) {
+    public static boolean validateRegulations(ProcessDefinition definition, List<ValidationError> errors) {
         boolean result = true;
-        List<StartState> listOfStartStates = this.getChildren(StartState.class);
+        List<StartState> listOfStartStates = definition.getChildren(StartState.class);
         if (listOfStartStates.size() > 1) {
             result = false;
-            errors.add(ValidationError.createLocalizedWarning(this, "regulations.multipleStartStateNodesWarning"));
+            errors.add(ValidationError.createLocalizedWarning(definition, "regulations.multipleStartStateNodesWarning"));
         }
-        List<Node> listOfNodes = this.getNodes();
-        if (result) {
-            for (Node node : listOfNodes) {
-                if (node.getNodeRegulationsProperties().getPreviousNode() == null && node.getNodeRegulationsProperties().getNextNode() == null) {
-                    result = false;
-                    errors.add(ValidationError.createLocalizedWarning(node, "regulations.nodeWithoutPreviousAndNextNodesWarning", node.getName()));
-                    break;
-                }
-            }
-        }
+        List<Node> listOfNodes = definition.getNodes();
         int countOfNodesWithoutPrev = 0;
         int countOfNodesWithoutNext = 0;
-        if (result) {
-            for (Node node : listOfNodes) {
-                if (node.getNodeRegulationsProperties().getPreviousNode() == null) {
-                    countOfNodesWithoutPrev++;
-                }
-                if (node.getNodeRegulationsProperties().getNextNode() == null) {
-                    countOfNodesWithoutNext++;
-                }
+        boolean isLoopsExists = false;
+
+        for (Node node : listOfNodes) {
+            if (node.getNodeRegulationsProperties().getIsEnabled() && node.getNodeRegulationsProperties().getPreviousNode() == null
+                    && node instanceof StartState != true && node.getArrivingTransitions().get(0).getSource() instanceof StartState != true) {
+                countOfNodesWithoutPrev++;
             }
-            if (countOfNodesWithoutPrev > 1 || countOfNodesWithoutNext > 1) {
-                result = false;
-                errors.add(ValidationError.createLocalizedWarning(this, "regulations.nodesDoesntAppearsSequenceForRegulationsWarning"));
+            if (node.getNodeRegulationsProperties().getIsEnabled() && node.getNodeRegulationsProperties().getNextNode() == null
+                    && node instanceof StartState != true) {
+                countOfNodesWithoutNext++;
             }
         }
+        if (countOfNodesWithoutPrev > 0 || countOfNodesWithoutNext > 1) {
+            result = false;
+            errors.add(ValidationError.createLocalizedWarning(definition, "regulations.nodesDoesntAppearsSequenceForRegulationsWarning"));
+        }
 
-        if (result && listOfStartStates.size() > 0) {
+        if (listOfStartStates.size() > 0) {
             Node curNode = listOfStartStates.get(0);
             List<String> listOfIds = Lists.newArrayList();
+            listOfIds.add(curNode.getId());
+            curNode = listOfStartStates.get(0).getLeavingTransitions().get(0).getTarget();
             do {
                 listOfIds.add(curNode.getId());
                 curNode = (Node) curNode.getNodeRegulationsProperties().getNextNode();
                 if (curNode != null && listOfIds.contains(curNode.getId())) {
                     result = false;
-                    errors.add(ValidationError.createLocalizedWarning(this, "regulations.loopsInRegulationsSettingsWarning", curNode.getName(),
+                    isLoopsExists = true;
+                    errors.add(ValidationError.createLocalizedWarning(definition, "regulations.loopsInRegulationsSettingsWarning", curNode.getName(),
                             curNode.getId()));
                 }
-            } while (result && curNode != null);
+            } while (curNode != null && isLoopsExists != true);
         }
 
-        if (result && listOfStartStates.size() > 0) {
-            Node curNode = listOfStartStates.get(0);
-            do {
-                if (curNode.getNodeRegulationsProperties().getIsEnabled() && curNode.getNodeRegulationsProperties().getPreviousNode() == null
-                        && curNode.getNodeRegulationsProperties().getNextNode() == null) {
-                    result = false;
-                    errors.add(ValidationError.createLocalizedWarning(curNode, "regulations.neitherPreviousNorNextNodeAreNotSpecified"));
-                } else if (curNode.getNodeRegulationsProperties().getPreviousNode() != null
-                        && curNode.getNodeRegulationsProperties().getNextNode() != null
-                        && curNode.getNodeRegulationsProperties().getPreviousNode().getId()
-                                .equals(curNode.getNodeRegulationsProperties().getNextNode().getId())) {
-                    result = false;
-                    errors.add(ValidationError.createLocalizedWarning(curNode, "regulations.previousAndNextNodesAreTheSame"));
-                }
-                curNode = (Node) curNode.getNodeRegulationsProperties().getNextNode();
-            } while (curNode != null && result);
+        for (Node node : listOfNodes) {
+            if (node.getNodeRegulationsProperties().getIsEnabled() && node.getNodeRegulationsProperties().getNextNode() != null
+                    && node.getNodeRegulationsProperties().getNextNode().getNodeRegulationsProperties().getIsEnabled() != true) {
+                result = false;
+                errors.add(ValidationError.createLocalizedWarning(node, "regulations.nodePointsToHiddenNodeAsNextWarning", node.getName(),
+                        node.getId(), ((Node) node.getNodeRegulationsProperties().getNextNode()).getName(), node.getNodeRegulationsProperties()
+                                .getNextNode().getId()));
+            }
         }
 
-        if (result) {
-            List<HashSet<String>> listOfSamePreviousElements = Lists.newArrayList();
-            List<HashSet<String>> listOfSameNextElements = Lists.newArrayList();
-            for (Node curNode : listOfNodes) {
-                for (Node node : listOfNodes) {
-                    if (curNode != null && node != null) {
-                        if (curNode != node
-                                && curNode.getNodeRegulationsProperties().getPreviousNode() != null
-                                && node.getNodeRegulationsProperties().getPreviousNode() != null
-                                && curNode.getNodeRegulationsProperties().getPreviousNode().getId()
-                                        .equals(node.getNodeRegulationsProperties().getPreviousNode().getId())) {
-                            HashSet<String> set = new HashSet<String>();
-                            set.add(curNode.getId());
-                            set.add(node.getId());
-                            if (listOfSamePreviousElements.contains(set) != true) {
-                                result = false;
-                                errors.add(ValidationError.createLocalizedWarning(this, "regulations.duplicatePreviousNodeWarning",
-                                        curNode.getName(), node.getName()));
+        for (Node currentNode : listOfNodes) {
+            if (currentNode.getNodeRegulationsProperties().getIsEnabled() && currentNode.getNodeRegulationsProperties().getPreviousNode() == null
+                    && currentNode.getNodeRegulationsProperties().getNextNode() == null && currentNode instanceof StartState != true) {
+                result = false;
+                errors.add(ValidationError.createLocalizedWarning(currentNode, "regulations.neitherPreviousNorNextNodeAreNotSpecified"));
+            } else if (currentNode.getNodeRegulationsProperties().getIsEnabled()
+                    && currentNode.getNodeRegulationsProperties().getPreviousNode() != null
+                    && currentNode.getNodeRegulationsProperties().getNextNode() != null
+                    && currentNode.getNodeRegulationsProperties().getPreviousNode().getId()
+                            .equals(currentNode.getNodeRegulationsProperties().getNextNode().getId()) && currentNode instanceof StartState != true) {
+                result = false;
+                errors.add(ValidationError.createLocalizedWarning(currentNode, "regulations.previousAndNextNodesAreTheSame"));
+            }
+        }
 
-                                listOfSamePreviousElements.add(set);
-                            }
+        List<HashSet<String>> listOfSamePreviousElements = Lists.newArrayList();
+        List<HashSet<String>> listOfSameNextElements = Lists.newArrayList();
+        for (Node curNode : listOfNodes) {
+            for (Node node : listOfNodes) {
+                if (curNode != null && node != null) {
+                    if (curNode != node
+                            && node.getNodeRegulationsProperties().getIsEnabled()
+                            && curNode.getNodeRegulationsProperties().getPreviousNode() != null
+                            && node.getNodeRegulationsProperties().getPreviousNode() != null
+                            && curNode.getNodeRegulationsProperties().getPreviousNode().getId()
+                                    .equals(node.getNodeRegulationsProperties().getPreviousNode().getId())) {
+                        HashSet<String> set = new HashSet<String>();
+                        set.add(curNode.getId());
+                        set.add(node.getId());
+                        if (listOfSamePreviousElements.contains(set) != true) {
+                            result = false;
+                            errors.add(ValidationError.createLocalizedWarning(definition, "regulations.duplicatePreviousNodeWarning",
+                                    curNode.getName(), node.getName()));
+
+                            listOfSamePreviousElements.add(set);
                         }
-                        if (curNode != node
-                                && curNode.getNodeRegulationsProperties().getNextNode() != null
-                                && node.getNodeRegulationsProperties().getNextNode() != null
-                                && curNode.getNodeRegulationsProperties().getNextNode().getId()
-                                        .equals(node.getNodeRegulationsProperties().getNextNode().getId())) {
-                            HashSet<String> set = new HashSet<String>();
-                            set.add(curNode.getId());
-                            set.add(node.getId());
-                            if (listOfSameNextElements.contains(set) != true) {
-                                result = false;
-                                errors.add(ValidationError.createLocalizedWarning(this, "regulations.duplicateNextNodeWarning", curNode.getName(),
-                                        node.getName()));
-                                listOfSameNextElements.add(set);
-                            }
+                    }
+                    if (curNode != node
+                            && node.getNodeRegulationsProperties().getIsEnabled()
+                            && curNode.getNodeRegulationsProperties().getNextNode() != null
+                            && node.getNodeRegulationsProperties().getNextNode() != null
+                            && curNode.getNodeRegulationsProperties().getNextNode().getId()
+                                    .equals(node.getNodeRegulationsProperties().getNextNode().getId())) {
+                        HashSet<String> set = new HashSet<String>();
+                        set.add(curNode.getId());
+                        set.add(node.getId());
+                        if (listOfSameNextElements.contains(set) != true) {
+                            result = false;
+                            errors.add(ValidationError.createLocalizedWarning(definition, "regulations.duplicateNextNodeWarning", curNode.getName(),
+                                    node.getName()));
+                            listOfSameNextElements.add(set);
                         }
                     }
                 }
             }
         }
 
-        if (result && listOfStartStates.size() > 0) {
+        if (listOfStartStates.size() > 0 && isLoopsExists != true) {
             Node curNode = listOfStartStates.get(0);
             do {
                 Node nextNode = (Node) curNode.getNodeRegulationsProperties().getNextNode();
 
-                if (nextNode != null && nextNode.getNodeRegulationsProperties().getPreviousNode().getId().equals(curNode.getId()) != true) {
+                if (nextNode != null && nextNode.getNodeRegulationsProperties().getPreviousNode() != null
+                        && nextNode.getNodeRegulationsProperties().getPreviousNode().getId().equals(curNode.getId()) != true) {
                     result = false;
-                    errors.add(ValidationError.createLocalizedWarning(this, "regulations.nextPreviousNodeMismatch", nextNode.getName(),
+                    errors.add(ValidationError.createLocalizedWarning(definition, "regulations.nextPreviousNodeMismatch", nextNode.getName(),
                             curNode.getName()));
                 }
                 curNode = nextNode;
-            } while (curNode != null && result);
+            } while (curNode != null);
         }
 
-        if (result && listOfStartStates.size() > 0) {
-            Node curNode = listOfStartStates.get(0);
-            do {
-                Node nextNode = (Node) curNode.getNodeRegulationsProperties().getNextNode();
-                if (nextNode != null && nextNode.getClass().equals(Subprocess.class) && ((Subprocess) nextNode).isEmbedded()) {
-                    SubprocessDefinition subprocessDefinition = ((Subprocess) nextNode).getEmbeddedSubprocess();
+        if (listOfStartStates.size() > 0) {
+            List<GraphElement> listOfElements = definition.getElements();
+            for (GraphElement graphElement : listOfElements) {
+                if (graphElement.getClass().equals(Subprocess.class) && ((Subprocess) graphElement).isEmbedded()) {
+                    SubprocessDefinition subprocessDefinition = ((Subprocess) graphElement).getEmbeddedSubprocess();
                     int resultOfDefinitionValidation = ProcessDefinitionValidator.validateDefinition(
                             ProcessCache.getProcessDefinitionFile(subprocessDefinition), subprocessDefinition);
                     if (resultOfDefinitionValidation != ProcessDefinitionValidator.ERRORS) {
-                        boolean resultOfRegulationsValidation = subprocessDefinition.validateRegulations(errors);
+                        boolean resultOfRegulationsValidation = ProcessDefinition.validateRegulations(subprocessDefinition, errors);
                         if (resultOfRegulationsValidation != true) {
                             result = false;
                         }
@@ -654,8 +657,7 @@ public class ProcessDefinition extends NamedGraphElement implements Active, Desc
                                 subprocessDefinition.getName()));
                     }
                 }
-                curNode = nextNode;
-            } while (curNode != null && result);
+            }
         }
 
         return result;

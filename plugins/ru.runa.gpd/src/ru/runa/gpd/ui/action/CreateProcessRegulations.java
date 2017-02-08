@@ -7,7 +7,9 @@ import java.io.Writer;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -23,13 +25,16 @@ import org.eclipse.ui.ide.IDE;
 import org.osgi.framework.Bundle;
 
 import ru.runa.gpd.Activator;
+import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.PluginLogger;
+import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.action.BaseModelActionDelegate;
 import ru.runa.gpd.lang.model.Action;
 import ru.runa.gpd.lang.model.EndState;
 import ru.runa.gpd.lang.model.EndTokenState;
+import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
@@ -45,9 +50,12 @@ import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.ui.view.RegulationsNotesView;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.TextEditorInput;
+import ru.runa.gpd.validation.FormNodeValidation;
+import ru.runa.gpd.validation.ValidatorConfig;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import freemarker.template.Configuration;
 import freemarker.template.ObjectWrapper;
@@ -63,7 +71,7 @@ public class CreateProcessRegulations extends BaseModelActionDelegate {
             ProcessDefinition proccDefinition = getActiveDesignerEditor().getDefinition();
             getActiveDesignerEditor().getDefinitionFile().deleteMarkers(RegulationsNotesView.ID, true, IResource.DEPTH_INFINITE);
             List<ValidationError> regulationsValidationErrors = Lists.newArrayList();
-            boolean resultOfValidation = proccDefinition.validateRegulations(regulationsValidationErrors);
+            boolean resultOfValidation = ProcessDefinition.validateRegulations(proccDefinition, regulationsValidationErrors);
             if (resultOfValidation) {
                 IViewReference[] viewParts = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getViewReferences();
                 for (IViewReference iviewReference : viewParts) {
@@ -146,9 +154,65 @@ public class CreateProcessRegulations extends BaseModelActionDelegate {
         Template template = new Template("regulations", new StringReader(IOUtils.readStream(input)), config);
         List<Node> listOfNodes = Lists.newArrayList();
         listOfNodes = makeSequenceList(definition);
+        HashMap<String, FormNodeValidation> mapOfFormNodeValidation = Maps.newHashMap();
+        for (Node node : listOfNodes) {
+            if (node instanceof FormNode) {
+                FormNode formNode = (FormNode) node;
+                if (formNode.hasFormValidation()) {
+                    mapOfFormNodeValidation.put(formNode.getId(),
+                            formNode.getValidation(ProcessCache.getProcessDefinitionFile(definition).getParent()));
+                }
+            }
+        }
         HashMap<String, Object> map = new HashMap<String, Object>();
         map.put("proc", definition);
         map.put("listOfNodes", listOfNodes);
+        map.put("mapOfFormNodeValidation", mapOfFormNodeValidation);
+        for (String nodeId : mapOfFormNodeValidation.keySet()) {
+            Map<String, Map<String, ValidatorConfig>> nodeFieldConfigs = mapOfFormNodeValidation.get(nodeId).getFieldConfigs();
+            for (Map<String, ValidatorConfig> nodeFieldConfigsValue : nodeFieldConfigs.values()) {
+                for (ValidatorConfig validatorConfig : nodeFieldConfigsValue.values()) {
+                    String typeNameBeforeLocalization = validatorConfig.getType();
+                    if (Localization.isLocalizationExists("ValidatorConfig.type." + validatorConfig.getType())) {
+                        validatorConfig.setType(Localization.getString("ValidatorConfig.type." + validatorConfig.getType()));
+                    }
+                    Map<String, String> localizedParameters = Maps.newHashMap();
+                    for (Iterator<String> iterator = validatorConfig.getParams().keySet().iterator(); iterator.hasNext();) {
+                        String currentParameterName = iterator.next();
+                        String currentParameterValue = validatorConfig.getParams().get(currentParameterName);
+                        if (Localization.isLocalizationExists("ValidatorConfig.type." + typeNameBeforeLocalization + "." + currentParameterName)) {
+                            if (Localization.isLocalizationExists("ValidatorConfig.parameters.values." + currentParameterValue)) {
+                                localizedParameters.put(
+                                        Localization.getString("ValidatorConfig.type." + typeNameBeforeLocalization + "." + currentParameterName),
+                                        Localization.getString("ValidatorConfig.parameters.values." + currentParameterValue));
+                            } else {
+                                if (currentParameterValue.isEmpty() != true) {
+                                    localizedParameters
+                                            .put(Localization.getString("ValidatorConfig.type." + typeNameBeforeLocalization + "."
+                                                    + currentParameterName), currentParameterValue);
+                                } else {
+                                    localizedParameters
+                                            .put(Localization.getString("ValidatorConfig.type." + typeNameBeforeLocalization + "."
+                                                    + currentParameterName), Localization.getString("ValidatorConfig.parameters.values.empty"));
+                                }
+                            }
+                        } else {
+                            if (Localization.isLocalizationExists("ValidatorConfig.parameters.values." + currentParameterValue)) {
+                                localizedParameters.put(currentParameterName,
+                                        Localization.getString("ValidatorConfig.parameters.values." + currentParameterValue));
+                            } else {
+                                if (currentParameterValue.isEmpty() != true) {
+                                    localizedParameters.put(currentParameterName, currentParameterValue);
+                                } else {
+                                    localizedParameters.put(currentParameterName, Localization.getString("ValidatorConfig.parameters.values.empty"));
+                                }
+                            }
+                        }
+                    }
+                    validatorConfig.setParams(localizedParameters);
+                }
+            }
+        }
 
         IFile htmlDefinition = IOUtils.getAdjacentFile(getActiveDesignerEditor().getDefinitionFile(),
                 ParContentProvider.PROCESS_DEFINITION_DESCRIPTION_FILE_NAME);
@@ -185,9 +249,11 @@ public class CreateProcessRegulations extends BaseModelActionDelegate {
 
     private List<Node> makeSequenceList(ProcessDefinition definition) {
         List<Node> result = Lists.newArrayList();
-        if (definition != null && definition.getChildren(StartState.class).size() > 0) {
+        if (definition != null && definition.getChildren(StartState.class).size() > 0
+                && definition.getChildren(StartState.class).get(0).getLeavingTransitions().size() > 0) {
             StartState startState = definition.getChildren(StartState.class).get(0);
-            Node curNode = startState;
+            result.add(startState);
+            Node curNode = startState.getLeavingTransitions().get(0).getTarget();
             boolean isAppend = true;
             do {
                 if (isAppend) {

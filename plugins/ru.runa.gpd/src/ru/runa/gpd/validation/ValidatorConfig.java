@@ -10,7 +10,7 @@ public class ValidatorConfig {
     public static final String GLOBAL_FIELD_ID = "";
     private String type;
     private String message = "";
-    private final Map<String, String> params = Maps.newHashMap();
+    private Map<String, String> params = Maps.newHashMap();
     private final List<String> transitionNames = Lists.newArrayList();
 
     public ValidatorConfig(String validatorType) {
@@ -25,12 +25,20 @@ public class ValidatorConfig {
         return message;
     }
 
+    public void setParams(Map<String, String> params) {
+        this.params = params;
+    }
+
     public Map<String, String> getParams() {
         return params;
     }
 
     public List<String> getTransitionNames() {
         return transitionNames;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public String getType() {

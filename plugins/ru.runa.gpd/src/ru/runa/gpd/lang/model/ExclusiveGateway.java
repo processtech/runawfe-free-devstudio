@@ -1,6 +1,12 @@
 package ru.runa.gpd.lang.model;
 
 public class ExclusiveGateway extends Decision {
+
+    public ExclusiveGateway() {
+        super();
+        nodeRegulationsProperties.setIsEnabled(false);
+    }
+
     @Override
     public boolean isDelegable() {
         return isDecision();
