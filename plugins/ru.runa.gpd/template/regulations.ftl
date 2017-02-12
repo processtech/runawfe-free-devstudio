@@ -4,9 +4,7 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 
 	</head>
-	<body>
-		<style>
-			.definition-header-1 { font-weight: 700;
+	<body><style type="text/css">.definition-header-1 { font-weight: 700;
 								   font-family: Verdana, Geneva, sans-serif;
 								   font-size: 2.5em; 
 								   text-align: center;}
@@ -90,7 +88,7 @@
                         <ul>
                          <#assign formNodeValidationGetFieldConfigs = formNodeValidation.getFieldConfigs()>
                             <#list formNodeValidationGetFieldConfigs?keys as variableName>
-                            <li>Переменная &quot;${variableName}&quot;
+                            <li>Переменная &quot;${variableName}&quot;</li>
                                 <#list formNodeValidationGetFieldConfigs[variableName]?keys as nodeFieldConfigsValueKey> 
                                     <ul>
                                        <li>Тип валидатора: &quot;${formNodeValidationGetFieldConfigs[variableName][nodeFieldConfigsValueKey].getType()}&quot;</li>
@@ -107,7 +105,6 @@
                                            </li> 
                                        </#if>
                                      </ul>
-                                     </li>
                                      <br />
                                </#list>
                             </#list> 
@@ -160,7 +157,7 @@
                         <ul>
                          <#assign formNodeValidationGetFieldConfigs = formNodeValidation.getFieldConfigs()>
                             <#list formNodeValidationGetFieldConfigs?keys as variableName>
-                            <li>Переменная &quot;${variableName}&quot;
+                            <li>Переменная &quot;${variableName}&quot;</li>
                                 <#list formNodeValidationGetFieldConfigs[variableName]?keys as nodeFieldConfigsValueKey>
                                     <ul>
                                        <li>Тип валидатора: &quot;${formNodeValidationGetFieldConfigs[variableName][nodeFieldConfigsValueKey].getType()}&quot;</li>
@@ -177,7 +174,6 @@
                                            </li> 
                                        </#if>
                                      </ul>
-                                     </li>
                                      <br />
                                </#list>
                             </#list> 
@@ -461,7 +457,7 @@
                         <ul>
                          <#assign formNodeValidationGetFieldConfigs = formNodeValidation.getFieldConfigs()>
                             <#list formNodeValidationGetFieldConfigs?keys as variableName>
-                            <li>Переменная &quot;${variableName}&quot;
+                            <li>Переменная &quot;${variableName}&quot;</li>
                                 <#list formNodeValidationGetFieldConfigs[variableName]?keys as nodeFieldConfigsValueKey>
                                     <ul>
                                        <li>Тип валидатора: &quot;${formNodeValidationGetFieldConfigs[variableName][nodeFieldConfigsValueKey].getType()}&quot;</li>
@@ -484,8 +480,7 @@
                                                       </#list>
                                                </li>
                                          </#if>
-                                    </ul>
-                                     </li>
+                                     </ul>
                                      <br />
                                </#list>
                             </#list> 

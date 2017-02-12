@@ -70,9 +70,12 @@
 		<textarea id="editor"></textarea>
 		<script type="text/javascript">
 		try {
-			CKEDITOR.replace("editor");
+			var editor = CKEDITOR.replace("editor");
 			onLoadCallback();
 			window.setInterval("findModifications()", 1000);
+			editor.on('change', function() { 
+				onEditorChangeCallback(editor.getData());
+			});
 		} catch (e) {
 			alertError(e, "CKEDITOR.replace");
 		}

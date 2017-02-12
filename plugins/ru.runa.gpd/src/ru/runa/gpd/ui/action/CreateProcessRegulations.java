@@ -14,6 +14,7 @@ import java.util.Map;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
@@ -81,7 +82,9 @@ public class CreateProcessRegulations extends BaseModelActionDelegate {
                     }
                 }
                 String html = generateRegulations(proccDefinition);
-                TextEditorInput input = new TextEditorInput(proccDefinition.getName() + ".rgl", html);
+                IFile file = IOUtils.getAdjacentFile(getDefinitionFile(), "regulations.html");
+                TextEditorInput input = new TextEditorInput(ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile().getAbsolutePath()
+                        + file.getFullPath(), html);
                 IDE.openEditor(getWorkbenchPage(), input, "ru.runa.gpd.wysiwyg.RegulationsHTMLEditor");
             } else {
                 for (ValidationError regulationsNote : regulationsValidationErrors) {
