@@ -527,15 +527,15 @@ public class ProcessDefinition extends NamedGraphElement implements Active, Desc
 
         for (Node node : listOfNodes) {
             if (node.getNodeRegulationsProperties().getIsEnabled() && node.getNodeRegulationsProperties().getPreviousNode() == null
-                    && node instanceof StartState != true && node.getArrivingTransitions().get(0).getSource() instanceof StartState != true) {
+                    && node instanceof StartState != true) {
                 countOfNodesWithoutPrev++;
             }
             if (node.getNodeRegulationsProperties().getIsEnabled() && node.getNodeRegulationsProperties().getNextNode() == null
-                    && node instanceof StartState != true) {
+                    && node instanceof EndTokenState != true && node instanceof EndState != true) {
                 countOfNodesWithoutNext++;
             }
         }
-        if (countOfNodesWithoutPrev > 0 || countOfNodesWithoutNext > 1) {
+        if (countOfNodesWithoutPrev > 0 || countOfNodesWithoutNext > 0) {
             result = false;
             errors.add(ValidationError.createLocalizedWarning(definition, "regulations.nodesDoesntAppearsSequenceForRegulationsWarning"));
         }
@@ -543,8 +543,6 @@ public class ProcessDefinition extends NamedGraphElement implements Active, Desc
         if (listOfStartStates.size() > 0) {
             Node curNode = listOfStartStates.get(0);
             List<String> listOfIds = Lists.newArrayList();
-            listOfIds.add(curNode.getId());
-            curNode = listOfStartStates.get(0).getLeavingTransitions().get(0).getTarget();
             do {
                 listOfIds.add(curNode.getId());
                 curNode = (Node) curNode.getNodeRegulationsProperties().getNextNode();
@@ -569,14 +567,14 @@ public class ProcessDefinition extends NamedGraphElement implements Active, Desc
 
         for (Node currentNode : listOfNodes) {
             if (currentNode.getNodeRegulationsProperties().getIsEnabled() && currentNode.getNodeRegulationsProperties().getPreviousNode() == null
-                    && currentNode.getNodeRegulationsProperties().getNextNode() == null && currentNode instanceof StartState != true) {
+                    && currentNode.getNodeRegulationsProperties().getNextNode() == null) {
                 result = false;
                 errors.add(ValidationError.createLocalizedWarning(currentNode, "regulations.neitherPreviousNorNextNodeAreNotSpecified"));
             } else if (currentNode.getNodeRegulationsProperties().getIsEnabled()
                     && currentNode.getNodeRegulationsProperties().getPreviousNode() != null
                     && currentNode.getNodeRegulationsProperties().getNextNode() != null
                     && currentNode.getNodeRegulationsProperties().getPreviousNode().getId()
-                            .equals(currentNode.getNodeRegulationsProperties().getNextNode().getId()) && currentNode instanceof StartState != true) {
+                            .equals(currentNode.getNodeRegulationsProperties().getNextNode().getId())) {
                 result = false;
                 errors.add(ValidationError.createLocalizedWarning(currentNode, "regulations.previousAndNextNodesAreTheSame"));
             }
@@ -599,7 +597,7 @@ public class ProcessDefinition extends NamedGraphElement implements Active, Desc
                         if (listOfSamePreviousElements.contains(set) != true) {
                             result = false;
                             errors.add(ValidationError.createLocalizedWarning(definition, "regulations.duplicatePreviousNodeWarning",
-                                    curNode.getName(), node.getName()));
+                                    curNode.getName(), curNode.getId(), node.getName(), node.getId()));
 
                             listOfSamePreviousElements.add(set);
                         }

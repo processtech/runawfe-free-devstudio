@@ -252,11 +252,8 @@ public class CreateProcessRegulations extends BaseModelActionDelegate {
 
     private List<Node> makeSequenceList(ProcessDefinition definition) {
         List<Node> result = Lists.newArrayList();
-        if (definition != null && definition.getChildren(StartState.class).size() > 0
-                && definition.getChildren(StartState.class).get(0).getLeavingTransitions().size() > 0) {
-            StartState startState = definition.getChildren(StartState.class).get(0);
-            result.add(startState);
-            Node curNode = startState.getLeavingTransitions().get(0).getTarget();
+        if (definition != null && definition.getChildren(StartState.class).size() > 0) {
+            Node curNode = definition.getChildren(StartState.class).get(0);
             boolean isAppend = true;
             do {
                 if (isAppend) {

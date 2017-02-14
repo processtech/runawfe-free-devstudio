@@ -113,7 +113,13 @@
                     </#if>
 					
 					<#assign afterStart = node.getLeavingTransitions()?first >
-					Далее управление переходит к шагу <a href="#${afterStart.getTarget().getId()}">${afterStart.getTarget().getName()}</a></p>
+					Далее управление переходит к шагу 
+					<#if afterStart.getTarget().getName()?length != 0>
+					   <a href="#${afterStart.getTarget().getId()}">${afterStart.getTarget().getName()}</a>
+					<#else>
+					   <a href="#${afterStart.getTarget().getId()}">[${afterStart.getTarget().getId()}]</a>
+					</#if>
+					</p>
 					<br/></td>
 					</tr>
 				</#if>
@@ -128,7 +134,16 @@
 					<hr color="#e3f4ff">
 					
 					<#-- name -->
-					<p id="${node.getId()}"> <font color="#005D85" size="3" face="Verdana, Geneva, sans-serif"> <strong> Шаг: ${node.getName()} </strong> </font> </p>
+					<p id="${node.getId()}"> 
+					<font color="#005D85" size="3" face="Verdana, Geneva, sans-serif"> 
+					   <strong> Шаг: 
+                            <#if node.getName()?length != 0>
+	                           ${node.getName()}
+	                        <#else>
+	                           [${node.getId()}]
+	                        </#if>
+					   </strong> 
+					</font> </p>
 					
 					<#-- type -->
 					<p>
@@ -185,12 +200,23 @@
 					<p> 
 					<#if node.getLeavingTransitions()?size == 1>
 						<#assign afterTask = node.getLeavingTransitions()?first >
-						Далее управление переходит к шагу <a href="#${afterTask.getTarget().getId()}">${afterTask.getTarget().getName()}</a>
+						Далее управление переходит к шагу
+				        <#if afterTask.getTarget().getName()?length != 0>
+	                       <a href="#${afterTask.getTarget().getId()}">${afterTask.getTarget().getName()}</a>
+	                    <#else>
+	                       <a href="#${afterTask.getTarget().getId()}">[${afterTask.getTarget().getId()}]</a>
+	                    </#if>
 					<#else>
 						Далее управление переходит:   
 						<ul>
 							<#list node.getLeavingTransitions() as transition>
-								<li>в случае ${transition.getName()} <a href="#${transition.getTarget().getId()}">${transition.getTarget().getName()}</a> </li>
+								<li>в случае ${transition.getName()} 
+								<#if transition.getTarget().getName()?length != 0>
+		                           <a href="#${transition.getTarget().getId()}">${transition.getTarget().getName()}</a>
+		                        <#else>
+		                           <a href="#${transition.getTarget().getId()}">[${transition.getTarget().getId()}]</a>
+		                        </#if>
+								</li>
 							</#list> 
 						</ul>
 					</#if>
@@ -206,7 +232,11 @@
 							<#else>
 								${timerDelay.toString()} времени управление переходит к шагу
 							</#if>
-							<a href="#${afterTimer.getTarget().getId()}">${afterTimer.getTarget().getName()}</a>
+							<#if afterTimer.getTarget().getName()?length != 0>
+	                           <a href="#${afterTimer.getTarget().getId()}">${afterTimer.getTarget().getName()}</a>
+	                        <#else>
+	                           <a href="#${afterTimer.getTarget().getId()}">[${afterTimer.getTarget().getId()}]</a>
+	                        </#if>
 							</p>
 						</#if>
 					</#if>
@@ -240,12 +270,24 @@
 					<#-- transitions -->
 					<#if node.getLeavingTransitions()?size == 1>
 						<#assign afterTask = node.getLeavingTransitions()?first >
-						Далее управление переходит к шагу <a href="#${afterTask.getTarget().getId()}">${afterTask.getTarget().getName()}</a></p>
+						Далее управление переходит к шагу 
+					    <#if afterTask.getTarget().getName()?length != 0>
+                           <a href="#${afterTask.getTarget().getId()}">${afterTask.getTarget().getName()}</a>
+                        <#else>
+                           <a href="#${afterTask.getTarget().getId()}">[${afterTask.getTarget().getId()}]</a>
+                        </#if>
+						</p>
 					<#else>
 						Далее управление переходит:</p>    
 						<ul>
 							<#list node.getLeavingTransitions() as transition>
-								<p>в случае ${transition.getName()} <a href="#${transition.getTarget().getId()}">${transition.getTarget().getName()}</a> </p>
+								<p>в случае ${transition.getName()} 
+                                <#if transition.getTarget().getName()?length != 0>
+		                           <a href="#${transition.getTarget().getId()}">${transition.getTarget().getName()}</a>
+		                        <#else>
+		                           <a href="#${transition.getTarget().getId()}">[${transition.getTarget().getId()}]</a>
+		                        </#if>
+							    </p>
 							</#list> 
 						</ul>
 					</#if>
@@ -275,7 +317,11 @@
 					<#-- transitions -->
 					<#assign afterNode = node.getLeavingTransitions()?first >
 					Далее cоединяются ${node.getArrivingTransitions()?size} точек управления, и управление переходит к шагу
-					<a href="#${afterNode.getTarget().getId()}">${afterNode.getTarget().getName()}</a> 
+                    <#if afterNode.getTarget().getName()?length != 0>
+                       <a href="#${afterNode.getTarget().getId()}">${afterNode.getTarget().getName()}</a>
+                    <#else>
+                       <a href="#${afterNode.getTarget().getId()}">[${afterNode.getTarget().getId()}]</a>
+                    </#if>
 					</p>    
 				</#if>
 				
@@ -305,7 +351,13 @@
 					Далее управление переходит:   
 						<ul>
 							<#list node.getLeavingTransitions() as transition>
-								<li>в случае ${transition.getName()} <a href="#${transition.getTarget().getId()}">${transition.getTarget().getName()}</a> </li>
+								<li>в случае ${transition.getName()} 
+								<#if transition.getTarget().getName()?length != 0>
+			                       <a href="#${transition.getTarget().getId()}">${transition.getTarget().getName()}</a>
+			                    <#else>
+			                       <a href="#${transition.getTarget().getId()}">[${transition.getTarget().getId()}]</a>
+			                    </#if>
+								</li>
 							</#list> 
 						</ul>
 					</p> 
@@ -341,7 +393,11 @@
 					<#else>
 						${timerDelay.toString()} времени управление переходит к шагу
 					</#if>
-						<a href="#${afterNode.getTarget().getId()}">${afterNode.getTarget().getName()}</a>
+					<#if afterNode.getTarget().getName()?length != 0>
+                       <a href="#${afterNode.getTarget().getId()}">${afterNode.getTarget().getName()}</a>
+                    <#else>
+                       <a href="#${afterNode.getTarget().getId()}">[${afterNode.getTarget().getId()}]</a>
+                    </#if>
 					</p>
 				</#if>
 				
@@ -378,7 +434,11 @@
 					<#else>
 						После отправки сообщения управление переходит к шагу
 					</#if>
-						<a href="#${afterNode.getTarget().getId()}">${afterNode.getTarget().getName()}</a>
+					<#if afterNode.getTarget().getName()?length != 0>
+                       <a href="#${afterNode.getTarget().getId()}">${afterNode.getTarget().getName()}</a>
+                    <#else>
+                       <a href="#${afterNode.getTarget().getId()}">[${afterNode.getTarget().getId()}]</a>
+                    </#if>
 					</p>
 					
 					<#-- timer option -->
@@ -387,7 +447,11 @@
 						<#assign afterTimer = timer.getLeavingTransitions()?first>
 						<p> 
 							В случае задержки задания на ${timer.getPropertyValue("timerDelay").toString()} времени управление переходит к шагу 
-							<a href="#${afterTimer.getTarget().getId()}">${afterTimer.getTarget().getName()}</a>
+							<#if afterTimer.getTarget().getName()?length != 0>
+		                       <a href="#${afterTimer.getTarget().getId()}">${afterTimer.getTarget().getName()}</a>
+		                    <#else>
+		                       <a href="#${afterTimer.getTarget().getId()}">[${afterTimer.getTarget().getId()}]</a>
+		                    </#if>
 						</p>
 					</#if>
 					
@@ -492,12 +556,23 @@
 					<p>
 					<#if node.getLeavingTransitions()?size == 1>
 						<#assign afterTask = node.getLeavingTransitions()?first >
-						Далее управление переходит к шагу <a href="#${afterTask.getTarget().getId()}">${afterTask.getTarget().getName()}</a>
+						Далее управление переходит к шагу 
+						<#if afterTask.getTarget().getName()?length != 0>
+                           <a href="#${afterTask.getTarget().getId()}">${afterTask.getTarget().getName()}</a>
+                        <#else>
+                           <a href="#${afterTask.getTarget().getId()}">[${afterTask.getTarget().getId()}]</a>
+                        </#if>
 					<#else>
 						Далее управление переходит: 
 						<ul>
 							<#list node.getLeavingTransitions() as transition>
-								<li>в случае ${transition.getName()} <a href="#${transition.getTarget().getId()}">${transition.getTarget().getName()}</a> </li>
+								<li>в случае ${transition.getName()} 
+                                <#if transition.getTarget().getName()?length != 0>
+                                    <a href="#${transition.getTarget().getId()}">${transition.getTarget().getName()}</a>
+                                <#else>
+                                    <a href="#${transition.getTarget().getId()}">[${transition.getTarget().getId()}]</a>
+                                </#if>
+								</li>
 							</#list> 
 						</ul>
 					</#if>
@@ -530,12 +605,23 @@
 					<p>
 					<#if node.getLeavingTransitions()?size == 1>
 						<#assign afterTask = node.getLeavingTransitions()?first >
-						Далее управление переходит к шагу <a href="#${afterTask.getTarget().getId()}">${afterTask.getTarget().getName()}</a>
+						Далее управление переходит к шагу 
+                        <#if afterTask.getTarget().getName()?length != 0>
+                            <a href="#${afterTask.getTarget().getId()}">${afterTask.getTarget().getName()}</a>
+                        <#else>
+                            <a href="#${afterTask.getTarget().getId()}">[${afterTask.getTarget().getId()}]</a>
+                        </#if>
 					<#else>
 						Далее управление переходит:  
 						<ul>
 							<#list node.getLeavingTransitions() as transition>
-								<li>в случае ${transition.getName()} <a href="#${transition.getTarget().getId()}">${transition.getTarget().getName()}</a> </li>
+                                <li>в случае ${transition.getName()} 
+								  <#if transition.getTarget().getName()?length != 0>
+			                          <a href="#${transition.getTarget().getId()}">${transition.getTarget().getName()}</a>
+			                      <#else>
+			                          <a href="#${transition.getTarget().getId()}">[${transition.getTarget().getId()}]</a>
+			                      </#if>
+                                </li>
 							</#list> 
 						</ul>
 					</#if>

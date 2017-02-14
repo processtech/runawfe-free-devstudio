@@ -91,16 +91,13 @@ public class EditPropertiesForRegulationsDialog extends Dialog {
         ProcessDefinition processDefinition = formNode.getProcessDefinition();
         List<Node> elementsList = processDefinition.getChildren(Node.class);
         String[] previousNodesListItems = { Localization.getString("EditPropertiesForRegulationsDialog.previousNodeCombo.text.notSet") };
-        List<String> previousNodesListItemsAsListOnlyNames = Lists.newArrayList();
         List<String> previousNodesListItemsAsList = Lists.newArrayList();
         for (Node node : elementsList) {
             String id = node.getId();
             if (id.equals(formNode.getId()) != true) {
-                previousNodesListItemsAsListOnlyNames.add(node.getName());
                 previousNodesListItemsAsList.add(node.getName() + " [" + node.getId() + "]");
             }
         }
-        Collections.sort(previousNodesListItemsAsListOnlyNames);
         Collections.sort(previousNodesListItemsAsList);
         for (String name : previousNodesListItemsAsList) {
             previousNodesListItems = Arrays.copyOf(previousNodesListItems, previousNodesListItems.length + 1);
@@ -109,8 +106,14 @@ public class EditPropertiesForRegulationsDialog extends Dialog {
         previousNodeCombo.setItems(previousNodesListItems);
         int previousNodePositionInList = -1;
         if (formNode.getNodeRegulationsProperties().getPreviousNode() != null) {
-            previousNodePositionInList = previousNodesListItemsAsListOnlyNames.indexOf(((Node) formNode.getNodeRegulationsProperties()
-                    .getPreviousNode()).getName()) + 1;
+            if (formNode.getNodeRegulationsProperties().getPreviousNode() != null) {
+                for (int position = 0; position < previousNodesListItemsAsList.size() && previousNodePositionInList == -1; position++) {
+                    if (previousNodesListItemsAsList.get(position).endsWith(
+                            "[" + ((Node) formNode.getNodeRegulationsProperties().getPreviousNode()).getId() + "]")) {
+                        previousNodePositionInList = position + 1;
+                    }
+                }
+            }
         }
         if (previousNodePositionInList != -1) {
             previousNodeCombo.select(previousNodePositionInList);
@@ -137,16 +140,13 @@ public class EditPropertiesForRegulationsDialog extends Dialog {
         nextNodeLabel.setText(Localization.getString("EditPropertiesForRegulationsDialog.nextNodeLabel.text"));
         nextNodeCombo = new Combo(composite0, SWT.READ_ONLY);
         String[] nextNodesListItems = { Localization.getString("EditPropertiesForRegulationsDialog.nextNodeCombo.text.notSet") };
-        List<String> nextNodesListItemsAsListOnlyNames = Lists.newArrayList();
         List<String> nextNodesListItemsAsList = Lists.newArrayList();
         for (Node node : elementsList) {
             String id = node.getId();
             if (id.equals(formNode.getId()) != true) {
-                nextNodesListItemsAsListOnlyNames.add(node.getName());
                 nextNodesListItemsAsList.add(node.getName() + " [" + node.getId() + "]");
             }
         }
-        Collections.sort(nextNodesListItemsAsListOnlyNames);
         Collections.sort(nextNodesListItemsAsList);
         for (String name : nextNodesListItemsAsList) {
             nextNodesListItems = Arrays.copyOf(nextNodesListItems, nextNodesListItems.length + 1);
@@ -155,8 +155,12 @@ public class EditPropertiesForRegulationsDialog extends Dialog {
         nextNodeCombo.setItems(nextNodesListItems);
         int nextNodePositionInList = -1;
         if (formNode.getNodeRegulationsProperties().getNextNode() != null) {
-            nextNodePositionInList = nextNodesListItemsAsListOnlyNames.indexOf(((Node) formNode.getNodeRegulationsProperties().getNextNode())
-                    .getName()) + 1;
+            for (int position = 0; position < nextNodesListItemsAsList.size() && nextNodePositionInList == -1; position++) {
+                if (nextNodesListItemsAsList.get(position).endsWith(
+                        "[" + ((Node) formNode.getNodeRegulationsProperties().getNextNode()).getId() + "]")) {
+                    nextNodePositionInList = position + 1;
+                }
+            }
         }
         if (nextNodePositionInList != -1) {
             nextNodeCombo.select(nextNodePositionInList);
@@ -260,13 +264,13 @@ public class EditPropertiesForRegulationsDialog extends Dialog {
                                 .getSelection()) != true);
     }
 
-    private Node getNodeByName(String name) {
+    private Node getNodeById(String id) {
         Node result = null;
         ProcessDefinition processDefinition = formNode.getProcessDefinition();
         List<Node> elementsList = processDefinition.getChildren(Node.class);
         for (Node node : elementsList) {
-            String nodeName = node.getName();
-            if (nodeName.equals(name)) {
+            String nodeName = node.getId();
+            if (nodeName.equals(id)) {
                 result = node;
                 break;
             }
@@ -281,8 +285,9 @@ public class EditPropertiesForRegulationsDialog extends Dialog {
         if (previousNodeCombo.getSelectionIndex() > 0) {
             matcher = pattern.matcher(previousNodeCombo.getText());
             matcher.find();
-            String previousNameForSearch = previousNodeCombo.getText().substring(0, previousNodeCombo.getText().indexOf(matcher.group(0)) - 1);
-            Node newPreviousNode = getNodeByName(previousNameForSearch);
+            String previousIdForSearch = previousNodeCombo.getText().substring(previousNodeCombo.getText().indexOf(matcher.group(0)) + 1,
+                    previousNodeCombo.getText().length() - 1);
+            Node newPreviousNode = getNodeById(previousIdForSearch);
             formNode.getNodeRegulationsProperties().setPreviousNode(newPreviousNode);
         } else {
             formNode.getNodeRegulationsProperties().setPreviousNode(null);
@@ -290,8 +295,9 @@ public class EditPropertiesForRegulationsDialog extends Dialog {
         if (nextNodeCombo.getSelectionIndex() > 0) {
             matcher = pattern.matcher(nextNodeCombo.getText());
             matcher.find();
-            String nextNameForSearch = nextNodeCombo.getText().substring(0, nextNodeCombo.getText().indexOf(matcher.group(0)) - 1);
-            Node newNextNode = getNodeByName(nextNameForSearch);
+            String nextIdForSearch = nextNodeCombo.getText().substring(nextNodeCombo.getText().indexOf(matcher.group(0)) + 1,
+                    nextNodeCombo.getText().length() - 1);
+            Node newNextNode = getNodeById(nextIdForSearch);
             formNode.getNodeRegulationsProperties().setNextNode(newNextNode);
         } else {
             formNode.getNodeRegulationsProperties().setNextNode(null);
