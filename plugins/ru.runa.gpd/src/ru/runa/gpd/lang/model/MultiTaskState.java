@@ -86,10 +86,7 @@ public class MultiTaskState extends TaskState implements IMultiInstancesContaine
     @Override
     public String getSwimlaneLabel() {
         if (isSwimlaneDisabled()) {
-            if (discriminatorUsage.contains(VariableMapping.USAGE_DISCRIMINATOR_VARIABLE)) {
-                return "";
-            }
-            return discriminatorValue != null ? "(" + discriminatorValue + ")" : "";
+            return "";
         }
         return super.getSwimlaneLabel();
     }
