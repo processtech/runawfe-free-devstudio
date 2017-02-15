@@ -18,6 +18,7 @@ import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Variable;
+import ru.runa.gpd.search.VariableSearchVisitor;
 import ru.runa.gpd.ui.custom.JavaHighlightTextStyling;
 import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
 import ru.runa.gpd.ui.custom.SWTUtils;
@@ -46,7 +47,7 @@ public class GroovyActionHandlerProvider extends DelegableProvider {
         List<String> result = Lists.newArrayList();
         if (delegable instanceof GraphElement) {
             for (Variable variable : ((GraphElement) delegable).getProcessDefinition().getVariables(true, true)) {
-                if (configuration.contains(variable.getScriptingName())) {
+                if (Pattern.compile(String.format(VariableSearchVisitor.REGEX_SCRIPT_VARIABLE, variable.getScriptingName())).matcher("(" + configuration + ")").find()) {
                     result.add(variable.getName());
                 }
             }

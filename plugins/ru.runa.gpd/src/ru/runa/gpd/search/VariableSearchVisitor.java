@@ -176,7 +176,7 @@ public class VariableSearchVisitor {
         }
         String conf = delegable.getDelegationConfiguration();
         ElementMatch elementMatch = new ElementMatch((GraphElement) delegable, definitionFile);
-        List<Match> matches = findInString(elementMatch, conf, delegableMatcher);
+        List<Match> matches = findInString(elementMatch, "(" + conf + ")", delegableMatcher);
         elementMatch.setPotentialMatchesCount(matches.size());
         for (Match match : matches) {
             query.getSearchResult().addMatch(match);
