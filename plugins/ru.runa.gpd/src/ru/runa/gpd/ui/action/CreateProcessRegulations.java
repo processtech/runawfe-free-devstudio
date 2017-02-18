@@ -36,6 +36,7 @@ import ru.runa.gpd.lang.model.Action;
 import ru.runa.gpd.lang.model.EndState;
 import ru.runa.gpd.lang.model.EndTokenState;
 import ru.runa.gpd.lang.model.FormNode;
+import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
@@ -53,6 +54,8 @@ import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.TextEditorInput;
 import ru.runa.gpd.validation.FormNodeValidation;
 import ru.runa.gpd.validation.ValidatorConfig;
+import ru.runa.gpd.validation.ValidatorDefinition;
+import ru.runa.gpd.validation.ValidatorDefinitionRegistry;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
@@ -216,6 +219,27 @@ public class CreateProcessRegulations extends BaseModelActionDelegate {
                 }
             }
         }
+
+        Map<String, ValidatorDefinition> validatorDefinitions = ValidatorDefinitionRegistry.getValidatorDefinitions();
+        map.put("validatorDefinitions", validatorDefinitions);
+
+        List<ValidatorConfig> globalValidators = Lists.newArrayList();
+        HashMap<String, ValidatorDefinition> globalValidatorDefinitions = Maps.newHashMap();
+        for (GraphElement element : definition.getNodesRecursive()) {
+            if (element instanceof FormNode && ((FormNode) element).hasFormValidation()) {
+                FormNode formNodeElement = ((FormNode) element);
+                FormNodeValidation validation = formNodeElement.getValidation(IOUtils.getAdjacentFile(getDefinitionFile(),
+                        formNodeElement.getValidationFileName()));
+                for (ValidatorConfig globalConfig : validation.getGlobalConfigs()) {
+                    globalValidators.add(globalConfig);
+                    ValidatorDefinition definitionByValidatorType = ValidatorDefinitionRegistry.getDefinition(globalConfig.getType());
+                    globalValidatorDefinitions.put(globalConfig.getType(), definitionByValidatorType);
+                }
+            }
+        }
+
+        map.put("globalValidators", globalValidators);
+        map.put("globalValidatorDefinitions", globalValidatorDefinitions);
 
         IFile htmlDefinition = IOUtils.getAdjacentFile(getActiveDesignerEditor().getDefinitionFile(),
                 ParContentProvider.PROCESS_DEFINITION_DESCRIPTION_FILE_NAME);

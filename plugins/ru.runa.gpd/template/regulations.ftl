@@ -57,6 +57,34 @@
 		</ul>
 		
 		<br/>
+		
+		<#-- GLOBAL VALIDATORS -->
+        <p> <strong> Cписок глобальных валидаторов бизнес-процесса: </strong> </p>
+        <ul>
+            <#list globalValidators as globalValidatorConfig>
+            	<#assign definitionByConfigType = globalValidatorDefinitions[globalValidatorConfig.getType()] >
+                <li>Валидатор &quot;${definitionByConfigType.getLabel()}&quot;
+	                <ul>
+		                <#if globalValidatorConfig.getDescription()?length != 0>
+		                	<li>Описание: ${globalValidatorConfig.getDescription()?replace("\n","<br />")}</li>
+		                </#if>
+		               	<#if globalValidatorConfig.getMessage()?length != 0>
+		                	<li>Сообщение валидатора: &quot;${globalValidatorConfig.getMessage()}&quot;</li>
+		                </#if>
+		                <li>Параметры:</li>
+		                <ul>
+		                	<#list definitionByConfigType.getParams()?keys as key>
+		               			<li>Параметр &quot;${definitionByConfigType.getParams()[key].getLabel()}&quot; <br />
+		               			Значение: &quot;${globalValidatorConfig.getParams()[definitionByConfigType.getParams()[key].getName()]}&quot;
+		               			</li>
+		               		</#list>
+		                </ul>  
+	                </ul>
+                 </li>
+            </#list>
+        </ul>
+        <br />
+
 		</td>
 		</tr>
 		
@@ -92,17 +120,23 @@
                                 <#list formNodeValidationGetFieldConfigs[variableName]?keys as nodeFieldConfigsValueKey> 
                                     <ul>
                                        <li>Тип валидатора: &quot;${formNodeValidationGetFieldConfigs[variableName][nodeFieldConfigsValueKey].getType()}&quot;</li>
+									   <li>Описание валидатора: &quot;
+                                       <#if formNodeValidationGetFieldConfigs[variableName][nodeFieldConfigsValueKey].getDescription()?length == 0>
+											${validatorDefinitions[nodeFieldConfigsValueKey].getDescription()}
+                                       <#else>
+                                       		${formNodeValidationGetFieldConfigs[variableName][nodeFieldConfigsValueKey].getDescription()?replace("\n","<br />")}
+                                       </#if>
+                                       &quot;</li>
                                        <#if formNodeValidationGetFieldConfigs[variableName][nodeFieldConfigsValueKey].getMessage()?length != 0>
                                        <li>Сообщение валидатора: &quot;${formNodeValidationGetFieldConfigs[variableName][nodeFieldConfigsValueKey].getMessage()}&quot;</li>
                                        </#if>
                                        <#if formNodeValidationGetFieldConfigs[variableName][nodeFieldConfigsValueKey].getParams()?size != 0>
-                                           <li>Параметры валидатора:
+                                           <li>Параметры валидатора:</li> 
                                                <ul>
                                                <#list formNodeValidationGetFieldConfigs[variableName][nodeFieldConfigsValueKey].getParams()?keys as parameterName>
                                                <li>${parameterName} = &quot;${formNodeValidationGetFieldConfigs[variableName][nodeFieldConfigsValueKey].getParams()[parameterName]}&quot;</li>
                                                </#list>
                                                </ul>
-                                           </li> 
                                        </#if>
                                      </ul>
                                      <br />
@@ -176,17 +210,23 @@
                                 <#list formNodeValidationGetFieldConfigs[variableName]?keys as nodeFieldConfigsValueKey>
                                     <ul>
                                        <li>Тип валидатора: &quot;${formNodeValidationGetFieldConfigs[variableName][nodeFieldConfigsValueKey].getType()}&quot;</li>
+                                       <li>Описание валидатора: &quot;
+                                       <#if formNodeValidationGetFieldConfigs[variableName][nodeFieldConfigsValueKey].getDescription()?length == 0>
+                                       		${validatorDefinitions[nodeFieldConfigsValueKey].getDescription()}
+                                       <#else>
+                                       		${formNodeValidationGetFieldConfigs[variableName][nodeFieldConfigsValueKey].getDescription()?replace("\n","<br />")}
+                                       </#if>
+                                       &quot;</li>
                                        <#if formNodeValidationGetFieldConfigs[variableName][nodeFieldConfigsValueKey].getMessage()?length != 0>
                                        <li>Сообщение валидатора: &quot;${formNodeValidationGetFieldConfigs[variableName][nodeFieldConfigsValueKey].getMessage()}&quot;</li>
                                        </#if>
                                        <#if formNodeValidationGetFieldConfigs[variableName][nodeFieldConfigsValueKey].getParams()?size != 0>
-                                           <li>Параметры валидатора:
+                                           <li>Параметры валидатора:</li> 
                                                <ul>
                                                <#list formNodeValidationGetFieldConfigs[variableName][nodeFieldConfigsValueKey].getParams()?keys as parameterName>
                                                <li>${parameterName} = &quot;${formNodeValidationGetFieldConfigs[variableName][nodeFieldConfigsValueKey].getParams()[parameterName]}&quot;</li>
                                                </#list>
                                                </ul>
-                                           </li> 
                                        </#if>
                                      </ul>
                                      <br />
@@ -525,24 +565,29 @@
                                 <#list formNodeValidationGetFieldConfigs[variableName]?keys as nodeFieldConfigsValueKey>
                                     <ul>
                                        <li>Тип валидатора: &quot;${formNodeValidationGetFieldConfigs[variableName][nodeFieldConfigsValueKey].getType()}&quot;</li>
+                                       <li>Описание валидатора: &quot;
+                                       <#if formNodeValidationGetFieldConfigs[variableName][nodeFieldConfigsValueKey].getDescription()?length == 0>
+                                       		${validatorDefinitions[nodeFieldConfigsValueKey].getDescription()}
+                                       <#else>
+                                       		${formNodeValidationGetFieldConfigs[variableName][nodeFieldConfigsValueKey].getDescription()?replace("\n","<br />")}
+                                       </#if>
+                                       &quot;</li>
                                        <#if formNodeValidationGetFieldConfigs[variableName][nodeFieldConfigsValueKey].getMessage()?length != 0>
                                        <li>Сообщение валидатора: &quot;${formNodeValidationGetFieldConfigs[variableName][nodeFieldConfigsValueKey].getMessage()}&quot;</li>
                                        </#if>
                                        <#if formNodeValidationGetFieldConfigs[variableName][nodeFieldConfigsValueKey].getParams()?size != 0>
-                                           <li>Параметры валидатора:
+                                           <li>Параметры валидатора:</li> 
                                                <ul>
                                                <#list formNodeValidationGetFieldConfigs[variableName][nodeFieldConfigsValueKey].getParams()?keys as parameterName>
                                                <li>${parameterName} = &quot;${formNodeValidationGetFieldConfigs[variableName][nodeFieldConfigsValueKey].getParams()[parameterName]}&quot;</li>
                                                </#list>
                                                </ul>
-                                           </li> 
                                        </#if>
                                         <#if formNodeValidationGetFieldConfigs[variableName][nodeFieldConfigsValueKey].getTransitionNames()?size != 0>
-                                               <li> Валидатор применяется только к переходам: 
+                                               <li> Валидатор применяется только к переходам:</li> 
                                                       <#list formNodeValidationGetFieldConfigs[variableName][nodeFieldConfigsValueKey].getTransitionNames() as transitionName>
                                                           "${transitionName}";
-                                                      </#list>
-                                               </li>
+                                                      </#list> 
                                          </#if>
                                      </ul>
                                      <br />

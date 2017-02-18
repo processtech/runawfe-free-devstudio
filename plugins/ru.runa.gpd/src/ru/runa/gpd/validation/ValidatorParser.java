@@ -22,6 +22,7 @@ public class ValidatorParser {
     private static final String VALIDATORS = "validators";
     private static final String MESSAGE = "message";
     private static final String PARAM = "param";
+    private static final String DESCRIPTION = "description";
     private static final String TRANSITION_NAME = "on";
     private static final String TRANSITION_CONTEXT = "transition-context";
     private static final String TYPE = "type";
@@ -68,6 +69,10 @@ public class ValidatorParser {
             Element messageElement = validatorElement.element(MESSAGE);
             if (messageElement != null) {
                 validatorConfig.setMessage(messageElement.getText());
+            }
+            Element descriptionElement = validatorElement.element(DESCRIPTION);
+            if (descriptionElement != null) {
+                validatorConfig.setDescription(descriptionElement.getText());
             }
             result.add(validatorConfig);
         }
@@ -131,6 +136,10 @@ public class ValidatorParser {
                             + "'not registered in validator definition: " + definition.getName());
                 }
             }
+        }
+        if (!Strings.isNullOrEmpty(config.getDescription())) {
+            Element messageElement = element.addElement(DESCRIPTION);
+            messageElement.addCDATA(config.getDescription());
         }
     }
 

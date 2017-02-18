@@ -89,7 +89,7 @@ public class ValidatorWizard extends Wizard {
         addPage(fieldValidatorsPage);
         addPage(globalValidatorsPage);
     }
-    
+
     public static abstract class ParametersComposite extends Composite {
         public ParametersComposite(Composite parent, int style) {
             super(parent, style);
@@ -107,7 +107,10 @@ public class ValidatorWizard extends Wizard {
         protected ValidatorConfig config;
         protected ParametersComposite parametersComposite;
         private Label descriptionLabel;
+        protected Label errorMessageLabel;
         protected Text errorMessageText;
+        protected Label descriptionForUserLabel;
+        protected Text descriptionForUserText;
 
         public ValidatorInfoControl(Composite parent, boolean showDescription) {
             super(parent, SWT.BORDER);
@@ -115,8 +118,10 @@ public class ValidatorWizard extends Wizard {
             if (showDescription) {
                 descriptionLabel = new Label(this, SWT.NONE);
                 descriptionLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-                descriptionLabel.setText("_\n_");
+                descriptionLabel.setText("\n");
             }
+            errorMessageLabel = new Label(this, SWT.NONE);
+            errorMessageLabel.setText(Localization.getString("ValidatorsWizardPage.ErrorMessage"));
             errorMessageText = new Text(this, SWT.BORDER);
             errorMessageText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             errorMessageText.setToolTipText(Localization.getString("ValidatorsWizardPage.ErrorMessage"));
@@ -148,6 +153,10 @@ public class ValidatorWizard extends Wizard {
                 parametersComposite.updateConfigParams(definition, config);
                 config = null;
             }
+        }
+
+        public ValidatorConfig getConfig() {
+            return config;
         }
     }
 

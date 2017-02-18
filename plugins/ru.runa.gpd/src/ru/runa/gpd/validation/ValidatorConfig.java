@@ -12,6 +12,7 @@ public class ValidatorConfig {
     private String message = "";
     private Map<String, String> params = Maps.newHashMap();
     private final List<String> transitionNames = Lists.newArrayList();
+    private String description = "";
 
     public ValidatorConfig(String validatorType) {
         this.type = validatorType;
@@ -31,6 +32,14 @@ public class ValidatorConfig {
 
     public Map<String, String> getParams() {
         return params;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getDescription() {
+        return description;
     }
 
     public List<String> getTransitionNames() {
