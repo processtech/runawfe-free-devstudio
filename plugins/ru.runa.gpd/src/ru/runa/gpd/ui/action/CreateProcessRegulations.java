@@ -17,7 +17,10 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IViewReference;
@@ -151,10 +154,15 @@ public class CreateProcessRegulations extends BaseModelActionDelegate {
         config.setTemplateExceptionHandler(TemplateExceptionHandler.HTML_DEBUG_HANDLER);
 
         // TODO need localization
-        Path path = new Path("template/regulations.ftl");
-
-        Bundle bundl = Activator.getDefault().getBundle();
-        URL url = FileLocator.find(bundl, path, Collections.EMPTY_MAP);
+        Path path = getTemplatePath();
+        String templatePluginId = getTemplatePluginId();
+        Bundle bundle = null;
+        if (templatePluginId.isEmpty() != true) {
+            bundle = Platform.getBundle(templatePluginId);
+        } else {
+            bundle = Activator.getDefault().getBundle();
+        }
+        URL url = FileLocator.find(bundle, path, Collections.EMPTY_MAP);
         URL fileUrl = FileLocator.toFileURL(url);
         InputStream input = fileUrl.openConnection().getInputStream();
         Template template = new Template("regulations", new StringReader(IOUtils.readStream(input)), config);
@@ -295,6 +303,26 @@ public class CreateProcessRegulations extends BaseModelActionDelegate {
                     }
                 }
             } while (curNode != null);
+        }
+        return result;
+    }
+
+    public Path getTemplatePath() {
+        Path result = new Path("template/regulations.ftl");
+        IExtension[] extensions = Platform.getExtensionRegistry().getExtensionPoint("ru.runa.gpd.regulationsTemplate").getExtensions();
+        if (extensions.length > 0) {
+            IConfigurationElement[] configElements = extensions[0].getConfigurationElements();
+            String templatePathAsString = configElements[0].getAttribute("regulationsTemplate");
+            result = new Path(templatePathAsString);
+        }
+        return result;
+    }
+
+    public String getTemplatePluginId() {
+        String result = "";
+        IExtension[] extensions = Platform.getExtensionRegistry().getExtensionPoint("ru.runa.gpd.regulationsTemplate").getExtensions();
+        if (extensions.length > 0) {
+            result = extensions[0].getNamespaceIdentifier();
         }
         return result;
     }
