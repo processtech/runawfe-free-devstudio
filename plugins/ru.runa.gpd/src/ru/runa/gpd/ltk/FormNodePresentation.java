@@ -94,6 +94,9 @@ public class FormNodePresentation extends VariableRenameProvider<FormNode> {
             Variable oldVariable = entry.getKey();
             Variable newVariable = entry.getValue();
             addChildEdit(multiEdit, formType.searchVariableReplacementsInScript(file, oldVariable.getScriptingName(), newVariable.getScriptingName()));
+            if (!oldVariable.getScriptingName().equals(oldVariable.getName())) {
+                addChildEdit(multiEdit, formType.searchVariableReplacementsInScript(file, oldVariable.getName(), newVariable.getName()));
+            }
         }
         return multiEdit;
     }

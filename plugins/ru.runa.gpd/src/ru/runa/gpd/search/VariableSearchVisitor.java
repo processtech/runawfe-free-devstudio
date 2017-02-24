@@ -69,7 +69,7 @@ public class VariableSearchVisitor {
     public VariableSearchVisitor(VariableSearchQuery query) {
         this.query = query;
         this.status = new MultiStatus(NewSearchUI.PLUGIN_ID, IStatus.OK, SearchMessages.TextSearchEngine_statusMessage, null);
-        this.matcher = Pattern.compile(String.format(REGEX_SCRIPT_VARIABLE, query.getSearchText())).matcher("");
+        this.matcher = Pattern.compile(String.format(REGEX_SCRIPT_VARIABLE, Pattern.quote(query.getSearchText()))).matcher("");
         this.matcherScriptingName = Pattern.compile(String.format(REGEX_SCRIPT_VARIABLE, query.getVariable().getScriptingName())).matcher("");
         this.matcherWithBrackets = Pattern.compile(Pattern.quote("\"" + query.getSearchText() + "\"")).matcher("");
     }
@@ -288,6 +288,9 @@ public class VariableSearchVisitor {
                 }
                 elementMatch.setMatchesCount(matchesCount);
                 List<Match> matches = findInFile(elementMatch, file, matcherScriptingName);
+                if (!query.getVariable().getName().equals(query.getVariable().getScriptingName())) {
+                    matches.addAll(findInFile(elementMatch, file, matcher));
+                }
                 elementMatch.setPotentialMatchesCount(matches.size() - matchesCount);
                 for (Match match : matches) {
                     query.getSearchResult().addMatch(match);
@@ -345,7 +348,7 @@ public class VariableSearchVisitor {
             int start = matcher.start();
             int end = matcher.end();
             if (end != start) {
-                matches.add(new Match(elementMatch, start, end - start));
+                matches.add(new Match(elementMatch, start + 1, end - start - 2));
             }
             if (k++ == 20) {
                 if (progressMonitor.isCanceled()) {
