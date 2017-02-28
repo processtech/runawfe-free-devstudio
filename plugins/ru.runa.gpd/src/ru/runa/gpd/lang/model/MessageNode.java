@@ -97,7 +97,7 @@ public abstract class MessageNode extends Node {
             }
         }
         if (selectorRulesCount == 0) {
-            errors.add(ValidationError.createLocalizedWarning(this, "message.selectorRulesEmpty"));
+            validateOnEmptyRules(errors);
         }
     }
 
@@ -108,6 +108,10 @@ public abstract class MessageNode extends Node {
             copy.getVariableMappings().add(mapping.getCopy());
         }
         return copy;
+    }
+
+    protected void validateOnEmptyRules(List<ValidationError> errors) {
+        errors.add(ValidationError.createLocalizedWarning(this, "message.selectorRulesEmpty"));
     }
 
 }
