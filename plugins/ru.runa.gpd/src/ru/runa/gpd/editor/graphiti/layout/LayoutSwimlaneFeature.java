@@ -13,7 +13,7 @@ import ru.runa.gpd.lang.model.GraphElement;
 
 import com.google.common.base.Objects;
 
-public class LayoutSwimlaneFeature extends ElementLayoutFeature {
+public class LayoutSwimlaneFeature extends LayoutElementFeature {
     public static final String NAME_RECT = "nameRect";
 
     private boolean isVerticalLayout(ILayoutContext context) {

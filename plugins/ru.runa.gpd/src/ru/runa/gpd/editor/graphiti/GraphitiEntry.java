@@ -11,7 +11,7 @@ import ru.runa.gpd.editor.graphiti.add.AddElementFeature;
 import ru.runa.gpd.editor.graphiti.add.AddTransitionFeature;
 import ru.runa.gpd.editor.graphiti.create.CreateElementFeature;
 import ru.runa.gpd.editor.graphiti.create.CreateTransitionFeature;
-import ru.runa.gpd.editor.graphiti.layout.ElementLayoutFeature;
+import ru.runa.gpd.editor.graphiti.layout.LayoutElementFeature;
 import ru.runa.gpd.editor.graphiti.update.UpdateFeature;
 import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.NodeTypeDefinition;
@@ -61,8 +61,8 @@ public class GraphitiEntry extends Entry {
 
     public ILayoutFeature createLayoutFeature(DiagramFeatureProvider provider) {
         ILayoutFeature feature = createExecutableExtension("layout");
-        if (feature instanceof ElementLayoutFeature) {
-            ((ElementLayoutFeature) feature).setFeatureProvider(provider);
+        if (feature instanceof LayoutElementFeature) {
+            ((LayoutElementFeature) feature).setFeatureProvider(provider);
         }
         return feature;
     }

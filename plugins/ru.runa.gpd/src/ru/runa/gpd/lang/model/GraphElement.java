@@ -15,9 +15,9 @@ import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
 import org.eclipse.ui.views.properties.TextPropertyDescriptor;
 
-import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.GEFConstants;
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.HandlerRegistry;
@@ -54,6 +54,10 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
         this.id = nodeId;
     }
 
+    /**
+     * @return parent container or <code>null</code> in case of
+     *         {@link ProcessDefinition}
+     */
     public GraphElement getParentContainer() {
         return parentContainer;
     }

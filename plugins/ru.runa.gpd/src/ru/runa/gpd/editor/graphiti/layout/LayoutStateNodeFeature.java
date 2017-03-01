@@ -5,6 +5,7 @@ import org.eclipse.graphiti.features.context.ILayoutContext;
 import org.eclipse.graphiti.mm.Property;
 import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
+import org.eclipse.graphiti.mm.pictograms.Shape;
 import org.eclipse.graphiti.services.Graphiti;
 
 import ru.runa.gpd.editor.graphiti.GaProperty;
@@ -12,7 +13,7 @@ import ru.runa.gpd.editor.graphiti.PropertyUtil;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.Synchronizable;
 
-public class LayoutStateNodeFeature extends ElementLayoutFeature {
+public class LayoutStateNodeFeature extends LayoutElementFeature {
     public static final String MAIN_RECT = "mainRect";
     public static final String BORDER_RECT = "borderRect";
 
@@ -78,6 +79,9 @@ public class LayoutStateNodeFeature extends ElementLayoutFeature {
         if (asyncImage != null) {
             int size = ((Synchronizable) node).isAsync() ? 14 : 1;
             Graphiti.getGaService().setLocationAndSize(asyncImage, bounds.width - 2 * GRID_SIZE, bounds.height - 2 * GRID_SIZE - 1, size, size);
+        }
+        for (Shape shape : containerShape.getChildren()) {
+            layoutPictogramElement(shape);
         }
         return true;
     }
