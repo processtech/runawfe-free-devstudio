@@ -3,25 +3,25 @@ package ru.runa.gpd.editor.graphiti.update;
 import org.eclipse.graphiti.features.IReason;
 import org.eclipse.graphiti.features.context.IUpdateContext;
 import org.eclipse.graphiti.features.impl.Reason;
+import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 
+import ru.runa.gpd.editor.graphiti.GraphUtil;
 import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 
-public class UpdateBoundaryCatchEventNodeFeature extends UpdateEventNodeFeature {
+public class UpdateCatchEventNodeFeature extends UpdateEventNodeFeature {
 
     @Override
     public IReason updateNeeded(IUpdateContext context) {
-        IReason reason = super.updateNeeded(context);
-        if (context.getPictogramElement() instanceof ContainerShape) {
+        CatchEventNode catchEventNode = (CatchEventNode) getBusinessObjectForPictogramElement(context.getPictogramElement());
+        if (catchEventNode.getParent() instanceof IBoundaryEventContainer) {
             ContainerShape containerShape = (ContainerShape) context.getPictogramElement();
-            CatchEventNode catchEventNode = (CatchEventNode) getBusinessObjectForPictogramElement(containerShape);
-            if (catchEventNode.getParent() instanceof IBoundaryEventContainer
-                    && catchEventNode.isInterruptingBoundaryEvent() == containerShape.getChildren().get(0).isVisible()) {
+            if (catchEventNode.isInterruptingBoundaryEvent() == containerShape.getChildren().get(0).isVisible()) {
                 return Reason.createTrueReason();
             }
         }
-        return reason;
+        return super.updateNeeded(context);
     }
 
     @Override
@@ -30,8 +30,10 @@ public class UpdateBoundaryCatchEventNodeFeature extends UpdateEventNodeFeature 
         CatchEventNode catchEventNode = (CatchEventNode) getBusinessObjectForPictogramElement(containerShape);
         if (catchEventNode.getParent() instanceof IBoundaryEventContainer
                 && catchEventNode.isInterruptingBoundaryEvent() == containerShape.getChildren().get(0).isVisible()) {
-            containerShape.getChildren().get(0).setVisible(!catchEventNode.isInterruptingBoundaryEvent());
-            layoutPictogramElement(containerShape.getChildren().get(0));
+            GraphicsAlgorithm ga = containerShape.getGraphicsAlgorithm();
+            GraphUtil.createBoundaryEventEllipse(getDiagram(), containerShape.getChildren().get(0), catchEventNode, ga.getWidth(), ga.getHeight());
+            // this does not updates view immediately, only on diagram saving
+            // containerShape.getChildren().get(0).setVisible(!catchEventNode.isInterruptingBoundaryEvent());
         }
         return super.update(context);
     }

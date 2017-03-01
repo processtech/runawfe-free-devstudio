@@ -36,7 +36,6 @@ public class UpdateEventNodeFeature extends UpdateFeature {
             Image oldImage = (Image) containerShape.getGraphicsAlgorithm();
             Image newImage = Graphiti.getGaService().createImage(containerShape, imageId);
             Graphiti.getGaService().setLocationAndSize(newImage, oldImage.getX(), oldImage.getY(), oldImage.getWidth(), oldImage.getHeight());
-            layoutPictogramElement(containerShape);
         }
         return true;
     }

@@ -13,10 +13,10 @@ import ru.runa.gpd.editor.GEFConstants;
 import ru.runa.gpd.editor.graphiti.DiagramFeatureProvider;
 import ru.runa.gpd.lang.model.GraphElement;
 
-public abstract class ElementLayoutFeature extends AbstractLayoutFeature implements GEFConstants {
+public abstract class LayoutElementFeature extends AbstractLayoutFeature implements GEFConstants {
     private DiagramFeatureProvider featureProvider;
 
-    public ElementLayoutFeature() {
+    public LayoutElementFeature() {
         super(null);
     }
 

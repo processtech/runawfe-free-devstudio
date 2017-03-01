@@ -770,9 +770,10 @@
          <graphiti
                add="ru.runa.gpd.editor.graphiti.add.AddTimerFeature"
                create="ru.runa.gpd.editor.graphiti.create.CreateTimerFeature"
-               height="4"
                fixedSize="true"
-               update="ru.runa.gpd.editor.graphiti.update.UpdateBoundaryTimerFeature"
+               height="4"
+               layout="ru.runa.gpd.editor.graphiti.layout.LayoutTimerFeature"
+               update="ru.runa.gpd.editor.graphiti.update.UpdateTimerFeature"
                width="4">
          </graphiti>
       </element>
@@ -1012,9 +1013,10 @@
          <graphiti
                add="ru.runa.gpd.editor.graphiti.add.AddCatchEventNodeFeature"
                create="ru.runa.gpd.editor.graphiti.create.CreateCatchEventNodeFeature"
-               update="ru.runa.gpd.editor.graphiti.update.UpdateBoundaryCatchEventNodeFeature"
-               height="4"
                fixedSize="true"
+               height="4"
+               layout="ru.runa.gpd.editor.graphiti.layout.LayoutCatchEventNodeFeature"
+               update="ru.runa.gpd.editor.graphiti.update.UpdateCatchEventNodeFeature"
                width="4">
          </graphiti>
       </element>
