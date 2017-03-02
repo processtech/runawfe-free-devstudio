@@ -16,6 +16,7 @@ import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.TaskState;
+import ru.runa.gpd.lang.model.Subprocess;
 
 public class LanguageElementPreferencePage extends FieldEditorPreferencePage implements PrefConstants {
     private final String id;
@@ -89,6 +90,11 @@ public class LanguageElementPreferencePage extends FieldEditorPreferencePage imp
                     Localization.getString("Swimlane.reassignSwimlaneToTaskPerformer"), getFieldEditorParent()));
             addField(new BooleanFieldEditor(getKey(P_LANGUAGE_TASK_STATE_ASYNC_INPUT_DATA),
                     Localization.getString("TaskNode.inputDataAllowedInAsyncMode"), getFieldEditorParent()));
+        }
+
+        if (element instanceof Subprocess){
+            addField(new BooleanFieldEditor(getKey(P_LANGUAGE_SUB_PROCESS_ASYNC_INPUT_DATA),
+                    Localization.getString("Subprocess.inputDataAllowedInAsyncSubprocess"), getFieldEditorParent()));
         }
     }
 
