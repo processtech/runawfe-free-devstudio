@@ -8,6 +8,7 @@ import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.services.Graphiti;
 import org.eclipse.graphiti.services.IGaService;
 
+import ru.runa.gpd.editor.graphiti.StyleUtil;
 import ru.runa.gpd.lang.model.StartTextDecoration;
 
 public class AddStartTextDecorationFeature extends AddNodeFeature {
@@ -29,8 +30,10 @@ public class AddStartTextDecorationFeature extends AddNodeFeature {
         // create UI element for definition
         Rectangle rect = gaService.createInvisibleRectangle(containerShape);
         gaService.setLocation(rect, context.getX(), context.getY());
-        Text textSwimlane = gaService.createDefaultText(getDiagram(), rect, labelSwimline);
-        Text textName = gaService.createDefaultText(getDiagram(), rect, labelName);
+        Text textSwimlane = gaService.createText(rect, labelSwimline);
+        textSwimlane.setStyle(StyleUtil.getStyleForText(getDiagram()));
+        Text textName = gaService.createText(rect, labelName);
+        textName.setStyle(StyleUtil.getStyleForText(getDiagram()));
         node.setUiContainer(node.new StartDefinitionUI(containerShape, rect, textName, textSwimlane));
 
         link(containerShape, node);

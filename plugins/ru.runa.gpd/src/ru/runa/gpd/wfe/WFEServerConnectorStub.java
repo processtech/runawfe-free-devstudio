@@ -88,4 +88,9 @@ public class WFEServerConnectorStub extends WFEServerConnector {
     public List<BotStation> getBotStations() {
         return Lists.newArrayList();
     }
+
+    @Override
+    public void setSetting(String properties, String name, String value) {
+        throw new UnsupportedOperationException();
+    }
 }

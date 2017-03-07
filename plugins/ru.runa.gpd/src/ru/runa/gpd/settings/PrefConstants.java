@@ -7,6 +7,11 @@ public interface PrefConstants {
     public static final String LOGIN_MODE_LOGIN_PASSWORD = "login.mode.login_password";
     public static final String LOGIN_MODE_KERBEROS = "login.mode.kerberos";
     public static final String P_BPMN_SHOW_SWIMLANE = "showSwimlane";
+    public static final String P_BPMN_FONT = "bpmnFont";
+    public static final String P_BPMN_COLOR_FONT = "bpmnColorFont";
+    public static final String P_BPMN_COLOR_BACKGROUND = "bpmnColorBackground";
+    public static final String P_BPMN_COLOR_BASE = "bpmnColorBase";
+    public static final String P_BPMN_COLOR_TRANSITION = "bpmnColorTransition";
     public static final String P_LANGUAGE_NODE_NAME_PATTERN = "nodeNamePattern";
     public static final String P_LANGUAGE_NODE_WIDTH = "nodeWidth";
     public static final String P_LANGUAGE_NODE_HEIGHT = "nodeHeight";

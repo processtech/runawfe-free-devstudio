@@ -32,6 +32,8 @@ import ru.runa.wfe.webservice.ExecutorWebService;
 import ru.runa.wfe.webservice.Relation;
 import ru.runa.wfe.webservice.RelationAPI;
 import ru.runa.wfe.webservice.RelationWebService;
+import ru.runa.wfe.webservice.SystemAPI;
+import ru.runa.wfe.webservice.SystemWebService;
 import ru.runa.wfe.webservice.User;
 import ru.runa.wfe.webservice.WfExecutor;
 
@@ -239,5 +241,14 @@ public abstract class AbstractWebServicesConnector extends WFEServerConnector {
     @Override
     public List<BotStation> getBotStations() {
         return BotStationAdapter.toDTOs(getBotService().getBotStations());
+    }
+
+    private SystemAPI getSystemService() {
+        return new SystemWebService(getUrl("System")).getSystemAPIPort();
+    }
+
+    @Override
+    public void setSetting(String properties, String name, String value) {
+        getSystemService().setSetting(properties, name, value);
     }
 }

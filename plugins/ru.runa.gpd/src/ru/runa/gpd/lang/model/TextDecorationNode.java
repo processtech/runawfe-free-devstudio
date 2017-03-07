@@ -1,5 +1,8 @@
 package ru.runa.gpd.lang.model;
 
+import org.eclipse.graphiti.mm.algorithms.Text;
+import org.eclipse.graphiti.mm.algorithms.styles.Font;
+
 import ru.runa.gpd.editor.graphiti.UIContainer;
 
 public abstract class TextDecorationNode extends NamedGraphElement {
@@ -19,6 +22,14 @@ public abstract class TextDecorationNode extends NamedGraphElement {
 
     public void setUiContainer(UIContainer uiContainer) {
         this.uiContainer = uiContainer;
+    }
+
+    protected Font getFont(Text text) {
+        Font font = text.getFont();
+        if (font == null) {
+            return text.getStyle().getFont();
+        }
+        return font;
     }
 
 }
