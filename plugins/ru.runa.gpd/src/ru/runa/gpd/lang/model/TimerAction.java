@@ -20,11 +20,6 @@ public class TimerAction extends Action {
     }
 
     @Override
-    public void setDirty() {
-        // stub
-    }
-
-    @Override
     public ProcessDefinition getProcessDefinition() {
         return processDefinition;
     }

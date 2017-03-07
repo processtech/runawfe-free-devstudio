@@ -87,10 +87,7 @@
           adaptable="false"
           id="jpdl.task.escalation"
           objectClass="ru.runa.gpd.lang.model.TaskState">
-       <filter
-             name="language"
-             value="jpdl">
-       </filter>
+
        <action
              class="ru.runa.gpd.lang.action.EscalationTaskFeatureDelegate"
              id="addEscalation"
@@ -428,10 +425,6 @@
           adaptable="false"
           id="jpdl.process"
           objectClass="ru.runa.gpd.lang.model.ProcessDefinition">
-       <filter
-             name="language"
-             value="jpdl">
-       </filter>
        <action
              class="ru.runa.gpd.lang.action.EnableEscalationOnProcessAction"
              id="turnEscalationOn"
