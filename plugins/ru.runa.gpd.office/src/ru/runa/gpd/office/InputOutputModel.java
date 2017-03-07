@@ -7,6 +7,7 @@ import org.dom4j.Element;
 
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.GraphElement;
+import ru.runa.gpd.lang.model.Variable;
 
 import com.google.common.base.Strings;
 
@@ -56,8 +57,24 @@ public class InputOutputModel {
     }
 
     public void validate(GraphElement graphElement, FilesSupplierMode mode, List<ValidationError> errors) {
-        if (mode.isInSupported() && Strings.isNullOrEmpty(inputPath) && Strings.isNullOrEmpty(inputVariable)) {
-            errors.add(ValidationError.createError(graphElement, Messages.getString("model.validation.in.file.empty")));
+        List<Variable> processVariables = graphElement.getProcessDefinition().getChildren(Variable.class);
+        if (mode.isInSupported()) {
+            if (Strings.isNullOrEmpty(inputPath) && Strings.isNullOrEmpty(inputVariable)) {
+                errors.add(ValidationError.createError(graphElement, Messages.getString("model.validation.in.file.empty")));
+            }
+
+            if (Strings.isNullOrEmpty(inputVariable) != true) {
+                boolean isInputVariableExistsInDefinition = false;
+                for (Variable variable : processVariables) {
+                    if (isInputVariableExistsInDefinition != true && variable.getName().equals(inputVariable)) {
+                        isInputVariableExistsInDefinition = true;
+                    }
+                }
+                if (isInputVariableExistsInDefinition != true) {
+                    errors.add(ValidationError.createError(graphElement, Messages.getString("model.validation.in.file.variable.doesnotExists")
+                            + " \"" + inputVariable + "\""));
+                }
+            }
         }
         if (mode.isOutSupported()) {
             if (Strings.isNullOrEmpty(outputVariable) && Strings.isNullOrEmpty(outputDir)) {
@@ -66,7 +83,18 @@ public class InputOutputModel {
             if (Strings.isNullOrEmpty(outputFilename)) {
                 errors.add(ValidationError.createError(graphElement, Messages.getString("model.validation.out.filename.empty")));
             }
+            if (Strings.isNullOrEmpty(outputVariable) != true) {
+                boolean isOutputVariableExistsInDefinition = false;
+                for (Variable variable : processVariables) {
+                    if (isOutputVariableExistsInDefinition != true && variable.getName().equals(outputVariable)) {
+                        isOutputVariableExistsInDefinition = true;
+                    }
+                }
+                if (isOutputVariableExistsInDefinition != true) {
+                    errors.add(ValidationError.createError(graphElement, Messages.getString("model.validation.out.file.variable.doesnotExists")
+                            + " \"" + outputVariable + "\""));
+                }
+            }
         }
     }
-
 }

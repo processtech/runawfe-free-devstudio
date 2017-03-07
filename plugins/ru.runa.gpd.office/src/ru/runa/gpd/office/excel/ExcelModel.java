@@ -77,8 +77,14 @@ public class ExcelModel extends Observable {
             for (int i = 0; i < variables.size(); i++) {
                 variablesNames.add(variables.get(i).getName());
             }
-            if (variablesNames.contains(constraintsModel.variableName) != true) {
-                errors.add(ValidationError.createError(graphElement, Messages.getString("model.validation.xlsx.constraint.variable.nonexistent")));
+            String constraintsModelVariableName = constraintsModel.variableName;
+            if (constraintsModelVariableName.contains(".")) {
+                constraintsModelVariableName = constraintsModelVariableName.substring(0, constraintsModelVariableName.indexOf("."));
+            }
+
+            if (variablesNames.contains(constraintsModelVariableName) != true) {
+                errors.add(ValidationError.createError(graphElement, Messages.getString("model.validation.xlsx.constraint.variable.nonexistent")
+                        + " \"" + constraintsModelVariableName + "\""));
                 break;
             }
         }
