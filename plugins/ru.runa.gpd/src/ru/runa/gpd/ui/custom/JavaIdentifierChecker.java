@@ -1,14 +1,9 @@
 package ru.runa.gpd.ui.custom;
 
-import java.util.List;
-
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 
-import com.google.common.collect.Lists;
-
 public class JavaIdentifierChecker extends KeyAdapter {
-    private static final List<Character> forbiddenCharacters = Lists.newArrayList('"', '\'', '@', '&', '>', '<', '\\', '.', '|');
 
     @Override
     public void keyPressed(KeyEvent e) {
