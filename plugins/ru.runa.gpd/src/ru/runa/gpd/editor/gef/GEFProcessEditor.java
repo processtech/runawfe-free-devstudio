@@ -5,9 +5,9 @@ import java.beans.PropertyChangeEvent;
 import org.eclipse.gef.SnapToGrid;
 import org.eclipse.gef.ui.parts.GraphicalEditor;
 
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.ProcessEditorBase;
 import ru.runa.gpd.lang.model.GraphElement;
-import ru.runa.gpd.lang.model.PropertyNames;
 
 public class GEFProcessEditor extends ProcessEditorBase {
     public static final String ID = "ru.runa.gpd.GEFDesignerEditor";

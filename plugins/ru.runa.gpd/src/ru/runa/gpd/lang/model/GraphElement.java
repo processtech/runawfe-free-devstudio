@@ -17,6 +17,7 @@ import org.eclipse.ui.views.properties.TextPropertyDescriptor;
 
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.GEFConstants;
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.HandlerRegistry;
@@ -24,6 +25,8 @@ import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.NodeRegistry;
 import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.lang.ValidationError;
+import ru.runa.gpd.lang.model.jpdl.Action;
+import ru.runa.gpd.lang.model.jpdl.ActionContainer;
 import ru.runa.gpd.property.DelegableClassPropertyDescriptor;
 import ru.runa.gpd.property.DelegableConfPropertyDescriptor;
 import ru.runa.gpd.property.DurationPropertyDescriptor;
@@ -52,6 +55,10 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
         this.id = nodeId;
     }
 
+    /**
+     * @return parent container or <code>null</code> in case of
+     *         {@link ProcessDefinition}
+     */
     public GraphElement getParentContainer() {
         return parentContainer;
     }
@@ -253,7 +260,7 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
 
     // Active implementation
     public void addAction(Action action, int index) {
-        if (!(this instanceof Active)) {
+        if (!(this instanceof ActionContainer)) {
             throw new IllegalStateException("It's not Active class ... " + this.getClass());
         }
         if (index == -1) {
@@ -422,8 +429,8 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
         if (this instanceof Describable) {
             copy.setDescription(getDescription());
         }
-        if (this instanceof Active) {
-            List<? extends Action> actions = ((Active) this).getActions();
+        if (this instanceof ActionContainer) {
+            List<? extends Action> actions = ((ActionContainer) this).getActions();
             for (Action action : actions) {
                 copy.addAction(action.getCopy(copy), -1);
             }
@@ -456,8 +463,8 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
                 PluginLogger.logErrorWithoutDialog("Unable to get used variables in " + this, e);
             }
         }
-        if (this instanceof Active) {
-            List<? extends Action> actions = ((Active) this).getActions();
+        if (this instanceof ActionContainer) {
+            List<? extends Action> actions = ((ActionContainer) this).getActions();
             for (Action action : actions) {
                 try {
                     DelegableProvider provider = HandlerRegistry.getProvider(action.getDelegationClassName());

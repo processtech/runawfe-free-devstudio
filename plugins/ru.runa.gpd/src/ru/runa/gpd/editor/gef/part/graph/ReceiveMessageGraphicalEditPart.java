@@ -8,8 +8,8 @@ import org.eclipse.gef.Request;
 
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.editor.gef.figure.ReceiveMessageFigure;
-import ru.runa.gpd.lang.model.ReceiveMessageNode;
 import ru.runa.gpd.lang.model.Transition;
+import ru.runa.gpd.lang.model.jpdl.ReceiveMessageNode;
 
 public class ReceiveMessageGraphicalEditPart extends LabeledNodeGraphicalEditPart {
     @Override

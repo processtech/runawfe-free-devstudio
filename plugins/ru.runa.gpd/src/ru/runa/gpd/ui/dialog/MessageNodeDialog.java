@@ -181,6 +181,18 @@ public class MessageNodeDialog extends Dialog {
                 }
             }
         });
+        addButton.addButton(Localization.getString("MessageNodeDialog.addByNodeId"), new LoggingSelectionAdapter() {
+
+            @Override
+            protected void onSelection(SelectionEvent e) throws Exception {
+                VariableMapping mapping = new VariableMapping("processNodeId", VariableUtils.CURRENT_NODE_ID, VariableMapping.USAGE_SELECTOR);
+                if (sendMode) {
+                    editVariableMapping(mapping, VariableMapping.USAGE_SELECTOR);
+                } else {
+                    addVariableMapping(mapping, true);
+                }
+            }
+        });
         selectorChangeButton = SWTUtils.createButtonFillHorizontal(composite, Localization.getString("button.change"), new LoggingSelectionAdapter() {
 
             @Override

@@ -37,7 +37,7 @@ import com.google.common.collect.Maps;
 import com.google.common.hash.Hashing;
 
 @SuppressWarnings("unchecked")
-public class ProcessDefinition extends NamedGraphElement implements Active, Describable {
+public class ProcessDefinition extends NamedGraphElement implements Describable {
     private Language language;
     private NodeAsyncExecution defaultNodeAsyncExecution = NodeAsyncExecution.DEFAULT;
     private Dimension dimension;

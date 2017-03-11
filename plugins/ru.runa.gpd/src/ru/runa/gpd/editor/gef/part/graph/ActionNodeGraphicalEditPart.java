@@ -5,8 +5,8 @@ import java.util.List;
 import org.eclipse.gef.EditPolicy;
 
 import ru.runa.gpd.editor.gef.figure.ActionNodeFigure;
-import ru.runa.gpd.editor.gef.policy.ActiveLayoutEditPolicy;
-import ru.runa.gpd.lang.model.ActionNode;
+import ru.runa.gpd.editor.gef.policy.ActionContainerLayoutEditPolicy;
+import ru.runa.gpd.lang.model.jpdl.ActionNode;
 
 public class ActionNodeGraphicalEditPart extends LabeledNodeGraphicalEditPart implements ActionsHost {
     @Override
@@ -32,6 +32,6 @@ public class ActionNodeGraphicalEditPart extends LabeledNodeGraphicalEditPart im
     @Override
     protected void createEditPolicies() {
         super.createEditPolicies();
-        installEditPolicy(EditPolicy.LAYOUT_ROLE, new ActiveLayoutEditPolicy());
+        installEditPolicy(EditPolicy.LAYOUT_ROLE, new ActionContainerLayoutEditPolicy());
     }
 }

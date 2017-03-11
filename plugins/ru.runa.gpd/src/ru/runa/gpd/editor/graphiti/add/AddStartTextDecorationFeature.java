@@ -8,7 +8,7 @@ import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.services.Graphiti;
 import org.eclipse.graphiti.services.IGaService;
 
-import ru.runa.gpd.lang.model.StartTextDecoration;
+import ru.runa.gpd.lang.model.bpmn.StartTextDecoration;
 
 public class AddStartTextDecorationFeature extends AddNodeFeature {
 

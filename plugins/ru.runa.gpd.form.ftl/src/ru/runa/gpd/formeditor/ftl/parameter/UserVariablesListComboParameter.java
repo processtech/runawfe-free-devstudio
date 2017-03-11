@@ -13,12 +13,12 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.formeditor.ftl.ComponentParameter;
 import ru.runa.gpd.formeditor.ftl.parameter.interfaces.IParameterChangeConsumer;
 import ru.runa.gpd.formeditor.ftl.parameter.interfaces.IParameterChangeCustomer;
 import ru.runa.gpd.formeditor.wysiwyg.FormEditor;
 import ru.runa.gpd.lang.model.ProcessDefinition;
-import ru.runa.gpd.lang.model.PropertyNames;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;

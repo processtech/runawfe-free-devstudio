@@ -14,8 +14,8 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.ide.IDE;
 
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.Localization;
-import ru.runa.gpd.lang.model.PropertyNames;
 import ru.runa.gpd.util.EmbeddedFileUtils;
 import ru.runa.gpd.util.EventSupport;
 import ru.runa.gpd.util.IOUtils;

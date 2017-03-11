@@ -11,7 +11,7 @@ import org.eclipse.graphiti.ui.internal.parts.ContainerShapeEditPart;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.editor.gef.part.graph.NodeGraphicalEditPart;
 import ru.runa.gpd.lang.model.NamedGraphElement;
-import ru.runa.gpd.lang.model.TextDecorationNode;
+import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
 
 import com.google.common.collect.Lists;
 
