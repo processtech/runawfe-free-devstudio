@@ -14,8 +14,8 @@ import ru.runa.gpd.editor.graphiti.DiagramFeatureProvider;
 import ru.runa.gpd.lang.BpmnSerializer;
 import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.NodeRegistry;
-import ru.runa.gpd.lang.model.AbstractEndTextDecorated;
-import ru.runa.gpd.lang.model.EndTextDecoration;
+import ru.runa.gpd.lang.model.bpmn.AbstractEndTextDecorated;
+import ru.runa.gpd.lang.model.bpmn.EndTextDecoration;
 
 public class AddEndNodeFeature extends AddNodeWithImageFeature {
 

@@ -32,6 +32,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.ProcessEditorBase;
 import ru.runa.gpd.editor.ProcessEditorContributor;
 import ru.runa.gpd.editor.gef.GEFActionBarContributor;
@@ -39,7 +40,6 @@ import ru.runa.gpd.editor.graphiti.update.BOUpdateContext;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
-import ru.runa.gpd.lang.model.PropertyNames;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.SwimlanedNode;
 import ru.runa.gpd.lang.model.Transition;

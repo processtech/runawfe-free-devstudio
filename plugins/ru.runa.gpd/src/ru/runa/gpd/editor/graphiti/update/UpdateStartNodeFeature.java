@@ -6,7 +6,7 @@ import org.eclipse.graphiti.features.impl.Reason;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 
 import ru.runa.gpd.lang.model.StartState;
-import ru.runa.gpd.lang.model.StartTextDecoration.StartDefinitionUI;
+import ru.runa.gpd.lang.model.bpmn.StartTextDecoration.StartDefinitionUI;
 
 import com.google.common.base.Objects;
 

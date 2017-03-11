@@ -36,13 +36,13 @@ import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.editor.ProcessEditorBase;
-import ru.runa.gpd.lang.model.Action;
-import ru.runa.gpd.lang.model.Active;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
+import ru.runa.gpd.lang.model.jpdl.Action;
+import ru.runa.gpd.lang.model.jpdl.ActionContainer;
 import ru.runa.gpd.util.WorkspaceOperations;
 
 import com.google.common.base.Objects;
@@ -116,16 +116,16 @@ public class ValidationErrorsView extends ViewPart implements ISelectionChangedL
             if (actionIndex != -1) {
                 String parentTreePath = marker.getAttribute(PluginConstants.PARENT_NODE_KEY, null);
                 String[] paths = parentTreePath.split("\\|", -1);
-                Active active;
+                ActionContainer actionContainer;
                 if (paths.length == 1) {
-                    active = (Active) findElement(editor.getDefinition(), NamedGraphElement.class, paths[0]);
+                    actionContainer = (ActionContainer) findElement(editor.getDefinition(), NamedGraphElement.class, paths[0]);
                 } else if (paths.length == 2) {
                     Node node = (Node) findElement(editor.getDefinition(), Node.class, paths[0]);
-                    active = node.getTransitionByName(paths[1]);
+                    actionContainer = node.getTransitionByName(paths[1]);
                 } else {
                     throw new RuntimeException("Invalid tree path: " + parentTreePath);
                 }
-                List<? extends Action> activeActions = active.getActions();
+                List<? extends Action> activeActions = actionContainer.getActions();
                 graphElement = activeActions.get(actionIndex);
             }
             if (graphElement != null) {

@@ -27,12 +27,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.ide.IDE;
 
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.editor.clipboard.VariableTransfer;
 import ru.runa.gpd.editor.clipboard.VariableUserTypeTransfer;
 import ru.runa.gpd.lang.model.FormNode;
-import ru.runa.gpd.lang.model.PropertyNames;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableUserType;

@@ -3,13 +3,13 @@ package ru.runa.gpd.editor.gef.command;
 import org.eclipse.gef.commands.Command;
 
 import ru.runa.gpd.lang.NodeRegistry;
-import ru.runa.gpd.lang.model.Action;
-import ru.runa.gpd.lang.model.ActionImpl;
-import ru.runa.gpd.lang.model.Active;
 import ru.runa.gpd.lang.model.GraphElement;
+import ru.runa.gpd.lang.model.jpdl.Action;
+import ru.runa.gpd.lang.model.jpdl.ActionContainer;
+import ru.runa.gpd.lang.model.jpdl.ActionImpl;
 
 public class AddActionCommand extends Command {
-    private Active target;
+    private ActionContainer target;
     private Action action;
     private int actionIndex = -1;
 
@@ -24,7 +24,7 @@ public class AddActionCommand extends Command {
         target.removeAction(action);
     }
 
-    public void setTarget(Active newTarget) {
+    public void setTarget(ActionContainer newTarget) {
         target = newTarget;
     }
 

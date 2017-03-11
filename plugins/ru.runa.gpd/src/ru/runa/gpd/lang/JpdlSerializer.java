@@ -13,30 +13,21 @@ import ru.runa.gpd.Application;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.PluginLogger;
-import ru.runa.gpd.lang.model.Action;
-import ru.runa.gpd.lang.model.ActionImpl;
-import ru.runa.gpd.lang.model.ActionNode;
-import ru.runa.gpd.lang.model.Conjunction;
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.lang.model.Decision;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.Describable;
 import ru.runa.gpd.lang.model.EndState;
 import ru.runa.gpd.lang.model.EndTokenState;
 import ru.runa.gpd.lang.model.EndTokenSubprocessDefinitionBehavior;
-import ru.runa.gpd.lang.model.Event;
-import ru.runa.gpd.lang.model.Fork;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.ITimed;
-import ru.runa.gpd.lang.model.Join;
 import ru.runa.gpd.lang.model.MultiSubprocess;
 import ru.runa.gpd.lang.model.MultiTaskState;
 import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.NodeAsyncExecution;
 import ru.runa.gpd.lang.model.ProcessDefinition;
-import ru.runa.gpd.lang.model.PropertyNames;
-import ru.runa.gpd.lang.model.ReceiveMessageNode;
-import ru.runa.gpd.lang.model.SendMessageNode;
 import ru.runa.gpd.lang.model.StartState;
 import ru.runa.gpd.lang.model.Subprocess;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
@@ -47,6 +38,15 @@ import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Timer;
 import ru.runa.gpd.lang.model.TimerAction;
 import ru.runa.gpd.lang.model.Transition;
+import ru.runa.gpd.lang.model.bpmn.Conjunction;
+import ru.runa.gpd.lang.model.jpdl.Action;
+import ru.runa.gpd.lang.model.jpdl.ActionEventType;
+import ru.runa.gpd.lang.model.jpdl.ActionImpl;
+import ru.runa.gpd.lang.model.jpdl.ActionNode;
+import ru.runa.gpd.lang.model.jpdl.Fork;
+import ru.runa.gpd.lang.model.jpdl.Join;
+import ru.runa.gpd.lang.model.jpdl.ReceiveMessageNode;
+import ru.runa.gpd.lang.model.jpdl.SendMessageNode;
 import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.util.Duration;
 import ru.runa.gpd.util.MultiinstanceParameters;
@@ -160,8 +160,8 @@ public class JpdlSerializer extends ProcessSerializer {
             Element actionNodeElement = writeNode(root, actionNode, null);
             for (Action action : actionNode.getActions()) {
                 ActionImpl actionImpl = (ActionImpl) action;
-                if (!Event.NODE_ACTION.equals(actionImpl.getEventType())) {
-                    writeEvent(actionNodeElement, new Event(actionImpl.getEventType()), actionImpl);
+                if (!ActionEventType.NODE_ACTION.equals(actionImpl.getEventType())) {
+                    writeEvent(actionNodeElement, new ActionEventType(actionImpl.getEventType()), actionImpl);
                 }
             }
         }
@@ -305,7 +305,7 @@ public class JpdlSerializer extends ProcessSerializer {
         }
         for (Action action : swimlanedNode.getActions()) {
             ActionImpl actionImpl = (ActionImpl) action;
-            writeEvent(taskElement, new Event(actionImpl.getEventType()), actionImpl);
+            writeEvent(taskElement, new ActionEventType(actionImpl.getEventType()), actionImpl);
         }
         return nodeElement;
     }
@@ -369,9 +369,9 @@ public class JpdlSerializer extends ProcessSerializer {
         }
     }
 
-    private void writeEvent(Element parent, Event event, ActionImpl action) {
-        Element eventElement = writeElement(parent, event, EVENT);
-        setAttribute(eventElement, TYPE, event.getType());
+    private void writeEvent(Element parent, ActionEventType actionEventType, ActionImpl action) {
+        Element eventElement = writeElement(parent, actionEventType, EVENT);
+        setAttribute(eventElement, TYPE, actionEventType.getType());
         writeDelegation(eventElement, ACTION, action);
     }
 
@@ -445,9 +445,9 @@ public class JpdlSerializer extends ProcessSerializer {
                 // only transition actions loaded here
                 String eventType;
                 if (element instanceof Transition) {
-                    eventType = Event.TRANSITION;
+                    eventType = ActionEventType.TRANSITION;
                 } else if (element instanceof ActionNode) {
-                    eventType = Event.NODE_ACTION;
+                    eventType = ActionEventType.NODE_ACTION;
                 } else {
                     throw new RuntimeException("Unexpected action in XML, context of " + element);
                 }
