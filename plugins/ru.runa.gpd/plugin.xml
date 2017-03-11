@@ -1806,7 +1806,7 @@
              name="required">
        </validator>
        <validator
-             applicable="java.lang.Number"
+             applicable="java.lang.Number,!java.math.BigDecimal"
              description="%validator.number.desc"
              label="%validator.number.name"
              name="number">
@@ -1819,6 +1819,27 @@
                 label="%validator.number.param.max"
                 name="max"
                 type="java.lang.Number">
+          </param>
+          <param
+                label="%validator.number.param.inclusive"
+                name="inclusive"
+                type="java.lang.Boolean">
+          </param>
+       </validator>
+       <validator
+             applicable="java.math.BigDecimal"
+             description="%validator.bigdecimal.desc"
+             label="%validator.bigdecimal.name"
+             name="bigdecimal">
+          <param
+                label="%validator.number.param.min"
+                name="min"
+                type="java.math.BigDecimal">
+          </param>
+          <param
+                label="%validator.number.param.max"
+                name="max"
+                type="java.math.BigDecimal">
           </param>
           <param
                 label="%validator.number.param.inclusive"

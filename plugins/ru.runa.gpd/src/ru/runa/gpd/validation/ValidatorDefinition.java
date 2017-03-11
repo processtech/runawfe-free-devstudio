@@ -17,6 +17,7 @@ public class ValidatorDefinition {
     private final String label;
     private final String type;
     private final List<String> applicable = new ArrayList<String>();
+    private final List<String> notApplicable = new ArrayList<String>();
     private final String description;
     private final Map<String, Param> params = new HashMap<String, Param>();
 
@@ -28,7 +29,11 @@ public class ValidatorDefinition {
     }
 
     public void addApplicableType(String applicableType) {
-        this.applicable.add(applicableType);
+        if (applicableType.startsWith("!")) {
+            this.notApplicable.add(applicableType.substring(1));
+        } else {
+            this.applicable.add(applicableType);
+        }
     }
 
     public ValidatorConfig create() {
@@ -47,9 +52,11 @@ public class ValidatorDefinition {
         if (applicable.isEmpty()) {
             return true;
         }
-        for (String appClassName : applicable) {
-            if (VariableFormatRegistry.isAssignableFrom(appClassName, className)) {
-                return true;
+        if (!notApplicable.contains(className)) {
+            for (String appClassName : applicable) {
+                if (VariableFormatRegistry.isAssignableFrom(appClassName, className)) {
+                    return true;
+                }
             }
         }
         return false;
