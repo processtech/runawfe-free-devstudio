@@ -9,6 +9,7 @@ import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.property.DurationPropertyDescriptor;
+import ru.runa.gpd.ui.custom.JavaIdentifierChecker;
 import ru.runa.gpd.util.Duration;
 import ru.runa.gpd.util.VariableMapping;
 import ru.runa.gpd.util.VariableUtils;
@@ -80,6 +81,9 @@ public abstract class MessageNode extends Node {
         for (VariableMapping mapping : variableMappings) {
             if (mapping.isPropertySelector()) {
                 selectorRulesCount++;
+                if (!JavaIdentifierChecker.isValid(mapping.getName())) {
+                    errors.add(ValidationError.createLocalizedError(this, "message.invalidSelectorName", mapping.getName()));
+                }
                 if (SELECTOR_SPECIAL_NAMES.contains(mapping.getMappedName())) {
                     continue;
                 }
