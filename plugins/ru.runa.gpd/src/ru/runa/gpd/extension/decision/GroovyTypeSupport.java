@@ -1,5 +1,6 @@
 package ru.runa.gpd.extension.decision;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -22,6 +23,7 @@ public abstract class GroovyTypeSupport {
         TYPES_MAP.put(Boolean.class.getName(), new BooleanType());
         TYPES_MAP.put(Number.class.getName(), new NumberType());
         TYPES_MAP.put(Date.class.getName(), new DateType());
+        TYPES_MAP.put(BigDecimal.class.getName(), new BigDecimalType());
     }
 
     public static GroovyTypeSupport get(String className) {
@@ -260,4 +262,64 @@ public abstract class GroovyTypeSupport {
             return extOperations;
         }
     }
+
+    static class BigDecimalType extends GroovyTypeSupport {
+
+        @Override
+        String wrap(Object value) {
+            if (value instanceof Variable) {
+                return ((Variable) value).getScriptingName();
+            } else if (value instanceof String) {
+                return (String) value;
+            } else {
+                throw new IllegalArgumentException("value class is " + value.getClass().getName());
+            }
+        }
+
+        @Override
+        public UserInputDialog createUserInputDialog() {
+            return new DoubleInputDialog();
+        }
+
+        @Override
+        List<Operation> getTypedOperations() {
+            List<Operation> extOperations = new ArrayList<Operation>();
+            extOperations.add(new BigDecimalTypeOperation(Localization.getString("Groovy.Operation.more"), ">"));
+            extOperations.add(new BigDecimalTypeOperation(Localization.getString("Groovy.Operation.less"), "<"));
+            extOperations.add(new BigDecimalTypeOperation(Localization.getString("Groovy.Operation.moreeq"), ">="));
+            extOperations.add(new BigDecimalTypeOperation(Localization.getString("Groovy.Operation.lesseq"), "<="));
+            return extOperations;
+        }
+
+        class BigDecimalTypeOperation extends Operation {
+
+            public BigDecimalTypeOperation(String visibleName, String operator) {
+                super(visibleName, operator);
+            }
+
+            @Override
+            public String generateCode(Variable variable, Object lexem2) {
+                if (NULL.equals(lexem2)) {
+                    if (Objects.equal(Operation.EQ.getOperator(), getOperator())) {
+                        return variable.getScriptingName() + " == " + NULL;
+                    }
+                    if (Objects.equal(Operation.NOT_EQ.getOperator(), getOperator())) {
+                        return variable.getScriptingName() + " != " + NULL;
+                    }
+                }
+                boolean lexem2isVariable = lexem2 instanceof Variable;
+                String var1 = wrap(variable);
+                String var2 = wrap(lexem2);
+                String code = var1 + " == null || ";
+                if (lexem2isVariable) {
+                    code += var2 + " == null || ";
+                }
+                code += var1 + ".compareTo( new BigDecimal( " + var2 + " ) ) " + getOperator() + " 0";
+                return code;
+            }
+
+        }
+
+    }
+
 }
