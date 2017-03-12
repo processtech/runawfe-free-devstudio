@@ -4,18 +4,23 @@ import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
 
+import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.extension.VariableFormatArtifact;
 import ru.runa.gpd.extension.VariableFormatRegistry;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
+import ru.runa.gpd.settings.LanguageElementPreferenceNode;
+import ru.runa.gpd.settings.PrefConstants;
 import ru.runa.gpd.util.VariableMapping;
 import ru.runa.gpd.util.VariableUtils;
 import ru.runa.wfe.lang.AsyncCompletionMode;
+
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
@@ -74,8 +79,12 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
             }
         }
         if (isAsync()) {
+            String propertyName = LanguageElementPreferenceNode.getId(this.getTypeDefinition(), getProcessDefinition().getLanguage()) + '.'
+                    + PrefConstants.P_LANGUAGE_SUB_PROCESS_ASYNC_INPUT_DATA;
+            IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+            boolean inputDataAllowedInAsyncSubProcess = store.contains(propertyName) ? store.getBoolean(propertyName) : false;
             for (VariableMapping mapping : variableMappings) {
-                if (isAsync() && mapping.isWritable()) {
+                if (isAsync() && mapping.isWritable() && !inputDataAllowedInAsyncSubProcess) {
                     errors.add(ValidationError.createLocalizedError(this, "subprocess.variablesInputInAsyncTask"));
                     break;
                 }
