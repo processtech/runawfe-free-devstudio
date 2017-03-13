@@ -23,11 +23,6 @@ import ru.runa.gpd.util.SwimlaneDisplayMode;
 
 public class AddStateNodeFeature extends AddNodeFeature {
 
-    private static final int ICON_X = 10;
-    private static final int ICON_Y = 10;
-    private static final int ICON_WIDTH = 16;
-    private static final int ICON_HEIGHT = 16;
-
     @Override
     public PictogramElement add(IAddContext context) {
         Node node = (Node) context.getNewObject();
@@ -57,10 +52,10 @@ public class AddStateNodeFeature extends AddNodeFeature {
         Image image = Graphiti.getGaService().createImage(main, NodeRegistry.getNodeTypeDefinition(node.getClass()).getPaletteIcon());
         image.getProperties().add(new GaProperty(GaProperty.ID, GaProperty.ICON));
         image.setTransparency(node.isMinimizedView() ? .0 : 1.0);
-        Graphiti.getGaService().setLocationAndSize(image, ICON_X, ICON_Y, ICON_WIDTH, ICON_HEIGHT);
+        Graphiti.getGaService().setLocationAndSize(image, MINIMAZED_ICON_X, MINIMAZED_ICON_Y, ICON_WIDTH, ICON_HEIGHT);
         //
         addCustomGraphics(node, context, main, containerShape);
-        // 
+        //
         link(containerShape, node);
         //
         Graphiti.getPeCreateService().createChopboxAnchor(containerShape);

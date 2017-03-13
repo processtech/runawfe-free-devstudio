@@ -38,7 +38,7 @@ public class LayoutStateNodeFeature extends LayoutElementFeature {
             }
             GraphicsAlgorithm scriptImage = PropertyUtil.findGaRecursiveByName(ga, GaProperty.SCRIPT);
             if (scriptImage != null) {
-                Graphiti.getGaService().setLocationAndSize(scriptImage, 10, 10, 16, 16);
+                Graphiti.getGaService().setLocationAndSize(scriptImage, MINIMAZED_ICON_X, MINIMAZED_ICON_Y, ICON_WIDTH, ICON_HEIGHT);
             }
             GraphicsAlgorithm iconImage = PropertyUtil.findGaRecursiveByName(ga, GaProperty.ICON);
             if (iconImage != null) {
@@ -81,7 +81,7 @@ public class LayoutStateNodeFeature extends LayoutElementFeature {
         }
         GraphicsAlgorithm scriptImage = PropertyUtil.findGaRecursiveByName(ga, GaProperty.SCRIPT);
         if (scriptImage != null) {
-            Graphiti.getGaService().setLocationAndSize(scriptImage, GRID_SIZE, GRID_SIZE, 16, 16);
+            Graphiti.getGaService().setLocationAndSize(scriptImage, GRID_SIZE, GRID_SIZE, ICON_WIDTH, ICON_HEIGHT);
         }
         GraphicsAlgorithm asyncImage = PropertyUtil.findGaRecursiveByName(ga, GaProperty.ASYNC);
         if (asyncImage != null) {

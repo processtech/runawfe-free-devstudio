@@ -138,7 +138,7 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
             }
         }
         Object bo = getFeatureProvider().getBusinessObjectForPictogramElement(ga.getPictogramElement());
-        if (bo != null && bo instanceof Node) {
+        if (bo instanceof Node) {
             Node node = (Node) bo;
             if (node.isMinimizedView()) {
                 return node.getLabel();
