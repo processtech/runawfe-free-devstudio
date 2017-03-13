@@ -24,7 +24,7 @@ public class AddStartNodeFeature extends AddNodeWithImageFeature {
     public PictogramElement add(IAddContext context) {
         PictogramElement containerShape = super.add(context);
         StartState node = (StartState) context.getNewObject();
-        Dimension bounds = adjustBounds(context);
+        Dimension bounds = getBounds(context);
 
         // create independent text label graph element for start point
         StartTextDecoration element = NodeRegistry.getNodeTypeDefinition(Language.BPMN, BpmnSerializer.START_TEXT_DECORATION).createElement(node.getParent(),

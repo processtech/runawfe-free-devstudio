@@ -10,6 +10,7 @@ import org.eclipse.graphiti.services.Graphiti;
 
 import ru.runa.gpd.editor.graphiti.GaProperty;
 import ru.runa.gpd.editor.graphiti.PropertyUtil;
+import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.Synchronizable;
 
@@ -21,6 +22,7 @@ public class LayoutStateNodeFeature extends LayoutElementFeature {
     public boolean layout(ILayoutContext context) {
         ContainerShape containerShape = (ContainerShape) context.getPictogramElement();
         GraphicsAlgorithm ga = containerShape.getGraphicsAlgorithm();
+        GraphElement element = (GraphElement) getBusinessObjectForPictogramElement(containerShape);
 
         Node node = (Node) getBusinessObjectForPictogramElement(containerShape);
         if (node.isMinimizedView()) {
@@ -43,7 +45,7 @@ public class LayoutStateNodeFeature extends LayoutElementFeature {
             return true;
         }
 
-        Dimension bounds = adjustBounds(context);
+        Dimension bounds = element.getConstraint().getSize();
         int borderWidth = bounds.width - GRID_SIZE;
         int borderHeight = bounds.height - GRID_SIZE;
         GraphicsAlgorithm mainRectangle = PropertyUtil.findGaRecursiveByName(ga, MAIN_RECT);

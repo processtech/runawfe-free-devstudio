@@ -23,7 +23,7 @@ public class AddEndNodeFeature extends AddNodeWithImageFeature {
     public PictogramElement add(IAddContext context) {
         PictogramElement container = super.add(context);
         AbstractEndTextDecorated node = (AbstractEndTextDecorated) context.getNewObject();
-        Dimension bounds = adjustBounds(context);
+        Dimension bounds = getBounds(context);
 
         // create independent text label graph element for end point
         EndTextDecoration element = NodeRegistry.getNodeTypeDefinition(Language.BPMN, BpmnSerializer.END_TEXT_DECORATION).createElement(node.getParent(),

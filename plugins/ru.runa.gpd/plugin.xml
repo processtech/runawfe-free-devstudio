@@ -738,10 +738,10 @@
                add="ru.runa.gpd.editor.graphiti.add.AddTaskStateNodeFeature"
                create="ru.runa.gpd.editor.graphiti.create.CreateElementFeature"
                fixedSize="false"
-               height="8"
+               height="10"
                layout="ru.runa.gpd.editor.graphiti.layout.LayoutStateNodeFeature"
                update="ru.runa.gpd.editor.graphiti.update.UpdateStateNodeFeature"
-               width="12">
+               width="15">
          </graphiti>
       </element>
       <element
@@ -754,10 +754,10 @@
                add="ru.runa.gpd.editor.graphiti.add.AddScriptTaskNodeFeature"
                create="ru.runa.gpd.editor.graphiti.create.CreateElementFeature"
                fixedSize="false"
-               height="8"
+               height="10"
                layout="ru.runa.gpd.editor.graphiti.layout.LayoutStateNodeFeature"
                update="ru.runa.gpd.editor.graphiti.update.UpdateStateNodeFeature"
-               width="12">
+               width="15">
          </graphiti>
       </element>
       <element
@@ -798,10 +798,10 @@
                add="ru.runa.gpd.editor.graphiti.add.AddMultiTaskFeature"
                create="ru.runa.gpd.editor.graphiti.create.CreateElementFeature"
                fixedSize="false"
-               height="9"
+               height="10"
                layout="ru.runa.gpd.editor.graphiti.layout.LayoutStateNodeFeature"
                update="ru.runa.gpd.editor.graphiti.update.UpdateStateNodeFeature"
-               width="13">
+               width="15">
          </graphiti>
       </element>
       <element
@@ -930,10 +930,10 @@
                add="ru.runa.gpd.editor.graphiti.add.AddSubProcessFeature"
                create="ru.runa.gpd.editor.graphiti.create.CreateElementFeature"
                fixedSize="false"
-               height="8"
+               height="10"
                layout="ru.runa.gpd.editor.graphiti.layout.LayoutStateNodeFeature"
                update="ru.runa.gpd.editor.graphiti.update.UpdateStateNodeFeature"
-               width="12">
+               width="15">
          </graphiti>
       </element>
       <element
@@ -952,10 +952,10 @@
                add="ru.runa.gpd.editor.graphiti.add.AddMultiSubprocessFeature"
                create="ru.runa.gpd.editor.graphiti.create.CreateElementFeature"
                fixedSize="false"
-               height="9"
+               height="10"
                layout="ru.runa.gpd.editor.graphiti.layout.LayoutStateNodeFeature"
                update="ru.runa.gpd.editor.graphiti.update.UpdateStateNodeFeature"
-               width="13">
+               width="15">
          </graphiti>
       </element>
       <element
@@ -2316,6 +2316,12 @@
                label="%label.menu.properties.enableActionsInGraph"
                menubarPath="view/additions"
                style="toggle"/>
+         <action
+               class="ru.runa.gpd.ui.action.ApplyDefaultSizesAction"
+               id="applyDefaultSizes"
+               label="%label.menu.properties.applyDefaultSizes"
+               menubarPath="view/additions"
+               style="push"/>
          <menu
                id="window"
                label="%label.menu.window"

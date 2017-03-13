@@ -23,7 +23,6 @@ public class AddStartTextDecorationFeature extends AddNodeFeature {
 
         ContainerShape containerShape = Graphiti.getPeCreateService().createContainerShape(context.getTargetContainer(), true);
 
-        adjustBounds(context);
         IGaService gaService = Graphiti.getGaService();
 
         // create UI element for definition

@@ -43,6 +43,7 @@ import ru.runa.gpd.editor.graphiti.update.MoveTransitionBendpointFeature;
 import ru.runa.gpd.editor.graphiti.update.MoveTransitionLabelFeature;
 import ru.runa.gpd.editor.graphiti.update.ReconnectSequenceFlowFeature;
 import ru.runa.gpd.editor.graphiti.update.RemoveTransitionBendpointFeature;
+import ru.runa.gpd.editor.graphiti.update.ResizeElementFeature;
 import ru.runa.gpd.lang.BpmnSerializer;
 import ru.runa.gpd.lang.NodeRegistry;
 import ru.runa.gpd.lang.NodeTypeDefinition;
@@ -59,6 +60,7 @@ import com.google.common.collect.Lists;
 
 @SuppressWarnings("unchecked")
 public class DiagramFeatureProvider extends DefaultFeatureProvider {
+
     public DiagramFeatureProvider(IDiagramTypeProvider dtp) {
         super(dtp);
         setIndependenceSolver(new IndependenceSolver());
@@ -131,10 +133,10 @@ public class DiagramFeatureProvider extends DefaultFeatureProvider {
     @Override
     public IResizeShapeFeature getResizeShapeFeature(IResizeShapeContext context) {
         GraphElement bo = (GraphElement) getBusinessObjectForPictogramElement(context.getPictogramElement());
-        if (bo == null || bo.getTypeDefinition().getGraphitiEntry().isFixedSize()) {
+        if (bo == null) {
             return null;
         }
-        return super.getResizeShapeFeature(context);
+        return new ResizeElementFeature(this);
     }
 
     @Override
