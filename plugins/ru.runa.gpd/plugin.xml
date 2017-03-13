@@ -181,6 +181,17 @@
              id="editPropertiesForRegulations"
              label="%label.action.editPropertiesForRegulations">
           </action>
+	</objectContribution>
+    <objectContribution
+          adaptable="false"
+          id="subprocess.compactview"
+          objectClass="ru.runa.gpd.lang.model.Subprocess">
+       <action
+             class="ru.runa.gpd.lang.action.CompactViewFeatureDelegate"
+             id="feature.compactView"
+             label="%label.action.feature.compactView"
+             menubarPath="features/sp1">
+       </action>
     </objectContribution>
     <objectContribution
           adaptable="false"
@@ -480,7 +491,9 @@
              class="ru.runa.gpd.lang.action.SubprocessDelegate"
              id="subprocess"
              label="%label.action.subprocess"
-             menubarPath="additions"/>
+             menubarPath="additions"
+             style="push"
+             />
        <action
              class="ru.runa.gpd.lang.action.EmbeddedSubprocessActionsDelegate"
              id="embeddedSubprocessActions"

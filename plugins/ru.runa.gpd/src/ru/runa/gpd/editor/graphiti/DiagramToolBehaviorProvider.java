@@ -137,6 +137,13 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
                 }
             }
         }
+        Object bo = getFeatureProvider().getBusinessObjectForPictogramElement(ga.getPictogramElement());
+        if (bo instanceof Node) {
+            Node node = (Node) bo;
+            if (node.isMinimizedView()) {
+                return node.getLabel();
+            }
+        }
         return super.getToolTip(ga);
     }
 }

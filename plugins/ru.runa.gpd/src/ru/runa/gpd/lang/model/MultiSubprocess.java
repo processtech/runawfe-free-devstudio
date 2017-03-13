@@ -13,6 +13,8 @@ import ru.runa.gpd.util.VariableMapping;
 
 public class MultiSubprocess extends Subprocess implements IMultiInstancesContainer {
 
+    private String discriminatorCondition;
+
     @Override
     public void validate(List<ValidationError> errors, IFile definitionFile) {
         super.validate(errors, definitionFile);
@@ -48,4 +50,15 @@ public class MultiSubprocess extends Subprocess implements IMultiInstancesContai
         }
         return super.isCompatibleVariables(mapping, variable1, variable2);
     }
+
+    public String getDiscriminatorCondition() {
+        return discriminatorCondition;
+    }
+
+    public void setDiscriminatorCondition(String discriminatorCondition) {
+        String old = this.discriminatorCondition;
+        this.discriminatorCondition = discriminatorCondition;
+        firePropertyChange(PROPERTY_DISCRIMINATOR_CONDITION, old, discriminatorCondition);
+    }
+
 }

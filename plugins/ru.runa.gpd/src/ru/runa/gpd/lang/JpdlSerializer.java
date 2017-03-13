@@ -101,6 +101,7 @@ public class JpdlSerializer extends ProcessSerializer {
     private static final String TASK_EXECUTORS_USAGE = "taskExecutorsUsage";
     private static final String TASK_EXECUTORS_VALUE = "taskExecutors";
     private static final String TASK_EXECUTION_MODE = "taskExecutionMode";
+    private static final String EXECUTION_CONDITION = "executionCondition";
 
     @Override
     public boolean isSupported(Document document) {
@@ -182,6 +183,7 @@ public class JpdlSerializer extends ProcessSerializer {
                 stateElement.addAttribute(TASK_EXECUTION_MODE, multiTaskNode.getSynchronizationMode().name());
                 stateElement.addAttribute(TASK_EXECUTORS_USAGE, multiTaskNode.getDiscriminatorUsage());
                 stateElement.addAttribute(TASK_EXECUTORS_VALUE, multiTaskNode.getDiscriminatorValue());
+                stateElement.addAttribute(EXECUTION_CONDITION, multiTaskNode.getDiscriminatorCondition());
                 for (VariableMapping variable : multiTaskNode.getVariableMappings()) {
                     Element variableElement = stateElement.addElement(VARIABLE);
                     setAttribute(variableElement, NAME, variable.getName());
@@ -239,6 +241,9 @@ public class JpdlSerializer extends ProcessSerializer {
                     setAttribute(variableElement, MAPPED_NAME, variable.getMappedName());
                     setAttribute(variableElement, ACCESS, variable.getUsage());
                 }
+            }
+            if (subprocess instanceof MultiSubprocess) {
+                setAttribute(processStateElement, EXECUTION_CONDITION, ((MultiSubprocess) subprocess).getDiscriminatorCondition());
             }
         }
         List<SendMessageNode> sendMessageNodes = definition.getChildren(SendMessageNode.class);
@@ -575,6 +580,7 @@ public class JpdlSerializer extends ProcessSerializer {
                 multiTaskState.setSynchronizationMode(MultiTaskSynchronizationMode.valueOf(node.attributeValue(TASK_EXECUTION_MODE)));
                 multiTaskState.setDiscriminatorUsage(node.attributeValue(TASK_EXECUTORS_USAGE, MultiTaskState.USAGE_DEFAULT));
                 multiTaskState.setDiscriminatorValue(node.attributeValue(TASK_EXECUTORS_VALUE));
+                multiTaskState.setDiscriminatorCondition(node.attributeValue(EXECUTION_CONDITION));
                 List<VariableMapping> mappings = Lists.newArrayList();
                 List<Element> vars = node.elements();
                 for (Element childNode : vars) {
@@ -728,6 +734,7 @@ public class JpdlSerializer extends ProcessSerializer {
         List<Element> multiSubprocessStates = root.elements(MULTIINSTANCE_STATE);
         for (Element node : multiSubprocessStates) {
             MultiSubprocess multiSubprocess = create(node, definition);
+            multiSubprocess.setDiscriminatorCondition(node.attributeValue(EXECUTION_CONDITION));
             List<VariableMapping> mappings = new ArrayList<VariableMapping>();
             List<Element> nodeList = node.elements();
             for (Element childNode : nodeList) {
