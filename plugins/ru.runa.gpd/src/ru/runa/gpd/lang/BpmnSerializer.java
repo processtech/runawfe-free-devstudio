@@ -214,6 +214,7 @@ public class BpmnSerializer extends ProcessSerializer {
             Map<String, Object> properties = Maps.newLinkedHashMap();
             if (subprocess instanceof MultiSubprocess) {
                 properties.put(MULTI_INSTANCE, true);
+                properties.put(PropertyNames.PROPERTY_DISCRIMINATOR_CONDITION, ((MultiSubprocess) subprocess).getDiscriminatorCondition());
             }
             if (subprocess.isEmbedded()) {
                 properties.put(EMBEDDED, true);
@@ -688,10 +689,11 @@ public class BpmnSerializer extends ProcessSerializer {
             Subprocess subprocess = create(subprocessElement, definition);
             subprocess.setSubProcessName(subprocessElement.attributeValue(QName.get(PROCESS, RUNA_NAMESPACE)));
             subprocess.setVariableMappings(parseVariableMappings(subprocessElement));
+            Map<String, String> properties = parseExtensionProperties(subprocessElement);
             if (subprocess instanceof MultiSubprocess) {
                 MultiinstanceParameters.convertBackCompatible((MultiSubprocess) subprocess);
+                ((MultiSubprocess) subprocess).setDiscriminatorCondition(properties.get(PropertyNames.PROPERTY_DISCRIMINATOR_CONDITION));
             }
-            Map<String, String> properties = parseExtensionProperties(subprocessElement);
             if (properties.containsKey(EMBEDDED)) {
                 subprocess.setEmbedded(Boolean.parseBoolean(properties.get(EMBEDDED)));
             }
