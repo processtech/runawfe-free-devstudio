@@ -771,6 +771,7 @@
       <element
             bpmn="scriptTask"
             icon="scripttask.png"
+            isEnabledInRegulationsByDefault="false"
             label="%label.element.scripttask"
             model="ru.runa.gpd.lang.model.bpmn.ScriptTask"
             type="node">
@@ -786,8 +787,9 @@
       </element>
       <element
             bpmn="timerEventDefinition"
-            jpdl="wait-state"
             icon="timer.png"
+            isEnabledInRegulationsByDefault="false"
+            jpdl="wait-state"
             label="%label.element.timer"
             model="ru.runa.gpd.lang.model.Timer"
             type="node">
@@ -830,6 +832,7 @@
       </element>
       <element
             icon="fork.png"
+            isEnabledInRegulationsByDefault="false"
             jpdl="fork"
             label="%label.element.fork"
             model="ru.runa.gpd.lang.model.jpdl.Fork"
@@ -842,6 +845,7 @@
       </element>
       <element
             icon="join.png"
+            isEnabledInRegulationsByDefault="false"
             jpdl="join"
             label="%label.element.join"
             model="ru.runa.gpd.lang.model.jpdl.Join"
@@ -854,6 +858,7 @@
       </element>
       <element
             icon="decision.png"
+            isEnabledInRegulationsByDefault="false"
             jpdl="decision"
             label="%label.element.decision"
             model="ru.runa.gpd.lang.model.Decision"
@@ -866,6 +871,7 @@
       </element>
       <element
             icon="conjunction.png"
+            isEnabledInRegulationsByDefault="false"
             jpdl="conjunction"
             label="%label.element.conjunction"
             model="ru.runa.gpd.lang.model.bpmn.Conjunction"
@@ -879,6 +885,7 @@
       <element
             bpmn="parallelGateway"
             icon="parallelGateway.png"
+            isEnabledInRegulationsByDefault="false"
             label="%label.element.parallelGateway"
             model="ru.runa.gpd.lang.model.bpmn.ParallelGateway"
             type="node">
@@ -893,6 +900,7 @@
       <element
             bpmn="exclusiveGateway"
             icon="exclusiveGateway.png"
+            isEnabledInRegulationsByDefault="false"
             label="%label.element.exclusiveGateway"
             model="ru.runa.gpd.lang.model.bpmn.ExclusiveGateway"
             type="node">
@@ -984,6 +992,7 @@
       </element>
       <element
             icon="sendmessage.png"
+            isEnabledInRegulationsByDefault="false"
             jpdl="send-message"
             label="%label.element.sendmessage"
             model="ru.runa.gpd.lang.model.jpdl.SendMessageNode"
@@ -1000,6 +1009,7 @@
       <element
             bpmn="intermediateThrowEvent"
             icon="throwEvent.png"
+            isEnabledInRegulationsByDefault="false"
             label="%label.element.throw.event"
             model="ru.runa.gpd.lang.model.bpmn.ThrowEventNode"
             type="node">
@@ -1017,6 +1027,7 @@
       </element>
       <element
             icon="receivemessage.png"
+            isEnabledInRegulationsByDefault="false"
             jpdl="receive-message"
             label="%label.element.receivemessage"
             model="ru.runa.gpd.lang.model.jpdl.ReceiveMessageNode"
@@ -1033,6 +1044,7 @@
       <element
             bpmn="intermediateCatchEvent"
             icon="catchEvent.png"
+            isEnabledInRegulationsByDefault="false"
             label="%label.element.catch.event"
             model="ru.runa.gpd.lang.model.bpmn.CatchEventNode"
             type="node">

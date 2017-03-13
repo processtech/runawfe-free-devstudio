@@ -13,7 +13,6 @@ public class ReceiveMessageNode extends MessageNode implements IReceiveMessageNo
 
     public ReceiveMessageNode() {
         super();
-        nodeRegulationsProperties.setIsEnabled(false);
     }
 
     @Override

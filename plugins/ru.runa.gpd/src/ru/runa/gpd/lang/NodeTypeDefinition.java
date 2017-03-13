@@ -38,6 +38,7 @@ public class NodeTypeDefinition {
     private final GefEntry gefEntry;
     private final GraphitiEntry graphitiEntry;
     private final Bundle bundle;
+    private final Boolean isEnabledInRegulationsByDefault;
 
     public NodeTypeDefinition(IConfigurationElement configElement) throws CoreException {
         bundle = Platform.getBundle(configElement.getDeclaringExtension().getNamespaceIdentifier());
@@ -58,6 +59,12 @@ public class NodeTypeDefinition {
             graphitiEntry = new GraphitiEntry(this, entries[0]);
         } else {
             graphitiEntry = null;
+        }
+        if (configElement.getAttribute("isEnabledInRegulationsByDefault") != null) {
+            this.isEnabledInRegulationsByDefault = Boolean.valueOf(configElement.getAttribute("isEnabledInRegulationsByDefault").isEmpty() ? "true"
+                    : configElement.getAttribute("isEnabledInRegulationsByDefault"));
+        } else {
+            this.isEnabledInRegulationsByDefault = new Boolean("true");
         }
     }
 
@@ -130,6 +137,10 @@ public class NodeTypeDefinition {
         } else {
             return this.label;
         }
+    }
+
+    public Boolean getIsEnabledInRegulationsByDefault() {
+        return this.isEnabledInRegulationsByDefault;
     }
 
     private <T> T createExecutableExtension(String propertyName) {

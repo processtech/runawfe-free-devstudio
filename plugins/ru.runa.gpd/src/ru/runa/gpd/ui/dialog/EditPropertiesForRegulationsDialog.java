@@ -32,7 +32,10 @@ import org.osgi.framework.Bundle;
 
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
+import ru.runa.gpd.PropertyNames;
+import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Node;
+import ru.runa.gpd.lang.model.NodeRegulationsProperties;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 
@@ -46,19 +49,19 @@ public class EditPropertiesForRegulationsDialog extends Dialog {
     private Button includeInRegulationsCheckbox;
     private Label descriptionLabel;
     private String descriptionTextAsString = "";
-    private final Node formNode;
+    private final Node processNode;
     private Browser browser;
 
-    public EditPropertiesForRegulationsDialog(Node formNode) {
+    public EditPropertiesForRegulationsDialog(Node node) {
         super(Display.getCurrent().getActiveShell());
-        this.formNode = formNode;
+        this.processNode = node;
         setShellStyle(getShellStyle() | SWT.RESIZE);
     }
 
     @Override
     protected void configureShell(Shell shell) {
         super.configureShell(shell);
-        shell.setText(Localization.getString("EditPropertiesForRegulationsDialog.title", formNode.getName()));
+        shell.setText(Localization.getString("EditPropertiesForRegulationsDialog.title", processNode.getName()));
         Rectangle displayRectangle = shell.getDisplay().getPrimaryMonitor().getBounds();
         shell.setSize(displayRectangle.width - (displayRectangle.width / 100 * 30), displayRectangle.height - (displayRectangle.height / 100 * 25));
         shell.setLocation((displayRectangle.width - shell.getBounds().width) / 2, (displayRectangle.height - shell.getBounds().height) / 2);
@@ -88,13 +91,13 @@ public class EditPropertiesForRegulationsDialog extends Dialog {
         previousNodeLabel = new Label(composite0, SWT.NONE);
         previousNodeLabel.setText(Localization.getString("EditPropertiesForRegulationsDialog.previousNodeLabel.text"));
         previousNodeCombo = new Combo(composite0, SWT.READ_ONLY);
-        ProcessDefinition processDefinition = formNode.getProcessDefinition();
+        ProcessDefinition processDefinition = processNode.getProcessDefinition();
         List<Node> elementsList = processDefinition.getChildren(Node.class);
         String[] previousNodesListItems = { Localization.getString("EditPropertiesForRegulationsDialog.previousNodeCombo.text.notSet") };
         List<String> previousNodesListItemsAsList = Lists.newArrayList();
         for (Node node : elementsList) {
             String id = node.getId();
-            if (id.equals(formNode.getId()) != true) {
+            if (id.equals(processNode.getId()) != true) {
                 previousNodesListItemsAsList.add(node.getName() + " [" + node.getId() + "]");
             }
         }
@@ -105,11 +108,11 @@ public class EditPropertiesForRegulationsDialog extends Dialog {
         }
         previousNodeCombo.setItems(previousNodesListItems);
         int previousNodePositionInList = -1;
-        if (formNode.getNodeRegulationsProperties().getPreviousNode() != null) {
-            if (formNode.getNodeRegulationsProperties().getPreviousNode() != null) {
+        if (processNode.getNodeRegulationsProperties().getPreviousNode() != null) {
+            if (processNode.getNodeRegulationsProperties().getPreviousNode() != null) {
                 for (int position = 0; position < previousNodesListItemsAsList.size() && previousNodePositionInList == -1; position++) {
                     if (previousNodesListItemsAsList.get(position).endsWith(
-                            "[" + ((Node) formNode.getNodeRegulationsProperties().getPreviousNode()).getId() + "]")) {
+                            "[" + ((Node) processNode.getNodeRegulationsProperties().getPreviousNode()).getId() + "]")) {
                         previousNodePositionInList = position + 1;
                     }
                 }
@@ -143,7 +146,7 @@ public class EditPropertiesForRegulationsDialog extends Dialog {
         List<String> nextNodesListItemsAsList = Lists.newArrayList();
         for (Node node : elementsList) {
             String id = node.getId();
-            if (id.equals(formNode.getId()) != true) {
+            if (id.equals(processNode.getId()) != true) {
                 nextNodesListItemsAsList.add(node.getName() + " [" + node.getId() + "]");
             }
         }
@@ -154,10 +157,10 @@ public class EditPropertiesForRegulationsDialog extends Dialog {
         }
         nextNodeCombo.setItems(nextNodesListItems);
         int nextNodePositionInList = -1;
-        if (formNode.getNodeRegulationsProperties().getNextNode() != null) {
+        if (processNode.getNodeRegulationsProperties().getNextNode() != null) {
             for (int position = 0; position < nextNodesListItemsAsList.size() && nextNodePositionInList == -1; position++) {
                 if (nextNodesListItemsAsList.get(position).endsWith(
-                        "[" + ((Node) formNode.getNodeRegulationsProperties().getNextNode()).getId() + "]")) {
+                        "[" + ((Node) processNode.getNodeRegulationsProperties().getNextNode()).getId() + "]")) {
                     nextNodePositionInList = position + 1;
                 }
             }
@@ -184,7 +187,7 @@ public class EditPropertiesForRegulationsDialog extends Dialog {
         includeInRegulationsCheckbox = new Button(composite1, SWT.CHECK);
         includeInRegulationsCheckbox.setText(Localization.getString("EditPropertiesForRegulationsDialog.includeInRegulationsCheckbox.text"));
         includeInRegulationsCheckbox.setLayoutData(dateGridData4);
-        includeInRegulationsCheckbox.setSelection(formNode.getNodeRegulationsProperties().getIsEnabled());
+        includeInRegulationsCheckbox.setSelection(processNode.getNodeRegulationsProperties().getIsEnabled());
         includeInRegulationsCheckbox.addSelectionListener(new LoggingSelectionAdapter() {
             @Override
             protected void onSelection(SelectionEvent e) throws Exception {
@@ -214,7 +217,7 @@ public class EditPropertiesForRegulationsDialog extends Dialog {
             dateGridData7.heightHint = 400;
             browser.setLayoutData(dateGridData7);
             new GetHTMLCallbackFunction(browser, this.descriptionTextAsString);
-            new OnLoadCallbackFunction(browser, formNode.getNodeRegulationsProperties().getDescriptionForUser());
+            new OnLoadCallbackFunction(browser, processNode.getNodeRegulationsProperties().getDescriptionForUser());
         } catch (IOException e) {
             PluginLogger.logErrorWithoutDialog("FileLocator.toFileURL() failed.", e);
         }
@@ -266,7 +269,7 @@ public class EditPropertiesForRegulationsDialog extends Dialog {
 
     private Node getNodeById(String id) {
         Node result = null;
-        ProcessDefinition processDefinition = formNode.getProcessDefinition();
+        ProcessDefinition processDefinition = processNode.getProcessDefinition();
         List<Node> elementsList = processDefinition.getChildren(Node.class);
         for (Node node : elementsList) {
             String nodeName = node.getId();
@@ -280,6 +283,7 @@ public class EditPropertiesForRegulationsDialog extends Dialog {
 
     @Override
     protected void okPressed() {
+        NodeRegulationsProperties oldNodeRegulationsProperties = processNode.getNodeRegulationsProperties().getCopy();
         Pattern pattern = Pattern.compile("\\[([A-Za-z0-9_]*\\.)*ID[0-9]+\\]$");
         Matcher matcher;
         if (previousNodeCombo.getSelectionIndex() > 0) {
@@ -288,9 +292,9 @@ public class EditPropertiesForRegulationsDialog extends Dialog {
             String previousIdForSearch = previousNodeCombo.getText().substring(previousNodeCombo.getText().indexOf(matcher.group(0)) + 1,
                     previousNodeCombo.getText().length() - 1);
             Node newPreviousNode = getNodeById(previousIdForSearch);
-            formNode.getNodeRegulationsProperties().setPreviousNode(newPreviousNode);
+            processNode.getNodeRegulationsProperties().setPreviousNode(newPreviousNode);
         } else {
-            formNode.getNodeRegulationsProperties().setPreviousNode(null);
+            processNode.getNodeRegulationsProperties().setPreviousNode(null);
         }
         if (nextNodeCombo.getSelectionIndex() > 0) {
             matcher = pattern.matcher(nextNodeCombo.getText());
@@ -298,14 +302,27 @@ public class EditPropertiesForRegulationsDialog extends Dialog {
             String nextIdForSearch = nextNodeCombo.getText().substring(nextNodeCombo.getText().indexOf(matcher.group(0)) + 1,
                     nextNodeCombo.getText().length() - 1);
             Node newNextNode = getNodeById(nextIdForSearch);
-            formNode.getNodeRegulationsProperties().setNextNode(newNextNode);
+            GraphElement oldNextNode = processNode.getNodeRegulationsProperties().getNextNode();
+            if (oldNextNode != null) {
+                oldNextNode.getNodeRegulationsProperties().setPreviousNode(null);
+                if (oldNextNode.getNodeRegulationsProperties().getNextNode() == newNextNode) {
+                    oldNextNode.getNodeRegulationsProperties().setNextNode(null);
+                }
+            }
+            processNode.getNodeRegulationsProperties().setNextNode(newNextNode);
+            processNode.getNodeRegulationsProperties().getNextNode().getNodeRegulationsProperties().setPreviousNode(processNode);
         } else {
-            formNode.getNodeRegulationsProperties().setNextNode(null);
+            if (processNode.getNodeRegulationsProperties().getNextNode() != null) {
+                processNode.getNodeRegulationsProperties().getNextNode().getNodeRegulationsProperties().setPreviousNode(null);
+            }
+            processNode.getNodeRegulationsProperties().setNextNode(null);
         }
-        formNode.getNodeRegulationsProperties().setIsEnabled(includeInRegulationsCheckbox.getSelection());
+        processNode.getNodeRegulationsProperties().setIsEnabled(includeInRegulationsCheckbox.getSelection());
         browser.execute("getHTML();");
-        formNode.getNodeRegulationsProperties().setDescriptionForUser(descriptionTextAsString);
-        formNode.getProcessDefinition().setDirty();
+        processNode.getNodeRegulationsProperties().setDescriptionForUser(descriptionTextAsString);
+        processNode.getProcessDefinition().setDirty();
+        processNode.firePropertyChange(PropertyNames.PROPERTY_NODE_IN_REGULATIONS, oldNodeRegulationsProperties,
+                processNode.getNodeRegulationsProperties());
         this.close();
     }
 }

@@ -22,7 +22,6 @@ public class Timer extends Node implements IBoundaryEvent {
 
     public Timer() {
         super();
-        nodeRegulationsProperties.setIsEnabled(false);
     }
 
     public Duration getDelay() {

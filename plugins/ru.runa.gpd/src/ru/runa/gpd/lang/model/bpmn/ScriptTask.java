@@ -11,7 +11,6 @@ public class ScriptTask extends Node implements Delegable, IBoundaryEventContain
 
     public ScriptTask() {
         super();
-        nodeRegulationsProperties.setIsEnabled(false);
     }
 
     @Override

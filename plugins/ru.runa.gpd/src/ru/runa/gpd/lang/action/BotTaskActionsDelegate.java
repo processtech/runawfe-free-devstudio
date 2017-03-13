@@ -22,7 +22,7 @@ import ru.runa.gpd.util.WorkspaceOperations;
 import com.google.common.collect.Lists;
 
 public class BotTaskActionsDelegate extends BaseModelDropDownActionDelegate {
-    
+
     private TaskState getTaskStateNotNull() {
         return getSelectionNotNull();
     }
@@ -68,6 +68,7 @@ public class BotTaskActionsDelegate extends BaseModelDropDownActionDelegate {
                 if (botTaskName != null) {
                     BotTaskLink botTaskLink = new BotTaskLink();
                     botTaskLink.setBotTaskName(botTaskName);
+                    getTaskStateNotNull().getNodeRegulationsProperties().setIsEnabled(false);
                     linkWithBotTask(botTaskLink);
                 }
             } catch (Exception e) {
@@ -84,6 +85,7 @@ public class BotTaskActionsDelegate extends BaseModelDropDownActionDelegate {
         @Override
         public void run() {
             try {
+                getTaskStateNotNull().getNodeRegulationsProperties().setIsEnabled(true);
                 linkWithBotTask(null);
             } catch (Exception e) {
                 PluginLogger.logError(e);

@@ -614,7 +614,7 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
                         if (listOfSameNextElements.contains(set) != true) {
                             result = false;
                             errors.add(ValidationError.createLocalizedWarning(definition, "regulations.duplicateNextNodeWarning", curNode.getName(),
-                                    node.getName()));
+                                    curNode.getId(), node.getName(), node.getId()));
                             listOfSameNextElements.add(set);
                         }
                     }

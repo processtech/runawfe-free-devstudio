@@ -6,7 +6,6 @@ public class ExclusiveGateway extends Decision {
 
     public ExclusiveGateway() {
         super();
-        nodeRegulationsProperties.setIsEnabled(false);
     }
 
     @Override

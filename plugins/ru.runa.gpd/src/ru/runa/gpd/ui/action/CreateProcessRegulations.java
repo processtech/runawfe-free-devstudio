@@ -35,21 +35,17 @@ import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.action.BaseModelActionDelegate;
-import ru.runa.gpd.lang.model.Action;
 import ru.runa.gpd.lang.model.EndState;
 import ru.runa.gpd.lang.model.EndTokenState;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.GraphElement;
-import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.StartState;
 import ru.runa.gpd.lang.model.Subprocess;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
-import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Timer;
-import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.ui.view.RegulationsNotesView;
@@ -114,27 +110,7 @@ public class CreateProcessRegulations extends BaseModelActionDelegate {
                 if (validationError.getSource() instanceof Node) {
                     elementId = ((Node) validationError.getSource()).getId();
                 }
-                if (validationError.getSource() instanceof Swimlane) {
-                    marker.setAttribute(PluginConstants.SWIMLANE_LINK_KEY, elementId);
-                } else if (validationError.getSource() instanceof Action) {
-                    Action action = (Action) validationError.getSource();
-                    NamedGraphElement actionParent = (NamedGraphElement) action.getParent();
-                    if (actionParent != null) {
-                        marker.setAttribute(PluginConstants.ACTION_INDEX_KEY, actionParent.getActions().indexOf(action));
-                        String parentNodeTreePath;
-                        if (actionParent instanceof Transition) {
-                            parentNodeTreePath = ((NamedGraphElement) actionParent.getParent()).getName() + "|" + actionParent.getName();
-                        } else {
-                            parentNodeTreePath = actionParent.getName();
-                        }
-                        marker.setAttribute(PluginConstants.PARENT_NODE_KEY, parentNodeTreePath);
-                        elementId = action + " (" + parentNodeTreePath + ")";
-                    } else {
-                        elementId = action.toString();
-                    }
-                } else {
-                    marker.setAttribute(PluginConstants.SELECTION_LINK_KEY, elementId);
-                }
+                marker.setAttribute(PluginConstants.SELECTION_LINK_KEY, elementId);
                 marker.setAttribute(IMarker.LOCATION, validationError.getSource().toString());
                 marker.setAttribute(IMarker.SEVERITY, validationError.getSeverity());
                 marker.setAttribute(PluginConstants.PROCESS_NAME_KEY, definition.getName());
@@ -231,23 +207,25 @@ public class CreateProcessRegulations extends BaseModelActionDelegate {
         Map<String, ValidatorDefinition> validatorDefinitions = ValidatorDefinitionRegistry.getValidatorDefinitions();
         map.put("validatorDefinitions", validatorDefinitions);
 
-        List<ValidatorConfig> globalValidators = Lists.newArrayList();
+        Map<String, List<ValidatorConfig>> globalValidatorDefinitionsMap = Maps.newHashMap();
         HashMap<String, ValidatorDefinition> globalValidatorDefinitions = Maps.newHashMap();
         for (GraphElement element : definition.getNodesRecursive()) {
             if (element instanceof FormNode && ((FormNode) element).hasFormValidation()) {
                 FormNode formNodeElement = ((FormNode) element);
                 FormNodeValidation validation = formNodeElement.getValidation(IOUtils.getAdjacentFile(getDefinitionFile(),
                         formNodeElement.getValidationFileName()));
+                List<ValidatorConfig> globalValidators = Lists.newArrayList();
                 for (ValidatorConfig globalConfig : validation.getGlobalConfigs()) {
                     globalValidators.add(globalConfig);
                     ValidatorDefinition definitionByValidatorType = ValidatorDefinitionRegistry.getDefinition(globalConfig.getType());
                     globalValidatorDefinitions.put(globalConfig.getType(), definitionByValidatorType);
                 }
+                globalValidatorDefinitionsMap.put(formNodeElement.getId(), globalValidators);
             }
         }
 
-        map.put("globalValidators", globalValidators);
         map.put("globalValidatorDefinitions", globalValidatorDefinitions);
+        map.put("globalValidatorDefinitionsMap", globalValidatorDefinitionsMap);
 
         IFile htmlDefinition = IOUtils.getAdjacentFile(getActiveDesignerEditor().getDefinitionFile(),
                 ParContentProvider.PROCESS_DEFINITION_DESCRIPTION_FILE_NAME);

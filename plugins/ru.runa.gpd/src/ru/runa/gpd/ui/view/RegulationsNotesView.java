@@ -38,15 +38,12 @@ import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.editor.ProcessEditorBase;
-import ru.runa.gpd.lang.model.Action;
-import ru.runa.gpd.lang.model.Active;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Subprocess;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
-import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.util.WorkspaceOperations;
 
 import com.google.common.base.Objects;
@@ -129,26 +126,6 @@ public class RegulationsNotesView extends ViewPart implements ISelectionChangedL
                         }
                     }
                 }
-            }
-            String swimlaneName = marker.getAttribute(PluginConstants.SWIMLANE_LINK_KEY, null);
-            if (swimlaneName != null) {
-                graphElement = findElement(editor.getDefinition(), Swimlane.class, swimlaneName);
-            }
-            int actionIndex = marker.getAttribute(PluginConstants.ACTION_INDEX_KEY, -1);
-            if (actionIndex != -1) {
-                String parentTreePath = marker.getAttribute(PluginConstants.PARENT_NODE_KEY, null);
-                String[] paths = parentTreePath.split("\\|", -1);
-                Active active;
-                if (paths.length == 1) {
-                    active = (Active) findElement(editor.getDefinition(), NamedGraphElement.class, paths[0]);
-                } else if (paths.length == 2) {
-                    Node node = (Node) findElement(editor.getDefinition(), Node.class, paths[0]);
-                    active = node.getTransitionByName(paths[1]);
-                } else {
-                    throw new RuntimeException("Invalid tree path: " + parentTreePath);
-                }
-                List<? extends Action> activeActions = active.getActions();
-                graphElement = activeActions.get(actionIndex);
             }
             String nameOfSourceProcess = marker.getAttribute(PluginConstants.PROCESS_NAME_KEY).toString();
             Set<ProcessDefinition> setOfProcessDefinitions = ProcessCache.getAllProcessDefinitions();

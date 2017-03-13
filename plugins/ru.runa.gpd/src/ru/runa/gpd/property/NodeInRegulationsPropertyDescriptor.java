@@ -17,26 +17,24 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
 
 import ru.runa.gpd.Localization;
+import ru.runa.gpd.PropertyNames;
+import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.NodeRegulationsProperties;
-import ru.runa.gpd.lang.model.PropertyNames;
 import ru.runa.gpd.ui.custom.LoggingMouseAdapter;
 import ru.runa.gpd.ui.dialog.EditPropertiesForRegulationsDialog;
 import ru.runa.gpd.ui.view.PropertiesView;
 
 public class NodeInRegulationsPropertyDescriptor extends PropertyDescriptor {
-    public static final int PREVIOUS_NODE_MODE = 0;
-    public static final int NEXT_NODE_MODE = 1;
-
     private final Node node;
-    private final int mode;
-    private Label nodeLabel;
 
-    public NodeInRegulationsPropertyDescriptor(Object id, Node node, int mode) {
-        super(id, mode == PREVIOUS_NODE_MODE ? Localization.getString("Node.property.previousNodeInRegulations") : Localization
-                .getString("Node.property.nextNodeInRegulations"));
+    private Label nodeIsIncludedLabel;
+    private Label previousNodeLabel;
+    private Label nextNodeLabel;
+
+    public NodeInRegulationsPropertyDescriptor(Node node) {
+        super(PropertyNames.PROPERTY_NODE_IN_REGULATIONS, Localization.getString("Node.property.nodeInRegulations"));
         this.node = node;
-        this.mode = mode;
     }
 
     @Override
@@ -71,67 +69,56 @@ public class NodeInRegulationsPropertyDescriptor extends PropertyDescriptor {
             editor = new Composite(parent, getStyle());
             editor.setFont(parent.getFont());
             editor.setBackground(parent.getBackground());
-            GridLayout layout = new GridLayout(1, false);
+            GridLayout layout = new GridLayout(3, false);
             layout.marginHeight = 0;
-            layout.verticalSpacing = 0;
             editor.setLayout(layout);
-            nodeLabel = new Label(editor, SWT.NONE);
+            GridData gridDataLabelForCheckbox = new GridData(SWT.NONE, SWT.NONE, false, false);
             GridData gridDataLabel = new GridData(SWT.FILL, SWT.FILL, true, true);
-            nodeLabel.setFont(editor.getFont());
-            nodeLabel.setBackground(editor.getBackground());
-            nodeLabel.setLayoutData(gridDataLabel);
+            nodeIsIncludedLabel = new Label(editor, SWT.NONE);
+            nodeIsIncludedLabel.setFont(editor.getFont());
+            nodeIsIncludedLabel.setBackground(editor.getBackground());
+            nodeIsIncludedLabel.setLayoutData(gridDataLabelForCheckbox);
+            nodeIsIncludedLabel.setImage(SharedImages.getImage(node.getNodeRegulationsProperties().getIsEnabled() ? "icons/checked.gif"
+                    : "icons/unchecked.gif"));
 
-            if (mode == PREVIOUS_NODE_MODE) {
-                if (node.getNodeRegulationsProperties().getPreviousNode() != null) {
-                    nodeLabel.setText(node.getNodeRegulationsProperties().getPreviousNode().getLabel());
-                } else {
-                    nodeLabel.setText(Localization.getString("Node.property.previousNodeInRegulations.notSet"));
-                }
+            previousNodeLabel = new Label(editor, SWT.NONE);
+            previousNodeLabel.setFont(editor.getFont());
+            previousNodeLabel.setBackground(editor.getBackground());
+            previousNodeLabel.setLayoutData(gridDataLabel);
+
+            nextNodeLabel = new Label(editor, SWT.NONE);
+            nextNodeLabel.setFont(editor.getFont());
+            nextNodeLabel.setBackground(editor.getBackground());
+            nextNodeLabel.setLayoutData(gridDataLabel);
+
+            if (node.getNodeRegulationsProperties().getPreviousNode() != null) {
+                previousNodeLabel.setText(node.getNodeRegulationsProperties().getPreviousNode().getLabel());
             } else {
-                if (node.getNodeRegulationsProperties().getNextNode() != null) {
-                    nodeLabel.setText(node.getNodeRegulationsProperties().getNextNode().getLabel());
-                } else {
-                    nodeLabel.setText(Localization.getString("Node.property.nextNodeInRegulations.notSet"));
-                }
+                previousNodeLabel.setText(Localization.getString("Node.property.previousNodeInRegulations.notSet"));
             }
+
+            if (node.getNodeRegulationsProperties().getNextNode() != null) {
+                nextNodeLabel.setText(node.getNodeRegulationsProperties().getNextNode().getLabel());
+            } else {
+                nextNodeLabel.setText(Localization.getString("Node.property.nextNodeInRegulations.notSet"));
+            }
+
             LoggingMouseAdapter loggingMouseAdapter = new LoggingMouseAdapter() {
                 @Override
                 protected void onMouseUp(MouseEvent e) throws Exception {
                     NodeRegulationsProperties newNodeRegulationProperties = (NodeRegulationsProperties) NodeInRegulationsDialogCellEditor.this
                             .openDialogBox(NodeInRegulationsDialogCellEditor.this.getEditor());
                     if (newNodeRegulationProperties != null) {
-                        String oldPreviousNodeLabel = Localization.getString("Node.property.previousNodeInRegulations.notSet");
-                        String oldNextNodeLabel = Localization.getString("Node.property.nextNodeInRegulations.notSet");
-                        if (NodeInRegulationsPropertyDescriptor.this.node.getNodeRegulationsProperties().getPreviousNode() != null) {
-                            oldPreviousNodeLabel = NodeInRegulationsPropertyDescriptor.this.node.getNodeRegulationsProperties().getPreviousNode()
-                                    .getLabel();
-                        }
-                        if (NodeInRegulationsPropertyDescriptor.this.node.getNodeRegulationsProperties().getNextNode() != null) {
-                            oldNextNodeLabel = NodeInRegulationsPropertyDescriptor.this.node.getNodeRegulationsProperties().getNextNode().getLabel();
-                        }
                         NodeInRegulationsPropertyDescriptor.this.node.setNodeRegulationsProperties(newNodeRegulationProperties);
 
-                        PropertyChangeEvent eventPreviousNode;
-                        PropertyChangeEvent eventNextNode;
-                        if (newNodeRegulationProperties.getPreviousNode() != null) {
-                            eventPreviousNode = new PropertyChangeEvent(node, PropertyNames.PROPERTY_PREVIOUS_NODE_IN_REGULATIONS,
-                                    oldPreviousNodeLabel, newNodeRegulationProperties.getPreviousNode().getLabel());
-                        } else {
-                            eventPreviousNode = new PropertyChangeEvent(node, PropertyNames.PROPERTY_PREVIOUS_NODE_IN_REGULATIONS,
-                                    oldPreviousNodeLabel, Localization.getString("Node.property.previousNodeInRegulations.notSet"));
-                        }
-                        if (newNodeRegulationProperties.getNextNode() != null) {
-                            eventNextNode = new PropertyChangeEvent(node, PropertyNames.PROPERTY_NEXT_NODE_IN_REGULATIONS, oldNextNodeLabel,
-                                    newNodeRegulationProperties.getNextNode().getLabel());
-                        } else {
-                            eventNextNode = new PropertyChangeEvent(node, PropertyNames.PROPERTY_NEXT_NODE_IN_REGULATIONS, oldNextNodeLabel,
-                                    Localization.getString("Node.property.nextNodeInRegulations.notSet"));
-                        }
+                        PropertyChangeEvent eventNode;
+
+                        eventNode = new PropertyChangeEvent(node, PropertyNames.PROPERTY_NODE_IN_REGULATIONS, null, newNodeRegulationProperties);
+
                         IViewPart viewPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(PropertiesView.ID);
                         if (viewPart instanceof PropertiesView) {
                             PropertiesView propertiesView = (PropertiesView) viewPart;
-                            propertiesView.propertyChange(eventPreviousNode);
-                            propertiesView.propertyChange(eventNextNode);
+                            propertiesView.propertyChange(eventNode);
                         }
                     }
                 }
@@ -145,22 +132,39 @@ public class NodeInRegulationsPropertyDescriptor extends PropertyDescriptor {
 
                 }
             };
-            nodeLabel.addMouseListener(loggingMouseAdapter);
+            previousNodeLabel.addMouseListener(loggingMouseAdapter);
+            nextNodeLabel.addMouseListener(loggingMouseAdapter);
+            nodeIsIncludedLabel.addMouseListener(loggingMouseAdapter);
             editor.addMouseListener(loggingMouseAdapter);
             return editor;
         }
 
         @Override
         protected void updateContents(Object value) {
-            if (nodeLabel == null) {
+            NodeRegulationsProperties newProperties;
+            if (previousNodeLabel == null || nextNodeLabel == null) {
                 return;
             }
 
-            String text = "";
             if (value != null) {
-                text = value.toString();
+                newProperties = (NodeRegulationsProperties) value;
+                node.setNodeRegulationsProperties(newProperties);
+                nodeIsIncludedLabel.setImage(SharedImages.getImage(newProperties.getIsEnabled() ? "icons/checked.gif" : "icons/unchecked.gif"));
+                if (newProperties.getPreviousNode() != null) {
+                    previousNodeLabel.setText(Localization.getString("Node.property.previousNodeInRegulations") + ": " + "["
+                            + newProperties.getPreviousNode().getId() + "] " + ((Node) newProperties.getPreviousNode()).getName());
+                } else {
+                    previousNodeLabel.setText(Localization.getString("Node.property.previousNodeInRegulations") + ": "
+                            + Localization.getString("Node.property.previousNodeInRegulations.notSet"));
+                }
+                if (newProperties.getNextNode() != null) {
+                    nextNodeLabel.setText(Localization.getString("Node.property.nextNodeInRegulations") + ": " + "["
+                            + newProperties.getNextNode().getId() + "] " + ((Node) newProperties.getNextNode()).getName());
+                } else {
+                    nextNodeLabel.setText(Localization.getString("Node.property.nextNodeInRegulations") + ": "
+                            + Localization.getString("Node.property.nextNodeInRegulations.notSet"));
+                }
             }
-            nodeLabel.setText(text);
         }
     }
 }
