@@ -8,6 +8,10 @@ import org.eclipse.draw2d.geometry.Rectangle;
 import ru.runa.gpd.lang.model.Node;
 
 public abstract class StateFigure<T extends Node> extends NodeFigure<T> {
+
+    protected static final int ICON_WIDTH = 18;
+    protected static final int ICON_HEIGHT = 19;
+
     @Override
     public void init() {
         super.init();
