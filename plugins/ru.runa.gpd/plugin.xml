@@ -1710,6 +1710,36 @@
             enabled="true"
             label="%ru.runa.wfe.extension.handler.file.SaveFileToFileSystemHandler">
       </handler>
+      <handler
+            actionHandler="false"
+            assignmentHandler="false"
+            botTaskHandler="true"
+            cellEditorProvider="ru.runa.gpd.extension.handler.ConfigBasedProvider"
+            className="ru.runa.wf.logic.bot.CancelProcessTaskHandler"
+            decisionHandler="false"
+            enabled="true"
+            label="%ru.runa.wf.logic.bot.CancelProcessTaskHandler">
+      </handler>
+      <handler
+            actionHandler="false"
+            assignmentHandler="false"
+            botTaskHandler="true"
+            cellEditorProvider="ru.runa.gpd.extension.handler.ConfigBasedProvider"
+            className="ru.runa.wf.logic.bot.SuspendProcessTaskHandler"
+            decisionHandler="false"
+            enabled="true"
+            label="%ru.runa.wf.logic.bot.SuspendProcessTaskHandler">
+      </handler>
+      <handler
+            actionHandler="false"
+            assignmentHandler="false"
+            botTaskHandler="true"
+            cellEditorProvider="ru.runa.gpd.extension.handler.ConfigBasedProvider"
+            className="ru.runa.wf.logic.bot.ResumeProcessTaskHandler"
+            decisionHandler="false"
+            enabled="true"
+            label="%ru.runa.wf.logic.bot.ResumeProcessTaskHandler">
+      </handler>
    </extension>
    <extension
          point="ru.runa.gpd.swimlaneElements">
