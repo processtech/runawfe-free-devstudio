@@ -7,6 +7,7 @@ import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.PointList;
 import org.eclipse.draw2d.geometry.Rectangle;
+import ru.runa.gpd.lang.model.AbstractEventNode;
 
 public class SendMessageFigure extends MessageNodeFigure {
     @Override
@@ -27,6 +28,7 @@ public class SendMessageFigure extends MessageNodeFigure {
         points.addPoint(xRight, dim.height - 1);
         points.addPoint(dim.width - 1, halfHeight);
         g.drawPolygon(points);
+        paintEventType(((AbstractEventNode) model).getEventNodeType(), g, dim, false);
     }
 
     static class SendMessageNodeAnchor extends ChopboxAnchor {

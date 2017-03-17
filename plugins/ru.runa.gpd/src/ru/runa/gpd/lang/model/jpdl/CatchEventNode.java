@@ -4,12 +4,13 @@ import java.util.List;
 
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.lang.NodeTypeDefinition;
+import ru.runa.gpd.lang.model.AbstractEventNode;
 import ru.runa.gpd.lang.model.IReceiveMessageNode;
 import ru.runa.gpd.lang.model.MessageNode;
 import ru.runa.gpd.lang.model.Timer;
 import ru.runa.gpd.lang.model.Transition;
 
-public class ReceiveMessageNode extends MessageNode implements IReceiveMessageNode {
+public class CatchEventNode extends AbstractEventNode implements IReceiveMessageNode {
 
     @Override
     protected boolean allowLeavingTransition(List<Transition> transitions) {

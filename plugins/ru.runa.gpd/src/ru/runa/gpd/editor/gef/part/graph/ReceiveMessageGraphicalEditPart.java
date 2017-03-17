@@ -9,7 +9,7 @@ import org.eclipse.gef.Request;
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.editor.gef.figure.ReceiveMessageFigure;
 import ru.runa.gpd.lang.model.Transition;
-import ru.runa.gpd.lang.model.jpdl.ReceiveMessageNode;
+import ru.runa.gpd.lang.model.jpdl.CatchEventNode;
 
 public class ReceiveMessageGraphicalEditPart extends LabeledNodeGraphicalEditPart {
     @Override
@@ -19,8 +19,8 @@ public class ReceiveMessageGraphicalEditPart extends LabeledNodeGraphicalEditPar
     }
 
     @Override
-    public ReceiveMessageNode getModel() {
-        return (ReceiveMessageNode) super.getModel();
+    public CatchEventNode getModel() {
+        return (CatchEventNode) super.getModel();
     }
 
     @Override

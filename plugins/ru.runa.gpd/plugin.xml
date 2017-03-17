@@ -497,7 +497,7 @@
     <objectContribution
           adaptable="false"
           id="sendmessage.configuration"
-          objectClass="ru.runa.gpd.lang.model.jpdl.SendMessageNode">
+          objectClass="ru.runa.gpd.lang.model.jpdl.ThrowEventNode">
        <action
              class="ru.runa.gpd.lang.action.SendMessageEditTTLAction"
              id="sendMessage.ttl"
@@ -531,7 +531,7 @@
     <objectContribution
           adaptable="false"
           id="receivemessage.configuration"
-          objectClass="ru.runa.gpd.lang.model.jpdl.ReceiveMessageNode">
+          objectClass="ru.runa.gpd.lang.model.jpdl.CatchEventNode">
        <action
              class="ru.runa.gpd.lang.action.ReceiveMessageConfAction"
              id="receiveMessage.configuration"
@@ -956,8 +956,8 @@
       <element
             icon="sendmessage.png"
             jpdl="send-message"
-            label="%label.element.sendmessage"
-            model="ru.runa.gpd.lang.model.jpdl.SendMessageNode"
+            label="%label.element.throw.event"
+            model="ru.runa.gpd.lang.model.jpdl.ThrowEventNode"
             type="node">
          <gef 
             figure="ru.runa.gpd.editor.gef.figure.SendMessageFigure"
@@ -989,8 +989,8 @@
       <element
             icon="receivemessage.png"
             jpdl="receive-message"
-            label="%label.element.receivemessage"
-            model="ru.runa.gpd.lang.model.jpdl.ReceiveMessageNode"
+            label="%label.element.catch.event"
+            model="ru.runa.gpd.lang.model.jpdl.CatchEventNode"
             type="node">
          <gef
             figure="ru.runa.gpd.editor.gef.figure.ReceiveMessageFigure"

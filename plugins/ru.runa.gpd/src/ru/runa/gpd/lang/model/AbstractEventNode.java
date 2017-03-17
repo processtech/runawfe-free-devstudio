@@ -1,4 +1,4 @@
-package ru.runa.gpd.lang.model.bpmn;
+package ru.runa.gpd.lang.model;
 
 import java.util.List;
 
@@ -6,9 +6,6 @@ import org.eclipse.ui.views.properties.ComboBoxPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 
 import ru.runa.gpd.Localization;
-import ru.runa.gpd.lang.model.GraphElement;
-import ru.runa.gpd.lang.model.MessageNode;
-import ru.runa.gpd.lang.model.ProcessDefinition;
 
 import com.google.common.collect.Lists;
 
