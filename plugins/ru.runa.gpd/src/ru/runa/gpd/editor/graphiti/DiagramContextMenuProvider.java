@@ -40,10 +40,6 @@ public class DiagramContextMenuProvider extends DiagramEditorContextMenuProvider
 
     @Override
     protected void addDefaultMenuGroupEdit(IMenuManager manager) {
-        // addActionToMenuIfAvailable(manager, ActionFactory.COPY.getId(),
-        // GEFActionConstants.GROUP_EDIT);
-        // addActionToMenuIfAvailable(manager, ActionFactory.PASTE.getId(),
-        // GEFActionConstants.GROUP_EDIT);
     }
 
     @Override
@@ -57,9 +53,6 @@ public class DiagramContextMenuProvider extends DiagramEditorContextMenuProvider
             Object object = getDiagramTypeProvider().getFeatureProvider().getBusinessObjectForPictogramElement(pes[0]);
             ISelectionProvider selectionProvider = new StructuredSelectionProvider(object);
             ObjectActionContributorManager.getManager().contributeObjectActions(getEditor(), manager, selectionProvider);
-            // ObjectActionContributorManager.getManager().contributeObjectActions(getEditor(),
-            // manager, selectionProvider, new
-            // HashSet<IObjectActionContributor>());
         }
     }
 

@@ -7,10 +7,12 @@ import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.services.Graphiti;
 
 import ru.runa.gpd.editor.graphiti.GaProperty;
+import ru.runa.gpd.lang.NodeRegistry;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.Synchronizable;
 
 public class AddTaskStateNodeFeature extends AddStateNodeFeature {
+
     @Override
     protected void addCustomGraphics(Node node, IAddContext context, GraphicsAlgorithmContainer container, ContainerShape containerShape) {
         addAsyncImage(node, context, container, containerShape);
@@ -23,4 +25,5 @@ public class AddTaskStateNodeFeature extends AddStateNodeFeature {
         boolean async = ((Synchronizable) node).isAsync();
         containerShape.getProperties().add(new GaProperty(GaProperty.ASYNC, String.valueOf(async)));
     }
+
 }

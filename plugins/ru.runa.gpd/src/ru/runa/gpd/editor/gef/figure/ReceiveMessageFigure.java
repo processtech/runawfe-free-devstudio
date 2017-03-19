@@ -9,7 +9,7 @@ import org.eclipse.draw2d.geometry.PointList;
 import org.eclipse.draw2d.geometry.Rectangle;
 
 import ru.runa.gpd.editor.gef.figure.uml.TimerAnchor;
-import ru.runa.gpd.lang.model.ReceiveMessageNode;
+import ru.runa.gpd.lang.model.jpdl.ReceiveMessageNode;
 
 public class ReceiveMessageFigure extends MessageNodeFigure {
     private ConnectionAnchor timerConnectionAnchor;

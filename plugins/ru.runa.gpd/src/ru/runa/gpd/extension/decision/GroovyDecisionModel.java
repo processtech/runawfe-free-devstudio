@@ -48,9 +48,7 @@ public class GroovyDecisionModel {
                 }
                 lexem1Text = ifContent.substring(start, ifContent.indexOf("."));
                 lexem2Text = ifContent.substring(ifContent.indexOf("(") + 1, ifContent.length() - 1);
-            } else if (strings.length > 3 
-                    && ifContent.contains(" || ") 
-                    && ifContent.contains("ru.runa.wfe.commons.CalendarUtil.dateToCalendar")
+            } else if (strings.length > 3 && ifContent.contains(" || ") && ifContent.contains("ru.runa.wfe.commons.CalendarUtil.dateToCalendar")
                     && ifContent.endsWith(" 0")) {
                 // GroovyTypeSupport.DateType
                 isOperationDateType = true;
@@ -60,6 +58,15 @@ public class GroovyDecisionModel {
                 lexem1Text = parts[0].substring(parts[0].lastIndexOf("(") + 1, parts[0].indexOf(")"));
                 lexem2Text = parts[1].substring(parts[1].lastIndexOf("(") + 1, parts[1].indexOf(")"));
                 operator = stringsWithoutNullCheck[1];
+            } else if (strings.length > 3 && ifContent.contains(" || ") && ifContent.contains("BigDecimal") && ifContent.endsWith(" 0")) {
+                // GroovyTypeSupport.BigDecimalType
+                isOperationDateType = false;
+                String ifContentWithoutNullCheck = ifContent.substring(ifContent.lastIndexOf(" || ") + " || ".length());
+                String[] stringsWithoutNullCheck = ifContentWithoutNullCheck.split(" ");
+                String[] parts = stringsWithoutNullCheck[0].split("\\.compareTo\\(");
+                lexem1Text = parts[0];
+                lexem2Text = stringsWithoutNullCheck[3];
+                operator = stringsWithoutNullCheck[6];
             } else {
                 lexem1Text = strings[0];
                 operator = strings[1];

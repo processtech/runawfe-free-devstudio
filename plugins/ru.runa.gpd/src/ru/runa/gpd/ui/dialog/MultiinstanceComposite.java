@@ -43,7 +43,7 @@ public class MultiinstanceComposite extends Composite {
     private final ProcessDefinition processDefinition;
     private final MultiinstanceParameters parameters;
     private Combo variableCombo;
-    private Composite createTasksByDiscriminatorComposite;
+    private Composite createSubprocessesByDiscriminatorComposite;
     private Combo swimlaneCombo;
     private StyledText conditionText;
 
@@ -69,6 +69,8 @@ public class MultiinstanceComposite extends Composite {
         Composite variableTabComposite = createTabVariable(tabFolder, variableLabelText);
         if (graphElement instanceof MultiTaskState) {
             createTaskCreationSettingsComposite(variableTabComposite);
+        } else { // MultiSubprocess
+            createSubprocessCreationSettingsComposite(variableTabComposite);
         }
         createTabGroup(tabFolder, groupLabelText);
         createTabRelation(tabFolder);
@@ -98,11 +100,11 @@ public class MultiinstanceComposite extends Composite {
             }
         });
 
-        createTasksByDiscriminatorComposite = new Composite(parent, SWT.NONE);
-        createTasksByDiscriminatorComposite.setLayout(new GridLayout(2, false));
-        createTasksByDiscriminatorComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        SWTUtils.createLabel(createTasksByDiscriminatorComposite, Localization.getString("SwimlanedNode.property.swimlane"));
-        swimlaneCombo = new Combo(createTasksByDiscriminatorComposite, SWT.READ_ONLY);
+        createSubprocessesByDiscriminatorComposite = new Composite(parent, SWT.NONE);
+        createSubprocessesByDiscriminatorComposite.setLayout(new GridLayout(2, false));
+        createSubprocessesByDiscriminatorComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
+        SWTUtils.createLabel(createSubprocessesByDiscriminatorComposite, Localization.getString("SwimlanedNode.property.swimlane"));
+        swimlaneCombo = new Combo(createSubprocessesByDiscriminatorComposite, SWT.READ_ONLY);
         for (Swimlane swimlane : processDefinition.getSwimlanes()) {
             swimlaneCombo.add(swimlane.getName());
         }
@@ -113,8 +115,9 @@ public class MultiinstanceComposite extends Composite {
                 parameters.setSwimlaneName(swimlaneCombo.getText());
             }
         });
-        SWTUtils.createLabel(createTasksByDiscriminatorComposite, Localization.getString("MultiTask.property.discriminatorCondition"));
-        SWTUtils.createLink(createTasksByDiscriminatorComposite, Localization.getString("button.insert_variable"), new LoggingHyperlinkAdapter() {
+        
+        SWTUtils.createLabel(createSubprocessesByDiscriminatorComposite, Localization.getString("MultiTask.property.discriminatorCondition"));
+        SWTUtils.createLink(createSubprocessesByDiscriminatorComposite, Localization.getString("button.insert_variable"), new LoggingHyperlinkAdapter() {
 
             @Override
             protected void onLinkActivated(HyperlinkEvent e) throws Exception {
@@ -127,10 +130,9 @@ public class MultiinstanceComposite extends Composite {
                 }
             }
         }).setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
-        conditionText = new StyledText(createTasksByDiscriminatorComposite, SWT.MULTI | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+        conditionText = new StyledText(createSubprocessesByDiscriminatorComposite, SWT.MULTI | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
         GridData conditionGridData = new GridData(GridData.FILL_BOTH);
         conditionGridData.horizontalSpan = 2;
-        conditionGridData.heightHint = 40;
         conditionText.setLayoutData(conditionGridData);
         conditionText.setLineSpacing(2);
         conditionText.addLineStyleListener(new JavaHighlightTextStyling(getConditionVariableNames()));
@@ -142,6 +144,38 @@ public class MultiinstanceComposite extends Composite {
             }
         });
         updateTaskCreationSettingsComposite();
+    }
+
+    private void createSubprocessCreationSettingsComposite(Composite parent) {
+        createSubprocessesByDiscriminatorComposite = new Composite(parent, SWT.NONE);
+        createSubprocessesByDiscriminatorComposite.setLayout(new GridLayout(2, false));
+        createSubprocessesByDiscriminatorComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
+        SWTUtils.createLabel(createSubprocessesByDiscriminatorComposite, Localization.getString("MultiSubprocess.property.discriminatorCondition"));
+        SWTUtils.createLink(createSubprocessesByDiscriminatorComposite, Localization.getString("button.insert_variable"), new LoggingHyperlinkAdapter() {
+            @Override
+            protected void onLinkActivated(HyperlinkEvent e) throws Exception {
+                ChooseVariableNameDialog dialog = new ChooseVariableNameDialog(getConditionVariableNames());
+                String variableName = dialog.openDialog();
+                if (variableName != null) {
+                    conditionText.insert(variableName);
+                    conditionText.setFocus();
+                    conditionText.setCaretOffset(conditionText.getCaretOffset() + variableName.length());
+                }
+            }
+        }).setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
+        conditionText = new StyledText(createSubprocessesByDiscriminatorComposite, SWT.MULTI | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+        GridData conditionGridData = new GridData(GridData.FILL_BOTH);
+        conditionGridData.horizontalSpan = 2;
+        conditionText.setLayoutData(conditionGridData);
+        conditionText.setLineSpacing(2);
+        conditionText.addLineStyleListener(new JavaHighlightTextStyling(getConditionVariableNames()));
+        conditionText.addModifyListener(new LoggingModifyTextAdapter() {
+            @Override
+            protected void onTextChanged(ModifyEvent e) throws Exception {
+                parameters.setDiscriminatorCondition(conditionText.getText());
+            }
+        });
+        updateSubprocessCreationSettingsComposite();
     }
 
     private List<String> getConditionVariableNames() {
@@ -162,15 +196,19 @@ public class MultiinstanceComposite extends Composite {
 
     private void updateTaskCreationSettingsComposite() {
         if (parameters.getCreationMode() == MultiTaskCreationMode.BY_EXECUTORS) {
-            createTasksByDiscriminatorComposite.setVisible(false);
+            createSubprocessesByDiscriminatorComposite.setVisible(false);
         } else {
             if (!Strings.isNullOrEmpty(parameters.getSwimlaneName())) {
                 swimlaneCombo.setText(parameters.getSwimlaneName());
             }
             conditionText.setText(parameters.getDiscriminatorCondition() != null ? parameters.getDiscriminatorCondition() : "");
-            createTasksByDiscriminatorComposite.setVisible(true);
+            createSubprocessesByDiscriminatorComposite.setVisible(true);
         }
         getParent().layout(true);
+    }
+
+    private void updateSubprocessCreationSettingsComposite() {
+    	conditionText.setText(parameters.getDiscriminatorCondition() != null ? parameters.getDiscriminatorCondition() : "");
     }
 
     private Composite createTabVariable(CTabFolder parent, String variableLabelText) {

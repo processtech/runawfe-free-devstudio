@@ -14,7 +14,7 @@ import org.eclipse.graphiti.services.Graphiti;
 import ru.runa.gpd.editor.graphiti.GaProperty;
 import ru.runa.gpd.editor.graphiti.StyleUtil;
 import ru.runa.gpd.editor.graphiti.layout.LayoutTextAnnotationFeature;
-import ru.runa.gpd.lang.model.TextAnnotation;
+import ru.runa.gpd.lang.model.bpmn.TextAnnotation;
 
 public class AddTextAnnotationFeature extends AddElementFeature {
     @Override

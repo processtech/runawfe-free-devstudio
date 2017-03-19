@@ -29,11 +29,11 @@ import ru.runa.gpd.extension.handler.ParamDefConfig;
 import ru.runa.gpd.form.FormVariableAccess;
 import ru.runa.gpd.lang.model.BotTask;
 import ru.runa.gpd.lang.model.BotTaskType;
-import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.GraphElement;
+import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.ITimed;
-import ru.runa.gpd.lang.model.MessagingNode;
+import ru.runa.gpd.lang.model.MessageNode;
 import ru.runa.gpd.lang.model.MultiTaskState;
 import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.ProcessDefinition;
@@ -153,8 +153,8 @@ public class VariableSearchVisitor {
             if (graphElement instanceof Subprocess) {
                 processSubprocessNode(definitionFile, (Subprocess) graphElement);
             }
-            if (graphElement instanceof MessagingNode) {
-                processMessagingNode(definitionFile, (MessagingNode) graphElement);
+            if (graphElement instanceof MessageNode) {
+                processMessagingNode(definitionFile, (MessageNode) graphElement);
             }
             if (graphElement instanceof MultiTaskState) {
                 processMultiTaskNode(definitionFile, (MultiTaskState) graphElement);
@@ -207,10 +207,10 @@ public class VariableSearchVisitor {
         }
     }
 
-    private void processMessagingNode(IFile definitionFile, MessagingNode messagingNode) throws Exception {
-        int matchesCount = findInVariableMappings(messagingNode.getVariableMappings());
+    private void processMessagingNode(IFile definitionFile, MessageNode messageNode) throws Exception {
+        int matchesCount = findInVariableMappings(messageNode.getVariableMappings());
         if (matchesCount > 0) {
-            ElementMatch elementMatch = new ElementMatch(messagingNode, definitionFile);
+            ElementMatch elementMatch = new ElementMatch(messageNode, definitionFile);
             elementMatch.setMatchesCount(matchesCount);
             query.getSearchResult().addMatch(new Match(elementMatch, 0, 0));
         }
@@ -254,6 +254,9 @@ public class VariableSearchVisitor {
                 elementMatch.setPotentialMatchesCount(matches.size() - matchesCount);
                 for (Match match : matches) {
                     query.getSearchResult().addMatch(match);
+                }
+                if (formNode.hasFormScript()) {
+                    // TODO
                 }
             }
             if (formNode.hasFormValidation()) {

@@ -15,7 +15,7 @@ public class AddScriptTaskNodeFeature extends AddStateNodeFeature {
     protected void addCustomGraphics(Node node, IAddContext context, GraphicsAlgorithmContainer container, ContainerShape containerShape) {
         Image image = Graphiti.getGaService().createImage(container, "script.png");
         image.getProperties().add(new GaProperty(GaProperty.ID, GaProperty.SCRIPT));
-        Graphiti.getGaService().setLocationAndSize(image, GRID_SIZE, GRID_SIZE, 16, 16);
+        Graphiti.getGaService().setLocationAndSize(image, GRID_SIZE, GRID_SIZE, ICON_WIDTH, ICON_HEIGHT);
     }
 
 }

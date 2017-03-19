@@ -16,9 +16,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.properties.ComboBoxPropertyDescriptor;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
 
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.formeditor.ftl.ComboOption;
 import ru.runa.gpd.formeditor.ftl.ComponentParameter;
-import ru.runa.gpd.lang.model.PropertyNames;
 import ru.runa.gpd.ui.custom.LoggingSelectionChangedAdapter;
 
 import com.google.common.base.Function;

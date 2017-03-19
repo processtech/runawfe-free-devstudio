@@ -15,8 +15,8 @@ import org.eclipse.gef.tools.DragEditPartsTracker;
 
 import ru.runa.gpd.editor.gef.ActionGraphUtils;
 import ru.runa.gpd.editor.gef.policy.ActionComponentEditPolicy;
-import ru.runa.gpd.lang.model.Action;
-import ru.runa.gpd.lang.model.Active;
+import ru.runa.gpd.lang.model.jpdl.Action;
+import ru.runa.gpd.lang.model.jpdl.ActionContainer;
 
 public class ActionGraphicalEditPart extends ElementGraphicalEditPart {
     //    @Override
@@ -58,7 +58,7 @@ public class ActionGraphicalEditPart extends ElementGraphicalEditPart {
                     if (getParent() == null) {
                         return;
                     }
-                    int index = ((Active) getParent().getModel()).getActions().indexOf(getModel());
+                    int index = ((ActionContainer) getParent().getModel()).getActions().indexOf(getModel());
                     getFigure().setLocation(ActionGraphUtils.getActionFigureLocation(((TransitionGraphicalEditPart) getParent()).getConnectionFigure(), index, 0, false));
                     refreshVisuals();
                 }
