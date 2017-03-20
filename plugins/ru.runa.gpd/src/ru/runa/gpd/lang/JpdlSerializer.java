@@ -192,6 +192,7 @@ public class JpdlSerializer extends ProcessSerializer {
                 stateElement.addAttribute(ASYNC_COMPLETION_MODE, state.getAsyncCompletionMode().name());
             }
             writeTimer(stateElement, state.getTimer());
+            writeBoundaryEvents(stateElement, state.getCatchEventNodes());
             if (state.isUseEscalation()) {
                 String timerName = TIMER_ESCALATION;
                 Duration escalationDuration = state.getEscalationDelay();
@@ -329,6 +330,14 @@ public class JpdlSerializer extends ProcessSerializer {
         }
         setAttribute(timerElement, TRANSITION, PluginConstants.TIMER_TRANSITION_NAME);
     }
+    
+	private void writeBoundaryEvents(Element stateElement, CatchEventNode catchEventNodes) {
+		if (catchEventNodes == null) {
+			return;
+		}
+		Element catchEventElement = stateElement.addElement(RECEIVE_MESSAGE);
+        setAttribute(catchEventElement, ID, catchEventNodes.getId());
+	}
 
     private Element writeElement(Element parent, GraphElement element) {
         return writeElement(parent, element, element.getTypeDefinition().getJpdlElementName());
