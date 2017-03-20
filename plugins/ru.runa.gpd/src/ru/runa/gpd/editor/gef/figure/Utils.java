@@ -73,8 +73,7 @@ public class Utils implements GEFConstants {
 		points.addPoint(leftUp.x + 11, leftUp.y + 7);
 		points.addPoint(leftUp.x + 15, leftUp.y + 3);
 		points.addPoint(leftUp.x + 11, leftUp.y + 15);
-		points.addPoint(leftUp.x + 11, leftUp.y + 15);
-		points.addPoint(leftUp.x + 5, leftUp.y + 8);
+		points.addPoint(leftUp.x + 5, leftUp.y + 9);
 		points.addPoint(leftUp.x, leftUp.y + 13);
 		points.addPoint(leftUp.x + 5, leftUp.y);		
 		g.setBackgroundColor(g.getForegroundColor());
