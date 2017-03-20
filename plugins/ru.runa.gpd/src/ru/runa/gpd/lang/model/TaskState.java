@@ -23,6 +23,8 @@ import ru.runa.gpd.form.FormVariableAccess;
 import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.lang.ValidationError;
+import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
+import ru.runa.gpd.lang.model.bpmn.IBoundaryEvent;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 import ru.runa.gpd.lang.model.jpdl.ActionContainer;
 import ru.runa.gpd.property.DurationPropertyDescriptor;
@@ -55,6 +57,12 @@ public class TaskState extends FormNode implements ActionContainer, ITimed, Sync
         return getFirstChild(Timer.class);
     }
 
+    @Override
+    public CatchEventNode getCatchEventNodes() {
+        return getFirstChild(CatchEventNode.class);
+    }
+
+    
     public boolean isReassignSwimlaneToInitializerValue() {
         return reassignSwimlaneToInitializerValue;
     }

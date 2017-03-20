@@ -18,5 +18,10 @@ public class ScriptTask extends Node implements Delegable, IBoundaryEventContain
     protected boolean allowLeavingTransition(List<Transition> transitions) {
         return super.allowLeavingTransition(transitions) && transitions.size() == 0;
     }
+    
+    @Override
+    public CatchEventNode getCatchEventNodes() {
+        return getFirstChild(CatchEventNode.class);
+    }
 
 }

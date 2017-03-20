@@ -364,6 +364,7 @@ public class BpmnSerializer extends ProcessSerializer {
     }
 
     private void writeBoundaryEvents(Element processElement, IBoundaryEventContainer boundaryEventContainer) {
+    	//TODO почему лист? сейчас можно добавить несколько обработчиков событий к одному действию! 
         List<CatchEventNode> catchEventNodes = ((GraphElement) boundaryEventContainer).getChildren(CatchEventNode.class);
         for (CatchEventNode eventNode : catchEventNodes) {
             Element boundaryEventElement = processElement.addElement(BOUNDARY_EVENT);
