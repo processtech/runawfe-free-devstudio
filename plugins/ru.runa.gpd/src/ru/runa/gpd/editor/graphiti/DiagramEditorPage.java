@@ -20,6 +20,7 @@ import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.impl.AddConnectionContext;
 import org.eclipse.graphiti.features.context.impl.AddContext;
 import org.eclipse.graphiti.features.context.impl.AreaContext;
+import org.eclipse.graphiti.features.context.impl.LayoutContext;
 import org.eclipse.graphiti.mm.pictograms.Anchor;
 import org.eclipse.graphiti.mm.pictograms.AnchorContainer;
 import org.eclipse.graphiti.mm.pictograms.ChopboxAnchor;
@@ -71,6 +72,10 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
         if (pe != null) {
             BOUpdateContext context = new BOUpdateContext(pe, event.getSource());
             getDiagramTypeProvider().getFeatureProvider().updateIfPossibleAndNeeded(context);
+            if (PropertyNames.NODE_BOUNDS_RESIZED.equals(event.getPropertyName())) {
+                LayoutContext layoutContext = new LayoutContext(pe);
+                getDiagramTypeProvider().getFeatureProvider().layoutIfPossible(layoutContext);
+            }
         } else if (event.getSource() instanceof Swimlane && PropertyNames.PROPERTY_NAME.equals(event.getPropertyName())) {
             for (SwimlanedNode swimlanedNode : editor.getDefinition().getChildren(SwimlanedNode.class)) {
                 if (Objects.equal(swimlanedNode.getSwimlane(), event.getSource())) {

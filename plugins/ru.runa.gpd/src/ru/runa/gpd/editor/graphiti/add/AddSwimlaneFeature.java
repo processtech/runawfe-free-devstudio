@@ -43,7 +43,7 @@ public class AddSwimlaneFeature extends AddElementFeature {
     @Override
     public PictogramElement add(IAddContext context) {
         Swimlane swimlane = (Swimlane) context.getNewObject();
-        Dimension bounds = adjustBounds(context);
+        Dimension bounds = getBounds(context);
         //
         ContainerShape containerShape = Graphiti.getPeCreateService().createContainerShape(context.getTargetContainer(), true);
         containerShape.getProperties().add(new GaProperty(GaProperty.SWIMLANE_DISPLAY_VERTICAL, String.valueOf(isVerticalLayout())));

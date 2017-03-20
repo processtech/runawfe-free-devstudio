@@ -18,7 +18,6 @@ public class AddEndTextDecorationFeature extends AddNodeFeature {
 
         ContainerShape containerShape = Graphiti.getPeCreateService().createContainerShape(context.getTargetContainer(), true);
 
-        adjustBounds(context);
         IGaService gaService = Graphiti.getGaService();
 
         Text textName = gaService.createDefaultText(getDiagram(), containerShape, labelName);
