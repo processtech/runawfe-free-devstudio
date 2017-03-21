@@ -26,15 +26,17 @@ public class AddEndNodeFeature extends AddNodeWithImageFeature {
         Dimension bounds = getBounds(context);
 
         // create independent text label graph element for end point
-        EndTextDecoration element = NodeRegistry.getNodeTypeDefinition(Language.BPMN, BpmnSerializer.END_TEXT_DECORATION).createElement(node.getParent(),
-                false);
+        EndTextDecoration element = NodeRegistry.getNodeTypeDefinition(Language.BPMN, BpmnSerializer.END_TEXT_DECORATION).createElement(
+                node.getParent(), false);
+        element.setConstraint(node.getConstraint().getCopy());
 
         node.getTextDecoratorEmulation().link(element);
         AreaContext tempArea = new AreaContext();
 
         if (node.getTextDecoratorEmulation().hasDefinitionLocation()) {
             // get saved position
-            tempArea.setLocation(node.getTextDecoratorEmulation().getDefinitionLocation().x(), node.getTextDecoratorEmulation().getDefinitionLocation().y());
+            tempArea.setLocation(node.getTextDecoratorEmulation().getDefinitionLocation().x(), node.getTextDecoratorEmulation()
+                    .getDefinitionLocation().y());
         } else {
             // calc position under end point image
             Font defFont = Graphiti.getGaService().manageDefaultFont(getDiagram());
