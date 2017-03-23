@@ -12,8 +12,6 @@ import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.extension.VariableFormatArtifact;
 import ru.runa.gpd.extension.VariableFormatRegistry;
 import ru.runa.gpd.lang.ValidationError;
-import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
-import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 import ru.runa.gpd.util.VariableMapping;
 import ru.runa.gpd.util.VariableUtils;
 import ru.runa.wfe.lang.AsyncCompletionMode;
@@ -31,8 +29,8 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
             VariableUtils.CURRENT_NODE_ID, VariableUtils.CURRENT_NODE_NAME);
     
     @Override
-    public CatchEventNode getCatchEventNodes() {
-        return getFirstChild(CatchEventNode.class);
+    public AbstractEventNode getCatchEventNodes() {
+        return getFirstChild(AbstractEventNode.class);
     }
 
     @Override

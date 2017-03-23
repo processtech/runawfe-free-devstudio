@@ -25,7 +25,6 @@ import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEvent;
-import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 import ru.runa.gpd.lang.model.jpdl.ActionContainer;
 import ru.runa.gpd.property.DurationPropertyDescriptor;
 import ru.runa.gpd.property.EscalationActionPropertyDescriptor;
@@ -58,8 +57,8 @@ public class TaskState extends FormNode implements ActionContainer, ITimed, Sync
     }
 
     @Override
-    public CatchEventNode getCatchEventNodes() {
-        return getFirstChild(CatchEventNode.class);
+    public AbstractEventNode getCatchEventNodes() {
+        return getFirstChild(AbstractEventNode.class);
     }
 
     

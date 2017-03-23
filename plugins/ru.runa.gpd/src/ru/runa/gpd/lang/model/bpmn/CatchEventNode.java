@@ -5,6 +5,7 @@ import java.util.List;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.AbstractEventNode;
 import ru.runa.gpd.lang.model.EventNodeType;
+import ru.runa.gpd.lang.model.IBoundaryEventContainer;
 import ru.runa.gpd.lang.model.IReceiveMessageNode;
 import ru.runa.gpd.lang.model.Timer;
 

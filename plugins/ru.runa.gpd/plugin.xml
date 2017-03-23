@@ -565,7 +565,7 @@
              menubarPath="features/sp1">
        </action>
        <action
-             class="ru.runa.gpd.lang.action.TimerFeatureDelegate"
+             class="ru.runa.gpd.lang.action.jpdl.CatchEventFeatureDelegate"
              id="feature.catch.event"
              label="%label.element.catch.event"
              menubarPath="features/sp1">

@@ -8,8 +8,8 @@ import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.services.Graphiti;
 
 import ru.runa.gpd.lang.model.AbstractEventNode;
+import ru.runa.gpd.lang.model.IBoundaryEventContainer;
 import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
-import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 
 import com.google.common.base.Objects;
 

@@ -7,8 +7,8 @@ import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 
 import ru.runa.gpd.editor.graphiti.GraphUtil;
+import ru.runa.gpd.lang.model.IBoundaryEventContainer;
 import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
-import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 
 public class UpdateCatchEventNodeFeature extends UpdateEventNodeFeature {
 

@@ -13,9 +13,9 @@ import org.eclipse.graphiti.services.IPeCreateService;
 
 import ru.runa.gpd.editor.GEFConstants;
 import ru.runa.gpd.editor.graphiti.GraphUtil;
+import ru.runa.gpd.lang.model.IBoundaryEventContainer;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
-import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 
 public class AddCatchEventNodeFeature extends AddEventNodeFeature implements GEFConstants {
 

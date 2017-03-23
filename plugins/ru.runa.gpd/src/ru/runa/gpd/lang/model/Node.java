@@ -14,7 +14,6 @@ import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEvent;
-import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 import ru.runa.gpd.util.Duration;
 
 import com.google.common.base.Objects;

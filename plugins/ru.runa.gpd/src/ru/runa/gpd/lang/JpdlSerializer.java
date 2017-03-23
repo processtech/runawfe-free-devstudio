@@ -14,6 +14,7 @@ import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.PropertyNames;
+import ru.runa.gpd.lang.model.AbstractEventNode;
 import ru.runa.gpd.lang.model.Decision;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.Describable;
@@ -247,13 +248,13 @@ public class JpdlSerializer extends ProcessSerializer {
             }
         }
         List<CatchEventNode> receiveMessageNodes = definition.getChildren(CatchEventNode.class);
-        for (CatchEventNode messageNode : receiveMessageNodes) {
-            Element messageElement = writeNode(root, messageNode, null);
-            messageElement.addAttribute(TYPE, messageNode.getEventNodeType().name());
-            for (VariableMapping variable : messageNode.getVariableMappings()) {                
+        for (CatchEventNode catchEventNode : receiveMessageNodes) {
+            Element messageElement = writeNode(root, catchEventNode, null);
+            messageElement.addAttribute(TYPE, catchEventNode.getEventNodeType().name());
+            for (VariableMapping variable : catchEventNode.getVariableMappings()) {                
                 writeVariableAttrs(messageElement, variable);
             }
-            writeTimer(messageElement, messageNode.getTimer());
+            writeTimer(messageElement, catchEventNode.getTimer());
         }
         List<EndTokenState> endTokenStates = definition.getChildren(EndTokenState.class);
         for (EndTokenState state : endTokenStates) {
@@ -329,15 +330,7 @@ public class JpdlSerializer extends ProcessSerializer {
             writeDelegation(timerElement, ACTION, timer.getAction());
         }
         setAttribute(timerElement, TRANSITION, PluginConstants.TIMER_TRANSITION_NAME);
-    }
-    
-	private void writeBoundaryEvents(Element stateElement, CatchEventNode catchEventNodes) {
-		if (catchEventNodes == null) {
-			return;
-		}
-		Element catchEventElement = stateElement.addElement(RECEIVE_MESSAGE);
-        setAttribute(catchEventElement, ID, catchEventNodes.getId());
-	}
+    }    	
 
     private Element writeElement(Element parent, GraphElement element) {
         return writeElement(parent, element, element.getTypeDefinition().getJpdlElementName());
@@ -381,6 +374,15 @@ public class JpdlSerializer extends ProcessSerializer {
         setAttribute(eventElement, TYPE, actionEventType.getType());
         writeDelegation(eventElement, ACTION, action);
     }
+    
+    private void writeBoundaryEvents(Element stateElement, AbstractEventNode catchEventNode) {
+		if (catchEventNode == null) {
+			return;
+		}
+		Element catchEventElement = stateElement.addElement(RECEIVE_MESSAGE);
+        setAttribute(catchEventElement, ID, catchEventNode.getId());
+        setAttribute(catchEventElement, TYPE, catchEventNode.getEventNodeType().name());
+	}
 
     private void writeDelegation(Element parent, String elementName, Delegable delegable) {
         Element delegationElement = parent.addElement(elementName);

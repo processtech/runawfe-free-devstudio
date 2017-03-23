@@ -3,7 +3,9 @@ package ru.runa.gpd.lang.model.bpmn;
 import java.util.List;
 
 import ru.runa.gpd.extension.HandlerArtifact;
+import ru.runa.gpd.lang.model.AbstractEventNode;
 import ru.runa.gpd.lang.model.Delegable;
+import ru.runa.gpd.lang.model.IBoundaryEventContainer;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.Transition;
 
@@ -20,8 +22,8 @@ public class ScriptTask extends Node implements Delegable, IBoundaryEventContain
     }
     
     @Override
-    public CatchEventNode getCatchEventNodes() {
-        return getFirstChild(CatchEventNode.class);
+    public AbstractEventNode getCatchEventNodes() {
+        return getFirstChild(AbstractEventNode.class);
     }
 
 }
