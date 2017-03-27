@@ -6,10 +6,10 @@ import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.AbstractEventNode;
 import ru.runa.gpd.lang.model.EventNodeType;
 import ru.runa.gpd.lang.model.IBoundaryEventContainer;
-import ru.runa.gpd.lang.model.IReceiveMessageNode;
+import ru.runa.gpd.lang.model.ITimed;
 import ru.runa.gpd.lang.model.Timer;
 
-public class CatchEventNode extends AbstractEventNode implements IReceiveMessageNode, IBoundaryEvent {
+public class CatchEventNode extends AbstractEventNode implements ITimed, IBoundaryEvent {
 
     @Override
     public Timer getTimer() {

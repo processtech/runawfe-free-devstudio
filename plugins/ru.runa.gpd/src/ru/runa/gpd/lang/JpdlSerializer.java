@@ -631,6 +631,14 @@ public class JpdlSerializer extends ProcessSerializer {
                         }
                     }
                 }
+                if (RECEIVE_MESSAGE.equals(stateNodeChild.getName())) {
+                	if(state instanceof TaskState) {
+                		CatchEventNode catchEventNode = new CatchEventNode();
+                		catchEventNode.setId(stateNodeChild.attributeValue(ID));
+                		catchEventNode.setEventNodeType(EventNodeType.valueOf(node.attributeValue(TYPE, "message")));
+                		state.addChild(catchEventNode);
+                	}
+                }
                 if (TIMER.equals(stateNodeChild.getName())) {
                     String nameTimer = stateNodeChild.attributeValue(NAME);
                     String dueDate = stateNodeChild.attributeValue(DUEDATE);

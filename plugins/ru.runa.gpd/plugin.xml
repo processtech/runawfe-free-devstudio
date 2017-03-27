@@ -564,12 +564,6 @@
              label="%label.action.feature.timer"
              menubarPath="features/sp1">
        </action>
-       <action
-             class="ru.runa.gpd.lang.action.jpdl.CatchEventFeatureDelegate"
-             id="feature.catch.event"
-             label="%label.element.catch.event"
-             menubarPath="features/sp1">
-       </action>
     </objectContribution>
     <objectContribution
           adaptable="false"
@@ -584,6 +578,21 @@
              class="ru.runa.gpd.lang.action.EditTimerActionAction"
              id="timer.2editAction"
              label="%label.action.editAction">
+       </action>
+    </objectContribution>
+    <objectContribution
+          adaptable="false"
+          id="jpdl.event"
+          objectClass="ru.runa.gpd.lang.model.IBoundaryEventContainer">
+       <filter
+             name="language"
+             value="jpdl">
+       </filter>
+       <action
+             class="ru.runa.gpd.lang.action.jpdl.CatchEventFeatureDelegate"
+             id="feature.catch.event"
+             label="%label.element.catch.event"
+             menubarPath="features/sp1">
        </action>
     </objectContribution>
   </extension>

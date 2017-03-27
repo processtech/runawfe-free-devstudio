@@ -51,19 +51,27 @@ public class TaskStateGraphicalEditPart extends SwimlaneNodeEditPart implements 
 
     @Override
     public ConnectionAnchor getSourceConnectionAnchor(ConnectionEditPart connectionEditPart) {
-        if (PluginConstants.TIMER_TRANSITION_NAME.equals(((Transition) connectionEditPart.getModel()).getName())) {
+        String transitionName = ((Transition) connectionEditPart.getModel()).getName();
+		if (PluginConstants.TIMER_TRANSITION_NAME.equals(transitionName)) {
             return getFigure().getTimerConnectionAnchor();
-        } else {
-            return getFigure().getLeavingConnectionAnchor();
-        }
+        } else if (PluginConstants.EVENT_TRANSITION_NAME.equals(transitionName)) {
+        	return getFigure().getEventConnectionAnchor();
+        } 
+        return getFigure().getLeavingConnectionAnchor();
     }
 
     @Override
     public ConnectionAnchor getSourceConnectionAnchor(Request request) {
-        if (getModel().getTimer() != null && getModel().getLeavingTransitions().size() == 1 && getModel().getTransitionByName(PluginConstants.TIMER_TRANSITION_NAME) == null) {
-            return getFigure().getTimerConnectionAnchor();
-        } else {
-            return getFigure().getLeavingConnectionAnchor();
-        }
+        if (getModel().getTimer() != null) { 
+        	if( getModel().getLeavingTransitions().size() == 1 
+        			&& getModel().getTransitionByName(PluginConstants.TIMER_TRANSITION_NAME) == null) {
+        		return getFigure().getTimerConnectionAnchor(); 
+        	} else if (getModel().getLeavingTransitions().size() == 1 
+        			&& getModel().getTransitionByName(PluginConstants.EVENT_TRANSITION_NAME) == null) {
+        		return getFigure().getEventConnectionAnchor();
+        	}
+        } 
+        
+        return getFigure().getLeavingConnectionAnchor();       
     }
 }

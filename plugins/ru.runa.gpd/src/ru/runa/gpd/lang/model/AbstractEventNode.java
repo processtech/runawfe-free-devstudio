@@ -35,7 +35,7 @@ public class AbstractEventNode extends MessageNode {
         return eventNodeType;
     }
 
-    public void setEventNodeType(EventNodeType eventNodeType) {
+	public void setEventNodeType(EventNodeType eventNodeType) {
         if (eventNodeType != this.eventNodeType) {
             EventNodeType old = this.eventNodeType;
             this.eventNodeType = eventNodeType;

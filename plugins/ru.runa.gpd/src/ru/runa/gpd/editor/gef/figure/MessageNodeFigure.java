@@ -28,14 +28,6 @@ public abstract class MessageNodeFigure extends NodeFigure {
     public void paintEventType(EventNodeType eventNodeType, Graphics g, Dimension dim, boolean toLeft) {
     	final int offset = Utils.EVENT_TYPE_ICON_WIDTH + GEFConstants.GRID_SIZE/2;
 		Point envTypePoint = new Point(toLeft ? dim.width - offset : GEFConstants.GRID_SIZE/2, GEFConstants.GRID_SIZE/2);
-		if (eventNodeType == EventNodeType.signal) {
-			Utils.paintSignal(g, envTypePoint);
-		} else if (eventNodeType == EventNodeType.cancel) {
-			Utils.paintCancle(g, envTypePoint);
-		} else if (eventNodeType == EventNodeType.error) {
-			Utils.paintError(g, envTypePoint);
-		} else {
-			Utils.paintMessage(g, envTypePoint);
-		}
+		Utils.paintEventType(g, envTypePoint, eventNodeType);
 	}
 }
