@@ -518,8 +518,8 @@ public class JpdlSerializer extends ProcessSerializer {
             }
             Element node = startStates.get(0);
             StartState startState = create(node, definition);
-            List<Element> stateChilds = node.elements();
-            for (Element stateNodeChild : stateChilds) {
+            List<Element> stateChildren = node.elements();
+            for (Element stateNodeChild : stateChildren) {
                 if (TASK.equals(stateNodeChild.getName())) {
                     String swimlaneName = stateNodeChild.attributeValue(SWIMLANE);
                     Swimlane swimlane = definition.getSwimlaneByName(swimlaneName);
@@ -594,8 +594,8 @@ public class JpdlSerializer extends ProcessSerializer {
                 }
                 multiTaskState.setVariableMappings(mappings);
             }
-            List<Element> stateChilds = node.elements();
-            for (Element stateNodeChild : stateChilds) {
+            List<Element> stateChildren = node.elements();
+            for (Element stateNodeChild : stateChildren) {
                 if (TASK.equals(stateNodeChild.getName())) {
                     String swimlaneName = stateNodeChild.attributeValue(SWIMLANE);
                     if (swimlaneName != null && state instanceof SwimlanedNode) {
@@ -675,8 +675,8 @@ public class JpdlSerializer extends ProcessSerializer {
         List<Element> waitStates = root.elements(WAIT_STATE);
         for (Element node : waitStates) {
             Timer timer = create(node, definition);
-            List<Element> stateChilds = node.elements();
-            for (Element stateNodeChild : stateChilds) {
+            List<Element> stateChildren = node.elements();
+            for (Element stateNodeChild : stateChildren) {
                 if (TIMER.equals(stateNodeChild.getName())) {
                     String dueDate = stateNodeChild.attributeValue(DUEDATE);
                     if (dueDate != null) {

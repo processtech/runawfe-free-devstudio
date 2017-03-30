@@ -189,7 +189,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             if (PropertyNames.PROPERTY_NAME.equals(type)) {
                 typeTableViewer.refresh(evt.getSource());
             }
-            if (PropertyNames.PROPERTY_CHILDS_CHANGED.equals(type)) {
+            if (PropertyNames.PROPERTY_CHILDREN_CHANGED.equals(type)) {
                 updateAttributeViewer();
             }
         }

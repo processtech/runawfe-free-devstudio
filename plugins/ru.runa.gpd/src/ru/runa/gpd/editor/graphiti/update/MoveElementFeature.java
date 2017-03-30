@@ -28,6 +28,7 @@ import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
+import ru.runa.gpd.lang.model.jpdl.Action;
 
 import com.google.common.collect.Lists;
 
@@ -40,6 +41,9 @@ public class MoveElementFeature extends DefaultMoveShapeFeature {
     public boolean canMoveShape(IMoveShapeContext context) {
         Shape shape = context.getShape();
         GraphElement element = (GraphElement) getBusinessObjectForPictogramElement(shape);
+        if (element instanceof Action) {
+            return false;
+        }
         if (element instanceof Timer && element.getParent() instanceof ITimed) {
             return false;
         }

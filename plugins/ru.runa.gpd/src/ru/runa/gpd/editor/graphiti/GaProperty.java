@@ -16,6 +16,12 @@ public class GaProperty extends PropertyImpl {
     public static final String SCRIPT = "script";
     public static final String ASYNC = "async";
     public static final String ICON = "icon";
+    public static final String CLASS = "class";
+    public static final String ACTION_ICON = "actionIcon";
+    public static final String ACTIONS_ICON = "actionsIcon";
+    public static final String ACTIVE = "active";
+    public static final String TRUE = "true";
+    public static final String FALSE = "false";
 
     public GaProperty(String name, String value) {
         setKey(name);

@@ -1192,6 +1192,7 @@
 					<xsd:element ref="resourceRole" minOccurs="0" maxOccurs="unbounded"/>
 					<xsd:element ref="correlationSubscription" minOccurs="0" maxOccurs="unbounded"/>
 					<xsd:element name="supports" type="xsd:QName" minOccurs="0" maxOccurs="unbounded"/>
+					<xsd:element ref="actionHandlerSet" minOccurs="0" maxOccurs="1"/>
 				</xsd:sequence>
 				<xsd:attribute name="processType" type="tProcessType" default="None"/>
 				<xsd:attribute name="isClosed" type="xsd:boolean" default="false"/>
@@ -1373,6 +1374,7 @@
 				<xsd:attribute name="sourceRef" type="xsd:IDREF" use="required"/>
 				<xsd:attribute name="targetRef" type="xsd:IDREF" use="required"/>
 				<xsd:attribute name="isImmediate" type="xsd:boolean" use="optional"/>
+				<xsd:attribute name="actionHandlerRefs" type="xsd:string" use="optional"/>
 			</xsd:extension>
 		</xsd:complexContent>
 	</xsd:complexType>
@@ -1555,6 +1557,7 @@
 					<xsd:element ref="rendering" minOccurs="0" maxOccurs="unbounded"/>
 				</xsd:sequence>
 				<xsd:attribute name="implementation" type="tImplementation" default="##unspecified"/>
+				<xsd:attribute name="actionHandlerRefs" type="xsd:string" use="optional"/>
 			</xsd:extension>
 		</xsd:complexContent>
 	</xsd:complexType>
@@ -1565,6 +1568,22 @@
 			<xsd:extension base="tUserTask">
 			</xsd:extension>
 		</xsd:complexContent>
+	</xsd:complexType>
+
+	<xsd:element name="actionHandler" type="tActionHandler"/>
+	<xsd:complexType name="tActionHandler">
+		<xsd:complexContent>
+			<xsd:extension base="tBaseElement">
+				<xsd:attribute name="name" type="xsd:string" use="optional"/>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+
+	<xsd:element name="actionHandlerSet" type="tActionHandlerSet"/>
+	<xsd:complexType name="tActionHandlerSet">
+		<xsd:sequence>
+			<xsd:element ref="actionHandler" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
 	</xsd:complexType>
 
 </xsd:schema>

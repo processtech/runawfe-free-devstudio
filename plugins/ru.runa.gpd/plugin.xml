@@ -648,6 +648,7 @@
                create="ru.runa.gpd.editor.graphiti.create.CreateTransitionFeature"
                fixedSize="false"
                height="1"
+               layout="ru.runa.gpd.editor.graphiti.layout.LayoutTransitionFeature"
                update="ru.runa.gpd.editor.graphiti.update.UpdateTransitionFeature"
                width="1">
          </graphiti>
@@ -897,6 +898,7 @@
       		type="node"
             model="ru.runa.gpd.lang.model.jpdl.ActionImpl"
             jpdl="action"
+            bpmn="actionHandler"
             icon="action.png"
             label="%label.element.action">
          <gef 
@@ -904,6 +906,14 @@
             graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.ActionGraphicalEditPart"
             treeEditPart="ru.runa.gpd.editor.gef.part.tree.ActionTreeEditPart">
          </gef>
+         <graphiti
+               create="ru.runa.gpd.editor.graphiti.create.CreateActionFeature"
+               add="ru.runa.gpd.editor.graphiti.add.AddActionFeature"
+               layout="ru.runa.gpd.editor.graphiti.layout.LayoutActionFeature"
+               fixedSize="true"
+               height="16"
+               width="16">
+         </graphiti>
       </element>
       <element
             bpmn="ioSpecification"
@@ -1140,6 +1150,11 @@
                relationship="right"
                relative="org.eclipse.ui.editorss"/>
          <view
+               id="ru.runa.gpd.ui.view.thumbnailview"
+               ratio="0.8"
+               relationship="stack"
+               relative="org.eclipse.ui.views.ContentOutline" />
+         <view
                id="ru.runa.gpd.botExplorerView"
                ratio="0.2"
                relationship="stack"
@@ -1152,6 +1167,12 @@
    </extension>
    <extension
          point="org.eclipse.ui.views">
+      <view
+            category="org.eclipse.ui"
+            class="ru.runa.gpd.ui.view.ThumbnailView"
+            icon="icons/thumbnail.gif"
+            id="ru.runa.gpd.ui.view.thumbnailview"
+            name="%label.menu.view.thumbnail"/>
       <view
             category="ru.runa.gpd.view.category"
             class="ru.runa.gpd.ui.view.ProcessExplorerTreeView"
@@ -2371,6 +2392,13 @@
                path="properties">
             <separator name="additions"/>
          </menu>
+         <action
+               class="ru.runa.gpd.ui.action.OpenThumbnail"
+               icon="icons/thumbnail.gif"
+               id="openThumbnail"
+               label="%label.menu.view.thumbnail"
+               menubarPath="window/additions"
+               style="push"/>
          <action
                class="ru.runa.gpd.ui.action.OpenProperties"
                icon="icons/prop_ps.gif"

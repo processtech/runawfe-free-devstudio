@@ -8,6 +8,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.transaction.RecordingCommand;
+import org.eclipse.emf.transaction.TransactionalEditingDomain;
+import org.eclipse.emf.transaction.util.TransactionUtil;
 import org.eclipse.gef.ContextMenuProvider;
 import org.eclipse.gef.KeyHandler;
 import org.eclipse.gef.LayerConstants;
@@ -24,9 +26,13 @@ import org.eclipse.graphiti.features.context.impl.LayoutContext;
 import org.eclipse.graphiti.mm.pictograms.Anchor;
 import org.eclipse.graphiti.mm.pictograms.AnchorContainer;
 import org.eclipse.graphiti.mm.pictograms.ChopboxAnchor;
+import org.eclipse.graphiti.mm.pictograms.Connection;
+import org.eclipse.graphiti.mm.pictograms.ConnectionDecorator;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.mm.pictograms.Diagram;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
+import org.eclipse.graphiti.mm.pictograms.Shape;
+import org.eclipse.graphiti.services.Graphiti;
 import org.eclipse.graphiti.ui.editor.DiagramEditor;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
@@ -43,7 +49,9 @@ import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.SwimlanedNode;
+import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Transition;
+import ru.runa.gpd.lang.model.jpdl.Action;
 
 import com.google.common.base.Objects;
 
@@ -191,9 +199,52 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
         refresh();
     }
 
-    private void drawElements(ContainerShape parentShape) {
+    public void refreshActions() {
+        refreshActions(getDiagramTypeProvider().getDiagram());
+    }
+
+    private void refreshActions(Diagram diagram) {
+        refreshActions((ContainerShape)  diagram);
+        for (Connection connection : diagram.getConnections()) {
+            for (final ConnectionDecorator decorator : connection.getConnectionDecorators()) {
+                if (PropertyUtil.hasProperty(decorator, GaProperty.CLASS, GaProperty.ACTION_ICON)) {
+                    TransactionalEditingDomain domain = TransactionUtil.getEditingDomain(decorator);
+                    domain.getCommandStack().execute(new RecordingCommand(domain) {
+                        @Override
+                        protected void doExecute() {
+                            decorator.setVisible(editor.getDefinition().isShowActions());
+                        }
+                    });
+                }
+            }
+        }
+        refresh();
+    }
+
+    private void refreshActions(ContainerShape containerShape) {
+        for (final Shape shape : containerShape.getChildren()) {
+            if (PropertyUtil.hasProperty(shape, GaProperty.CLASS, GaProperty.ACTION_ICON)) {
+                TransactionalEditingDomain domain = TransactionUtil.getEditingDomain(shape);
+                domain.getCommandStack().execute(new RecordingCommand(domain) {
+                    @Override
+                    protected void doExecute() {
+                        if (editor.getDefinition().isShowActions()) {
+                            shape.setVisible(Graphiti.getPeService().getPropertyValue(shape, GaProperty.ACTIVE).equals(GaProperty.TRUE));
+                        } else {
+                            shape.setVisible(false);
+                        }
+                    }
+                });
+            }
+            if (shape instanceof ContainerShape) {
+                refreshActions((ContainerShape) shape);
+            }
+        }
+    }
+
+    private void drawElements(Diagram diagram) {
         List<GraphElement> graphElements = getDefinition().getContainerElements(getDefinition());
-        drawElements(parentShape, graphElements);
+        drawElements(diagram, graphElements);
     }
 
     public void drawElements(ContainerShape parentShape, List<? extends GraphElement> graphElements) {
@@ -214,10 +265,49 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
             context.setLocation(graphElement.getConstraint().x, graphElement.getConstraint().y);
             if (addFeature.canAdd(context)) {
                 PictogramElement childContainer = addFeature.add(context);
+                if (graphElement instanceof TaskState) {
+                    drawActions((ContainerShape) childContainer, graphElement);
+                }
                 List<GraphElement> children = getDefinition().getContainerElements(graphElement);
                 if (childContainer instanceof ContainerShape && children.size() > 0) {
                     drawElements((ContainerShape) childContainer, children);
                 }
+            }
+        }
+    }
+
+    public void drawActions(ContainerShape containerShape, GraphElement actionOwner) {
+        IFeatureProvider featureProvider = getDiagramTypeProvider().getFeatureProvider();
+        for (Action action : actionOwner.getActions()) {
+            AddContext context = new AddContext(new AreaContext(), action);
+            context.setNewObject(action);
+            context.setTargetContainer(containerShape);
+            IAddFeature addFeature = featureProvider.getAddFeature(context);
+            if (addFeature != null) {
+                if (addFeature.canAdd(context)) {
+                    addFeature.add(context);
+                }
+            } else {
+                System.out.println("Element not supported: " + action);
+                continue;
+            }
+        }
+    }
+
+    public void drawActions(Connection containerShape, GraphElement actionOwner) {
+        IFeatureProvider featureProvider = getDiagramTypeProvider().getFeatureProvider();
+        for (Action action : actionOwner.getActions()) {
+            AddContext context = new AddContext(new AreaContext(), action);
+            context.setNewObject(action);
+            context.setTargetConnection(containerShape);
+            IAddFeature addFeature = featureProvider.getAddFeature(context);
+            if (addFeature != null) {
+                if (addFeature.canAdd(context)) {
+                    addFeature.add(context);
+                }
+            } else {
+                System.out.println("Element not supported: " + action);
+                continue;
             }
         }
     }
@@ -252,7 +342,7 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
             }
             AddConnectionContext addContext = new AddConnectionContext(sourceAnchor, targetAnchor);
             addContext.setNewObject(transition);
-            getDiagramTypeProvider().getFeatureProvider().addIfPossible(addContext);
+            drawActions((Connection) getDiagramTypeProvider().getFeatureProvider().addIfPossible(addContext), transition);
         }
     }
 

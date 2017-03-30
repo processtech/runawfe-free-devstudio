@@ -33,7 +33,7 @@ public interface PropertyNames {
     public static final String PROPERTY_SUBPROCESS = "subprocess";
     public static final String PROPERTY_NODE_ASYNC_EXECUTION = "asyncExecution";
     public static final String NODE_REMOVED = "NODE_REMOVED";
-    public static final String PROPERTY_CHILDS_CHANGED = "NODE_CHILDS_CHANGED";
+    public static final String PROPERTY_CHILDREN_CHANGED = "NODE_CHILDREN_CHANGED";
     public static final String NODE_LEAVING_TRANSITION_ADDED = "LEAVING_TRANSITION_ADDED";
     public static final String NODE_LEAVING_TRANSITION_REMOVED = "LEAVING_TRANSITION_REMOVED";
     public static final String NODE_ARRIVING_TRANSITION_ADDED = "ARRIVING_TRANSITION_ADDED";

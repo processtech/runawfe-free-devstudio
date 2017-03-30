@@ -19,6 +19,7 @@ import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.SwimlanedNode;
+import ru.runa.gpd.lang.model.jpdl.Action;
 
 public class CreateElementFeature extends AbstractCreateFeature implements GEFConstants {
     public static final String CONNECTION_PROPERTY = "connectionContext";
@@ -70,6 +71,9 @@ public class CreateElementFeature extends AbstractCreateFeature implements GEFCo
     public Object[] create(ICreateContext context) {
         GraphElement graphElement = getNodeDefinition().createElement(getProcessDefinition(), true);
         GraphElement parent = (GraphElement) getBusinessObjectForPictogramElement(context.getTargetContainer());
+        if (graphElement instanceof Action && context.getTargetConnection() != null) {
+            parent = (GraphElement) getBusinessObjectForPictogramElement(context.getTargetConnection());
+        }
         graphElement.setParentContainer(parent);
         Swimlane swimlane = null;
         if (parent instanceof Swimlane) {

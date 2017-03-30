@@ -21,5 +21,10 @@ public class MoveTransitionLabelFeature extends DefaultMoveConnectionDecoratorFe
         Transition transition = (Transition) getBusinessObjectForPictogramElement(connection);
         transition.setLabelLocation(new Point(context.getX(), context.getY()));
     }
+
+    @Override
+    public boolean canMoveConnectionDecorator(IMoveConnectionDecoratorContext context) {
+        return false;
+    }
     
 }

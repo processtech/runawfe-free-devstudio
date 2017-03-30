@@ -16,6 +16,7 @@ import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
+import ru.runa.gpd.lang.model.jpdl.Action;
 import ru.runa.gpd.util.XmlUtil;
 
 import com.google.common.collect.Lists;
@@ -175,7 +176,7 @@ public class GpdXmlContentProvider extends AuxContentProvider {
             }
         }
         for (GraphElement graphElement : definition.getElementsRecursive()) {
-            if (graphElement.getConstraint() == null) {
+            if (graphElement instanceof Action || graphElement.getConstraint() == null) {
                 continue;
             }
             Element element = root.addElement(NODE);

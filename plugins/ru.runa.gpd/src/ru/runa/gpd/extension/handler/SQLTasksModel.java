@@ -183,8 +183,8 @@ public class SQLTasksModel extends Observable {
         public static SQLQueryModel deserialize(Element element) {
             SQLQueryModel model = new SQLQueryModel();
             model.query = element.attributeValue("sql");
-            List<Element> childs = element.elements();
-            for (Element child : childs) {
+            List<Element> children = element.elements();
+            for (Element child : children) {
                 SQLQueryParameterModel parameterModel = SQLQueryParameterModel.deserialize(child);
                 if (parameterModel.result) {
                     model.results.add(parameterModel);
