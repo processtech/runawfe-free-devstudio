@@ -314,7 +314,7 @@ public abstract class GroovyTypeSupport {
                 if (lexem2isVariable) {
                     code += var2 + " == null || ";
                 }
-                code += var1 + ".compareTo( new BigDecimal( " + var2 + " ) ) " + getOperator() + " 0";
+                code += "new BigDecimal( " + var1 + " ).compareTo( new BigDecimal( " + var2 + " ) ) " + getOperator() + " 0";
                 return code;
             }
 
