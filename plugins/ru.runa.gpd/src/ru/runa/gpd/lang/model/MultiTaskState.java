@@ -10,6 +10,7 @@ import org.eclipse.core.resources.IFolder;
 import ru.runa.gpd.extension.VariableFormatRegistry;
 import ru.runa.gpd.extension.handler.ParamDefConfig;
 import ru.runa.gpd.lang.ValidationError;
+import ru.runa.gpd.lang.model.bpmn.IMultiInstancesContainer;
 import ru.runa.gpd.util.MultiinstanceParameters;
 import ru.runa.gpd.util.VariableMapping;
 import ru.runa.gpd.util.VariableUtils;

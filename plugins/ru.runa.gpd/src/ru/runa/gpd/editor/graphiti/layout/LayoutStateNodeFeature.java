@@ -5,14 +5,16 @@ import org.eclipse.graphiti.features.context.ILayoutContext;
 import org.eclipse.graphiti.mm.Property;
 import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
+import org.eclipse.graphiti.mm.pictograms.Shape;
 import org.eclipse.graphiti.services.Graphiti;
 
 import ru.runa.gpd.editor.graphiti.GaProperty;
 import ru.runa.gpd.editor.graphiti.PropertyUtil;
+import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.Synchronizable;
 
-public class LayoutStateNodeFeature extends ElementLayoutFeature {
+public class LayoutStateNodeFeature extends LayoutElementFeature {
     public static final String MAIN_RECT = "mainRect";
     public static final String BORDER_RECT = "borderRect";
 
@@ -20,6 +22,7 @@ public class LayoutStateNodeFeature extends ElementLayoutFeature {
     public boolean layout(ILayoutContext context) {
         ContainerShape containerShape = (ContainerShape) context.getPictogramElement();
         GraphicsAlgorithm ga = containerShape.getGraphicsAlgorithm();
+        GraphElement element = (GraphElement) getBusinessObjectForPictogramElement(containerShape);
 
         Node node = (Node) getBusinessObjectForPictogramElement(containerShape);
         if (node.isMinimizedView()) {
@@ -37,12 +40,16 @@ public class LayoutStateNodeFeature extends ElementLayoutFeature {
             }
             GraphicsAlgorithm scriptImage = PropertyUtil.findGaRecursiveByName(ga, GaProperty.SCRIPT);
             if (scriptImage != null) {
-                Graphiti.getGaService().setLocationAndSize(scriptImage, 10, 10, 16, 16);
+                Graphiti.getGaService().setLocationAndSize(scriptImage, MINIMAZED_ICON_X, MINIMAZED_ICON_Y, ICON_WIDTH, ICON_HEIGHT);
+            }
+            GraphicsAlgorithm iconImage = PropertyUtil.findGaRecursiveByName(ga, GaProperty.ICON);
+            if (iconImage != null) {
+                iconImage.setTransparency(.0);
             }
             return true;
         }
 
-        Dimension bounds = adjustBounds(context);
+        Dimension bounds = element.getConstraint().getSize();
         int borderWidth = bounds.width - GRID_SIZE;
         int borderHeight = bounds.height - GRID_SIZE;
         GraphicsAlgorithm mainRectangle = PropertyUtil.findGaRecursiveByName(ga, MAIN_RECT);
@@ -70,14 +77,21 @@ public class LayoutStateNodeFeature extends ElementLayoutFeature {
             }
             Graphiti.getGaService().setLocationAndSize(multipleInstancesImage, x, y, 16, 12);
         }
+        GraphicsAlgorithm iconImage = PropertyUtil.findGaRecursiveByName(ga, GaProperty.ICON);
+        if (iconImage != null) {
+            iconImage.setTransparency(1.0);
+        }
         GraphicsAlgorithm scriptImage = PropertyUtil.findGaRecursiveByName(ga, GaProperty.SCRIPT);
         if (scriptImage != null) {
-            Graphiti.getGaService().setLocationAndSize(scriptImage, GRID_SIZE, GRID_SIZE, 16, 16);
+            Graphiti.getGaService().setLocationAndSize(scriptImage, GRID_SIZE, GRID_SIZE, ICON_WIDTH, ICON_HEIGHT);
         }
         GraphicsAlgorithm asyncImage = PropertyUtil.findGaRecursiveByName(ga, GaProperty.ASYNC);
         if (asyncImage != null) {
             int size = ((Synchronizable) node).isAsync() ? 14 : 1;
             Graphiti.getGaService().setLocationAndSize(asyncImage, bounds.width - 2 * GRID_SIZE, bounds.height - 2 * GRID_SIZE - 1, size, size);
+        }
+        for (Shape shape : containerShape.getChildren()) {
+            layoutPictogramElement(shape);
         }
         return true;
     }

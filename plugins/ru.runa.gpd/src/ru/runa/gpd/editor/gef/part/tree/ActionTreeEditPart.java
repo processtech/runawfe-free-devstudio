@@ -2,7 +2,7 @@ package ru.runa.gpd.editor.gef.part.tree;
 
 import java.beans.PropertyChangeEvent;
 
-import ru.runa.gpd.lang.model.Action;
+import ru.runa.gpd.lang.model.jpdl.Action;
 
 public class ActionTreeEditPart extends ElementTreeEditPart {
 

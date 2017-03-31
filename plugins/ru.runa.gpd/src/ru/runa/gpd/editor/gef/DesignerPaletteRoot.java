@@ -15,9 +15,9 @@ import ru.runa.gpd.editor.ProcessEditorBase;
 import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.NodeRegistry;
 import ru.runa.gpd.lang.NodeTypeDefinition;
-import ru.runa.gpd.lang.model.ActionImpl;
 import ru.runa.gpd.lang.model.EndState;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
+import ru.runa.gpd.lang.model.jpdl.ActionImpl;
 
 public class DesignerPaletteRoot extends PaletteRoot {
     private static final String ACTION_IMPL_ENTRY_ID = "ActionImpl";

@@ -7,9 +7,9 @@ import java.util.List;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
 
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.gef.figure.NodeFigure;
 import ru.runa.gpd.lang.model.GraphElement;
-import ru.runa.gpd.lang.model.PropertyNames;
 
 import com.google.common.collect.Lists;
 

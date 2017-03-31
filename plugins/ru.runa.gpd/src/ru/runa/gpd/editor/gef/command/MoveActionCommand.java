@@ -2,21 +2,21 @@ package ru.runa.gpd.editor.gef.command;
 
 import org.eclipse.gef.commands.Command;
 
-import ru.runa.gpd.lang.model.Action;
-import ru.runa.gpd.lang.model.Active;
+import ru.runa.gpd.lang.model.jpdl.Action;
+import ru.runa.gpd.lang.model.jpdl.ActionContainer;
 
 public class MoveActionCommand extends Command {
-    private final Active newTarget;
+    private final ActionContainer newTarget;
     private final int newIndex;
-    private final Active oldTarget;
+    private final ActionContainer oldTarget;
     private int oldIndex;
     private int oldIndexesCount;
     private final Action action;
 
-    public MoveActionCommand(Active newTarget, Action action, int newIndex) {
+    public MoveActionCommand(ActionContainer newTarget, Action action, int newIndex) {
         this.newTarget = newTarget;
         this.newIndex = newIndex;
-        this.oldTarget = (Active) action.getParent();
+        this.oldTarget = (ActionContainer) action.getParent();
         this.oldIndex = oldTarget.getActions().indexOf(action);
         this.oldIndexesCount = oldTarget.getActions().size();
         this.action = action;

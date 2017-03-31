@@ -2,8 +2,8 @@ package ru.runa.gpd.swimlane;
 
 import java.util.List;
 
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.lang.ValidationError;
-import ru.runa.gpd.lang.model.PropertyNames;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.util.EventSupport;

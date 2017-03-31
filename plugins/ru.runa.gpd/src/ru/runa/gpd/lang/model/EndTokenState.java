@@ -6,6 +6,7 @@ import org.eclipse.ui.views.properties.ComboBoxPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 
 import ru.runa.gpd.Localization;
+import ru.runa.gpd.lang.model.bpmn.AbstractEndTextDecorated;
 
 public class EndTokenState extends AbstractEndTextDecorated {
 

@@ -7,7 +7,7 @@ import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 
 import ru.runa.gpd.editor.graphiti.GaProperty;
 import ru.runa.gpd.editor.graphiti.PropertyUtil;
-import ru.runa.gpd.lang.model.AbstractEndTextDecorated;
+import ru.runa.gpd.lang.model.bpmn.AbstractEndTextDecorated;
 
 import com.google.common.base.Objects;
 
