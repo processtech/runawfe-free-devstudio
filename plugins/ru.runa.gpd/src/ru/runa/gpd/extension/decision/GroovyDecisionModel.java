@@ -63,10 +63,9 @@ public class GroovyDecisionModel {
                 isOperationDateType = false;
                 String ifContentWithoutNullCheck = ifContent.substring(ifContent.lastIndexOf(" || ") + " || ".length());
                 String[] stringsWithoutNullCheck = ifContentWithoutNullCheck.split(" ");
-                String[] parts = stringsWithoutNullCheck[0].split("\\.compareTo\\(");
-                lexem1Text = parts[0];
-                lexem2Text = stringsWithoutNullCheck[3];
-                operator = stringsWithoutNullCheck[6];
+                lexem1Text = stringsWithoutNullCheck[2];
+                lexem2Text = stringsWithoutNullCheck[6];
+                operator = stringsWithoutNullCheck[9];
             } else {
                 lexem1Text = strings[0];
                 operator = strings[1];
@@ -101,8 +100,12 @@ public class GroovyDecisionModel {
             }
             Object lexem2;
             if (lexem2Text.indexOf(".") > 0 && !isOperationDateType) {
-                // Java names doesn't allowed use of point in variable name
-                lexem2Text = lexem2Text.substring(0, lexem2Text.lastIndexOf("."));
+                try {
+                    Double.parseDouble(lexem2Text);
+                } catch (NumberFormatException e) {
+                    // Java names doesn't allowed use of point in variable name
+                    lexem2Text = lexem2Text.substring(0, lexem2Text.lastIndexOf("."));
+                }
             }
             Variable variable2 = VariableUtils.getVariableByScriptingName(variables, lexem2Text);
             if (variable2 != null) {
