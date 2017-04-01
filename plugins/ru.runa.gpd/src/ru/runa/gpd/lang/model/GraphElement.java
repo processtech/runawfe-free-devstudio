@@ -191,16 +191,18 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
     }
 
     public void addChild(GraphElement child, int index) {
-        childs.add(index, child);
-        child.setParent(this);
-        child.setDelegatedListener(delegatedListener);
-        firePropertyChange(PROPERTY_CHILDS_CHANGED, null, 1);
-        String nodeId = child.getId();
-        if (nodeId == null) {
-            nodeId = getProcessDefinition().getNextNodeId();
-            child.setId(nodeId);
-        } else {
-            getProcessDefinition().setNextNodeIdIfApplicable(nodeId);
+        if (!childs.contains(child)) {
+            childs.add(index, child);
+            child.setParent(this);
+            child.setDelegatedListener(delegatedListener);
+            firePropertyChange(PROPERTY_CHILDS_CHANGED, null, 1);
+            String nodeId = child.getId();
+            if (nodeId == null) {
+                nodeId = getProcessDefinition().getNextNodeId();
+                child.setId(nodeId);
+            } else {
+                getProcessDefinition().setNextNodeIdIfApplicable(nodeId);
+            }
         }
     }
 

@@ -27,7 +27,7 @@ import org.eclipse.graphiti.mm.pictograms.ChopboxAnchor;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.mm.pictograms.Diagram;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
-import org.eclipse.graphiti.ui.editor.DiagramEditor;
+import org.eclipse.graphiti.ui.editor.DiagramEditor2;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
@@ -47,7 +47,8 @@ import ru.runa.gpd.lang.model.Transition;
 
 import com.google.common.base.Objects;
 
-public class DiagramEditorPage extends DiagramEditor implements PropertyChangeListener {
+public class DiagramEditorPage extends DiagramEditor2 implements PropertyChangeListener {
+
     private final ProcessEditorBase editor;
     private KeyHandler keyHandler;
 
@@ -179,6 +180,10 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
     public void select(GraphElement model) {
         PictogramElement pe = getDiagramTypeProvider().getFeatureProvider().getPictogramElementForBusinessObject(model);
         selectPictogramElements(new PictogramElement[] { pe });
+    }
+
+    public PictogramElement[] getAllPictogramElementsForBusinessObject(GraphElement model) {
+        return getDiagramTypeProvider().getFeatureProvider().getAllPictogramElementsForBusinessObject(model);
     }
 
     @Override

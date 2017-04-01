@@ -28,7 +28,10 @@ public class Action extends GraphElement implements Delegable, Describable {
 
     @Override
     public Action getCopy(GraphElement parent) {
-        return (Action) super.getCopy(parent);
+        Action copy = (Action) super.getCopy(parent);
+        copy.setDelegationClassName(getDelegationClassName());
+        copy.setDelegationConfiguration(getDelegationConfiguration());
+        return copy;
     }
 
 }
