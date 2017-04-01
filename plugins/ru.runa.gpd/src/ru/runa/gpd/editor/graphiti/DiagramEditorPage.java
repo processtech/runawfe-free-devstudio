@@ -33,7 +33,7 @@ import org.eclipse.graphiti.mm.pictograms.Diagram;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.mm.pictograms.Shape;
 import org.eclipse.graphiti.services.Graphiti;
-import org.eclipse.graphiti.ui.editor.DiagramEditor;
+import org.eclipse.graphiti.ui.editor.DiagramEditor2;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
@@ -55,7 +55,8 @@ import ru.runa.gpd.lang.model.jpdl.Action;
 
 import com.google.common.base.Objects;
 
-public class DiagramEditorPage extends DiagramEditor implements PropertyChangeListener {
+public class DiagramEditorPage extends DiagramEditor2 implements PropertyChangeListener {
+
     private final ProcessEditorBase editor;
     private KeyHandler keyHandler;
 
@@ -189,6 +190,10 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
         selectPictogramElements(new PictogramElement[] { pe });
     }
 
+    public PictogramElement[] getAllPictogramElementsForBusinessObject(GraphElement model) {
+        return getDiagramTypeProvider().getFeatureProvider().getAllPictogramElementsForBusinessObject(model);
+    }
+
     @Override
     public CommandStack getCommandStack() {
         return super.getCommandStack();
@@ -204,7 +209,7 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
     }
 
     private void refreshActions(Diagram diagram) {
-        refreshActions((ContainerShape)  diagram);
+        refreshActions((ContainerShape) diagram);
         for (Connection connection : diagram.getConnections()) {
             for (final ConnectionDecorator decorator : connection.getConnectionDecorators()) {
                 if (PropertyUtil.hasProperty(decorator, GaProperty.CLASS, GaProperty.ACTION_ICON)) {
