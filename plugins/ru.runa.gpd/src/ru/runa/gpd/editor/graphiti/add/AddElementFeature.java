@@ -39,4 +39,9 @@ public abstract class AddElementFeature extends AbstractAddShapeFeature implemen
     public Dimension getDefaultSize(GraphElement element, IAddContext context) {
         return element.getTypeDefinition().getGraphitiEntry().getDefaultSize();
     }
+
+    public Dimension getDefaultSystemSize(GraphElement element, IAddContext context) {
+        return element.getTypeDefinition().getGraphitiEntry().getDefaultSystemSize();
+    }
+
 }

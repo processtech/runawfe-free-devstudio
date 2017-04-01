@@ -124,7 +124,7 @@ public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
     @Override
     public void propertyChange(PropertyChangeEvent event) {
         String type = event.getPropertyName();
-        if (PropertyNames.PROPERTY_CHILDS_CHANGED.equals(type)) {
+        if (PropertyNames.PROPERTY_CHILDREN_CHANGED.equals(type)) {
             updateViewer();
         } else if (event.getSource() instanceof Swimlane) {
             if (PropertyNames.PROPERTY_NAME.equals(type) || PropertyNames.PROPERTY_CONFIGURATION.equals(type)) {
@@ -226,7 +226,7 @@ public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
             Swimlane swimlane = (Swimlane) selection.getFirstElement();
             List<Swimlane> children = swimlane.getParent().getChildren(Swimlane.class);
             int index = children.indexOf(swimlane);
-            swimlane.getParent().swapChilds(swimlane, up ? children.get(index - 1) : children.get(index + 1));
+            swimlane.getParent().swapChildren(swimlane, up ? children.get(index - 1) : children.get(index + 1));
             tableViewer.setSelection(selection);
         }
     }

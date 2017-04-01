@@ -240,7 +240,7 @@ public class Transition extends NamedGraphElement implements ActionContainer {
         if (PROPERTY_ORDERNUM.equals(id)) {
             Object oldOrderNum = getPropertyValue(PROPERTY_ORDERNUM);
             Transition anotherTransition = getSource().getLeavingTransitions().get(Integer.parseInt((String) value) - 1);
-            getSource().swapChilds(this, anotherTransition);
+            getSource().swapChildren(this, anotherTransition);
             firePropertyChange(PROPERTY_ORDERNUM, oldOrderNum, value);
             anotherTransition.firePropertyChange(PROPERTY_ORDERNUM, value, oldOrderNum);
         } else {

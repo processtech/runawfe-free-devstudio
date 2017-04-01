@@ -145,7 +145,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         String type = evt.getPropertyName();
-        if (PropertyNames.PROPERTY_CHILDS_CHANGED.equals(type)) {
+        if (PropertyNames.PROPERTY_CHILDREN_CHANGED.equals(type)) {
             updateViewer();
         } else if (evt.getSource() instanceof Variable) {
             if (PropertyNames.PROPERTY_NAME.equals(type) || PropertyNames.PROPERTY_FORMAT.equals(type)
@@ -191,7 +191,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
             Variable variable = (Variable) selection.getFirstElement();
             List<Variable> variables = getDefinition().getVariables(false, false);
             int index = variables.indexOf(variable);
-            getDefinition().swapChilds(variable, up ? variables.get(index - 1) : variables.get(index + 1));
+            getDefinition().swapChildren(variable, up ? variables.get(index - 1) : variables.get(index + 1));
             tableViewer.setSelection(selection);
         }
     }

@@ -108,4 +108,27 @@ public class PropertyUtil {
             ((MultiText) ga).setValue(value);
         }
     }
+
+    public static boolean hasProperty(PropertyContainer container, String propKey, String propValue) {
+        if (container != null) {
+            for (Property prop : container.getProperties()) {
+                if (Objects.equal(propKey, prop.getKey()) && Objects.equal(propValue, prop.getValue())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public static Shape findChildShapeByProperty(ContainerShape container, String propKey, String propValue) {
+        for (Shape child : container.getChildren()) {
+            for (Property prop : child.getProperties()) {
+                if (Objects.equal(propKey, prop.getKey()) && Objects.equal(propValue, prop.getValue())) {
+                    return child;
+                }
+            }
+        }
+        return null;
+    }
+
 }

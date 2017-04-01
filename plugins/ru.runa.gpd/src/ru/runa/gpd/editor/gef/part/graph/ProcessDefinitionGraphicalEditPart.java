@@ -36,7 +36,7 @@ public class ProcessDefinitionGraphicalEditPart extends ElementGraphicalEditPart
         String messageId = evt.getPropertyName();
         if (PROPERTY_NAME.equals(messageId)) {
             refreshVisuals();
-        } else if (PROPERTY_CHILDS_CHANGED.equals(messageId)) {
+        } else if (PROPERTY_CHILDREN_CHANGED.equals(messageId)) {
             refreshChildren();
         } else if (PROPERTY_SHOW_ACTIONS.equals(messageId)) {
             Set<EditPart> parts = new HashSet<EditPart>(getViewer().getEditPartRegistry().values());

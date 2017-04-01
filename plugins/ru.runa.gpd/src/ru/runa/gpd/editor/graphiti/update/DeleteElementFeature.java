@@ -7,6 +7,9 @@ import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.IContext;
 import org.eclipse.graphiti.features.context.IDeleteContext;
 import org.eclipse.graphiti.features.context.impl.DeleteContext;
+import org.eclipse.graphiti.mm.pictograms.ConnectionDecorator;
+import org.eclipse.graphiti.mm.pictograms.PictogramElement;
+import org.eclipse.graphiti.mm.pictograms.Shape;
 import org.eclipse.graphiti.ui.features.DefaultDeleteFeature;
 
 import ru.runa.gpd.editor.graphiti.HasTextDecorator;
@@ -14,6 +17,7 @@ import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
+import ru.runa.gpd.lang.model.jpdl.Action;
 
 public class DeleteElementFeature extends DefaultDeleteFeature implements ICustomUndoableFeature {
 
@@ -116,4 +120,26 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements ICusto
             }
         }
     }
+
+    @Override
+    public void preDelete(IDeleteContext context) {
+        super.preDelete(context);
+        if (getBusinessObjectForPictogramElement(context.getPictogramElement()) instanceof Action) {
+            PictogramElement pe = context.getPictogramElement();
+            context.putProperty(
+                    "action-container",
+                    pe instanceof ConnectionDecorator ?
+                            ((ConnectionDecorator) context.getPictogramElement()).getConnection() :
+                                ((Shape) context.getPictogramElement()).getContainer());
+        }
+    }
+
+    @Override
+    public void postDelete(IDeleteContext context) {
+        super.postDelete(context);
+        if (element instanceof Action) {
+            layoutPictogramElement((PictogramElement) context.getProperty("action-container"));
+        }
+    }
+
 }

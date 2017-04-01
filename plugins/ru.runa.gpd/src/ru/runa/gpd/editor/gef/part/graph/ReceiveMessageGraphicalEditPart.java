@@ -15,7 +15,7 @@ public class ReceiveMessageGraphicalEditPart extends LabeledNodeGraphicalEditPar
     @Override
     protected void fillFigureUpdatePropertyNames(List<String> list) {
         super.fillFigureUpdatePropertyNames(list);
-        list.add(PROPERTY_CHILDS_CHANGED);
+        list.add(PROPERTY_CHILDREN_CHANGED);
     }
 
     @Override
