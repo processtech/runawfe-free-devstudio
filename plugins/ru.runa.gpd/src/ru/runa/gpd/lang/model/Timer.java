@@ -10,12 +10,13 @@ import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.lang.ValidationError;
+import ru.runa.gpd.lang.model.bpmn.IBoundaryEvent;
 import ru.runa.gpd.property.DurationPropertyDescriptor;
 import ru.runa.gpd.property.TimerActionPropertyDescriptor;
 import ru.runa.gpd.util.Duration;
 import ru.runa.gpd.util.VariableUtils;
 
-public class Timer extends Node {
+public class Timer extends Node implements IBoundaryEvent {
     private Duration duration = new Duration();
     private TimerAction action;
 
@@ -129,6 +130,9 @@ public class Timer extends Node {
             if (variable != null) {
                 result.add(variable);
             }
+        }
+        if (action != null) {
+            result.addAll(action.getUsedVariables(processFolder));
         }
         return result;
     }

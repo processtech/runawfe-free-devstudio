@@ -2,6 +2,7 @@ package ru.runa.gpd.editor;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -11,17 +12,28 @@ import java.util.Set;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.draw2d.FigureCanvas;
+import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.gef.EditPart;
 import org.eclipse.gef.commands.Command;
+import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.editor.CopyBuffer.ExtraCopyAction;
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.HandlerRegistry;
+import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.EndState;
 import ru.runa.gpd.lang.model.FormNode;
+import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
@@ -32,7 +44,7 @@ import ru.runa.gpd.lang.model.SwimlanedNode;
 import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableUserType;
-import ru.runa.gpd.ui.custom.Dialogs;
+import ru.runa.gpd.ui.dialog.InfoWithDetailsDialog;
 import ru.runa.gpd.ui.dialog.MultipleSelectionDialog;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.SwimlaneDisplayMode;
@@ -43,6 +55,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 public class CopyGraphCommand extends Command {
+    private final ProcessEditorBase targetEditor;
+    private final Point targetViewportLocation;
     private final ProcessDefinition targetDefinition;
     private final IFolder targetFolder;
     private final CopyBuffer copyBuffer;
@@ -50,8 +64,10 @@ public class CopyGraphCommand extends Command {
     private final List<ExtraCopyAction> executedCopyActions = Lists.newArrayList();
     private final Map<String, String> nodeToSwimlaneNameMap = Maps.newHashMap();
 
-    public CopyGraphCommand(ProcessDefinition targetDefinition, IFolder targetFolder) {
-        this.targetDefinition = targetDefinition;
+    public CopyGraphCommand(ProcessEditorBase targetEditor, IFolder targetFolder) {
+        this.targetEditor = targetEditor;
+        this.targetViewportLocation = ((FigureCanvas) targetEditor.getGraphicalViewer().getControl()).getViewport().getViewLocation();
+        this.targetDefinition = targetEditor.getDefinition();
         this.targetFolder = targetFolder;
         this.copyBuffer = new CopyBuffer();
     }
@@ -70,12 +86,18 @@ public class CopyGraphCommand extends Command {
     public void execute() {
         try {
             if (!copyBuffer.getLanguage().equals(targetDefinition.getLanguage())) {
-                Dialogs.warning(Localization.getString("CopyBuffer.DifferentVersion.warning"));
+                (new InfoWithDetailsDialog(MessageDialog.WARNING,  Localization.getString("message.warning"), Localization.getString("CopyBuffer.DifferentVersion.warning"), null) {
+                    @Override
+                    protected void createButtonsForButtonBar(Composite parent) {
+                        createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, false);
+                    }
+                }).open();
                 return;
             }
             Set<ExtraCopyAction> copyActions = new HashSet<ExtraCopyAction>();
             List<NamedGraphElement> sourceNodeList = copyBuffer.getSourceNodes();
             // add nodes
+            final List<NamedGraphElement> newElements = new ArrayList<>();
             for (NamedGraphElement node : sourceNodeList) {
                 if (node instanceof StartState && targetDefinition.getChildren(StartState.class).size() != 0) {
                     continue;
@@ -86,6 +108,8 @@ public class CopyGraphCommand extends Command {
                     continue;
                 }
                 NamedGraphElement copy = node.getCopy(targetDefinition);
+                adjustLocation(copy);
+                newElements.add(copy);
                 for (Variable variable : node.getUsedVariables(copyBuffer.getSourceFolder())) {
                     ExtraCopyAction copyAction;
                     if (variable instanceof Swimlane) {
@@ -134,7 +158,9 @@ public class CopyGraphCommand extends Command {
                     NamedGraphElement target = targetNodeMap.get(transition.getTarget().getId());
                     if (source != null && target != null) {
                         Transition copy = transition.getCopy(source);
+                        adjustLocation(copy);
                         copy.setTarget((Node) target);
+                        newElements.add(copy);
                     }
                     for (Variable variable : transition.getUsedVariables(copyBuffer.getSourceFolder())) {
                         ExtraCopyAction copyAction;
@@ -147,6 +173,38 @@ public class CopyGraphCommand extends Command {
                         }
                         copyActions.add(copyAction);
                     }
+                }
+            }
+            if (newElements.size() > 0) {
+                if (copyBuffer.getLanguage() == Language.JPDL) {
+                    List<EditPart> editParts = new ArrayList<>();
+                    for (NamedGraphElement e : newElements) {
+                        EditPart ep = (EditPart) targetEditor.getGraphicalViewer().getEditPartRegistry().get(e);
+                        if (ep != null) {
+                            editParts.add(ep);
+                        }
+                    }
+                    if (editParts.size() > 0) {
+                        targetEditor.getGraphicalViewer().deselectAll();
+                        targetEditor.getGraphicalViewer().getSelectionManager().setSelection(new StructuredSelection(editParts));
+                    }
+                } else { // BPMN
+                    Display.getDefault().asyncExec(new Runnable() {
+                        @Override
+                        public void run() {
+                            List<PictogramElement> pictograms = new ArrayList<>();
+                            for (NamedGraphElement e : newElements) {
+                                PictogramElement[] pe = targetEditor.getDiagramEditorPage().getAllPictogramElementsForBusinessObject(e);
+                                if (pe != null && pe.length > 0) {
+                                    pictograms.addAll(Arrays.asList(pe));
+                                }
+                            }
+                            if (pictograms.size() > 0) {
+                                targetEditor.getGraphicalViewer().deselectAll();
+                                targetEditor.getDiagramEditorPage().selectPictogramElements(pictograms.toArray(new PictogramElement[] {}));
+                            }
+                        }
+                    });
                 }
             }
             List<ExtraCopyAction> sortedCopyActions = Lists.newArrayList(copyActions);
@@ -218,6 +276,18 @@ public class CopyGraphCommand extends Command {
 
     public List<NamedGraphElement> getFilteredElements() {
         return new ArrayList<NamedGraphElement>(targetNodeMap.values());
+    }
+
+    private void adjustLocation(GraphElement ge) {
+        if (!targetEditor.toString().equals(copyBuffer.getEditorId())) {
+            Rectangle constraint = ge.getConstraint();
+            if (constraint != null) {
+                Rectangle rect = constraint.getCopy();
+                rect.setX(constraint.x() - GEFConstants.GRID_SIZE - copyBuffer.getViewportLocation().x() + targetViewportLocation.x()); 
+                rect.setY(constraint.y() - GEFConstants.GRID_SIZE - copyBuffer.getViewportLocation().y() + targetViewportLocation.y());
+                ge.setConstraint(rect);
+            }
+        }
     }
 
     private class CopyFormFilesAction extends ExtraCopyAction {
@@ -372,6 +442,7 @@ public class CopyGraphCommand extends Command {
                 targetDefinition.removeChild(oldSwimlane);
             }
             addedSwimlane = (Swimlane) sourceSwimlane.getCopy(targetDefinition);
+            adjustLocation(addedSwimlane);
         }
 
         @Override
@@ -416,6 +487,7 @@ public class CopyGraphCommand extends Command {
                 targetDefinition.removeChild(oldVariable);
             }
             addedVariable = (Variable) sourceVariable.getCopy(targetDefinition);
+            adjustLocation(addedVariable);
             if (addedVariable.isComplex() && targetDefinition.getVariableUserType(addedVariable.getUserType().getName()) == null) {
                 addedUserType = addedVariable.getUserType().getCopy();
                 targetDefinition.addVariableUserType(addedUserType);
@@ -458,6 +530,7 @@ public class CopyGraphCommand extends Command {
             }
             if (oldComplexVariable == null) {
                 addedVariable = (Variable) complexVariable.getCopy(targetDefinition);
+                adjustLocation(addedVariable);
             }
             for (VariableUserType userType : usedUserTypes) {
                 if (targetDefinition.getVariableUserType(userType.getName()) == null) {

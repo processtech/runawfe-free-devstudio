@@ -2,6 +2,7 @@ package ru.runa.gpd.lang.model;
 
 import java.util.List;
 
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.util.EventSupport;
 
 import com.google.common.base.Objects;

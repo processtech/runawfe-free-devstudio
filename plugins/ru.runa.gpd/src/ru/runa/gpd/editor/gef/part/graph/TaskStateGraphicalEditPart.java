@@ -9,7 +9,7 @@ import org.eclipse.gef.Request;
 
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.editor.gef.figure.TaskStateFigure;
-import ru.runa.gpd.editor.gef.policy.ActiveLayoutEditPolicy;
+import ru.runa.gpd.editor.gef.policy.ActionContainerLayoutEditPolicy;
 import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Transition;
 
@@ -23,7 +23,7 @@ public class TaskStateGraphicalEditPart extends SwimlaneNodeEditPart implements 
     @Override
     protected void createEditPolicies() {
         super.createEditPolicies();
-        installEditPolicy(EditPolicy.LAYOUT_ROLE, new ActiveLayoutEditPolicy());
+        installEditPolicy(EditPolicy.LAYOUT_ROLE, new ActionContainerLayoutEditPolicy());
     }
 
     @Override

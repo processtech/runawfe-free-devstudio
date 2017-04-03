@@ -7,10 +7,13 @@ import org.eclipse.core.resources.IFile;
 import ru.runa.gpd.extension.VariableFormatArtifact;
 import ru.runa.gpd.extension.VariableFormatRegistry;
 import ru.runa.gpd.lang.ValidationError;
+import ru.runa.gpd.lang.model.bpmn.IMultiInstancesContainer;
 import ru.runa.gpd.util.MultiinstanceParameters;
 import ru.runa.gpd.util.VariableMapping;
 
 public class MultiSubprocess extends Subprocess implements IMultiInstancesContainer {
+
+    private String discriminatorCondition;
 
     @Override
     public void validate(List<ValidationError> errors, IFile definitionFile) {
@@ -47,4 +50,15 @@ public class MultiSubprocess extends Subprocess implements IMultiInstancesContai
         }
         return super.isCompatibleVariables(mapping, variable1, variable2);
     }
+
+    public String getDiscriminatorCondition() {
+        return discriminatorCondition;
+    }
+
+    public void setDiscriminatorCondition(String discriminatorCondition) {
+        String old = this.discriminatorCondition;
+        this.discriminatorCondition = discriminatorCondition;
+        firePropertyChange(PROPERTY_DISCRIMINATOR_CONDITION, old, discriminatorCondition);
+    }
+
 }

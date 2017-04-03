@@ -19,6 +19,7 @@ import org.eclipse.swt.widgets.Text;
 
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.ui.custom.InsertVariableTextMenuDetectListener;
+import ru.runa.gpd.ui.custom.JavaIdentifierChecker;
 import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.util.VariableMapping;
@@ -70,8 +71,9 @@ public class MessageVariableDialog extends Dialog {
             gridData.minimumWidth = 200;
             variableText.setLayoutData(gridData);
             variableText.setText(getVariable());
+            variableText.addKeyListener(new JavaIdentifierChecker());
             variableText.addModifyListener(new LoggingModifyTextAdapter() {
-                
+
                 @Override
                 protected void onTextChanged(ModifyEvent e) throws Exception {
                     variable = variableText.getText();
@@ -86,7 +88,7 @@ public class MessageVariableDialog extends Dialog {
             variableCombo.setLayoutData(gridData);
             variableCombo.setText(getVariable());
             variableCombo.addSelectionListener(new LoggingSelectionAdapter() {
-                
+
                 @Override
                 protected void onSelection(SelectionEvent e) throws Exception {
                     variable = variableCombo.getText();
@@ -106,6 +108,7 @@ public class MessageVariableDialog extends Dialog {
 
         aliasText.addModifyListener(new ModifyListener() {
 
+            @Override
             public void modifyText(ModifyEvent e) {
                 alias = aliasText.getText();
             }

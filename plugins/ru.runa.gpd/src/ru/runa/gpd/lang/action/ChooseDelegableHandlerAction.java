@@ -13,6 +13,7 @@ public class ChooseDelegableHandlerAction extends BaseModelActionDelegate {
         ChooseHandlerClassDialog dialog = new ChooseHandlerClassDialog(delegable.getDelegationType(), delegable.getDelegationClassName());
         String className = dialog.openDialog();
         if (className != null) {
+            delegable.setDelegationConfiguration(null);
             delegable.setDelegationClassName(className);
         }
     }

@@ -13,6 +13,7 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
@@ -75,7 +76,7 @@ public class SubprocessDialog extends Dialog {
 
     @Override
     protected void configureShell(Shell newShell) {
-        newShell.setSize(800, 600);
+        newShell.setSize(800, 400);
         super.configureShell(newShell);
     }
 
@@ -83,7 +84,6 @@ public class SubprocessDialog extends Dialog {
     protected Control createDialogArea(Composite parent) {
         Composite composite = (Composite) super.createDialogArea(parent);
         composite.setLayout(new GridLayout(1, false));
-
         Group subprocessNameGroup = new Group(composite, SWT.NONE);
         subprocessNameGroup.setLayout(new GridLayout());
         subprocessNameGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -111,12 +111,21 @@ public class SubprocessDialog extends Dialog {
             }
         });
 
-        createConfigurationComposite(composite);
+        
+        SashForm sf = new SashForm(composite, SWT.VERTICAL | SWT.SMOOTH);
+        sf.setLayout(new GridLayout());
+        sf.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        Group mappingsGroup = new Group(composite, SWT.NONE);
+        createConfigurationComposite(sf);
+
+        Group mappingsGroup = new Group(sf, SWT.NONE);
         mappingsGroup.setLayout(new GridLayout());
         mappingsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
         mappingsGroup.setText(Localization.getString("Subprocess.VariableMappings"));
+        
+        if (sf.getChildren().length > 1) {
+            sf.setWeights(new int[] {60, 40});
+        }
 
         variablesComposite = new VariablesComposite(mappingsGroup);
         variablesComposite.setLayoutData(new GridData(GridData.FILL_BOTH));

@@ -13,7 +13,7 @@ import ru.runa.gpd.lang.model.GraphElement;
 
 import com.google.common.base.Objects;
 
-public class LayoutSwimlaneFeature extends ElementLayoutFeature {
+public class LayoutSwimlaneFeature extends LayoutElementFeature {
     public static final String NAME_RECT = "nameRect";
 
     private boolean isVerticalLayout(ILayoutContext context) {
@@ -22,20 +22,11 @@ public class LayoutSwimlaneFeature extends ElementLayoutFeature {
     }
 
     @Override
-    public Dimension getDefaultSize(GraphElement element, ILayoutContext context) {
-        Dimension horizontal = super.getDefaultSize(element, context);
-        if (isVerticalLayout(context)) {
-            horizontal.transpose();
-        }
-        return horizontal;
-    }
-
-    @Override
     public boolean layout(ILayoutContext context) {
         GraphicsAlgorithm ga = context.getPictogramElement().getGraphicsAlgorithm();
-        Dimension bounds = adjustBounds(context);
+        GraphElement element = (GraphElement) getBusinessObjectForPictogramElement(context.getPictogramElement());
         GraphicsAlgorithm nameRectangle = PropertyUtil.findGaRecursiveByName(ga, NAME_RECT);
-        Dimension nameDimension = bounds.getCopy();
+        Dimension nameDimension = element.getConstraint().getSize().getCopy();
         if (isVerticalLayout(context)) {
             nameDimension.setHeight(2 * GRID_SIZE);
         } else {

@@ -14,7 +14,7 @@ import org.eclipse.graphiti.services.Graphiti;
 import ru.runa.gpd.editor.graphiti.GaProperty;
 import ru.runa.gpd.editor.graphiti.StyleUtil;
 import ru.runa.gpd.editor.graphiti.layout.LayoutTextAnnotationFeature;
-import ru.runa.gpd.lang.model.TextAnnotation;
+import ru.runa.gpd.lang.model.bpmn.TextAnnotation;
 
 public class AddTextAnnotationFeature extends AddElementFeature {
     @Override
@@ -25,7 +25,7 @@ public class AddTextAnnotationFeature extends AddElementFeature {
     @Override
     public PictogramElement add(IAddContext context) {
         TextAnnotation annotation = (TextAnnotation) context.getNewObject();
-        Dimension bounds = adjustBounds(context);
+        Dimension bounds = getBounds(context);
         ContainerShape containerShape = Graphiti.getPeCreateService().createContainerShape(context.getTargetContainer(), true);
         Rectangle main = Graphiti.getGaService().createInvisibleRectangle(containerShape);
         Graphiti.getGaService().setLocationAndSize(main, context.getX(), context.getY(), bounds.width, bounds.height);

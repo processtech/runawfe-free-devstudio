@@ -20,18 +20,20 @@ import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.impl.AddConnectionContext;
 import org.eclipse.graphiti.features.context.impl.AddContext;
 import org.eclipse.graphiti.features.context.impl.AreaContext;
+import org.eclipse.graphiti.features.context.impl.LayoutContext;
 import org.eclipse.graphiti.mm.pictograms.Anchor;
 import org.eclipse.graphiti.mm.pictograms.AnchorContainer;
 import org.eclipse.graphiti.mm.pictograms.ChopboxAnchor;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.mm.pictograms.Diagram;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
-import org.eclipse.graphiti.ui.editor.DiagramEditor;
+import org.eclipse.graphiti.ui.editor.DiagramEditor2;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.ProcessEditorBase;
 import ru.runa.gpd.editor.ProcessEditorContributor;
 import ru.runa.gpd.editor.gef.GEFActionBarContributor;
@@ -39,14 +41,14 @@ import ru.runa.gpd.editor.graphiti.update.BOUpdateContext;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
-import ru.runa.gpd.lang.model.PropertyNames;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.SwimlanedNode;
 import ru.runa.gpd.lang.model.Transition;
 
 import com.google.common.base.Objects;
 
-public class DiagramEditorPage extends DiagramEditor implements PropertyChangeListener {
+public class DiagramEditorPage extends DiagramEditor2 implements PropertyChangeListener {
+
     private final ProcessEditorBase editor;
     private KeyHandler keyHandler;
 
@@ -71,6 +73,10 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
         if (pe != null) {
             BOUpdateContext context = new BOUpdateContext(pe, event.getSource());
             getDiagramTypeProvider().getFeatureProvider().updateIfPossibleAndNeeded(context);
+            if (PropertyNames.NODE_BOUNDS_RESIZED.equals(event.getPropertyName())) {
+                LayoutContext layoutContext = new LayoutContext(pe);
+                getDiagramTypeProvider().getFeatureProvider().layoutIfPossible(layoutContext);
+            }
         } else if (event.getSource() instanceof Swimlane && PropertyNames.PROPERTY_NAME.equals(event.getPropertyName())) {
             for (SwimlanedNode swimlanedNode : editor.getDefinition().getChildren(SwimlanedNode.class)) {
                 if (Objects.equal(swimlanedNode.getSwimlane(), event.getSource())) {
@@ -174,6 +180,10 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
     public void select(GraphElement model) {
         PictogramElement pe = getDiagramTypeProvider().getFeatureProvider().getPictogramElementForBusinessObject(model);
         selectPictogramElements(new PictogramElement[] { pe });
+    }
+
+    public PictogramElement[] getAllPictogramElementsForBusinessObject(GraphElement model) {
+        return getDiagramTypeProvider().getFeatureProvider().getAllPictogramElementsForBusinessObject(model);
     }
 
     @Override

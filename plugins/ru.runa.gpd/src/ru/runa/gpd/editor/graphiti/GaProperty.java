@@ -15,6 +15,7 @@ public class GaProperty extends PropertyImpl {
     public static final String MINIMAZED_VIEW = "minimazedView";
     public static final String SCRIPT = "script";
     public static final String ASYNC = "async";
+    public static final String ICON = "icon";
 
     public GaProperty(String name, String value) {
         setKey(name);

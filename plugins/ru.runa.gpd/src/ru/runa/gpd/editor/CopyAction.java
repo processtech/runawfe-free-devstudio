@@ -3,6 +3,7 @@ package ru.runa.gpd.editor;
 import java.util.List;
 
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.draw2d.FigureCanvas;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
 import org.eclipse.gef.ui.actions.SelectionAction;
@@ -11,7 +12,7 @@ import org.eclipse.graphiti.ui.internal.parts.ContainerShapeEditPart;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.editor.gef.part.graph.NodeGraphicalEditPart;
 import ru.runa.gpd.lang.model.NamedGraphElement;
-import ru.runa.gpd.lang.model.TextDecorationNode;
+import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
 
 import com.google.common.collect.Lists;
 
@@ -60,7 +61,8 @@ public class CopyAction extends SelectionAction {
 
     @Override
     public void run() {
-        CopyBuffer copyBuffer = new CopyBuffer((IFolder) editor.getDefinitionFile().getParent(), editor.getDefinition().getLanguage(), extractNodes());
+        CopyBuffer copyBuffer = new CopyBuffer((IFolder) editor.getDefinitionFile().getParent(), editor.getDefinition().getLanguage(),
+                extractNodes(), editor.toString(), ((FigureCanvas) editor.getGraphicalViewer().getControl()).getViewport().getViewLocation().getCopy());
         copyBuffer.setToClipboard();
     }
 }
