@@ -7,13 +7,13 @@ import java.util.List;
 
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.EndState;
-import ru.runa.gpd.lang.model.Fork;
-import ru.runa.gpd.lang.model.Join;
 import ru.runa.gpd.lang.model.Node;
-import ru.runa.gpd.lang.model.ParallelGateway;
 import ru.runa.gpd.lang.model.StartState;
 import ru.runa.gpd.lang.model.Timer;
 import ru.runa.gpd.lang.model.Transition;
+import ru.runa.gpd.lang.model.bpmn.ParallelGateway;
+import ru.runa.gpd.lang.model.jpdl.Fork;
+import ru.runa.gpd.lang.model.jpdl.Join;
 
 public class CheckUnlimitedTokenAlgorithm {
     private static final boolean DEBUG = "true".equals(System.getProperty("ru.runa.gpd.algorithms.checkUnlimitedTokens.debug"));

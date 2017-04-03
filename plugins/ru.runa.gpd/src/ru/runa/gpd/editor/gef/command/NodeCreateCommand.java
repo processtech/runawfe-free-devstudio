@@ -24,9 +24,6 @@ public class NodeCreateCommand extends Command {
         if (node instanceof StartState) {
             return definition.getFirstChild(StartState.class) == null;
         }
-        if (node instanceof EndState) {
-            return definition.getFirstChild(EndState.class) == null;
-        }
         return true;
     }
 

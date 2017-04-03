@@ -14,8 +14,8 @@ import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
-import ru.runa.gpd.lang.model.TextDecorationNode;
 import ru.runa.gpd.lang.model.Transition;
+import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
 import ru.runa.gpd.util.XmlUtil;
 
 import com.google.common.collect.Lists;
@@ -183,10 +183,11 @@ public class GpdXmlContentProvider extends AuxContentProvider {
             Rectangle constraint = graphElement.getConstraint().getCopy();
             GraphElement parentGraphElement = graphElement.getParentContainer();
             Rectangle parentConstraint = null;
-            if (parentGraphElement != null && !parentGraphElement.equals(definition)) {
+            while (parentGraphElement != null && !parentGraphElement.equals(definition)) {
                 parentConstraint = parentGraphElement.getConstraint();
                 constraint.x += parentConstraint.x;
                 constraint.y += parentConstraint.y;
+                parentGraphElement = parentGraphElement.getParentContainer();
             }
             if (constraint.isEmpty()) {
                 throw new Exception("Invalid figure size: " + constraint.getSize());

@@ -36,7 +36,7 @@ public class ActorNameEditorProvider extends ParamBasedProvider {
             inputGroup.getParameters().add(p);
             p = new ParamDef("format", Localization.getString("ActorNameEditorProvider.param.format"));
             p.setUseVariable(false);
-            p.setComboItems(new String[] { "full name", "name", "email", "code", "description" });
+            p.setComboItems(new String[] { "full name", "name", "email", "code", "description", "title", "department" });
             inputGroup.getParameters().add(p);
             ParamDefGroup outputGroup = new ParamDefGroup(ParamDefGroup.NAME_OUTPUT);
             p = new ParamDef("result", Localization.getString("ActorNameEditorProvider.param.result"));

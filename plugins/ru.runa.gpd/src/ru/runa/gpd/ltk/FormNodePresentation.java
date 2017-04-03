@@ -54,6 +54,9 @@ public class FormNodePresentation extends VariableRenameProvider<FormNode> {
                 String validationLabel = Localization.getString("Search.formNode.validation");
                 result.addAll(textEditToChangeArray(validationFile, validationLabel, multiEdit));
             }
+            if (element.hasFormScript()) {
+                // TODO
+            }
         }
         if (element.hasFormScript()) {
             FormType formType = FormTypeProvider.getFormType(element.getFormType());

@@ -14,8 +14,8 @@ import ru.runa.gpd.editor.graphiti.DiagramFeatureProvider;
 import ru.runa.gpd.lang.BpmnSerializer;
 import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.NodeRegistry;
-import ru.runa.gpd.lang.model.AbstractEndTextDecorated;
-import ru.runa.gpd.lang.model.EndTextDecoration;
+import ru.runa.gpd.lang.model.bpmn.AbstractEndTextDecorated;
+import ru.runa.gpd.lang.model.bpmn.EndTextDecoration;
 
 public class AddEndNodeFeature extends AddNodeWithImageFeature {
 
@@ -23,18 +23,20 @@ public class AddEndNodeFeature extends AddNodeWithImageFeature {
     public PictogramElement add(IAddContext context) {
         PictogramElement container = super.add(context);
         AbstractEndTextDecorated node = (AbstractEndTextDecorated) context.getNewObject();
-        Dimension bounds = adjustBounds(context);
+        Dimension bounds = getBounds(context);
 
         // create independent text label graph element for end point
-        EndTextDecoration element = NodeRegistry.getNodeTypeDefinition(Language.BPMN, BpmnSerializer.END_TEXT_DECORATION).createElement(node.getParent(),
-                false);
+        EndTextDecoration element = NodeRegistry.getNodeTypeDefinition(Language.BPMN, BpmnSerializer.END_TEXT_DECORATION).createElement(
+                node.getParent(), false);
+        element.setConstraint(node.getConstraint().getCopy());
 
         node.getTextDecoratorEmulation().link(element);
         AreaContext tempArea = new AreaContext();
 
         if (node.getTextDecoratorEmulation().hasDefinitionLocation()) {
             // get saved position
-            tempArea.setLocation(node.getTextDecoratorEmulation().getDefinitionLocation().x(), node.getTextDecoratorEmulation().getDefinitionLocation().y());
+            tempArea.setLocation(node.getTextDecoratorEmulation().getDefinitionLocation().x(), node.getTextDecoratorEmulation()
+                    .getDefinitionLocation().y());
         } else {
             // calc position under end point image
             Font defFont = Graphiti.getGaService().manageDefaultFont(getDiagram());

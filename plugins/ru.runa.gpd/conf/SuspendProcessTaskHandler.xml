@@ -1,0 +1,7 @@
+<config>
+	<input>
+		<param name="processId" formatFilter="java.lang.Long" label.key="Param.ProcessId" />
+		<param name="excludeMe" optional="true" variable="false"
+			options="true,false" label.key="Param.ExcludeCurrentSubprocessFromSuspension" />
+	</input>
+</config>

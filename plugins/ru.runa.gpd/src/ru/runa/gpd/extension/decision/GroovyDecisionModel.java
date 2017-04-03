@@ -48,9 +48,7 @@ public class GroovyDecisionModel {
                 }
                 lexem1Text = ifContent.substring(start, ifContent.indexOf("."));
                 lexem2Text = ifContent.substring(ifContent.indexOf("(") + 1, ifContent.length() - 1);
-            } else if (strings.length > 3 
-                    && ifContent.contains(" || ") 
-                    && ifContent.contains("ru.runa.wfe.commons.CalendarUtil.dateToCalendar")
+            } else if (strings.length > 3 && ifContent.contains(" || ") && ifContent.contains("ru.runa.wfe.commons.CalendarUtil.dateToCalendar")
                     && ifContent.endsWith(" 0")) {
                 // GroovyTypeSupport.DateType
                 isOperationDateType = true;
@@ -60,6 +58,14 @@ public class GroovyDecisionModel {
                 lexem1Text = parts[0].substring(parts[0].lastIndexOf("(") + 1, parts[0].indexOf(")"));
                 lexem2Text = parts[1].substring(parts[1].lastIndexOf("(") + 1, parts[1].indexOf(")"));
                 operator = stringsWithoutNullCheck[1];
+            } else if (strings.length > 3 && ifContent.contains(" || ") && ifContent.contains("BigDecimal") && ifContent.endsWith(" 0")) {
+                // GroovyTypeSupport.BigDecimalType
+                isOperationDateType = false;
+                String ifContentWithoutNullCheck = ifContent.substring(ifContent.lastIndexOf(" || ") + " || ".length());
+                String[] stringsWithoutNullCheck = ifContentWithoutNullCheck.split(" ");
+                lexem1Text = stringsWithoutNullCheck[2];
+                lexem2Text = stringsWithoutNullCheck[6];
+                operator = stringsWithoutNullCheck[9];
             } else {
                 lexem1Text = strings[0];
                 operator = strings[1];
@@ -94,8 +100,12 @@ public class GroovyDecisionModel {
             }
             Object lexem2;
             if (lexem2Text.indexOf(".") > 0 && !isOperationDateType) {
-                // Java names doesn't allowed use of point in variable name
-                lexem2Text = lexem2Text.substring(0, lexem2Text.lastIndexOf("."));
+                try {
+                    Double.parseDouble(lexem2Text);
+                } catch (NumberFormatException e) {
+                    // Java names doesn't allowed use of point in variable name
+                    lexem2Text = lexem2Text.substring(0, lexem2Text.lastIndexOf("."));
+                }
             }
             Variable variable2 = VariableUtils.getVariableByScriptingName(variables, lexem2Text);
             if (variable2 != null) {

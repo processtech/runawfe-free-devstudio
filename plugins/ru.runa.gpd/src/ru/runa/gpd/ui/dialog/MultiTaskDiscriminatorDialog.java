@@ -12,6 +12,7 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
@@ -67,7 +68,7 @@ public class MultiTaskDiscriminatorDialog extends Dialog {
 
     @Override
     protected void configureShell(Shell newShell) {
-        newShell.setSize(600, 550);
+        newShell.setSize(600, 600);
         super.configureShell(newShell);
     }
 
@@ -75,17 +76,24 @@ public class MultiTaskDiscriminatorDialog extends Dialog {
     protected Control createDialogArea(Composite parent) {
         Composite composite = (Composite) super.createDialogArea(parent);
         composite.setLayout(new GridLayout(1, false));
-        Group group = new Group(composite, SWT.NONE);
+        
+        SashForm sf = new SashForm(composite, SWT.VERTICAL | SWT.SMOOTH);
+        sf.setLayout(new GridLayout());
+        sf.setLayoutData(new GridData(GridData.FILL_BOTH));
+        
+        Group group = new Group(sf, SWT.NONE);
         group.setLayout(new GridLayout());
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
         group.setText(Localization.getString("Feature.Multiinstance"));
         MultiinstanceComposite multiinstanceComposite = new MultiinstanceComposite(group, state, parameters);
         multiinstanceComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        Group mappingsGroup = new Group(composite, SWT.NONE);
+        Group mappingsGroup = new Group(sf, SWT.NONE);
         mappingsGroup.setLayout(new GridLayout());
         mappingsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
         mappingsGroup.setText(Localization.getString("Subprocess.VariableMappings"));
+
+        sf.setWeights(new int[] {60, 40});
 
         variablesComposite = new VariablesComposite(mappingsGroup);
         variablesComposite.setLayoutData(new GridData(GridData.FILL_BOTH));

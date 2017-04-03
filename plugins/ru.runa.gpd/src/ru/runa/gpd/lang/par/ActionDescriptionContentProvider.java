@@ -6,10 +6,10 @@ import org.dom4j.Document;
 import org.dom4j.Element;
 
 import ru.runa.gpd.PluginLogger;
-import ru.runa.gpd.lang.model.Action;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.ProcessDefinition;
+import ru.runa.gpd.lang.model.jpdl.Action;
 
 /**
  * Action description were moved to processdescription.xml
