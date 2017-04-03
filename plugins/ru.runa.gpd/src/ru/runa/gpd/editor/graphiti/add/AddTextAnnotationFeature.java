@@ -25,7 +25,7 @@ public class AddTextAnnotationFeature extends AddElementFeature {
     @Override
     public PictogramElement add(IAddContext context) {
         TextAnnotation annotation = (TextAnnotation) context.getNewObject();
-        Dimension bounds = adjustBounds(context);
+        Dimension bounds = getBounds(context);
         ContainerShape containerShape = Graphiti.getPeCreateService().createContainerShape(context.getTargetContainer(), true);
         Rectangle main = Graphiti.getGaService().createInvisibleRectangle(containerShape);
         Graphiti.getGaService().setLocationAndSize(main, context.getX(), context.getY(), bounds.width, bounds.height);

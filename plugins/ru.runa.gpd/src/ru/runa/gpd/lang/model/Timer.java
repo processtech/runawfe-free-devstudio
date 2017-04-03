@@ -131,6 +131,9 @@ public class Timer extends Node implements IBoundaryEvent {
                 result.add(variable);
             }
         }
+        if (action != null) {
+            result.addAll(action.getUsedVariables(processFolder));
+        }
         return result;
     }
 

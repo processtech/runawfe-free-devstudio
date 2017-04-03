@@ -21,7 +21,7 @@ public class PasteAction extends SelectionAction {
     }
 
     private CopyGraphCommand createCommand() {
-        return new CopyGraphCommand(editor.getDefinition(), (IFolder) editor.getDefinitionFile().getParent());
+        return new CopyGraphCommand(editor, (IFolder) editor.getDefinitionFile().getParent());
     }
 
     @Override
