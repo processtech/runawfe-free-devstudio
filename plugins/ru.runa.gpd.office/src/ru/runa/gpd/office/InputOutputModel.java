@@ -71,8 +71,8 @@ public class InputOutputModel {
                     }
                 }
                 if (isInputVariableExistsInDefinition != true) {
-                    errors.add(ValidationError.createError(graphElement, Messages.getString("model.validation.in.file.variable.doesnotExists")
-                            + " \"" + inputVariable + "\""));
+                    errors.add(ValidationError.createError(graphElement,
+                            Messages.getString("model.validation.in.file.variable.doesnotExists", inputVariable)));
                 }
             }
         }
@@ -91,8 +91,8 @@ public class InputOutputModel {
                     }
                 }
                 if (isOutputVariableExistsInDefinition != true) {
-                    errors.add(ValidationError.createError(graphElement, Messages.getString("model.validation.out.file.variable.doesnotExists")
-                            + " \"" + outputVariable + "\""));
+                    errors.add(ValidationError.createError(graphElement,
+                            Messages.getString("model.validation.out.file.variable.doesnotExists", outputVariable)));
                 }
             }
         }

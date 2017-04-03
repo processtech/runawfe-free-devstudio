@@ -10,6 +10,7 @@ import org.dom4j.Element;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Variable;
+import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.gpd.office.FilesSupplierMode;
 import ru.runa.gpd.office.InputOutputModel;
 import ru.runa.gpd.office.Messages;
@@ -71,24 +72,45 @@ public class ExcelModel extends Observable {
         for (ConstraintsModel constraintsModel : constraints) {
             if (Strings.isNullOrEmpty(constraintsModel.variableName)) {
                 errors.add(ValidationError.createError(graphElement, Messages.getString("model.validation.xlsx.constraint.variable.empty")));
-                break;
             }
             List<String> variablesNames = Lists.newArrayList();
-            for (int i = 0; i < variables.size(); i++) {
-                variablesNames.add(variables.get(i).getName());
-            }
+            variablesNames.addAll(fillVariableNames(variables));
             String constraintsModelVariableName = constraintsModel.variableName;
-            if (constraintsModelVariableName.contains(".")) {
-                constraintsModelVariableName = constraintsModelVariableName.substring(0, constraintsModelVariableName.indexOf("."));
-            }
 
             if (variablesNames.contains(constraintsModelVariableName) != true) {
                 errors.add(ValidationError.createError(graphElement, Messages.getString("model.validation.xlsx.constraint.variable.nonexistent")
                         + " \"" + constraintsModelVariableName + "\""));
-                break;
             }
         }
         inOutModel.validate(graphElement, mode, errors);
     }
 
+    private List<String> fillVariableNames(List<Variable> variables) {
+        List<String> result = Lists.newArrayList();
+        for (int i = 0; i < variables.size(); i++) {
+            result.add(variables.get(i).getName());
+            result.addAll(fillUsertypeFields(variables.get(i).getName(), variables.get(i).getUserType()));
+        }
+        return result;
+    }
+
+    private List<String> fillUsertypeFields(String variableName, VariableUserType userType) {
+        List<String> result = Lists.newArrayList();
+        if (userType != null && userType.getAttributes() != null) {
+            for (Variable currentVariable : userType.getAttributes()) {
+                String complexVariable = "";
+                if (currentVariable.getUserType() != null) {
+                    complexVariable = variableName + "." + currentVariable.getUserType().getName();
+                    result.add(complexVariable);
+                    if (currentVariable.getUserType().getAttributes() != null) {
+                        result.addAll(fillUsertypeFields(complexVariable + ".", currentVariable.getUserType()));
+                    }
+                } else {
+                    complexVariable = variableName + currentVariable.getName();
+                    result.add(complexVariable);
+                }
+            }
+        }
+        return result;
+    }
 }
