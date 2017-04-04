@@ -14,19 +14,23 @@ public class AbstractEventNode extends MessageNode {
     private EventNodeType eventNodeType;
 
     static {
-        List<String> eventNodeTypeNames = Lists.newArrayList();
+        EVENT_NODE_TYPE_NAMES = getEventTypeNames();
+    }
+
+	public static String[] getEventTypeNames() {
+		List<String> eventNodeTypeNames = Lists.newArrayList();
         for (EventNodeType eventNodeType : EventNodeType.values()) {
             eventNodeTypeNames.add(Localization.getString("event.node.type." + eventNodeType.name().toLowerCase()));
         }
-        EVENT_NODE_TYPE_NAMES = eventNodeTypeNames.toArray(new String[eventNodeTypeNames.size()]);
-    }
+		return eventNodeTypeNames.toArray(new String[eventNodeTypeNames.size()]);
+	}
 
     @Override
     public void setParent(GraphElement parent) {
         super.setParent(parent);
         if (parent instanceof ProcessDefinition) {
             eventNodeType = EventNodeType.message;
-        } else {
+        } else if (! (parent instanceof TaskState)) {
             eventNodeType = EventNodeType.signal;
         }
     }

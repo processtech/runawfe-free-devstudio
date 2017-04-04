@@ -31,10 +31,7 @@ public class ReceiveMessageFigure extends MessageNodeFigure {
         return timerConnectionAnchor;
     }
     
-    public ConnectionAnchor getEventConnectionAnchor() {
-        return eventConnectionAnchor;
-    }
-
+    
     @Override
     public Dimension getDefaultSize() {
         return super.getDefaultSize().getExpanded(GRID_SIZE, GRID_SIZE);

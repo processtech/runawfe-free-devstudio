@@ -10,6 +10,7 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IActionFilter;
+import org.eclipse.ui.views.properties.ComboBoxPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
@@ -371,12 +372,20 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
                     .getString("property.delegation.configuration")));
         }
         if (this instanceof ITimed && getProcessDefinition().getLanguage() == Language.JPDL) {
-            Timer timer = ((ITimed) this).getTimer();
-            if (timer != null) {
-                descriptors.add(new DurationPropertyDescriptor(PROPERTY_TIMER_DELAY, timer.getProcessDefinition(), timer.getDelay(), Localization
-                        .getString("property.duration")));
-                descriptors.add(new TimerActionPropertyDescriptor(PROPERTY_TIMER_ACTION, Localization.getString("Timer.action"), timer));
-            }
+        	if (this instanceof ITimed) {
+	            Timer timer = ((ITimed) this).getTimer();
+	            if (timer != null) {
+	                descriptors.add(new DurationPropertyDescriptor(PROPERTY_TIMER_DELAY, timer.getProcessDefinition(), timer.getDelay(), Localization
+	                        .getString("property.duration")));
+	                descriptors.add(new TimerActionPropertyDescriptor(PROPERTY_TIMER_ACTION, Localization.getString("Timer.action"), timer));
+	            }
+        	} 
+        	if (this instanceof TaskState) {
+	            AbstractEventNode event = ((IBoundaryEventContainer) this).getCatchEventNodes();
+	            if (event != null) {
+	            	descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_EVENT_TYPE, Localization.getString("property.eventType"), AbstractEventNode.getEventTypeNames()));
+	            }
+        	}
         }
         populateCustomPropertyDescriptors(descriptors);
         return descriptors.toArray(new IPropertyDescriptor[descriptors.size()]);

@@ -33,8 +33,6 @@ public class ReceiveMessageGraphicalEditPart extends LabeledNodeGraphicalEditPar
         String connectionName = ((Transition) connectionEditPart.getModel()).getName();
 		if (PluginConstants.TIMER_TRANSITION_NAME.equals(connectionName)) {
             return getFigure().getTimerConnectionAnchor();
-        } else if (PluginConstants.EVENT_TRANSITION_NAME.equals(connectionName)) { 
-        	return getFigure().getEventConnectionAnchor();
         } else {
             return getFigure().getLeavingConnectionAnchor();
         }

@@ -635,7 +635,7 @@ public class JpdlSerializer extends ProcessSerializer {
                 	if(state instanceof TaskState) {
                 		CatchEventNode catchEventNode = new CatchEventNode();
                 		catchEventNode.setId(stateNodeChild.attributeValue(ID));
-                		catchEventNode.setEventNodeType(EventNodeType.valueOf(node.attributeValue(TYPE, "message")));
+                		catchEventNode.setEventNodeType(EventNodeType.valueOf(stateNodeChild.attributeValue(TYPE, "message")));
                 		state.addChild(catchEventNode);
                 	}
                 }
