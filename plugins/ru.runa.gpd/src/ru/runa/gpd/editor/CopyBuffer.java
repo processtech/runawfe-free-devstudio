@@ -3,6 +3,7 @@ package ru.runa.gpd.editor;
 import java.util.List;
 
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.gef.ui.actions.Clipboard;
 
 import ru.runa.gpd.Localization;
@@ -22,27 +23,33 @@ public class CopyBuffer {
     private IFolder sourceFolder;
     private Language sourceLanguage;
     private List<NamedGraphElement> sourceNodes;
+    private String editorId;
+    private Point viewportLocation;
 
     public CopyBuffer() {
         Object contents = Clipboard.getDefault().getContents();
         if (contents != null && contents.getClass().isArray()) {
             Object[] array = (Object[]) contents;
-            if (array.length == 3) {
+            if (array.length == 5) {
                 sourceFolder = (IFolder) array[0];
                 sourceLanguage = (Language) array[1];
                 sourceNodes = (List<NamedGraphElement>) array[2];
+                editorId = (String) array[3];
+                viewportLocation = (Point) array[4];
             }
         }
     }
 
-    public CopyBuffer(IFolder sourceFolder, Language sourceLanguage, List<NamedGraphElement> sourceNodes) {
+    public CopyBuffer(IFolder sourceFolder, Language sourceLanguage, List<NamedGraphElement> sourceNodes, String editorId, Point viewportLocation) {
         this.sourceFolder = sourceFolder;
         this.sourceLanguage = sourceLanguage;
         this.sourceNodes = sourceNodes;
+        this.editorId = editorId;
+        this.viewportLocation = viewportLocation;
     }
 
     public void setToClipboard() {
-        Clipboard.getDefault().setContents(new Object[] { sourceFolder, sourceLanguage, sourceNodes });
+        Clipboard.getDefault().setContents(new Object[] { sourceFolder, sourceLanguage, sourceNodes, editorId, viewportLocation });
     }
 
     public List<NamedGraphElement> getSourceNodes() {
@@ -59,6 +66,14 @@ public class CopyBuffer {
 
     public Language getLanguage() {
         return sourceLanguage;
+    }
+
+    public String getEditorId() {
+        return editorId;
+    }
+
+    public Point getViewportLocation() {
+        return viewportLocation;
     }
 
     public static abstract class ExtraCopyAction extends SelectionItem implements Comparable<ExtraCopyAction> {
