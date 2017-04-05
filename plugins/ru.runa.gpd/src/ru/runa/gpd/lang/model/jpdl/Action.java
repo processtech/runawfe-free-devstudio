@@ -28,8 +28,8 @@ public class Action extends NamedGraphElement implements Delegable, Describable 
     }
 
     @Override
-    public Action getCopy(GraphElement parent) {
-        Action copy = (Action) super.getCopy(parent);
+    public Action makeCopy(GraphElement parent) {
+        Action copy = (Action) super.makeCopy(parent);
         copy.setDelegationClassName(getDelegationClassName());
         copy.setDelegationConfiguration(getDelegationConfiguration());
         return copy;
