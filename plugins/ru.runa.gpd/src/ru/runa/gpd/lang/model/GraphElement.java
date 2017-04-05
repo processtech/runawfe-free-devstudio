@@ -431,7 +431,7 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
         if (this instanceof ActionContainer) {
             List<? extends Action> actions = ((ActionContainer) this).getActions();
             for (Action action : actions) {
-                copy.addAction(action.getCopy(copy), -1);
+                action.getCopy(copy);
             }
         }
         Rectangle old = getConstraint();

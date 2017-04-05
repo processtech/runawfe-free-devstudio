@@ -418,7 +418,7 @@ public class BpmnSerializer extends ProcessSerializer {
 
     private void writeBaseProperties(Element element, GraphElement graphElement) {
         setAttribute(element, ID, graphElement.getId());
-        if (graphElement instanceof NamedGraphElement && !Strings.isNullOrEmpty(((NamedGraphElement) graphElement).getName())) {
+        if (graphElement instanceof NamedGraphElement) {
             setAttribute(element, NAME, ((NamedGraphElement) graphElement).getName());
         }
         if (graphElement instanceof Describable) {
