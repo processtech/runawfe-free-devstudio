@@ -187,8 +187,8 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
     }
 
     @Override
-    public Subprocess getCopy(GraphElement parent) {
-        Subprocess copy = (Subprocess) super.getCopy(parent);
+    public Subprocess makeCopy(GraphElement parent) {
+        Subprocess copy = (Subprocess) super.makeCopy(parent);
         // we are not copy embedded subprocess
         copy.setSubProcessName(embedded ? "" : getSubProcessName());
         for (VariableMapping mapping : getVariableMappings()) {

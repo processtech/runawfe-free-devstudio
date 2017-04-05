@@ -73,7 +73,7 @@ public class TimerAction extends GraphElement implements Delegable {
     }
 
     @Override
-    public TimerAction getCopy(GraphElement parent) {
+    public TimerAction makeCopy(GraphElement parent) {
         TimerAction copy = new TimerAction((ProcessDefinition) parent);
         copy.setDelegationClassName(getDelegationClassName());
         copy.setDelegationConfiguration(getDelegationConfiguration());

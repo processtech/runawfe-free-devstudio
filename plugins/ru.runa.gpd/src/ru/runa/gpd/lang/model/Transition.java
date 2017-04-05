@@ -218,8 +218,8 @@ public class Transition extends NamedGraphElement implements ActionContainer {
     }
 
     @Override
-    public Transition getCopy(GraphElement parent) {
-        Transition copy = (Transition) super.getCopy(parent);
+    public Transition makeCopy(GraphElement parent) {
+        Transition copy = (Transition) super.makeCopy(parent);
         for (Point bp : getBendpoints()) {
             // a little shift for making visible copy on same diagram
             // synchronized with ru.runa.gpd.lang.model.GraphElement.getCopy(GraphElement)
