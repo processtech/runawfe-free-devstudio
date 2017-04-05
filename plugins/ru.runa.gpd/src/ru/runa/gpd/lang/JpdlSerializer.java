@@ -251,7 +251,7 @@ public class JpdlSerializer extends ProcessSerializer {
         for (CatchEventNode catchEventNode : receiveMessageNodes) {
             Element messageElement = writeNode(root, catchEventNode, null);
             messageElement.addAttribute(TYPE, catchEventNode.getEventNodeType().name());
-            for (VariableMapping variable : catchEventNode.getVariableMappings()) {                
+            for (VariableMapping variable : catchEventNode.getVariableMappings()) {
                 writeVariableAttrs(messageElement, variable);
             }
             writeTimer(messageElement, catchEventNode.getTimer());
@@ -269,12 +269,12 @@ public class JpdlSerializer extends ProcessSerializer {
         }
     }
 
-	private void writeVariableAttrs(Element processStateElement, VariableMapping variable) {
-		Element variableElement = processStateElement.addElement(VARIABLE);
-		setAttribute(variableElement, NAME, variable.getName());
-		setAttribute(variableElement, MAPPED_NAME, variable.getMappedName());
-		setAttribute(variableElement, ACCESS, variable.getUsage());
-	}
+    private void writeVariableAttrs(Element processStateElement, VariableMapping variable) {
+        Element variableElement = processStateElement.addElement(VARIABLE);
+        setAttribute(variableElement, NAME, variable.getName());
+        setAttribute(variableElement, MAPPED_NAME, variable.getMappedName());
+        setAttribute(variableElement, ACCESS, variable.getUsage());
+    }
 
     private Element writeNode(Element parent, Node node, String delegationNodeName) {
         Element nodeElement = writeElement(parent, node);
@@ -330,7 +330,7 @@ public class JpdlSerializer extends ProcessSerializer {
             writeDelegation(timerElement, ACTION, timer.getAction());
         }
         setAttribute(timerElement, TRANSITION, PluginConstants.TIMER_TRANSITION_NAME);
-    }    	
+    }
 
     private Element writeElement(Element parent, GraphElement element) {
         return writeElement(parent, element, element.getTypeDefinition().getJpdlElementName());
@@ -374,15 +374,15 @@ public class JpdlSerializer extends ProcessSerializer {
         setAttribute(eventElement, TYPE, actionEventType.getType());
         writeDelegation(eventElement, ACTION, action);
     }
-    
+
     private void writeBoundaryEvents(Element stateElement, AbstractEventNode catchEventNode) {
-		if (catchEventNode == null) {
-			return;
-		}
-		Element catchEventElement = stateElement.addElement(RECEIVE_MESSAGE);
+        if (catchEventNode == null) {
+            return;
+        }
+        Element catchEventElement = stateElement.addElement(RECEIVE_MESSAGE);
         setAttribute(catchEventElement, ID, catchEventNode.getId());
         setAttribute(catchEventElement, TYPE, catchEventNode.getEventNodeType().name());
-	}
+    }
 
     private void writeDelegation(Element parent, String elementName, Delegable delegable) {
         Element delegationElement = parent.addElement(elementName);
@@ -632,12 +632,12 @@ public class JpdlSerializer extends ProcessSerializer {
                     }
                 }
                 if (RECEIVE_MESSAGE.equals(stateNodeChild.getName())) {
-                	if(state instanceof TaskState) {
-                		CatchEventNode catchEventNode = new CatchEventNode();
-                		catchEventNode.setId(stateNodeChild.attributeValue(ID));
-                		catchEventNode.setEventNodeType(EventNodeType.valueOf(stateNodeChild.attributeValue(TYPE, "message")));
-                		state.addChild(catchEventNode);
-                	}
+                    if (state instanceof TaskState) {
+                        CatchEventNode catchEventNode = new CatchEventNode();
+                        catchEventNode.setId(stateNodeChild.attributeValue(ID));
+                        catchEventNode.setEventNodeType(EventNodeType.valueOf(stateNodeChild.attributeValue(TYPE, "message")));
+                        state.addChild(catchEventNode);
+                    }
                 }
                 if (TIMER.equals(stateNodeChild.getName())) {
                     String nameTimer = stateNodeChild.attributeValue(NAME);
@@ -815,11 +815,11 @@ public class JpdlSerializer extends ProcessSerializer {
         }
     }
 
-	private void parseVariableAttrs(Element element, List<VariableMapping> variablesList) {
-		VariableMapping variable = new VariableMapping();
-		variable.setName(element.attributeValue(NAME));
-		variable.setMappedName(element.attributeValue(MAPPED_NAME));
-		variable.setUsage(element.attributeValue(ACCESS));
-		variablesList.add(variable);
-	}
+    private void parseVariableAttrs(Element element, List<VariableMapping> variablesList) {
+        VariableMapping variable = new VariableMapping();
+        variable.setName(element.attributeValue(NAME));
+        variable.setMappedName(element.attributeValue(MAPPED_NAME));
+        variable.setUsage(element.attributeValue(ACCESS));
+        variablesList.add(variable);
+    }
 }
