@@ -191,18 +191,16 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
     }
 
     public void addChild(GraphElement child, int index) {
-        if (!childs.contains(child)) {
-            childs.add(index, child);
-            child.setParent(this);
-            child.setDelegatedListener(delegatedListener);
-            firePropertyChange(PROPERTY_CHILDS_CHANGED, null, 1);
-            String nodeId = child.getId();
-            if (nodeId == null) {
-                nodeId = getProcessDefinition().getNextNodeId();
-                child.setId(nodeId);
-            } else {
-                getProcessDefinition().setNextNodeIdIfApplicable(nodeId);
-            }
+        childs.add(index, child);
+        child.setParent(this);
+        child.setDelegatedListener(delegatedListener);
+        firePropertyChange(PROPERTY_CHILDS_CHANGED, null, 1);
+        String nodeId = child.getId();
+        if (nodeId == null) {
+            nodeId = getProcessDefinition().getNextNodeId();
+            child.setId(nodeId);
+        } else {
+            getProcessDefinition().setNextNodeIdIfApplicable(nodeId);
         }
     }
 
@@ -425,7 +423,7 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
         return getTypeDefinition().getImage(getProcessDefinition().getLanguage().getNotation());
     }
 
-    public GraphElement getCopy(GraphElement parent) {
+    public GraphElement makeCopy(GraphElement parent) {
         GraphElement copy = getTypeDefinition().createElement(parent, false);
         if (this instanceof Describable) {
             copy.setDescription(getDescription());
@@ -433,7 +431,7 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
         if (this instanceof ActionContainer) {
             List<? extends Action> actions = ((ActionContainer) this).getActions();
             for (Action action : actions) {
-                copy.addAction(action.getCopy(copy), -1);
+                action.makeCopy(copy);
             }
         }
         Rectangle old = getConstraint();
