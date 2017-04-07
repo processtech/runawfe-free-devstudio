@@ -71,8 +71,8 @@ public class Swimlane extends Variable implements Delegable {
     }
 
     @Override
-    public NamedGraphElement getCopy(GraphElement parent) {
-        Swimlane copy = (Swimlane) super.getCopy(parent);
+    public NamedGraphElement makeCopy(GraphElement parent) {
+        Swimlane copy = (Swimlane) super.makeCopy(parent);
         copy.setDelegationClassName(getDelegationClassName());
         copy.setDelegationConfiguration(getDelegationConfiguration());
         return copy;

@@ -195,8 +195,8 @@ public class MultiTaskState extends TaskState implements IMultiInstancesContaine
     }
 
     @Override
-    public MultiTaskState getCopy(GraphElement parent) {
-        MultiTaskState copy = (MultiTaskState) super.getCopy(parent);
+    public MultiTaskState makeCopy(GraphElement parent) {
+        MultiTaskState copy = (MultiTaskState) super.makeCopy(parent);
         copy.setDiscriminatorUsage(discriminatorUsage);
         copy.setDiscriminatorValue(discriminatorValue);
         copy.setDiscriminatorCondition(discriminatorCondition);

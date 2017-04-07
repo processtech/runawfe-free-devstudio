@@ -275,13 +275,13 @@ public class TaskState extends FormNode implements ActionContainer, ITimed, Sync
     }
 
     @Override
-    public TaskState getCopy(GraphElement parent) {
-        TaskState copy = (TaskState) super.getCopy(parent);
+    public TaskState makeCopy(GraphElement parent) {
+        TaskState copy = (TaskState) super.makeCopy(parent);
         if (getBotTaskLink() != null) {
             copy.setBotTaskLink(getBotTaskLink().getCopy(copy));
         }
         if (getEscalationAction() != null) {
-            copy.setEscalationAction(getEscalationAction().getCopy(parent.getProcessDefinition()));
+            copy.setEscalationAction(getEscalationAction().makeCopy(parent.getProcessDefinition()));
         }
         if (getEscalationDelay() != null) {
             copy.setEscalationDelay(new Duration(getEscalationDelay()));
