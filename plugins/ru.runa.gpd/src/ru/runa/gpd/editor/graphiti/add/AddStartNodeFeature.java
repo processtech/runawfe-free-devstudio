@@ -24,27 +24,29 @@ public class AddStartNodeFeature extends AddNodeWithImageFeature {
     public PictogramElement add(IAddContext context) {
         PictogramElement containerShape = super.add(context);
         StartState node = (StartState) context.getNewObject();
-        Dimension bounds = adjustBounds(context);
+        Dimension bounds = getBounds(context);
 
         // create independent text label graph element for start point
-        StartTextDecoration element = NodeRegistry.getNodeTypeDefinition(Language.BPMN, BpmnSerializer.START_TEXT_DECORATION).createElement(node.getParent(),
-                false);
+        StartTextDecoration element = NodeRegistry.getNodeTypeDefinition(Language.BPMN, BpmnSerializer.START_TEXT_DECORATION).createElement(
+                node.getParent(), false);
+        element.setConstraint(node.getConstraint().getCopy());
 
         node.getTextDecoratorEmulation().link(element);
         AreaContext tempArea = new AreaContext();
 
         if (node.getTextDecoratorEmulation().hasDefinitionLocation()) {
             // get saved position
-            tempArea.setLocation(node.getTextDecoratorEmulation().getDefinitionLocation().x(), node.getTextDecoratorEmulation().getDefinitionLocation().y());
+            tempArea.setLocation(node.getTextDecoratorEmulation().getDefinitionLocation().x(), node.getTextDecoratorEmulation()
+                    .getDefinitionLocation().y());
         } else {
             // calc position under start point image
             Font defFont = Graphiti.getGaService().manageDefaultFont(getDiagram());
-            
+
             IDimension swimlaneDim = new DimensionImpl(0, 0);
-            if (SwimlaneDisplayMode.none == node.getProcessDefinition().getSwimlaneDisplayMode() ) {
-            	swimlaneDim = GraphitiUi.getUiLayoutService().calculateTextSize(node.getSwimlaneLabel(), defFont);
-        	}
-            
+            if (SwimlaneDisplayMode.none == node.getProcessDefinition().getSwimlaneDisplayMode()) {
+                swimlaneDim = GraphitiUi.getUiLayoutService().calculateTextSize(node.getSwimlaneLabel(), defFont);
+            }
+
             IDimension nameDim = GraphitiUi.getUiLayoutService().calculateTextSize(node.getName(), defFont);
             int y = context.getY() - swimlaneDim.getHeight() - nameDim.getHeight();
             int maxWidth = Math.max(swimlaneDim.getWidth(), nameDim.getWidth());

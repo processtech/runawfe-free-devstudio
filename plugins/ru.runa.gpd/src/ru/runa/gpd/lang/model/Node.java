@@ -276,14 +276,15 @@ public abstract class Node extends NamedGraphElement implements Describable {
     }
 
     @Override
-    public Node getCopy(GraphElement parent) {
-        Node copy = (Node) super.getCopy(parent);
+    public Node makeCopy(GraphElement parent) {
+        Node copy = (Node) super.makeCopy(parent);
         copy.setMinimizedView(isMinimizedView());
+        copy.setAsyncExecution(getAsyncExecution());
         copy.setInterruptingBoundaryEvent(isInterruptingBoundaryEvent());
         if (this instanceof ITimed) {
             Timer timer = ((ITimed) this).getTimer();
             if (timer != null) {
-                timer.getCopy(copy);
+                timer.makeCopy(copy);
             }
         }
         if (this instanceof Synchronizable) {

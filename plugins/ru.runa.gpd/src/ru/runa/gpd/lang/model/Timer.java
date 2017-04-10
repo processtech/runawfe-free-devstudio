@@ -115,10 +115,10 @@ public class Timer extends Node implements IBoundaryEvent {
     }
 
     @Override
-    public Timer getCopy(GraphElement parent) {
-        Timer copy = (Timer) super.getCopy(parent);
+    public Timer makeCopy(GraphElement parent) {
+        Timer copy = (Timer) super.makeCopy(parent);
         if (getAction() != null) {
-            copy.setAction(getAction().getCopy(parent.getProcessDefinition()));
+            copy.setAction(getAction().makeCopy(parent.getProcessDefinition()));
         }
         if (getDelay() != null) {
             copy.setDelay(new Duration(getDelay()));
@@ -134,6 +134,9 @@ public class Timer extends Node implements IBoundaryEvent {
             if (variable != null) {
                 result.add(variable);
             }
+        }
+        if (action != null) {
+            result.addAll(action.getUsedVariables(processFolder));
         }
         return result;
     }

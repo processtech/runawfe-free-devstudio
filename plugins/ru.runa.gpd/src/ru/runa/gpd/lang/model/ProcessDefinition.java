@@ -465,7 +465,7 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
     }
 
     @Override
-    public ProcessDefinition getCopy(GraphElement parent) {
+    public ProcessDefinition makeCopy(GraphElement parent) {
         throw new UnsupportedOperationException();
     }
 

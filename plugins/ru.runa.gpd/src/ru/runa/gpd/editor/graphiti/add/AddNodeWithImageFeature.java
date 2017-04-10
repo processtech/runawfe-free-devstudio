@@ -14,7 +14,7 @@ public class AddNodeWithImageFeature extends AddNodeFeature {
     @Override
     public PictogramElement add(IAddContext context) {
         Node node = (Node) context.getNewObject();
-        Dimension bounds = adjustBounds(context);
+        Dimension bounds = getBounds(context);
         ContainerShape containerShape = Graphiti.getPeCreateService().createContainerShape(context.getTargetContainer(), true);
         Image image = Graphiti.getGaService().createImage(containerShape, "graph/" + getIcon(node));
         Graphiti.getGaService().setLocationAndSize(image, context.getX(), context.getY(), bounds.width, bounds.height);

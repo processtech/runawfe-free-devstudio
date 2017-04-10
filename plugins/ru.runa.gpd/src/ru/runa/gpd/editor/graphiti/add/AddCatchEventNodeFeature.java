@@ -33,7 +33,7 @@ public class AddCatchEventNodeFeature extends AddEventNodeFeature implements GEF
         Object parent = getBusinessObjectForPictogramElement(context.getTargetContainer());
         if (parent instanceof IBoundaryEventContainer) {
             CatchEventNode catchEventNode = (CatchEventNode) context.getNewObject();
-            Dimension bounds = adjustBounds(context);
+            Dimension bounds = getBounds(context);
             ((LocationContext) context).setX(((Node) parent).getConstraint().width - 2 * GRID_SIZE);
             ((LocationContext) context).setY(((Node) parent).getConstraint().height - 2 * GRID_SIZE);
             bounds.scale(0.5);

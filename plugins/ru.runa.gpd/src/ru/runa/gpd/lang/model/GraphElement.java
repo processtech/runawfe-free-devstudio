@@ -429,7 +429,7 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
         return getTypeDefinition().getImage(getProcessDefinition().getLanguage().getNotation());
     }
 
-    public GraphElement getCopy(GraphElement parent) {
+    public GraphElement makeCopy(GraphElement parent) {
         GraphElement copy = getTypeDefinition().createElement(parent, false);
         if (this instanceof Describable) {
             copy.setDescription(getDescription());
@@ -437,7 +437,7 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
         if (this instanceof ActionContainer) {
             List<? extends Action> actions = ((ActionContainer) this).getActions();
             for (Action action : actions) {
-                copy.addAction(action.getCopy(copy), -1);
+                action.makeCopy(copy);
             }
         }
         Rectangle old = getConstraint();
