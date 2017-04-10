@@ -278,6 +278,12 @@ public abstract class Node extends NamedGraphElement implements Describable {
                 timer.getCopy(copy);
             }
         }
+        if (this instanceof IBoundaryEventContainer) {
+            AbstractEventNode event = ((IBoundaryEventContainer) this).getCatchEventNodes();
+            if (event != null) {
+                event.getCopy(copy);
+            }
+        }
         if (this instanceof Synchronizable) {
             ((Synchronizable) copy).setAsync(((Synchronizable) this).isAsync());
             ((Synchronizable) copy).setAsyncCompletionMode(((Synchronizable) this).getAsyncCompletionMode());

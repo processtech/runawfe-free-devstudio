@@ -106,11 +106,11 @@ public class TaskState extends FormNode implements ActionContainer, ITimed, Sync
 
     @Override
     public String getNextTransitionName(NodeTypeDefinition typeDefinition) {
-        if (getProcessDefinition().getLanguage() == Language.JPDL && getTimer() != null) {
-        	if (getTransitionByName(PluginConstants.TIMER_TRANSITION_NAME) == null) {
+        if (getProcessDefinition().getLanguage() == Language.JPDL ) {
+        	if (getTimer() != null && getTransitionByName(PluginConstants.TIMER_TRANSITION_NAME) == null) {
         		return PluginConstants.TIMER_TRANSITION_NAME;
         	}
-        	if (getTransitionByName(PluginConstants.EVENT_TRANSITION_NAME) == null) {
+        	if (getCatchEventNodes() != null && getTransitionByName(PluginConstants.EVENT_TRANSITION_NAME) == null) {
         		return PluginConstants.EVENT_TRANSITION_NAME;
         	}
         }

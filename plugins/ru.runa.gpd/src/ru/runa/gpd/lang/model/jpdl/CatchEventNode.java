@@ -5,12 +5,17 @@ import java.util.List;
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.lang.model.AbstractEventNode;
+import ru.runa.gpd.lang.model.EventNodeType;
 import ru.runa.gpd.lang.model.ITimed;
 import ru.runa.gpd.lang.model.Timer;
 import ru.runa.gpd.lang.model.Transition;
 
 public class CatchEventNode extends AbstractEventNode implements ITimed {
 
+    public CatchEventNode() {
+        this.setEventNodeType(EventNodeType.message);
+    }
+    
     @Override
     protected boolean allowLeavingTransition(List<Transition> transitions) {
         return super.allowLeavingTransition(transitions) && (transitions.size() == 0 || (transitions.size() == 1 && getTimer() != null));
