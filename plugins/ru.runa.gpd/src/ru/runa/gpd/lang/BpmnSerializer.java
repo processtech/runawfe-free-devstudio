@@ -3,9 +3,7 @@ package ru.runa.gpd.lang;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.QName;
@@ -64,7 +62,6 @@ import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 @SuppressWarnings("unchecked")
 public class BpmnSerializer extends ProcessSerializer {
@@ -117,13 +114,8 @@ public class BpmnSerializer extends ProcessSerializer {
     private static final String REPEAT = "repeat";
     public static final String START_TEXT_DECORATION = "startTextDecoration";
     public static final String END_TEXT_DECORATION = "endTextDecoration";
-    private static final String ACTION_HANDLER_SET = "actionHandlerSet";
     private static final String ACTION_HANDLER = "actionHandler";
-    private static final String ACTION_HANDLER_REFS = "actionHandlerRefs";
     private static final String EVENT_TYPE = "eventType";
-
-    private Set<ActionImpl> actionSet = Sets.newHashSet();
-    private Map<String, Element> actionMap = Maps.newHashMap();
 
     @Override
     public boolean isSupported(Document document) {
@@ -187,7 +179,6 @@ public class BpmnSerializer extends ProcessSerializer {
                 }
             }
         }
-        actionSet.clear();
         StartState startState = definition.getFirstChild(StartState.class);
         if (startState != null) {
             writeTaskState(processElement, startState);
@@ -274,7 +265,6 @@ public class BpmnSerializer extends ProcessSerializer {
                 element.addElement(TEXT).addCDATA(description);
             }
         }
-        writeActionHandlers(processElement);
     }
 
     private void writeVariables(Element element, List<VariableMapping> variableMappings) {
@@ -412,7 +402,7 @@ public class BpmnSerializer extends ProcessSerializer {
         }
         Element element = parent.addElement(bpmnElementName);
         writeBaseProperties(element, graphElement);
-        writeActionRefsAttribute(element, graphElement);
+        writeActionHandlers(element, graphElement);
         return element;
     }
 
@@ -442,49 +432,31 @@ public class BpmnSerializer extends ProcessSerializer {
             }
             transitionElement.addAttribute(SOURCE_REF, sourceNodeId);
             transitionElement.addAttribute(TARGET_REF, targetNodeId);
-            writeActionRefsAttribute(transitionElement, transition);
+            writeActionHandlers(transitionElement, transition);
         }
     }
 
-    private void writeActionRefsAttribute(Element element, GraphElement graphElement) {
-        String actionIds = "";
+    private void writeActionHandlers(Element element, GraphElement graphElement) {
         for (ActionImpl action : graphElement.getChildren(ActionImpl.class)) {
-            actionIds += (actionIds.length() > 0 ? "," : "") + action.getId();
-            actionSet.add(action);
+            writeActionHandler(element, action);
         }
-        if (actionIds.length() > 0) {
-            element.addAttribute(ACTION_HANDLER_REFS, actionIds);
-        }
-    }
-
-    private void writeActionHandlers(Element element) {
-        Element setElement = element.addElement(ACTION_HANDLER_SET);
-        for (ActionImpl action : actionSet) {
-            writeActionHandler(setElement.addElement(ACTION_HANDLER), action);
-        }
-        actionSet.clear();
     }
 
     private void writeActionHandler(Element parent, ActionImpl action) {
-        writeBaseProperties(parent, action);
+        Element extElements = parent.element(EXTENSION_ELEMENTS);
+        if (extElements == null) {
+            extElements = parent.addElement(EXTENSION_ELEMENTS);
+        }
+        Element element = extElements.addElement(RUNA_PREFIX + ":" + ACTION_HANDLER);
+        writeBaseProperties(element, action);
         Map<String, Object> properties = Maps.newLinkedHashMap();
         if (!Strings.isNullOrEmpty(action.getEventType())) {
             properties.put(EVENT_TYPE, action.getEventType());
         }
         properties.put(CLASS, action.getDelegationClassName());
-        Element extensionsElement = writeExtensionElements(parent, properties);
+        Element extensionsElement = writeExtensionElements(element, properties);
         if (!Strings.isNullOrEmpty(action.getDelegationConfiguration())) {
             extensionsElement.addElement(RUNA_PREFIX + ":" + PROPERTY).addAttribute(NAME, CONFIG).addCDATA(action.getDelegationConfiguration());
-        }
-    }
-
-    private void cacheActionHandlers(Element processElement) {
-        actionMap.clear();
-        Element actionHandlerSet = processElement.element(ACTION_HANDLER_SET);
-        if (actionHandlerSet != null) {
-            for (Element actionHandlerElement : (List<Element>) actionHandlerSet.elements(ACTION_HANDLER)) {
-                actionMap.put(actionHandlerElement.attributeValue(ID), actionHandlerElement);
-            }
         }
     }
 
@@ -499,20 +471,17 @@ public class BpmnSerializer extends ProcessSerializer {
         }
     }
 
-    private void resolveActionHandlerRefs(Element element, GraphElement graphElement) {
-        Attribute actionHandlerRefs = element.attribute(ACTION_HANDLER_REFS);
-        if (actionHandlerRefs != null) {
-            String[] refs = actionHandlerRefs.getValue().split(",");
-            for (String actionId : refs) {
-                Element actionElement = actionMap.get(actionId);
-                if (actionElement != null) {
-                    ActionImpl action = create(actionElement, graphElement);
-                    parseBaseProperties(actionElement, action);
-                    Map<String, String> extProperties = parseExtensionProperties(actionElement);
-                    action.setEventType(extProperties.get(EVENT_TYPE));
-                    action.setDelegationClassName(extProperties.get(CLASS));
-                    action.setDelegationConfiguration(extProperties.get(CONFIG));
-                }
+    private void parseActionHandlers(Element element, GraphElement graphElement) {
+        Element extElements = element.element(EXTENSION_ELEMENTS);
+        if (extElements != null) {
+            List<Element> actionHandlers = extElements.elements(QName.get(ACTION_HANDLER, RUNA_NAMESPACE));
+            for (Element actionHandler : actionHandlers) {
+                ActionImpl action = create(actionHandler, graphElement);
+                parseBaseProperties(actionHandler, action);
+                Map<String, String> extProperties = parseExtensionProperties(actionHandler);
+                action.setEventType(extProperties.get(EVENT_TYPE));
+                action.setDelegationClassName(extProperties.get(CLASS));
+                action.setDelegationConfiguration(extProperties.get(CONFIG));
             }
         }
     }
@@ -615,7 +584,7 @@ public class BpmnSerializer extends ProcessSerializer {
             ((Node) element).setAsyncExecution(NodeAsyncExecution.getByValueNotNull(properties.get(NODE_ASYNC_EXECUTION)));
         }
         if (element instanceof TaskState) {
-            resolveActionHandlerRefs(node, element);
+            parseActionHandlers(node, element);
         }
     }
 
@@ -696,7 +665,6 @@ public class BpmnSerializer extends ProcessSerializer {
                 swimlaneElementIds.put(swimlane, flowNodeIds);
             }
         }
-        cacheActionHandlers(processElement);
         List<Element> startStates = processElement.elements(START_EVENT);
         if (startStates.size() > 0) {
             if (startStates.size() > 1) {
@@ -858,7 +826,7 @@ public class BpmnSerializer extends ProcessSerializer {
             transition.setId(transitionElement.attributeValue(ID));
             transition.setName(transitionElement.attributeValue(NAME));
             transition.setTarget(target);
-            resolveActionHandlerRefs(transitionElement, transition);
+            parseActionHandlers(transitionElement, transition);
             source.addLeavingTransition(transition);
         }
         for (Map.Entry<Swimlane, List<String>> entry : swimlaneElementIds.entrySet()) {
@@ -866,7 +834,6 @@ public class BpmnSerializer extends ProcessSerializer {
                 definition.getGraphElementByIdNotNull(nodeId).setParentContainer(entry.getKey());
             }
         }
-        actionMap.clear();
     }
 
     private GraphElement parseEventElement(ProcessDefinition definition, GraphElement parent, Element eventElement) {
