@@ -526,11 +526,11 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
         boolean isLoopsExists = false;
 
         for (Node node : listOfNodes) {
-            if (node.getNodeRegulationsProperties().getIsEnabled() && node.getNodeRegulationsProperties().getPreviousNode() == null
+            if (node.getNodeRegulationsProperties().isEnabled() && node.getNodeRegulationsProperties().getPreviousNode() == null
                     && node instanceof StartState != true) {
                 countOfNodesWithoutPrev++;
             }
-            if (node.getNodeRegulationsProperties().getIsEnabled() && node.getNodeRegulationsProperties().getNextNode() == null
+            if (node.getNodeRegulationsProperties().isEnabled() && node.getNodeRegulationsProperties().getNextNode() == null
                     && node instanceof EndTokenState != true && node instanceof EndState != true) {
                 countOfNodesWithoutNext++;
             }
@@ -556,8 +556,8 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
         }
 
         for (Node node : listOfNodes) {
-            if (node.getNodeRegulationsProperties().getIsEnabled() && node.getNodeRegulationsProperties().getNextNode() != null
-                    && node.getNodeRegulationsProperties().getNextNode().getNodeRegulationsProperties().getIsEnabled() != true) {
+            if (node.getNodeRegulationsProperties().isEnabled() && node.getNodeRegulationsProperties().getNextNode() != null
+                    && node.getNodeRegulationsProperties().getNextNode().getNodeRegulationsProperties().isEnabled() != true) {
                 result = false;
                 errors.add(ValidationError.createLocalizedWarning(node, "regulations.nodePointsToHiddenNodeAsNextWarning", node.getName(),
                         node.getId(), ((Node) node.getNodeRegulationsProperties().getNextNode()).getName(), node.getNodeRegulationsProperties()
@@ -566,11 +566,11 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
         }
 
         for (Node currentNode : listOfNodes) {
-            if (currentNode.getNodeRegulationsProperties().getIsEnabled() && currentNode.getNodeRegulationsProperties().getPreviousNode() == null
+            if (currentNode.getNodeRegulationsProperties().isEnabled() && currentNode.getNodeRegulationsProperties().getPreviousNode() == null
                     && currentNode.getNodeRegulationsProperties().getNextNode() == null) {
                 result = false;
                 errors.add(ValidationError.createLocalizedWarning(currentNode, "regulations.neitherPreviousNorNextNodeAreNotSpecified"));
-            } else if (currentNode.getNodeRegulationsProperties().getIsEnabled()
+            } else if (currentNode.getNodeRegulationsProperties().isEnabled()
                     && currentNode.getNodeRegulationsProperties().getPreviousNode() != null
                     && currentNode.getNodeRegulationsProperties().getNextNode() != null
                     && currentNode.getNodeRegulationsProperties().getPreviousNode().getId()
@@ -586,7 +586,7 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
             for (Node node : listOfNodes) {
                 if (curNode != null && node != null) {
                     if (curNode != node
-                            && node.getNodeRegulationsProperties().getIsEnabled()
+                            && node.getNodeRegulationsProperties().isEnabled()
                             && curNode.getNodeRegulationsProperties().getPreviousNode() != null
                             && node.getNodeRegulationsProperties().getPreviousNode() != null
                             && curNode.getNodeRegulationsProperties().getPreviousNode().getId()
@@ -603,7 +603,7 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
                         }
                     }
                     if (curNode != node
-                            && node.getNodeRegulationsProperties().getIsEnabled()
+                            && node.getNodeRegulationsProperties().isEnabled()
                             && curNode.getNodeRegulationsProperties().getNextNode() != null
                             && node.getNodeRegulationsProperties().getNextNode() != null
                             && curNode.getNodeRegulationsProperties().getNextNode().getId()

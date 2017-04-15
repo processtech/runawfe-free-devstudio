@@ -187,7 +187,7 @@ public class EditPropertiesForRegulationsDialog extends Dialog {
         includeInRegulationsCheckbox = new Button(composite1, SWT.CHECK);
         includeInRegulationsCheckbox.setText(Localization.getString("EditPropertiesForRegulationsDialog.includeInRegulationsCheckbox.text"));
         includeInRegulationsCheckbox.setLayoutData(dateGridData4);
-        includeInRegulationsCheckbox.setSelection(processNode.getNodeRegulationsProperties().getIsEnabled());
+        includeInRegulationsCheckbox.setSelection(processNode.getNodeRegulationsProperties().isEnabled());
         includeInRegulationsCheckbox.addSelectionListener(new LoggingSelectionAdapter() {
             @Override
             protected void onSelection(SelectionEvent e) throws Exception {
@@ -317,7 +317,7 @@ public class EditPropertiesForRegulationsDialog extends Dialog {
             }
             processNode.getNodeRegulationsProperties().setNextNode(null);
         }
-        processNode.getNodeRegulationsProperties().setIsEnabled(includeInRegulationsCheckbox.getSelection());
+        processNode.getNodeRegulationsProperties().setEnabled(includeInRegulationsCheckbox.getSelection());
         browser.execute("getHTML();");
         processNode.getNodeRegulationsProperties().setDescriptionForUser(descriptionTextAsString);
         processNode.getProcessDefinition().setDirty();

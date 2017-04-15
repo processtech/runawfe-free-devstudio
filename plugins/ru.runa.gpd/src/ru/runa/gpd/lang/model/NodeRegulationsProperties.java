@@ -1,18 +1,17 @@
 package ru.runa.gpd.lang.model;
 
 public class NodeRegulationsProperties {
+    private final GraphElement parent;
+    private boolean enabled = true;
     private GraphElement previousNode;
     private GraphElement nextNode;
-    private boolean isEnabled;
-    private String descriptionForUser;
-    private final GraphElement parent;
+    private String descriptionForUser = "";
 
     public NodeRegulationsProperties(GraphElement parent) {
-        previousNode = null;
-        nextNode = null;
-        isEnabled = true;
-        descriptionForUser = "";
         this.parent = parent;
+        if (parent.getTypeDefinition() != null) {
+            setEnabled(parent.getTypeDefinition().isEnabledInRegulationsByDefault());
+        }
     }
 
     public GraphElement getParent() {
@@ -35,12 +34,12 @@ public class NodeRegulationsProperties {
         this.nextNode = nextNode;
     }
 
-    public boolean getIsEnabled() {
-        return isEnabled;
+    public boolean isEnabled() {
+        return enabled;
     }
 
-    public void setIsEnabled(boolean isEnabled) {
-        this.isEnabled = isEnabled;
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     public String getDescriptionForUser() {
@@ -55,7 +54,7 @@ public class NodeRegulationsProperties {
         NodeRegulationsProperties copy = new NodeRegulationsProperties(this.parent);
         copy.setPreviousNode(this.getPreviousNode());
         copy.setNextNode(this.getNextNode());
-        copy.setIsEnabled(this.getIsEnabled());
+        copy.setEnabled(this.isEnabled());
         copy.setDescriptionForUser(this.getDescriptionForUser());
         return copy;
     }

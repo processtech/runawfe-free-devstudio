@@ -20,10 +20,6 @@ public class Timer extends Node implements IBoundaryEvent {
     private Duration duration = new Duration();
     private TimerAction action;
 
-    public Timer() {
-        super();
-    }
-
     public Duration getDelay() {
         return duration;
     }

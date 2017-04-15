@@ -50,9 +50,9 @@ public class RegulationsXmlContentProvider extends AuxContentProvider {
             }
             String isEnabledInRegulation = nodeSetting.elementText(IS_ENABLED);
             if (isEnabledInRegulation.equals("true")) {
-                graphElement.getNodeRegulationsProperties().setIsEnabled(true);
+                graphElement.getNodeRegulationsProperties().setEnabled(true);
             } else {
-                graphElement.getNodeRegulationsProperties().setIsEnabled(false);
+                graphElement.getNodeRegulationsProperties().setEnabled(false);
             }
             graphElement.getNodeRegulationsProperties().setDescriptionForUser(nodeSetting.elementText(DESCRIPTION));
         }
@@ -79,7 +79,7 @@ public class RegulationsXmlContentProvider extends AuxContentProvider {
                 } else {
                     nodeSettingElement.addElement(NEXT_NODE_ID).addText("");
                 }
-                if (graphElement.getNodeRegulationsProperties().getIsEnabled()) {
+                if (graphElement.getNodeRegulationsProperties().isEnabled()) {
                     nodeSettingElement.addElement(IS_ENABLED).addText("true");
                 } else {
                     nodeSettingElement.addElement(IS_ENABLED).addText("false");
