@@ -5,9 +5,12 @@ import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 
 import ru.runa.gpd.extension.VariableFormatRegistry;
+import ru.runa.gpd.extension.handler.ParamDefConfig;
 import ru.runa.gpd.lang.ValidationError;
+import ru.runa.gpd.lang.model.bpmn.IMultiInstancesContainer;
 import ru.runa.gpd.util.MultiinstanceParameters;
 import ru.runa.gpd.util.VariableMapping;
 import ru.runa.gpd.util.VariableUtils;
@@ -194,8 +197,8 @@ public class MultiTaskState extends TaskState implements IMultiInstancesContaine
     }
 
     @Override
-    public MultiTaskState getCopy(GraphElement parent) {
-        MultiTaskState copy = (MultiTaskState) super.getCopy(parent);
+    public MultiTaskState makeCopy(GraphElement parent) {
+        MultiTaskState copy = (MultiTaskState) super.makeCopy(parent);
         copy.setDiscriminatorUsage(discriminatorUsage);
         copy.setDiscriminatorValue(discriminatorValue);
         copy.setDiscriminatorCondition(discriminatorCondition);
@@ -205,6 +208,18 @@ public class MultiTaskState extends TaskState implements IMultiInstancesContaine
             copy.getVariableMappings().add(mapping.getCopy());
         }
         return copy;
+    }
+
+    @Override
+    public List<Variable> getUsedVariables(IFolder processFolder) {
+        List<Variable> result = super.getUsedVariables(processFolder);
+        if (discriminatorUsage.contains(VariableMapping.USAGE_DISCRIMINATOR_VARIABLE)) {
+            Variable variable = VariableUtils.getVariableByName(getProcessDefinition(), discriminatorValue);
+            if (variable != null) {
+                result.add(variable);
+            }
+        }
+        return result;
     }
 
 }

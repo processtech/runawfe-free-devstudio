@@ -10,7 +10,6 @@
 		<script type="text/javascript">
 		var displayedErrors = new Object();
 		var modificationFlagSent = true;
-		var lastModificationLength = 0;
 		function alertError(e, method) {
 			if (displayedErrors[e.message] == undefined) {
 				displayedErrors[e.message] = true;
@@ -50,18 +49,12 @@
 			}
 		}
 		function markContent(editor) {
-			lastModificationLength = editor.getData().length;
 			modificationFlagSent = false;
 		}
-		function findModifications() {
+		function onModification() {
 			if (!modificationFlagSent) {
-				var editor = CKEDITOR.instances.editor;
-				var contentLength = editor.getData().length;
-				if (contentLength != lastModificationLength) {
-					markEditorDirtyCallback();
-					lastModificationLength = contentLength;
-					modificationFlagSent = true;
-				}
+				markEditorDirtyCallback();
+				modificationFlagSent = true;
 			}
 		}
 		</script>
@@ -70,9 +63,11 @@
 		<textarea id="editor"></textarea>
 		<script type="text/javascript">
 		try {
-			CKEDITOR.replace("editor");
+			var editor = CKEDITOR.replace("editor");
 			onLoadCallback();
-			window.setInterval("findModifications()", 1000);
+			editor.on( 'change', function( evt ) {
+				onModification();
+			});
 		} catch (e) {
 			alertError(e, "CKEDITOR.replace");
 		}

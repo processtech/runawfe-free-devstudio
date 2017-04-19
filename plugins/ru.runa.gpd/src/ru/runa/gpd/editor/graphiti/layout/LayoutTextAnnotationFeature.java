@@ -10,15 +10,17 @@ import org.eclipse.graphiti.services.Graphiti;
 
 import ru.runa.gpd.editor.graphiti.GaProperty;
 import ru.runa.gpd.editor.graphiti.PropertyUtil;
+import ru.runa.gpd.lang.model.GraphElement;
 
-public class LayoutTextAnnotationFeature extends ElementLayoutFeature {
+public class LayoutTextAnnotationFeature extends LayoutElementFeature {
     public static final String POLYLINE = "POLYLINE";
     public static final int EDGE = 20;
 
     @Override
     public boolean layout(ILayoutContext context) {
         ContainerShape containerShape = (ContainerShape) context.getPictogramElement();
-        Dimension bounds = adjustBounds(context);
+        GraphElement element = (GraphElement) getBusinessObjectForPictogramElement(containerShape);
+        Dimension bounds = element.getConstraint().getSize();
         Polyline polyline = PropertyUtil.findGaRecursiveByName(containerShape, POLYLINE);
         polyline.getPoints().set(2, getNewPoint(polyline, 2, bounds.height));
         polyline.getPoints().set(3, getNewPoint(polyline, 3, bounds.height));

@@ -7,7 +7,7 @@ import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.services.Graphiti;
 import org.eclipse.graphiti.services.IGaService;
 
-import ru.runa.gpd.lang.model.EndTextDecoration;
+import ru.runa.gpd.lang.model.bpmn.EndTextDecoration;
 
 public class AddEndTextDecorationFeature extends AddNodeFeature {
 
@@ -18,7 +18,6 @@ public class AddEndTextDecorationFeature extends AddNodeFeature {
 
         ContainerShape containerShape = Graphiti.getPeCreateService().createContainerShape(context.getTargetContainer(), true);
 
-        adjustBounds(context);
         IGaService gaService = Graphiti.getGaService();
 
         Text textName = gaService.createDefaultText(getDiagram(), containerShape, labelName);

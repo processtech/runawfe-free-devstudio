@@ -29,6 +29,8 @@ public class VariableTypeSupportHashModel extends SimpleHash {
             addPropertyDescriptor(properties, variable, "code");
             addPropertyDescriptor(properties, variable, "email");
             addPropertyDescriptor(properties, variable, "phone");
+            addPropertyDescriptor(properties, variable, "title");
+            addPropertyDescriptor(properties, variable, "department");
             // transient fields
             addPropertyDescriptor(properties, variable, "firstName");
             addPropertyDescriptor(properties, variable, "middleName");
