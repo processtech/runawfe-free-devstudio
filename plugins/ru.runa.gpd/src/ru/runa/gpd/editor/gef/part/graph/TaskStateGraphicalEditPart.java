@@ -37,6 +37,7 @@ public class TaskStateGraphicalEditPart extends SwimlaneNodeEditPart implements 
         list.add(PROPERTY_MINIMAZED_VIEW);
         list.add(PROPERTY_CHILDS_CHANGED);
         list.add(PROPERTY_ASYNC);
+        list.add(PROPERTY_ESCALATION);
     }
 
     @Override
