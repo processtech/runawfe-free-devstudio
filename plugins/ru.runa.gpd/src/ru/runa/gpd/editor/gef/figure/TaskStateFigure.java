@@ -45,14 +45,18 @@ public class TaskStateFigure extends StateFigure<TaskState> {
             if (model.isAsync()) {
                 g.drawImage(SharedImages.getImage("icons/uml/async.png"), dim.width - GRID_SIZE / 2 - 20, dim.height - GRID_SIZE - 20);
             }
-            if (model.getTimer() != null) {
+            if (model.getTimer() != null || model.isUseEscalation()) {
                 Utils.paintTimer(g, dim);
             }
         }
     }
 
     protected Rectangle getFrameArea(Rectangle origin) {
-        return origin;
+        if (model.isMinimizedView()) {
+            return new Rectangle(origin.x + GRID_SIZE / 2, origin.y + GRID_SIZE / 2, origin.width - GRID_SIZE, origin.height - GRID_SIZE);
+        } else {
+            return new Rectangle(origin.x + GRID_SIZE, origin.y, origin.width - 2 * GRID_SIZE, origin.height - GRID_SIZE);
+        }
     }
 
     @Override
