@@ -2592,6 +2592,12 @@
             javaClassName="java.lang.String">
       </format>
       <format
+            className="ru.runa.wfe.var.format.FormattedTextFormat"
+            label="%ru.runa.wfe.var.format.FormattedTextFormat"
+            enabled="true"
+            javaClassName="java.lang.String">
+      </format>
+      <format
             className="ru.runa.wfe.var.format.LongFormat"
             label="%ru.runa.wfe.var.format.LongFormat"
             enabled="true"
