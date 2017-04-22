@@ -12,10 +12,10 @@ import org.eclipse.graphiti.services.IGaService;
 
 import ru.runa.gpd.editor.graphiti.GaProperty;
 import ru.runa.gpd.editor.graphiti.PropertyUtil;
+import ru.runa.gpd.lang.model.Action;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.TaskState;
-import ru.runa.gpd.lang.model.jpdl.Action;
 
 public class LayoutActionFeature extends LayoutElementFeature {
 

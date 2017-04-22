@@ -13,11 +13,11 @@ import org.eclipse.graphiti.mm.pictograms.Shape;
 import org.eclipse.graphiti.ui.features.DefaultDeleteFeature;
 
 import ru.runa.gpd.editor.graphiti.HasTextDecorator;
+import ru.runa.gpd.lang.model.Action;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
-import ru.runa.gpd.lang.model.jpdl.Action;
 
 public class DeleteElementFeature extends DefaultDeleteFeature implements ICustomUndoableFeature {
 

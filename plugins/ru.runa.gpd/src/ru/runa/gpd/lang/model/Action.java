@@ -1,11 +1,7 @@
-package ru.runa.gpd.lang.model.jpdl;
+package ru.runa.gpd.lang.model;
 
 import ru.runa.gpd.extension.HandlerArtifact;
 import ru.runa.gpd.extension.LocalizationRegistry;
-import ru.runa.gpd.lang.model.Delegable;
-import ru.runa.gpd.lang.model.Describable;
-import ru.runa.gpd.lang.model.GraphElement;
-import ru.runa.gpd.lang.model.NamedGraphElement;
 
 public class Action extends NamedGraphElement implements Delegable, Describable {
 

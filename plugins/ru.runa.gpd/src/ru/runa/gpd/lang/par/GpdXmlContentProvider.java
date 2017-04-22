@@ -10,13 +10,13 @@ import org.eclipse.draw2d.geometry.Rectangle;
 
 import ru.runa.gpd.editor.graphiti.HasTextDecorator;
 import ru.runa.gpd.lang.Language;
+import ru.runa.gpd.lang.model.Action;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
-import ru.runa.gpd.lang.model.jpdl.Action;
 import ru.runa.gpd.util.XmlUtil;
 
 import com.google.common.collect.Lists;

@@ -896,7 +896,7 @@
       </element>
       <element
       		type="node"
-            model="ru.runa.gpd.lang.model.jpdl.ActionImpl"
+            model="ru.runa.gpd.lang.model.ActionImpl"
             jpdl="action"
             bpmn="actionHandler"
             icon="action.png"

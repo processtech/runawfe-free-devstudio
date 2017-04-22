@@ -15,7 +15,7 @@ import org.eclipse.gef.tools.DragEditPartsTracker;
 
 import ru.runa.gpd.editor.gef.ActionGraphUtils;
 import ru.runa.gpd.editor.gef.policy.ActionComponentEditPolicy;
-import ru.runa.gpd.lang.model.jpdl.Action;
+import ru.runa.gpd.lang.model.Action;
 import ru.runa.gpd.lang.model.jpdl.ActionContainer;
 
 public class ActionGraphicalEditPart extends ElementGraphicalEditPart {
