@@ -103,6 +103,7 @@ public class JpdlSerializer extends ProcessSerializer {
     private static final String TASK_EXECUTORS_USAGE = "taskExecutorsUsage";
     private static final String TASK_EXECUTORS_VALUE = "taskExecutors";
     private static final String TASK_EXECUTION_MODE = "taskExecutionMode";
+    private static final String CANCEL_ACTIVITY = "cancelActivity";
 
     @Override
     public boolean isSupported(Document document) {
@@ -382,6 +383,10 @@ public class JpdlSerializer extends ProcessSerializer {
         Element catchEventElement = stateElement.addElement(RECEIVE_MESSAGE);
         setAttribute(catchEventElement, ID, catchEventNode.getId());
         setAttribute(catchEventElement, TYPE, catchEventNode.getEventNodeType().name());
+        setAttribute(catchEventElement, CANCEL_ACTIVITY, String.valueOf(catchEventNode.isInterruptingBoundaryEvent()));
+        for (VariableMapping variable : catchEventNode.getVariableMappings()) {
+            writeVariableAttrs(catchEventElement, variable);
+        }
     }
 
     private void writeDelegation(Element parent, String elementName, Delegable delegable) {
@@ -636,6 +641,16 @@ public class JpdlSerializer extends ProcessSerializer {
                         CatchEventNode catchEventNode = new CatchEventNode();
                         catchEventNode.setId(stateNodeChild.attributeValue(ID));
                         catchEventNode.setEventNodeType(EventNodeType.valueOf(stateNodeChild.attributeValue(TYPE, "message")));
+                        String interrupting = stateNodeChild.attributeValue(CANCEL_ACTIVITY);
+                        if (!Strings.isNullOrEmpty(interrupting)) {
+                        	catchEventNode.setInterruptingBoundaryEvent(Boolean.parseBoolean(interrupting));
+                        }
+                        List<VariableMapping> variablesList = catchEventNode.getVariableMappings();
+                        for (Element childNode : (List<Element>) stateNodeChild.elements()) {
+                            if (VARIABLE.equals(childNode.getName())) {
+                                parseVariableAttrs(childNode, variablesList);
+                            }
+                        }
                         state.addChild(catchEventNode);
                     }
                 }

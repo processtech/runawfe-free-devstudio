@@ -26,6 +26,7 @@ import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.NodeRegistry;
 import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.lang.ValidationError;
+import ru.runa.gpd.lang.model.Node.YesNoComboBoxTransformer;
 import ru.runa.gpd.lang.model.jpdl.Action;
 import ru.runa.gpd.lang.model.jpdl.ActionContainer;
 import ru.runa.gpd.property.DelegableClassPropertyDescriptor;
@@ -384,6 +385,9 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
 	            AbstractEventNode event = ((IBoundaryEventContainer) this).getCatchEventNodes();
 	            if (event != null) {
 	            	descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_EVENT_TYPE, Localization.getString("property.eventType"), AbstractEventNode.getEventTypeNames()));
+	                descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_INTERRUPTING_BOUNDARY_EVENT, Localization.getString("property.interrupting"),
+	                        YesNoComboBoxTransformer.LABELS));
+
 	            }
         	}
         }

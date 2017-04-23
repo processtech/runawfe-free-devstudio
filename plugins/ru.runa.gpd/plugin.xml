@@ -589,6 +589,12 @@
              value="jpdl">
        </filter>
        <action
+             class="ru.runa.gpd.lang.action.ReceiveMessageConfAction"
+             id="receiveMessage.configuration"
+             label="%label.action.editConfiguration"
+             menubarPath="additions">             
+       </action>
+       <action
              class="ru.runa.gpd.lang.action.jpdl.CatchEventFeatureDelegate"
              id="feature.catch.event"
              label="%label.element.catch.event"

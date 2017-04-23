@@ -25,6 +25,7 @@ import ru.runa.gpd.form.FormVariableAccess;
 import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.lang.ValidationError;
+import ru.runa.gpd.lang.model.Node.YesNoComboBoxTransformer;
 import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEvent;
 import ru.runa.gpd.lang.model.jpdl.ActionContainer;
@@ -273,6 +274,9 @@ public class TaskState extends FormNode implements ActionContainer, ITimed, Sync
         if (PROPERTY_EVENT_TYPE.equals(id)) {
         	  return getEventNodeType();
         }
+        if (PROPERTY_INTERRUPTING_BOUNDARY_EVENT.equals(id) && getCatchEventNodes() != null ) {
+            return YesNoComboBoxTransformer.getPropertyValue(getCatchEventNodes().isInterruptingBoundaryEvent());
+        }
         return super.getPropertyValue(id);
     }
 
@@ -299,7 +303,9 @@ public class TaskState extends FormNode implements ActionContainer, ITimed, Sync
             setTimeOutDelay((Duration) value);
         } else if (PROPERTY_EVENT_TYPE.equals(id)) { 
         	setEventNodeType(value);
-        }else {
+        } else if (PROPERTY_INTERRUPTING_BOUNDARY_EVENT.equals(id) && getCatchEventNodes() != null) {
+        	getCatchEventNodes().setInterruptingBoundaryEvent(YesNoComboBoxTransformer.setPropertyValue(value));
+        } else {
             super.setPropertyValue(id, value);
         }
     }
