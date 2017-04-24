@@ -30,17 +30,15 @@ public class CopyAction extends SelectionAction {
     protected boolean calculateEnabled() {
         return extractNodes().size() > 0;
     }
-    
+
     private List<NamedGraphElement> extractNodes() {
         List<EditPart> editParts = editor.getGraphicalViewer().getSelectedEditParts();
         List<NamedGraphElement> result = Lists.newArrayList();
         for (EditPart editPart : editParts) {
-            //if (!(editPart instanceof NodeGraphicalEditPart)) {
-        	if (!(editPart instanceof AbstractGraphicalEditPart)) {
+            if (!(editPart instanceof AbstractGraphicalEditPart)) {
                 continue;
             }
-            
-        	NamedGraphElement node = null;
+            NamedGraphElement node = null;
             if (editPart instanceof NodeGraphicalEditPart) {
                 // gef way
                 node = ((NodeGraphicalEditPart) editPart).getModel();
@@ -52,16 +50,14 @@ public class CopyAction extends SelectionAction {
                     continue;
                 }
             }
-        	
-        	// 1. If transition selected, it is not able to detect from NodeGraphicalEditPart/ContainerShapeEditPart and return null
-        	// 2. Text decoration for Start end End created automatically and don't need copy too.
-        	if ( node != null && !(node instanceof TextDecorationNode) ) {
-        		result.add(node);
-        	}
+            // 1. If transition selected, it is not able to detect from NodeGraphicalEditPart/ContainerShapeEditPart and return null
+            // 2. Text decoration for Start end End created automatically and don't need copy too.
+            if (node != null && !(node instanceof TextDecorationNode)) {
+                result.add(node);
+            }
         }
         return result;
     }
-
 
     @Override
     public void run() {
