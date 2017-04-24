@@ -11,6 +11,7 @@ import org.eclipse.graphiti.ui.internal.parts.ContainerShapeEditPart;
 
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.editor.gef.part.graph.NodeGraphicalEditPart;
+import ru.runa.gpd.lang.model.Action;
 import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
 
@@ -40,14 +41,17 @@ public class CopyAction extends SelectionAction {
             }
             
         	NamedGraphElement node = null;
-        	if ( editPart instanceof NodeGraphicalEditPart ) {
-        		//gef way
-        		node = ((NodeGraphicalEditPart) editPart).getModel();
-        	} else if ( editPart instanceof ContainerShapeEditPart ){
-        		//graphiti way
-        		ContainerShapeEditPart container = (ContainerShapeEditPart) editPart;
-        		node = (NamedGraphElement) container.getFeatureProvider().getBusinessObjectForPictogramElement(container.getPictogramElement());
-        	}
+            if (editPart instanceof NodeGraphicalEditPart) {
+                // gef way
+                node = ((NodeGraphicalEditPart) editPart).getModel();
+            } else if (editPart instanceof ContainerShapeEditPart) {
+                // graphiti way
+                ContainerShapeEditPart container = (ContainerShapeEditPart) editPart;
+                node = (NamedGraphElement) container.getFeatureProvider().getBusinessObjectForPictogramElement(container.getPictogramElement());
+                if (node instanceof Action) {
+                    continue;
+                }
+            }
         	
         	// 1. If transition selected, it is not able to detect from NodeGraphicalEditPart/ContainerShapeEditPart and return null
         	// 2. Text decoration for Start end End created automatically and don't need copy too.
