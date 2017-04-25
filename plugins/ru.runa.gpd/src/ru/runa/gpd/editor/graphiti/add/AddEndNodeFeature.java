@@ -33,18 +33,20 @@ public class AddEndNodeFeature extends AddNodeWithImageFeature {
         node.getTextDecoratorEmulation().link(element);
         AreaContext tempArea = new AreaContext();
 
+        int x, y;
         if (node.getTextDecoratorEmulation().hasDefinitionLocation()) {
             // get saved position
-            tempArea.setLocation(node.getTextDecoratorEmulation().getDefinitionLocation().x(), node.getTextDecoratorEmulation()
-                    .getDefinitionLocation().y());
+            x = node.getTextDecoratorEmulation().getDefinitionLocation().x();
+            y = node.getTextDecoratorEmulation().getDefinitionLocation().y();
         } else {
             // calc position under end point image
             Font defFont = Graphiti.getGaService().manageDefaultFont(getDiagram());
             IDimension nameDim = GraphitiUi.getUiLayoutService().calculateTextSize(node.getName(), defFont);
-            int y = context.getY() + bounds.height;
-            int x = (context.getX() + bounds.width / 2) - nameDim.getWidth() / 2;
-            tempArea.setLocation(x, y);
+            y = context.getY() + bounds.height;
+            x = (context.getX() + bounds.width / 2) - nameDim.getWidth() / 2;
         }
+        tempArea.setLocation(x, y);
+        element.getConstraint().setLocation(x, y);
 
         // put new element in run-time
         AddContext myAddContext = new AddContext(tempArea, element);

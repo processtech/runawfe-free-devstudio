@@ -802,6 +802,20 @@
                variableTypeFilter="java.util.List"
                variableAccess="READ">
          </param>
+         <param
+               name="%Param.Layout"
+               type="combo"
+               variableAccess="NONE"
+               optional="true">
+            <paramValue
+                  name="%Param.Layout.vertical"
+                  value="vertical">
+            </paramValue>
+            <paramValue
+                  name="%Param.Layout.horizontal"
+                  value="horizontal">
+            </paramValue>
+         </param>
       </component>
       <component
             enabled="true"
@@ -822,8 +836,8 @@
       </component>
       <component
             enabled="true"
-            id="SelectFromList"
-            name="%Method.SelectFromList"
+            id="OptionSelectFromVariableList"
+            name="%Method.OptionSelectFromVariableList"
             order="-85">
          <param
                name="%Param.Variable"
@@ -840,8 +854,74 @@
       </component>
       <component
             enabled="true"
+            id="CheckboxSelectFromVariableList"
+            name="%Method.CheckboxSelectFromVariableList"
+            order="-85">
+         <param
+               name="%Param.Variable"
+               type="varcombo"
+               variableTypeFilter="java.lang.Object"
+               variableAccess="WRITE">
+         </param>
+         <param
+               name="%Param.InputData"
+               type="varcombo"
+               variableTypeFilter="java.util.List"
+               variableAccess="READ">
+         </param>
+         <param
+               name="%Param.Layout"
+               type="combo"
+               variableAccess="NONE"
+               optional="true">
+            <paramValue
+                  name="%Param.Layout.vertical"
+                  value="vertical">
+            </paramValue>
+            <paramValue
+                  name="%Param.Layout.horizontal"
+                  value="horizontal">
+            </paramValue>
+         </param>
+      </component>
+      <component
+            enabled="false"
+            id="SelectFromList"
+            name="%Method.OptionSelectFromVariableList"
+            order="-85">
+         <param
+               name="%Param.Variable"
+               type="varcombo"
+               variableTypeFilter="java.lang.Object"
+               variableAccess="WRITE">
+         </param>
+         <param
+               name="%Param.InputData"
+               type="varcombo"
+               variableTypeFilter="java.util.List"
+               variableAccess="READ">
+         </param>
+      </component>
+      <component
+            enabled="true"
+            id="SelectFromValueList"
+            name="%Method.SelectFromValueList">
+         <param
+               name="%Param.Variable"
+               type="varcombo"
+               variableTypeFilter="java.lang.Object"
+               variableAccess="WRITE">
+         </param>
+         <param
+               name="%Param.Value"
+               type="textlist"
+               variableAccess="NONE">
+         </param>
+      </component>
+      <component
+            enabled="false"
             id="ChooseValueFromList"
-            name="%Method.ChooseValueFromList">
+            name="%Method.SelectFromValueList">
          <param
                name="%Param.Variable"
                type="varcombo"

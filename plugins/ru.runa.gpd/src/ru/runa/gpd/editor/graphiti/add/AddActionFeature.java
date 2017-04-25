@@ -15,9 +15,9 @@ import org.eclipse.graphiti.services.IPeCreateService;
 
 import ru.runa.gpd.editor.GEFConstants;
 import ru.runa.gpd.editor.graphiti.GaProperty;
+import ru.runa.gpd.lang.model.Action;
 import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Transition;
-import ru.runa.gpd.lang.model.jpdl.Action;
 
 public class AddActionFeature extends AddElementFeature implements GEFConstants {
 

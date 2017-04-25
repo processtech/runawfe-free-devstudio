@@ -28,6 +28,7 @@ import ru.runa.gpd.editor.graphiti.create.CreateSwimlaneFeature;
 import ru.runa.gpd.editor.graphiti.update.OpenSubProcessFeature;
 import ru.runa.gpd.lang.NodeRegistry;
 import ru.runa.gpd.lang.NodeTypeDefinition;
+import ru.runa.gpd.lang.model.Action;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.Subprocess;
@@ -35,7 +36,6 @@ import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
-import ru.runa.gpd.lang.model.jpdl.Action;
 
 public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
     public DiagramToolBehaviorProvider(IDiagramTypeProvider provider) {

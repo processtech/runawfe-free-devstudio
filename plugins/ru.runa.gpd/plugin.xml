@@ -896,7 +896,7 @@
       </element>
       <element
       		type="node"
-            model="ru.runa.gpd.lang.model.jpdl.ActionImpl"
+            model="ru.runa.gpd.lang.model.ActionImpl"
             jpdl="action"
             bpmn="actionHandler"
             icon="action.png"
@@ -2588,6 +2588,12 @@
       <format
             className="ru.runa.wfe.var.format.TextFormat"
             label="%ru.runa.wfe.var.format.TextFormat"
+            enabled="true"
+            javaClassName="java.lang.String">
+      </format>
+      <format
+            className="ru.runa.wfe.var.format.FormattedTextFormat"
+            label="%ru.runa.wfe.var.format.FormattedTextFormat"
             enabled="true"
             javaClassName="java.lang.String">
       </format>

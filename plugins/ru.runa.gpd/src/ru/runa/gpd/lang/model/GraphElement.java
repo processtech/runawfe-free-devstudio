@@ -25,7 +25,6 @@ import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.NodeRegistry;
 import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.lang.ValidationError;
-import ru.runa.gpd.lang.model.jpdl.Action;
 import ru.runa.gpd.lang.model.jpdl.ActionContainer;
 import ru.runa.gpd.property.DelegableClassPropertyDescriptor;
 import ru.runa.gpd.property.DelegableConfPropertyDescriptor;
