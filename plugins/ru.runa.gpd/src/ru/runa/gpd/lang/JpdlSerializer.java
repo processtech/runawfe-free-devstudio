@@ -387,6 +387,7 @@ public class JpdlSerializer extends ProcessSerializer {
         for (VariableMapping variable : catchEventNode.getVariableMappings()) {
             writeVariableAttrs(catchEventElement, variable);
         }
+        setAttribute(catchEventElement, TRANSITION, PluginConstants.EVENT_TRANSITION_NAME);
     }
 
     private void writeDelegation(Element parent, String elementName, Delegable delegable) {
