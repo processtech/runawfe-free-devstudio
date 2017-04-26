@@ -78,7 +78,7 @@ public class NodeInRegulationsPropertyDescriptor extends PropertyDescriptor {
             nodeIsIncludedLabel.setFont(editor.getFont());
             nodeIsIncludedLabel.setBackground(editor.getBackground());
             nodeIsIncludedLabel.setLayoutData(gridDataLabelForCheckbox);
-            nodeIsIncludedLabel.setImage(SharedImages.getImage(node.getNodeRegulationsProperties().getIsEnabled() ? "icons/checked.gif"
+            nodeIsIncludedLabel.setImage(SharedImages.getImage(node.getNodeRegulationsProperties().isEnabled() ? "icons/checked.gif"
                     : "icons/unchecked.gif"));
 
             previousNodeLabel = new Label(editor, SWT.NONE);
@@ -123,14 +123,6 @@ public class NodeInRegulationsPropertyDescriptor extends PropertyDescriptor {
                     }
                 }
 
-                @Override
-                protected void onMouseDown(MouseEvent e) throws Exception {
-                }
-
-                @Override
-                protected void onMouseDoubleClick(MouseEvent e) throws Exception {
-
-                }
             };
             previousNodeLabel.addMouseListener(loggingMouseAdapter);
             nextNodeLabel.addMouseListener(loggingMouseAdapter);
@@ -149,7 +141,7 @@ public class NodeInRegulationsPropertyDescriptor extends PropertyDescriptor {
             if (value != null) {
                 newProperties = (NodeRegulationsProperties) value;
                 node.setNodeRegulationsProperties(newProperties);
-                nodeIsIncludedLabel.setImage(SharedImages.getImage(newProperties.getIsEnabled() ? "icons/checked.gif" : "icons/unchecked.gif"));
+                nodeIsIncludedLabel.setImage(SharedImages.getImage(newProperties.isEnabled() ? "icons/checked.gif" : "icons/unchecked.gif"));
                 if (newProperties.getPreviousNode() != null) {
                     previousNodeLabel.setText(Localization.getString("Node.property.previousNodeInRegulations") + ": " + "["
                             + newProperties.getPreviousNode().getId() + "] " + ((Node) newProperties.getPreviousNode()).getName());

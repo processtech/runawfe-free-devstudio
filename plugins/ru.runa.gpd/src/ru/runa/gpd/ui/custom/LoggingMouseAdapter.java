@@ -33,10 +33,13 @@ public abstract class LoggingMouseAdapter implements MouseListener {
         }
     }
 
-    protected abstract void onMouseDoubleClick(MouseEvent e) throws Exception;
+    protected void onMouseDoubleClick(MouseEvent e) throws Exception {
+    }
 
-    protected abstract void onMouseDown(MouseEvent e) throws Exception;
+    protected void onMouseDown(MouseEvent e) throws Exception {
+    }
 
-    protected abstract void onMouseUp(MouseEvent e) throws Exception;
+    protected void onMouseUp(MouseEvent e) throws Exception {
+    }
 
 }

@@ -47,12 +47,6 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
     private String id;
     protected NodeRegulationsProperties nodeRegulationsProperties = new NodeRegulationsProperties(this);
 
-    {
-        if (this.getTypeDefinition() != null) {
-            nodeRegulationsProperties.setIsEnabled(this.getTypeDefinition().getIsEnabledInRegulationsByDefault());
-        }
-    }
-
     public String getId() {
         return id;
     }
@@ -62,7 +56,8 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
     }
 
     /**
-     * @return parent container or <code>null</code> in case of {@link ProcessDefinition}
+     * @return parent container or <code>null</code> in case of
+     *         {@link ProcessDefinition}
      */
     public GraphElement getParentContainer() {
         return parentContainer;

@@ -9,10 +9,6 @@ import ru.runa.gpd.lang.model.Transition;
 
 public class ScriptTask extends Node implements Delegable, IBoundaryEventContainer {
 
-    public ScriptTask() {
-        super();
-    }
-
     @Override
     public String getDelegationType() {
         return HandlerArtifact.ACTION;
