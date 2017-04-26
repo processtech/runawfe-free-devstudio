@@ -97,7 +97,7 @@ public class EditPropertiesForRegulationsDialog extends Dialog {
         List<String> previousNodesListItemsAsList = Lists.newArrayList();
         for (Node node : elementsList) {
             String id = node.getId();
-            if (id.equals(processNode.getId()) != true && getNodeById(id).getNodeRegulationsProperties().getIsEnabled()) {
+            if (id.equals(processNode.getId()) != true && getNodeById(id).getNodeRegulationsProperties().isEnabled()) {
                 previousNodesListItemsAsList.add(node.getName() + " [" + node.getId() + "]");
             }
         }
@@ -146,7 +146,7 @@ public class EditPropertiesForRegulationsDialog extends Dialog {
         List<String> nextNodesListItemsAsList = Lists.newArrayList();
         for (Node node : elementsList) {
             String id = node.getId();
-            if (id.equals(processNode.getId()) != true && getNodeById(id).getNodeRegulationsProperties().getIsEnabled()) {
+            if (id.equals(processNode.getId()) != true && getNodeById(id).getNodeRegulationsProperties().isEnabled()) {
                 nextNodesListItemsAsList.add(node.getName() + " [" + node.getId() + "]");
             }
         }
