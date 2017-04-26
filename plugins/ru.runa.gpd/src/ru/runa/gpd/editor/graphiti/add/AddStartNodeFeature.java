@@ -34,12 +34,13 @@ public class AddStartNodeFeature extends AddNodeWithImageFeature {
         node.getTextDecoratorEmulation().link(element);
         AreaContext tempArea = new AreaContext();
 
+        int x, y;
         if (node.getTextDecoratorEmulation().hasDefinitionLocation()) {
             // get saved position
-            tempArea.setLocation(node.getTextDecoratorEmulation().getDefinitionLocation().x(), node.getTextDecoratorEmulation()
-                    .getDefinitionLocation().y());
+            x = node.getTextDecoratorEmulation().getDefinitionLocation().x();
+            y = node.getTextDecoratorEmulation().getDefinitionLocation().y();
         } else {
-            // calc position under start point image
+            // calc position above start point image
             Font defFont = Graphiti.getGaService().manageDefaultFont(getDiagram());
 
             IDimension swimlaneDim = new DimensionImpl(0, 0);
@@ -48,11 +49,12 @@ public class AddStartNodeFeature extends AddNodeWithImageFeature {
             }
 
             IDimension nameDim = GraphitiUi.getUiLayoutService().calculateTextSize(node.getName(), defFont);
-            int y = context.getY() - swimlaneDim.getHeight() - nameDim.getHeight();
+            y = context.getY() - swimlaneDim.getHeight() - nameDim.getHeight();
             int maxWidth = Math.max(swimlaneDim.getWidth(), nameDim.getWidth());
-            int x = (context.getX() + bounds.width / 2) - maxWidth / 2;
-            tempArea.setLocation(x, y);
+            x = (context.getX() + bounds.width / 2) - maxWidth / 2;
         }
+        tempArea.setLocation(x, y);
+        element.getConstraint().setLocation(x, y);
 
         // put new element in run-time
         AddContext myAddContext = new AddContext(tempArea, element);

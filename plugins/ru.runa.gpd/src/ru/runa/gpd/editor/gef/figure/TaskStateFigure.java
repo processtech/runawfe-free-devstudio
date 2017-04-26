@@ -50,7 +50,11 @@ public class TaskStateFigure extends StateFigure<TaskState> {
     }
 
     protected Rectangle getFrameArea(Rectangle origin) {
-        return origin;
+        if (model.isMinimizedView()) {
+            return origin;
+        } else {
+            return new Rectangle(origin.x + GRID_SIZE, origin.y, origin.width - GRID_SIZE, origin.height - GRID_SIZE);
+        }
     }
 
     @Override
