@@ -154,9 +154,24 @@ public class CreateProcessRegulations extends BaseModelActionDelegate {
                 }
             }
         }
-        HashMap<String, Object> map = new HashMap<String, Object>();
+        HashMap<String, Object> map = new HashMap<>();
         map.put("proc", definition);
         map.put("listOfNodes", listOfNodes);
+
+        HashMap<String, String> subprocessDescriptions = new HashMap<>();
+        for (Node node : listOfNodes) {
+            if (node instanceof Subprocess) {
+                Subprocess subprocessNode = (Subprocess) node;
+                ProcessDefinition subprocessDefinition = ProcessCache.getFirstProcessDefinition(subprocessNode.getSubProcessName());
+                IFile descriptionFile = IOUtils.getAdjacentFile(getDefinitionFile(), subprocessDefinition.getId() + "."
+                        + ParContentProvider.PROCESS_DEFINITION_DESCRIPTION_FILE_NAME);
+                if (descriptionFile.exists()) {
+                    String descriptionFileText = IOUtils.readStream(descriptionFile.getContents());
+                    subprocessDescriptions.put(subprocessNode.getSubProcessName(), descriptionFileText);
+                }
+            }
+        }
+        map.put("subprocessDescriptions", subprocessDescriptions);
         map.put("mapOfFormNodeValidation", mapOfFormNodeValidation);
         for (String nodeId : mapOfFormNodeValidation.keySet()) {
             Map<String, Map<String, ValidatorConfig>> nodeFieldConfigs = mapOfFormNodeValidation.get(nodeId).getFieldConfigs();

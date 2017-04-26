@@ -97,7 +97,7 @@ public class EditPropertiesForRegulationsDialog extends Dialog {
         List<String> previousNodesListItemsAsList = Lists.newArrayList();
         for (Node node : elementsList) {
             String id = node.getId();
-            if (id.equals(processNode.getId()) != true) {
+            if (id.equals(processNode.getId()) != true && getNodeById(id).getNodeRegulationsProperties().getIsEnabled()) {
                 previousNodesListItemsAsList.add(node.getName() + " [" + node.getId() + "]");
             }
         }
@@ -146,7 +146,7 @@ public class EditPropertiesForRegulationsDialog extends Dialog {
         List<String> nextNodesListItemsAsList = Lists.newArrayList();
         for (Node node : elementsList) {
             String id = node.getId();
-            if (id.equals(processNode.getId()) != true) {
+            if (id.equals(processNode.getId()) != true && getNodeById(id).getNodeRegulationsProperties().getIsEnabled()) {
                 nextNodesListItemsAsList.add(node.getName() + " [" + node.getId() + "]");
             }
         }
@@ -292,8 +292,19 @@ public class EditPropertiesForRegulationsDialog extends Dialog {
             String previousIdForSearch = previousNodeCombo.getText().substring(previousNodeCombo.getText().indexOf(matcher.group(0)) + 1,
                     previousNodeCombo.getText().length() - 1);
             Node newPreviousNode = getNodeById(previousIdForSearch);
+            GraphElement oldPreviousNode = processNode.getNodeRegulationsProperties().getPreviousNode();
+            if (oldPreviousNode != null) {
+                oldPreviousNode.getNodeRegulationsProperties().setNextNode(null);
+                if (oldPreviousNode.getNodeRegulationsProperties().getPreviousNode() == newPreviousNode) {
+                    oldPreviousNode.getNodeRegulationsProperties().setPreviousNode(null);
+                }
+            }
             processNode.getNodeRegulationsProperties().setPreviousNode(newPreviousNode);
+            processNode.getNodeRegulationsProperties().getPreviousNode().getNodeRegulationsProperties().setNextNode(processNode);
         } else {
+            if (processNode.getNodeRegulationsProperties().getPreviousNode() != null) {
+                processNode.getNodeRegulationsProperties().getPreviousNode().getNodeRegulationsProperties().setNextNode(null);
+            }
             processNode.getNodeRegulationsProperties().setPreviousNode(null);
         }
         if (nextNodeCombo.getSelectionIndex() > 0) {

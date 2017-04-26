@@ -12,12 +12,12 @@ import ru.runa.gpd.util.XmlUtil;
 
 public class RegulationsXmlContentProvider extends AuxContentProvider {
     private static final String XML_FILE_NAME = "regulations.xml";
-    private static final String NODES_SETTINGS = "nodes_settings";
-    private static final String NODE_SETTINGS = "node_settings";
-    private static final String NODE_ID = "node_id";
-    private static final String PREVIOUS_NODE_ID = "previous_node_id";
-    private static final String NEXT_NODE_ID = "next_node_id";
-    private static final String IS_ENABLED = "is_enabled";
+    private static final String NODES_SETTINGS = "settings";
+    private static final String NODE_SETTINGS = "node";
+    private static final String NODE_ID = "id";
+    private static final String PREVIOUS_NODE_ID = "previous";
+    private static final String NEXT_NODE_ID = "next";
+    private static final String IS_ENABLED = "enabled";
     private static final String DESCRIPTION = "description";
 
     @Override
@@ -32,6 +32,9 @@ public class RegulationsXmlContentProvider extends AuxContentProvider {
         for (Element nodeSetting : listOfNodeSettings) {
             String id = nodeSetting.elementText(NODE_ID);
             GraphElement graphElement = definition.getGraphElementById(id);
+            if (graphElement == null) {
+                continue;
+            }
             String previousNodeId = nodeSetting.elementText(PREVIOUS_NODE_ID);
             String nextNodeId = nodeSetting.elementText(NEXT_NODE_ID);
             GraphElement previousNode = null;
