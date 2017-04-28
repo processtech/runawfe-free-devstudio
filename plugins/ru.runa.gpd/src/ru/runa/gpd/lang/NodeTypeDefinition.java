@@ -146,7 +146,6 @@ public class NodeTypeDefinition {
 
     public <T extends GraphElement> T createElement(GraphElement parent, boolean setName) {
         GraphElement element = createExecutableExtension("model");
-        element.setParent(parent);
         if (setName) {
             String name;
             if (element instanceof Swimlane) {
@@ -174,6 +173,7 @@ public class NodeTypeDefinition {
                 }
             }
         }
+        element.setParent(parent);
         return (T) element;
     }
 
