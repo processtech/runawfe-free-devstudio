@@ -206,8 +206,8 @@ public class Transition extends NamedGraphElement implements ActionContainer {
         } else if (getSource() instanceof TaskState || getSource() instanceof StartState) {
             int count = 0;
             for (Transition transition : getSource().getLeavingTransitions()) {
-                if (!PluginConstants.TIMER_TRANSITION_NAME.equals(transition.getName()) 
-                	&& !PluginConstants.EVENT_TRANSITION_NAME.equals(transition.getName())) {
+                if (!PluginConstants.TIMER_TRANSITION_NAME.equals(transition.getName())
+                        && !PluginConstants.EVENT_TRANSITION_NAME.equals(transition.getName())) {
                     count++;
                 }
             }
