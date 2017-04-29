@@ -14,6 +14,7 @@ import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEvent;
+import ru.runa.gpd.lang.model.jpdl.CatchEventNode;
 import ru.runa.gpd.util.Duration;
 
 import com.google.common.base.Objects;
@@ -125,7 +126,8 @@ public abstract class Node extends NamedGraphElement implements Describable {
     public void validate(List<ValidationError> errors, IFile definitionFile) {
         super.validate(errors, definitionFile);
         if (!(this instanceof StartState) && !(this instanceof Timer && getParent() instanceof ITimed)
-                && !(this instanceof IBoundaryEvent && getParent() instanceof IBoundaryEventContainer)) {
+                && !(this instanceof IBoundaryEvent && getParent() instanceof IBoundaryEventContainer)
+                && !(this instanceof CatchEventNode && getParent() instanceof TaskState)) {
             if (getArrivingTransitions().size() == 0) {
                 errors.add(ValidationError.createLocalizedError(this, "noInputTransitions"));
             }
@@ -134,6 +136,13 @@ public abstract class Node extends NamedGraphElement implements Describable {
             if (getLeavingTransitions().size() == 0) {
                 if (this instanceof Timer) {
                     // for jpdl
+                    return;
+                }
+                if (this instanceof CatchEventNode && getParent() instanceof TaskState) {
+                    final TaskState taskState = (TaskState) getParent();
+                    if (getEventTransitions(taskState.getLeavingTransitions()) == null) {
+                        errors.add(ValidationError.createLocalizedError(getParent(), "noOutputTransitions"));
+                    }
                     return;
                 }
                 errors.add(ValidationError.createLocalizedError(this, "noOutputTransitions"));
@@ -150,6 +159,15 @@ public abstract class Node extends NamedGraphElement implements Describable {
         if (transitionNames.size() != transitions.size()) {
             errors.add(ValidationError.createLocalizedError(this, "duplicatedTransitionNames"));
         }
+    }
+
+    private Object getEventTransitions(List<Transition> transitions) {
+        for (Transition transition : transitions) {
+            if (PluginConstants.EVENT_TRANSITION_NAME.equals(transition.getName())) {
+                return transition;
+            }
+        }
+        return null;
     }
 
     public String getNextTransitionName(NodeTypeDefinition typeDefinition) {
