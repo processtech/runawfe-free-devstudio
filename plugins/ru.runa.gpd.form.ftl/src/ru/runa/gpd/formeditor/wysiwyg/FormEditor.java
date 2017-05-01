@@ -187,8 +187,8 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
         return list;
     }
 
-    public List<VariableUserType> getUserVariablesTypes() {
-        return formNode.getProcessDefinition().getVariableUserTypes();
+    public VariableUserType getVariableUserType(String name) {
+        return formNode.getProcessDefinition().getVariableUserType(name);
     }
 
     public ProcessDefinition getProcessDefinition() {

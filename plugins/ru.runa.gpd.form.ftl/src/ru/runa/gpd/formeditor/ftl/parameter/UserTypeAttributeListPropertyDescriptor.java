@@ -9,14 +9,17 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
 
-import ru.runa.gpd.formeditor.ftl.ui.UserVariableFieldListDialog;
+import ru.runa.gpd.formeditor.ftl.Component;
+import ru.runa.gpd.formeditor.ftl.ui.UserTypeAttributeListDialog;
 
-public class UserVariableFieldListPropertyDescriptor extends PropertyDescriptor {
-    private final List<String> attributeNames;
+public class UserTypeAttributeListPropertyDescriptor extends PropertyDescriptor {
+    private final Component component;
+    private final UserTypeAttributeListParameter parameter;
 
-    public UserVariableFieldListPropertyDescriptor(Object id, String displayName, List<String> atributeNames) {
+    public UserTypeAttributeListPropertyDescriptor(Object id, String displayName, Component component, UserTypeAttributeListParameter parameter) {
         super(id, displayName);
-        this.attributeNames = atributeNames;
+        this.component = component;
+        this.parameter = parameter;
     }
 
     @Override
@@ -33,7 +36,7 @@ public class UserVariableFieldListPropertyDescriptor extends PropertyDescriptor 
         @Override
         protected Object openDialogBox(Control cellEditorWindow) {
             List<String> value = (List<String>) doGetValue();
-            UserVariableFieldListDialog dialog = new UserVariableFieldListDialog(attributeNames, value);
+            UserTypeAttributeListDialog dialog = new UserTypeAttributeListDialog(parameter.getAttributes(component), value);
             return dialog.openDialog();
         }
 
