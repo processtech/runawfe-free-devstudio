@@ -88,6 +88,10 @@
             id="uservarfields">
       </type>
       <type
+            class="ru.runa.gpd.formeditor.ftl.parameter.UserVariableFieldListParameter"
+            id="uservarfieldlist">
+      </type>
+      <type
             class="ru.runa.gpd.formeditor.ftl.parameter.UserVariablesListComboParameter"
             id="uservarlistcombo">
       </type>
@@ -975,6 +979,12 @@
                variableAccess="NONE"
                variableTypeFilter="java.lang.String">
          </param>
+         <param
+               name="%Param.DisplayFields"
+               optional="true"
+               type="uservarfieldlist"
+               variableAccess="NONE">
+         </param>
       </component>
       <component
             enabled="true"
@@ -1016,6 +1026,26 @@
                type="uservarfields"
                variableAccess="NONE"
                variableTypeFilter="java.lang.String">
+         </param>
+         <param
+               name="%Param.DisplayFields"
+               optional="true"
+               type="uservarfieldlist"
+               variableAccess="NONE">
+         </param>
+      </component>
+      <component
+            enabled="true"
+            id="EditUserTypeList"
+            imageProvider="ru.runa.gpd.formeditor.ftl.image.VariableComponentImageProvider"
+            name="%Method.EditUserTypeList"
+            order="-81">
+         <param
+               name="%Param.Variable"
+               optional="false"
+               type="uservarlistcombo"
+               variableAccess="WRITE"
+               variableTypeFilter="java.util.List">
          </param>
       </component>
    </extension>
