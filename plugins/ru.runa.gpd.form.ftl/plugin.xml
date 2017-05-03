@@ -604,7 +604,6 @@
             name="%Method.EditLinkedLists"
             order="-91">
          <param
-               
                name="%Param.ListAddition"
                type="combo"
                variableAccess="NONE">
@@ -1117,6 +1116,51 @@
                type="usertypevarlistcombo"
                variableAccess="WRITE"
                variableTypeFilter="java.util.List">
+         </param>
+         <param
+               name="%Param.ListAddition"
+               type="combo"
+               variableAccess="NONE">
+            <paramValue
+                  name="false"
+                  value="false">
+            </paramValue>
+            <paramValue
+                  name="true"
+                  value="true">
+            </paramValue>
+         </param>
+         <param
+               name="%Param.ListRemoval"
+               type="combo"
+               variableAccess="NONE">
+            <paramValue
+                  name="false"
+                  value="false">
+            </paramValue>
+            <paramValue
+                  name="true"
+                  value="true">
+            </paramValue>
+         </param>
+         <param
+               name="%Param.ListChange"
+               type="combo"
+               variableAccess="NONE">
+            <paramValue
+                  name="false"
+                  value="false">
+            </paramValue>
+            <paramValue
+                  name="true"
+                  value="true">
+            </paramValue>
+         </param>
+         <param
+               name="%Param.Attributes"
+               optional="true"
+               type="usertypeattributelist"
+               variableAccess="NONE">
          </param>
       </component>
    </extension>
