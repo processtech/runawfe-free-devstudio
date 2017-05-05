@@ -37,7 +37,7 @@ public class TimerActionEditDialog extends Dialog {
     public TimerActionEditDialog(ProcessDefinition processDefinition, TimerAction timerAction) {
         super(Display.getCurrent().getActiveShell());
         this.sourceTimerAction = timerAction;
-        editableTimerAction = sourceTimerAction != null ? timerAction.getCopy(processDefinition) : new TimerAction(processDefinition);
+        editableTimerAction = sourceTimerAction != null ? timerAction.makeCopy(processDefinition) : new TimerAction(processDefinition);
         deleteButtonEnabled = timerAction != null;
     }
 
