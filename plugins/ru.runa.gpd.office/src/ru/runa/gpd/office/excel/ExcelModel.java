@@ -85,7 +85,7 @@ public class ExcelModel extends Observable {
         inOutModel.validate(graphElement, mode, errors);
     }
 
-    private List<String> fillVariableNames(List<Variable> variables) {
+    public static List<String> fillVariableNames(List<Variable> variables) {
         List<String> result = Lists.newArrayList();
         for (int i = 0; i < variables.size(); i++) {
             result.add(variables.get(i).getName());
@@ -94,15 +94,19 @@ public class ExcelModel extends Observable {
         return result;
     }
 
-    private List<String> fillUsertypeFields(String variableName, VariableUserType userType) {
+    public static List<String> fillUsertypeFields(String variableName, VariableUserType userType) {
         List<String> result = Lists.newArrayList();
         if (userType != null && userType.getAttributes() != null) {
             for (Variable currentVariable : userType.getAttributes()) {
                 String complexVariable = "";
-                if (currentVariable.getUserType() != null) {
-                    complexVariable = variableName + "." + currentVariable.getUserType().getName();
+                if (variableName.endsWith(".") != true) {
+                    if (currentVariable.getUserType() != null) {
+                        complexVariable = variableName + "." + currentVariable.getUserType().getName();
+                    } else {
+                        complexVariable = variableName + "." + currentVariable.getName();
+                    }
                     result.add(complexVariable);
-                    if (currentVariable.getUserType().getAttributes() != null) {
+                    if (currentVariable.getUserType() != null && currentVariable.getUserType().getAttributes() != null) {
                         result.addAll(fillUsertypeFields(complexVariable + ".", currentVariable.getUserType()));
                     }
                 } else {

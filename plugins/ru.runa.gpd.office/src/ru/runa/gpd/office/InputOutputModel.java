@@ -8,8 +8,10 @@ import org.dom4j.Element;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Variable;
+import ru.runa.gpd.office.excel.ExcelModel;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 
 public class InputOutputModel {
     public String inputPath;
@@ -58,19 +60,15 @@ public class InputOutputModel {
 
     public void validate(GraphElement graphElement, FilesSupplierMode mode, List<ValidationError> errors) {
         List<Variable> processVariables = graphElement.getProcessDefinition().getChildren(Variable.class);
+        List<String> variablesNames = Lists.newArrayList();
+        variablesNames.addAll(ExcelModel.fillVariableNames(processVariables));
         if (mode.isInSupported()) {
             if (Strings.isNullOrEmpty(inputPath) && Strings.isNullOrEmpty(inputVariable)) {
                 errors.add(ValidationError.createError(graphElement, Messages.getString("model.validation.in.file.empty")));
             }
 
             if (Strings.isNullOrEmpty(inputVariable) != true) {
-                boolean isInputVariableExistsInDefinition = false;
-                for (Variable variable : processVariables) {
-                    if (isInputVariableExistsInDefinition != true && variable.getName().equals(inputVariable)) {
-                        isInputVariableExistsInDefinition = true;
-                    }
-                }
-                if (isInputVariableExistsInDefinition != true) {
+                if (variablesNames.contains(inputVariable) != true) {
                     errors.add(ValidationError.createError(graphElement,
                             Messages.getString("model.validation.in.file.variable.doesnotExists", inputVariable)));
                 }
@@ -84,13 +82,7 @@ public class InputOutputModel {
                 errors.add(ValidationError.createError(graphElement, Messages.getString("model.validation.out.filename.empty")));
             }
             if (Strings.isNullOrEmpty(outputVariable) != true) {
-                boolean isOutputVariableExistsInDefinition = false;
-                for (Variable variable : processVariables) {
-                    if (isOutputVariableExistsInDefinition != true && variable.getName().equals(outputVariable)) {
-                        isOutputVariableExistsInDefinition = true;
-                    }
-                }
-                if (isOutputVariableExistsInDefinition != true) {
+                if (variablesNames.contains(outputVariable) != true) {
                     errors.add(ValidationError.createError(graphElement,
                             Messages.getString("model.validation.out.file.variable.doesnotExists", outputVariable)));
                 }
