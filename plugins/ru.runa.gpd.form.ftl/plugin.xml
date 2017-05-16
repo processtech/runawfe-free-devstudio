@@ -955,7 +955,7 @@
             order="-84">
       </component>
       <component
-            enabled="true"
+            enabled="false"
             id="DisplayListUserVariables"
             imageProvider="ru.runa.gpd.formeditor.ftl.image.VariableComponentImageProvider"
             name="%Method.DisplayListUserVariables"
@@ -991,7 +991,7 @@
          </param>
       </component>
       <component
-            enabled="true"
+            enabled="false"
             id="MultipleSelectFromListUserVariables"
             name="%Method.MultipleSelectFromListUserVariables"
             order="-82">
