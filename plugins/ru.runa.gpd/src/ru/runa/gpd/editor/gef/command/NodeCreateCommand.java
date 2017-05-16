@@ -3,7 +3,6 @@ package ru.runa.gpd.editor.gef.command;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.commands.Command;
 
-import ru.runa.gpd.lang.model.EndState;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.StartState;
