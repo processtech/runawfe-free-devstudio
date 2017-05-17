@@ -128,7 +128,9 @@ public class GlobalValidatorsWizardPage extends WizardPage {
                 ValidatorConfig config = (ValidatorConfig) ((IStructuredSelection) validatorsTableViewer.getSelection()).getFirstElement();
                 deleteButton.setEnabled(config != null);
                 infoGroup.setConfig(ValidatorConfig.GLOBAL_FIELD_ID, globalDefinition, config);
-                descriptionText.setText(config.getDescription());
+                if (config != null) {
+                    descriptionText.setText(config.getDescription());
+                }
             }
         });
 
