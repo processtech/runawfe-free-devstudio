@@ -1195,6 +1195,11 @@
             id="ru.runa.gpd.regulationsNotes"
             name="%label.view.regulationsNotes"/>
       <view
+            class="ru.runa.gpd.ui.view.RegulationsSequenceView"
+            icon="icons/regulations_notes.png"
+            id="ru.runa.gpd.regulationsSequence"
+            name="%label.view.regulationsSequence"/>
+      <view
             class="ru.runa.gpd.ui.view.SleakView"
             id="ru.runa.gpd.sleak"
             name="%label.view.sleak"/>

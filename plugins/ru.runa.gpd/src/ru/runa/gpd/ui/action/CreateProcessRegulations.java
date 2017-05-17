@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IViewReference;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
@@ -33,6 +34,7 @@ import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
+import ru.runa.gpd.editor.ProcessEditorBase;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.action.BaseModelActionDelegate;
 import ru.runa.gpd.lang.model.EndState;
@@ -49,6 +51,7 @@ import ru.runa.gpd.lang.model.Timer;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.ui.view.RegulationsNotesView;
+import ru.runa.gpd.ui.view.RegulationsSequenceView;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.TextEditorInput;
 import ru.runa.gpd.validation.FormNodeValidation;
@@ -66,6 +69,8 @@ import freemarker.template.Template;
 import freemarker.template.TemplateExceptionHandler;
 
 public class CreateProcessRegulations extends BaseModelActionDelegate {
+
+    private static List<Node> sequenceNodeList = Lists.newArrayList();
 
     @Override
     public void run(IAction action) {
@@ -113,6 +118,24 @@ public class CreateProcessRegulations extends BaseModelActionDelegate {
                 marker.setAttribute(PluginConstants.SELECTION_LINK_KEY, elementId);
                 marker.setAttribute(IMarker.LOCATION, validationError.getSource().toString());
                 marker.setAttribute(IMarker.SEVERITY, validationError.getSeverity());
+                marker.setAttribute(PluginConstants.PROCESS_NAME_KEY, definition.getName());
+            }
+        } catch (CoreException e) {
+            PluginLogger.logError(e);
+        }
+
+    }
+
+    public static void addRegulationsSequenceNote(IFile definitionFile, ProcessDefinition definition, long n, Node node) {
+        try {
+            IMarker marker = definitionFile.createMarker(RegulationsSequenceView.ID);
+            if (marker.exists()) {
+                marker.setAttribute(IMarker.MESSAGE, node.getName());
+                String elementId = node.getId();
+
+                marker.setAttribute(PluginConstants.SELECTION_LINK_KEY, elementId);
+                marker.setAttribute(IMarker.LOCATION, String.valueOf(n));
+                marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_INFO);
                 marker.setAttribute(PluginConstants.PROCESS_NAME_KEY, definition.getName());
             }
         } catch (CoreException e) {
@@ -275,7 +298,7 @@ public class CreateProcessRegulations extends BaseModelActionDelegate {
         }
     }
 
-    private List<Node> makeSequenceList(ProcessDefinition definition) {
+    public static List<Node> makeSequenceList(ProcessDefinition definition) {
         List<Node> result = Lists.newArrayList();
         if (definition != null && definition.getChildren(StartState.class).size() > 0) {
             Node curNode = definition.getChildren(StartState.class).get(0);
@@ -290,7 +313,7 @@ public class CreateProcessRegulations extends BaseModelActionDelegate {
                     result.add(curNode);
                     isAppend = false;
                     SubprocessDefinition subprocessDefinition = ((Subprocess) curNode).getEmbeddedSubprocess();
-                    List<Node> sequenceNodeList = makeSequenceList(subprocessDefinition);
+                    sequenceNodeList = makeSequenceList(subprocessDefinition);
                     for (Node nodeInSequenceList : sequenceNodeList) {
                         result.add(nodeInSequenceList);
                     }
@@ -318,5 +341,59 @@ public class CreateProcessRegulations extends BaseModelActionDelegate {
             result = extensions[0].getNamespaceIdentifier();
         }
         return result;
+    }
+
+    public static List<Node> getRegulationsSequence() {
+        try {
+            if (sequenceNodeList.size() == 0) {
+                List<ValidationError> regulationsValidationErrors = Lists.newArrayList();
+                ProcessDefinition processDefinition = getActiveDesignerDefinition();
+                boolean resultOfValidation = ProcessDefinition.validateRegulations(processDefinition, regulationsValidationErrors);
+                if (resultOfValidation) {
+                    IViewReference[] viewParts = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getViewReferences();
+                    for (IViewReference iviewReference : viewParts) {
+                        if (iviewReference.getId().equals(RegulationsNotesView.ID)) {
+                            PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().hideView(iviewReference);
+                            break;
+                        }
+                    }
+                    sequenceNodeList = makeSequenceList(processDefinition);
+                } else {
+                    for (ValidationError regulationsNote : regulationsValidationErrors) {
+                        addRegulationsNote(getActiveDesignerDefinitionFile(), regulationsNote.getSource().getProcessDefinition(), regulationsNote);
+                    }
+                    PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(RegulationsNotesView.ID);
+                }
+            }
+        } catch (Exception e) {
+            PluginLogger.logError(e);
+        }
+
+        return sequenceNodeList;
+    }
+
+    @Override
+    protected ProcessEditorBase getActiveDesignerEditor() {
+        IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+        if (editor instanceof ProcessEditorBase) {
+            return (ProcessEditorBase) editor;
+        }
+        return null;
+    }
+
+    public static ProcessDefinition getActiveDesignerDefinition() {
+        IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+        if (editor instanceof ProcessEditorBase) {
+            return ((ProcessEditorBase) editor).getDefinition();
+        }
+        return null;
+    }
+
+    public static IFile getActiveDesignerDefinitionFile() {
+        IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+        if (editor instanceof ProcessEditorBase) {
+            return ((ProcessEditorBase) editor).getDefinitionFile();
+        }
+        return null;
     }
 }
