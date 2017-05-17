@@ -45,6 +45,14 @@ final class Serializator {
         if (variable.isComplex()) {
             write(out, variable.getUserType());
         }
+        out.writeBoolean(variable.getUserType1() != null);
+        if (variable.getUserType1() != null) {
+            write(out, variable.getUserType1());
+        }
+        out.writeBoolean(variable.getUserType2() != null);
+        if (variable.getUserType2() != null) {
+            write(out, variable.getUserType2());
+        }
     }
 
     static void read(ObjectInputStream in, Variable variable, ProcessDefinition processDefinition) throws IOException, ClassNotFoundException {
@@ -65,6 +73,16 @@ final class Serializator {
             read(in, type, processDefinition);
             variable.setUserType(type);
             variable.setFormat(format);
+        }
+        if (in.readBoolean()) {
+            VariableUserType type1 = new VariableUserType();
+            read(in, type1, processDefinition);
+            variable.setUserType1(type1);
+        }
+        if (in.readBoolean()) {
+            VariableUserType type2 = new VariableUserType();
+            read(in, type2, processDefinition);
+            variable.setUserType2(type2);
         }
     }
 

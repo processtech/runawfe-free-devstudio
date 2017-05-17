@@ -24,6 +24,8 @@ public class Variable extends NamedGraphElement implements Describable {
     private boolean publicVisibility;
     private String defaultValue;
     private VariableUserType userType;
+    private VariableUserType userType1;
+    private VariableUserType userType2;
 
     public Variable() {
     }
@@ -50,11 +52,27 @@ public class Variable extends NamedGraphElement implements Describable {
         return userType;
     }
 
+    public VariableUserType getUserType1() {
+        return userType1;
+    }
+
+    public VariableUserType getUserType2() {
+        return userType2;
+    }
+
     public void setUserType(VariableUserType userType) {
         this.userType = userType;
         if (userType != null) {
             setFormat(VariableUserType.PREFIX + userType.getName());
         }
+    }
+
+    public void setUserType1(VariableUserType userType1) {
+        this.userType1 = userType1;
+    }
+
+    public void setUserType2(VariableUserType userType2) {
+        this.userType2 = userType2;
     }
 
     public void setUserType(VariableUserType userType, boolean isFirePropertyChange) {

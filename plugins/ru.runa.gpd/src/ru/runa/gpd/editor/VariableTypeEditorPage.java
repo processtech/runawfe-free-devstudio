@@ -3,7 +3,6 @@ package ru.runa.gpd.editor;
 import java.beans.PropertyChangeEvent;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -28,9 +27,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.ide.IDE;
 
-import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.ProcessCache;
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.clipboard.VariableTransfer;
 import ru.runa.gpd.editor.clipboard.VariableUserTypeTransfer;
 import ru.runa.gpd.lang.model.FormNode;
@@ -275,20 +274,27 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
                 String newTypeName = dialog.getName();
                 List<Variable> variables = getDefinition().getChildren(Variable.class);
                 List<Variable> resultVariables = Lists.newArrayList();
-                Pattern pattern = Pattern.compile("ru\\.runa\\.wfe\\.var\\.format\\.ListFormat\\(" + oldTypeName + "\\)");
+                List<VariableUserType> listOfTypes = getDefinition().getVariableUserTypes();
+                for (VariableUserType currentType : listOfTypes) {
+                    List<Variable> listOfVariables = currentType.getAttributes();
+                    for (Variable currentVariable : listOfVariables) {
+                        if (currentVariable.getFormat().contains(oldTypeName)) {
+                            currentVariable.setFormat(currentVariable.getFormat().replace(oldTypeName, newTypeName));
+                        }
+                    }
+                }
                 for (Variable currentVariable : variables) {
                     if ((currentVariable.getFormat().equals("ru.runa.wfe.var.format.UserTypeFormat") && currentVariable.getUserType().getName()
                             .equals(oldTypeName))
                             || currentVariable.getFormat().equals("usertype:" + oldTypeName)) {
                         resultVariables.add(currentVariable);
-                    } else if (pattern.matcher(currentVariable.getFormat()).matches()) {
-                        String replacedUserTypeFormat = pattern.matcher(currentVariable.getFormat()).replaceFirst(
-                                "ru.runa.wfe.var.format.ListFormat(" + newTypeName + ")");
+                    } else if (currentVariable.getFormat().contains(oldTypeName)) {
+                        String replacedUserTypeFormat = currentVariable.getFormat().replace(oldTypeName, newTypeName);
                         currentVariable.setFormat(replacedUserTypeFormat);
                     }
                 }
+                type.setName(newTypeName);
                 if (resultVariables.size() > 0) {
-                    type.setName(newTypeName);
                     for (Variable currentVariable : resultVariables) {
                         currentVariable.setUserType(type);
                     }
