@@ -49,8 +49,8 @@ public class EndTokenState extends AbstractEndTextDecorated {
     }
 
     @Override
-    public Node getCopy(GraphElement parent) {
-        EndTokenState copy = (EndTokenState) super.getCopy(parent);
+    public Node makeCopy(GraphElement parent) {
+        EndTokenState copy = (EndTokenState) super.makeCopy(parent);
         copy.setSubprocessDefinitionBehavior(getSubprocessDefinitionBehavior());
         return copy;
     }

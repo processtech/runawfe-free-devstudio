@@ -107,7 +107,7 @@ public class CopyGraphCommand extends Command {
                 } else if (node instanceof Swimlane && targetDefinition.getSwimlaneByName(node.getName()) != null) {
                     continue;
                 }
-                NamedGraphElement copy = node.getCopy(targetDefinition);
+                NamedGraphElement copy = node.makeCopy(targetDefinition);
                 adjustLocation(copy);
                 newElements.add(copy);
                 for (Variable variable : node.getUsedVariables(copyBuffer.getSourceFolder())) {
@@ -157,7 +157,7 @@ public class CopyGraphCommand extends Command {
                     NamedGraphElement source = targetNodeMap.get(transition.getSource().getId());
                     NamedGraphElement target = targetNodeMap.get(transition.getTarget().getId());
                     if (source != null && target != null) {
-                        Transition copy = transition.getCopy(source);
+                        Transition copy = transition.makeCopy(source);
                         adjustLocation(copy);
                         copy.setTarget((Node) target);
                         newElements.add(copy);
@@ -441,7 +441,7 @@ public class CopyGraphCommand extends Command {
             if (oldSwimlane != null) {
                 targetDefinition.removeChild(oldSwimlane);
             }
-            addedSwimlane = (Swimlane) sourceSwimlane.getCopy(targetDefinition);
+            addedSwimlane = (Swimlane) sourceSwimlane.makeCopy(targetDefinition);
             adjustLocation(addedSwimlane);
         }
 
@@ -486,7 +486,7 @@ public class CopyGraphCommand extends Command {
             if (oldVariable != null) {
                 targetDefinition.removeChild(oldVariable);
             }
-            addedVariable = (Variable) sourceVariable.getCopy(targetDefinition);
+            addedVariable = (Variable) sourceVariable.makeCopy(targetDefinition);
             adjustLocation(addedVariable);
             if (addedVariable.isComplex() && targetDefinition.getVariableUserType(addedVariable.getUserType().getName()) == null) {
                 addedUserType = addedVariable.getUserType().getCopy();
@@ -529,7 +529,7 @@ public class CopyGraphCommand extends Command {
                         + "/" + complexVariable.getUserType().getName());
             }
             if (oldComplexVariable == null) {
-                addedVariable = (Variable) complexVariable.getCopy(targetDefinition);
+                addedVariable = (Variable) complexVariable.makeCopy(targetDefinition);
                 adjustLocation(addedVariable);
             }
             for (VariableUserType userType : usedUserTypes) {
