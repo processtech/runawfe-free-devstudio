@@ -5,7 +5,7 @@ import org.eclipse.gef.editpolicies.ComponentEditPolicy;
 import org.eclipse.gef.requests.GroupRequest;
 
 import ru.runa.gpd.editor.gef.command.ActionDeleteCommand;
-import ru.runa.gpd.lang.model.jpdl.Action;
+import ru.runa.gpd.lang.model.Action;
 
 public class ActionComponentEditPolicy extends ComponentEditPolicy {
 

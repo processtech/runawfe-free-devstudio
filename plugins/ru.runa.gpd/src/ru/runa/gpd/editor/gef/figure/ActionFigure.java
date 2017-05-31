@@ -5,7 +5,7 @@ import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 
 import ru.runa.gpd.editor.gef.ActionGraphUtils;
-import ru.runa.gpd.lang.model.jpdl.Action;
+import ru.runa.gpd.lang.model.Action;
 
 public class ActionFigure extends NodeFigure<Action> {
     private boolean multiple = false;

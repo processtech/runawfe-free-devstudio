@@ -2,7 +2,7 @@ package ru.runa.gpd.editor.gef.command;
 
 import org.eclipse.gef.commands.Command;
 
-import ru.runa.gpd.lang.model.jpdl.Action;
+import ru.runa.gpd.lang.model.Action;
 import ru.runa.gpd.lang.model.jpdl.ActionContainer;
 
 public class ActionDeleteCommand extends Command {

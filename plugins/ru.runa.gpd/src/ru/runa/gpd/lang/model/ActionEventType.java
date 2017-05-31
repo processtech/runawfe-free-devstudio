@@ -1,6 +1,4 @@
-package ru.runa.gpd.lang.model.jpdl;
-
-import ru.runa.gpd.lang.model.GraphElement;
+package ru.runa.gpd.lang.model;
 
 public class ActionEventType extends GraphElement {
     public static final String NODE_ENTER = "node-enter";
