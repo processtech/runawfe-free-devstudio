@@ -1,0 +1,8 @@
+<config>
+  <input>
+    <param name="nodeId" formatFilter="java.lang.String" variable="false" label.key="Param.NodeId" presentation="text" />
+  </input>
+  <output>
+    <param name="result" label.key="Param.Result" />
+  </output>
+</config>

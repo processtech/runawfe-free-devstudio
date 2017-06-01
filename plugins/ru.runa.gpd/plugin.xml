@@ -1536,6 +1536,16 @@
             label="%ru.runa.wfe.extension.handler.user.GetExecutorInfoHandler">
       </handler>
       <handler
+            actionHandler="true"
+            assignmentHandler="false"
+            botTaskHandler="true"
+            decisionHandler="false"
+            cellEditorProvider="ru.runa.gpd.extension.handler.ConfigBasedProvider"
+            className="ru.runa.wfe.extension.handler.user.GetExecutorBySubstitutorHandler"
+            enabled="true"
+            label="%ru.runa.wfe.extension.handler.user.GetExecutorBySubstitutorHandler">
+      </handler>
+      <handler
             actionHandler="false"
             assignmentHandler="false"
             botTaskHandler="true"
