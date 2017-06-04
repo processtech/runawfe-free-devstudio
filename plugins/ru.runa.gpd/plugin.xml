@@ -1538,12 +1538,12 @@
       <handler
             actionHandler="true"
             assignmentHandler="false"
-            botTaskHandler="true"
+            botTaskHandler="false"
             decisionHandler="false"
             cellEditorProvider="ru.runa.gpd.extension.handler.ConfigBasedProvider"
-            className="ru.runa.wfe.extension.handler.user.GetExecutorBySubstitutorHandler"
+            className="ru.runa.wfe.extension.handler.user.GetTaskPerformerHandler"
             enabled="true"
-            label="%ru.runa.wfe.extension.handler.user.GetExecutorBySubstitutorHandler">
+            label="%ru.runa.wfe.extension.handler.user.GetTaskPerformerHandler">
       </handler>
       <handler
             actionHandler="false"
