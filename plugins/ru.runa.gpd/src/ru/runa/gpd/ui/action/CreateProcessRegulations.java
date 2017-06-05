@@ -50,6 +50,7 @@ import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Timer;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.par.ParContentProvider;
+import ru.runa.gpd.settings.CommonPreferencePage;
 import ru.runa.gpd.ui.view.RegulationsNotesView;
 import ru.runa.gpd.ui.view.RegulationsSequenceView;
 import ru.runa.gpd.util.IOUtils;
@@ -142,6 +143,19 @@ public class CreateProcessRegulations extends BaseModelActionDelegate {
             PluginLogger.logError(e);
         }
 
+    }
+
+    private void disableNotConnectedBotNodes() {
+        ProcessDefinition definition = getActiveDesignerDefinition();
+        List<Node> listOfNodes = definition.getNodes();
+        for (Node node : listOfNodes) {
+            if (node.getNodeRegulationsProperties().isEnabled() && node.getNodeRegulationsProperties().getPreviousNode() == null
+                    && node.getNodeRegulationsProperties().getNextNode() == null && node instanceof TaskState
+                    && ((TaskState) node).getBotTaskLink() != null) {
+                node.getNodeRegulationsProperties().setEnabled(false);
+            }
+        }
+        definition.setDirty(true);
     }
 
     private String generateRegulations(ProcessDefinition definition) throws Exception {
@@ -291,7 +305,9 @@ public class CreateProcessRegulations extends BaseModelActionDelegate {
     @Override
     public void selectionChanged(IAction action, ISelection selection) {
         super.selectionChanged(action, selection);
-        if (getSelection() != null && getSelection().getClass().equals(ProcessDefinition.class)) {
+        disableNotConnectedBotNodes();
+        if (getSelection() != null && CommonPreferencePage.isRegulationsMenuItemsEnabled()
+                && getSelection().getClass().equals(ProcessDefinition.class)) {
             action.setEnabled(!getActiveDesignerEditor().getDefinition().isInvalid());
         } else {
             action.setEnabled(false);
@@ -345,25 +361,22 @@ public class CreateProcessRegulations extends BaseModelActionDelegate {
 
     public static List<Node> getRegulationsSequence() {
         try {
-            if (sequenceNodeList.size() == 0) {
-                List<ValidationError> regulationsValidationErrors = Lists.newArrayList();
-                ProcessDefinition processDefinition = getActiveDesignerDefinition();
-                boolean resultOfValidation = ProcessDefinition.validateRegulations(processDefinition, regulationsValidationErrors);
-                if (resultOfValidation) {
-                    IViewReference[] viewParts = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getViewReferences();
-                    for (IViewReference iviewReference : viewParts) {
-                        if (iviewReference.getId().equals(RegulationsNotesView.ID)) {
-                            PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().hideView(iviewReference);
-                            break;
-                        }
-                    }
-                    sequenceNodeList = makeSequenceList(processDefinition);
-                } else {
-                    for (ValidationError regulationsNote : regulationsValidationErrors) {
-                        addRegulationsNote(getActiveDesignerDefinitionFile(), regulationsNote.getSource().getProcessDefinition(), regulationsNote);
-                    }
-                    PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(RegulationsNotesView.ID);
+            List<ValidationError> regulationsValidationErrors = Lists.newArrayList();
+            ProcessDefinition processDefinition = getActiveDesignerDefinition();
+            boolean resultOfValidation = ProcessDefinition.validateRegulations(processDefinition, regulationsValidationErrors);
+            IViewReference[] viewParts = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getViewReferences();
+            for (IViewReference iviewReference : viewParts) {
+                if (iviewReference.getId().equals(RegulationsNotesView.ID)) {
+                    PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().hideView(iviewReference);
+                    break;
                 }
+            }
+            sequenceNodeList = makeSequenceList(processDefinition);
+            if (resultOfValidation == false) {
+                for (ValidationError regulationsNote : regulationsValidationErrors) {
+                    addRegulationsNote(getActiveDesignerDefinitionFile(), regulationsNote.getSource().getProcessDefinition(), regulationsNote);
+                }
+                PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(RegulationsNotesView.ID);
             }
         } catch (Exception e) {
             PluginLogger.logError(e);
