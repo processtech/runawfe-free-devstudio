@@ -2,6 +2,7 @@ package ru.runa.gpd.lang.model;
 
 import java.util.List;
 
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.util.EventSupport;
 
 import com.google.common.base.Objects;
@@ -82,19 +83,19 @@ public class VariableUserType extends EventSupport implements VariableContainer,
 
     public void addAttribute(Variable variable) {
         attributes.add(variable);
-        firePropertyChange(PROPERTY_CHILDS_CHANGED, null, variable);
+        firePropertyChange(PROPERTY_CHILDREN_CHANGED, null, variable);
     }
 
     public void changeAttributePosition(Variable attribute, int position) {
         if (position != -1 && attributes.remove(attribute)) {
             attributes.add(position, attribute);
-            firePropertyChange(PROPERTY_CHILDS_CHANGED, null, attribute);
+            firePropertyChange(PROPERTY_CHILDREN_CHANGED, null, attribute);
         }
     }
 
     public void removeAttribute(Variable variable) {
         attributes.remove(variable);
-        firePropertyChange(PROPERTY_CHILDS_CHANGED, null, variable);
+        firePropertyChange(PROPERTY_CHILDREN_CHANGED, null, variable);
     }
 
     @Override

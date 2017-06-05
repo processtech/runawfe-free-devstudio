@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
 
@@ -22,8 +23,11 @@ import ru.runa.gpd.form.FormVariableAccess;
 import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.lang.ValidationError;
+import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
+import ru.runa.gpd.lang.model.jpdl.ActionContainer;
 import ru.runa.gpd.property.DurationPropertyDescriptor;
 import ru.runa.gpd.property.EscalationActionPropertyDescriptor;
+import ru.runa.gpd.settings.LanguageElementPreferenceNode;
 import ru.runa.gpd.settings.PrefConstants;
 import ru.runa.gpd.util.BotTaskUtils;
 import ru.runa.gpd.util.Duration;
@@ -34,7 +38,7 @@ import ru.runa.wfe.lang.AsyncCompletionMode;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 
-public class TaskState extends FormNode implements Active, ITimed, Synchronizable {
+public class TaskState extends FormNode implements ActionContainer, ITimed, Synchronizable, IBoundaryEventContainer {
     private TimerAction escalationAction;
     private boolean ignoreSubstitutionRules;
     private boolean useEscalation;
@@ -271,13 +275,13 @@ public class TaskState extends FormNode implements Active, ITimed, Synchronizabl
     }
 
     @Override
-    public TaskState getCopy(GraphElement parent) {
-        TaskState copy = (TaskState) super.getCopy(parent);
+    public TaskState makeCopy(GraphElement parent) {
+        TaskState copy = (TaskState) super.makeCopy(parent);
         if (getBotTaskLink() != null) {
             copy.setBotTaskLink(getBotTaskLink().getCopy(copy));
         }
         if (getEscalationAction() != null) {
-            copy.setEscalationAction(getEscalationAction().getCopy(parent.getProcessDefinition()));
+            copy.setEscalationAction(getEscalationAction().makeCopy(parent.getProcessDefinition()));
         }
         if (getEscalationDelay() != null) {
             copy.setEscalationDelay(new Duration(getEscalationDelay()));
@@ -374,20 +378,26 @@ public class TaskState extends FormNode implements Active, ITimed, Synchronizabl
                 }
             }
         }
-        if (isAsync() && getTimer() != null) {
-            errors.add(ValidationError.createLocalizedError(this, "taskState.timerInAsyncTask"));
-        }
         if (isAsync()) {
-            try {
-                Map<String, FormVariableAccess> formVariables = getFormVariables((IFolder) definitionFile.getParent());
-                for (FormVariableAccess access : formVariables.values()) {
-                    if (access != FormVariableAccess.READ) {
-                        errors.add(ValidationError.createLocalizedError(this, "taskState.variablesInputInAsyncTask"));
-                        break;
+            if (getTimer() != null) {
+                errors.add(ValidationError.createLocalizedError(this, "taskState.timerInAsyncTask"));
+            }
+            String propertyName = LanguageElementPreferenceNode.getId(this.getTypeDefinition(), getProcessDefinition().getLanguage()) + '.'
+                    + PrefConstants.P_LANGUAGE_TASK_STATE_ASYNC_INPUT_DATA;
+            IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+            boolean inputDataAllowedInAsyncTaskNode = store.contains(propertyName) ? store.getBoolean(propertyName) : false;
+            if (!inputDataAllowedInAsyncTaskNode) {
+                try {
+                    Map<String, FormVariableAccess> formVariables = getFormVariables((IFolder) definitionFile.getParent());
+                    for (FormVariableAccess access : formVariables.values()) {
+                        if (access == FormVariableAccess.WRITE) {
+                            errors.add(ValidationError.createLocalizedWarning(this, "taskState.variablesInputInAsyncTask"));
+                            break;
+                        }
                     }
+                } catch (Exception e) {
+                    PluginLogger.logError(e);
                 }
-            } catch (Exception e) {
-                PluginLogger.logError(e);
             }
         }
     }

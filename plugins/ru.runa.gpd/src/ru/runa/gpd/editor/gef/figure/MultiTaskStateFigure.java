@@ -16,8 +16,10 @@ public class MultiTaskStateFigure extends TaskStateFigure {
     @Override
     protected void paintFigure(Graphics g, Dimension dim) {
         super.paintFigure(g, dim);
-        Utils.paintSurroudingBoxes(g, dim);
-        g.drawText("*", dim.width - 2 * GRID_SIZE, dim.height - 3 * GRID_SIZE / 2);
+        if (!model.isMinimizedView()) {
+            Utils.paintSurroudingBoxes(g, dim);
+            g.drawText("*", dim.width - 2 * GRID_SIZE, dim.height - 3 * GRID_SIZE / 2);
+        }
     }
 
     @Override
@@ -30,9 +32,14 @@ public class MultiTaskStateFigure extends TaskStateFigure {
 
     @Override
     protected Rectangle getBox() {
-        Rectangle r = super.getBox();
-        Rectangle borderRect = r.getCopy();
-        borderRect.expand(GRID_SIZE / 2, 0);
-        return borderRect;
+        if (model.isMinimizedView()) {
+            return super.getBox();
+        } else {
+            Rectangle r = super.getBox();
+            Rectangle borderRect = r.getCopy();
+            borderRect.expand(GRID_SIZE / 2, 0);
+            return borderRect;
+        }
     }
+
 }

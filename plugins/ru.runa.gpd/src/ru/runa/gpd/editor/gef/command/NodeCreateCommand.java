@@ -3,7 +3,6 @@ package ru.runa.gpd.editor.gef.command;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.commands.Command;
 
-import ru.runa.gpd.lang.model.EndState;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.StartState;
@@ -23,9 +22,6 @@ public class NodeCreateCommand extends Command {
     public boolean canExecute() {
         if (node instanceof StartState) {
             return definition.getFirstChild(StartState.class) == null;
-        }
-        if (node instanceof EndState) {
-            return definition.getFirstChild(EndState.class) == null;
         }
         return true;
     }

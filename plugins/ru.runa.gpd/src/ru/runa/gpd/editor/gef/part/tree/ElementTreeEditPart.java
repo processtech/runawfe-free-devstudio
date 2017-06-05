@@ -5,8 +5,8 @@ import java.beans.PropertyChangeListener;
 
 import org.eclipse.gef.editparts.AbstractTreeEditPart;
 
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.lang.model.GraphElement;
-import ru.runa.gpd.lang.model.PropertyNames;
 
 public class ElementTreeEditPart extends AbstractTreeEditPart implements PropertyChangeListener, PropertyNames {
 
@@ -48,7 +48,7 @@ public class ElementTreeEditPart extends AbstractTreeEditPart implements Propert
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         String messageId = evt.getPropertyName();
-        if (PROPERTY_CHILDS_CHANGED.equals(messageId)) {
+        if (PROPERTY_CHILDREN_CHANGED.equals(messageId)) {
             refreshChildren();
         } else if (PROPERTY_NAME.equals(messageId)) {
             refreshVisuals();

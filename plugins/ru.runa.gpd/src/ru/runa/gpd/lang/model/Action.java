@@ -1,10 +1,10 @@
 package ru.runa.gpd.lang.model;
 
-import ru.runa.gpd.Localization;
 import ru.runa.gpd.extension.HandlerArtifact;
 import ru.runa.gpd.extension.LocalizationRegistry;
 
-public class Action extends GraphElement implements Delegable, Describable {
+public class Action extends NamedGraphElement implements Delegable, Describable {
+
     @Override
     public String getDelegationType() {
         return HandlerArtifact.ACTION;
@@ -13,7 +13,7 @@ public class Action extends GraphElement implements Delegable, Describable {
     public String getLabel() {
         String className = getDelegationClassName();
         if (className == null || className.length() == 0) {
-            className = Localization.getString("label.new");
+            return super.getLabel();
         }
         return LocalizationRegistry.getLabel(className);
     }
@@ -24,8 +24,11 @@ public class Action extends GraphElement implements Delegable, Describable {
     }
 
     @Override
-    public Action getCopy(GraphElement parent) {
-        return (Action) super.getCopy(parent);
+    public Action makeCopy(GraphElement parent) {
+        Action copy = (Action) super.makeCopy(parent);
+        copy.setDelegationClassName(getDelegationClassName());
+        copy.setDelegationConfiguration(getDelegationConfiguration());
+        return copy;
     }
 
 }

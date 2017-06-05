@@ -15,15 +15,15 @@ public class ActionImpl extends Action {
     public void setParent(GraphElement parent) {
         super.setParent(parent);
         if (parent instanceof Transition) {
-            eventType = Event.TRANSITION;
+            eventType = ActionEventType.TRANSITION;
         } else if (parent instanceof StartState) {
-            eventType = Event.NODE_LEAVE;
+            eventType = ActionEventType.NODE_LEAVE;
         } else if (parent instanceof EndState) {
-            eventType = Event.NODE_ENTER;
+            eventType = ActionEventType.NODE_ENTER;
         } else if (parent instanceof TaskState) {
-            eventType = Event.TASK_ASSIGN;
+            eventType = ActionEventType.TASK_ASSIGN;
         } else if (parent instanceof Node) {
-            eventType = Event.NODE_LEAVE;
+            eventType = ActionEventType.NODE_LEAVE;
         }
     }
 
@@ -43,11 +43,11 @@ public class ActionImpl extends Action {
         return getAllowedEventTypes().contains(eventType);
     }
 
-    private static final String[] TRANSITION_EVENT_TYPES = { Event.TRANSITION };
-    private static final String[] TASK_EVENT_TYPES = { Event.TASK_CREATE, Event.TASK_ASSIGN, Event.TASK_END };
-    private static final String[] START_STATE_EVENT_TYPES = { Event.NODE_LEAVE };
-    private static final String[] END_STATE_EVENT_TYPES = { Event.NODE_ENTER };
-    private static final String[] NODE_EVENT_TYPES = { Event.NODE_ENTER, Event.NODE_ACTION, Event.NODE_LEAVE };
+    private static final String[] TRANSITION_EVENT_TYPES = { ActionEventType.TRANSITION };
+    private static final String[] TASK_EVENT_TYPES = { ActionEventType.TASK_CREATE, ActionEventType.TASK_ASSIGN, ActionEventType.TASK_END };
+    private static final String[] START_STATE_EVENT_TYPES = { ActionEventType.NODE_LEAVE };
+    private static final String[] END_STATE_EVENT_TYPES = { ActionEventType.NODE_ENTER };
+    private static final String[] NODE_EVENT_TYPES = { ActionEventType.NODE_ENTER, ActionEventType.NODE_ACTION, ActionEventType.NODE_LEAVE };
 
     private List<String> getAllowedEventTypes() {
         GraphElement parent = getParent();
@@ -75,7 +75,7 @@ public class ActionImpl extends Action {
         for (String string : allowedEventTypes) {
             eventTypes[i++] = Localization.getString(string);
         }
-        descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_EVENT_TYPE, Localization.getString("Action.property.eventType"), eventTypes));
+        descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_EVENT_TYPE, Localization.getString("property.eventType"), eventTypes));
     }
 
     @Override
@@ -102,8 +102,8 @@ public class ActionImpl extends Action {
     }
 
     @Override
-    public ActionImpl getCopy(GraphElement parent) {
-        ActionImpl copy = (ActionImpl) super.getCopy(parent);
+    public ActionImpl makeCopy(GraphElement parent) {
+        ActionImpl copy = (ActionImpl) super.makeCopy(parent);
         copy.setEventType(getEventType());
         return copy;
     }

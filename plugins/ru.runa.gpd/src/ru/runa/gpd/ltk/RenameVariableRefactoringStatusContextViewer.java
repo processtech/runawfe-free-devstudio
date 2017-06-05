@@ -20,11 +20,11 @@ import ru.runa.gpd.lang.model.Decision;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.MultiTaskState;
-import ru.runa.gpd.lang.model.ScriptTask;
 import ru.runa.gpd.lang.model.Subprocess;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Timer;
+import ru.runa.gpd.lang.model.bpmn.ScriptTask;
 import ru.runa.gpd.util.VariableMapping;
 
 public class RenameVariableRefactoringStatusContextViewer extends TextStatusContextViewer {

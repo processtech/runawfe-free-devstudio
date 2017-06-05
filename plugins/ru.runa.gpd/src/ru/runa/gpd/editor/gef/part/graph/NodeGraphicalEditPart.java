@@ -79,9 +79,11 @@ public class NodeGraphicalEditPart extends ElementGraphicalEditPart implements N
             refreshSourceConnections();
         } else if (NODE_BOUNDS_RESIZED.equals(messageId)) {
             refreshVisuals();
-        } else if (PROPERTY_CHILDS_CHANGED.equals(messageId)) {
+        } else if (PROPERTY_CHILDREN_CHANGED.equals(messageId)) {
             refreshChildren();
         } else if (PROPERTY_MINIMAZED_VIEW.equals(messageId)) {
+            refreshVisuals();
+        } else if (PROPERTY_INTERRUPTING_BOUNDARY_EVENT.equals(messageId)) {
             refreshVisuals();
         }
     }

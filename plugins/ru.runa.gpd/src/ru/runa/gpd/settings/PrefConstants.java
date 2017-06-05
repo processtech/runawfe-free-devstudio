@@ -12,6 +12,8 @@ public interface PrefConstants {
     public static final String P_LANGUAGE_NODE_HEIGHT = "nodeHeight";
     public static final String P_LANGUAGE_SWIMLANE_INITIALIZER = "reassignSwimlaneToInitializerValue";
     public static final String P_LANGUAGE_SWIMLANE_PERFORMER = "reassignSwimlaneToTaskPerformer";
+    public static final String P_LANGUAGE_TASK_STATE_ASYNC_INPUT_DATA = "inputDataAllowedInAsyncTaskNode";
+    public static final String P_LANGUAGE_SUB_PROCESS_ASYNC_INPUT_DATA = "inputDataAllowedInAsyncSubprocess";
     public static final String P_FORM_DEFAULT_FCK_EDITOR = "defaultFCKEditor";
     public static final String FORM_FCK_EDITOR = "fck2";
     public static final String FORM_CK_EDITOR4 = "ck4";

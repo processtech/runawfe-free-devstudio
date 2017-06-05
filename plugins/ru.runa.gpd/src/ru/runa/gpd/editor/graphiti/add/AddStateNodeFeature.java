@@ -1,8 +1,8 @@
 package ru.runa.gpd.editor.graphiti.add;
 
-import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.graphiti.features.context.IAddContext;
 import org.eclipse.graphiti.mm.GraphicsAlgorithmContainer;
+import org.eclipse.graphiti.mm.algorithms.Image;
 import org.eclipse.graphiti.mm.algorithms.MultiText;
 import org.eclipse.graphiti.mm.algorithms.Rectangle;
 import org.eclipse.graphiti.mm.algorithms.RoundedRectangle;
@@ -15,19 +15,20 @@ import org.eclipse.graphiti.services.Graphiti;
 import ru.runa.gpd.editor.graphiti.GaProperty;
 import ru.runa.gpd.editor.graphiti.StyleUtil;
 import ru.runa.gpd.editor.graphiti.layout.LayoutStateNodeFeature;
+import ru.runa.gpd.lang.NodeRegistry;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.SwimlanedNode;
 import ru.runa.gpd.util.SwimlaneDisplayMode;
 
 public class AddStateNodeFeature extends AddNodeFeature {
+
     @Override
     public PictogramElement add(IAddContext context) {
         Node node = (Node) context.getNewObject();
-        Dimension bounds = adjustBounds(context);
         //
         ContainerShape containerShape = Graphiti.getPeCreateService().createContainerShape(context.getTargetContainer(), true);
         Rectangle main = Graphiti.getGaService().createInvisibleRectangle(containerShape);
-        Graphiti.getGaService().setLocationAndSize(main, context.getX(), context.getY(), bounds.width, bounds.height);
+        Graphiti.getGaService().setLocationAndSize(main, context.getX(), context.getY(), context.getWidth(), context.getHeight());
         main.getProperties().add(new GaProperty(GaProperty.ID, LayoutStateNodeFeature.MAIN_RECT));
         //
         RoundedRectangle border = Graphiti.getGaService().createRoundedRectangle(main, 20, 20);
@@ -46,8 +47,13 @@ public class AddStateNodeFeature extends AddNodeFeature {
         nameText.setHorizontalAlignment(Orientation.ALIGNMENT_CENTER);
         containerShape.getProperties().add(new GaProperty(GaProperty.MINIMAZED_VIEW, String.valueOf(node.isMinimizedView())));
         //
+        Image image = Graphiti.getGaService().createImage(main, NodeRegistry.getNodeTypeDefinition(node.getClass()).getPaletteIcon());
+        image.getProperties().add(new GaProperty(GaProperty.ID, GaProperty.ICON));
+        image.setTransparency(node.isMinimizedView() ? .0 : 1.0);
+        Graphiti.getGaService().setLocationAndSize(image, MINIMAZED_ICON_X, MINIMAZED_ICON_Y, ICON_WIDTH, ICON_HEIGHT);
+        //
         addCustomGraphics(node, context, main, containerShape);
-        // 
+        //
         link(containerShape, node);
         //
         Graphiti.getPeCreateService().createChopboxAnchor(containerShape);

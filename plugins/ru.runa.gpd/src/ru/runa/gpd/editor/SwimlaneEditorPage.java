@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.editor.gef.command.ProcessDefinitionRemoveSwimlaneCommand;
@@ -32,7 +33,6 @@ import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.lang.NodeRegistry;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.ProcessDefinition;
-import ru.runa.gpd.lang.model.PropertyNames;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.SwimlanedNode;
@@ -124,7 +124,7 @@ public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
     @Override
     public void propertyChange(PropertyChangeEvent event) {
         String type = event.getPropertyName();
-        if (PropertyNames.PROPERTY_CHILDS_CHANGED.equals(type)) {
+        if (PropertyNames.PROPERTY_CHILDREN_CHANGED.equals(type)) {
             updateViewer();
         } else if (event.getSource() instanceof Swimlane) {
             if (PropertyNames.PROPERTY_NAME.equals(type) || PropertyNames.PROPERTY_CONFIGURATION.equals(type)) {
@@ -226,7 +226,7 @@ public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
             Swimlane swimlane = (Swimlane) selection.getFirstElement();
             List<Swimlane> children = swimlane.getParent().getChildren(Swimlane.class);
             int index = children.indexOf(swimlane);
-            swimlane.getParent().swapChilds(swimlane, up ? children.get(index - 1) : children.get(index + 1));
+            swimlane.getParent().swapChildren(swimlane, up ? children.get(index - 1) : children.get(index + 1));
             tableViewer.setSelection(selection);
         }
     }

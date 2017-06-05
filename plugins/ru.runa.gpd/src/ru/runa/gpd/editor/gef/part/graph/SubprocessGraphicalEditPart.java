@@ -27,5 +27,8 @@ public class SubprocessGraphicalEditPart extends LabeledNodeGraphicalEditPart {
     protected void fillFigureUpdatePropertyNames(List<String> list) {
         super.fillFigureUpdatePropertyNames(list);
         list.add(PROPERTY_SUBPROCESS);
+        list.add(PROPERTY_MINIMAZED_VIEW);
+        list.add(PROPERTY_CHILDREN_CHANGED);
+        list.add(PROPERTY_ASYNC);
     }
 }

@@ -43,6 +43,7 @@ import ru.runa.gpd.editor.graphiti.update.MoveTransitionBendpointFeature;
 import ru.runa.gpd.editor.graphiti.update.MoveTransitionLabelFeature;
 import ru.runa.gpd.editor.graphiti.update.ReconnectSequenceFlowFeature;
 import ru.runa.gpd.editor.graphiti.update.RemoveTransitionBendpointFeature;
+import ru.runa.gpd.editor.graphiti.update.ResizeElementFeature;
 import ru.runa.gpd.lang.BpmnSerializer;
 import ru.runa.gpd.lang.NodeRegistry;
 import ru.runa.gpd.lang.NodeTypeDefinition;
@@ -50,7 +51,7 @@ import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
-import ru.runa.gpd.lang.model.TextAnnotation;
+import ru.runa.gpd.lang.model.bpmn.TextAnnotation;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.SwimlaneDisplayMode;
 
@@ -59,6 +60,7 @@ import com.google.common.collect.Lists;
 
 @SuppressWarnings("unchecked")
 public class DiagramFeatureProvider extends DefaultFeatureProvider {
+
     public DiagramFeatureProvider(IDiagramTypeProvider dtp) {
         super(dtp);
         setIndependenceSolver(new IndependenceSolver());
@@ -79,6 +81,9 @@ public class DiagramFeatureProvider extends DefaultFeatureProvider {
                         if (processDefinition instanceof SubprocessDefinition) {
                             continue;
                         }
+                    }
+                    if ("actionHandler".equals(definition.getBpmnElementName()) && !processDefinition.isShowActions()) {
+                        continue;
                     }
                     list.add((ICreateFeature) definition.getGraphitiEntry().createCreateFeature(this));
                 }
@@ -131,10 +136,10 @@ public class DiagramFeatureProvider extends DefaultFeatureProvider {
     @Override
     public IResizeShapeFeature getResizeShapeFeature(IResizeShapeContext context) {
         GraphElement bo = (GraphElement) getBusinessObjectForPictogramElement(context.getPictogramElement());
-        if (bo == null || bo.getTypeDefinition().getGraphitiEntry().isFixedSize()) {
+        if (bo == null) {
             return null;
         }
-        return super.getResizeShapeFeature(context);
+        return new ResizeElementFeature(this);
     }
 
     @Override
@@ -208,20 +213,5 @@ public class DiagramFeatureProvider extends DefaultFeatureProvider {
         }
         return super.getUpdateFeature(context);
     }
-    //
-    // @Override
-    // public IFeature[] getDragAndDropFeatures(IPictogramElementContext
-    // context) {
-    // // simply return all create connection features
-    // return getCreateConnectionFeatures();
-    // }
-    // @Override
-    // public ICopyFeature getCopyFeature(ICopyContext context) {
-    // return new CopyFlowElementFeature(this);
-    // }
-    // @Override
-    // public IPasteFeature getPasteFeature(IPasteContext context) {
-    // return new PasteFlowElementFeature(this);
-    // }
-    //
+
 }

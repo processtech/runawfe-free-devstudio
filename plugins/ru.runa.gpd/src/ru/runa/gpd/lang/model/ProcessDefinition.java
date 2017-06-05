@@ -35,7 +35,7 @@ import com.google.common.collect.Maps;
 import com.google.common.hash.Hashing;
 
 @SuppressWarnings("unchecked")
-public class ProcessDefinition extends NamedGraphElement implements Active, Describable {
+public class ProcessDefinition extends NamedGraphElement implements Describable {
     private Language language;
     private NodeAsyncExecution defaultNodeAsyncExecution = NodeAsyncExecution.DEFAULT;
     private Dimension dimension;
@@ -463,7 +463,7 @@ public class ProcessDefinition extends NamedGraphElement implements Active, Desc
     }
 
     @Override
-    public ProcessDefinition getCopy(GraphElement parent) {
+    public ProcessDefinition makeCopy(GraphElement parent) {
         throw new UnsupportedOperationException();
     }
 

@@ -1,8 +1,6 @@
 package ru.runa.gpd.editor.graphiti.add;
 
 import org.eclipse.draw2d.geometry.Dimension;
-import org.eclipse.draw2d.geometry.Point;
-import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.IAddContext;
 import org.eclipse.graphiti.features.impl.AbstractAddShapeFeature;
@@ -32,21 +30,18 @@ public abstract class AddElementFeature extends AbstractAddShapeFeature implemen
         return (ProcessDefinition) getBusinessObjectForPictogramElement(getDiagram());
     }
 
-    protected Dimension adjustBounds(IAddContext context) {
+    protected Dimension getBounds(IAddContext context) {
+        // TODO use LayoutFeature instead of this
         Dimension dimension = new Dimension(context.getWidth(), context.getHeight());
-        GraphElement element = (GraphElement) context.getNewObject();
-        Dimension min = getDefaultSize(element, context);
-        if (dimension.height < min.height) {
-            dimension.height = min.height;
-        }
-        if (dimension.width < min.width) {
-            dimension.width = min.width;
-        }
-        element.setConstraint(new Rectangle(new Point(context.getX(), context.getY()), dimension));
         return dimension;
     }
 
     public Dimension getDefaultSize(GraphElement element, IAddContext context) {
         return element.getTypeDefinition().getGraphitiEntry().getDefaultSize();
     }
+
+    public Dimension getDefaultSystemSize(GraphElement element, IAddContext context) {
+        return element.getTypeDefinition().getGraphitiEntry().getDefaultSystemSize();
+    }
+
 }

@@ -13,30 +13,24 @@ import ru.runa.gpd.Application;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.PluginLogger;
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.lang.model.Action;
+import ru.runa.gpd.lang.model.ActionEventType;
 import ru.runa.gpd.lang.model.ActionImpl;
-import ru.runa.gpd.lang.model.ActionNode;
-import ru.runa.gpd.lang.model.Conjunction;
 import ru.runa.gpd.lang.model.Decision;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.Describable;
 import ru.runa.gpd.lang.model.EndState;
 import ru.runa.gpd.lang.model.EndTokenState;
 import ru.runa.gpd.lang.model.EndTokenSubprocessDefinitionBehavior;
-import ru.runa.gpd.lang.model.Event;
-import ru.runa.gpd.lang.model.Fork;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.ITimed;
-import ru.runa.gpd.lang.model.Join;
 import ru.runa.gpd.lang.model.MultiSubprocess;
 import ru.runa.gpd.lang.model.MultiTaskState;
 import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.NodeAsyncExecution;
 import ru.runa.gpd.lang.model.ProcessDefinition;
-import ru.runa.gpd.lang.model.PropertyNames;
-import ru.runa.gpd.lang.model.ReceiveMessageNode;
-import ru.runa.gpd.lang.model.SendMessageNode;
 import ru.runa.gpd.lang.model.StartState;
 import ru.runa.gpd.lang.model.Subprocess;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
@@ -47,6 +41,12 @@ import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Timer;
 import ru.runa.gpd.lang.model.TimerAction;
 import ru.runa.gpd.lang.model.Transition;
+import ru.runa.gpd.lang.model.bpmn.Conjunction;
+import ru.runa.gpd.lang.model.jpdl.ActionNode;
+import ru.runa.gpd.lang.model.jpdl.Fork;
+import ru.runa.gpd.lang.model.jpdl.Join;
+import ru.runa.gpd.lang.model.jpdl.ReceiveMessageNode;
+import ru.runa.gpd.lang.model.jpdl.SendMessageNode;
 import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.util.Duration;
 import ru.runa.gpd.util.MultiinstanceParameters;
@@ -101,6 +101,7 @@ public class JpdlSerializer extends ProcessSerializer {
     private static final String TASK_EXECUTORS_USAGE = "taskExecutorsUsage";
     private static final String TASK_EXECUTORS_VALUE = "taskExecutors";
     private static final String TASK_EXECUTION_MODE = "taskExecutionMode";
+    private static final String EXECUTION_CONDITION = "executionCondition";
 
     @Override
     public boolean isSupported(Document document) {
@@ -160,8 +161,8 @@ public class JpdlSerializer extends ProcessSerializer {
             Element actionNodeElement = writeNode(root, actionNode, null);
             for (Action action : actionNode.getActions()) {
                 ActionImpl actionImpl = (ActionImpl) action;
-                if (!Event.NODE_ACTION.equals(actionImpl.getEventType())) {
-                    writeEvent(actionNodeElement, new Event(actionImpl.getEventType()), actionImpl);
+                if (!ActionEventType.NODE_ACTION.equals(actionImpl.getEventType())) {
+                    writeEvent(actionNodeElement, new ActionEventType(actionImpl.getEventType()), actionImpl);
                 }
             }
         }
@@ -182,6 +183,7 @@ public class JpdlSerializer extends ProcessSerializer {
                 stateElement.addAttribute(TASK_EXECUTION_MODE, multiTaskNode.getSynchronizationMode().name());
                 stateElement.addAttribute(TASK_EXECUTORS_USAGE, multiTaskNode.getDiscriminatorUsage());
                 stateElement.addAttribute(TASK_EXECUTORS_VALUE, multiTaskNode.getDiscriminatorValue());
+                stateElement.addAttribute(EXECUTION_CONDITION, multiTaskNode.getDiscriminatorCondition());
                 for (VariableMapping variable : multiTaskNode.getVariableMappings()) {
                     Element variableElement = stateElement.addElement(VARIABLE);
                     setAttribute(variableElement, NAME, variable.getName());
@@ -239,6 +241,9 @@ public class JpdlSerializer extends ProcessSerializer {
                     setAttribute(variableElement, MAPPED_NAME, variable.getMappedName());
                     setAttribute(variableElement, ACCESS, variable.getUsage());
                 }
+            }
+            if (subprocess instanceof MultiSubprocess) {
+                setAttribute(processStateElement, EXECUTION_CONDITION, ((MultiSubprocess) subprocess).getDiscriminatorCondition());
             }
         }
         List<SendMessageNode> sendMessageNodes = definition.getChildren(SendMessageNode.class);
@@ -305,7 +310,7 @@ public class JpdlSerializer extends ProcessSerializer {
         }
         for (Action action : swimlanedNode.getActions()) {
             ActionImpl actionImpl = (ActionImpl) action;
-            writeEvent(taskElement, new Event(actionImpl.getEventType()), actionImpl);
+            writeEvent(taskElement, new ActionEventType(actionImpl.getEventType()), actionImpl);
         }
         return nodeElement;
     }
@@ -369,9 +374,9 @@ public class JpdlSerializer extends ProcessSerializer {
         }
     }
 
-    private void writeEvent(Element parent, Event event, ActionImpl action) {
-        Element eventElement = writeElement(parent, event, EVENT);
-        setAttribute(eventElement, TYPE, event.getType());
+    private void writeEvent(Element parent, ActionEventType actionEventType, ActionImpl action) {
+        Element eventElement = writeElement(parent, actionEventType, EVENT);
+        setAttribute(eventElement, TYPE, actionEventType.getType());
         writeDelegation(eventElement, ACTION, action);
     }
 
@@ -445,9 +450,9 @@ public class JpdlSerializer extends ProcessSerializer {
                 // only transition actions loaded here
                 String eventType;
                 if (element instanceof Transition) {
-                    eventType = Event.TRANSITION;
+                    eventType = ActionEventType.TRANSITION;
                 } else if (element instanceof ActionNode) {
-                    eventType = Event.NODE_ACTION;
+                    eventType = ActionEventType.NODE_ACTION;
                 } else {
                     throw new RuntimeException("Unexpected action in XML, context of " + element);
                 }
@@ -513,8 +518,8 @@ public class JpdlSerializer extends ProcessSerializer {
             }
             Element node = startStates.get(0);
             StartState startState = create(node, definition);
-            List<Element> stateChilds = node.elements();
-            for (Element stateNodeChild : stateChilds) {
+            List<Element> stateChildren = node.elements();
+            for (Element stateNodeChild : stateChildren) {
                 if (TASK.equals(stateNodeChild.getName())) {
                     String swimlaneName = stateNodeChild.attributeValue(SWIMLANE);
                     Swimlane swimlane = definition.getSwimlaneByName(swimlaneName);
@@ -575,6 +580,7 @@ public class JpdlSerializer extends ProcessSerializer {
                 multiTaskState.setSynchronizationMode(MultiTaskSynchronizationMode.valueOf(node.attributeValue(TASK_EXECUTION_MODE)));
                 multiTaskState.setDiscriminatorUsage(node.attributeValue(TASK_EXECUTORS_USAGE, MultiTaskState.USAGE_DEFAULT));
                 multiTaskState.setDiscriminatorValue(node.attributeValue(TASK_EXECUTORS_VALUE));
+                multiTaskState.setDiscriminatorCondition(node.attributeValue(EXECUTION_CONDITION));
                 List<VariableMapping> mappings = Lists.newArrayList();
                 List<Element> vars = node.elements();
                 for (Element childNode : vars) {
@@ -588,8 +594,8 @@ public class JpdlSerializer extends ProcessSerializer {
                 }
                 multiTaskState.setVariableMappings(mappings);
             }
-            List<Element> stateChilds = node.elements();
-            for (Element stateNodeChild : stateChilds) {
+            List<Element> stateChildren = node.elements();
+            for (Element stateNodeChild : stateChildren) {
                 if (TASK.equals(stateNodeChild.getName())) {
                     String swimlaneName = stateNodeChild.attributeValue(SWIMLANE);
                     if (swimlaneName != null && state instanceof SwimlanedNode) {
@@ -669,8 +675,8 @@ public class JpdlSerializer extends ProcessSerializer {
         List<Element> waitStates = root.elements(WAIT_STATE);
         for (Element node : waitStates) {
             Timer timer = create(node, definition);
-            List<Element> stateChilds = node.elements();
-            for (Element stateNodeChild : stateChilds) {
+            List<Element> stateChildren = node.elements();
+            for (Element stateNodeChild : stateChildren) {
                 if (TIMER.equals(stateNodeChild.getName())) {
                     String dueDate = stateNodeChild.attributeValue(DUEDATE);
                     if (dueDate != null) {
@@ -728,6 +734,7 @@ public class JpdlSerializer extends ProcessSerializer {
         List<Element> multiSubprocessStates = root.elements(MULTIINSTANCE_STATE);
         for (Element node : multiSubprocessStates) {
             MultiSubprocess multiSubprocess = create(node, definition);
+            multiSubprocess.setDiscriminatorCondition(node.attributeValue(EXECUTION_CONDITION));
             List<VariableMapping> mappings = new ArrayList<VariableMapping>();
             List<Element> nodeList = node.elements();
             for (Element childNode : nodeList) {

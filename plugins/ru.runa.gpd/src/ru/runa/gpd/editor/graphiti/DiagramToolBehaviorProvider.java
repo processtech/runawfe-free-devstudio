@@ -1,5 +1,7 @@
 package ru.runa.gpd.editor.graphiti;
 
+import java.util.List;
+
 import org.eclipse.graphiti.dt.IDiagramTypeProvider;
 import org.eclipse.graphiti.features.ICreateConnectionFeature;
 import org.eclipse.graphiti.features.ICreateFeature;
@@ -9,9 +11,11 @@ import org.eclipse.graphiti.features.context.impl.CreateConnectionContext;
 import org.eclipse.graphiti.features.context.impl.CreateContext;
 import org.eclipse.graphiti.features.custom.ICustomFeature;
 import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
+import org.eclipse.graphiti.mm.algorithms.Image;
 import org.eclipse.graphiti.mm.algorithms.Polyline;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
+import org.eclipse.graphiti.mm.pictograms.Shape;
 import org.eclipse.graphiti.tb.ContextButtonEntry;
 import org.eclipse.graphiti.tb.DefaultToolBehaviorProvider;
 import org.eclipse.graphiti.tb.IContextButtonPadData;
@@ -19,17 +23,19 @@ import org.eclipse.graphiti.tb.IContextButtonPadData;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.editor.graphiti.create.CreateAnnotationFeature;
 import ru.runa.gpd.editor.graphiti.create.CreateElementFeature;
+import ru.runa.gpd.editor.graphiti.create.CreateStartNodeFeature;
 import ru.runa.gpd.editor.graphiti.create.CreateSwimlaneFeature;
 import ru.runa.gpd.editor.graphiti.update.OpenSubProcessFeature;
 import ru.runa.gpd.lang.NodeRegistry;
 import ru.runa.gpd.lang.NodeTypeDefinition;
+import ru.runa.gpd.lang.model.Action;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.Subprocess;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.TaskState;
-import ru.runa.gpd.lang.model.TextDecorationNode;
 import ru.runa.gpd.lang.model.Transition;
+import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
 
 public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
     public DiagramToolBehaviorProvider(IDiagramTypeProvider provider) {
@@ -66,7 +72,13 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
         boolean allowTargetNodeCreation = (element instanceof Node) && ((Node) element).canAddLeavingTransition();
         //
         CreateContext createContext = new CreateContext();
-        createContext.setTargetContainer((ContainerShape) pe.eContainer());
+        ContainerShape targetContainer;
+        if (element.getParentContainer() instanceof Swimlane) {
+            targetContainer = (ContainerShape) getFeatureProvider().getPictogramElementForBusinessObject(element.getParentContainer());
+        } else {
+            targetContainer = getFeatureProvider().getDiagramTypeProvider().getDiagram();
+        }
+        createContext.setTargetContainer(targetContainer);
         createContext.putProperty(CreateElementFeature.CONNECTION_PROPERTY, createConnectionContext);
         if (allowTargetNodeCreation) {
             //
@@ -101,7 +113,8 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
             createElementButton.setIconId("elements.png");
             data.getDomainSpecificContextButtons().add(createElementButton);
             for (ICreateFeature feature : getFeatureProvider().getCreateFeatures()) {
-                if (feature instanceof CreateSwimlaneFeature || feature instanceof CreateAnnotationFeature) {
+                if (feature instanceof CreateSwimlaneFeature || feature instanceof CreateAnnotationFeature
+                        || feature instanceof CreateStartNodeFeature) {
                     continue;
                 }
                 if (feature instanceof CreateElementFeature && feature.canCreate(createContext)) {
@@ -119,8 +132,9 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
 
     @Override
     public String getToolTip(GraphicsAlgorithm ga) {
+        PictogramElement pe = ga.getPictogramElement();
         if (ga instanceof Polyline) {
-            Object element = getFeatureProvider().getBusinessObjectForPictogramElement(ga.getPictogramElement());
+            Object element = getFeatureProvider().getBusinessObjectForPictogramElement(pe);
             if (element instanceof Transition) {
                 Transition transition = (Transition) element;
                 Object orderNum = transition.getPropertyValue(Transition.PROPERTY_ORDERNUM);
@@ -128,6 +142,22 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
                     return Localization.getString("Transition.property.orderNum") + ": " + orderNum;
                 }
             }
+        }
+        Object bo = getFeatureProvider().getBusinessObjectForPictogramElement(pe);
+        if (bo instanceof Node) {
+            Node node = (Node) bo;
+            if (node.isMinimizedView()) {
+                return node.getLabel();
+            }
+        }
+        if (ga instanceof Image && PropertyUtil.hasProperty(pe, GaProperty.CLASS, GaProperty.ACTIONS_ICON)) {
+            GraphElement ge = (GraphElement) getFeatureProvider().getBusinessObjectForPictogramElement(((Shape) pe).getContainer());
+            List<Action> actions = ge.getActions();
+            String toolTip = " " + Localization.getString("pref.extensions.handler") + ": ";
+            for (Action act : actions) {
+                toolTip += " \n " + act.getLabel();
+            }
+            return toolTip;
         }
         return super.getToolTip(ga);
     }

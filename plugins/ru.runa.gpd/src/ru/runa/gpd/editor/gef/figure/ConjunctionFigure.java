@@ -6,7 +6,7 @@ import org.eclipse.draw2d.geometry.PointList;
 import org.eclipse.draw2d.geometry.Rectangle;
 
 import ru.runa.gpd.editor.GEFConstants;
-import ru.runa.gpd.lang.model.Conjunction;
+import ru.runa.gpd.lang.model.bpmn.Conjunction;
 
 public class ConjunctionFigure extends NodeFigure<Conjunction> {
     @Override

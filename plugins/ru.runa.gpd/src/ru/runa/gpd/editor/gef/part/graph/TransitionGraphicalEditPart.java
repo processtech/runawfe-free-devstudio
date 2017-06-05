@@ -13,14 +13,14 @@ import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.gef.EditPolicy;
 import org.eclipse.gef.editparts.AbstractConnectionEditPart;
 
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.editor.gef.figure.TransitionFigure;
-import ru.runa.gpd.editor.gef.policy.ActiveLayoutEditPolicy;
+import ru.runa.gpd.editor.gef.policy.ActionContainerLayoutEditPolicy;
 import ru.runa.gpd.editor.gef.policy.TransitionConnectionBendpointEditPolicy;
 import ru.runa.gpd.editor.gef.policy.TransitionConnectionEditPolicy;
 import ru.runa.gpd.editor.gef.policy.TransitionConnectionEndpointsEditPolicy;
 import ru.runa.gpd.lang.model.ITimed;
-import ru.runa.gpd.lang.model.PropertyNames;
 import ru.runa.gpd.lang.model.Timer;
 import ru.runa.gpd.lang.model.Transition;
 
@@ -92,7 +92,7 @@ public class TransitionGraphicalEditPart extends AbstractConnectionEditPart impl
         installEditPolicy(EditPolicy.CONNECTION_ENDPOINTS_ROLE, new TransitionConnectionEndpointsEditPolicy());
         installEditPolicy(EditPolicy.CONNECTION_ROLE, new TransitionConnectionEditPolicy());
         installEditPolicy(EditPolicy.CONNECTION_BENDPOINTS_ROLE, new TransitionConnectionBendpointEditPolicy());
-        installEditPolicy(EditPolicy.LAYOUT_ROLE, new ActiveLayoutEditPolicy());
+        installEditPolicy(EditPolicy.LAYOUT_ROLE, new ActionContainerLayoutEditPolicy());
     }
 
     @Override
@@ -159,7 +159,7 @@ public class TransitionGraphicalEditPart extends AbstractConnectionEditPart impl
                 getFigure().setLabelText(timer != null ? timer.getDelay().toString() : "");
                 refreshVisuals();
             }
-        } else if (PROPERTY_CHILDS_CHANGED.equals(messageId)) {
+        } else if (PROPERTY_CHILDREN_CHANGED.equals(messageId)) {
             refreshChildren();
         }
     }

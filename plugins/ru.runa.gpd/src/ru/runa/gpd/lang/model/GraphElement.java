@@ -17,6 +17,7 @@ import org.eclipse.ui.views.properties.TextPropertyDescriptor;
 
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.GEFConstants;
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.HandlerRegistry;
@@ -24,6 +25,7 @@ import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.NodeRegistry;
 import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.lang.ValidationError;
+import ru.runa.gpd.lang.model.jpdl.ActionContainer;
 import ru.runa.gpd.property.DelegableClassPropertyDescriptor;
 import ru.runa.gpd.property.DelegableConfPropertyDescriptor;
 import ru.runa.gpd.property.DurationPropertyDescriptor;
@@ -39,7 +41,7 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
     private PropertyChangeListener delegatedListener;
     private GraphElement parent;
     private GraphElement parentContainer;
-    private final List<GraphElement> childs = new ArrayList<GraphElement>();
+    private final List<GraphElement> children = new ArrayList<GraphElement>();
     private Rectangle constraint;
     private String id;
 
@@ -51,6 +53,10 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
         this.id = nodeId;
     }
 
+    /**
+     * @return parent container or <code>null</code> in case of
+     *         {@link ProcessDefinition}
+     */
     public GraphElement getParentContainer() {
         return parentContainer;
     }
@@ -138,7 +144,7 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
                 }
             }
         }
-        for (GraphElement element : childs) {
+        for (GraphElement element : children) {
             try {
                 element.validate(errors, definitionFile);
             } catch (Exception e) {
@@ -165,29 +171,29 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
             DelegableProvider provider = HandlerRegistry.getProvider(child.getDelegationClassName());
             provider.onDelete((Delegable) child);
         }
-        childs.remove(child);
+        children.remove(child);
         firePropertyChange(NODE_REMOVED, child, null);
-        firePropertyChange(PROPERTY_CHILDS_CHANGED, null, childs);
+        firePropertyChange(PROPERTY_CHILDREN_CHANGED, null, children);
         if (child.delegatedListener != null) {
             child.removePropertyChangeListener(child.delegatedListener);
         }
     }
 
     public int removeAction(Action action) {
-        int index = childs.indexOf(action);
+        int index = children.indexOf(action);
         removeChild(action);
         return index;
     }
 
     public void addChild(GraphElement child) {
-        addChild(child, childs.size());
+        addChild(child, children.size());
     }
 
     public void addChild(GraphElement child, int index) {
-        childs.add(index, child);
+        children.add(index, child);
         child.setParent(this);
         child.setDelegatedListener(delegatedListener);
-        firePropertyChange(PROPERTY_CHILDS_CHANGED, null, 1);
+        firePropertyChange(PROPERTY_CHILDREN_CHANGED, null, 1);
         String nodeId = child.getId();
         if (nodeId == null) {
             nodeId = getProcessDefinition().getNextNodeId();
@@ -197,24 +203,24 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
         }
     }
 
-    public void swapChilds(GraphElement child1, GraphElement child2) {
-        Collections.swap(childs, childs.indexOf(child1), childs.indexOf(child2));
-        firePropertyChange(PROPERTY_CHILDS_CHANGED, null, childs);
+    public void swapChildren(GraphElement child1, GraphElement child2) {
+        Collections.swap(children, children.indexOf(child1), children.indexOf(child2));
+        firePropertyChange(PROPERTY_CHILDREN_CHANGED, null, children);
     }
 
     public void changeChildIndex(GraphElement child, GraphElement insertBefore) {
         if (insertBefore != null && child != null) {
-            int old = childs.indexOf(child);
-            childs.remove(child);
-            int before = childs.indexOf(insertBefore);
-            childs.add(before, child);
-            firePropertyChange(PROPERTY_CHILDS_CHANGED, old, before + 1);
+            int old = children.indexOf(child);
+            children.remove(child);
+            int before = children.indexOf(insertBefore);
+            children.add(before, child);
+            firePropertyChange(PROPERTY_CHILDREN_CHANGED, old, before + 1);
         }
     }
 
     public <T extends GraphElement> List<T> getChildren(Class<T> type) {
         List<T> items = new ArrayList<T>();
-        for (GraphElement element : childs) {
+        for (GraphElement element : children) {
             if (type.isAssignableFrom(element.getClass())) {
                 items.add((T) element);
             }
@@ -232,7 +238,7 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
 
     public <T extends GraphElement> List<T> getChildrenRecursive(Class<T> type) {
         List<T> items = new ArrayList<T>();
-        for (GraphElement element : childs) {
+        for (GraphElement element : children) {
             if (type.isAssignableFrom(element.getClass())) {
                 items.add((T) element);
             }
@@ -242,7 +248,7 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
     }
 
     public <T extends GraphElement> T getFirstChild(Class<T> type) {
-        for (GraphElement element : childs) {
+        for (GraphElement element : children) {
             if (type.isAssignableFrom(element.getClass())) {
                 return (T) element;
             }
@@ -252,7 +258,7 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
 
     // Active implementation
     public void addAction(Action action, int index) {
-        if (!(this instanceof Active)) {
+        if (!(this instanceof ActionContainer)) {
             throw new IllegalStateException("It's not Active class ... " + this.getClass());
         }
         if (index == -1) {
@@ -416,15 +422,15 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
         return getTypeDefinition().getImage(getProcessDefinition().getLanguage().getNotation());
     }
 
-    public GraphElement getCopy(GraphElement parent) {
+    public GraphElement makeCopy(GraphElement parent) {
         GraphElement copy = getTypeDefinition().createElement(parent, false);
         if (this instanceof Describable) {
             copy.setDescription(getDescription());
         }
-        if (this instanceof Active) {
-            List<? extends Action> actions = ((Active) this).getActions();
+        if (this instanceof ActionContainer) {
+            List<? extends Action> actions = ((ActionContainer) this).getActions();
             for (Action action : actions) {
-                copy.addAction(action.getCopy(copy), -1);
+                action.makeCopy(copy);
             }
         }
         Rectangle old = getConstraint();
@@ -455,8 +461,8 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
                 PluginLogger.logErrorWithoutDialog("Unable to get used variables in " + this, e);
             }
         }
-        if (this instanceof Active) {
-            List<? extends Action> actions = ((Active) this).getActions();
+        if (this instanceof ActionContainer) {
+            List<? extends Action> actions = ((ActionContainer) this).getActions();
             for (Action action : actions) {
                 try {
                     DelegableProvider provider = HandlerRegistry.getProvider(action.getDelegationClassName());
