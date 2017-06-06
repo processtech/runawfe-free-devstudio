@@ -1557,6 +1557,16 @@
             label="%ru.runa.wfe.extension.handler.user.GetExecutorInfoHandler">
       </handler>
       <handler
+            actionHandler="true"
+            assignmentHandler="false"
+            botTaskHandler="false"
+            decisionHandler="false"
+            cellEditorProvider="ru.runa.gpd.extension.handler.ConfigBasedProvider"
+            className="ru.runa.wfe.extension.handler.user.GetTaskPerformerHandler"
+            enabled="true"
+            label="%ru.runa.wfe.extension.handler.user.GetTaskPerformerHandler">
+      </handler>
+      <handler
             actionHandler="false"
             assignmentHandler="false"
             botTaskHandler="true"
