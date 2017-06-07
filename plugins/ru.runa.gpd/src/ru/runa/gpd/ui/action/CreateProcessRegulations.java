@@ -153,9 +153,9 @@ public class CreateProcessRegulations extends BaseModelActionDelegate {
                     && node.getNodeRegulationsProperties().getNextNode() == null && node instanceof TaskState
                     && ((TaskState) node).getBotTaskLink() != null) {
                 node.getNodeRegulationsProperties().setEnabled(false);
+                definition.setDirty(true);
             }
         }
-        definition.setDirty(true);
     }
 
     private String generateRegulations(ProcessDefinition definition) throws Exception {
@@ -200,11 +200,13 @@ public class CreateProcessRegulations extends BaseModelActionDelegate {
             if (node instanceof Subprocess) {
                 Subprocess subprocessNode = (Subprocess) node;
                 ProcessDefinition subprocessDefinition = ProcessCache.getFirstProcessDefinition(subprocessNode.getSubProcessName());
-                IFile descriptionFile = IOUtils.getAdjacentFile(getDefinitionFile(), subprocessDefinition.getId() + "."
-                        + ParContentProvider.PROCESS_DEFINITION_DESCRIPTION_FILE_NAME);
-                if (descriptionFile.exists()) {
-                    String descriptionFileText = IOUtils.readStream(descriptionFile.getContents());
-                    subprocessDescriptions.put(subprocessNode.getSubProcessName(), descriptionFileText);
+                if (subprocessDefinition != null) {
+                    IFile descriptionFile = IOUtils.getAdjacentFile(getDefinitionFile(), subprocessDefinition.getId() + "."
+                            + ParContentProvider.PROCESS_DEFINITION_DESCRIPTION_FILE_NAME);
+                    if (descriptionFile.exists()) {
+                        String descriptionFileText = IOUtils.readStream(descriptionFile.getContents());
+                        subprocessDescriptions.put(subprocessNode.getSubProcessName(), descriptionFileText);
+                    }
                 }
             }
         }
