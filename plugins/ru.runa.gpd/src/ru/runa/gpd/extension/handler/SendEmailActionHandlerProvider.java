@@ -29,6 +29,7 @@ import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.ui.wizard.CompactWizardDialog;
+import ru.runa.gpd.util.VariableUtils;
 import ru.runa.wfe.commons.email.EmailConfig;
 import ru.runa.wfe.commons.email.EmailConfigParser;
 import ru.runa.wfe.commons.email.EmailUtils;
@@ -37,6 +38,9 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
 public class SendEmailActionHandlerProvider extends DelegableProvider {
+
+    private static String[][] configVarDelimeters = {{"\"", "\""}, {"${", "}"}};
+
     @Override
     public String showConfigurationDialog(Delegable delegable) {
         final EmailConfigWizardPage wizardPage = new EmailConfigWizardPage(bundle, delegable);
@@ -105,18 +109,32 @@ public class SendEmailActionHandlerProvider extends DelegableProvider {
         }
         List<String> result = Lists.newArrayList();
         for (String variableName : delegable.getVariableNames(true)) {
-            if (configuration.contains("\"" + variableName + "\"")) {
-                result.add(variableName);
+            for (String[] delimiters : configVarDelimeters) {
+                String[] varNames = {variableName, VariableUtils.toScriptingName(variableName)};
+                for (String varName : varNames) {
+                    if (configuration.contains(delimiters[0] + varName + delimiters[1])) {
+                        result.add(variableName);
+                    }
+                }
             }
         }
         return result;
     }
-
+    
     @Override
     public String getConfigurationOnVariableRename(Delegable delegable, Variable currentVariable, Variable previewVariable) {
-        String oldString = Pattern.quote("\"" + currentVariable.getName() + "\"");
-        String newString = Matcher.quoteReplacement("\"" + previewVariable.getName() + "\"");
-        return delegable.getDelegationConfiguration().replaceAll(oldString, newString);
+        String configuration = delegable.getDelegationConfiguration();
+        String[] currentVariableNames = {currentVariable.getName(), currentVariable.getScriptingName()};
+        for (String[] delimiters : configVarDelimeters) {
+            for (String currentVariableName : currentVariableNames) {
+                String oldString = Pattern.quote(delimiters[0] + currentVariableName + delimiters[1]);
+                String newString = Matcher.quoteReplacement(delimiters[0]
+                        + (currentVariableName.equals(currentVariable.getName()) ? previewVariable.getName() : previewVariable.getScriptingName())
+                        + delimiters[1]);
+                configuration = configuration.replaceAll(oldString, newString);
+            }
+        }
+        return configuration;
     }
 
     @Override

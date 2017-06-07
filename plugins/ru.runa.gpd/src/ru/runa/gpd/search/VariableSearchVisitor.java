@@ -54,7 +54,7 @@ import com.google.common.collect.Maps;
 
 public class VariableSearchVisitor {
 
-    public static final String REGEX_SCRIPT_VARIABLE = "[^\\p{Alnum}_]%s[^\\p{Alnum}_]";
+    public static final String REGEX_SCRIPT_VARIABLE = "[^\\p{Alnum}_&&[\"'{]]%s[^\\p{Alnum}_&&[\"'}]]";
 
     private final VariableSearchQuery query;
     private IProgressMonitor progressMonitor;
@@ -180,6 +180,13 @@ public class VariableSearchVisitor {
         elementMatch.setPotentialMatchesCount(matches.size());
         for (Match match : matches) {
             query.getSearchResult().addMatch(match);
+        }
+        if (delegable.getDelegationClassName().equals("ru.runa.wfe.extension.handler.SendEmailActionHandler")
+                && !query.getVariable().getName().equals(query.getVariable().getScriptingName())) {
+            matches = findInString(elementMatch, "(" + conf + ")", matcherScriptingName);
+            for (Match match : matches) {
+                query.getSearchResult().addMatch(match);
+            }
         }
     }
 
