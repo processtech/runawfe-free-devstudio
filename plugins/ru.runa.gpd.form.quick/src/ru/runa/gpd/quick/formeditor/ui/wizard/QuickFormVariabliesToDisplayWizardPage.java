@@ -272,7 +272,7 @@ public class QuickFormVariabliesToDisplayWizardPage extends WizardPage {
                 if (componentType.getLabel().equals(tagType.getCombo().getText())) {
                     for (int i = 1; i < componentType.getParameters().size(); i++) {
                         ComponentParameter componentParameter = componentType.getParameters().get(i);
-                        Composite parameterComposite = componentParameter.getType().createEditor(parent, componentParameter, paramValue, new PropertyChangeListener() {
+                        componentParameter.getType().createEditor(parent, null, componentParameter, paramValue, new PropertyChangeListener() {
 
                             @Override
                             public void propertyChange(PropertyChangeEvent evt) {
@@ -281,7 +281,7 @@ public class QuickFormVariabliesToDisplayWizardPage extends WizardPage {
                                 variableDef.setParams(param.toArray(new String[0]));
                             }
                         });
-                        parameterComposite.setEnabled(!initialVariables.contains(variableDef));
+                        // parameterComposite.setEnabled(!initialVariables.contains(variableDef));
                     }
                 }
             }
