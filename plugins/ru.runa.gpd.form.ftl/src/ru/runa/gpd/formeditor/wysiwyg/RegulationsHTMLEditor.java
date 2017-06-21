@@ -1,6 +1,7 @@
 package ru.runa.gpd.formeditor.wysiwyg;
 
-import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -21,12 +22,11 @@ import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.BrowserFunction;
 import org.eclipse.swt.browser.ProgressAdapter;
 import org.eclipse.swt.browser.ProgressEvent;
-import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
@@ -38,16 +38,22 @@ import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.formeditor.WebServerUtils;
 import ru.runa.gpd.formeditor.resources.Messages;
+import ru.runa.gpd.htmleditor.editors.HTMLConfiguration;
+import ru.runa.gpd.htmleditor.editors.HTMLSourceEditor;
 import ru.runa.gpd.lang.model.ProcessDefinition;
-import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
+import ru.runa.gpd.lang.par.ParContentProvider;
+import ru.runa.gpd.util.EditorUtils;
 import ru.runa.gpd.util.IOUtils;
+import ru.runa.gpd.util.RegulationsRegistry;
 
 import com.google.common.base.Charsets;
+import com.google.common.base.Throwables;
+import com.google.common.io.Files;
 
 public class RegulationsHTMLEditor extends MultiPageEditorPart implements IResourceChangeListener {
     public static final int CLOSED = 197;
     public static final String ID = "ru.runa.gpd.wysiwyg.RegulationsHTMLEditor";
-    private Text sourceEditor;
+    private HTMLSourceEditor sourceEditor;
     private Browser browser;
     private boolean browserLoaded = false;
     private static final Pattern BODY_PATTERN = Pattern.compile("^(.*?<(body|BODY).*?>)(.*?)(</(body|BODY)>.*?)$", Pattern.DOTALL);
@@ -100,17 +106,14 @@ public class RegulationsHTMLEditor extends MultiPageEditorPart implements IResou
 
     @Override
     public void resourceChanged(IResourceChangeEvent event) {
+        if (sourceEditor != null && sourceEditor.getEditorInput() != null) {
+            EditorUtils.closeEditorIfRequired(event, ((IFileEditorInput) sourceEditor.getEditorInput()).getFile(), this);
+        }
     }
 
     @Override
     protected void createPages() {
-        sourceEditor = new Text(getContainer(), SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
-        try {
-            sourceEditor.setText(prepareHtml(IOUtils.readStream(file.getContents())));
-        } catch (Exception e1) {
-            // TODO 2797 temporary
-            e1.printStackTrace();
-        }
+        sourceEditor = new HTMLSourceEditor(new HTMLConfiguration(EditorsPlugin.getDefault().getColorProvider()));
         int pageNumber = 0;
         try {
             browser = new Browser(getContainer(), SWT.NULL);
@@ -131,18 +134,16 @@ public class RegulationsHTMLEditor extends MultiPageEditorPart implements IResou
         } catch (Throwable th) {
             PluginLogger.logError(Messages.getString("wysiwyg.design.create_error"), th);
         }
-        addPage(sourceEditor);
-        setPageText(pageNumber++, Messages.getString("wysiwyg.source.tab_name"));
-        sourceEditor.addModifyListener(new LoggingModifyTextAdapter() {
-            @Override
-            protected void onTextChanged(ModifyEvent e) throws Exception {
-                String currentText = sourceEditor.getText();
-                currentText = currentText.replaceAll("\r\n", "\n");
-                currentHashSum = getHashSum(currentText);
-                RegulationsHTMLEditor.this.setDirty(!lastSavedHashSum.equals(currentHashSum));
-            }
-        });
-
+        try {
+            addPage(sourceEditor, getEditorInput());
+            setPageText(pageNumber++, Messages.getString("wysiwyg.source.tab_name"));
+        } catch (PartInitException e) {
+            Throwables.propagate(e);
+        }
+        if (browser == null) {
+            return;
+        }
+        syncCss();
         try {
             final Display display = Display.getCurrent();
             final ProgressMonitorDialog monitorDialog = new ProgressMonitorDialog(getSite().getShell());
@@ -172,14 +173,6 @@ public class RegulationsHTMLEditor extends MultiPageEditorPart implements IResou
                             public void run() {
                                 if (!browser.isDisposed()) {
                                     setActivePage(VIEW_MODE_WYSIWYG);
-                                    setDirty(true);
-                                    syncBrowser2Editor();
-                                    doSave(null);
-                                    // Workaround for CKEditor's bug - editor
-                                    // occasionally becomes dirty
-                                    syncEditor2Browser();
-                                    syncBrowser2Editor();
-                                    doSave(null);
                                 }
                             }
                         });
@@ -208,19 +201,27 @@ public class RegulationsHTMLEditor extends MultiPageEditorPart implements IResou
         }
     }
 
+    private void syncCss() {
+        try {
+            if (RegulationsRegistry.getCssStyles() == null) {
+                return;
+            }
+            File formCssFile = new File(WebServerUtils.getEditorDirectory(), ParContentProvider.FORM_CSS_FILE_NAME);
+            if (formCssFile.exists()) {
+                formCssFile.delete();
+            }
+            formCssFile.createNewFile();
+            Files.write(RegulationsRegistry.getCssStyles().getBytes(Charsets.UTF_8), formCssFile);
+        } catch (IOException e) {
+            PluginLogger.logError(e);
+        }
+    }
+
     @Override
     public void doSave(IProgressMonitor monitor) {
-        if (isDirty()) {
-            try {
-                String textToSave = this.sourceEditor.getText();
-                textToSave = textToSave.replaceAll("\\\\n", "\n");
-                IOUtils.createOrUpdateFile(file, new ByteArrayInputStream(textToSave.getBytes(Charsets.UTF_8)));
-                setDirty(false);
-                lastSavedHashSum = currentHashSum;
-            } catch (Exception e) {
-                PluginLogger.logError(e);
-            }
-        }
+        sourceEditor.doSave(monitor);
+        setDirty(false);
+        lastSavedHashSum = currentHashSum;
     }
 
     @Override
@@ -265,14 +266,16 @@ public class RegulationsHTMLEditor extends MultiPageEditorPart implements IResou
     }
 
     private void syncEditor2Browser() {
-        String html = sourceEditor.getText();
-        html = prepareHtml(html);
         if (browser != null) {
-            boolean result = browser.execute("setHTML('" + html + "')");
+            boolean result = browser.execute("setHTML('" + getSourceDocumentHTML() + "')");
             if (EditorsPlugin.DEBUG) {
                 PluginLogger.logInfo("syncEditor2Browser = " + result);
             }
         }
+    }
+
+    private String getSourceDocumentHTML() {
+        return sourceEditor.getDocumentProvider().getDocument(sourceEditor.getEditorInput()).get();
     }
 
     private String prepareHtml(String html) {
@@ -280,10 +283,10 @@ public class RegulationsHTMLEditor extends MultiPageEditorPart implements IResou
         if (matcher.find()) {
             html = matcher.group(3);
         }
-        html = html.replaceAll("\r\n", "\n");
-        html = html.replaceAll("\r", "\n");
-        html = html.replaceAll("\n", "\\\\n");
-        html = html.replaceAll("'", "\\\\'");
+        // html = html.replaceAll("\r\n", "\n");
+        // html = html.replaceAll("\r", "\n");
+        // html = html.replaceAll("\n", "\\\\n");
+        // html = html.replaceAll("'", "\\\\'");
         return html;
     }
 
@@ -295,9 +298,9 @@ public class RegulationsHTMLEditor extends MultiPageEditorPart implements IResou
 
         @Override
         public Object function(Object[] arguments) {
-            String html = (String) arguments[0];
-            if (!html.equals(prepareHtml(sourceEditor.getText()))) {
-                sourceEditor.setText(html);
+            String html = prepareHtml((String) arguments[0]);
+            if (!html.equals(getSourceDocumentHTML())) {
+                sourceEditor.getDocumentProvider().getDocument(sourceEditor.getEditorInput()).set(html);
                 currentHashSum = getHashSum(html);
             }
             return null;
@@ -337,7 +340,7 @@ public class RegulationsHTMLEditor extends MultiPageEditorPart implements IResou
 
     @Override
     public boolean isDirty() {
-        return dirty;
+        return dirty || sourceEditor.isDirty();
     }
 
     public void setDirty(boolean dirty) {

@@ -1,12 +1,9 @@
 package ru.runa.gpd.ui.action;
 
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.net.URL;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -16,20 +13,13 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.IExtension;
-import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IViewReference;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
-import org.osgi.framework.Bundle;
 
-import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.PluginLogger;
@@ -54,6 +44,7 @@ import ru.runa.gpd.settings.CommonPreferencePage;
 import ru.runa.gpd.ui.view.RegulationsNotesView;
 import ru.runa.gpd.ui.view.RegulationsSequenceView;
 import ru.runa.gpd.util.IOUtils;
+import ru.runa.gpd.util.RegulationsRegistry;
 import ru.runa.gpd.validation.FormNodeValidation;
 import ru.runa.gpd.validation.ValidatorConfig;
 import ru.runa.gpd.validation.ValidatorDefinition;
@@ -176,19 +167,7 @@ public class CreateProcessRegulations extends BaseModelActionDelegate {
         config.setObjectWrapper(ObjectWrapper.DEFAULT_WRAPPER);
         config.setDefaultEncoding(Charsets.UTF_8.name());
         config.setTemplateExceptionHandler(TemplateExceptionHandler.HTML_DEBUG_HANDLER);
-        // TODO need localization
-        Path path = getTemplatePath();
-        String templatePluginId = getTemplatePluginId();
-        Bundle bundle = null;
-        if (templatePluginId.isEmpty() != true) {
-            bundle = Platform.getBundle(templatePluginId);
-        } else {
-            bundle = Activator.getDefault().getBundle();
-        }
-        URL url = FileLocator.find(bundle, path, Collections.EMPTY_MAP);
-        URL fileUrl = FileLocator.toFileURL(url);
-        InputStream input = fileUrl.openConnection().getInputStream();
-        Template template = new Template("regulations", new StringReader(IOUtils.readStream(input)), config);
+        Template template = new Template("regulations", new StringReader(RegulationsRegistry.getTemplate()), config);
         List<Node> listOfNodes = Lists.newArrayList();
         listOfNodes = makeSequenceList(definition);
         HashMap<String, FormNodeValidation> mapOfFormNodeValidation = Maps.newHashMap();
@@ -335,26 +314,6 @@ public class CreateProcessRegulations extends BaseModelActionDelegate {
                     }
                 }
             } while (curNode != null);
-        }
-        return result;
-    }
-
-    private Path getTemplatePath() {
-        Path result = new Path("template/regulations.ftl");
-        IExtension[] extensions = Platform.getExtensionRegistry().getExtensionPoint("ru.runa.gpd.regulationsTemplate").getExtensions();
-        if (extensions.length > 0) {
-            IConfigurationElement[] configElements = extensions[0].getConfigurationElements();
-            String templatePathAsString = configElements[0].getAttribute("regulationsTemplate");
-            result = new Path(templatePathAsString);
-        }
-        return result;
-    }
-
-    private String getTemplatePluginId() {
-        String result = "";
-        IExtension[] extensions = Platform.getExtensionRegistry().getExtensionPoint("ru.runa.gpd.regulationsTemplate").getExtensions();
-        if (extensions.length > 0) {
-            result = extensions[0].getNamespaceIdentifier();
         }
         return result;
     }
