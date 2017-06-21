@@ -45,6 +45,7 @@ final class Serializator {
         if (variable.isComplex()) {
             write(out, variable.getUserType());
         }
+        out.writeObject(variable.getStoreType());
     }
 
     static void read(ObjectInputStream in, Variable variable, ProcessDefinition processDefinition) throws IOException, ClassNotFoundException {
@@ -63,6 +64,7 @@ final class Serializator {
             read(in, type, processDefinition);
             variable.setUserType(type);
         }
+        variable.setStoreType((String) in.readObject());
     }
 
     static void write(ObjectOutputStream out, VariableUserType type) throws IOException {
