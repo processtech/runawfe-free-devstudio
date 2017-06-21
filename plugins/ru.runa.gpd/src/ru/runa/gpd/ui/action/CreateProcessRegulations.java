@@ -1,5 +1,6 @@
 package ru.runa.gpd.ui.action;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -14,7 +15,6 @@ import java.util.Map;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -54,7 +54,6 @@ import ru.runa.gpd.settings.CommonPreferencePage;
 import ru.runa.gpd.ui.view.RegulationsNotesView;
 import ru.runa.gpd.ui.view.RegulationsSequenceView;
 import ru.runa.gpd.util.IOUtils;
-import ru.runa.gpd.util.TextEditorInput;
 import ru.runa.gpd.validation.FormNodeValidation;
 import ru.runa.gpd.validation.ValidatorConfig;
 import ru.runa.gpd.validation.ValidatorDefinition;
@@ -70,12 +69,10 @@ import freemarker.template.Template;
 import freemarker.template.TemplateExceptionHandler;
 
 public class CreateProcessRegulations extends BaseModelActionDelegate {
-
     private static List<Node> sequenceNodeList = Lists.newArrayList();
 
     @Override
     public void run(IAction action) {
-
         try {
             ProcessDefinition proccDefinition = getActiveDesignerEditor().getDefinition();
             getActiveDesignerEditor().getDefinitionFile().deleteMarkers(RegulationsNotesView.ID, true, IResource.DEPTH_INFINITE);
@@ -91,23 +88,41 @@ public class CreateProcessRegulations extends BaseModelActionDelegate {
                 }
                 String html = generateRegulations(proccDefinition);
                 IFile file = IOUtils.getAdjacentFile(getDefinitionFile(), "regulations.html");
-                TextEditorInput input = new TextEditorInput(ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile().getAbsolutePath()
-                        + file.getFullPath(), html);
-                IDE.openEditor(getWorkbenchPage(), input, "ru.runa.gpd.wysiwyg.RegulationsHTMLEditor");
+                IOUtils.createOrUpdateFile(file, new ByteArrayInputStream(html.getBytes(Charsets.UTF_8)));
+                IDE.openEditor(getWorkbenchPage(), file, "ru.runa.gpd.wysiwyg.RegulationsHTMLEditor");
             } else {
-                for (ValidationError regulationsNote : regulationsValidationErrors) {
-                    addRegulationsNote(getActiveDesignerEditor().getDefinitionFile(), regulationsNote.getSource().getProcessDefinition(),
-                            regulationsNote);
+                for (ValidationError error : regulationsValidationErrors) {
+                    addRegulationsNote(getActiveDesignerEditor().getDefinitionFile(), error.getSource().getProcessDefinition(), error);
                 }
                 PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(RegulationsNotesView.ID);
             }
         } catch (Exception e) {
             PluginLogger.logError(e);
         }
-
     }
 
-    public static void addRegulationsNote(IFile definitionFile, ProcessDefinition definition, ValidationError validationError) {
+    @Override
+    public void selectionChanged(IAction action, ISelection selection) {
+        super.selectionChanged(action, selection);
+        disableNotConnectedBotNodes();
+        if (getSelection() != null && CommonPreferencePage.isRegulationsMenuItemsEnabled()
+                && getSelection().getClass().equals(ProcessDefinition.class)) {
+            action.setEnabled(!getActiveDesignerEditor().getDefinition().isInvalid());
+        } else {
+            action.setEnabled(false);
+        }
+    }
+
+    @Override
+    protected ProcessEditorBase getActiveDesignerEditor() {
+        IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+        if (editor instanceof ProcessEditorBase) {
+            return (ProcessEditorBase) editor;
+        }
+        return null;
+    }
+
+    private static void addRegulationsNote(IFile definitionFile, ProcessDefinition definition, ValidationError validationError) {
         try {
             IMarker marker = definitionFile.createMarker(RegulationsNotesView.ID);
             if (marker.exists()) {
@@ -124,7 +139,6 @@ public class CreateProcessRegulations extends BaseModelActionDelegate {
         } catch (CoreException e) {
             PluginLogger.logError(e);
         }
-
     }
 
     public static void addRegulationsSequenceNote(IFile definitionFile, ProcessDefinition definition, long n, Node node) {
@@ -142,7 +156,6 @@ public class CreateProcessRegulations extends BaseModelActionDelegate {
         } catch (CoreException e) {
             PluginLogger.logError(e);
         }
-
     }
 
     private void disableNotConnectedBotNodes() {
@@ -159,13 +172,10 @@ public class CreateProcessRegulations extends BaseModelActionDelegate {
     }
 
     private String generateRegulations(ProcessDefinition definition) throws Exception {
-
         Configuration config = new Configuration();
-
         config.setObjectWrapper(ObjectWrapper.DEFAULT_WRAPPER);
         config.setDefaultEncoding(Charsets.UTF_8.name());
         config.setTemplateExceptionHandler(TemplateExceptionHandler.HTML_DEBUG_HANDLER);
-
         // TODO need localization
         Path path = getTemplatePath();
         String templatePluginId = getTemplatePluginId();
@@ -304,19 +314,7 @@ public class CreateProcessRegulations extends BaseModelActionDelegate {
 
     }
 
-    @Override
-    public void selectionChanged(IAction action, ISelection selection) {
-        super.selectionChanged(action, selection);
-        disableNotConnectedBotNodes();
-        if (getSelection() != null && CommonPreferencePage.isRegulationsMenuItemsEnabled()
-                && getSelection().getClass().equals(ProcessDefinition.class)) {
-            action.setEnabled(!getActiveDesignerEditor().getDefinition().isInvalid());
-        } else {
-            action.setEnabled(false);
-        }
-    }
-
-    public static List<Node> makeSequenceList(ProcessDefinition definition) {
+    private static List<Node> makeSequenceList(ProcessDefinition definition) {
         List<Node> result = Lists.newArrayList();
         if (definition != null && definition.getChildren(StartState.class).size() > 0) {
             Node curNode = definition.getChildren(StartState.class).get(0);
@@ -341,7 +339,7 @@ public class CreateProcessRegulations extends BaseModelActionDelegate {
         return result;
     }
 
-    public Path getTemplatePath() {
+    private Path getTemplatePath() {
         Path result = new Path("template/regulations.ftl");
         IExtension[] extensions = Platform.getExtensionRegistry().getExtensionPoint("ru.runa.gpd.regulationsTemplate").getExtensions();
         if (extensions.length > 0) {
@@ -352,7 +350,7 @@ public class CreateProcessRegulations extends BaseModelActionDelegate {
         return result;
     }
 
-    public String getTemplatePluginId() {
+    private String getTemplatePluginId() {
         String result = "";
         IExtension[] extensions = Platform.getExtensionRegistry().getExtensionPoint("ru.runa.gpd.regulationsTemplate").getExtensions();
         if (extensions.length > 0) {
@@ -383,17 +381,7 @@ public class CreateProcessRegulations extends BaseModelActionDelegate {
         } catch (Exception e) {
             PluginLogger.logError(e);
         }
-
         return sequenceNodeList;
-    }
-
-    @Override
-    protected ProcessEditorBase getActiveDesignerEditor() {
-        IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-        if (editor instanceof ProcessEditorBase) {
-            return (ProcessEditorBase) editor;
-        }
-        return null;
     }
 
     public static ProcessDefinition getActiveDesignerDefinition() {

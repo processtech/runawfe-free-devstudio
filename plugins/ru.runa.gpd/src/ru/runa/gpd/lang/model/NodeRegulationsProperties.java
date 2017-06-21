@@ -1,5 +1,7 @@
 package ru.runa.gpd.lang.model;
 
+import ru.runa.gpd.lang.NodeRegistry;
+
 public class NodeRegulationsProperties {
     private final GraphElement parent;
     private boolean enabled = true;
@@ -9,7 +11,7 @@ public class NodeRegulationsProperties {
 
     public NodeRegulationsProperties(GraphElement parent) {
         this.parent = parent;
-        if (parent.getTypeDefinition() != null) {
+        if (NodeRegistry.hasNodeTypeDefinition(parent.getClass())) {
             setEnabled(parent.getTypeDefinition().isEnabledInRegulationsByDefault());
         }
     }
