@@ -1,4 +1,4 @@
-package ru.runa.gpd.property;
+package ru.runa.gpd.extension.regulations;
 
 import java.beans.PropertyChangeEvent;
 
@@ -19,20 +19,18 @@ import org.eclipse.ui.views.properties.PropertyDescriptor;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.SharedImages;
+import ru.runa.gpd.extension.regulations.ui.EditNodeRegulationsPropertiesDialog;
 import ru.runa.gpd.lang.model.Node;
-import ru.runa.gpd.lang.model.NodeRegulationsProperties;
 import ru.runa.gpd.ui.custom.LoggingMouseAdapter;
-import ru.runa.gpd.ui.dialog.EditPropertiesForRegulationsDialog;
 import ru.runa.gpd.ui.view.PropertiesView;
 
-public class NodeInRegulationsPropertyDescriptor extends PropertyDescriptor {
+public class NodeRegulationsPropertyDescriptor extends PropertyDescriptor {
     private final Node node;
-
-    private Label nodeIsIncludedLabel;
+    private Label enabledLabel;
     private Label previousNodeLabel;
     private Label nextNodeLabel;
 
-    public NodeInRegulationsPropertyDescriptor(Node node) {
+    public NodeRegulationsPropertyDescriptor(Node node) {
         super(PropertyNames.PROPERTY_NODE_IN_REGULATIONS, Localization.getString("Node.property.nodeInRegulations"));
         this.node = node;
     }
@@ -56,10 +54,10 @@ public class NodeInRegulationsPropertyDescriptor extends PropertyDescriptor {
         @Override
         protected Object openDialogBox(Control cellEditorWindow) {
             Object result = null;
-            EditPropertiesForRegulationsDialog dialog = new EditPropertiesForRegulationsDialog(node);
+            EditNodeRegulationsPropertiesDialog dialog = new EditNodeRegulationsPropertiesDialog(node);
             int dialogResult = dialog.open();
             if (dialogResult == IDialogConstants.OK_ID) {
-                result = node.getNodeRegulationsProperties();
+                result = node.getRegulationsProperties();
             }
             return result;
         }
@@ -74,11 +72,11 @@ public class NodeInRegulationsPropertyDescriptor extends PropertyDescriptor {
             editor.setLayout(layout);
             GridData gridDataLabelForCheckbox = new GridData(SWT.NONE, SWT.NONE, false, false);
             GridData gridDataLabel = new GridData(SWT.FILL, SWT.FILL, true, true);
-            nodeIsIncludedLabel = new Label(editor, SWT.NONE);
-            nodeIsIncludedLabel.setFont(editor.getFont());
-            nodeIsIncludedLabel.setBackground(editor.getBackground());
-            nodeIsIncludedLabel.setLayoutData(gridDataLabelForCheckbox);
-            nodeIsIncludedLabel.setImage(SharedImages.getImage(node.getNodeRegulationsProperties().isEnabled() ? "icons/checked.gif"
+            enabledLabel = new Label(editor, SWT.NONE);
+            enabledLabel.setFont(editor.getFont());
+            enabledLabel.setBackground(editor.getBackground());
+            enabledLabel.setLayoutData(gridDataLabelForCheckbox);
+            enabledLabel.setImage(SharedImages.getImage(node.getRegulationsProperties().isEnabled() ? "icons/checked.gif"
                     : "icons/unchecked.gif"));
 
             previousNodeLabel = new Label(editor, SWT.NONE);
@@ -91,14 +89,14 @@ public class NodeInRegulationsPropertyDescriptor extends PropertyDescriptor {
             nextNodeLabel.setBackground(editor.getBackground());
             nextNodeLabel.setLayoutData(gridDataLabel);
 
-            if (node.getNodeRegulationsProperties().getPreviousNode() != null) {
-                previousNodeLabel.setText(node.getNodeRegulationsProperties().getPreviousNode().getLabel());
+            if (node.getRegulationsProperties().getPreviousNode() != null) {
+                previousNodeLabel.setText(node.getRegulationsProperties().getPreviousNode().getLabel());
             } else {
                 previousNodeLabel.setText(Localization.getString("Node.property.previousNodeInRegulations.notSet"));
             }
 
-            if (node.getNodeRegulationsProperties().getNextNode() != null) {
-                nextNodeLabel.setText(node.getNodeRegulationsProperties().getNextNode().getLabel());
+            if (node.getRegulationsProperties().getNextNode() != null) {
+                nextNodeLabel.setText(node.getRegulationsProperties().getNextNode().getLabel());
             } else {
                 nextNodeLabel.setText(Localization.getString("Node.property.nextNodeInRegulations.notSet"));
             }
@@ -109,24 +107,21 @@ public class NodeInRegulationsPropertyDescriptor extends PropertyDescriptor {
                     NodeRegulationsProperties newNodeRegulationProperties = (NodeRegulationsProperties) NodeInRegulationsDialogCellEditor.this
                             .openDialogBox(NodeInRegulationsDialogCellEditor.this.getEditor());
                     if (newNodeRegulationProperties != null) {
-                        NodeInRegulationsPropertyDescriptor.this.node.setNodeRegulationsProperties(newNodeRegulationProperties);
-
+                        NodeRegulationsPropertyDescriptor.this.node.setRegulationsProperties(newNodeRegulationProperties);
                         PropertyChangeEvent eventNode;
-
                         eventNode = new PropertyChangeEvent(node, PropertyNames.PROPERTY_NODE_IN_REGULATIONS, null, newNodeRegulationProperties);
-
                         IViewPart viewPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(PropertiesView.ID);
                         if (viewPart instanceof PropertiesView) {
                             PropertiesView propertiesView = (PropertiesView) viewPart;
+                            // TODO 2797 для чего?
                             propertiesView.propertyChange(eventNode);
                         }
                     }
                 }
-
             };
             previousNodeLabel.addMouseListener(loggingMouseAdapter);
             nextNodeLabel.addMouseListener(loggingMouseAdapter);
-            nodeIsIncludedLabel.addMouseListener(loggingMouseAdapter);
+            enabledLabel.addMouseListener(loggingMouseAdapter);
             editor.addMouseListener(loggingMouseAdapter);
             return editor;
         }
@@ -137,11 +132,10 @@ public class NodeInRegulationsPropertyDescriptor extends PropertyDescriptor {
             if (previousNodeLabel == null || nextNodeLabel == null) {
                 return;
             }
-
             if (value != null) {
                 newProperties = (NodeRegulationsProperties) value;
-                node.setNodeRegulationsProperties(newProperties);
-                nodeIsIncludedLabel.setImage(SharedImages.getImage(newProperties.isEnabled() ? "icons/checked.gif" : "icons/unchecked.gif"));
+                node.setRegulationsProperties(newProperties);
+                enabledLabel.setImage(SharedImages.getImage(newProperties.isEnabled() ? "icons/checked.gif" : "icons/unchecked.gif"));
                 if (newProperties.getPreviousNode() != null) {
                     previousNodeLabel.setText(Localization.getString("Node.property.previousNodeInRegulations") + ": " + "["
                             + newProperties.getPreviousNode().getId() + "] " + ((Node) newProperties.getPreviousNode()).getName());

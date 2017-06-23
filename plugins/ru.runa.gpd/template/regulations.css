@@ -1,0 +1,15 @@
+strong {
+	margin: 5px;
+}
+
+.node {
+	margin-top: 15px;
+}
+
+.name {
+	font-weight: bold;
+}
+
+.header .name, .variables .name {
+	color: orange;
+}

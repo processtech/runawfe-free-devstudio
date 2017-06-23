@@ -118,7 +118,7 @@
 					</documentation>
 				</annotation>
 			</attribute>
-			<attribute name="isEnabledInRegulationsByDefault" type="boolean">
+			<attribute name="enabledInRegulationsByDefault" type="boolean">
 				<annotation>
 					<documentation>
 

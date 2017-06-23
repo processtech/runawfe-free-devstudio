@@ -50,9 +50,9 @@ import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.part.FileEditorInput;
 import org.osgi.framework.Bundle;
 
-import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.extension.Artifact;
 import ru.runa.gpd.formeditor.ftl.ComponentType;
 import ru.runa.gpd.formeditor.ftl.ComponentTypeRegistry;
@@ -388,7 +388,7 @@ public class QuickFormEditor extends EditorPart implements ISelectionListener, I
                 MapDelegableVariableProvider variableProvider = new MapDelegableVariableProvider(variables, null);
                 FormHashModelGpdWrap model = new FormHashModelGpdWrap(null, variableProvider, null);
 
-                String out = TemplateProcessor.process(templateHtml, model);
+                String out = TemplateProcessor.process(formFile.getFullPath().toString(), templateHtml, model);
 
                 variables = new HashMap<String, Object>();
                 variableProvider = new MapDelegableVariableProvider(variables, null);
@@ -416,7 +416,7 @@ public class QuickFormEditor extends EditorPart implements ISelectionListener, I
                 }
 
                 model = new FormHashModelGpdWrap(null, variableProvider, null);
-                out = TemplateProcessor.process(out, model);
+                out = TemplateProcessor.process(formFile.getFullPath().toString() + "_2", out, model);
 
                 IFile formCssFile = definitionFolder.getFile(ParContentProvider.FORM_CSS_FILE_NAME);
                 String styles = formCssFile.exists() ? IOUtils.readStream(formCssFile.getContents()) : null;

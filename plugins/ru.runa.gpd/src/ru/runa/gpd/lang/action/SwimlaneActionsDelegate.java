@@ -23,7 +23,6 @@ import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.SwimlanedNode;
 import ru.runa.gpd.lang.model.TaskState;
-import ru.runa.gpd.swimlane.BotSwimlaneInitializer;
 import ru.runa.gpd.ui.dialog.UpdateSwimlaneNameDialog;
 import ru.runa.gpd.util.SwimlaneDisplayMode;
 
@@ -115,9 +114,6 @@ public class SwimlaneActionsDelegate extends BaseModelDropDownActionDelegate {
         if (swimlaneName != null) {
             Swimlane swimlane = definition.getSwimlaneByName(swimlaneName);
             swimlanedNode.setSwimlane(swimlane);
-            if (swimlane.getDelegationConfiguration().startsWith(BotSwimlaneInitializer.BEGIN)) {
-                swimlanedNode.getNodeRegulationsProperties().setEnabled(false);
-            }
         } else {
             swimlanedNode.setSwimlane(null);
         }

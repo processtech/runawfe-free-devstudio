@@ -68,7 +68,6 @@ public class BotTaskActionsDelegate extends BaseModelDropDownActionDelegate {
                 if (botTaskName != null) {
                     BotTaskLink botTaskLink = new BotTaskLink();
                     botTaskLink.setBotTaskName(botTaskName);
-                    getTaskStateNotNull().getNodeRegulationsProperties().setEnabled(false);
                     linkWithBotTask(botTaskLink);
                 }
             } catch (Exception e) {
@@ -85,7 +84,6 @@ public class BotTaskActionsDelegate extends BaseModelDropDownActionDelegate {
         @Override
         public void run() {
             try {
-                getTaskStateNotNull().getNodeRegulationsProperties().setEnabled(true);
                 linkWithBotTask(null);
             } catch (Exception e) {
                 PluginLogger.logError(e);

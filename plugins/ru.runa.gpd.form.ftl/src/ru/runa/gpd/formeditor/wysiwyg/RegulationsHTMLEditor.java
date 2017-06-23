@@ -36,6 +36,7 @@ import ru.runa.gpd.EditorsPlugin;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
+import ru.runa.gpd.extension.regulations.RegulationsRegistry;
 import ru.runa.gpd.formeditor.WebServerUtils;
 import ru.runa.gpd.formeditor.resources.Messages;
 import ru.runa.gpd.htmleditor.editors.HTMLConfiguration;
@@ -44,7 +45,6 @@ import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.util.EditorUtils;
 import ru.runa.gpd.util.IOUtils;
-import ru.runa.gpd.util.RegulationsRegistry;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Throwables;
@@ -79,7 +79,7 @@ public class RegulationsHTMLEditor extends MultiPageEditorPart implements IResou
         file = ((FileEditorInput) editorInput).getFile();
         IFile definitionFile = IOUtils.getProcessDefinitionFile((IFolder) file.getParent());
         ProcessDefinition processDefinition = ProcessCache.getProcessDefinition(definitionFile);
-        this.setPartName(Localization.getString("Regulations.tab.title", processDefinition.getMainProcessDefinition().getName()));
+        this.setPartName(Localization.getString("regulations"));
     }
 
     private String getHashSum(String input) {

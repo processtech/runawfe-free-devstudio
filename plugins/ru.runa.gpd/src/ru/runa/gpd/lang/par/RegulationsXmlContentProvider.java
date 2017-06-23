@@ -5,13 +5,15 @@ import java.util.List;
 import org.dom4j.Document;
 import org.dom4j.Element;
 
+import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.util.XmlUtil;
 
+import com.google.common.base.Strings;
+
 public class RegulationsXmlContentProvider extends AuxContentProvider {
-    private static final String XML_FILE_NAME = "regulations.xml";
     private static final String NODES_SETTINGS = "settings";
     private static final String NODE_SETTINGS = "node";
     private static final String NODE_ID = "id";
@@ -22,42 +24,33 @@ public class RegulationsXmlContentProvider extends AuxContentProvider {
 
     @Override
     public String getFileName() {
-        return XML_FILE_NAME;
+        return ParContentProvider.PROCESS_DEFINITION_REGULATIONS_XML_FILE_NAME;
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public void read(Document document, ProcessDefinition definition) throws Exception {
-        List<Element> listOfNodeSettings = document.getRootElement().elements(NODE_SETTINGS);
-        for (Element nodeSetting : listOfNodeSettings) {
-            String id = nodeSetting.elementText(NODE_ID);
-            GraphElement graphElement = definition.getGraphElementById(id);
-            if (graphElement == null) {
-                continue;
+        List<Element> elements = document.getRootElement().elements(NODE_SETTINGS);
+        for (Element element : elements) {
+            String id = element.elementText(NODE_ID);
+            try {
+                Node node = definition.getGraphElementById(id);
+                if (node == null) {
+                    continue;
+                }
+                node.getRegulationsProperties().setEnabled("true".equals(element.elementText(IS_ENABLED)));
+                String previousNodeId = element.elementText(PREVIOUS_NODE_ID);
+                if (!Strings.isNullOrEmpty(previousNodeId)) {
+                    node.getRegulationsProperties().setPreviousNode((Node) definition.getGraphElementById(previousNodeId));
+                }
+                String nextNodeId = element.elementText(NEXT_NODE_ID);
+                if (!Strings.isNullOrEmpty(nextNodeId)) {
+                    node.getRegulationsProperties().setNextNode((Node) definition.getGraphElementById(nextNodeId));
+                }
+                node.getRegulationsProperties().setDescription(element.elementText(DESCRIPTION));
+            } catch (Exception e) {
+                PluginLogger.logErrorWithoutDialog("regulation load failed near node " + id, e);
             }
-            String previousNodeId = nodeSetting.elementText(PREVIOUS_NODE_ID);
-            String nextNodeId = nodeSetting.elementText(NEXT_NODE_ID);
-            GraphElement previousNode = null;
-            GraphElement nextNode = null;
-            if (previousNodeId.isEmpty() != true) {
-                previousNode = definition.getGraphElementById(previousNodeId);
-            }
-            if (previousNode != null) {
-                graphElement.getNodeRegulationsProperties().setPreviousNode(previousNode);
-            }
-            if (nextNodeId.isEmpty() != true) {
-                nextNode = definition.getGraphElementById(nextNodeId);
-            }
-            if (nextNode != null) {
-                graphElement.getNodeRegulationsProperties().setNextNode(nextNode);
-            }
-            String isEnabledInRegulation = nodeSetting.elementText(IS_ENABLED);
-            if (isEnabledInRegulation.equals("true")) {
-                graphElement.getNodeRegulationsProperties().setEnabled(true);
-            } else {
-                graphElement.getNodeRegulationsProperties().setEnabled(false);
-            }
-            graphElement.getNodeRegulationsProperties().setDescriptionForUser(nodeSetting.elementText(DESCRIPTION));
         }
     }
 
@@ -65,30 +58,19 @@ public class RegulationsXmlContentProvider extends AuxContentProvider {
     public Document save(ProcessDefinition definition) throws Exception {
         Document document = XmlUtil.createDocument(NODES_SETTINGS);
         Element root = document.getRootElement();
-        List<GraphElement> listOfChildren = definition.getElements();
-        for (GraphElement graphElement : listOfChildren) {
-            if (graphElement instanceof Node) {
-                Element nodeSettingElement = root.addElement(NODE_SETTINGS);
-                nodeSettingElement.addElement(NODE_ID).addText(graphElement.getId());
-                GraphElement previousNodeInRegulation = graphElement.getNodeRegulationsProperties().getPreviousNode();
-                GraphElement nextNodeInRegulation = graphElement.getNodeRegulationsProperties().getNextNode();
-                if (previousNodeInRegulation != null) {
-                    nodeSettingElement.addElement(PREVIOUS_NODE_ID).addText(previousNodeInRegulation.getId());
-                } else {
-                    nodeSettingElement.addElement(PREVIOUS_NODE_ID).addText("");
-                }
-                if (nextNodeInRegulation != null) {
-                    nodeSettingElement.addElement(NEXT_NODE_ID).addText(nextNodeInRegulation.getId());
-                } else {
-                    nodeSettingElement.addElement(NEXT_NODE_ID).addText("");
-                }
-                if (graphElement.getNodeRegulationsProperties().isEnabled()) {
-                    nodeSettingElement.addElement(IS_ENABLED).addText("true");
-                } else {
-                    nodeSettingElement.addElement(IS_ENABLED).addText("false");
-                }
-                nodeSettingElement.addElement(DESCRIPTION).addCDATA(graphElement.getNodeRegulationsProperties().getDescriptionForUser());
+        for (Node node : definition.getNodes()) {
+            Element nodeSettingElement = root.addElement(NODE_SETTINGS);
+            nodeSettingElement.addElement(NODE_ID).addText(node.getId());
+            nodeSettingElement.addElement(IS_ENABLED).addText(String.valueOf(node.getRegulationsProperties().isEnabled()));
+            GraphElement previousNodeInRegulation = node.getRegulationsProperties().getPreviousNode();
+            if (previousNodeInRegulation != null) {
+                nodeSettingElement.addElement(PREVIOUS_NODE_ID).addText(previousNodeInRegulation.getId());
             }
+            GraphElement nextNodeInRegulation = node.getRegulationsProperties().getNextNode();
+            if (nextNodeInRegulation != null) {
+                nodeSettingElement.addElement(NEXT_NODE_ID).addText(nextNodeInRegulation.getId());
+            }
+            nodeSettingElement.addElement(DESCRIPTION).addCDATA(node.getRegulationsProperties().getDescription());
         }
         return document;
     }

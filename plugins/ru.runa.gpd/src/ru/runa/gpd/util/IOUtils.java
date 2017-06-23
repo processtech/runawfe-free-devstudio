@@ -10,7 +10,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -247,6 +249,22 @@ public class IOUtils {
             zis.closeEntry();
             entry = zis.getNextEntry();
         }
+        zis.close();
+    }
+
+    public static Map<String, byte[]> getArchiveFiles(InputStream archiveStream, boolean closeStream) throws IOException {
+        Map<String, byte[]> files = new HashMap<String, byte[]>();
+        ZipInputStream zis = new ZipInputStream(archiveStream);
+        ZipEntry botEntry;
+        while ((botEntry = zis.getNextEntry()) != null) {
+            byte[] bytes = ByteStreams.toByteArray(zis);
+            files.put(botEntry.getName(), bytes);
+        }
+        zis.close();
+        if (closeStream) {
+            archiveStream.close();
+        }
+        return files;
     }
 
     public static void setUtfCharsetRecursively(IResource resource) throws CoreException {
@@ -324,7 +342,7 @@ public class IOUtils {
         if (botFolder.getParent() == null || botFolder.getParent().getParent() == null) {
             return null;
         }
-        
+
         IContainer container = botFolder.getParent().getParent().getParent();
         return container instanceof IProject ? (IProject) container : null;
     }
@@ -344,14 +362,14 @@ public class IOUtils {
             if (!botFolder.exists()) {
                 return folderList;
             }
-            
+
             IResource[] resources = botFolder.members();
             for (int i = 0; i < resources.length; i++) {
                 if (resources[i] instanceof IFolder) {
                     folderList.add((IFolder) resources[i]);
                 }
             }
-            
+
             return folderList;
         } catch (Exception e) {
             throw new RuntimeException(e);

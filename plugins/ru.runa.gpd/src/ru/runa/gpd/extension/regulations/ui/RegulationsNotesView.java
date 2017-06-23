@@ -1,4 +1,4 @@
-package ru.runa.gpd.ui.view;
+package ru.runa.gpd.extension.regulations.ui;
 
 import java.util.List;
 import java.util.Set;
@@ -47,10 +47,10 @@ import ru.runa.gpd.util.WorkspaceOperations;
 
 import com.google.common.base.Objects;
 
-public class RegulationsSequenceView extends ViewPart implements ISelectionChangedListener {
-    public static final String ID = "ru.runa.gpd.regulationsSequence";
-    static final String[] COLUMN_NAMES = { Localization.getString("RegulationsSequenceView.Number"),
-            Localization.getString("RegulationsSequenceView.Node"), Localization.getString("RegulationsSequenceView.Process") };
+public class RegulationsNotesView extends ViewPart implements ISelectionChangedListener {
+    public static final String ID = "ru.runa.gpd.regulationsNotes";
+    static final String[] COLUMN_NAMES = { Localization.getString("ValidationErrorsView.Source"),
+            Localization.getString("ValidationErrorsView.Message"), Localization.getString("ValidationErrorsView.ProcessName") };
     private TableViewer viewer;
 
     @Override
@@ -205,7 +205,7 @@ public class RegulationsSequenceView extends ViewPart implements ISelectionChang
         @Override
         public Object[] getElements(Object parent) {
             try {
-                return input.getRoot().findMarkers(RegulationsSequenceView.ID, false, IResource.DEPTH_INFINITE);
+                return input.getRoot().findMarkers(RegulationsNotesView.ID, false, IResource.DEPTH_INFINITE);
             } catch (CoreException e) {
                 return null;
             }
@@ -214,7 +214,7 @@ public class RegulationsSequenceView extends ViewPart implements ISelectionChang
         @Override
         public void resourceChanged(IResourceChangeEvent event) {
             final Control ctrl = viewer.getControl();
-            IMarkerDelta[] mDeltas = event.findMarkerDeltas(RegulationsSequenceView.ID, false);
+            IMarkerDelta[] mDeltas = event.findMarkerDeltas(RegulationsNotesView.ID, false);
             if (mDeltas.length != 0) {
                 try {
                     ctrl.getDisplay().asyncExec(new Runnable() {

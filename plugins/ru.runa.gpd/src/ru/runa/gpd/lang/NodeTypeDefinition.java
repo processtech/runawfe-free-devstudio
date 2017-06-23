@@ -60,8 +60,8 @@ public class NodeTypeDefinition {
         } else {
             graphitiEntry = null;
         }
-        if (configElement.getAttribute("isEnabledInRegulationsByDefault") != null) {
-            this.enabledInRegulationsByDefault = Boolean.valueOf(configElement.getAttribute("isEnabledInRegulationsByDefault"));
+        if (configElement.getAttribute("enabledInRegulationsByDefault") != null) {
+            this.enabledInRegulationsByDefault = Boolean.valueOf(configElement.getAttribute("enabledInRegulationsByDefault"));
         } else {
             this.enabledInRegulationsByDefault = true;
         }

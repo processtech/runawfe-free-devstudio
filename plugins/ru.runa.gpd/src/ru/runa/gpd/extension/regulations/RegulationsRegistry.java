@@ -1,4 +1,4 @@
-package ru.runa.gpd.util;
+package ru.runa.gpd.extension.regulations;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,6 +14,7 @@ import org.osgi.framework.Bundle;
 
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.PluginLogger;
+import ru.runa.gpd.util.IOUtils;
 
 public class RegulationsRegistry {
     private static String template;
@@ -49,7 +50,7 @@ public class RegulationsRegistry {
         } else {
             bundle = Activator.getDefault().getBundle();
             templatePath = new Path("template/regulations.ftl");
-            cssPath = null;
+            cssPath = new Path("template/regulations.css");
         }
         template = getContent(bundle, templatePath);
         cssStyles = getContent(bundle, cssPath);

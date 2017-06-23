@@ -177,7 +177,7 @@
           id="propertiesForRegulations"
           objectClass="ru.runa.gpd.lang.model.Node">
         <action
-             class="ru.runa.gpd.lang.action.OpenEditPropertiesForRegulationsDialogDelegate"
+             class="ru.runa.gpd.extension.regulations.ui.EditNodeRegulationsPropertiesAction"
              id="editPropertiesForRegulations"
              label="%label.action.editPropertiesForRegulations">
         </action>
@@ -320,9 +320,9 @@
              label="%label.action.editDescription">
        </action>
        <action
-             class="ru.runa.gpd.ui.action.CreateProcessRegulations"
-             id="ru.runa.gpd.createProcessRegulations"
-             label="%label.menu.createProcessRegulations">
+             class="ru.runa.gpd.extension.regulations.ui.CreateProcessRegulations"
+             id="ru.runa.gpd.createRegulations"
+             label="%label.menu.createRegulations">
        </action>
        <menu
              id="formCss"
@@ -771,7 +771,7 @@
       <element
             bpmn="scriptTask"
             icon="scripttask.png"
-            isEnabledInRegulationsByDefault="false"
+            enabledInRegulationsByDefault="false"
             label="%label.element.scripttask"
             model="ru.runa.gpd.lang.model.bpmn.ScriptTask"
             type="node">
@@ -789,7 +789,7 @@
             bpmn="timerEventDefinition"
             jpdl="wait-state"
             icon="timer.png"
-            isEnabledInRegulationsByDefault="false"
+            enabledInRegulationsByDefault="false"
             label="%label.element.timer"
             model="ru.runa.gpd.lang.model.Timer"
             type="node">
@@ -832,7 +832,7 @@
       </element>
       <element
             icon="fork.png"
-            isEnabledInRegulationsByDefault="false"
+            enabledInRegulationsByDefault="false"
             jpdl="fork"
             label="%label.element.fork"
             model="ru.runa.gpd.lang.model.jpdl.Fork"
@@ -845,7 +845,7 @@
       </element>
       <element
             icon="join.png"
-            isEnabledInRegulationsByDefault="false"
+            enabledInRegulationsByDefault="false"
             jpdl="join"
             label="%label.element.join"
             model="ru.runa.gpd.lang.model.jpdl.Join"
@@ -858,7 +858,7 @@
       </element>
       <element
             icon="decision.png"
-            isEnabledInRegulationsByDefault="false"
+            enabledInRegulationsByDefault="false"
             jpdl="decision"
             label="%label.element.decision"
             model="ru.runa.gpd.lang.model.Decision"
@@ -871,7 +871,7 @@
       </element>
       <element
             icon="conjunction.png"
-            isEnabledInRegulationsByDefault="false"
+            enabledInRegulationsByDefault="false"
             jpdl="conjunction"
             label="%label.element.conjunction"
             model="ru.runa.gpd.lang.model.bpmn.Conjunction"
@@ -885,7 +885,7 @@
       <element
             bpmn="parallelGateway"
             icon="parallelGateway.png"
-            isEnabledInRegulationsByDefault="false"
+            enabledInRegulationsByDefault="false"
             label="%label.element.parallelGateway"
             model="ru.runa.gpd.lang.model.bpmn.ParallelGateway"
             type="node">
@@ -900,7 +900,7 @@
       <element
             bpmn="exclusiveGateway"
             icon="exclusiveGateway.png"
-            isEnabledInRegulationsByDefault="false"
+            enabledInRegulationsByDefault="false"
             label="%label.element.exclusiveGateway"
             model="ru.runa.gpd.lang.model.bpmn.ExclusiveGateway"
             type="node">
@@ -992,7 +992,7 @@
       </element>
       <element
             icon="sendmessage.png"
-            isEnabledInRegulationsByDefault="false"
+            enabledInRegulationsByDefault="false"
             jpdl="send-message"
             label="%label.element.sendmessage"
             model="ru.runa.gpd.lang.model.jpdl.SendMessageNode"
@@ -1008,7 +1008,7 @@
       </element>
       <element
             bpmn="intermediateThrowEvent"
-            isEnabledInRegulationsByDefault="false"
+            enabledInRegulationsByDefault="false"
             icon="throwEvent.png"
             label="%label.element.throw.event"
             model="ru.runa.gpd.lang.model.bpmn.ThrowEventNode"
@@ -1027,7 +1027,7 @@
       </element>
       <element
             icon="receivemessage.png"
-            isEnabledInRegulationsByDefault="false"
+            enabledInRegulationsByDefault="false"
             jpdl="receive-message"
             label="%label.element.receivemessage"
             model="ru.runa.gpd.lang.model.jpdl.ReceiveMessageNode"
@@ -1043,7 +1043,7 @@
       </element>
       <element
             bpmn="intermediateCatchEvent"
-            isEnabledInRegulationsByDefault="false"
+            enabledInRegulationsByDefault="false"
             icon="catchEvent.png"
             label="%label.element.catch.event"
             model="ru.runa.gpd.lang.model.bpmn.CatchEventNode"
@@ -1190,12 +1190,12 @@
             id="ru.runa.gpd.validationErrors"
             name="%label.view.errors"/>
       <view
-            class="ru.runa.gpd.ui.view.RegulationsNotesView"
+            class="ru.runa.gpd.extension.regulations.ui.RegulationsNotesView"
             icon="icons/regulations_notes.png"
             id="ru.runa.gpd.regulationsNotes"
             name="%label.view.regulationsNotes"/>
       <view
-            class="ru.runa.gpd.ui.view.RegulationsSequenceView"
+            class="ru.runa.gpd.extension.regulations.ui.RegulationsSequenceView"
             icon="icons/regulations_notes.png"
             id="ru.runa.gpd.regulationsSequence"
             name="%label.view.regulationsSequence"/>
@@ -2366,6 +2366,23 @@
                menubarPath="file/project"
                style="push"/>       
          <action
+               class="ru.runa.gpd.extension.regulations.ui.ImportRegulationsAction"
+               icon="icons/regulations.bmp"
+               id="ru.runa.gpd.extension.regulations.ui.importRegulationsAction"
+               label="%label.menu.importRegulations"
+               menubarPath="file/project"
+               style="push">
+         </action>
+         <action
+               class="ru.runa.gpd.extension.regulations.ui.ShowRegulationsSequenceAction"
+               icon="icons/regulations.bmp"
+               id="ru.runa.gpd.extension.regulations.ui.showRegulationsSequenceAction"
+               label="%label.menu.showRegulationsSequence"
+               menubarPath="file/project"
+               style="push"
+               toolbarPath="additions">
+         </action>
+         <action
                class="ru.runa.gpd.ui.action.EnableAntialiasingAction"
                id="enableAntialiasing"
                label="%label.menu.properties.antialiasing"
@@ -2447,7 +2464,7 @@
                style="push">
          </action>
          <action
-               class="ru.runa.gpd.ui.action.OpenRegulationsNotesView"
+               class="ru.runa.gpd.extension.regulations.ui.OpenRegulationsNotesView"
                icon="icons/regulations_notes.png"
                id="openRegulationsNotesView"
                label="%label.menu.view.regulationsNotes"
