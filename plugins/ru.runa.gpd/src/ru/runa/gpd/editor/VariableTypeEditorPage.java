@@ -375,8 +375,8 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             }
 
             for (VariableUserType userType : getDefinition().getVariableUserTypes()) {
-                // Ð”Ð°Ð½Ð½Ð°Ñ� Ð¿Ñ€Ð¾Ð²ÐµÑ€ÐºÐ° Ð²Ñ‹Ð¿Ð¾Ð»Ð½Ñ�ÐµÑ‚Ñ�Ñ� Ñ�Ð½Ð°Ñ€ÑƒÐ¶Ð¸ Ð¼ÐµÑ‚Ð¾Ð´Ð°, Ñ‡Ñ‚Ð¾Ð±Ñ‹ Ð¸Ð·Ð±ÐµÐ¶Ð°Ñ‚ÑŒ
-                // Ñ�Ð¸Ñ‚ÑƒÐ°Ñ†Ð¸Ð¸ Ñ�Ñ€Ð°Ð²Ð½ÐµÐ½Ð¸Ñ� Ñ‚Ð¸Ð¿Ð° Ñ� Ñ�Ð°Ð¼Ð¸Ð¼ Ñ�Ð¾Ð±Ð¾Ð¹.
+                // Данная проверка выполняется снаружи метода, чтобы избежать
+                // ситуации сравнения типа с самим собой.
                 if (!type.equals(userType)) {
                     if (isUserTypeUsed(type, userType)) {
                         action = RemoveAction.TYPE_USAGE;
@@ -849,8 +849,8 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             boolean result = Objects.equal(leftType.getName(), rightType.getName());
             result = result && (leftType.getAttributes() == null ? rightType.getAttributes() == null : false);
             if (leftType.getAttributes() != null && rightType.getAttributes() != null) {
-                // Ð½Ðµ Ð´Ð¾Ð»Ð¶Ð½Ð¾ Ð±Ñ‹Ñ‚ÑŒ result && Ð¿Ð¾Ñ�ÐºÐ¾Ð»ÑŒÐºÑƒ Ð¿Ñ€ÐµÐ´Ñ‹Ð´ÑƒÑ‰Ð°Ñ� Ð¿Ñ€Ð¾Ð²ÐµÑ€ÐºÐ°
-                // ÑƒÑ�Ñ‚Ð°Ð½Ð¾Ð²Ð¸Ñ‚ false _Ð½Ðµ Ð²ÐµÑ€Ð½Ð¾_ Ð¿Ñ€Ð¸ Ð¿ÐµÑ€ÐµÑ…Ð¾Ð´Ðµ Ñ�ÑŽÐ´Ð°.
+                // не должно быть result && поскольку предыдущая проверка
+                // установит false _не верно_ при переходе сюда.
                 result = leftType.getAttributes().size() == rightType.getAttributes().size();
                 if (result) {
                     for (int i = 0; i < leftType.getAttributes().size(); i++) {
