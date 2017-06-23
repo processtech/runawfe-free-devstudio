@@ -21,7 +21,7 @@ public class VariableStoreTypePage extends ContentWizardPage {
 
     public VariableStoreTypePage(Variable variable) {
         if (variable != null && variable.getStoreType() != null) {
-            storeType = VariableStoreType.valueOf(variable.getStoreType());
+            storeType = variable.getStoreType();
         }
     }
 
@@ -29,14 +29,14 @@ public class VariableStoreTypePage extends ContentWizardPage {
     protected void createContent(Composite composite) {
         final Combo combo = new Combo(composite, SWT.BORDER | SWT.READ_ONLY);
         for (VariableStoreType st : VariableStoreType.values()) {
-            combo.add(st.name());
+            combo.add(st.getDescription());
         }
         combo.setEnabled(true);
-        combo.setText(storeType.name());
+        combo.setText(storeType.getDescription());
         combo.addSelectionListener(new LoggingSelectionAdapter() {
             @Override
             protected void onSelection(SelectionEvent e) throws Exception {
-                storeType = VariableStoreType.valueOf(combo.getText());
+                storeType = VariableStoreType.valueOfDescription(combo.getText());
             }
         });
     }
