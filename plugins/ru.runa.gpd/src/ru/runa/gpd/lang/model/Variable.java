@@ -13,7 +13,6 @@ import ru.runa.gpd.extension.VariableFormatRegistry;
 import ru.runa.wfe.var.UserTypeMap;
 
 import com.google.common.base.Objects;
-import com.google.common.base.Strings;
 import com.google.common.base.Objects.ToStringHelper;
 
 public class Variable extends NamedGraphElement implements Describable {
@@ -25,13 +24,13 @@ public class Variable extends NamedGraphElement implements Describable {
     private boolean publicVisibility;
     private String defaultValue;
     private VariableUserType userType;
-    private String storeType = VariableStoreType.DEFAULT.name();
+    private VariableStoreType storeType = VariableStoreType.DEFAULT;
 
     public Variable() {
     }
 
     public Variable(String name, String scriptingName, String format, VariableUserType userType, boolean publicVisibility, String defaultValue,
-            String storeType) {
+            VariableStoreType storeType) {
         super(name);
         setScriptingName(scriptingName);
         setFormat(format);
@@ -166,13 +165,13 @@ public class Variable extends NamedGraphElement implements Describable {
         firePropertyChange(PROPERTY_DEFAULT_VALUE, old, this.defaultValue);
     }
 
-    public String getStoreType() {
+    public VariableStoreType getStoreType() {
         return storeType;
     }
 
-    public void setStoreType(String storeType) {
-        String old = this.storeType;
-        this.storeType = !Strings.isNullOrEmpty(storeType) ? storeType : VariableStoreType.DEFAULT.name();
+    public void setStoreType(VariableStoreType storeType) {
+        VariableStoreType old = this.storeType;
+        this.storeType = storeType != null ? storeType : VariableStoreType.DEFAULT;
         firePropertyChange(PROPERTY_STORE_TYPE, old, this.storeType);
     }
 
@@ -201,7 +200,7 @@ public class Variable extends NamedGraphElement implements Describable {
             return defaultValue == null ? "" : defaultValue;
         }
         if (PROPERTY_STORE_TYPE.equals(id)) {
-            return getStoreType() != null ? getStoreType() : VariableStoreType.DEFAULT.name();
+            return getStoreType() != null ? getStoreType() : VariableStoreType.DEFAULT;
         }
         return super.getPropertyValue(id);
     }

@@ -80,7 +80,8 @@ public class VariablesXmlContentProvider extends AuxContentProvider {
                     swimlane.setDescription(description);
                     swimlane.setPublicVisibility(publicVisibility);
                     swimlane.setEditorPath(element.attributeValue(EDITOR));
-                    swimlane.setStoreType(element.attributeValue(STORE_TYPE, VariableStoreType.DEFAULT.name()));
+                    swimlane.setStoreType(element.attributeValue(STORE_TYPE, null) != null ? VariableStoreType.valueOf(element.attributeValue(
+                            STORE_TYPE).toUpperCase()) : VariableStoreType.DEFAULT);
                 } catch (Exception e) {
                     PluginLogger.logErrorWithoutDialog("No swimlane found for " + variableName, e);
                 }
@@ -107,7 +108,8 @@ public class VariablesXmlContentProvider extends AuxContentProvider {
         String defaultValue = element.attributeValue(DEFAULT_VALUE);
         String scriptingName = element.attributeValue(SCRIPTING_NAME, variableName);
         String description = element.attributeValue(DESCRIPTION);
-        String storeType = element.attributeValue(STORE_TYPE, VariableStoreType.DEFAULT.name());
+        VariableStoreType storeType = element.attributeValue(STORE_TYPE, null) != null ? VariableStoreType.valueOf(element.attributeValue(STORE_TYPE)
+                .toUpperCase()) : VariableStoreType.DEFAULT;
         if ("false".equals(description)) {
             // remove old comments due to some bug
             description = null;
@@ -138,7 +140,9 @@ public class VariablesXmlContentProvider extends AuxContentProvider {
         Element element = root.addElement(VARIABLE);
         element.addAttribute(NAME, variable.getName());
         element.addAttribute(SCRIPTING_NAME, variable.getScriptingName());
-        element.addAttribute(STORE_TYPE, variable.getStoreType());
+        if (variable.getStoreType() != VariableStoreType.DEFAULT) {
+            element.addAttribute(STORE_TYPE, variable.getStoreType().asProperty());
+        }
         if (variable.getUserType() != null) {
             element.addAttribute(USER_TYPE, variable.getUserType().getName());
         } else {

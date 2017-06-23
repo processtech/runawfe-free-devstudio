@@ -180,8 +180,8 @@ public class MultiTaskState extends TaskState implements IMultiInstancesContaine
             }
             String componentFormat = VariableUtils.getListVariableComponentFormat(listVariable);
             VariableUserType userType = getProcessDefinition().getVariableUserType(componentFormat);
-            Variable variable = new Variable(mapping.getMappedName(), mapping.getMappedName(), componentFormat, userType, true, null, mapping
-                    .getStoreType().name());
+            Variable variable = new Variable(mapping.getMappedName(), mapping.getMappedName(), componentFormat, userType, true, null,
+                    mapping.getStoreType());
             if (expandComplexTypes && variable.isComplex()) {
                 formVariables.addAll(VariableUtils.expandComplexVariable(variable, variable));
             } else {
