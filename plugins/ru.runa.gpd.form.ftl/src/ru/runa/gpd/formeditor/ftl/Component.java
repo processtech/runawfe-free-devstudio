@@ -98,7 +98,7 @@ public class Component extends EventSupport implements IPropertySource {
         IPropertyDescriptor[] descriptors = new IPropertyDescriptor[type.getParameters().size()];
         for (int i = 0; i < descriptors.length; i++) {
             ComponentParameter parameter = type.getParameters().get(i);
-            PropertyDescriptor descriptor = parameter.getType().createPropertyDescriptor(parameter, i);
+            PropertyDescriptor descriptor = parameter.getType().createPropertyDescriptor(this, parameter, i);
             descriptor.setDescription(parameter.getDescription());
             descriptors[i] = descriptor;
         }
@@ -109,7 +109,7 @@ public class Component extends EventSupport implements IPropertySource {
     public Object getPropertyValue(Object propertyId) {
         ComponentParameter parameter = type.getParameters().get((Integer) propertyId);
         Object value = getParameterValue(parameter);
-        return parameter.getType().toPropertyDescriptorValue(parameter, value);
+        return parameter.getType().toPropertyDescriptorValue(this, parameter, value);
     }
 
     @Override
@@ -127,7 +127,7 @@ public class Component extends EventSupport implements IPropertySource {
     @Override
     public void setPropertyValue(Object propertyId, Object editorValue) {
         ComponentParameter parameter = type.getParameters().get((Integer) propertyId);
-        Object value = parameter.getType().fromPropertyDescriptorValue(parameter, editorValue);
+        Object value = parameter.getType().fromPropertyDescriptorValue(this, parameter, editorValue);
         Object old = setParameterValue(parameter, value);
         firePropertyChange(propertyId.toString(), old, value);
     }

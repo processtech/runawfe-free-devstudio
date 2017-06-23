@@ -2,6 +2,7 @@ package ru.runa.gpd.formeditor.ftl.ui;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Map;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -23,8 +24,11 @@ import ru.runa.gpd.formeditor.resources.Messages;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.custom.SWTUtils;
 
+import com.google.common.collect.Maps;
+
 public class ComponentParametersDialog extends Dialog {
     private Component component;
+    private final Map<ComponentParameter, Object> parameterEditors = Maps.newHashMap();
 
     public ComponentParametersDialog(Component component) {
         super(Display.getDefault().getActiveShell());
@@ -87,15 +91,21 @@ public class ComponentParametersDialog extends Dialog {
     }
 
     private void drawParameters(Composite parametersComposite) {
+        parameterEditors.clear();
         for (final ComponentParameter componentParameter : component.getType().getParameters()) {
             SWTUtils.createLabel(parametersComposite, componentParameter.getLabel()).setToolTipText(componentParameter.getDescription());
-            componentParameter.getType().createEditor(parametersComposite, componentParameter, component.getParameterValue(componentParameter), new PropertyChangeListener() {
+            Object editor = componentParameter.getType().createEditor(parametersComposite, component, componentParameter,
+                    component.getParameterValue(componentParameter), new PropertyChangeListener() {
 
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    component.setParameterValue(componentParameter, evt.getNewValue());
-                }
-            });
+                        @Override
+                        public void propertyChange(PropertyChangeEvent event) {
+                            component.setParameterValue(componentParameter, event.getNewValue());
+                            for (ComponentParameter dependentParameter : componentParameter.getDependents()) {
+                                dependentParameter.getType().updateEditor(parameterEditors.get(dependentParameter), component, dependentParameter);
+                            }
+                        }
+                    });
+            parameterEditors.put(componentParameter, editor);
         }
     }
 

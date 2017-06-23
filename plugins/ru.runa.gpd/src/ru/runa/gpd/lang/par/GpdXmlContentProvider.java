@@ -10,6 +10,7 @@ import org.eclipse.draw2d.geometry.Rectangle;
 
 import ru.runa.gpd.editor.graphiti.HasTextDecorator;
 import ru.runa.gpd.lang.Language;
+import ru.runa.gpd.lang.model.Action;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
@@ -175,7 +176,7 @@ public class GpdXmlContentProvider extends AuxContentProvider {
             }
         }
         for (GraphElement graphElement : definition.getElementsRecursive()) {
-            if (graphElement.getConstraint() == null) {
+            if (graphElement instanceof Action || graphElement.getConstraint() == null) {
                 continue;
             }
             Element element = root.addElement(NODE);

@@ -3,10 +3,10 @@ package ru.runa.gpd.editor.gef.command;
 import org.eclipse.gef.commands.Command;
 
 import ru.runa.gpd.lang.NodeRegistry;
+import ru.runa.gpd.lang.model.Action;
+import ru.runa.gpd.lang.model.ActionImpl;
 import ru.runa.gpd.lang.model.GraphElement;
-import ru.runa.gpd.lang.model.jpdl.Action;
 import ru.runa.gpd.lang.model.jpdl.ActionContainer;
-import ru.runa.gpd.lang.model.jpdl.ActionImpl;
 
 public class AddActionCommand extends Command {
     private ActionContainer target;

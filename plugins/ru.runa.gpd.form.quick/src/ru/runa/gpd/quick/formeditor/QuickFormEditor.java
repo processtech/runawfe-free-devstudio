@@ -88,7 +88,7 @@ import ru.runa.gpd.validation.ValidationUtil;
 import ru.runa.wfe.InternalApplicationException;
 import ru.runa.wfe.commons.ClassLoaderUtil;
 import ru.runa.wfe.commons.TypeConversionUtil;
-import ru.runa.wfe.var.MapDelegableVariableProvider;
+import ru.runa.wfe.var.MapVariableProvider;
 import ru.runa.wfe.var.VariableDefinition;
 import ru.runa.wfe.var.dto.WfVariable;
 
@@ -377,50 +377,33 @@ public class QuickFormEditor extends EditorPart implements ISelectionListener, I
             protected void onSelection(SelectionEvent e) throws Exception {
                 String filename = formNode.getTemplateFileName();
                 Bundle bundle = QuickTemplateRegister.getBundle(filename);
-                String templateHtml = QuickFormXMLUtil.getTemplateFromRegister(bundle, filename);
-
+                String quickTemplate = QuickFormXMLUtil.getTemplateFromRegister(bundle, filename);
                 Map<String, Object> variables = new HashMap<String, Object>();
                 variables.put("variables", quickForm.getVariables());
                 variables.put("task", "");
                 for (QuickFormGpdProperty quickFormGpdProperty : quickForm.getProperties()) {
                     variables.put(quickFormGpdProperty.getName(), quickFormGpdProperty.getValue() == null ? "" : quickFormGpdProperty.getValue());
                 }
-                MapDelegableVariableProvider variableProvider = new MapDelegableVariableProvider(variables, null);
-                FormHashModelGpdWrap model = new FormHashModelGpdWrap(null, variableProvider, null);
-
-                String out = TemplateProcessor.process(formFile.getFullPath().toString(), templateHtml, model);
-
-                variables = new HashMap<String, Object>();
-                variableProvider = new MapDelegableVariableProvider(variables, null);
-
+                FormHashModelGpdWrap quickModel = new FormHashModelGpdWrap(null, new MapVariableProvider(variables), null);
+                String ftlTemplate = TemplateProcessor.process(formFile.getFullPath().toString(), quickTemplate, quickModel);
+                MapVariableProvider ftlVariableProvider = new MapVariableProvider(new HashMap<String, Object>());
                 for (QuickFormGpdVariable quickFormGpdVariable : quickForm.getVariables()) {
                     Variable variable = VariableUtils.getVariableByName(processDefinition, quickFormGpdVariable.getName());
-
                     String defaultValue = PresentationVariableUtils.getPresentationValue(variable.getFormat());
                     Object value = null;
                     if (defaultValue != null) {
                         value = TypeConversionUtil.convertTo(ClassLoaderUtil.loadClass(variable.getJavaClassName()), defaultValue);
                     }
-                    variables.put(quickFormGpdVariable.getName(), value);
                     VariableDefinition variableDefinition = new VariableDefinition(quickFormGpdVariable.getName(), null);
                     variableDefinition.setFormat(variable.getFormat());
                     WfVariable wfVariable = new WfVariable(variableDefinition, value);
-                    variableProvider.add(wfVariable);
+                    ftlVariableProvider.add(wfVariable);
                 }
-
-                for (QuickFormGpdProperty quickFormGpdProperty : quickForm.getProperties()) {
-                    if (quickFormGpdProperty.getValue() != null && quickFormGpdProperty.getValue().length() > 0
-                            && VariableUtils.isVariableNameWrapped(quickFormGpdProperty.getValue())) {
-                        variables.put(VariableUtils.unwrapVariableName(quickFormGpdProperty.getValue()), quickFormGpdProperty.getValue());
-                    }
-                }
-
-                model = new FormHashModelGpdWrap(null, variableProvider, null);
-                out = TemplateProcessor.process(formFile.getFullPath().toString() + "_2", out, model);
-
+                FormHashModelGpdWrap ftlModel = new FormHashModelGpdWrap(null, ftlVariableProvider, null);
+                String form = TemplateProcessor.process(formFile.getFullPath().toString() + "_2", ftlTemplate, ftlModel);
                 IFile formCssFile = definitionFolder.getFile(ParContentProvider.FORM_CSS_FILE_NAME);
                 String styles = formCssFile.exists() ? IOUtils.readStream(formCssFile.getContents()) : null;
-                PreviewFormWizard wizard = new PreviewFormWizard(out, styles);
+                PreviewFormWizard wizard = new PreviewFormWizard(form, styles);
                 CompactWizardDialog dialog = new CompactWizardDialog(wizard);
                 dialog.open();
             }

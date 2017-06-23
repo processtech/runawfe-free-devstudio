@@ -35,8 +35,9 @@ public class TaskStateGraphicalEditPart extends SwimlaneNodeEditPart implements 
     protected void fillFigureUpdatePropertyNames(List<String> list) {
         super.fillFigureUpdatePropertyNames(list);
         list.add(PROPERTY_MINIMAZED_VIEW);
-        list.add(PROPERTY_CHILDS_CHANGED);
+        list.add(PROPERTY_CHILDREN_CHANGED);
         list.add(PROPERTY_ASYNC);
+        list.add(PROPERTY_DISCRIMINATOR_USAGE);
     }
 
     @Override

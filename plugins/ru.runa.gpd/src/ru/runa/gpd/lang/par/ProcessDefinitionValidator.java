@@ -10,12 +10,12 @@ import org.eclipse.core.runtime.CoreException;
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.ValidationError;
+import ru.runa.gpd.lang.model.Action;
 import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.Transition;
-import ru.runa.gpd.lang.model.jpdl.Action;
 import ru.runa.gpd.ui.view.ValidationErrorsView;
 
 import com.google.common.collect.Lists;

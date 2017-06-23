@@ -17,6 +17,7 @@ import org.eclipse.graphiti.services.Graphiti;
 
 import ru.runa.gpd.editor.graphiti.HasTextDecorator;
 import ru.runa.gpd.editor.graphiti.TextDecoratorEmulation;
+import ru.runa.gpd.lang.model.Action;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.ITimed;
 import ru.runa.gpd.lang.model.Node;
@@ -40,6 +41,9 @@ public class MoveElementFeature extends DefaultMoveShapeFeature {
     public boolean canMoveShape(IMoveShapeContext context) {
         Shape shape = context.getShape();
         GraphElement element = (GraphElement) getBusinessObjectForPictogramElement(shape);
+        if (element instanceof Action) {
+            return false;
+        }
         if (element instanceof Timer && element.getParent() instanceof ITimed) {
             return false;
         }

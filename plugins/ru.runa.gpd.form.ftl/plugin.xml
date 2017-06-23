@@ -61,35 +61,50 @@
          point="ru.runa.gpd.form.ftl.parameters">
       <type
             class="ru.runa.gpd.formeditor.ftl.parameter.StringParameter"
+            validator="ru.runa.gpd.formeditor.ftl.validation.DefaultParameterTypeValidator"
             id="text">
       </type>
       <type
             class="ru.runa.gpd.formeditor.ftl.parameter.ComboParameter"
+            validator="ru.runa.gpd.formeditor.ftl.validation.DefaultParameterTypeValidator"
             id="combo">
       </type>
       <type
             class="ru.runa.gpd.formeditor.ftl.parameter.VariableComboParameter"
+            validator="ru.runa.gpd.formeditor.ftl.validation.DefaultParameterTypeValidator"
             id="varcombo">               
       </type>
       <type
             class="ru.runa.gpd.formeditor.ftl.parameter.RichComboParameter"
+            validator="ru.runa.gpd.formeditor.ftl.validation.DefaultParameterTypeValidator"
             id="richcombo">
       </type>
       <type
             class="ru.runa.gpd.formeditor.ftl.parameter.VariableListParameter"
+            validator="ru.runa.gpd.formeditor.ftl.validation.DefaultParameterTypeValidator"
             id="varlist">
       </type>
       <type
             class="ru.runa.gpd.formeditor.ftl.parameter.TextListParameter"
+            validator="ru.runa.gpd.formeditor.ftl.validation.DefaultParameterTypeValidator"
             id="textlist">
       </type>
       <type
-            class="ru.runa.gpd.formeditor.ftl.parameter.UserVariableFieldsComboParameter"
-            id="uservarfields">
+            class="ru.runa.gpd.formeditor.ftl.parameter.UserTypeVariableListComboParameter"
+            validator="ru.runa.gpd.formeditor.ftl.validation.DefaultParameterTypeValidator"
+            id="usertypevarlistcombo">
       </type>
       <type
-            class="ru.runa.gpd.formeditor.ftl.parameter.UserVariablesListComboParameter"
-            id="uservarlistcombo">
+            class="ru.runa.gpd.formeditor.ftl.parameter.UserTypeAttributeParameter"
+            depends="usertypevarlistcombo"
+            validator="ru.runa.gpd.formeditor.ftl.validation.UserTypeAttributeListValidator"
+            id="usertypeattribute">
+      </type>
+      <type
+            class="ru.runa.gpd.formeditor.ftl.parameter.UserTypeAttributeListParameter"
+            depends="usertypevarlistcombo"
+            validator="ru.runa.gpd.formeditor.ftl.validation.UserTypeAttributeListValidator"
+            id="usertypeattributelist">
       </type>
    </extension>
    
@@ -589,7 +604,6 @@
             name="%Method.EditLinkedLists"
             order="-91">
          <param
-               
                name="%Param.ListAddition"
                type="combo"
                variableAccess="NONE">
@@ -941,7 +955,7 @@
             order="-84">
       </component>
       <component
-            enabled="true"
+            enabled="false"
             id="DisplayListUserVariables"
             imageProvider="ru.runa.gpd.formeditor.ftl.image.VariableComponentImageProvider"
             name="%Method.DisplayListUserVariables"
@@ -949,7 +963,7 @@
          <param
                name="%Param.Variable"
                optional="false"
-               type="uservarlistcombo"
+               type="usertypevarlistcombo"
                variableAccess="READ"
                variableTypeFilter="java.util.List">
          </param>
@@ -971,27 +985,27 @@
          <param
                name="%Param.UseToSortField"
                optional="true"
-               type="uservarfields"
+               type="usertypeattribute"
                variableAccess="NONE"
                variableTypeFilter="java.lang.String">
          </param>
       </component>
       <component
-            enabled="true"
+            enabled="false"
             id="MultipleSelectFromListUserVariables"
             name="%Method.MultipleSelectFromListUserVariables"
             order="-82">
          <param
                name="%Param.Variable"
                optional="false"
-               type="uservarlistcombo"
+               type="usertypevarlistcombo"
                variableAccess="WRITE"
                variableTypeFilter="java.util.List">
          </param>
          <param
                name="%Param.InputData"
                optional="false"
-               type="uservarlistcombo"
+               type="usertypevarlistcombo"
                variableAccess="READ"
                variableTypeFilter="java.util.List">
          </param>
@@ -1013,9 +1027,140 @@
          <param
                name="%Param.UseToSortField"
                optional="true"
-               type="uservarfields"
+               type="usertypeattribute"
                variableAccess="NONE"
                variableTypeFilter="java.lang.String">
+         </param>
+      </component>
+      <component
+            enabled="true"
+            id="DisplayUserTypeList"
+            imageProvider="ru.runa.gpd.formeditor.ftl.image.VariableComponentImageProvider"
+            name="%Method.DisplayUserTypeList"
+            order="-83">
+         <param
+               name="%Param.Variable"
+               optional="false"
+               type="usertypevarlistcombo"
+               variableAccess="READ"
+               variableTypeFilter="java.util.List">
+         </param>
+         <param
+               name="%Param.DisplayFormat"
+               type="combo"
+               variableAccess="NONE">
+            <paramValue
+                  name="%Format.Variable.Component"
+                  value="true">
+            </paramValue>
+            <paramValue
+                  name="%Format.Variable.Output"
+                  value="false">
+            </paramValue>
+         </param>
+         <param
+               name="%Param.Attributes"
+               optional="true"
+               type="usertypeattributelist"
+               variableAccess="NONE">
+         </param>
+      </component>
+      <component
+            enabled="true"
+            id="MultipleSelectFromUserTypeList"
+            name="%Method.MultipleSelectFromUserTypeList"
+            order="-82">
+         <param
+               name="%Param.Variable"
+               optional="false"
+               type="usertypevarlistcombo"
+               variableAccess="WRITE"
+               variableTypeFilter="java.util.List">
+         </param>
+         <param
+               name="%Param.InputData"
+               optional="false"
+               type="usertypevarlistcombo"
+               variableAccess="READ"
+               variableTypeFilter="java.util.List">
+         </param>
+         <param
+               name="%Param.DisplayFormat"
+               type="combo"
+               variableAccess="NONE">
+            <paramValue
+                  name="%Format.Variable.Component"
+                  value="true">
+            </paramValue>
+            <paramValue
+                  name="%Format.Variable.Output"
+                  value="false">
+            </paramValue>
+         </param>
+         <param
+               name="%Param.Attributes"
+               optional="true"
+               type="usertypeattributelist"
+               variableAccess="NONE">
+         </param>
+      </component>
+      <component
+            enabled="true"
+            id="EditUserTypeList"
+            imageProvider="ru.runa.gpd.formeditor.ftl.image.VariableComponentImageProvider"
+            name="%Method.EditUserTypeList"
+            order="-81">
+         <param
+               name="%Param.Variable"
+               optional="false"
+               type="usertypevarlistcombo"
+               variableAccess="WRITE"
+               variableTypeFilter="java.util.List">
+         </param>
+         <param
+               name="%Param.ListAddition"
+               type="combo"
+               variableAccess="NONE">
+            <paramValue
+                  name="false"
+                  value="false">
+            </paramValue>
+            <paramValue
+                  name="true"
+                  value="true">
+            </paramValue>
+         </param>
+         <param
+               name="%Param.ListRemoval"
+               type="combo"
+               variableAccess="NONE">
+            <paramValue
+                  name="false"
+                  value="false">
+            </paramValue>
+            <paramValue
+                  name="true"
+                  value="true">
+            </paramValue>
+         </param>
+         <param
+               name="%Param.ListChange"
+               type="combo"
+               variableAccess="NONE">
+            <paramValue
+                  name="false"
+                  value="false">
+            </paramValue>
+            <paramValue
+                  name="true"
+                  value="true">
+            </paramValue>
+         </param>
+         <param
+               name="%Param.Attributes"
+               optional="true"
+               type="usertypeattributelist"
+               variableAccess="NONE">
          </param>
       </component>
    </extension>

@@ -4,8 +4,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.MatchResult;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import ru.runa.gpd.PluginLogger;
@@ -14,7 +12,6 @@ import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableContainer;
 import ru.runa.gpd.lang.model.VariableUserType;
-import ru.runa.wfe.var.format.ListFormat;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
@@ -23,26 +20,14 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 public class VariableUtils {
-    private static final Pattern LIST_ENTRY_PATTERN = Pattern.compile("\\(\\s*([^\\)]+)\\)");
     public static final String CURRENT_PROCESS_ID = "${currentProcessId}";
     public static final String CURRENT_PROCESS_DEFINITION_NAME = "${currentDefinitionName}";
     public static final String CURRENT_NODE_NAME = "${currentNodeName}";
     public static final String CURRENT_NODE_ID = "${currentNodeId}";
 
+    @Deprecated
     public static final String getListVariableComponentFormat(Variable variable) {
-        String formatStr = variable.getFormat();
-        if (!formatStr.contains(ListFormat.class.getName())) {
-            return null;
-        }
-        Matcher m = LIST_ENTRY_PATTERN.matcher(formatStr);
-        if (!m.find()) {
-            return null;
-        }
-        MatchResult mr = m.toMatchResult();
-        if (mr.groupCount() != 1) {
-            return null;
-        }
-        return mr.group(1).trim();
+        return variable.getFormatComponentClassNames()[0];
     }
 
     public static Map<String, Variable> toMap(List<Variable> variables) {

@@ -26,7 +26,7 @@ import ru.runa.gpd.editor.gef.ActionGraphUtils;
 import ru.runa.gpd.editor.gef.command.AddActionCommand;
 import ru.runa.gpd.editor.gef.command.MoveActionCommand;
 import ru.runa.gpd.editor.gef.part.graph.ActionGraphicalEditPart;
-import ru.runa.gpd.lang.model.jpdl.Action;
+import ru.runa.gpd.lang.model.Action;
 import ru.runa.gpd.lang.model.jpdl.ActionContainer;
 
 public class ActionContainerLayoutEditPolicy extends OrderedLayoutEditPolicy {

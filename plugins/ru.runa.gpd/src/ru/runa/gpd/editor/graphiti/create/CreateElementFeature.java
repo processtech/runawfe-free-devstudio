@@ -14,6 +14,7 @@ import org.eclipse.graphiti.services.Graphiti;
 import ru.runa.gpd.editor.GEFConstants;
 import ru.runa.gpd.editor.graphiti.DiagramFeatureProvider;
 import ru.runa.gpd.lang.NodeTypeDefinition;
+import ru.runa.gpd.lang.model.Action;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
@@ -70,6 +71,12 @@ public class CreateElementFeature extends AbstractCreateFeature implements GEFCo
     public Object[] create(ICreateContext context) {
         GraphElement graphElement = getNodeDefinition().createElement(getProcessDefinition(), true);
         GraphElement parent = (GraphElement) getBusinessObjectForPictogramElement(context.getTargetContainer());
+        if (graphElement instanceof Action) {
+            if (context.getTargetConnection() != null) {
+                parent = (GraphElement) getBusinessObjectForPictogramElement(context.getTargetConnection());
+            }
+            ((Action) graphElement).setName(getCreateName() + " " + (parent.getChildren(Action.class).size() + 1));
+        }
         graphElement.setParentContainer(parent);
         Swimlane swimlane = null;
         if (parent instanceof Swimlane) {
