@@ -69,6 +69,10 @@ public class WebServerUtils {
         return url;
     }
 
+    public static String getRegulationsViewerUrl() {
+        return "http://localhost:" + SERVER_PORT + "/regulations.html";
+    }
+
     public static boolean useCKEditor() {
         String pref = Activator.getPrefString(PrefConstants.P_FORM_DEFAULT_FCK_EDITOR);
         return PrefConstants.FORM_CK_EDITOR4.equals(pref);

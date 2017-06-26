@@ -32,7 +32,7 @@ public class CreateProcessRegulations extends BaseModelActionDelegate {
                 String html = RegulationsUtil.generate(definitionFile, processDefinition);
                 IFile file = IOUtils.getAdjacentFile(getDefinitionFile(), "regulations.html");
                 IOUtils.createOrUpdateFile(file, new ByteArrayInputStream(html.getBytes(Charsets.UTF_8)));
-                IDE.openEditor(getWorkbenchPage(), file, "ru.runa.gpd.wysiwyg.RegulationsHTMLEditor");
+                IDE.openEditor(getWorkbenchPage(), file);
             }
         } catch (Exception e) {
             PluginLogger.logError(e);

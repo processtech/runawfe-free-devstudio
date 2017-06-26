@@ -178,18 +178,19 @@ public class EditNodeRegulationsPropertiesDialog extends Dialog {
         dateGridData7.heightHint = 400;
         try {
             browser = new Browser(descriptionComposite, SWT.NONE);
+            new GetHTMLCallbackFunction(browser);
+            new OnLoadCallbackFunction(browser);
+            // TODO 2797 improve
             Bundle bundle = Platform.getBundle("ru.runa.gpd.form.ftl");
-            URL url = FileLocator.find(bundle, new Path("/CKeditor4/editor.html"), null);
+            URL url = FileLocator.find(bundle, new Path("/CKeditor4/regulations.html"), null);
             URL fileURL = FileLocator.resolve(url);
             String fileURLAsString = fileURL.toString().replace("file:/", "file:///");
             if (fileURLAsString.indexOf(".jar!") != -1) {
                 String tillJar = fileURLAsString.substring(0, fileURLAsString.indexOf(".jar!"));
-                fileURLAsString = tillJar.substring(4, tillJar.lastIndexOf("/")) + "/CKeditor4/editor.html";
+                fileURLAsString = tillJar.substring(4, tillJar.lastIndexOf("/")) + "/CKeditor4/regulations.html";
             }
             browser.setUrl(fileURLAsString);
             browser.setLayoutData(dateGridData7);
-            new GetHTMLCallbackFunction(browser);
-            new OnLoadCallbackFunction(browser);
         } catch (Throwable th) {
             if (!ERROR_ABOUT_BROWSER_LOGGED) {
                 PluginLogger.logErrorWithoutDialog("Unable to create browser", th);
@@ -229,8 +230,13 @@ public class EditNodeRegulationsPropertiesDialog extends Dialog {
 
         @Override
         public Object function(Object[] arguments) {
-            browser.execute("CKEDITOR.instances['editor'].setData('" + properties.getDescription() + "');");
-            return null;
+            String html = properties.getDescription();
+            html = html.replaceAll("\r\n", "\n");
+            html = html.replaceAll("\r", "\n");
+            html = html.replaceAll("\n", "\\\\n");
+            html = html.replaceAll("'", "\\\\'");
+            boolean result = browser.execute("setHTML('" + html + "')");
+            return result;
         }
     }
 
