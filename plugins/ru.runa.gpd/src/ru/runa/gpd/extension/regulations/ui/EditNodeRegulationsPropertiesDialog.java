@@ -1,11 +1,9 @@
 package ru.runa.gpd.extension.regulations.ui;
 
-import java.net.URL;
+import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
-import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -31,8 +29,10 @@ import org.osgi.framework.Bundle;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.regulations.NodeRegulationsProperties;
+import ru.runa.gpd.extension.regulations.RegulationsUtil;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
+import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 
@@ -77,7 +77,7 @@ public class EditNodeRegulationsPropertiesDialog extends Dialog {
                 if (node == null) {
                     return Localization.getString("EditNodeRegulationsPropertiesDialog.text.notSet");
                 }
-                return node.getName() + " [" + node.getId() + "]";
+                return RegulationsUtil.getNodeLabel(node);
             }
         });
         this.comboLabels = labels.toArray(new String[labels.size()]);
@@ -176,26 +176,28 @@ public class EditNodeRegulationsPropertiesDialog extends Dialog {
         GridData dateGridData7 = new GridData(SWT.FILL, SWT.FILL, true, true);
         dateGridData7.minimumHeight = 400;
         dateGridData7.heightHint = 400;
+        boolean createTextInsteadOFBrowser = false;
         try {
-            browser = new Browser(descriptionComposite, SWT.NONE);
-            new GetHTMLCallbackFunction(browser);
-            new OnLoadCallbackFunction(browser);
-            // TODO 2797 improve
             Bundle bundle = Platform.getBundle("ru.runa.gpd.form.ftl");
-            URL url = FileLocator.find(bundle, new Path("/CKeditor4/regulations.html"), null);
-            URL fileURL = FileLocator.resolve(url);
-            String fileURLAsString = fileURL.toString().replace("file:/", "file:///");
-            if (fileURLAsString.indexOf(".jar!") != -1) {
-                String tillJar = fileURLAsString.substring(0, fileURLAsString.indexOf(".jar!"));
-                fileURLAsString = tillJar.substring(4, tillJar.lastIndexOf("/")) + "/CKeditor4/regulations.html";
+            File editorFolder = new File(Platform.getStateLocation(bundle).toFile(), "CKeditor4");
+            if (editorFolder.exists()) {
+                browser = new Browser(descriptionComposite, SWT.NONE);
+                new GetHTMLCallbackFunction(browser);
+                new OnLoadCallbackFunction(browser);
+                browser.setUrl(new File(editorFolder, "regulations.html").getAbsolutePath());
+                browser.setLayoutData(dateGridData7);
+            } else {
+                Dialogs.warning(Localization.getString("EditNodeRegulationsPropertiesDialog.unableToFindEditor"));
+                createTextInsteadOFBrowser = true;
             }
-            browser.setUrl(fileURLAsString);
-            browser.setLayoutData(dateGridData7);
         } catch (Throwable th) {
             if (!ERROR_ABOUT_BROWSER_LOGGED) {
-                PluginLogger.logErrorWithoutDialog("Unable to create browser", th);
+                PluginLogger.logError(Localization.getString("EditNodeRegulationsPropertiesDialog.unableToCreateBrowser"), th);
                 ERROR_ABOUT_BROWSER_LOGGED = true;
             }
+            createTextInsteadOFBrowser = true;
+        }
+        if (createTextInsteadOFBrowser) {
             text = new Text(descriptionComposite, SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
             text.setLayoutData(dateGridData7);
             text.setText(properties.getDescription());

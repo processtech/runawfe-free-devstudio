@@ -1,4 +1,6 @@
-strong {
+.header {
+	font-weight: bold;
+	font-size: 17px;
 	margin: 5px;
 }
 

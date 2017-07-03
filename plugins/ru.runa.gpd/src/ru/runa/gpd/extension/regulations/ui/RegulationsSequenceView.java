@@ -1,15 +1,11 @@
 package ru.runa.gpd.extension.regulations.ui;
 
-import java.util.List;
-import java.util.Set;
+import java.util.Arrays;
+import java.util.Comparator;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.IMarkerDelta;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IResourceChangeEvent;
-import org.eclipse.core.resources.IResourceChangeListener;
-import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.ColumnWeightData;
@@ -19,15 +15,12 @@ import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.TableLayout;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.part.ViewPart;
@@ -35,30 +28,26 @@ import org.eclipse.ui.part.ViewPart;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.PluginLogger;
-import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.editor.ProcessEditorBase;
 import ru.runa.gpd.lang.model.GraphElement;
-import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
-import ru.runa.gpd.lang.model.Subprocess;
-import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.util.WorkspaceOperations;
-
-import com.google.common.base.Objects;
 
 public class RegulationsSequenceView extends ViewPart implements ISelectionChangedListener {
     public static final String ID = "ru.runa.gpd.regulationsSequence";
+    public static final String ORDER = "order";
     static final String[] COLUMN_NAMES = { Localization.getString("RegulationsSequenceView.Number"),
             Localization.getString("RegulationsSequenceView.Node"), Localization.getString("RegulationsSequenceView.Process") };
     private TableViewer viewer;
+    // TODO markers really needed?
+    private IMarker[] markers = new IMarker[0];
 
     @Override
     public void createPartControl(Composite parent) {
         viewer = multiColumnViewer(parent);
         viewer.setContentProvider(new MarkerContentProvider());
         viewer.setLabelProvider(new MarkerLabelProvider());
-        viewer.setSorter(new ViewerSorter());
         viewer.setInput(ResourcesPlugin.getWorkspace());
         viewer.addSelectionChangedListener(this);
     }
@@ -88,6 +77,21 @@ public class RegulationsSequenceView extends ViewPart implements ISelectionChang
         viewer.getControl().setFocus();
     }
 
+    public void refresh(ProcessDefinition processDefinition) throws CoreException {
+        markers = processDefinition.getFile().getProject().findMarkers(RegulationsSequenceView.ID, false, IResource.DEPTH_INFINITE);
+        Arrays.sort(markers, OrderComparator.INSTANCE);
+        viewer.getControl().getDisplay().asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    viewer.refresh();
+                } catch (Exception e) {
+                    // widget is disposed
+                }
+            }
+        });
+    }
+
     @Override
     public void selectionChanged(SelectionChangedEvent event) {
         IMarker marker = (IMarker) ((StructuredSelection) viewer.getSelection()).getFirstElement();
@@ -97,43 +101,8 @@ public class RegulationsSequenceView extends ViewPart implements ISelectionChang
         try {
             IFile definitionFile = (IFile) marker.getResource();
             ProcessEditorBase editor = WorkspaceOperations.openProcessDefinition(definitionFile);
-            GraphElement graphElement = null;
             String elementId = marker.getAttribute(PluginConstants.SELECTION_LINK_KEY, null);
-            if (elementId != null) {
-                List<? extends Node> elements = editor.getDefinition().getChildrenRecursive(Node.class);
-                for (Node element : elements) {
-                    if (Objects.equal(elementId, element.getId())) {
-                        graphElement = element;
-                        break;
-                    }
-                }
-                if (graphElement == null) {
-                    List<GraphElement> listOfElements = editor.getDefinition().getElements();
-                    for (GraphElement curGraphElement : listOfElements) {
-                        if (curGraphElement != null && curGraphElement.getClass().equals(Subprocess.class)
-                                && ((Subprocess) curGraphElement).isEmbedded()) {
-                            Subprocess subprocess = (Subprocess) curGraphElement;
-                            SubprocessDefinition subprocessDefinition = subprocess.getEmbeddedSubprocess();
-                            List<GraphElement> listOfSubprocessElements = subprocessDefinition.getElements();
-                            for (GraphElement curSubprocessGraphElement : listOfSubprocessElements) {
-                                if (Objects.equal(elementId, curSubprocessGraphElement.getId())) {
-                                    graphElement = curSubprocessGraphElement;
-                                    editor = WorkspaceOperations.openProcessDefinition(ProcessCache.getProcessDefinitionFile(subprocessDefinition));
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            String nameOfSourceProcess = marker.getAttribute(PluginConstants.PROCESS_NAME_KEY).toString();
-            Set<ProcessDefinition> setOfProcessDefinitions = ProcessCache.getAllProcessDefinitions();
-            for (ProcessDefinition curProcessDefinition : setOfProcessDefinitions) {
-                if (curProcessDefinition.getName().equals(nameOfSourceProcess)) {
-                    IFile fileCurProcessDefinition = ProcessCache.getProcessDefinitionFile(curProcessDefinition);
-                    editor = WorkspaceOperations.openProcessDefinition(fileCurProcessDefinition);
-                }
-            }
+            GraphElement graphElement = editor.getDefinition().getGraphElementById(elementId);
             if (graphElement != null) {
                 editor.select(graphElement);
             }
@@ -153,7 +122,7 @@ public class RegulationsSequenceView extends ViewPart implements ISelectionChang
             case 2:
                 return marker.getAttribute(IMarker.MESSAGE, "Undefined");
             case 1:
-                return marker.getAttribute(IMarker.LOCATION, "Undefined");
+                return String.valueOf(marker.getAttribute(ORDER, 0));
             default:
                 return "";
             }
@@ -175,62 +144,30 @@ public class RegulationsSequenceView extends ViewPart implements ISelectionChang
         }
     }
 
-    static class MarkerContentProvider implements IStructuredContentProvider, IResourceChangeListener {
-        private StructuredViewer viewer;
-        private IWorkspace input = null;
+    class MarkerContentProvider implements IStructuredContentProvider {
+
+        @Override
+        public Object[] getElements(Object parent) {
+            return markers;
+        }
 
         @Override
         public void inputChanged(Viewer v, Object oldInput, Object newInput) {
-            if (viewer == null) {
-                this.viewer = (StructuredViewer) v;
-            }
-            if (input == null && newInput != null) {
-                input = (IWorkspace) newInput;
-                input.addResourceChangeListener(this, IResourceChangeEvent.POST_CHANGE);
-            }
-            if (newInput == null && input != null) {
-                input.removeResourceChangeListener(this);
-                input = null;
-            }
         }
 
         @Override
         public void dispose() {
-            if (input != null) {
-                input.removeResourceChangeListener(this);
-                input = null;
-            }
         }
 
-        @Override
-        public Object[] getElements(Object parent) {
-            try {
-                return input.getRoot().findMarkers(RegulationsSequenceView.ID, false, IResource.DEPTH_INFINITE);
-            } catch (CoreException e) {
-                return null;
-            }
-        }
+    }
+
+    static class OrderComparator implements Comparator<IMarker> {
+        public static final OrderComparator INSTANCE = new OrderComparator();
 
         @Override
-        public void resourceChanged(IResourceChangeEvent event) {
-            final Control ctrl = viewer.getControl();
-            IMarkerDelta[] mDeltas = event.findMarkerDeltas(RegulationsSequenceView.ID, false);
-            if (mDeltas.length != 0) {
-                try {
-                    ctrl.getDisplay().asyncExec(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                viewer.refresh();
-                            } catch (Exception e) {
-                                // widget is disposed
-                            }
-                        }
-                    });
-                } catch (Exception e) {
-                    // widget is disposed
-                }
-            }
+        public int compare(IMarker m1, IMarker m2) {
+            return m1.getAttribute(ORDER, 0) - m2.getAttribute(ORDER, 0);
         }
+
     }
 }

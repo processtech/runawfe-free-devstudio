@@ -45,9 +45,6 @@ public class CommonPreferencePage extends FieldEditorPreferencePage implements I
     }
 
     public static boolean isRegulationsMenuItemsEnabled() {
-        boolean result = false;
-        result = Activator.getDefault().getPreferenceStore().getString(P_ENABLE_REGULATIONS_MENU_ITEMS).equals(Localization.getString("enable")) ? true
-                : false;
-        return result;
+        return Activator.getDefault().getPreferenceStore().getString(P_ENABLE_REGULATIONS_MENU_ITEMS).equals(Localization.getString("enable"));
     }
 }

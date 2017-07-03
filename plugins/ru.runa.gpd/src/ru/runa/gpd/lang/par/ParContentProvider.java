@@ -28,7 +28,8 @@ public class ParContentProvider {
     public static final String PROCESS_IMAGE_FILE_NAME = "processimage.png";
     public static final String PROCESS_IMAGE_OLD_FILE_NAME = "processimage.jpg";
     public static final String PROCESS_INSTANCE_START_IMAGE_FILE_NAME = "start.png";
-    public static final String PROCESS_DEFINITION_REGULATIONS_XML_FILE_NAME = "regulations.xml";
+    public static final String REGULATIONS_XML_FILE_NAME = "regulations.xml";
+    public static final String REGULATIONS_HTML_FILE_NAME = "regulations.html";
     private static final List<AuxContentProvider> contentProviders = new ArrayList<AuxContentProvider>();
     static {
         contentProviders.add(new VariablesXmlContentProvider());

@@ -19,6 +19,7 @@ import org.eclipse.swt.browser.ProgressEvent;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.MultiPageEditorPart;
 
@@ -30,6 +31,7 @@ import ru.runa.gpd.formeditor.WebServerUtils;
 import ru.runa.gpd.formeditor.resources.Messages;
 import ru.runa.gpd.htmleditor.editors.HTMLConfiguration;
 import ru.runa.gpd.htmleditor.editors.HTMLSourceEditor;
+import ru.runa.gpd.util.EditorUtils;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Throwables;
@@ -48,6 +50,9 @@ public class RegulationsViewer extends MultiPageEditorPart implements IResourceC
 
     @Override
     public void resourceChanged(IResourceChangeEvent event) {
+        if (sourceEditor != null && sourceEditor.getEditorInput() != null) {
+            EditorUtils.closeEditorIfRequired(event, ((IFileEditorInput) sourceEditor.getEditorInput()).getFile(), this);
+        }
     }
 
     @Override

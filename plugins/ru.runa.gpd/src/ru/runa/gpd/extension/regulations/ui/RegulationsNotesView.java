@@ -1,8 +1,5 @@
 package ru.runa.gpd.extension.regulations.ui;
 
-import java.util.List;
-import java.util.Set;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IMarkerDelta;
@@ -35,17 +32,10 @@ import org.eclipse.ui.part.ViewPart;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.PluginLogger;
-import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.editor.ProcessEditorBase;
 import ru.runa.gpd.lang.model.GraphElement;
-import ru.runa.gpd.lang.model.Node;
-import ru.runa.gpd.lang.model.ProcessDefinition;
-import ru.runa.gpd.lang.model.Subprocess;
-import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.util.WorkspaceOperations;
-
-import com.google.common.base.Objects;
 
 public class RegulationsNotesView extends ViewPart implements ISelectionChangedListener {
     public static final String ID = "ru.runa.gpd.regulationsNotes";
@@ -97,43 +87,8 @@ public class RegulationsNotesView extends ViewPart implements ISelectionChangedL
         try {
             IFile definitionFile = (IFile) marker.getResource();
             ProcessEditorBase editor = WorkspaceOperations.openProcessDefinition(definitionFile);
-            GraphElement graphElement = null;
             String elementId = marker.getAttribute(PluginConstants.SELECTION_LINK_KEY, null);
-            if (elementId != null) {
-                List<? extends Node> elements = editor.getDefinition().getChildrenRecursive(Node.class);
-                for (Node element : elements) {
-                    if (Objects.equal(elementId, element.getId())) {
-                        graphElement = element;
-                        break;
-                    }
-                }
-                if (graphElement == null) {
-                    List<GraphElement> listOfElements = editor.getDefinition().getElements();
-                    for (GraphElement curGraphElement : listOfElements) {
-                        if (curGraphElement != null && curGraphElement.getClass().equals(Subprocess.class)
-                                && ((Subprocess) curGraphElement).isEmbedded()) {
-                            Subprocess subprocess = (Subprocess) curGraphElement;
-                            SubprocessDefinition subprocessDefinition = subprocess.getEmbeddedSubprocess();
-                            List<GraphElement> listOfSubprocessElements = subprocessDefinition.getElements();
-                            for (GraphElement curSubprocessGraphElement : listOfSubprocessElements) {
-                                if (Objects.equal(elementId, curSubprocessGraphElement.getId())) {
-                                    graphElement = curSubprocessGraphElement;
-                                    editor = WorkspaceOperations.openProcessDefinition(ProcessCache.getProcessDefinitionFile(subprocessDefinition));
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            String nameOfSourceProcess = marker.getAttribute(PluginConstants.PROCESS_NAME_KEY).toString();
-            Set<ProcessDefinition> setOfProcessDefinitions = ProcessCache.getAllProcessDefinitions();
-            for (ProcessDefinition curProcessDefinition : setOfProcessDefinitions) {
-                if (curProcessDefinition.getName().equals(nameOfSourceProcess)) {
-                    IFile fileCurProcessDefinition = ProcessCache.getProcessDefinitionFile(curProcessDefinition);
-                    editor = WorkspaceOperations.openProcessDefinition(fileCurProcessDefinition);
-                }
-            }
+            GraphElement graphElement = editor.getDefinition().getGraphElementById(elementId);
             if (graphElement != null) {
                 editor.select(graphElement);
             }

@@ -9,6 +9,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IViewReference;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
@@ -82,11 +83,12 @@ public class EditorUtils {
         return null;
     }
 
-    public static void showView(String viewId) {
+    public static IViewPart showView(String viewId) {
         try {
-            PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(viewId);
+            return PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(viewId);
         } catch (PartInitException e) {
             PluginLogger.logErrorWithoutDialog(viewId, e);
+            return null;
         }
     }
 

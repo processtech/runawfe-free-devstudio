@@ -174,12 +174,16 @@
     </objectContribution>
     <objectContribution
           adaptable="false"
-          id="propertiesForRegulations"
+          id="node.regulationProperties"
           objectClass="ru.runa.gpd.lang.model.Node">
+       <filter
+             name="regulationsEnabled"
+             value="true">
+       </filter>
         <action
              class="ru.runa.gpd.extension.regulations.ui.EditNodeRegulationsPropertiesAction"
-             id="editPropertiesForRegulations"
-             label="%label.action.editPropertiesForRegulations">
+             id="editNodeRegulationsProperties"
+             label="%label.action.editNodeRegulationProperties">
         </action>
     </objectContribution>
     <objectContribution
@@ -318,11 +322,6 @@
              class="ru.runa.gpd.lang.action.OpenDescriptionEditorDelegate"
              id="editDescription"
              label="%label.action.editDescription">
-       </action>
-       <action
-             class="ru.runa.gpd.extension.regulations.ui.CreateProcessRegulations"
-             id="ru.runa.gpd.createRegulations"
-             label="%label.menu.createRegulations">
        </action>
        <menu
              id="formCss"
@@ -607,6 +606,24 @@
              class="ru.runa.gpd.lang.action.EditTimerActionAction"
              id="timer.2editAction"
              label="%label.action.editAction">
+       </action>
+    </objectContribution>
+    <objectContribution
+          adaptable="false"
+          id="processdefinition.regulations"
+          objectClass="ru.runa.gpd.lang.model.ProcessDefinition">
+       <filter
+             name="regulationsEnabled"
+             value="true">
+       </filter>
+       <filter
+             name="composition"
+             value="false">
+       </filter>
+       <action
+             class="ru.runa.gpd.extension.regulations.ui.CreateRegulationsAction"
+             id="ru.runa.gpd.createRegulations"
+             label="%label.menu.createRegulations">
        </action>
     </objectContribution>
   </extension>

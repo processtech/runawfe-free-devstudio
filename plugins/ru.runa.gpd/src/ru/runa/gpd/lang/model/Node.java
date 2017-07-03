@@ -17,6 +17,7 @@ import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEvent;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
+import ru.runa.gpd.settings.CommonPreferencePage;
 import ru.runa.gpd.util.Duration;
 
 import com.google.common.base.Objects;
@@ -89,6 +90,21 @@ public abstract class Node extends NamedGraphElement implements Describable {
         }
     }
 
+    public void updateRegulationsPropertiesOnDelete() {
+        if (regulationsProperties.getPreviousNode() != null) {
+            // update next node link
+            if (regulationsProperties.getPreviousNode() != null) {
+                regulationsProperties.getPreviousNode().getRegulationsProperties().setNextNode(null);
+            }
+        }
+        if (regulationsProperties.getNextNode() != null) {
+            // update previous node link
+            if (regulationsProperties.getNextNode() != null) {
+                regulationsProperties.getNextNode().getRegulationsProperties().setPreviousNode(null);
+            }
+        }
+    }
+
     @Override
     protected void populateCustomPropertyDescriptors(List<IPropertyDescriptor> descriptors) {
         super.populateCustomPropertyDescriptors(descriptors);
@@ -98,15 +114,9 @@ public abstract class Node extends NamedGraphElement implements Describable {
             descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_INTERRUPTING_BOUNDARY_EVENT, Localization.getString("property.interrupting"),
                     YesNoComboBoxTransformer.LABELS));
         }
-        descriptors.add(new NodeRegulationsPropertyDescriptor(this));
-    }
-
-    @Override
-    public boolean testAttribute(Object target, String name, String value) {
-        if ("minimizedView".equals(name)) {
-            return Objects.equal(value, isMinimizedView());
+        if (CommonPreferencePage.isRegulationsMenuItemsEnabled()) {
+            descriptors.add(new NodeRegulationsPropertyDescriptor(this));
         }
-        return super.testAttribute(target, name, value);
     }
 
     @Override

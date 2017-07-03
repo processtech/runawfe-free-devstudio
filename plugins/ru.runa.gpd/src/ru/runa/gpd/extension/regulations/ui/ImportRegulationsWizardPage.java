@@ -96,11 +96,11 @@ public class ImportRegulationsWizardPage extends WizardPage {
                 IFile definitionFile = editor.getDefinitionFile();
                 ProcessDefinition definition = editor.getDefinition();
                 Map<String, byte[]> files = IOUtils.getArchiveFiles(new FileInputStream(selectedFile), true);
-                if (!files.containsKey(ParContentProvider.PROCESS_DEFINITION_REGULATIONS_XML_FILE_NAME)) {
+                if (!files.containsKey(ParContentProvider.REGULATIONS_XML_FILE_NAME)) {
                     throw new Exception("regulations.xml not found");
                 }
                 copy(definitionFile, files, ParContentProvider.PROCESS_DEFINITION_DESCRIPTION_FILE_NAME);
-                copy(definitionFile, files, ParContentProvider.PROCESS_DEFINITION_REGULATIONS_XML_FILE_NAME);
+                copy(definitionFile, files, ParContentProvider.REGULATIONS_XML_FILE_NAME);
             } catch (Exception exception) {
                 PluginLogger.logErrorWithoutDialog("import regulations", exception);
                 setErrorMessage(Throwables.getRootCause(exception).getMessage());

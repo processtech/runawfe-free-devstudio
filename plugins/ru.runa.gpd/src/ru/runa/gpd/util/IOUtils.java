@@ -59,7 +59,7 @@ public class IOUtils {
     }
 
     public static boolean looksLikeFormFile(String fileName) {
-        if (fileName.endsWith("index.html")) {
+        if (fileName.endsWith(ParContentProvider.PROCESS_DEFINITION_DESCRIPTION_FILE_NAME)) {
             return false;
         }
         String ext = getExtension(fileName);

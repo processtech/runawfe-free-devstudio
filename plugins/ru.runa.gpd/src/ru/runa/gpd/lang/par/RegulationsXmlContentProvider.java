@@ -24,7 +24,7 @@ public class RegulationsXmlContentProvider extends AuxContentProvider {
 
     @Override
     public String getFileName() {
-        return ParContentProvider.PROCESS_DEFINITION_REGULATIONS_XML_FILE_NAME;
+        return ParContentProvider.REGULATIONS_XML_FILE_NAME;
     }
 
     @Override

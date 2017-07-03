@@ -1,12 +1,11 @@
-<h1>Общее описание бизнес-процесса</h1>
 <div class="nodes">
 	<#list nodeModels as model>
 		<div id="${model.node.id}" class="node ${model.node.typeDefinition.bpmnElementName}">
-			<h3 class="header">
+			<div class="header">
 				<span class="step">Шаг ${model?counter}.</span>
 				<span class="type">${model.node.typeDefinition.label}</span>
 				<span class="name">${model.node.name}</span>
-			</h3>
+			</div>
 			<#if model.inEmbeddedSubprocess>
 				<div class="embedded-subprocess">Действие в рамках композиции <span class="name">${model.node.processDefinition.name}</span></div>
 			</#if>
@@ -19,9 +18,6 @@
 			<#if model.node.class.simpleName == "Subprocess" || model.node.class.simpleName == "MultiSubprocess">
 				<#if !model.node.embedded>
 					<div class="subprocess">Подпроцесс: <span class="name">${model.node.subProcessName}</span></div>
-				</#if>
-				<#if subprocessDescriptions[model.node.getSubProcessName()]?has_content>
-					${subprocessDescriptions[model.node.getSubProcessName()]}
 				</#if>
 			</#if>
 			<#if model.properties.description?length != 0>

@@ -133,6 +133,7 @@ public class ProcessCache {
         return CACHE_BY_FILE.get(file);
     }
 
+    // TODO eliminate due to ProcessDefinition.getFile?
     public static IFile getProcessDefinitionFile(ProcessDefinition processDefinition) {
         for (Map.Entry<IFile, ProcessDefinition> entry : CACHE_BY_FILE.entrySet()) {
             if (Objects.equal(processDefinition, entry.getValue())) {

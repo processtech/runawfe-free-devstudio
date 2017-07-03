@@ -41,7 +41,7 @@ public class RegulationsRegistry {
         Path templatePath;
         Path cssPath;
         IExtension[] extensions = Platform.getExtensionRegistry().getExtensionPoint("ru.runa.gpd.regulations").getExtensions();
-        if (extensions.length > 0) {
+        if (extensions.length > 0 && extensions[0].getConfigurationElements().length > 0) {
             bundle = Platform.getBundle(extensions[0].getNamespaceIdentifier());
             PluginLogger.logInfo("Using " + extensions[0].getExtensionPointUniqueIdentifier() + " for regulations");
             IConfigurationElement[] configElements = extensions[0].getConfigurationElements();

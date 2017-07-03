@@ -2,7 +2,6 @@ package ru.runa.gpd.extension.regulations;
 
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +32,7 @@ import ru.runa.gpd.validation.ValidatorDefinition;
 import ru.runa.gpd.validation.ValidatorDefinitionRegistry;
 
 import com.google.common.base.Objects;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -46,24 +46,31 @@ public class RegulationsUtil {
         // configuration.setDefaultEncoding(Charsets.UTF_8.name());
     }
 
-    public static String generate(IFile definitionFile, ProcessDefinition processDefinition) throws Exception {
+    public static String getNodeLabel(Node node) {
+        if (Strings.isNullOrEmpty(node.getName())) {
+            return node.getTypeDefinition().getLabel() + " [" + node.getId() + "]";
+        }
+        return node.getName() + " [" + node.getId() + "]";
+    }
+
+    public static String generate(ProcessDefinition processDefinition) throws Exception {
         Template template = new Template("regulations", RegulationsRegistry.getTemplate(), configuration);
         List<Node> listOfNodes = getSequencedNodes(processDefinition);
         List<NodeModel> nodeModels = Lists.newArrayList();
-        HashMap<String, FormNodeValidation> mapOfFormNodeValidation = Maps.newHashMap();
+        Map<String, FormNodeValidation> mapOfFormNodeValidation = Maps.newHashMap();
         Map<String, List<ValidatorConfig>> globalValidatorDefinitionsMap = Maps.newHashMap();
         for (Node node : listOfNodes) {
             if (node instanceof FormNode) {
                 FormNode formNode = (FormNode) node;
                 if (formNode.hasFormValidation()) {
-                    FormNodeValidation validation = formNode.getValidation(definitionFile);
+                    FormNodeValidation validation = formNode.getValidation(processDefinition.getFile());
                     mapOfFormNodeValidation.put(formNode.getId(), validation);
                     globalValidatorDefinitionsMap.put(formNode.getId(), validation.getGlobalConfigs());
                 }
             }
             nodeModels.add(new NodeModel(node));
         }
-        HashMap<String, Object> map = new HashMap<>();
+        Map<String, Object> map = Maps.newHashMap();
         map.put("nodeModels", nodeModels);
         map.put("mapOfFormNodeValidation", mapOfFormNodeValidation);
         map.put("globalValidatorDefinitionsMap", globalValidatorDefinitionsMap);
@@ -116,7 +123,7 @@ public class RegulationsUtil {
         Map<String, ValidatorDefinition> validatorDefinitions = ValidatorDefinitionRegistry.getValidatorDefinitions();
         map.put("validatorDefinitions", validatorDefinitions);
 
-        IFile htmlDescriptionFile = IOUtils.getAdjacentFile(definitionFile, ParContentProvider.PROCESS_DEFINITION_DESCRIPTION_FILE_NAME);
+        IFile htmlDescriptionFile = IOUtils.getAdjacentFile(processDefinition.getFile(), ParContentProvider.PROCESS_DEFINITION_DESCRIPTION_FILE_NAME);
         if (htmlDescriptionFile.exists()) {
             map.put("processHtmlDescription", IOUtils.readStream(htmlDescriptionFile.getContents()));
         }
@@ -150,10 +157,12 @@ public class RegulationsUtil {
         return result;
     }
 
-    public static boolean validate(IFile definitionFile, ProcessDefinition definition, List<ValidationError> errors) {
-        for (Node node : definition.getNodes()) {
+    public static boolean validate(ProcessDefinition processDefinition) {
+        List<ValidationError> errors = Lists.newArrayList();
+        IFile definitionFile = processDefinition.getFile();
+        for (Node node : processDefinition.getNodes()) {
             if (!node.getRegulationsProperties().isValid()) {
-                errors.add(ValidationError.createLocalizedWarning(definition, "regulations.invalidProperties", node));
+                errors.add(ValidationError.createLocalizedWarning(node, "regulations.invalidProperties", node));
             }
             if (node.getRegulationsProperties().isEnabled()) {
                 Node nextNode = node.getRegulationsProperties().getNextNode();
@@ -161,33 +170,35 @@ public class RegulationsUtil {
                     errors.add(ValidationError.createLocalizedWarning(node, "regulations.nextNodeIsDisabled", node, nextNode));
                 }
                 if (nextNode != null && !Objects.equal(nextNode.getRegulationsProperties().getPreviousNode(), node)) {
-                    errors.add(ValidationError.createLocalizedWarning(definition, "regulations.nextPreviousNodeMismatch", nextNode, node));
+                    errors.add(ValidationError.createLocalizedWarning(node, "regulations.nextPreviousNodeMismatch", nextNode, node));
                 }
             }
         }
-        Node curNode = definition.getFirstChild(StartState.class);
+        Node curNode = processDefinition.getFirstChild(StartState.class);
         Set<String> loopCheckIds = Sets.newHashSet();
         while (curNode != null) {
             if (loopCheckIds.contains(curNode.getId())) {
-                errors.add(ValidationError.createLocalizedWarning(definition, "regulations.loopDetected", curNode));
+                errors.add(ValidationError.createLocalizedWarning(processDefinition, "regulations.loopDetected", curNode));
                 break;
             }
             loopCheckIds.add(curNode.getId());
             curNode = curNode.getRegulationsProperties().getNextNode();
         }
-        for (Subprocess subprocess : definition.getChildren(Subprocess.class)) {
+        boolean result = true;
+        for (Subprocess subprocess : processDefinition.getChildren(Subprocess.class)) {
             if (subprocess.isEmbedded()) {
                 SubprocessDefinition subprocessDefinition = subprocess.getEmbeddedSubprocess();
                 if (subprocessDefinition.isInvalid()) {
                     errors.add(ValidationError.createLocalizedWarning(subprocessDefinition, "regulations.subprocessContainsErrors",
                             subprocessDefinition.getName()));
                 } else {
-                    validate(definitionFile, subprocessDefinition, errors);
+                    result &= validate(subprocessDefinition);
                 }
             }
         }
+        result &= errors.isEmpty();
         updateView(definitionFile, errors);
-        return errors.isEmpty();
+        return result;
     }
 
     private static void updateView(IFile definitionFile, List<ValidationError> errors) {
@@ -197,11 +208,7 @@ public class RegulationsUtil {
                 IMarker marker = definitionFile.createMarker(RegulationsNotesView.ID);
                 if (marker.exists()) {
                     marker.setAttribute(IMarker.MESSAGE, validationError.getMessage());
-                    String elementId = validationError.getSource().toString();
-                    if (validationError.getSource() instanceof Node) {
-                        elementId = ((Node) validationError.getSource()).getId();
-                    }
-                    marker.setAttribute(PluginConstants.SELECTION_LINK_KEY, elementId);
+                    marker.setAttribute(PluginConstants.SELECTION_LINK_KEY, validationError.getSource().getId());
                     marker.setAttribute(IMarker.LOCATION, validationError.getSource().toString());
                     marker.setAttribute(IMarker.SEVERITY, validationError.getSeverity());
                     marker.setAttribute(PluginConstants.PROCESS_NAME_KEY, validationError.getSource().getProcessDefinition().getName());

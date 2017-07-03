@@ -32,7 +32,6 @@ import ru.runa.wfe.definition.ProcessDefinitionAccessType;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.hash.Hashing;
 
 @SuppressWarnings("unchecked")
 public class ProcessDefinition extends NamedGraphElement implements Describable {
@@ -50,13 +49,16 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
     private ProcessDefinitionAccessType accessType = ProcessDefinitionAccessType.Process;
     private final List<VariableUserType> types = Lists.newArrayList();
     private final IFile file;
-    private int hash32 = -1;
 
     private final ArrayList<VersionInfo> versionInfoList;
 
     public ProcessDefinition(IFile file) {
         this.file = file;
         versionInfoList = new ArrayList<>();
+    }
+
+    public IFile getFile() {
+        return file;
     }
 
     public ProcessDefinitionAccessType getAccessType() {
@@ -66,7 +68,7 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
     @Override
     public boolean testAttribute(Object target, String name, String value) {
         if ("composition".equals(name)) {
-            return this instanceof SubprocessDefinition;
+            return Objects.equal(value, String.valueOf(this instanceof SubprocessDefinition));
         }
         if ("hasFormCSS".equals(name)) {
             try {
@@ -469,19 +471,15 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
 
     @Override
     public final int hashCode() {
-        if (hash32 != -1) {
-            return hash32;
-        }
-        hash32 = Hashing.murmur3_32().hashString(file.getFullPath().toString()).asInt();
-        return hash32;
+        return file.getFullPath().toString().hashCode();
     }
 
     @Override
     public final boolean equals(Object o) {
-        if (o == null || !(o instanceof ProcessDefinition)) {
-            return false;
+        if (o instanceof ProcessDefinition) {
+            return file.equals(((ProcessDefinition) o).file);
         }
-        return hashCode() == o.hashCode();
+        return super.equals(o);
     }
 
     public void addToVersionInfoList(VersionInfo versionInfo) {
