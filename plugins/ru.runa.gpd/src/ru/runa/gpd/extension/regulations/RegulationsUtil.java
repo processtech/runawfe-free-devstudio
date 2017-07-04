@@ -2,7 +2,6 @@ package ru.runa.gpd.extension.regulations;
 
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -12,12 +11,10 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 
-import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.regulations.ui.RegulationsNotesView;
 import ru.runa.gpd.lang.ValidationError;
-import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.StartState;
@@ -26,8 +23,6 @@ import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.util.EditorUtils;
 import ru.runa.gpd.util.IOUtils;
-import ru.runa.gpd.validation.FormNodeValidation;
-import ru.runa.gpd.validation.ValidatorConfig;
 import ru.runa.gpd.validation.ValidatorDefinition;
 import ru.runa.gpd.validation.ValidatorDefinitionRegistry;
 
@@ -57,77 +52,17 @@ public class RegulationsUtil {
         Template template = new Template("regulations", RegulationsRegistry.getTemplate(), configuration);
         List<Node> listOfNodes = getSequencedNodes(processDefinition);
         List<NodeModel> nodeModels = Lists.newArrayList();
-        Map<String, FormNodeValidation> mapOfFormNodeValidation = Maps.newHashMap();
-        Map<String, List<ValidatorConfig>> globalValidatorDefinitionsMap = Maps.newHashMap();
         for (Node node : listOfNodes) {
-            if (node instanceof FormNode) {
-                FormNode formNode = (FormNode) node;
-                if (formNode.hasFormValidation()) {
-                    FormNodeValidation validation = formNode.getValidation(processDefinition.getFile());
-                    mapOfFormNodeValidation.put(formNode.getId(), validation);
-                    globalValidatorDefinitionsMap.put(formNode.getId(), validation.getGlobalConfigs());
-                }
-            }
             nodeModels.add(new NodeModel(node));
         }
         Map<String, Object> map = Maps.newHashMap();
         map.put("nodeModels", nodeModels);
-        map.put("mapOfFormNodeValidation", mapOfFormNodeValidation);
-        map.put("globalValidatorDefinitionsMap", globalValidatorDefinitionsMap);
-        for (String nodeId : mapOfFormNodeValidation.keySet()) {
-            Map<String, Map<String, ValidatorConfig>> nodeFieldConfigs = mapOfFormNodeValidation.get(nodeId).getFieldConfigs();
-            for (Map<String, ValidatorConfig> nodeFieldConfigsValue : nodeFieldConfigs.values()) {
-                for (ValidatorConfig validatorConfig : nodeFieldConfigsValue.values()) {
-                    String typeNameBeforeLocalization = validatorConfig.getType();
-                    if (Localization.isLocalizationExists("ValidatorConfig.type." + validatorConfig.getType())) {
-                        validatorConfig.setType(Localization.getString("ValidatorConfig.type." + validatorConfig.getType()));
-                    }
-                    Map<String, String> localizedParameters = Maps.newHashMap();
-                    for (Iterator<String> iterator = validatorConfig.getParams().keySet().iterator(); iterator.hasNext();) {
-                        String currentParameterName = iterator.next();
-                        String currentParameterValue = validatorConfig.getParams().get(currentParameterName);
-                        if (Localization.isLocalizationExists("ValidatorConfig.type." + typeNameBeforeLocalization + "." + currentParameterName)) {
-                            if (Localization.isLocalizationExists("ValidatorConfig.parameters.values." + currentParameterValue)) {
-                                localizedParameters.put(
-                                        Localization.getString("ValidatorConfig.type." + typeNameBeforeLocalization + "." + currentParameterName),
-                                        Localization.getString("ValidatorConfig.parameters.values." + currentParameterValue));
-                            } else {
-                                if (currentParameterValue.isEmpty() != true) {
-                                    localizedParameters
-                                            .put(Localization.getString("ValidatorConfig.type." + typeNameBeforeLocalization + "."
-                                                    + currentParameterName), currentParameterValue);
-                                } else {
-                                    localizedParameters
-                                            .put(Localization.getString("ValidatorConfig.type." + typeNameBeforeLocalization + "."
-                                                    + currentParameterName), Localization.getString("ValidatorConfig.parameters.values.empty"));
-                                }
-                            }
-                        } else {
-                            if (Localization.isLocalizationExists("ValidatorConfig.parameters.values." + currentParameterValue)) {
-                                localizedParameters.put(currentParameterName,
-                                        Localization.getString("ValidatorConfig.parameters.values." + currentParameterValue));
-                            } else {
-                                if (currentParameterValue.isEmpty() != true) {
-                                    localizedParameters.put(currentParameterName, currentParameterValue);
-                                } else {
-                                    localizedParameters.put(currentParameterName, Localization.getString("ValidatorConfig.parameters.values.empty"));
-                                }
-                            }
-                        }
-                    }
-                    validatorConfig.setParams(localizedParameters);
-                }
-            }
-        }
-
         Map<String, ValidatorDefinition> validatorDefinitions = ValidatorDefinitionRegistry.getValidatorDefinitions();
         map.put("validatorDefinitions", validatorDefinitions);
-
         IFile htmlDescriptionFile = IOUtils.getAdjacentFile(processDefinition.getFile(), ParContentProvider.PROCESS_DEFINITION_DESCRIPTION_FILE_NAME);
         if (htmlDescriptionFile.exists()) {
             map.put("processHtmlDescription", IOUtils.readStream(htmlDescriptionFile.getContents()));
         }
-
         Writer writer = new StringWriter();
         template.process(map, writer);
         return writer.toString();

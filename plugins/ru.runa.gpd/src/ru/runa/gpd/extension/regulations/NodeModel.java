@@ -1,18 +1,17 @@
 package ru.runa.gpd.extension.regulations;
 
+import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.SwimlanedNode;
+import ru.runa.gpd.validation.FormNodeValidation;
 
 public class NodeModel {
     private final Node node;
     private final NodeRegulationsProperties properties;
     private Swimlane swimlane;
-
-    // TODO
-    // private List<String> globalValidators
 
     public NodeModel(Node node) {
         this.node = node;
@@ -44,6 +43,12 @@ public class NodeModel {
         }
         return false;
     }
-    //
 
+    public FormNodeValidation getFormNodeValidation() {
+        return ((FormNode) node).getValidation(node.getProcessDefinition().getFile());
+    }
+
+    public String getLocalized(String string) {
+        return Localization.getString(string);
+    }
 }

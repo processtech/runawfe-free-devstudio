@@ -24,58 +24,53 @@
 				<div class="description">${model.properties.description}</div>
 			</#if>
 			<#if model.hasFormValidation()>
-				<#assign formNodeValidation = mapOfFormNodeValidation[model.node.id]>
+				<#assign formNodeValidation = model.formNodeValidation>
 				<div class="variables">
-					<#assign formNodeValidationGetFieldConfigs = formNodeValidation.getFieldConfigs()>
+					<#assign formNodeValidationFieldConfigs = formNodeValidation.getFieldConfigs()>
 					<table class="data">
 						<tr>
 							<th>Переменная</th>
 							<th>Проверка ввода</th>
 						</tr>
-						<#list formNodeValidationGetFieldConfigs?keys as variableName>
+						<#list formNodeValidationFieldConfigs?keys as variableName>
 							<tr>
-								<td>${variableName}</td>
+								<td class="variableName">${variableName}</td>
 								<td>
-									<#list formNodeValidationGetFieldConfigs[variableName]?keys as nodeFieldConfigsValueKey> 
-										<ul>
-											<li>Тип проверки: ${validatorDefinitions[nodeFieldConfigsValueKey].getLabel()}</li>
+									<ul>
+										<#list formNodeValidationFieldConfigs[variableName]?values as fieldValidatorConfig> 
 											<li>
-												Описание проверки: 
-												<#if formNodeValidationGetFieldConfigs[variableName][nodeFieldConfigsValueKey].getDescription()?length == 0>
-													${validatorDefinitions[nodeFieldConfigsValueKey].getDescription()} (default)
+												<#if fieldValidatorConfig.message?length != 0>
+													${fieldValidatorConfig.message}
 												<#else>
-													${formNodeValidationGetFieldConfigs[variableName][nodeFieldConfigsValueKey].getDescription()}
+													${validatorDefinitions[fieldValidatorConfig.type].getDescription()}
+												</#if>
+												<#if fieldValidatorConfig.transitionNames?size != 0>
+													(только в случае <#list fieldValidatorConfig.transitionNames as transitionName>«<b>${transitionName}</b>»<#if transitionName?has_next>, </#if></#list>)
+												</#if>
+												<#if fieldValidatorConfig.params?size != 0>
+													<ul>
+														<#list fieldValidatorConfig.params?keys as parameterName>
+															<li>
+																${validatorDefinitions[fieldValidatorConfig.type].params[parameterName].label}: 
+																${model.getLocalized(fieldValidatorConfig.params[parameterName])}
+															</li>
+														</#list>
+													</ul>
 												</#if>
 											</li>
-											<#if formNodeValidationGetFieldConfigs[variableName][nodeFieldConfigsValueKey].getMessage()?length != 0>
-												<li>Сообщение проверки: ${formNodeValidationGetFieldConfigs[variableName][nodeFieldConfigsValueKey].getMessage()}</li>
-											</#if>
-											<#if formNodeValidationGetFieldConfigs[variableName][nodeFieldConfigsValueKey].getParams()?size != 0>
-												<li>Параметры проверки:</li> 
-												<ul>
-													<#list formNodeValidationGetFieldConfigs[variableName][nodeFieldConfigsValueKey].getParams()?keys as parameterName>
-														<li>${parameterName}: ${formNodeValidationGetFieldConfigs[variableName][nodeFieldConfigsValueKey].getParams()[parameterName]}</li>
-													</#list>
-												</ul>
-											</#if>
-										</ul>
-									</#list>
+										</#list>
+									</ul>
 								</td>
 							</tr>
 						</#list>
-						<#if globalValidatorDefinitionsMap[model.node.getId()]?size != 0>
+						<#if formNodeValidation.globalConfigs?size != 0>
 							<tr>
 								<td><span class="name">Комплексные проверки данных</span></td>
 								<td>
 									<ul>
-										<#list globalValidatorDefinitionsMap[model.node.getId()] as validatorConfig>
+										<#list formNodeValidation.globalConfigs as globalValidatorConfig>
 											<li>
-												<#if validatorConfig.getDescription()?length != 0>
-													Описание: ${validatorConfig.getDescription()}
-												</#if>
-												<#if validatorConfig.getMessage()?length != 0>
-													Сообщение валидатора: ${validatorConfig.getMessage()}
-												</#if>
+												${globalValidatorConfig.message!"Без сообщения"}
 											</li>
 										</#list>
 									</ul>  
