@@ -7,6 +7,7 @@ import java.io.ObjectOutputStream;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.Variable;
+import ru.runa.gpd.lang.model.VariableStoreType;
 import ru.runa.gpd.lang.model.VariableUserType;
 
 import com.google.common.base.Strings;
@@ -45,6 +46,7 @@ final class Serializator {
         if (variable.isComplex()) {
             write(out, variable.getUserType());
         }
+        out.writeObject(variable.getStoreType());
     }
 
     static void read(ObjectInputStream in, Variable variable, ProcessDefinition processDefinition) throws IOException, ClassNotFoundException {
@@ -63,6 +65,7 @@ final class Serializator {
             read(in, type, processDefinition);
             variable.setUserType(type);
         }
+        variable.setStoreType((VariableStoreType) in.readObject());
     }
 
     static void write(ObjectOutputStream out, VariableUserType type) throws IOException {
