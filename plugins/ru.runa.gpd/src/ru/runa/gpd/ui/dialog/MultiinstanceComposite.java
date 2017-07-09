@@ -115,21 +115,22 @@ public class MultiinstanceComposite extends Composite {
                 parameters.setSwimlaneName(swimlaneCombo.getText());
             }
         });
-        
-        SWTUtils.createLabel(createSubprocessesByDiscriminatorComposite, Localization.getString("MultiTask.property.discriminatorCondition"));
-        SWTUtils.createLink(createSubprocessesByDiscriminatorComposite, Localization.getString("button.insert_variable"), new LoggingHyperlinkAdapter() {
 
-            @Override
-            protected void onLinkActivated(HyperlinkEvent e) throws Exception {
-                ChooseVariableNameDialog dialog = new ChooseVariableNameDialog(getConditionVariableNames());
-                String variableName = dialog.openDialog();
-                if (variableName != null) {
-                    conditionText.insert(variableName);
-                    conditionText.setFocus();
-                    conditionText.setCaretOffset(conditionText.getCaretOffset() + variableName.length());
-                }
-            }
-        }).setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
+        SWTUtils.createLabel(createSubprocessesByDiscriminatorComposite, Localization.getString("MultiTask.property.discriminatorCondition"));
+        SWTUtils.createLink(createSubprocessesByDiscriminatorComposite, Localization.getString("button.insert_variable"),
+                new LoggingHyperlinkAdapter() {
+
+                    @Override
+                    protected void onLinkActivated(HyperlinkEvent e) throws Exception {
+                        ChooseVariableNameDialog dialog = new ChooseVariableNameDialog(getConditionVariableNames());
+                        String variableName = dialog.openDialog();
+                        if (variableName != null) {
+                            conditionText.insert(variableName);
+                            conditionText.setFocus();
+                            conditionText.setCaretOffset(conditionText.getCaretOffset() + variableName.length());
+                        }
+                    }
+                }).setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
         conditionText = new StyledText(createSubprocessesByDiscriminatorComposite, SWT.MULTI | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
         GridData conditionGridData = new GridData(GridData.FILL_BOTH);
         conditionGridData.horizontalSpan = 2;
@@ -151,18 +152,19 @@ public class MultiinstanceComposite extends Composite {
         createSubprocessesByDiscriminatorComposite.setLayout(new GridLayout(2, false));
         createSubprocessesByDiscriminatorComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
         SWTUtils.createLabel(createSubprocessesByDiscriminatorComposite, Localization.getString("MultiSubprocess.property.discriminatorCondition"));
-        SWTUtils.createLink(createSubprocessesByDiscriminatorComposite, Localization.getString("button.insert_variable"), new LoggingHyperlinkAdapter() {
-            @Override
-            protected void onLinkActivated(HyperlinkEvent e) throws Exception {
-                ChooseVariableNameDialog dialog = new ChooseVariableNameDialog(getConditionVariableNames());
-                String variableName = dialog.openDialog();
-                if (variableName != null) {
-                    conditionText.insert(variableName);
-                    conditionText.setFocus();
-                    conditionText.setCaretOffset(conditionText.getCaretOffset() + variableName.length());
-                }
-            }
-        }).setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
+        SWTUtils.createLink(createSubprocessesByDiscriminatorComposite, Localization.getString("button.insert_variable"),
+                new LoggingHyperlinkAdapter() {
+                    @Override
+                    protected void onLinkActivated(HyperlinkEvent e) throws Exception {
+                        ChooseVariableNameDialog dialog = new ChooseVariableNameDialog(getConditionVariableNames());
+                        String variableName = dialog.openDialog();
+                        if (variableName != null) {
+                            conditionText.insert(variableName);
+                            conditionText.setFocus();
+                            conditionText.setCaretOffset(conditionText.getCaretOffset() + variableName.length());
+                        }
+                    }
+                }).setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
         conditionText = new StyledText(createSubprocessesByDiscriminatorComposite, SWT.MULTI | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
         GridData conditionGridData = new GridData(GridData.FILL_BOTH);
         conditionGridData.horizontalSpan = 2;
@@ -185,7 +187,7 @@ public class MultiinstanceComposite extends Composite {
             VariableUserType userType = processDefinition.getVariableUserType(variable.getFormatComponentClassNames()[0]);
             if (userType != null) {
                 Variable itemVariable = new Variable("item", "item", variable);
-                Variable userTypeVariable = new Variable("", "", userType.getName(), userType, false, null);
+                Variable userTypeVariable = new Variable("", "", userType.getName(), userType, false, null, null);
                 for (Variable expanded : VariableUtils.expandComplexVariable(itemVariable, userTypeVariable)) {
                     conditionVariableNames.add(expanded.getScriptingName());
                 }
@@ -208,7 +210,7 @@ public class MultiinstanceComposite extends Composite {
     }
 
     private void updateSubprocessCreationSettingsComposite() {
-    	conditionText.setText(parameters.getDiscriminatorCondition() != null ? parameters.getDiscriminatorCondition() : "");
+        conditionText.setText(parameters.getDiscriminatorCondition() != null ? parameters.getDiscriminatorCondition() : "");
     }
 
     private Composite createTabVariable(CTabFolder parent, String variableLabelText) {

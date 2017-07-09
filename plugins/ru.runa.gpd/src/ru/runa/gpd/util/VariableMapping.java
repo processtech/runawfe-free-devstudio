@@ -1,5 +1,7 @@
 package ru.runa.gpd.util;
 
+import ru.runa.gpd.lang.model.VariableStoreType;
+
 import com.google.common.base.Objects;
 
 public class VariableMapping {
@@ -16,6 +18,10 @@ public class VariableMapping {
     private String name;
     private String mappedName;
     private String usage;
+    /**
+     * TODO implement inherit from base variable
+     */
+    private VariableStoreType storeType = VariableStoreType.DEFAULT;
 
     public VariableMapping() {
     }
@@ -118,5 +124,13 @@ public class VariableMapping {
     @Override
     public String toString() {
         return name + "=" + mappedName + " (" + usage + ")";
+    }
+
+    public VariableStoreType getStoreType() {
+        return storeType;
+    }
+
+    public void setStoreType(VariableStoreType storeType) {
+        this.storeType = storeType;
     }
 }
