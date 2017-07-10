@@ -281,8 +281,8 @@ public class CopyGraphCommand extends Command {
     private void adjustLocation(GraphElement ge) {
         if (!targetEditor.toString().equals(copyBuffer.getEditorId())) {
             Rectangle constraint = ge.getConstraint();
-            int deltaX = GEFConstants.GRID_SIZE - copyBuffer.getViewportLocation().x() + targetViewportLocation.x();
-            int deltaY = GEFConstants.GRID_SIZE - copyBuffer.getViewportLocation().y() + targetViewportLocation.y();
+            int deltaX = GEFConstants.GRID_SIZE + copyBuffer.getViewportLocation().x() - targetViewportLocation.x();
+            int deltaY = GEFConstants.GRID_SIZE + copyBuffer.getViewportLocation().y() - targetViewportLocation.y();
             if (constraint != null) {
                 Rectangle rect = constraint.getCopy();
                 rect.setX(constraint.x() - deltaX);
