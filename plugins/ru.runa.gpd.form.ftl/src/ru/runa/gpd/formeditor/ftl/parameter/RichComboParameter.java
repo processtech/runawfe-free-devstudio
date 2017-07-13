@@ -15,6 +15,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
 
 import ru.runa.gpd.PropertyNames;
+import ru.runa.gpd.formeditor.ftl.Component;
 import ru.runa.gpd.formeditor.ftl.ComponentParameter;
 import ru.runa.gpd.formeditor.ftl.ui.RichComboDialog;
 import ru.runa.gpd.formeditor.wysiwyg.FormEditor;
@@ -23,12 +24,12 @@ public class RichComboParameter extends ParameterType {
     public static final String VALUE_PREFIX = "value@";
 
     @Override
-    public PropertyDescriptor createPropertyDescriptor(ComponentParameter parameter, int propertyId) {
+    public PropertyDescriptor createPropertyDescriptor(Component component, ComponentParameter parameter, int propertyId) {
         return new RichComboPropertyDescriptor(propertyId, parameter, FormEditor.getCurrent().getVariableNames(parameter.getVariableTypeFilter()));
     }
 
     @Override
-    public Composite createEditor(Composite parent, final ComponentParameter parameter, final Object oldValue, final PropertyChangeListener listener) {
+    public Object createEditor(Composite parent, Component component, final ComponentParameter parameter, final Object oldValue, final PropertyChangeListener listener) {
         Composite composite = new Composite(parent, SWT.NONE);
         composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         composite.setLayout(new GridLayout(2, false));

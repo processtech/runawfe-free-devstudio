@@ -15,7 +15,10 @@ import ru.runa.gpd.EditorsPlugin;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.formeditor.ftl.filter.IComponentFilter;
 import ru.runa.gpd.formeditor.ftl.parameter.ParameterType;
+import ru.runa.gpd.formeditor.ftl.validation.IParameterTypeValidator;
+import ru.runa.wfe.InternalApplicationException;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -49,8 +52,10 @@ public class ComponentTypeRegistry {
                     if (EditorsPlugin.DEBUG) {
                         PluginLogger.logInfo("Registering parameter type " + id);
                     }
-                    ParameterType parameterInstance = (ParameterType) element.createExecutableExtension("class");
-                    parameters.put(id, parameterInstance);
+                    ParameterType parameterType = (ParameterType) element.createExecutableExtension("class");
+                    parameterType.setDepends(element.getAttribute("depends"));
+                    parameterType.setValidator((IParameterTypeValidator) element.createExecutableExtension("validator"));
+                    parameters.put(id, parameterType);
                 } catch (Throwable th) {
                     EditorsPlugin.logError("Unable to load FTL component parameter type " + element, th);
                 }
@@ -75,6 +80,21 @@ public class ComponentTypeRegistry {
                         IConfigurationElement[] paramElements = componentElement.getChildren();
                         for (IConfigurationElement paramElement : paramElements) {
                             ComponentParameter componentParameter = new ComponentParameter(paramElement);
+                            if (componentParameter.getType().getDepends() != null) {
+                                ParameterType dependsOnType = parameters.get(componentParameter.getType().getDepends());
+                                Preconditions.checkNotNull(dependsOnType, componentParameter.getType().getDepends());
+                                boolean dependentAdded = false;
+                                for (ComponentParameter testParameter : type.getParameters()) {
+                                    if (testParameter.getType() == dependsOnType) {
+                                        testParameter.getDependents().add(componentParameter);
+                                        dependentAdded = true;
+                                    }
+                                }
+                                if (!dependentAdded) {
+                                    throw new InternalApplicationException("Not found dependent component "
+                                            + componentParameter.getType().getDepends());
+                                }
+                            }
                             type.getParameters().add(componentParameter);
                         }
                         if (EditorsPlugin.DEBUG) {

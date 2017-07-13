@@ -15,9 +15,9 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
 
 import ru.runa.gpd.PropertyNames;
+import ru.runa.gpd.formeditor.ftl.Component;
 import ru.runa.gpd.formeditor.ftl.ComponentParameter;
 import ru.runa.gpd.formeditor.ftl.ui.VariableListDialog;
-import ru.runa.gpd.formeditor.wysiwyg.FormEditor;
 
 import com.google.common.base.Joiner;
 
@@ -29,12 +29,12 @@ public class VariableListParameter extends ParameterType {
     }
 
     @Override
-    public PropertyDescriptor createPropertyDescriptor(ComponentParameter parameter, int propertyId) {
-        return new VariableListPropertyDescriptor(propertyId, parameter.getLabel(), FormEditor.getCurrent().getVariableNames(parameter.getVariableTypeFilter()));
+    public PropertyDescriptor createPropertyDescriptor(Component component, ComponentParameter parameter, int propertyId) {
+        return new VariableListPropertyDescriptor(propertyId, parameter.getLabel(), getVariableNames(parameter));
     }
 
     @Override
-    public Composite createEditor(Composite parent, final ComponentParameter parameter, final Object oldValue, final PropertyChangeListener listener) {
+    public Object createEditor(Composite parent, Component component, final ComponentParameter parameter, final Object oldValue, final PropertyChangeListener listener) {
         Composite composite = new Composite(parent, SWT.NONE);
         composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         composite.setLayout(new GridLayout(2, false));
@@ -47,22 +47,20 @@ public class VariableListParameter extends ParameterType {
         Button selectButton = new Button(composite, SWT.PUSH);
         selectButton.setText("...");
         selectButton.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-        if (listener != null) {
-            final List<String> variableNames = FormEditor.getCurrent().getVariableNames(parameter.getVariableTypeFilter());
-            selectButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    List<String> value = (List<String>) text.getData();
-                    VariableListDialog dialog = new VariableListDialog(variableNames, value);
-                    List<String> result = dialog.openDialog();
-                    if (result != null) {
-                        text.setText(Joiner.on(VALUES_DELIM).join(result));
-                        text.setData(result);
-                        listener.propertyChange(new PropertyChangeEvent(text, PropertyNames.PROPERTY_VALUE, oldValue, result));
-                    }
+        final List<String> variableNames = getVariableNames(parameter);
+        selectButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                List<String> value = (List<String>) text.getData();
+                VariableListDialog dialog = new VariableListDialog(variableNames, value);
+                List<String> result = dialog.openDialog();
+                if (result != null) {
+                    text.setText(Joiner.on(VALUES_DELIM).join(result));
+                    text.setData(result);
+                    listener.propertyChange(new PropertyChangeEvent(text, PropertyNames.PROPERTY_VALUE, oldValue, result));
                 }
-            });
-        }
+            }
+        });
         return composite;
     }
 

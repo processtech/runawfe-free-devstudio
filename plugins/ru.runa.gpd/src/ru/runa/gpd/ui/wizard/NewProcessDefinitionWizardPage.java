@@ -39,7 +39,7 @@ public class NewProcessDefinitionWizardPage extends WizardPage {
     private Combo cssTemplateCombo;
     private final IContainer initialSelection;
     private final List<IContainer> processContainers;
-    private ProcessDefinition parentProcessDefinition;
+    private final ProcessDefinition parentProcessDefinition;
 
     public NewProcessDefinitionWizardPage(IStructuredSelection selection, ProcessDefinition parentProcessDefinition) {
         super(Localization.getString("NewProcessDefinitionWizardPage.page.name"));
@@ -75,7 +75,7 @@ public class NewProcessDefinitionWizardPage extends WizardPage {
         label.setText(Localization.getString("label.project"));
         projectCombo = new Combo(parent, SWT.SINGLE | SWT.READ_ONLY | SWT.BORDER);
         for (IContainer container : processContainers) {
-            projectCombo.add(IOUtils.getProcessContainerName((IContainer) container));
+            projectCombo.add(IOUtils.getProcessContainerName(container));
         }
         projectCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         if (initialSelection != null) {
@@ -154,15 +154,14 @@ public class NewProcessDefinitionWizardPage extends WizardPage {
         cssTemplateCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         if (parentProcessDefinition != null) {
             cssTemplateCombo.add(Localization.getString("inherited"));
-            cssTemplateCombo.select(0);
             cssTemplateCombo.setEnabled(false);
         } else {
             cssTemplateCombo.add(Localization.getString("none"));
             for (FormCSSTemplate template : FormCSSTemplateRegistry.getTemplates()) {
                 cssTemplateCombo.add(template.getName());
             }
-            cssTemplateCombo.select(1);
         }
+        cssTemplateCombo.select(0);
     }
 
     private void verifyContentsValid() {
@@ -183,7 +182,7 @@ public class NewProcessDefinitionWizardPage extends WizardPage {
             setPageComplete(true);
         }
     }
-    
+
     private boolean isProcessExists() {
         if (parentProcessDefinition != null) {
             return parentProcessDefinition.getEmbeddedSubprocessByName(getProcessName()) != null;
@@ -210,7 +209,7 @@ public class NewProcessDefinitionWizardPage extends WizardPage {
         }
         return cssTemplateCombo.getText();
     }
-    
+
     public IFolder getProcessFolder() {
         IContainer container = processContainers.get(projectCombo.getSelectionIndex());
         if (parentProcessDefinition != null) {
