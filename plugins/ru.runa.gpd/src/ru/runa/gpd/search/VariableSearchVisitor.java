@@ -29,9 +29,9 @@ import ru.runa.gpd.extension.handler.ParamDefConfig;
 import ru.runa.gpd.form.FormVariableAccess;
 import ru.runa.gpd.lang.model.BotTask;
 import ru.runa.gpd.lang.model.BotTaskType;
+import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.GraphElement;
-import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.ITimed;
 import ru.runa.gpd.lang.model.MessageNode;
 import ru.runa.gpd.lang.model.MultiTaskState;
@@ -54,7 +54,7 @@ import com.google.common.collect.Maps;
 
 public class VariableSearchVisitor {
 
-    public static final String REGEX_SCRIPT_VARIABLE = "[^\\p{Alnum}_&&[\"'{]]%s[^\\p{Alnum}_&&[\"'}]]";
+    public static final String REGEX_SCRIPT_VARIABLE = "[^\\p{Alnum}_&&[\"'{(, ]]%s[^\\p{Alnum}_&&[\"'}), ]]";
 
     private final VariableSearchQuery query;
     private IProgressMonitor progressMonitor;
@@ -169,7 +169,7 @@ public class VariableSearchVisitor {
 
     private void processDelegableNode(IFile definitionFile, Delegable delegable) throws Exception {
         Matcher delegableMatcher;
-        if (matcherScriptingName != null && HandlerRegistry.SCRIPT_HANDLER_CLASS_NAMES.contains(delegable.getDelegationClassName())) {
+        if (HandlerRegistry.SCRIPT_HANDLER_CLASS_NAMES.contains(delegable.getDelegationClassName())) {
             delegableMatcher = matcherScriptingName;
         } else {
             delegableMatcher = matcher;
@@ -181,9 +181,10 @@ public class VariableSearchVisitor {
         for (Match match : matches) {
             query.getSearchResult().addMatch(match);
         }
-        if (delegable.getDelegationClassName().equals("ru.runa.wfe.extension.handler.SendEmailActionHandler")
+        if (!HandlerRegistry.SCRIPT_HANDLER_CLASS_NAMES.contains(delegable.getDelegationClassName())
                 && !query.getVariable().getName().equals(query.getVariable().getScriptingName())) {
             matches = findInString(elementMatch, "(" + conf + ")", matcherScriptingName);
+            elementMatch.setPotentialMatchesCount(elementMatch.getPotentialMatchesCount() + matches.size());
             for (Match match : matches) {
                 query.getSearchResult().addMatch(match);
             }
