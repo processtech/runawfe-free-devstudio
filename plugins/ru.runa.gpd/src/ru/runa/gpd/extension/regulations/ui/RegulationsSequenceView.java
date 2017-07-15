@@ -40,7 +40,6 @@ public class RegulationsSequenceView extends ViewPart implements ISelectionChang
     static final String[] COLUMN_NAMES = { Localization.getString("RegulationsSequenceView.Number"),
             Localization.getString("RegulationsSequenceView.Node"), Localization.getString("RegulationsSequenceView.Process") };
     private TableViewer viewer;
-    // TODO markers really needed?
     private IMarker[] markers = new IMarker[0];
 
     @Override

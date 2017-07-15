@@ -265,6 +265,7 @@ public abstract class ProcessEditorBase extends MultiPageEditorPart implements I
         ProcessDefinition mainProcessDefinition = definition.getMainProcessDefinition();
         try {
             Set<String> usedFormFiles = new HashSet<String>();
+            usedFormFiles.add(ParContentProvider.PROCESS_DEFINITION_DESCRIPTION_FILE_NAME);
             usedFormFiles.add(ParContentProvider.FORM_JS_FILE_NAME);
             usedFormFiles.add(ParContentProvider.REGULATIONS_HTML_FILE_NAME);
             fetchUsedFormFiles(usedFormFiles, mainProcessDefinition);

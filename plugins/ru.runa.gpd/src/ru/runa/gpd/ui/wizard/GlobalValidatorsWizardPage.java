@@ -28,7 +28,6 @@ import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 
 import ru.runa.gpd.Localization;
@@ -70,8 +69,6 @@ public class GlobalValidatorsWizardPage extends WizardPage {
     private final List<String> variableNames;
     private final List<String> contextVariableNames;
     private final ValidatorDefinition globalDefinition = ValidatorDefinitionRegistry.getGlobalDefinition();
-    private Text descriptionText;
-    private TabFolder tabFolderForValidatorParameters;
 
     protected GlobalValidatorsWizardPage(FormNode formNode) {
         super("Global validators");
@@ -120,17 +117,9 @@ public class GlobalValidatorsWizardPage extends WizardPage {
         validatorsTableViewer.addSelectionChangedListener(new LoggingSelectionChangedAdapter() {
             @Override
             protected void onSelectionChanged(SelectionChangedEvent event) throws Exception {
-                if (infoGroup.getConfig() != null) {
-                    infoGroup.getConfig().setDescription(descriptionText.getText());
-                }
-                infoGroup.saveConfig();
-                tabFolderForValidatorParameters.setSelection(0);
                 ValidatorConfig config = (ValidatorConfig) ((IStructuredSelection) validatorsTableViewer.getSelection()).getFirstElement();
                 deleteButton.setEnabled(config != null);
                 infoGroup.setConfig(ValidatorConfig.GLOBAL_FIELD_ID, globalDefinition, config);
-                if (config != null) {
-                    descriptionText.setText(config.getDescription());
-                }
             }
         });
 
@@ -173,31 +162,11 @@ public class GlobalValidatorsWizardPage extends WizardPage {
         });
         deleteButton.setEnabled(false);
 
-        Composite compositeForTabFolder = new Composite(mainComposite, SWT.NONE);
-        compositeForTabFolder.setLayout(new GridLayout(1, false));
-        compositeForTabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-
-        tabFolderForValidatorParameters = new TabFolder(compositeForTabFolder, SWT.NONE);
-        GridData gridDataForTabFolder = new GridData(GridData.FILL_BOTH);
-        gridDataForTabFolder.minimumHeight = 500;
-        tabFolderForValidatorParameters.setLayoutData(gridDataForTabFolder);
-
-        TabItem tabItemGeneral = new TabItem(tabFolderForValidatorParameters, SWT.NONE);
-        tabItemGeneral.setText(Localization.getString("ValidatorsWizardPage.GeneralInfo"));
-        GridData gridDataForInfoGroup = new GridData(GridData.FILL_BOTH);
-        gridDataForInfoGroup.minimumHeight = 250;
-        infoGroup = new DefaultValidatorInfoControl(tabFolderForValidatorParameters);
-        infoGroup.setLayoutData(gridDataForInfoGroup);
+        GridData infoGridData = new GridData(GridData.FILL_BOTH);
+        infoGridData.minimumHeight = 250;
+        infoGroup = new DefaultValidatorInfoControl(mainComposite);
+        infoGroup.setLayoutData(infoGridData);
         infoGroup.setVisible(false);
-        tabItemGeneral.setControl(infoGroup);
-
-        TabItem tabItemDescription = new TabItem(tabFolderForValidatorParameters, SWT.NONE);
-        tabItemDescription.setText(Localization.getString("ValidatorsWizardPage.DescriptionForUser"));
-        Composite compositeForDescription = new Composite(tabFolderForValidatorParameters, SWT.NONE);
-        compositeForDescription.setLayout(new GridLayout(1, false));
-        descriptionText = new Text(compositeForDescription, SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | SWT.BORDER);
-        descriptionText.setLayoutData(new GridData(GridData.FILL_BOTH));
-        tabItemDescription.setControl(compositeForDescription);
 
         mainComposite.pack(true);
         setControl(mainComposite);
@@ -212,9 +181,6 @@ public class GlobalValidatorsWizardPage extends WizardPage {
     }
 
     public void performFinish() {
-        if (infoGroup.getConfig() != null) {
-            infoGroup.getConfig().setDescription(descriptionText.getText());
-        }
         infoGroup.saveConfig();
         Map<String, ValidatorConfig> globalConfigsMap = new HashMap<String, ValidatorConfig>(validatorConfigs.size());
         int discrimination = 1;

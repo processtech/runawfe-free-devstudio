@@ -59,19 +59,25 @@ public class RegulationsXmlContentProvider extends AuxContentProvider {
         Document document = XmlUtil.createDocument(NODES_SETTINGS);
         Element root = document.getRootElement();
         for (Node node : definition.getNodes()) {
-            Element nodeSettingElement = root.addElement(NODE_SETTINGS);
-            nodeSettingElement.addElement(NODE_ID).addText(node.getId());
-            nodeSettingElement.addElement(IS_ENABLED).addText(String.valueOf(node.getRegulationsProperties().isEnabled()));
+            if (node.getRegulationsProperties().isEmpty()) {
+                continue;
+            }
+            Element element = root.addElement(NODE_SETTINGS);
+            element.addElement(NODE_ID).addText(node.getId());
+            element.addElement(IS_ENABLED).addText(String.valueOf(node.getRegulationsProperties().isEnabled()));
             GraphElement previousNodeInRegulation = node.getRegulationsProperties().getPreviousNode();
             if (previousNodeInRegulation != null) {
-                nodeSettingElement.addElement(PREVIOUS_NODE_ID).addText(previousNodeInRegulation.getId());
+                element.addElement(PREVIOUS_NODE_ID).addText(previousNodeInRegulation.getId());
             }
             GraphElement nextNodeInRegulation = node.getRegulationsProperties().getNextNode();
             if (nextNodeInRegulation != null) {
-                nodeSettingElement.addElement(NEXT_NODE_ID).addText(nextNodeInRegulation.getId());
+                element.addElement(NEXT_NODE_ID).addText(nextNodeInRegulation.getId());
             }
-            nodeSettingElement.addElement(DESCRIPTION).addCDATA(node.getRegulationsProperties().getDescription());
+            element.addElement(DESCRIPTION).addCDATA(node.getRegulationsProperties().getDescription());
         }
-        return document;
+        if (root.elements().size() > 0) {
+            return document;
+        }
+        return null;
     }
 }

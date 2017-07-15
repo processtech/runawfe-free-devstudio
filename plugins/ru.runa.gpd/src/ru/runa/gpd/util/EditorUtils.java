@@ -5,7 +5,6 @@ import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IFileEditorInput;
@@ -30,16 +29,7 @@ public class EditorUtils {
                     public boolean visit(IResourceDelta delta) {
                         if (delta.getKind() == IResourceDelta.REMOVED) {
                             if (file.equals(delta.getResource())) {
-                                Display.getDefault().asyncExec(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        try {
-                                            editor.getSite().getPage().closeEditor(editor, false);
-                                        } catch (Exception e) {
-                                            PluginLogger.logErrorWithoutDialog("Close editor on delete", e);
-                                        }
-                                    }
-                                });
+                                editor.getSite().getPage().closeEditor(editor, false);
                                 return false;
                             }
                         }

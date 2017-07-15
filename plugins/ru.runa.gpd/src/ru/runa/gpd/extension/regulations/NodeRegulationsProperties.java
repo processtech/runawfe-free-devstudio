@@ -8,6 +8,7 @@ import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.StartState;
 
 import com.google.common.base.Objects;
+import com.google.common.base.Strings;
 
 public class NodeRegulationsProperties {
     private final GraphElement parent;
@@ -78,6 +79,10 @@ public class NodeRegulationsProperties {
             }
         }
         return true;
+    }
+
+    public boolean isEmpty() {
+        return previousNode == null && nextNode == null && Strings.isNullOrEmpty(description);
     }
 
     @Override

@@ -49,6 +49,12 @@ public class RegulationsViewer extends MultiPageEditorPart implements IResourceC
     }
 
     @Override
+    public void dispose() {
+        ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
+        super.dispose();
+    }
+
+    @Override
     public void resourceChanged(IResourceChangeEvent event) {
         if (sourceEditor != null && sourceEditor.getEditorInput() != null) {
             EditorUtils.closeEditorIfRequired(event, ((IFileEditorInput) sourceEditor.getEditorInput()).getFile(), this);

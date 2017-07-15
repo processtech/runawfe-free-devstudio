@@ -318,11 +318,6 @@
           adaptable="false"
           id="processdefinition"
           objectClass="ru.runa.gpd.lang.model.ProcessDefinition">
-       <action
-             class="ru.runa.gpd.lang.action.OpenDescriptionEditorDelegate"
-             id="editDescription"
-             label="%label.action.editDescription">
-       </action>
        <menu
              id="formCss"
              label="%label.action.formCSS"
@@ -438,6 +433,15 @@
                 </objectState>
              </and>
           </enablement>
+       </action>
+       <filter
+             name="composition"
+             value="false">
+       </filter>
+       <action
+             class="ru.runa.gpd.lang.action.OpenDescriptionEditorDelegate"
+             id="editDescription"
+             label="%label.action.editDescription">
        </action>
        <action
              class="ru.runa.gpd.ui.action.VersionCommentAction"

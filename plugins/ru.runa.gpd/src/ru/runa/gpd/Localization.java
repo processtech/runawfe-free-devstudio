@@ -24,15 +24,4 @@ public class Localization {
         return MessageFormat.format(msg, parameters);
     }
 
-    public static boolean isLocalizationExists(String key) {
-        boolean result = true;
-
-        try {
-            RESOURCE_BUNDLE.getString(key);
-        } catch (MissingResourceException e) {
-            result = false;
-        }
-
-        return result;
-    }
 }

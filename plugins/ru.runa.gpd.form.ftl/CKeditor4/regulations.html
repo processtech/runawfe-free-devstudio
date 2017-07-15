@@ -30,16 +30,14 @@
 		function setHTML(html) {
 			try {
 				var editor = CKEDITOR.instances.editor;        	  
-				editor.setData(html, function() {
-					;
-				});	
+				editor.setData(html);	
 			} catch (e) {
 				alertError(e, "setHTML");
 			}
         }
 		</script>
 	</head>
-	<body style="margin: 0px; padding: 0px;" class="taskform">
+	<body style="margin: 0px; padding: 0px;">
 		<textarea id="editor"></textarea>
 		<script type="text/javascript">
 		try {

@@ -37,7 +37,6 @@ import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.swt.widgets.Text;
 
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.SharedImages;
@@ -75,8 +74,6 @@ public class FieldValidatorsWizardPage extends WizardPage {
     private ValidatorInfoControl infoGroup;
     private String warningMessage = "";
     private Map<String, Map<String, ValidatorConfig>> fieldConfigs;
-    private Text descriptionText;
-    private TabFolder tabFolderForValidatorParameters;
 
     protected FieldValidatorsWizardPage(FormNode formNode) {
         super("Field validators");
@@ -245,32 +242,11 @@ public class FieldValidatorsWizardPage extends WizardPage {
         validatorsTableViewer.setLabelProvider(new ValidatorDefinitionTableLabelProvider());
         validatorsTableViewer.getControl().setLayoutData(data);
 
-        Composite compositeForTabFolder = new Composite(right, SWT.NONE);
-        compositeForTabFolder.setLayout(new GridLayout(1, false));
-        compositeForTabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-        tabFolderForValidatorParameters = new TabFolder(compositeForTabFolder, SWT.NONE);
-
-        GridData gridDataForTabFolder = new GridData(GridData.FILL_BOTH);
-        gridDataForTabFolder.minimumHeight = 500;
-        tabFolderForValidatorParameters.setLayoutData(gridDataForTabFolder);
-
-        TabItem tabItemGeneral = new TabItem(tabFolderForValidatorParameters, SWT.NONE);
-        tabItemGeneral.setText(Localization.getString("ValidatorsWizardPage.GeneralInfo"));
-        GridData gridDataForInfoGroup = new GridData(GridData.FILL_BOTH);
-        gridDataForInfoGroup.minimumHeight = 500;
-        infoGroup = new DefaultValidatorInfoControl(tabFolderForValidatorParameters);
-        infoGroup.setLayoutData(gridDataForInfoGroup);
+        GridData groupData = new GridData(GridData.FILL_BOTH);
+        groupData.minimumHeight = 200;
+        infoGroup = new DefaultValidatorInfoControl(right);
+        infoGroup.setLayoutData(groupData);
         infoGroup.setVisible(false);
-        tabItemGeneral.setControl(infoGroup);
-
-        TabItem tabItemDescription = new TabItem(tabFolderForValidatorParameters, SWT.NONE);
-        tabItemDescription.setText(Localization.getString("ValidatorsWizardPage.DescriptionForUser"));
-        Composite compositeForDescription = new Composite(tabFolderForValidatorParameters, SWT.NONE);
-        compositeForDescription.setLayout(new GridLayout(1, false));
-        descriptionText = new Text(compositeForDescription, SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | SWT.BORDER);
-        descriptionText.setLayoutData(new GridData(GridData.FILL_BOTH));
-        tabItemDescription.setControl(compositeForDescription);
-
         validatorsTableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
@@ -380,9 +356,6 @@ public class FieldValidatorsWizardPage extends WizardPage {
     }
 
     public void performFinish() {
-        if (infoGroup.getConfig() != null) {
-            infoGroup.getConfig().setDescription(descriptionText.getText());
-        }
         infoGroup.saveConfig();
     }
 
@@ -394,20 +367,13 @@ public class FieldValidatorsWizardPage extends WizardPage {
     }
 
     private void updateValidatorSelection() {
-        if (infoGroup.getConfig() != null) {
-            infoGroup.getConfig().setDescription(descriptionText.getText());
-        }
-        infoGroup.saveConfig();
-        tabFolderForValidatorParameters.setSelection(0);
         ValidatorDefinition vd = getCurrentDefinition();
         if (vd != null) {
             ValidatorConfig config = getFieldValidator(getCurrentVariableName(), vd);
             if (config == null) {
                 config = vd.create();
-                descriptionText.setText("");
             }
             infoGroup.setConfig(getCurrentVariableName(), vd, config);
-            descriptionText.setText(config.getDescription());
         }
     }
 
