@@ -199,7 +199,7 @@ public class ExportParWizardPage extends WizardArchiveFileResourceExportPage1 {
                 IFile definitionFile = definitionNameFileMap.get(selectedDefinitionName);
                 definitionFile.getParent().refreshLocal(IResource.DEPTH_ONE, null);
                 ProcessDefinition definition = ProcessCache.getProcessDefinition(definitionFile);
-                int validationResult = ProcessDefinitionValidator.validateDefinition(definitionFile, definition);
+                int validationResult = ProcessDefinitionValidator.validateDefinition(definition);
                 if (!exportToFile && validationResult != 0) {
                     Activator.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(ValidationErrorsView.ID);
                     if (validationResult == 2) {
@@ -208,8 +208,7 @@ public class ExportParWizardPage extends WizardArchiveFileResourceExportPage1 {
                     }
                 }
                 for (SubprocessDefinition subprocessDefinition : definition.getEmbeddedSubprocesses().values()) {
-                    IFile subprocessDefinitionFile = ProcessCache.getProcessDefinitionFile(subprocessDefinition);
-                    validationResult = ProcessDefinitionValidator.validateDefinition(subprocessDefinitionFile, subprocessDefinition);
+                    validationResult = ProcessDefinitionValidator.validateDefinition(subprocessDefinition);
                     if (!exportToFile && validationResult != 0) {
                         if (validationResult == 2) {
                             setErrorMessage(Localization.getString("ExportParWizardPage.page.errorsExistInEmbeddedSubprocess"));

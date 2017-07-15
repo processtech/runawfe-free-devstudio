@@ -24,9 +24,8 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 
-import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.Localization;
-import ru.runa.gpd.ProcessCache;
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.gef.command.ProcessDefinitionRemoveSwimlaneCommand;
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.HandlerRegistry;
@@ -276,7 +275,7 @@ public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
             if (useLtk && editor.getDefinition().getEmbeddedSubprocesses().size() > 0) {
                 IDE.saveAllEditors(new IResource[] { projectRoot }, false);
                 for (SubprocessDefinition subprocessDefinition : editor.getDefinition().getEmbeddedSubprocesses().values()) {
-                    WorkspaceOperations.saveProcessDefinition(ProcessCache.getProcessDefinitionFile(subprocessDefinition), subprocessDefinition);
+                    WorkspaceOperations.saveProcessDefinition(subprocessDefinition.getFile(), subprocessDefinition);
                 }
             }
         }

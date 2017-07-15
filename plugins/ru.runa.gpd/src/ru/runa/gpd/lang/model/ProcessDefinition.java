@@ -14,7 +14,6 @@ import org.eclipse.ui.views.properties.PropertyDescriptor;
 
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
-import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.extension.VariableFormatRegistry;
 import ru.runa.gpd.lang.Language;
@@ -72,7 +71,7 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
         }
         if ("hasFormCSS".equals(name)) {
             try {
-                IFile file = IOUtils.getAdjacentFile(ProcessCache.getProcessDefinitionFile(this), ParContentProvider.FORM_CSS_FILE_NAME);
+                IFile file = IOUtils.getAdjacentFile(getFile(), ParContentProvider.FORM_CSS_FILE_NAME);
                 return Objects.equal(value, String.valueOf(file.exists()));
             } catch (Exception e) {
                 PluginLogger.logErrorWithoutDialog("testAttribute: hasFormCSS", e);
@@ -81,7 +80,7 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
         }
         if ("hasFormJS".equals(name)) {
             try {
-                IFile file = IOUtils.getAdjacentFile(ProcessCache.getProcessDefinitionFile(this), ParContentProvider.FORM_JS_FILE_NAME);
+                IFile file = IOUtils.getAdjacentFile(getFile(), ParContentProvider.FORM_JS_FILE_NAME);
                 return Objects.equal(value, String.valueOf(file.exists()));
             } catch (Exception e) {
                 PluginLogger.logErrorWithoutDialog("testAttribute: hasFormJS", e);

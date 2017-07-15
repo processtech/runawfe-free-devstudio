@@ -29,15 +29,16 @@ public class ProcessDefinitionValidator {
     /**
      * 0 = no errors 1 = only warnings 2 = errors
      */
-    public static int validateDefinition(IFile definitionFile, ProcessDefinition definition) {
+    public static int validateDefinition(ProcessDefinition processDefinition) {
         try {
             boolean hasErrors = false;
             boolean hasWarnings = false;
+            IFile definitionFile = processDefinition.getFile();
             definitionFile.deleteMarkers(ValidationErrorsView.ID, true, IResource.DEPTH_INFINITE);
             List<ValidationError> errors = Lists.newArrayList();
-            definition.validate(errors, definitionFile);
+            processDefinition.validate(errors, definitionFile);
             for (ValidationError validationError : errors) {
-                addError(definitionFile, definition, validationError);
+                addError(definitionFile, processDefinition, validationError);
                 if (validationError.getSeverity() == IMarker.SEVERITY_WARNING) {
                     hasWarnings = true;
                 }
