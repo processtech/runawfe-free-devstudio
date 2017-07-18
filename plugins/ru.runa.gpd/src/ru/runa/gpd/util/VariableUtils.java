@@ -12,6 +12,8 @@ import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableContainer;
 import ru.runa.gpd.lang.model.VariableUserType;
+import ru.runa.wfe.var.format.ListFormat;
+import ru.runa.wfe.var.format.MapFormat;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
@@ -235,6 +237,15 @@ public class VariableUtils {
 
     public static Variable getComplexVariableByExpandedAttribute(VariableContainer variableContainer, String variableName) {
         return getVariableByName(variableContainer, variableName.split(Pattern.quote(VariableUserType.DELIM))[0]);
+    }
+
+    public static boolean isResizableVariable(Variable v) {
+        String fcn = v.getFormatClassName();
+        return fcn.equals(ListFormat.class.getName()) || fcn.equals(MapFormat.class.getName());
+    }
+
+    public static boolean isUserTypeFormat(String variableFormat) {
+        return variableFormat.indexOf(".") < 0;
     }
 
 }
