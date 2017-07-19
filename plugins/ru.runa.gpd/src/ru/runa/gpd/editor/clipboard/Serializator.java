@@ -55,7 +55,7 @@ final class Serializator {
                 String[] componentNames = variable.getFormatComponentClassNames();
                 List<VariableUserType> vuts = Lists.newArrayList();
                 for (String componentName : componentNames) {
-                    if (VariableUtils.isUserTypeFormat(componentName)) {
+                    if (componentName.indexOf(".") < 0) { // UserType?
                         VariableUserType vut = variable.getProcessDefinition().getVariableUserType(componentName);
                         if (vut != null) {
                             vuts.add(vut);

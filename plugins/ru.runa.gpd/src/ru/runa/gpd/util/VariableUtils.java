@@ -1,5 +1,6 @@
 package ru.runa.gpd.util;
 
+import java.text.MessageFormat;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +10,7 @@ import java.util.regex.Pattern;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.GraphElement;
+import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableContainer;
 import ru.runa.gpd.lang.model.VariableUserType;
@@ -244,8 +246,37 @@ public class VariableUtils {
         return fcn.equals(ListFormat.class.getName()) || fcn.equals(MapFormat.class.getName());
     }
 
-    public static boolean isUserTypeFormat(String variableFormat) {
-        return variableFormat.indexOf(".") < 0;
+    public static void renameUserType(ProcessDefinition pd, VariableUserType type, String newTypeName) {
+        final String[] typeUsages = { "\\({0}\\)", "\\({0},", ", {0}\\)", ", {0}," };
+        String oldTypeName = type.getName();
+        List<VariableUserType> userTypes = pd.getVariableUserTypes();
+        for (VariableUserType userType : userTypes) {
+            List<Variable> attributes = userType.getAttributes();
+            for (Variable attribute : attributes) {
+                for (String typeUsage : typeUsages) {
+                    attribute.setFormat(attribute.getFormat().replaceAll(MessageFormat.format(typeUsage, oldTypeName),
+                            MessageFormat.format(typeUsage, newTypeName)));
+                }
+            }
+        }
+        List<Variable> complexVariables = Lists.newArrayList();
+        List<Variable> variables = pd.getVariables(false, true);
+        for (Variable variable : variables) {
+            if (variable.isComplex()) {
+                if (variable.getUserType().getName().equals(oldTypeName)) {
+                    complexVariables.add(variable);
+                }
+            } else if (variable.getFormat().contains(oldTypeName)) {
+                for (String typeUsage : typeUsages) {
+                    variable.setFormat(variable.getFormat().replaceAll(MessageFormat.format(typeUsage, oldTypeName),
+                            MessageFormat.format(typeUsage, newTypeName)));
+                }
+            }
+        }
+        type.setName(newTypeName);
+        for (Variable variable : complexVariables) {
+            variable.setUserType(type);
+        }
     }
 
 }
