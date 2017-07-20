@@ -59,6 +59,10 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
         versionInfoList = new ArrayList<>();
     }
 
+    public IFile getFile() {
+        return file;
+    }
+
     public ProcessDefinitionAccessType getAccessType() {
         return accessType;
     }
