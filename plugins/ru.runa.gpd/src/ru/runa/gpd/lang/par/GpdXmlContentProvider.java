@@ -7,7 +7,15 @@ import org.dom4j.Element;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.graphiti.datatypes.ILocation;
+import org.eclipse.graphiti.features.IFeatureProvider;
+import org.eclipse.graphiti.mm.pictograms.Connection;
+import org.eclipse.graphiti.services.Graphiti;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.part.FileEditorInput;
 
+import ru.runa.gpd.editor.graphiti.GraphitiProcessEditor;
 import ru.runa.gpd.editor.graphiti.HasTextDecorator;
 import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.model.Action;
@@ -20,6 +28,8 @@ import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
 import ru.runa.gpd.util.XmlUtil;
 
 import com.google.common.collect.Lists;
+
+import static java.lang.Math.min;
 
 /**
  * Information saved in absolute coordinates for all elements.
@@ -44,6 +54,9 @@ public class GpdXmlContentProvider extends AuxContentProvider {
     private static final String BENDPOINT = "bendpoint";
     private static final String LABEL = "label";
     private static final String TEXT_DECORATION = "textDecoration";
+
+    private static int MAGIC_NUMBER_X = 5;
+    private static int MAGIC_NUMBER_Y = 47;
 
     @Override
     public String getFileName() {
@@ -112,9 +125,17 @@ public class GpdXmlContentProvider extends AuxContentProvider {
             }
         }
     }
-
+    
     @Override
     public Document save(ProcessDefinition definition) throws Exception {
+        IFeatureProvider bpmnFeatureProvider = null;
+        if (definition.getLanguage() == Language.BPMN) {
+            IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+            GraphitiProcessEditor graphitiProcessEditor = (GraphitiProcessEditor) page.findEditor(new FileEditorInput(definition.getFile()));
+            if (graphitiProcessEditor != null) { // while copying
+                bpmnFeatureProvider = graphitiProcessEditor.getDiagramEditorPage().getDiagramTypeProvider().getFeatureProvider();
+            }
+        }
         Document document = XmlUtil.createDocument(PROCESS_DIAGRAM);
         Element root = document.getRootElement();
         addAttribute(root, NAME, definition.getName());
@@ -127,6 +148,8 @@ public class GpdXmlContentProvider extends AuxContentProvider {
         addAttribute(root, HEIGHT, String.valueOf(dimension.height));
         addAttribute(root, SHOW_ACTIONS, String.valueOf(definition.isShowActions()));
         addAttribute(root, SHOW_GRID, String.valueOf(definition.isShowGrid()));
+        int diagramX = MAGIC_NUMBER_X;
+        int diagramY = MAGIC_NUMBER_Y;
         int xOffset = 0;
         int yOffset = 0;
         int canvasShift = 0;
@@ -143,37 +166,42 @@ public class GpdXmlContentProvider extends AuxContentProvider {
                 continue;
             }
             Rectangle constraint = graphElement.getConstraint();
-            if (constraint.x - canvasShift < xOffset) {
-                xOffset = constraint.x - canvasShift;
-            }
-            if (constraint.y - canvasShift < yOffset) {
-                yOffset = constraint.y - canvasShift;
-            }
+            xOffset = min(xOffset, constraint.x - canvasShift);
+            yOffset = min(yOffset, constraint.y - canvasShift);
             if (graphElement instanceof Node) {
                 Node node = (Node) graphElement;
                 for (Transition transition : node.getLeavingTransitions()) {
+                    Point lableLocation = transition.getLabelLocation();
+                    if (bpmnFeatureProvider != null && lableLocation != null) {
+                        Connection connection = (Connection) bpmnFeatureProvider.getPictogramElementForBusinessObject(transition);
+                        ILocation midpoint = Graphiti.getPeService().getConnectionMidpoint(connection, 0.5d);
+                        diagramX = min(diagramX, lableLocation.x + midpoint.getX());
+                        diagramY = min(diagramY, lableLocation.y + midpoint.getY());
+                    }
                     for (Point bendpoint : transition.getBendpoints()) {
                         // canvasShift for BPMN connections = 0;
-                        if (bendpoint.x < xOffset) {
-                            xOffset = bendpoint.x;
-                        }
-                        if (bendpoint.y < yOffset) {
-                            yOffset = bendpoint.y;
-                        }
+                        xOffset = min(xOffset, bendpoint.x);
+                        yOffset = min(yOffset, bendpoint.y);
                     }
                 }
             }
             if (graphElement instanceof HasTextDecorator) {
                 TextDecorationNode decorationNode = ((HasTextDecorator) graphElement).getTextDecoratorEmulation().getDefinition();
                 if (decorationNode != null && decorationNode.getConstraint() != null) {
-                    if (decorationNode.getConstraint().x - canvasShift < xOffset) {
-                        xOffset = decorationNode.getConstraint().x - canvasShift;
-                    }
-                    if (decorationNode.getConstraint().y - canvasShift < yOffset) {
-                        yOffset = decorationNode.getConstraint().y - canvasShift;
-                    }
+                    xOffset = min(xOffset, decorationNode.getConstraint().x - canvasShift);
+                    yOffset = min(yOffset, decorationNode.getConstraint().y - canvasShift);
                 }
             }
+        }
+        if (diagramX < 0) {
+            addAttribute(root, X, String.valueOf(-diagramX + MAGIC_NUMBER_X));
+        } else if (diagramX < MAGIC_NUMBER_X) {
+            addAttribute(root, X, String.valueOf(MAGIC_NUMBER_X - diagramX));
+        }
+        if (diagramY < 0) {
+            addAttribute(root, Y, String.valueOf(-diagramY + MAGIC_NUMBER_Y));
+        } else if (diagramY < MAGIC_NUMBER_Y) {
+            addAttribute(root, Y, String.valueOf(MAGIC_NUMBER_Y - diagramY));
         }
         for (GraphElement graphElement : definition.getElementsRecursive()) {
             if (graphElement instanceof Action || graphElement.getConstraint() == null) {
