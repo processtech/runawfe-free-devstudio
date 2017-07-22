@@ -27,9 +27,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.ide.IDE;
 
-import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.ProcessCache;
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.clipboard.VariableTransfer;
 import ru.runa.gpd.editor.clipboard.VariableUserTypeTransfer;
 import ru.runa.gpd.lang.model.FormNode;
@@ -270,7 +270,35 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             VariableUserType type = getSelection();
             VariableUserTypeDialog dialog = new VariableUserTypeDialog(getDefinition(), type);
             if (dialog.open() == Window.OK) {
-                type.setName(dialog.getName());
+                String oldTypeName = type.getName();
+                String newTypeName = dialog.getName();
+                List<Variable> variables = getDefinition().getChildren(Variable.class);
+                List<Variable> resultVariables = Lists.newArrayList();
+                List<VariableUserType> listOfTypes = getDefinition().getVariableUserTypes();
+                for (VariableUserType currentType : listOfTypes) {
+                    List<Variable> listOfVariables = currentType.getAttributes();
+                    for (Variable currentVariable : listOfVariables) {
+                        if (currentVariable.getFormat().contains(oldTypeName)) {
+                            currentVariable.setFormat(currentVariable.getFormat().replace(oldTypeName, newTypeName));
+                        }
+                    }
+                }
+                for (Variable currentVariable : variables) {
+                    if ((currentVariable.getFormat().equals("ru.runa.wfe.var.format.UserTypeFormat") && currentVariable.getUserType().getName()
+                            .equals(oldTypeName))
+                            || currentVariable.getFormat().equals("usertype:" + oldTypeName)) {
+                        resultVariables.add(currentVariable);
+                    } else if (currentVariable.getFormat().contains(oldTypeName)) {
+                        String replacedUserTypeFormat = currentVariable.getFormat().replace(oldTypeName, newTypeName);
+                        currentVariable.setFormat(replacedUserTypeFormat);
+                    }
+                }
+                type.setName(newTypeName);
+                if (resultVariables.size() > 0) {
+                    for (Variable currentVariable : resultVariables) {
+                        currentVariable.setUserType(type);
+                    }
+                }
             }
         }
     }

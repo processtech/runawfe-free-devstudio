@@ -24,9 +24,9 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 
-import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.ProcessCache;
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.clipboard.VariableTransfer;
 import ru.runa.gpd.editor.gef.command.ProcessDefinitionRemoveVariablesCommand;
 import ru.runa.gpd.lang.model.FormNode;
@@ -344,6 +344,29 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
             Clipboard clipboard = new Clipboard(getDisplay());
             @SuppressWarnings("unchecked")
             List<Variable> list = ((IStructuredSelection) tableViewer.getSelection()).toList();
+            for (int i = 0; i < list.size(); i++) {
+                String formatName = list.get(i).getFormat();
+                String[] variableUserTypeNameArray = list.get(i).getFormatComponentClassNames();
+                if (variableUserTypeNameArray.length > 0) {
+                    if (formatName.startsWith("ru.runa.wfe.var.format.ListFormat")
+                            && variableUserTypeNameArray[0].startsWith("ru.runa.wfe.var.format") != true) {
+                        VariableUserType variableUserType = getDefinition().getVariableUserTypeNotNull(variableUserTypeNameArray[0]);
+                        list.get(i).setUserType(variableUserType, false);
+                        list.get(i).setFormat(formatName, false);
+                    } else if (formatName.startsWith("ru.runa.wfe.var.format.MapFormat")) {
+                        VariableUserType variableUserType1 = null;
+                        if (variableUserTypeNameArray[0].startsWith("ru.runa.wfe.var.format") != true) {
+                            variableUserType1 = getDefinition().getVariableUserTypeNotNull(variableUserTypeNameArray[0]);
+                            list.get(i).setUserType1(variableUserType1);
+                        }
+                        VariableUserType variableUserType2 = null;
+                        if (variableUserTypeNameArray[1].startsWith("ru.runa.wfe.var.format") != true) {
+                            variableUserType2 = getDefinition().getVariableUserTypeNotNull(variableUserTypeNameArray[1]);
+                            list.get(i).setUserType2(variableUserType2);
+                        }
+                    }
+                }
+            }
             clipboard.setContents(new Object[] { list }, new Transfer[] { VariableTransfer.getInstance() });
         }
     }
@@ -360,6 +383,8 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
                     Variable newVariable = VariableUtils.getVariableByName(getDefinition(), variable.getName());
                     if (newVariable == null) {
                         newVariable = new Variable(variable);
+                        newVariable.setUserType1(variable.getUserType1());
+                        newVariable.setUserType2(variable.getUserType2());
                     } else {
                         UpdateVariableNameDialog dialog = new UpdateVariableNameDialog(newVariable);
                         nameAllowed = dialog.open() == Window.OK;
@@ -372,9 +397,20 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
 
                     if (nameAllowed) {
                         getDefinition().addChild(newVariable);
-                        if (newVariable.isComplex()) {
-                            copyUserTypeRecursive(newVariable.getUserType());
-                            newVariable.setUserType(getDefinition().getVariableUserTypeNotNull(newVariable.getUserType().getName()));
+                        if (newVariable.getUserType() != null || newVariable.getUserType1() != null || newVariable.getUserType2() != null) {
+                            if (newVariable.getUserType() != null) {
+                                copyUserTypeRecursive(newVariable.getUserType());
+                            }
+                            if (newVariable.getUserType1() != null) {
+                                copyUserTypeRecursive(newVariable.getUserType1());
+                            }
+                            if (newVariable.getUserType2() != null) {
+                                copyUserTypeRecursive(newVariable.getUserType2());
+                            }
+                            if (newVariable.getFormatClassName().equals("ru.runa.wfe.var.format.UserTypeFormat")
+                                    || newVariable.getFormat().startsWith("usertype:")) {
+                                newVariable.setUserType(getDefinition().getVariableUserTypeNotNull(newVariable.getUserType().getName()));
+                            }
                         }
                     }
                 }
@@ -387,8 +423,14 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
                 getDefinition().addVariableUserType(userType);
             }
             for (Variable attribute : sourceUserType.getAttributes()) {
-                if (attribute.isComplex()) {
+                if (attribute.getUserType() != null) {
                     copyUserTypeRecursive(attribute.getUserType());
+                }
+                if (attribute.getUserType1() != null) {
+                    copyUserTypeRecursive(attribute.getUserType1());
+                }
+                if (attribute.getUserType2() != null) {
+                    copyUserTypeRecursive(attribute.getUserType2());
                 }
             }
         }
