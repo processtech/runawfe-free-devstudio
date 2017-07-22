@@ -385,7 +385,7 @@ public class QuickFormEditor extends EditorPart implements ISelectionListener, I
                     variables.put(quickFormGpdProperty.getName(), quickFormGpdProperty.getValue() == null ? "" : quickFormGpdProperty.getValue());
                 }
                 FormHashModelGpdWrap quickModel = new FormHashModelGpdWrap(null, new MapVariableProvider(variables), null);
-                String ftlTemplate = TemplateProcessor.process(quickTemplate, quickModel);
+                String ftlTemplate = TemplateProcessor.process(formFile.getFullPath().toString(), quickTemplate, quickModel);
                 MapVariableProvider ftlVariableProvider = new MapVariableProvider(new HashMap<String, Object>());
                 for (QuickFormGpdVariable quickFormGpdVariable : quickForm.getVariables()) {
                     Variable variable = VariableUtils.getVariableByName(processDefinition, quickFormGpdVariable.getName());
@@ -400,8 +400,7 @@ public class QuickFormEditor extends EditorPart implements ISelectionListener, I
                     ftlVariableProvider.add(wfVariable);
                 }
                 FormHashModelGpdWrap ftlModel = new FormHashModelGpdWrap(null, ftlVariableProvider, null);
-                String form = TemplateProcessor.process(ftlTemplate, ftlModel);
-
+                String form = TemplateProcessor.process(formFile.getFullPath().toString() + "_2", ftlTemplate, ftlModel);
                 IFile formCssFile = definitionFolder.getFile(ParContentProvider.FORM_CSS_FILE_NAME);
                 String styles = formCssFile.exists() ? IOUtils.readStream(formCssFile.getContents()) : null;
                 PreviewFormWizard wizard = new PreviewFormWizard(form, styles);

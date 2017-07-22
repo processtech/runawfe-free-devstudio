@@ -14,7 +14,6 @@ import org.eclipse.ui.views.properties.PropertyDescriptor;
 
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
-import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.extension.VariableFormatRegistry;
 import ru.runa.gpd.lang.Language;
@@ -32,7 +31,6 @@ import ru.runa.wfe.definition.ProcessDefinitionAccessType;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.hash.Hashing;
 
 @SuppressWarnings("unchecked")
 public class ProcessDefinition extends NamedGraphElement implements Describable {
@@ -50,13 +48,16 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
     private ProcessDefinitionAccessType accessType = ProcessDefinitionAccessType.Process;
     private final List<VariableUserType> types = Lists.newArrayList();
     private final IFile file;
-    private int hash32 = -1;
 
     private final ArrayList<VersionInfo> versionInfoList;
 
     public ProcessDefinition(IFile file) {
         this.file = file;
         versionInfoList = new ArrayList<>();
+    }
+
+    public IFile getFile() {
+        return file;
     }
 
     public ProcessDefinitionAccessType getAccessType() {
@@ -66,11 +67,11 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
     @Override
     public boolean testAttribute(Object target, String name, String value) {
         if ("composition".equals(name)) {
-            return this instanceof SubprocessDefinition;
+            return Objects.equal(value, String.valueOf(this instanceof SubprocessDefinition));
         }
         if ("hasFormCSS".equals(name)) {
             try {
-                IFile file = IOUtils.getAdjacentFile(ProcessCache.getProcessDefinitionFile(this), ParContentProvider.FORM_CSS_FILE_NAME);
+                IFile file = IOUtils.getAdjacentFile(getFile(), ParContentProvider.FORM_CSS_FILE_NAME);
                 return Objects.equal(value, String.valueOf(file.exists()));
             } catch (Exception e) {
                 PluginLogger.logErrorWithoutDialog("testAttribute: hasFormCSS", e);
@@ -79,7 +80,7 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
         }
         if ("hasFormJS".equals(name)) {
             try {
-                IFile file = IOUtils.getAdjacentFile(ProcessCache.getProcessDefinitionFile(this), ParContentProvider.FORM_JS_FILE_NAME);
+                IFile file = IOUtils.getAdjacentFile(getFile(), ParContentProvider.FORM_JS_FILE_NAME);
                 return Objects.equal(value, String.valueOf(file.exists()));
             } catch (Exception e) {
                 PluginLogger.logErrorWithoutDialog("testAttribute: hasFormJS", e);
@@ -469,19 +470,15 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
 
     @Override
     public final int hashCode() {
-        if (hash32 != -1) {
-            return hash32;
-        }
-        hash32 = Hashing.murmur3_32().hashString(file.getFullPath().toString()).asInt();
-        return hash32;
+        return file.getFullPath().toString().hashCode();
     }
 
     @Override
     public final boolean equals(Object o) {
-        if (o == null || !(o instanceof ProcessDefinition)) {
-            return false;
+        if (o instanceof ProcessDefinition) {
+            return file.equals(((ProcessDefinition) o).file);
         }
-        return hashCode() == o.hashCode();
+        return super.equals(o);
     }
 
     public void addToVersionInfoList(VersionInfo versionInfo) {

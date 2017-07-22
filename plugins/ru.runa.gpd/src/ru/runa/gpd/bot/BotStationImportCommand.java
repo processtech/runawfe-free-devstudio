@@ -70,6 +70,8 @@ public class BotStationImportCommand extends BotSyncCommand {
             if (messages.length() > 0) {
                 Dialogs.warning(Localization.getString("ImportBotStationWizardPage.warning.botstationImportError"), messages.toString());
             }
+            zin.close();
+            inputStream.close();
         } catch (Exception e) {
             throw new InvocationTargetException(e);
         }

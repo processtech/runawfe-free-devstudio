@@ -19,7 +19,6 @@ import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.util.IOUtils;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
 public class ProcessCache {
@@ -83,10 +82,10 @@ public class ProcessCache {
             ProcessDefinition definition = CACHE_BY_FILE.remove(file);
             if (definition != null) {
                 CACHE_BY_NAME.remove(definition.getName());
-                if (!(definition instanceof SubprocessDefinition)) {
-                    for (SubprocessDefinition sub : definition.getEmbeddedSubprocesses().values()) {
-                        processDefinitionWasDeleted(getProcessDefinitionFile(sub));
-                    }
+            }
+            if (!(definition instanceof SubprocessDefinition)) {
+                for (SubprocessDefinition subprocessDefinition : definition.getEmbeddedSubprocesses().values()) {
+                    processDefinitionWasDeleted(subprocessDefinition.getFile());
                 }
             }
         } catch (Exception e) {
@@ -131,15 +130,6 @@ public class ProcessCache {
             }
         }
         return CACHE_BY_FILE.get(file);
-    }
-
-    public static IFile getProcessDefinitionFile(ProcessDefinition processDefinition) {
-        for (Map.Entry<IFile, ProcessDefinition> entry : CACHE_BY_FILE.entrySet()) {
-            if (Objects.equal(processDefinition, entry.getValue())) {
-                return entry.getKey();
-            }
-        }
-        throw new RuntimeException("No file found for " + processDefinition);
     }
 
     public static ProcessDefinition getFirstProcessDefinition(String name) {

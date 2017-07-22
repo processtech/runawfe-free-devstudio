@@ -23,4 +23,5 @@ public class Localization {
         String msg = getString(key);
         return MessageFormat.format(msg, parameters);
     }
+
 }

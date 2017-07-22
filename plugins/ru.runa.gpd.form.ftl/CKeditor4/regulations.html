@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<link rel="stylesheet" href="jquery-ui-1.9.2.custom.css">
+		<script src="jquery-1.7.1.min.js"></script>
+		<script src="jquery-ui-1.9.2.custom.min.js"></script>
+		<script src="jquery.scrollTo.min.js"></script>
+		<script type="text/javascript" src="ckeditor.js"></script>
+		<script type="text/javascript">
+		var displayedErrors = new Object();
+		function alertError(e, method) {
+			if (displayedErrors[e.message] == undefined) {
+				displayedErrors[e.message] = true;
+				var errorInfo = "Message: " + e.message + "\n";
+				errorInfo += "Name: " + e.name + "\n";
+				errorInfo += "Description: " + e.description + "\n";
+				errorInfo += "Number: " + e.number + "\n";
+				errorInfo += "On method: " + method + "\n";
+				errorInfo += "-------\n";
+				errorInfo += "Stack: " + e.stack + "\n";
+				alert(errorInfo);
+			}
+		}
+		function getHTML() {
+			// passing exception to caller to prevent saving old content
+			var editor = CKEDITOR.instances.editor;
+			getHTMLCallback(editor.getData());
+		}
+		function setHTML(html) {
+			try {
+				var editor = CKEDITOR.instances.editor;        	  
+				editor.setData(html);	
+			} catch (e) {
+				alertError(e, "setHTML");
+			}
+        }
+		</script>
+	</head>
+	<body style="margin: 0px; padding: 0px;">
+		<textarea id="editor"></textarea>
+		<script type="text/javascript">
+		try {
+			var editor = CKEDITOR.replace("editor", {
+				contentsCss: "regulations.css",
+				extraPlugins: ""
+			});
+			onLoadCallback();
+		} catch (e) {
+			alertError(e, "CKEDITOR.replace");
+		}
+		</script>
+	</body>
+</html>

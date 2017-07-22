@@ -49,11 +49,11 @@
             id="ru.runa.gpd.htmleditor.editors.WebBrowser"
             name="%plugin.editor.webbrowser"/>
       <editor
-            class="ru.runa.gpd.formeditor.wysiwyg.RegulationHTMLEditor"
-            extensions="rgl"
+            class="ru.runa.gpd.formeditor.wysiwyg.RegulationsViewer"
+            filenames="regulations.html"
             icon="icons/html.png"
-            id="ru.runa.gpd.wysiwyg.RegulationHTMLEditor"
-            name="%editor.name">
+            id="ru.runa.gpd.wysiwyg.RegulationsViewer"
+            name="regulations viewer">
       </editor>
    </extension>
 
