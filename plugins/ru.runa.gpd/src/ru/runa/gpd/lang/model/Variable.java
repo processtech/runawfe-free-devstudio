@@ -32,7 +32,7 @@ public class Variable extends NamedGraphElement implements Describable {
         super(name);
         setScriptingName(scriptingName);
         setFormat(format);
-        this.userType = userType;
+        setUserType(userType);
         this.publicVisibility = publicVisibility;
         this.defaultValue = defaultValue;
     }
