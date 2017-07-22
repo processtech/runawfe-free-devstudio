@@ -8,7 +8,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 
 import ru.runa.gpd.extension.VariableFormatRegistry;
-import ru.runa.gpd.extension.handler.ParamDefConfig;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.bpmn.IMultiInstancesContainer;
 import ru.runa.gpd.util.MultiinstanceParameters;
@@ -180,8 +179,7 @@ public class MultiTaskState extends TaskState implements IMultiInstancesContaine
             }
             String componentFormat = VariableUtils.getListVariableComponentFormat(listVariable);
             VariableUserType userType = getProcessDefinition().getVariableUserType(componentFormat);
-            Variable variable = new Variable(mapping.getMappedName(), mapping.getMappedName(), componentFormat, userType, true, null,
-                    mapping.getStoreType());
+            Variable variable = new Variable(mapping.getMappedName(), mapping.getMappedName(), componentFormat, userType);
             if (expandComplexTypes && variable.isComplex()) {
                 formVariables.addAll(VariableUtils.expandComplexVariable(variable, variable));
             } else {

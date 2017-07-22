@@ -29,25 +29,25 @@ public class Variable extends NamedGraphElement implements Describable {
     public Variable() {
     }
 
-    public Variable(String name, String scriptingName, String format, VariableUserType userType, boolean publicVisibility, String defaultValue,
-            VariableStoreType storeType) {
+    public Variable(String name, String scriptingName, String format, VariableUserType userType) {
         super(name);
         setScriptingName(scriptingName);
         setFormat(format);
-        this.userType = userType;
-        this.publicVisibility = publicVisibility;
-        this.defaultValue = defaultValue;
-        setStoreType(storeType);
+        setUserType(userType);
     }
 
     public Variable(Variable variable) {
-        this(variable.getName(), variable.getScriptingName(), variable.getFormat(), variable.getUserType(), variable.isPublicVisibility(), variable
-                .getDefaultValue(), variable.getStoreType());
+        this(variable.getName(), variable.getScriptingName(), variable.getFormat(), variable.getUserType());
+        setPublicVisibility(variable.isPublicVisibility());
+        setDefaultValue(variable.getDefaultValue());
+        setStoreType(variable.getStoreType());
     }
 
     public Variable(String name, String scriptingName, Variable variable) {
-        this(name, scriptingName, variable.getFormat(), variable.getUserType(), variable.isPublicVisibility(), variable.getDefaultValue(), variable
-                .getStoreType());
+        this(name, scriptingName, variable.getFormat(), variable.getUserType());
+        setPublicVisibility(variable.isPublicVisibility());
+        setDefaultValue(variable.getDefaultValue());
+        setStoreType(variable.getStoreType());
     }
 
     public VariableUserType getUserType() {

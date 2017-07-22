@@ -5,7 +5,6 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 
-import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableStoreType;
 import ru.runa.gpd.ui.custom.ContentWizardPage;
@@ -16,7 +15,6 @@ import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
  * @since Jun 21, 2017
  */
 public class VariableStoreTypePage extends ContentWizardPage {
-
     private VariableStoreType storeType = VariableStoreType.DEFAULT;
 
     public VariableStoreTypePage(Variable variable) {
@@ -28,34 +26,24 @@ public class VariableStoreTypePage extends ContentWizardPage {
     @Override
     protected void createContent(Composite composite) {
         final Combo combo = new Combo(composite, SWT.BORDER | SWT.READ_ONLY);
-        for (VariableStoreType st : VariableStoreType.values()) {
-            combo.add(st.getDescription());
+        for (VariableStoreType storeType : VariableStoreType.values()) {
+            combo.add(storeType.getDescription());
         }
-        combo.setEnabled(true);
         combo.setText(storeType.getDescription());
         combo.addSelectionListener(new LoggingSelectionAdapter() {
             @Override
             protected void onSelection(SelectionEvent e) throws Exception {
-                storeType = VariableStoreType.valueOfDescription(combo.getText());
+                storeType = VariableStoreType.values()[combo.getSelectionIndex()];
             }
         });
     }
 
     @Override
     protected void verifyContentIsValid() {
-        if (storeType == null) {
-            setErrorMessage(Localization.getString("VariableStoreTypePage.error.store.type.not.present"));
-        } else {
-            setErrorMessage(null);
-        }
     }
 
     public VariableStoreType getStoreType() {
         return storeType;
-    }
-
-    public void setStoreType(VariableStoreType storeType) {
-        this.storeType = storeType != null ? storeType : VariableStoreType.DEFAULT;
     }
 
 }

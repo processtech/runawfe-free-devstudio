@@ -187,7 +187,7 @@ public class MultiinstanceComposite extends Composite {
             VariableUserType userType = processDefinition.getVariableUserType(variable.getFormatComponentClassNames()[0]);
             if (userType != null) {
                 Variable itemVariable = new Variable("item", "item", variable);
-                Variable userTypeVariable = new Variable("", "", userType.getName(), userType, false, null, null);
+                Variable userTypeVariable = new Variable("", "", userType.getName(), userType);
                 for (Variable expanded : VariableUtils.expandComplexVariable(itemVariable, userTypeVariable)) {
                     conditionVariableNames.add(expanded.getScriptingName());
                 }

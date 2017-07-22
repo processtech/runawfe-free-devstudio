@@ -114,8 +114,11 @@ public class VariablesXmlContentProvider extends AuxContentProvider {
             // remove old comments due to some bug
             description = null;
         }
-        Variable variable = new Variable(variableName, scriptingName, format, userType, publicVisibility, defaultValue, storeType);
+        Variable variable = new Variable(variableName, scriptingName, format, userType);
+        variable.setPublicVisibility(publicVisibility);
+        variable.setDefaultValue(defaultValue);
         variable.setDescription(description);
+        variable.setStoreType(storeType);
         return variable;
     }
 

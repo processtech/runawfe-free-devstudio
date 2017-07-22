@@ -74,8 +74,11 @@ public class VariableWizard extends Wizard {
         }
         String defaultValue = defaultValuePage.getDefaultValue();
         boolean publicVisibility = accessPage != null ? accessPage.isPublicVisibility() : false;
-        variable = new Variable(name, scriptingName, format, formatPage.getUserType(), publicVisibility, defaultValue, storeTypePage.getStoreType());
+        variable = new Variable(name, scriptingName, format, formatPage.getUserType());
+        variable.setPublicVisibility(publicVisibility);
+        variable.setDefaultValue(defaultValue);
         variable.setDescription(description);
+        variable.setStoreType(storeTypePage.getStoreType());
         return true;
     }
 }

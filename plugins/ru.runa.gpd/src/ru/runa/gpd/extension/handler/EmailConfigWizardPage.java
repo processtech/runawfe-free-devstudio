@@ -171,13 +171,13 @@ public class EmailConfigWizardPage extends WizardPage implements MessageDisplay 
         ParamDefGroup paramGroup = ftlSyntaxConfig.getGroupByName(EFS_PROPS_COMMON);
         if (paramGroup != null) {
             for (ParamDef param : paramGroup.getParameters()) {
-                props.add(new Variable(param.getLabel(), param.getName(), null, null, false, null, null));
+                props.add(new Variable(param.getLabel(), param.getName(), null, null));
             }
         }
         paramGroup = ftlSyntaxConfig.getGroupByName(isBotTask ? EFS_PROPS_BOT : EFS_PROPS_NON_BOT);
         if (paramGroup != null) {
             for (ParamDef param : paramGroup.getParameters()) {
-                props.add(new Variable(param.getLabel(), param.getName(), null, null, false, null, null));
+                props.add(new Variable(param.getLabel(), param.getName(), null, null));
             }
         }
         return props;
