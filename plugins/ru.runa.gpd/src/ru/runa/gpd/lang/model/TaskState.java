@@ -122,6 +122,14 @@ public class TaskState extends FormNode implements ActionContainer, ITimed, Sync
     }
 
     @Override
+    public void setSwimlane(Swimlane swimlane) {
+        super.setSwimlane(swimlane);
+        if (getRegulationsProperties().isEnabled() && getSwimlaneBotName() != null) {
+            getRegulationsProperties().setEnabled(false);
+        }
+    }
+
+    @Override
     public boolean testAttribute(Object target, String name, String value) {
         if (super.testAttribute(target, name, value)) {
             return true;

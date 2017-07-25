@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Schema file written by PDE -->
 <schema targetNamespace="ru.runa.gpd" xmlns="http://www.w3.org/2001/XMLSchema">
-<annotation>
-      <appInfo>
+   <annotation>
+      <appinfo>
          <meta.schema plugin="ru.runa.gpd" id="elements" name="Graph Element Extensions"/>
-      </appInfo>
+      </appinfo>
       <documentation>
          Jpdl elements
       </documentation>
@@ -12,9 +12,9 @@
 
    <element name="extension">
       <annotation>
-         <appInfo>
+         <appinfo>
             <meta.element />
-         </appInfo>
+         </appinfo>
       </annotation>
       <complexType>
          <sequence>
@@ -39,9 +39,9 @@
                <documentation>
                   
                </documentation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute translatable="true"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
       </complexType>
@@ -96,9 +96,9 @@
                <documentation>
                   
                </documentation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute translatable="true"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="model" type="string" use="required">
@@ -106,12 +106,19 @@
                <documentation>
                   
                </documentation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute kind="java" basedOn="ru.runa.gpd.lang.model.GraphElement"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="icon" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="enabledInRegulationsByDefault" type="boolean">
             <annotation>
                <documentation>
                   
@@ -128,9 +135,9 @@
                <documentation>
                   
                </documentation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute kind="java" basedOn="org.eclipse.gef.EditPart"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="treeEditPart" type="string">
@@ -138,9 +145,9 @@
                <documentation>
                   
                </documentation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute kind="java" basedOn="org.eclipse.gef.EditPart"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="figure" type="string">
@@ -148,9 +155,9 @@
                <documentation>
                   
                </documentation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute kind="java" basedOn="org.eclipse.draw2d.IFigure"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
       </complexType>
@@ -163,9 +170,9 @@
                <documentation>
                   
                </documentation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute kind="java" basedOn=":ru.runa.gpd.ltk.VariableRenameProvider"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
       </complexType>
@@ -178,9 +185,9 @@
                <documentation>
                   
                </documentation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute kind="java" basedOn=":org.eclipse.graphiti.features.ICreateFeature"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="add" type="string" use="required">
@@ -188,9 +195,9 @@
                <documentation>
                   
                </documentation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute kind="java" basedOn=":org.eclipse.graphiti.features.IAddFeature"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="update" type="string">
@@ -198,9 +205,9 @@
                <documentation>
                   
                </documentation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute kind="java" basedOn=":org.eclipse.graphiti.features.IUpdateFeature"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="layout" type="string">
@@ -208,9 +215,9 @@
                <documentation>
                   
                </documentation>
-               <appInfo>
+               <appinfo>
                   <meta.attribute kind="java" basedOn=":org.eclipse.graphiti.features.ILayoutFeature"/>
-               </appInfo>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="width" type="string" use="required">
@@ -238,39 +245,38 @@
    </element>
 
    <annotation>
-      <appInfo>
+      <appinfo>
+         <meta.section type="apiInfo"/>
+      </appinfo>
+      <documentation>
+         [Enter API information here.]
+      </documentation>
+   </annotation>
+
+   <annotation>
+      <appinfo>
          <meta.section type="since"/>
-      </appInfo>
+      </appinfo>
       <documentation>
          [Enter the first release in which this extension point appears.]
       </documentation>
    </annotation>
 
    <annotation>
-      <appInfo>
+      <appinfo>
          <meta.section type="examples"/>
-      </appInfo>
+      </appinfo>
       <documentation>
          [Enter extension point usage example here.]
       </documentation>
    </annotation>
 
    <annotation>
-      <appInfo>
+      <appinfo>
          <meta.section type="implementation"/>
-      </appInfo>
+      </appinfo>
       <documentation>
          [Enter information about supplied implementation of this extension point.]
-      </documentation>
-   </annotation>
-
-
-   <annotation>
-      <appInfo>
-         <meta.section type="apiInfo"/>
-      </appInfo>
-      <documentation>
-         [Enter API information here.]
       </documentation>
    </annotation>
 

@@ -3,6 +3,7 @@ package ru.runa.gpd.lang.model.bpmn;
 import ru.runa.gpd.lang.model.Decision;
 
 public class ExclusiveGateway extends Decision {
+
     @Override
     public boolean isDelegable() {
         return isDecision();
