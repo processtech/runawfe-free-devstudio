@@ -7,8 +7,11 @@ import org.dom4j.Element;
 
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.GraphElement;
+import ru.runa.gpd.lang.model.Variable;
+import ru.runa.gpd.office.excel.ExcelModel;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 
 public class InputOutputModel {
     public String inputPath;
@@ -56,8 +59,20 @@ public class InputOutputModel {
     }
 
     public void validate(GraphElement graphElement, FilesSupplierMode mode, List<ValidationError> errors) {
-        if (mode.isInSupported() && Strings.isNullOrEmpty(inputPath) && Strings.isNullOrEmpty(inputVariable)) {
-            errors.add(ValidationError.createError(graphElement, Messages.getString("model.validation.in.file.empty")));
+        List<Variable> processVariables = graphElement.getProcessDefinition().getChildren(Variable.class);
+        List<String> variablesNames = Lists.newArrayList();
+        variablesNames.addAll(ExcelModel.fillVariableNames(processVariables));
+        if (mode.isInSupported()) {
+            if (Strings.isNullOrEmpty(inputPath) && Strings.isNullOrEmpty(inputVariable)) {
+                errors.add(ValidationError.createError(graphElement, Messages.getString("model.validation.in.file.empty")));
+            }
+
+            if (Strings.isNullOrEmpty(inputVariable) != true) {
+                if (variablesNames.contains(inputVariable) != true) {
+                    errors.add(ValidationError.createError(graphElement,
+                            Messages.getString("model.validation.in.file.variable.doesnotExists", inputVariable)));
+                }
+            }
         }
         if (mode.isOutSupported()) {
             if (Strings.isNullOrEmpty(outputVariable) && Strings.isNullOrEmpty(outputDir)) {
@@ -66,7 +81,12 @@ public class InputOutputModel {
             if (Strings.isNullOrEmpty(outputFilename)) {
                 errors.add(ValidationError.createError(graphElement, Messages.getString("model.validation.out.filename.empty")));
             }
+            if (Strings.isNullOrEmpty(outputVariable) != true) {
+                if (variablesNames.contains(outputVariable) != true) {
+                    errors.add(ValidationError.createError(graphElement,
+                            Messages.getString("model.validation.out.file.variable.doesnotExists", outputVariable)));
+                }
+            }
         }
     }
-
 }
