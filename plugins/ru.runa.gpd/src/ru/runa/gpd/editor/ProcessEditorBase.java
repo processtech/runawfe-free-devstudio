@@ -37,14 +37,16 @@ import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.views.contentoutline.ContentOutline;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
-import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.gef.GEFImageHelper;
 import ru.runa.gpd.editor.gef.GEFProcessEditor;
 import ru.runa.gpd.editor.gef.part.graph.ElementGraphicalEditPart;
 import ru.runa.gpd.editor.graphiti.DiagramEditorPage;
+import ru.runa.gpd.extension.regulations.ui.RegulationsNotesView;
+import ru.runa.gpd.extension.regulations.ui.RegulationsSequenceView;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.ProcessDefinition;
@@ -96,6 +98,8 @@ public abstract class ProcessEditorBase extends MultiPageEditorPart implements I
                 }
                 if (definitionFile.exists()) {
                     definitionFile.deleteMarkers(ValidationErrorsView.ID, true, IResource.DEPTH_INFINITE);
+                    definitionFile.deleteMarkers(RegulationsSequenceView.ID, true, IResource.DEPTH_INFINITE);
+                    definitionFile.deleteMarkers(RegulationsNotesView.ID, true, IResource.DEPTH_INFINITE);
                 }
             }
         } catch (Exception e) {
@@ -164,7 +168,7 @@ public abstract class ProcessEditorBase extends MultiPageEditorPart implements I
             }
             sourcePage = addNewPage(new TextEditor(), "DesignerEditor.title.source");
 
-            ProcessDefinitionValidator.validateDefinition(definitionFile, definition);
+            ProcessDefinitionValidator.validateDefinition(definition);
         } catch (PartInitException e) {
             PluginLogger.logError(Localization.getString("DesignerEditor.error.can_not_create_graphical_viewer"), e);
             throw new RuntimeException(e);
@@ -251,7 +255,7 @@ public abstract class ProcessEditorBase extends MultiPageEditorPart implements I
         graphPage.doSave(monitor);
         GEFImageHelper.save(getGraphicalViewer(), definition, getGraphImagePath());
         try {
-            ProcessDefinitionValidator.validateDefinition(definitionFile, definition);
+            ProcessDefinitionValidator.validateDefinition(definition);
             WorkspaceOperations.saveProcessDefinition(definitionFile, definition);
             getCommandStack().markSaveLocation();
             definition.setDirty(false);
@@ -261,7 +265,9 @@ public abstract class ProcessEditorBase extends MultiPageEditorPart implements I
         ProcessDefinition mainProcessDefinition = definition.getMainProcessDefinition();
         try {
             Set<String> usedFormFiles = new HashSet<String>();
+            usedFormFiles.add(ParContentProvider.PROCESS_DEFINITION_DESCRIPTION_FILE_NAME);
             usedFormFiles.add(ParContentProvider.FORM_JS_FILE_NAME);
+            usedFormFiles.add(ParContentProvider.REGULATIONS_HTML_FILE_NAME);
             fetchUsedFormFiles(usedFormFiles, mainProcessDefinition);
             for (SubprocessDefinition subprocessDefinition : mainProcessDefinition.getEmbeddedSubprocesses().values()) {
                 fetchUsedFormFiles(usedFormFiles, subprocessDefinition);

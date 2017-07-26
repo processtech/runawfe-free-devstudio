@@ -14,6 +14,9 @@ import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.PropertyNames;
+import ru.runa.gpd.lang.model.Action;
+import ru.runa.gpd.lang.model.ActionEventType;
+import ru.runa.gpd.lang.model.ActionImpl;
 import ru.runa.gpd.lang.model.Decision;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.Describable;
@@ -39,9 +42,6 @@ import ru.runa.gpd.lang.model.Timer;
 import ru.runa.gpd.lang.model.TimerAction;
 import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.bpmn.Conjunction;
-import ru.runa.gpd.lang.model.jpdl.Action;
-import ru.runa.gpd.lang.model.jpdl.ActionEventType;
-import ru.runa.gpd.lang.model.jpdl.ActionImpl;
 import ru.runa.gpd.lang.model.jpdl.ActionNode;
 import ru.runa.gpd.lang.model.jpdl.Fork;
 import ru.runa.gpd.lang.model.jpdl.Join;
@@ -518,8 +518,8 @@ public class JpdlSerializer extends ProcessSerializer {
             }
             Element node = startStates.get(0);
             StartState startState = create(node, definition);
-            List<Element> stateChilds = node.elements();
-            for (Element stateNodeChild : stateChilds) {
+            List<Element> stateChildren = node.elements();
+            for (Element stateNodeChild : stateChildren) {
                 if (TASK.equals(stateNodeChild.getName())) {
                     String swimlaneName = stateNodeChild.attributeValue(SWIMLANE);
                     Swimlane swimlane = definition.getSwimlaneByName(swimlaneName);
@@ -594,8 +594,8 @@ public class JpdlSerializer extends ProcessSerializer {
                 }
                 multiTaskState.setVariableMappings(mappings);
             }
-            List<Element> stateChilds = node.elements();
-            for (Element stateNodeChild : stateChilds) {
+            List<Element> stateChildren = node.elements();
+            for (Element stateNodeChild : stateChildren) {
                 if (TASK.equals(stateNodeChild.getName())) {
                     String swimlaneName = stateNodeChild.attributeValue(SWIMLANE);
                     if (swimlaneName != null && state instanceof SwimlanedNode) {
@@ -675,8 +675,8 @@ public class JpdlSerializer extends ProcessSerializer {
         List<Element> waitStates = root.elements(WAIT_STATE);
         for (Element node : waitStates) {
             Timer timer = create(node, definition);
-            List<Element> stateChilds = node.elements();
-            for (Element stateNodeChild : stateChilds) {
+            List<Element> stateChildren = node.elements();
+            for (Element stateNodeChild : stateChildren) {
                 if (TIMER.equals(stateNodeChild.getName())) {
                     String dueDate = stateNodeChild.attributeValue(DUEDATE);
                     if (dueDate != null) {

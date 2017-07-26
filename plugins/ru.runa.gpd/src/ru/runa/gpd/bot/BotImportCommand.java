@@ -4,13 +4,10 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -28,7 +25,6 @@ import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.WorkspaceOperations;
 
 import com.google.common.base.Preconditions;
-import com.google.common.io.ByteStreams;
 
 public class BotImportCommand extends BotSyncCommand {
 
@@ -53,16 +49,7 @@ public class BotImportCommand extends BotSyncCommand {
 
     protected void importBot(IProgressMonitor progressMonitor) throws IOException, CoreException {
         validate();
-
-        Map<String, byte[]> files = new HashMap<String, byte[]>();
-        ZipInputStream botZin = new ZipInputStream(inputStream);
-        ZipEntry botEntry;
-
-        while ((botEntry = botZin.getNextEntry()) != null) {
-            byte[] bytes = ByteStreams.toByteArray(botZin);
-            files.put(botEntry.getName(), bytes);
-        }
-
+        Map<String, byte[]> files = IOUtils.getArchiveFiles(inputStream, true);
         byte[] scriptXml = files.remove("script.xml");
         Preconditions.checkNotNull(scriptXml, "No script.xml");
         List<BotTask> botTasks = BotScriptUtils.getBotTasksFromScript(botStationName, botName, scriptXml, files);

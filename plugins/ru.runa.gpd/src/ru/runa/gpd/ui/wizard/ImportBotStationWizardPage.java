@@ -61,8 +61,8 @@ public class ImportBotStationWizardPage extends ImportBotElementWizardPage {
     }
 
     @Override
-    public void runImport(InputStream parInputStream, String botName) throws InvocationTargetException, InterruptedException {
-        getContainer().run(false, true, new BotStationImportCommand(parInputStream));
+    public void runImport(InputStream inputStream, String botName) throws InvocationTargetException, InterruptedException {
+        getContainer().run(false, true, new BotStationImportCommand(inputStream));
     }
 
     public static class BotStationTreeContentProvider implements ITreeContentProvider {

@@ -5,16 +5,19 @@ import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IViewReference;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.editor.ProcessEditorBase;
+
+import com.google.common.base.Objects;
 
 public class EditorUtils {
     public static synchronized void closeEditorIfRequired(IResourceChangeEvent event, final IFile file, final IEditorPart editor) {
@@ -26,16 +29,7 @@ public class EditorUtils {
                     public boolean visit(IResourceDelta delta) {
                         if (delta.getKind() == IResourceDelta.REMOVED) {
                             if (file.equals(delta.getResource())) {
-                                Display.getDefault().asyncExec(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        try {
-                                            editor.getSite().getPage().closeEditor(editor, false);
-                                        } catch (Exception e) {
-                                            PluginLogger.logErrorWithoutDialog("Close editor on delete", e);
-                                        }
-                                    }
-                                });
+                                editor.getSite().getPage().closeEditor(editor, false);
                                 return false;
                             }
                         }
@@ -77,5 +71,24 @@ public class EditorUtils {
             return (ProcessEditorBase) editorPart;
         }
         return null;
+    }
+
+    public static IViewPart showView(String viewId) {
+        try {
+            return PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(viewId);
+        } catch (PartInitException e) {
+            PluginLogger.logErrorWithoutDialog(viewId, e);
+            return null;
+        }
+    }
+
+    public static void hideView(String viewId) {
+        IViewReference[] viewParts = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getViewReferences();
+        for (IViewReference viewReference : viewParts) {
+            if (Objects.equal(viewReference.getId(), viewId)) {
+                PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().hideView(viewReference);
+                return;
+            }
+        }
     }
 }

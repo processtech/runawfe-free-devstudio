@@ -26,7 +26,8 @@ public class CommonPreferencePage extends FieldEditorPreferencePage implements I
     @Override
     public void createFieldEditors() {
         addField(new RadioGroupFieldEditor(P_DEFAULT_LANGUAGE, Localization.getString("pref.commons.defaultLanguage"), 2, new String[][] {
-                { Language.JPDL.toString(), Language.JPDL.toString() }, { Language.BPMN.toString(), Language.BPMN.toString() } }, getFieldEditorParent()));
+                { Language.JPDL.toString(), Language.JPDL.toString() }, { Language.BPMN.toString(), Language.BPMN.toString() } },
+                getFieldEditorParent()));
         addField(new StringFieldEditor(P_DATE_FORMAT_PATTERN, Localization.getString("pref.commons.date.format"), getFieldEditorParent()) {
             @Override
             protected boolean doCheckState() {
@@ -38,6 +39,12 @@ public class CommonPreferencePage extends FieldEditorPreferencePage implements I
                 }
             }
         });
+        addField(new RadioGroupFieldEditor(P_ENABLE_REGULATIONS_MENU_ITEMS, Localization.getString("pref.commons.enableRegulationsMenuItems"), 2,
+                new String[][] { { Localization.getString("disable"), Localization.getString("disable") },
+                        { Localization.getString("enable"), Localization.getString("enable") } }, getFieldEditorParent()));
     }
 
+    public static boolean isRegulationsMenuItemsEnabled() {
+        return Activator.getDefault().getPreferenceStore().getString(P_ENABLE_REGULATIONS_MENU_ITEMS).equals(Localization.getString("enable"));
+    }
 }

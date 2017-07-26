@@ -24,7 +24,7 @@ public class ActionContainerDelegate extends BaseModelDropDownActionDelegate {
     protected void fillMenu(Menu menu) {
         ActionContainer actionContainer = (ActionContainer) getSelectionNotNull();
         boolean createSeparator = false;
-        for (ru.runa.gpd.lang.model.jpdl.Action action : actionContainer.getActions()) {
+        for (ru.runa.gpd.lang.model.Action action : actionContainer.getActions()) {
             Action menuAction = new ShowAction(action);
             menuAction.setText(action.getLabel());
             ActionContributionItem item = new ActionContributionItem(menuAction);
@@ -56,14 +56,14 @@ public class ActionContainerDelegate extends BaseModelDropDownActionDelegate {
         }
     }
 
-    private void setFocus(ru.runa.gpd.lang.model.jpdl.Action action) {
+    private void setFocus(ru.runa.gpd.lang.model.Action action) {
         getActiveDesignerEditor().select(action);
     }
 
     public class ShowAction extends Action {
-        private ru.runa.gpd.lang.model.jpdl.Action action;
+        private ru.runa.gpd.lang.model.Action action;
 
-        public ShowAction(ru.runa.gpd.lang.model.jpdl.Action action) {
+        public ShowAction(ru.runa.gpd.lang.model.Action action) {
             this.action = action;
         }
 

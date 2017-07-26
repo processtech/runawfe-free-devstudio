@@ -21,7 +21,9 @@ public class SearchLabelProvider extends LabelProvider {
     @Override
     public Image getImage(Object element) {
         ElementMatch elementMatch = (ElementMatch) element;
-        if (ElementMatch.CONTEXT_FORM.equals(elementMatch.getContext()) || ElementMatch.CONTEXT_FORM_VALIDATION.equals(elementMatch.getContext())) {
+        if (ElementMatch.CONTEXT_FORM.equals(elementMatch.getContext())
+                || ElementMatch.CONTEXT_FORM_VALIDATION.equals(elementMatch.getContext())
+                || ElementMatch.CONTEXT_FORM_SCRIPT.equals(elementMatch.getContext())) {
             return SharedImages.getImage("icons/show_in_file.gif");
         }
         if (ElementMatch.CONTEXT_BOT_TASK.equals(elementMatch.getContext())) {

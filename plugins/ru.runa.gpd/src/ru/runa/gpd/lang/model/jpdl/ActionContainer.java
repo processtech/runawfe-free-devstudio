@@ -2,6 +2,7 @@ package ru.runa.gpd.lang.model.jpdl;
 
 import java.util.List;
 
+import ru.runa.gpd.lang.model.Action;
 
 public interface ActionContainer {
 

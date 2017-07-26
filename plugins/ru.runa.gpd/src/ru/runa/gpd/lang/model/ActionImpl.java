@@ -1,4 +1,4 @@
-package ru.runa.gpd.lang.model.jpdl;
+package ru.runa.gpd.lang.model;
 
 import java.util.Arrays;
 import java.util.List;
@@ -7,12 +7,6 @@ import org.eclipse.ui.views.properties.ComboBoxPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 
 import ru.runa.gpd.Localization;
-import ru.runa.gpd.lang.model.EndState;
-import ru.runa.gpd.lang.model.GraphElement;
-import ru.runa.gpd.lang.model.Node;
-import ru.runa.gpd.lang.model.StartState;
-import ru.runa.gpd.lang.model.TaskState;
-import ru.runa.gpd.lang.model.Transition;
 
 public class ActionImpl extends Action {
     private String eventType;

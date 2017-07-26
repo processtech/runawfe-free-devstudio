@@ -11,6 +11,7 @@
    <extension-point id="validators" name="Variable validators" schema="schema/validators.exsd"/>
    <extension-point id="wfeConnectors" name="wfeConnectors" schema="schema/wfeConnectors.exsd"/>
    <extension-point id="cssTemplates" name="form CSS templates" schema="schema/cssTemplates.exsd"/>
+   <extension-point id="regulations" name="regulations" schema="schema/regulations.exsd"/>
 
   <extension point = "org.eclipse.ui.editors">
     <editor
@@ -173,6 +174,20 @@
     </objectContribution>
     <objectContribution
           adaptable="false"
+          id="node.regulationProperties"
+          objectClass="ru.runa.gpd.lang.model.Node">
+       <filter
+             name="regulationsEnabled"
+             value="true">
+       </filter>
+        <action
+             class="ru.runa.gpd.extension.regulations.ui.EditNodeRegulationsPropertiesAction"
+             id="editNodeRegulationsProperties"
+             label="%label.action.editNodeRegulationProperties">
+        </action>
+    </objectContribution>
+    <objectContribution
+          adaptable="false"
           id="subprocess.compactview"
           objectClass="ru.runa.gpd.lang.model.Subprocess">
        <action
@@ -303,16 +318,6 @@
           adaptable="false"
           id="processdefinition"
           objectClass="ru.runa.gpd.lang.model.ProcessDefinition">
-       <action
-             class="ru.runa.gpd.lang.action.OpenDescriptionEditorDelegate"
-             id="editDescription"
-             label="%label.action.editDescription">
-       </action>
-       <action
-             class="ru.runa.gpd.ui.action.CreateProcessRegulation"
-             id="ru.runa.gpd.createProcessRegulation"
-             label="%label.menu.createProcessRegulation">
-       </action>
        <menu
              id="formCss"
              label="%label.action.formCSS"
@@ -428,6 +433,15 @@
                 </objectState>
              </and>
           </enablement>
+       </action>
+       <filter
+             name="composition"
+             value="false">
+       </filter>
+       <action
+             class="ru.runa.gpd.lang.action.OpenDescriptionEditorDelegate"
+             id="editDescription"
+             label="%label.action.editDescription">
        </action>
        <action
              class="ru.runa.gpd.ui.action.VersionCommentAction"
@@ -598,6 +612,24 @@
              label="%label.action.editAction">
        </action>
     </objectContribution>
+    <objectContribution
+          adaptable="false"
+          id="processdefinition.regulations"
+          objectClass="ru.runa.gpd.lang.model.ProcessDefinition">
+       <filter
+             name="regulationsEnabled"
+             value="true">
+       </filter>
+       <filter
+             name="composition"
+             value="false">
+       </filter>
+       <action
+             class="ru.runa.gpd.extension.regulations.ui.CreateRegulationsAction"
+             id="ru.runa.gpd.createRegulations"
+             label="%label.menu.createRegulations">
+       </action>
+    </objectContribution>
   </extension>
   
    <extension
@@ -648,6 +680,7 @@
                create="ru.runa.gpd.editor.graphiti.create.CreateTransitionFeature"
                fixedSize="false"
                height="1"
+               layout="ru.runa.gpd.editor.graphiti.layout.LayoutTransitionFeature"
                update="ru.runa.gpd.editor.graphiti.update.UpdateTransitionFeature"
                width="1">
          </graphiti>
@@ -760,6 +793,7 @@
       <element
             bpmn="scriptTask"
             icon="scripttask.png"
+            enabledInRegulationsByDefault="false"
             label="%label.element.scripttask"
             model="ru.runa.gpd.lang.model.bpmn.ScriptTask"
             type="node">
@@ -777,6 +811,7 @@
             bpmn="timerEventDefinition"
             jpdl="wait-state"
             icon="timer.png"
+            enabledInRegulationsByDefault="false"
             label="%label.element.timer"
             model="ru.runa.gpd.lang.model.Timer"
             type="node">
@@ -819,6 +854,7 @@
       </element>
       <element
             icon="fork.png"
+            enabledInRegulationsByDefault="false"
             jpdl="fork"
             label="%label.element.fork"
             model="ru.runa.gpd.lang.model.jpdl.Fork"
@@ -831,6 +867,7 @@
       </element>
       <element
             icon="join.png"
+            enabledInRegulationsByDefault="false"
             jpdl="join"
             label="%label.element.join"
             model="ru.runa.gpd.lang.model.jpdl.Join"
@@ -843,6 +880,7 @@
       </element>
       <element
             icon="decision.png"
+            enabledInRegulationsByDefault="false"
             jpdl="decision"
             label="%label.element.decision"
             model="ru.runa.gpd.lang.model.Decision"
@@ -855,6 +893,7 @@
       </element>
       <element
             icon="conjunction.png"
+            enabledInRegulationsByDefault="false"
             jpdl="conjunction"
             label="%label.element.conjunction"
             model="ru.runa.gpd.lang.model.bpmn.Conjunction"
@@ -868,6 +907,7 @@
       <element
             bpmn="parallelGateway"
             icon="parallelGateway.png"
+            enabledInRegulationsByDefault="false"
             label="%label.element.parallelGateway"
             model="ru.runa.gpd.lang.model.bpmn.ParallelGateway"
             type="node">
@@ -882,6 +922,7 @@
       <element
             bpmn="exclusiveGateway"
             icon="exclusiveGateway.png"
+            enabledInRegulationsByDefault="false"
             label="%label.element.exclusiveGateway"
             model="ru.runa.gpd.lang.model.bpmn.ExclusiveGateway"
             type="node">
@@ -895,8 +936,9 @@
       </element>
       <element
       		type="node"
-            model="ru.runa.gpd.lang.model.jpdl.ActionImpl"
+            model="ru.runa.gpd.lang.model.ActionImpl"
             jpdl="action"
+            bpmn="actionHandler"
             icon="action.png"
             label="%label.element.action">
          <gef 
@@ -904,6 +946,14 @@
             graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.ActionGraphicalEditPart"
             treeEditPart="ru.runa.gpd.editor.gef.part.tree.ActionTreeEditPart">
          </gef>
+         <graphiti
+               create="ru.runa.gpd.editor.graphiti.create.CreateActionFeature"
+               add="ru.runa.gpd.editor.graphiti.add.AddActionFeature"
+               layout="ru.runa.gpd.editor.graphiti.layout.LayoutActionFeature"
+               fixedSize="true"
+               height="16"
+               width="16">
+         </graphiti>
       </element>
       <element
             bpmn="ioSpecification"
@@ -973,6 +1023,7 @@
       </element>
       <element
             icon="sendmessage.png"
+            enabledInRegulationsByDefault="false"
             jpdl="send-message"
             label="%label.element.sendmessage"
             model="ru.runa.gpd.lang.model.jpdl.SendMessageNode"
@@ -988,6 +1039,7 @@
       </element>
       <element
             bpmn="intermediateThrowEvent"
+            enabledInRegulationsByDefault="false"
             icon="throwEvent.png"
             label="%label.element.throw.event"
             model="ru.runa.gpd.lang.model.bpmn.ThrowEventNode"
@@ -1006,6 +1058,7 @@
       </element>
       <element
             icon="receivemessage.png"
+            enabledInRegulationsByDefault="false"
             jpdl="receive-message"
             label="%label.element.receivemessage"
             model="ru.runa.gpd.lang.model.jpdl.ReceiveMessageNode"
@@ -1021,6 +1074,7 @@
       </element>
       <element
             bpmn="intermediateCatchEvent"
+            enabledInRegulationsByDefault="false"
             icon="catchEvent.png"
             label="%label.element.catch.event"
             model="ru.runa.gpd.lang.model.bpmn.CatchEventNode"
@@ -1140,6 +1194,11 @@
                relationship="right"
                relative="org.eclipse.ui.editorss"/>
          <view
+               id="ru.runa.gpd.ui.view.thumbnailview"
+               ratio="0.8"
+               relationship="stack"
+               relative="org.eclipse.ui.views.ContentOutline" />
+         <view
                id="ru.runa.gpd.botExplorerView"
                ratio="0.2"
                relationship="stack"
@@ -1152,6 +1211,12 @@
    </extension>
    <extension
          point="org.eclipse.ui.views">
+      <view
+            category="org.eclipse.ui"
+            class="ru.runa.gpd.ui.view.ThumbnailView"
+            icon="icons/thumbnail.gif"
+            id="ru.runa.gpd.ui.view.thumbnailview"
+            name="%label.menu.view.thumbnail"/>
       <view
             category="ru.runa.gpd.view.category"
             class="ru.runa.gpd.ui.view.ProcessExplorerTreeView"
@@ -1166,6 +1231,16 @@
             icon="icons/validation_error.gif"
             id="ru.runa.gpd.validationErrors"
             name="%label.view.errors"/>
+      <view
+            class="ru.runa.gpd.extension.regulations.ui.RegulationsNotesView"
+            icon="icons/regulations_notes.png"
+            id="ru.runa.gpd.regulationsNotes"
+            name="%label.view.regulationsNotes"/>
+      <view
+            class="ru.runa.gpd.extension.regulations.ui.RegulationsSequenceView"
+            icon="icons/regulations_notes.png"
+            id="ru.runa.gpd.regulationsSequence"
+            name="%label.view.regulationsSequence"/>
       <view
             class="ru.runa.gpd.ui.view.SleakView"
             id="ru.runa.gpd.sleak"
@@ -1534,6 +1609,16 @@
             className="ru.runa.wfe.extension.handler.user.GetExecutorInfoHandler"
             enabled="true"
             label="%ru.runa.wfe.extension.handler.user.GetExecutorInfoHandler">
+      </handler>
+      <handler
+            actionHandler="true"
+            assignmentHandler="false"
+            botTaskHandler="false"
+            decisionHandler="false"
+            cellEditorProvider="ru.runa.gpd.extension.handler.ConfigBasedProvider"
+            className="ru.runa.wfe.extension.handler.user.GetTaskPerformerHandler"
+            enabled="true"
+            label="%ru.runa.wfe.extension.handler.user.GetTaskPerformerHandler">
       </handler>
       <handler
             actionHandler="false"
@@ -2333,6 +2418,23 @@
                menubarPath="file/project"
                style="push"/>       
          <action
+               class="ru.runa.gpd.extension.regulations.ui.ImportRegulationsAction"
+               icon="icons/regulations.bmp"
+               id="ru.runa.gpd.extension.regulations.ui.importRegulationsAction"
+               label="%label.menu.importRegulations"
+               menubarPath="file/project"
+               style="push">
+         </action>
+         <action
+               class="ru.runa.gpd.extension.regulations.ui.ShowRegulationsSequenceAction"
+               icon="icons/regulations.bmp"
+               id="ru.runa.gpd.extension.regulations.ui.showRegulationsSequenceAction"
+               label="%label.menu.showRegulationsSequence"
+               menubarPath="file/project"
+               style="push"
+               toolbarPath="additions">
+         </action>
+         <action
                class="ru.runa.gpd.ui.action.EnableAntialiasingAction"
                id="enableAntialiasing"
                label="%label.menu.properties.antialiasing"
@@ -2372,6 +2474,13 @@
             <separator name="additions"/>
          </menu>
          <action
+               class="ru.runa.gpd.ui.action.OpenThumbnail"
+               icon="icons/thumbnail.gif"
+               id="openThumbnail"
+               label="%label.menu.view.thumbnail"
+               menubarPath="window/additions"
+               style="push"/>
+         <action
                class="ru.runa.gpd.ui.action.OpenProperties"
                icon="icons/prop_ps.gif"
                id="openProperties"
@@ -2410,6 +2519,14 @@
                icon="icons/validation_error.gif"
                id="openValidationErrorsView"
                label="%label.menu.view.validationErrors"
+               menubarPath="window/additions"
+               style="push">
+         </action>
+         <action
+               class="ru.runa.gpd.extension.regulations.ui.OpenRegulationsNotesView"
+               icon="icons/regulations_notes.png"
+               id="openRegulationsNotesView"
+               label="%label.menu.view.regulationsNotes"
                menubarPath="window/additions"
                style="push">
          </action>

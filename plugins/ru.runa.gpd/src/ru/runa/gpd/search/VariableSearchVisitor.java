@@ -23,15 +23,14 @@ import org.eclipse.search.ui.NewSearchUI;
 import org.eclipse.search.ui.text.Match;
 
 import ru.runa.gpd.BotCache;
-import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.extension.handler.ParamDefConfig;
 import ru.runa.gpd.form.FormVariableAccess;
 import ru.runa.gpd.lang.model.BotTask;
 import ru.runa.gpd.lang.model.BotTaskType;
+import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.GraphElement;
-import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.ITimed;
 import ru.runa.gpd.lang.model.MessageNode;
 import ru.runa.gpd.lang.model.MultiTaskState;
@@ -53,6 +52,9 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
 
 public class VariableSearchVisitor {
+
+    public static final String REGEX_SCRIPT_VARIABLE = "[^\\p{Alnum}_&&[\"'{(, ]]%s[^\\p{Alnum}_&&[\"'}), ]]";
+
     private final VariableSearchQuery query;
     private IProgressMonitor progressMonitor;
     private int numberOfScannedElements;
@@ -66,10 +68,8 @@ public class VariableSearchVisitor {
     public VariableSearchVisitor(VariableSearchQuery query) {
         this.query = query;
         this.status = new MultiStatus(NewSearchUI.PLUGIN_ID, IStatus.OK, SearchMessages.TextSearchEngine_statusMessage, null);
-        this.matcher = Pattern.compile(Pattern.quote(query.getSearchText())).matcher("");
-        if (!Objects.equal(query.getVariable().getScriptingName(), query.getSearchText())) {
-            this.matcherScriptingName = Pattern.compile(Pattern.quote(query.getVariable().getScriptingName())).matcher("");
-        }
+        this.matcher = Pattern.compile(String.format(REGEX_SCRIPT_VARIABLE, Pattern.quote(query.getSearchText()))).matcher("");
+        this.matcherScriptingName = Pattern.compile(String.format(REGEX_SCRIPT_VARIABLE, query.getVariable().getScriptingName())).matcher("");
         this.matcherWithBrackets = Pattern.compile(Pattern.quote("\"" + query.getSearchText() + "\"")).matcher("");
     }
 
@@ -78,8 +78,7 @@ public class VariableSearchVisitor {
         map.put(query.getMainProcessDefinition(), query.getMainProcessdefinitionFile());
         numberOfElementsToScan = query.getMainProcessDefinition().getChildrenRecursive(GraphElement.class).size();
         for (SubprocessDefinition subprocessDefinition : query.getMainProcessDefinition().getEmbeddedSubprocesses().values()) {
-            IFile subprocessDefinitionFile = ProcessCache.getProcessDefinitionFile(subprocessDefinition);
-            map.put(subprocessDefinition, subprocessDefinitionFile);
+            map.put(subprocessDefinition, subprocessDefinition.getFile());
             numberOfElementsToScan = subprocessDefinition.getChildrenRecursive(GraphElement.class).size();
         }
         progressMonitor = monitor == null ? new NullProgressMonitor() : monitor;
@@ -168,17 +167,25 @@ public class VariableSearchVisitor {
 
     private void processDelegableNode(IFile definitionFile, Delegable delegable) throws Exception {
         Matcher delegableMatcher;
-        if (matcherScriptingName != null && HandlerRegistry.SCRIPT_HANDLER_CLASS_NAMES.contains(delegable.getDelegationClassName())) {
+        if (HandlerRegistry.SCRIPT_HANDLER_CLASS_NAMES.contains(delegable.getDelegationClassName())) {
             delegableMatcher = matcherScriptingName;
         } else {
             delegableMatcher = matcher;
         }
         String conf = delegable.getDelegationConfiguration();
         ElementMatch elementMatch = new ElementMatch((GraphElement) delegable, definitionFile);
-        List<Match> matches = findInString(elementMatch, conf, delegableMatcher);
+        List<Match> matches = findInString(elementMatch, "(" + conf + ")", delegableMatcher);
         elementMatch.setPotentialMatchesCount(matches.size());
         for (Match match : matches) {
             query.getSearchResult().addMatch(match);
+        }
+        if (!HandlerRegistry.SCRIPT_HANDLER_CLASS_NAMES.contains(delegable.getDelegationClassName())
+                && !query.getVariable().getName().equals(query.getVariable().getScriptingName())) {
+            matches = findInString(elementMatch, "(" + conf + ")", matcherScriptingName);
+            elementMatch.setPotentialMatchesCount(elementMatch.getPotentialMatchesCount() + matches.size());
+            for (Match match : matches) {
+                query.getSearchResult().addMatch(match);
+            }
         }
     }
 
@@ -279,6 +286,25 @@ public class VariableSearchVisitor {
                     query.getSearchResult().addMatch(new Match(elementMatch, 0, 0));
                 }
             }
+            if (formNode.hasFormScript()) {
+                IFile file = IOUtils.getAdjacentFile(definitionFile, formNode.getScriptFileName());
+                Map<String, FormVariableAccess> formVariables = formNode.getFormVariables((IFolder) definitionFile.getParent());
+                ElementMatch elementMatch = new ElementMatch(formNode, file, ElementMatch.CONTEXT_FORM_SCRIPT);
+                elementMatch.setParent(nodeElementMatch);
+                int matchesCount = 0;
+                if (formVariables.keySet().contains(query.getSearchText())) {
+                    matchesCount++;
+                }
+                elementMatch.setMatchesCount(matchesCount);
+                List<Match> matches = findInFile(elementMatch, file, matcherScriptingName);
+                if (!query.getVariable().getName().equals(query.getVariable().getScriptingName())) {
+                    matches.addAll(findInFile(elementMatch, file, matcher));
+                }
+                elementMatch.setPotentialMatchesCount(matches.size() - matchesCount);
+                for (Match match : matches) {
+                    query.getSearchResult().addMatch(match);
+                }
+            }
             String swimlaneName = ((SwimlanedNode) formNode).getSwimlaneName();
             if (query.getSearchText().equals(swimlaneName)) {
                 nodeElementMatch.setMatchesCount(1);
@@ -331,7 +357,7 @@ public class VariableSearchVisitor {
             int start = matcher.start();
             int end = matcher.end();
             if (end != start) {
-                matches.add(new Match(elementMatch, start, end - start));
+                matches.add(new Match(elementMatch, start + 1, end - start - 2));
             }
             if (k++ == 20) {
                 if (progressMonitor.isCanceled()) {

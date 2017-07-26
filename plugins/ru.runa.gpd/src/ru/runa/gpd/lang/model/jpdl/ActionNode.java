@@ -6,6 +6,9 @@ import java.util.List;
 import org.eclipse.core.resources.IFile;
 
 import ru.runa.gpd.lang.ValidationError;
+import ru.runa.gpd.lang.model.Action;
+import ru.runa.gpd.lang.model.ActionEventType;
+import ru.runa.gpd.lang.model.ActionImpl;
 import ru.runa.gpd.lang.model.Node;
 
 public class ActionNode extends Node implements ActionContainer {

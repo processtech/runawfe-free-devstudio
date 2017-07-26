@@ -15,6 +15,7 @@ public class ElementMatch {
     public static String CONTEXT_TIMED_VARIABLE = "itimed_conf";
     public static String CONTEXT_FORM = "form";
     public static String CONTEXT_FORM_VALIDATION = "form_validation";
+    public static String CONTEXT_FORM_SCRIPT = "form_script";
     public static String CONTEXT_BOT_TASK_LINK = "botTaskLink";
     public static String CONTEXT_BOT_TASK = "botTask";
     public static String CONTEXT_PROCESS_DEFINITION = "processDefinition";
@@ -95,6 +96,8 @@ public class ElementMatch {
             text = Localization.getString("Search.formNode.form");
         } else if (ElementMatch.CONTEXT_FORM_VALIDATION.equals(context)) {
             text = Localization.getString("Search.formNode.validation");
+        } else if (ElementMatch.CONTEXT_FORM_SCRIPT.equals(context)) {
+            text = Localization.getString("Search.formNode.script");
         } else if (ElementMatch.CONTEXT_BOT_TASK.equals(context)) {
             text = Localization.getString("Search.taskNode.botTask");
         } else if (ElementMatch.CONTEXT_BOT_TASK_LINK.equals(context)) {

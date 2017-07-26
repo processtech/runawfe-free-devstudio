@@ -179,7 +179,7 @@ public class QuickFormVariableWizardPage extends WizardPage {
                         label.setText(componentParameter.getLabel());
                         // TODO in createEditor variables populated from
                         // FormEditor instance
-                        componentParameter.getType().createEditor(parent, componentParameter, paramValue, new PropertyChangeListener() {
+                        componentParameter.getType().createEditor(parent, null, componentParameter, paramValue, new PropertyChangeListener() {
 
                             @Override
                             public void propertyChange(PropertyChangeEvent evt) {

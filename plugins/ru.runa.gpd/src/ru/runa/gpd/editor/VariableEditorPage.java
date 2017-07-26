@@ -24,9 +24,8 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 
-import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.Localization;
-import ru.runa.gpd.ProcessCache;
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.clipboard.VariableTransfer;
 import ru.runa.gpd.editor.gef.command.ProcessDefinitionRemoveVariablesCommand;
 import ru.runa.gpd.lang.model.FormNode;
@@ -145,7 +144,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         String type = evt.getPropertyName();
-        if (PropertyNames.PROPERTY_CHILDS_CHANGED.equals(type)) {
+        if (PropertyNames.PROPERTY_CHILDREN_CHANGED.equals(type)) {
             updateViewer();
         } else if (evt.getSource() instanceof Variable) {
             if (PropertyNames.PROPERTY_NAME.equals(type) || PropertyNames.PROPERTY_FORMAT.equals(type)
@@ -191,7 +190,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
             Variable variable = (Variable) selection.getFirstElement();
             List<Variable> variables = getDefinition().getVariables(false, false);
             int index = variables.indexOf(variable);
-            getDefinition().swapChilds(variable, up ? variables.get(index - 1) : variables.get(index + 1));
+            getDefinition().swapChildren(variable, up ? variables.get(index - 1) : variables.get(index + 1));
             tableViewer.setSelection(selection);
         }
     }
@@ -245,7 +244,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
             if (useLtk) {
                 IDE.saveAllEditors(new IResource[] { projectRoot }, false);
                 for (SubprocessDefinition subprocessDefinition : editor.getDefinition().getEmbeddedSubprocesses().values()) {
-                    WorkspaceOperations.saveProcessDefinition(ProcessCache.getProcessDefinitionFile(subprocessDefinition), subprocessDefinition);
+                    WorkspaceOperations.saveProcessDefinition(subprocessDefinition.getFile(), subprocessDefinition);
                 }
             }
         }
@@ -457,7 +456,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
             if (useLtk && editor.getDefinition().getEmbeddedSubprocesses().size() > 0) {
                 IDE.saveAllEditors(new IResource[] { projectRoot }, false);
                 for (SubprocessDefinition subprocessDefinition : editor.getDefinition().getEmbeddedSubprocesses().values()) {
-                    WorkspaceOperations.saveProcessDefinition(ProcessCache.getProcessDefinitionFile(subprocessDefinition), subprocessDefinition);
+                    WorkspaceOperations.saveProcessDefinition(subprocessDefinition.getFile(), subprocessDefinition);
                 }
             }
         }

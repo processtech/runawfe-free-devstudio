@@ -82,6 +82,9 @@ public class DiagramFeatureProvider extends DefaultFeatureProvider {
                             continue;
                         }
                     }
+                    if ("actionHandler".equals(definition.getBpmnElementName()) && !processDefinition.isShowActions()) {
+                        continue;
+                    }
                     list.add((ICreateFeature) definition.getGraphitiEntry().createCreateFeature(this));
                 }
                 if (NodeTypeDefinition.TYPE_ARTIFACT.equals(definition.getType())) {
@@ -210,4 +213,5 @@ public class DiagramFeatureProvider extends DefaultFeatureProvider {
         }
         return super.getUpdateFeature(context);
     }
+
 }

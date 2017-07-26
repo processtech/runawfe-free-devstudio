@@ -38,6 +38,7 @@ public class NodeTypeDefinition {
     private final GefEntry gefEntry;
     private final GraphitiEntry graphitiEntry;
     private final Bundle bundle;
+    private final boolean enabledInRegulationsByDefault;
 
     public NodeTypeDefinition(IConfigurationElement configElement) throws CoreException {
         bundle = Platform.getBundle(configElement.getDeclaringExtension().getNamespaceIdentifier());
@@ -58,6 +59,11 @@ public class NodeTypeDefinition {
             graphitiEntry = new GraphitiEntry(this, entries[0]);
         } else {
             graphitiEntry = null;
+        }
+        if (configElement.getAttribute("enabledInRegulationsByDefault") != null) {
+            this.enabledInRegulationsByDefault = Boolean.valueOf(configElement.getAttribute("enabledInRegulationsByDefault"));
+        } else {
+            this.enabledInRegulationsByDefault = true;
         }
     }
 
@@ -132,6 +138,10 @@ public class NodeTypeDefinition {
         }
     }
 
+    public boolean isEnabledInRegulationsByDefault() {
+        return this.enabledInRegulationsByDefault;
+    }
+
     private <T> T createExecutableExtension(String propertyName) {
         try {
             if (element == null || element.getAttribute(propertyName) == null) {
@@ -146,7 +156,10 @@ public class NodeTypeDefinition {
 
     public <T extends GraphElement> T createElement(GraphElement parent, boolean setName) {
         GraphElement element = createExecutableExtension("model");
-        element.setParent(parent);
+        Language lang = parent.getProcessDefinition().getLanguage();
+        if (lang == Language.BPMN) {
+            element.setParent(parent);
+        }
         if (setName) {
             String name;
             if (element instanceof Swimlane) {
@@ -173,6 +186,9 @@ public class NodeTypeDefinition {
                     ((TaskState) element).setReassignSwimlaneToTaskPerformer(store.getBoolean(key));
                 }
             }
+        }
+        if (lang == Language.JPDL) {
+            element.setParent(parent);
         }
         return (T) element;
     }
