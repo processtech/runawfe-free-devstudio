@@ -1,5 +1,7 @@
 package ru.runa.gpd.lang.par;
 
+import static java.lang.Math.min;
+
 import java.util.List;
 
 import org.dom4j.Document;
@@ -28,8 +30,6 @@ import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
 import ru.runa.gpd.util.XmlUtil;
 
 import com.google.common.collect.Lists;
-
-import static java.lang.Math.min;
 
 /**
  * Information saved in absolute coordinates for all elements.
@@ -132,7 +132,7 @@ public class GpdXmlContentProvider extends AuxContentProvider {
         if (definition.getLanguage() == Language.BPMN) {
             IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
             GraphitiProcessEditor graphitiProcessEditor = (GraphitiProcessEditor) page.findEditor(new FileEditorInput(definition.getFile()));
-            if (graphitiProcessEditor != null) { // while copying
+            if (graphitiProcessEditor != null) { // while copying/renaming
                 bpmnFeatureProvider = graphitiProcessEditor.getDiagramEditorPage().getDiagramTypeProvider().getFeatureProvider();
             }
         }
@@ -195,13 +195,27 @@ public class GpdXmlContentProvider extends AuxContentProvider {
         }
         if (diagramX < 0) {
             addAttribute(root, X, String.valueOf(-diagramX + MAGIC_NUMBER_X));
+            setX(definition, -diagramX + MAGIC_NUMBER_X);
         } else if (diagramX < MAGIC_NUMBER_X) {
             addAttribute(root, X, String.valueOf(MAGIC_NUMBER_X - diagramX));
+            setX(definition, MAGIC_NUMBER_X - diagramX);
+        } else if (bpmnFeatureProvider == null) {
+            Rectangle r = definition.getConstraint();
+            if (r != null && r.x != 0) {
+                addAttribute(root, X, String.valueOf(r.x));
+            }
         }
         if (diagramY < 0) {
             addAttribute(root, Y, String.valueOf(-diagramY + MAGIC_NUMBER_Y));
+            setY(definition, -diagramY + MAGIC_NUMBER_Y);
         } else if (diagramY < MAGIC_NUMBER_Y) {
             addAttribute(root, Y, String.valueOf(MAGIC_NUMBER_Y - diagramY));
+            setY(definition, MAGIC_NUMBER_Y - diagramY);
+        } else if (bpmnFeatureProvider == null) {
+            Rectangle r = definition.getConstraint();
+            if (r != null && r.y != 0) {
+                addAttribute(root, Y, String.valueOf(r.y));
+            }
         }
         for (GraphElement graphElement : definition.getElementsRecursive()) {
             if (graphElement instanceof Action || graphElement.getConstraint() == null) {
@@ -262,7 +276,26 @@ public class GpdXmlContentProvider extends AuxContentProvider {
         return document;
     }
 
+    private void setX(ProcessDefinition pd, int x) {
+        if (pd.getConstraint() == null) {
+            pd.setConstraint(new Rectangle());
+        }
+        pd.getConstraint().x = x;
+    }
+
+    private void setY(ProcessDefinition pd, int y) {
+        if (pd.getConstraint() == null) {
+            pd.setConstraint(new Rectangle());
+        }
+        pd.getConstraint().y = y;
+    }
+
     private void addProcessDiagramInfo(ProcessDefinition definition, Element processDiagramInfo) {
+        int x = getIntAttribute(processDiagramInfo, X, 0);
+        int y = getIntAttribute(processDiagramInfo, Y, 0);
+        if (x + y > 0) {
+            definition.setConstraint(new Rectangle(x, y, 0, 0));
+        }
         int width = getIntAttribute(processDiagramInfo, WIDTH, 0);
         int height = getIntAttribute(processDiagramInfo, HEIGHT, 0);
         definition.setDimension(new Dimension(width, height));
