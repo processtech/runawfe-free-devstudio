@@ -119,4 +119,5 @@ public class VariableMapping {
     public String toString() {
         return name + "=" + mappedName + " (" + usage + ")";
     }
+
 }

@@ -9,6 +9,7 @@ import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.Variable;
+import ru.runa.gpd.lang.model.VariableStoreType;
 import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.gpd.util.VariableUtils;
 import ru.runa.gpd.util.XmlUtil;
@@ -27,6 +28,7 @@ public class VariablesXmlContentProvider extends AuxContentProvider {
     private static final String PUBLIC = "public";
     private static final String DEFAULT_VALUE = "defaultValue";
     private static final String SCRIPTING_NAME = "scriptingName";
+    private static final String STORE_TYPE = "storeType";
     private static final String USER_TYPE = "usertype";
     private static final String EDITOR = "editor";
 
@@ -78,6 +80,8 @@ public class VariablesXmlContentProvider extends AuxContentProvider {
                     swimlane.setDescription(description);
                     swimlane.setPublicVisibility(publicVisibility);
                     swimlane.setEditorPath(element.attributeValue(EDITOR));
+                    swimlane.setStoreType(element.attributeValue(STORE_TYPE, null) != null ? VariableStoreType.valueOf(element.attributeValue(
+                            STORE_TYPE).toUpperCase()) : VariableStoreType.DEFAULT);
                 } catch (Exception e) {
                     PluginLogger.logErrorWithoutDialog("No swimlane found for " + variableName, e);
                 }
@@ -104,12 +108,17 @@ public class VariablesXmlContentProvider extends AuxContentProvider {
         String defaultValue = element.attributeValue(DEFAULT_VALUE);
         String scriptingName = element.attributeValue(SCRIPTING_NAME, variableName);
         String description = element.attributeValue(DESCRIPTION);
+        VariableStoreType storeType = element.attributeValue(STORE_TYPE, null) != null ? VariableStoreType.valueOf(element.attributeValue(STORE_TYPE)
+                .toUpperCase()) : VariableStoreType.DEFAULT;
         if ("false".equals(description)) {
             // remove old comments due to some bug
             description = null;
         }
-        Variable variable = new Variable(variableName, scriptingName, format, userType, publicVisibility, defaultValue);
+        Variable variable = new Variable(variableName, scriptingName, format, userType);
+        variable.setPublicVisibility(publicVisibility);
+        variable.setDefaultValue(defaultValue);
         variable.setDescription(description);
+        variable.setStoreType(storeType);
         return variable;
     }
 
@@ -134,6 +143,9 @@ public class VariablesXmlContentProvider extends AuxContentProvider {
         Element element = root.addElement(VARIABLE);
         element.addAttribute(NAME, variable.getName());
         element.addAttribute(SCRIPTING_NAME, variable.getScriptingName());
+        if (variable.getStoreType() != VariableStoreType.DEFAULT) {
+            element.addAttribute(STORE_TYPE, variable.getStoreType().asProperty());
+        }
         if (variable.getUserType() != null) {
             element.addAttribute(USER_TYPE, variable.getUserType().getName());
         } else {
