@@ -66,6 +66,23 @@
                </appInfo>
             </annotation>
          </attribute>
+         <attribute name="depends" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="validator" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="java" basedOn=":ru.runa.gpd.formeditor.ftl.validation.IParameterTypeValidator"/>
+               </appInfo>
+            </annotation>
+         </attribute>
       </complexType>
    </element>
 

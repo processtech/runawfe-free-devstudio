@@ -37,13 +37,15 @@ public class VariableFormatPage extends DynaContentWizardPage {
     private static Map<String, String[]> containerFormats = Maps.newHashMap();
     static {
         containerFormats.put(ListFormat.class.getName(), new String[] { Localization.getString("VariableFormatPage.components.list.value") });
-        containerFormats.put(MapFormat.class.getName(),
-                new String[] { Localization.getString("VariableFormatPage.components.map.key"), Localization.getString("VariableFormatPage.components.map.value") });
+        containerFormats.put(
+                MapFormat.class.getName(),
+                new String[] { Localization.getString("VariableFormatPage.components.map.key"),
+                        Localization.getString("VariableFormatPage.components.map.value") });
     }
 
     public VariableFormatPage(ProcessDefinition processDefinition, VariableContainer variableContainer, Variable variable, boolean editFormat) {
-    	this.processDefinition = processDefinition;
-    	this.variableContainer = variableContainer;
+        this.processDefinition = processDefinition;
+        this.variableContainer = variableContainer;
         if (variable != null) {
             if (variable.getUserType() != null) {
                 this.userType = variable.getUserType();
@@ -63,7 +65,7 @@ public class VariableFormatPage extends DynaContentWizardPage {
     }
 
     private void setTypeByFormatClassName(String formatClassName) {
-   		this.type = VariableFormatRegistry.getInstance().getArtifactNotNull(formatClassName);
+        this.type = VariableFormatRegistry.getInstance().getArtifactNotNull(formatClassName);
     }
 
     @Override
@@ -79,13 +81,13 @@ public class VariableFormatPage extends DynaContentWizardPage {
         combo.addSelectionListener(new LoggingSelectionAdapter() {
             @Override
             protected void onSelection(SelectionEvent e) throws Exception {
-            	String label = combo.getText();
-            	userType = processDefinition.getVariableUserType(label);
-            	if (userType != null) {
-            	    type = VariableFormatRegistry.getInstance().getArtifactNotNull(UserTypeFormat.class.getName());
-            	} else {
-            		type = VariableFormatRegistry.getInstance().getArtifactNotNullByLabel(label);
-            	}
+                String label = combo.getText();
+                userType = processDefinition.getVariableUserType(label);
+                if (userType != null) {
+                    type = VariableFormatRegistry.getInstance().getArtifactNotNull(UserTypeFormat.class.getName());
+                } else {
+                    type = VariableFormatRegistry.getInstance().getArtifactNotNullByLabel(label);
+                }
                 createDefaultComponentClassNames();
                 updateContent();
             }
@@ -160,7 +162,7 @@ public class VariableFormatPage extends DynaContentWizardPage {
     public VariableUserType getUserType() {
         return userType;
     }
-    
+
     public VariableFormatArtifact getType() {
         return type;
     }

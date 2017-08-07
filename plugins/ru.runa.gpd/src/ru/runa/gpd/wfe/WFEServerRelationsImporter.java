@@ -3,6 +3,7 @@ package ru.runa.gpd.wfe;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,7 +41,9 @@ public class WFEServerRelationsImporter extends DataImporter {
             Element element = document.getRootElement().addElement("relation");
             element.addAttribute("name", name);
         }
-        XmlUtil.writeXml(document, new FileOutputStream(getCacheFile()));
+        try (OutputStream os = new FileOutputStream(getCacheFile())) {
+            XmlUtil.writeXml(document, os);
+        }
     }
 
     @Override

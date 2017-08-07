@@ -82,8 +82,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 /**
- * The WYSIWYG HTML editor using <a
- * href="http://www.fckeditor.net/">FCKeditor</a>.
+ * The WYSIWYG HTML editor using <a href="http://www.fckeditor.net/">FCKeditor</a>.
  * <p>
  * org.eclipse.ui.texteditor.BasicTextEditorActionContributor
  * </p>
@@ -187,8 +186,8 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
         return list;
     }
 
-    public List<VariableUserType> getUserVariablesTypes() {
-        return formNode.getProcessDefinition().getVariableUserTypes();
+    public VariableUserType getVariableUserType(String name) {
+        return formNode.getProcessDefinition().getVariableUserType(name);
     }
 
     public ProcessDefinition getProcessDefinition() {
@@ -473,7 +472,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
         if (ftlFormat) {
             components.clear();
             try {
-                html = TemplateProcessor.process(html, new EditorHashModel(this));
+                html = TemplateProcessor.process(formFile.getFullPath().toString(), html, new EditorHashModel(this));
             } catch (Exception e) {
                 EditorsPlugin.logError("ftl WYSIWYGHTMLEditor.syncEditor2Browser()", e);
             }

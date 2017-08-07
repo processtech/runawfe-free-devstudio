@@ -22,7 +22,7 @@ import ru.runa.gpd.util.WorkspaceOperations;
 import com.google.common.collect.Lists;
 
 public class BotTaskActionsDelegate extends BaseModelDropDownActionDelegate {
-    
+
     private TaskState getTaskStateNotNull() {
         return getSelectionNotNull();
     }

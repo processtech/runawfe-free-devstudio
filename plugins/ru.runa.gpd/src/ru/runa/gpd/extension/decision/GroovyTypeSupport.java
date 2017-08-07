@@ -53,9 +53,11 @@ public abstract class GroovyTypeSupport {
 
     public List<String> getPredefinedValues(Operation operation) {
         List<String> v = new ArrayList<String>();
-        if (Objects.equal(Operation.EQ.getOperator(), operation.getOperator())
-                || Objects.equal(Operation.NOT_EQ.getOperator(), operation.getOperator())) {
-            v.add("null");
+        if (operation != null) {
+            if (Objects.equal(Operation.EQ.getOperator(), operation.getOperator())
+                    || Objects.equal(Operation.NOT_EQ.getOperator(), operation.getOperator())) {
+                v.add("null");
+            }
         }
         return v;
     }

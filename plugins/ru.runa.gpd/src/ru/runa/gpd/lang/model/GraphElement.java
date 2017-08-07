@@ -30,6 +30,7 @@ import ru.runa.gpd.property.DelegableClassPropertyDescriptor;
 import ru.runa.gpd.property.DelegableConfPropertyDescriptor;
 import ru.runa.gpd.property.DurationPropertyDescriptor;
 import ru.runa.gpd.property.TimerActionPropertyDescriptor;
+import ru.runa.gpd.settings.CommonPreferencePage;
 import ru.runa.gpd.util.EventSupport;
 import ru.runa.gpd.util.VariableUtils;
 
@@ -72,6 +73,9 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
         }
         if ("delegable".equals(name)) {
             return Objects.equal(value, String.valueOf(isDelegable()));
+        }
+        if ("regulationsEnabled".equals(name)) {
+            return Objects.equal(value, String.valueOf(CommonPreferencePage.isRegulationsMenuItemsEnabled()));
         }
         return false;
     }
@@ -176,6 +180,9 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
         firePropertyChange(PROPERTY_CHILDREN_CHANGED, null, children);
         if (child.delegatedListener != null) {
             child.removePropertyChangeListener(child.delegatedListener);
+        }
+        if (child instanceof Node) {
+            ((Node) child).updateRegulationsPropertiesOnDelete();
         }
     }
 

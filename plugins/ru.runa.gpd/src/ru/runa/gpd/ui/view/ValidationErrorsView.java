@@ -45,12 +45,10 @@ import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.jpdl.ActionContainer;
 import ru.runa.gpd.util.WorkspaceOperations;
 
-import com.google.common.base.Objects;
-
 public class ValidationErrorsView extends ViewPart implements ISelectionChangedListener {
     public static final String ID = "ru.runa.gpd.validationErrors";
-    static final String[] COLUMN_NAMES = { Localization.getString("ValidationErrorsView.Source"), Localization.getString("ValidationErrorsView.Message"),
-            Localization.getString("ValidationErrorsView.ProcessName") };
+    static final String[] COLUMN_NAMES = { Localization.getString("ValidationErrorsView.Source"),
+            Localization.getString("ValidationErrorsView.Message"), Localization.getString("ValidationErrorsView.ProcessName") };
     private TableViewer viewer;
 
     @Override
@@ -100,13 +98,7 @@ public class ValidationErrorsView extends ViewPart implements ISelectionChangedL
             GraphElement graphElement = null;
             String elementId = marker.getAttribute(PluginConstants.SELECTION_LINK_KEY, null);
             if (elementId != null) {
-                List<? extends Node> elements = editor.getDefinition().getChildrenRecursive(Node.class);
-                for (Node element : elements) {
-                    if (Objects.equal(elementId, element.getId())) {
-                        graphElement = element;
-                        break;
-                    }
-                }
+                graphElement = editor.getDefinition().getGraphElementById(elementId);
             }
             String swimlaneName = marker.getAttribute(PluginConstants.SWIMLANE_LINK_KEY, null);
             if (swimlaneName != null) {
@@ -137,12 +129,6 @@ public class ValidationErrorsView extends ViewPart implements ISelectionChangedL
         }
     }
 
-    //    public static void showPropertiesViewIfThisViewVisible(IWorkbenchPartSite site) throws PartInitException {
-    //        IViewPart viewPart = site.getPage().findView(ID);
-    //        if (site.getPage().isPartVisible(viewPart)) {
-    //            site.getPage().showView(PropertiesView.ID, null, IWorkbenchPage.VIEW_VISIBLE);
-    //        }
-    //    }
     private GraphElement findElement(ProcessDefinition definition, Class<? extends NamedGraphElement> clazz, String elementName) {
         List<? extends NamedGraphElement> elements = definition.getChildrenRecursive(clazz);
         for (NamedGraphElement element : elements) {

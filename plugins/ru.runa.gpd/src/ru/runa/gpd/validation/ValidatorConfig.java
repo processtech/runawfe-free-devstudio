@@ -8,7 +8,7 @@ import com.google.common.collect.Maps;
 
 public class ValidatorConfig {
     public static final String GLOBAL_FIELD_ID = "";
-    private String type;
+    private final String type;
     private String message = "";
     private final Map<String, String> params = Maps.newHashMap();
     private final List<String> transitionNames = Lists.newArrayList();

@@ -13,10 +13,12 @@ import org.eclipse.ui.IEditorPart;
 
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.FormNode;
+import ru.runa.gpd.search.VariableSearchVisitor;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.validation.FormNodeValidation;
 
 public abstract class FormType {
+
     private String type;
     private String name;
     private int order;
@@ -85,6 +87,20 @@ public abstract class FormType {
         int len = variableName.length();
         while (matcher.find()) {
             ReplaceEdit replaceEdit = new ReplaceEdit(matcher.start(), len, replacement);
+            multiEdit.addChild(replaceEdit);
+        }
+        return multiEdit;
+    }
+
+    public MultiTextEdit searchVariableReplacementsInScript(IFile file, String variableName, String replacement) throws Exception {
+        String text = IOUtils.readStream(file.getContents());
+        Pattern pattern = Pattern.compile(String.format(VariableSearchVisitor.REGEX_SCRIPT_VARIABLE, Pattern.quote(variableName)));
+        Matcher matcher = pattern.matcher(text);
+        MultiTextEdit multiEdit = new MultiTextEdit();
+        int len = variableName.length();
+        while (matcher.find()) {
+            ReplaceEdit replaceEdit = new ReplaceEdit(matcher.start(), len, replacement);
+            replaceEdit = new ReplaceEdit(replaceEdit.getOffset() + text.substring(replaceEdit.getOffset()).indexOf(variableName), len, replacement);
             multiEdit.addChild(replaceEdit);
         }
         return multiEdit;

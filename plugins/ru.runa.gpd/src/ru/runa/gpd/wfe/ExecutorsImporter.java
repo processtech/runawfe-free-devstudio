@@ -3,6 +3,7 @@ package ru.runa.gpd.wfe;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -28,7 +29,9 @@ public abstract class ExecutorsImporter extends DataImporter {
             element.addAttribute("name", name);
             element.addAttribute("group", String.valueOf(executors.get(name)));
         }
-        XmlUtil.writeXml(document, new FileOutputStream(getCacheFile()));
+        try (OutputStream os = new FileOutputStream(getCacheFile())) {
+            XmlUtil.writeXml(document, os);
+        }
     }
 
     @Override

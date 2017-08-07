@@ -12,18 +12,19 @@ import org.eclipse.ui.views.properties.PropertyDescriptor;
 import org.eclipse.ui.views.properties.TextPropertyDescriptor;
 
 import ru.runa.gpd.PropertyNames;
+import ru.runa.gpd.formeditor.ftl.Component;
 import ru.runa.gpd.formeditor.ftl.ComponentParameter;
 import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
 
 public class StringParameter extends ParameterType {
 
     @Override
-    public PropertyDescriptor createPropertyDescriptor(ComponentParameter parameter, int propertyId) {
+    public PropertyDescriptor createPropertyDescriptor(Component component, ComponentParameter parameter, int propertyId) {
         return new TextPropertyDescriptor(propertyId, parameter.getLabel());
     }
 
     @Override
-    public Composite createEditor(Composite parent, ComponentParameter parameter, final Object oldValue, final PropertyChangeListener listener) {
+    public Object createEditor(Composite parent, Component component, ComponentParameter parameter, final Object oldValue, final PropertyChangeListener listener) {
         final Text text = new Text(parent, SWT.BORDER);
         text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         if (oldValue != null) {

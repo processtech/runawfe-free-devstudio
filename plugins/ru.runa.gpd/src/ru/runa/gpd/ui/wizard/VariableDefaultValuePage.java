@@ -7,6 +7,8 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.model.Variable;
@@ -83,14 +85,18 @@ public class VariableDefaultValuePage extends DynaContentWizardPage {
             if (useDefaultValueButton != null && useDefaultValueButton.getSelection()) {
                 VariableFormatPage formatPage = (VariableFormatPage) getWizard().getPage(VariableFormatPage.class.getSimpleName());
                 if (formatPage.getUserType() != null) {
-                    setErrorMessage(Localization.getString("VariableDefaultValuePage.error.userType"));
-                    return;
-                }
-                String className = formatPage.getType().getJavaClassName();
-                if (Group.class.getName().equals(className) || Actor.class.getName().equals(className) || Executor.class.getName().equals(className)) {
-                    // TODO validate using connection?
+                    // TODO validate using UserTypeFormat
+                    if (!(JSONValue.parse(defaultValue.replaceAll("&quot;", "\"")) instanceof JSONObject)) {
+                        throw new Exception("Invalid user type value");
+                    }
                 } else {
-                    TypeConversionUtil.convertTo(ClassLoaderUtil.loadClass(className), defaultValue);
+                    String className = formatPage.getType().getJavaClassName();
+                    if (Group.class.getName().equals(className) || Actor.class.getName().equals(className)
+                            || Executor.class.getName().equals(className)) {
+                        // TODO validate using connection?
+                    } else {
+                        TypeConversionUtil.convertTo(ClassLoaderUtil.loadClass(className), defaultValue);
+                    }
                 }
             }
             setErrorMessage(null);

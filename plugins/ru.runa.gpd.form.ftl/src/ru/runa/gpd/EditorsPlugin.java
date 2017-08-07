@@ -7,6 +7,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
+
 import ru.runa.gpd.formeditor.WebServerUtils;
 import ru.runa.gpd.htmleditor.ColorProvider;
 import ru.runa.gpd.htmleditor.HTMLPlugin;
@@ -40,15 +41,16 @@ public class EditorsPlugin extends AbstractUIPlugin {
     public static void logError(String message, Throwable exception) {
         log(IStatus.ERROR, IStatus.OK, message, exception);
     }
-    
+
     public String getLocalizedProperty(String key) {
-        return Platform.getResourceString(getBundle(),"%"+key);
+        return Platform.getResourceString(getBundle(), "%" + key);
     }
 
     @Override
     public void start(BundleContext context) throws Exception {
         super.start(context);
         colorProvider = new ColorProvider(getPreferenceStore());
+        WebServerUtils.copyEditor(null, 1);
     }
 
     @Override

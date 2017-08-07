@@ -1,6 +1,5 @@
 package ru.runa.gpd.quick.formeditor.ui;
 
-import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;
@@ -11,7 +10,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 
-import ru.runa.gpd.quick.Activator;
 import ru.runa.gpd.quick.Messages;
 
 public class PreviewFormWizard extends Wizard implements INewWizard {
@@ -50,20 +48,15 @@ public class PreviewFormWizard extends Wizard implements INewWizard {
             Browser browser = new Browser(parent, SWT.NULL);
             browser.setLayoutData(new GridData(GridData.FILL_BOTH));
             browser.setSize(800, 600);
-            try {
-                String background = FileLocator.toFileURL(Activator.getDefault().getBundle().getEntry("/icons/runawfeweb.jpg")).toString();
-                String html = "<html>\n<head>\n<style>\n";
-                if (styles != null) {
-                    html += styles;
-                }
-                html += "</style>\n</head>\n<BODY style=\"background: url(" + background + ") top left no-repeat;\">\n";
-                html += "<div class=\"taskform\" style=\"margin-left: 260px; margin-top: 120px; width: 100%;\">\n";
-                html += formHtml;
-                html += "</div>\n</body>\n</html>";
-                browser.setText(html);
-            } catch (Exception e) {
-                throw new RuntimeException("Error loading background img", e);
+            String html = "<html>\n<head>\n<style>\n";
+            if (styles != null) {
+                html += styles;
             }
+            html += "</style>\n</head>\n<BODY>\n";
+            html += "<div class=\"taskform\">\n";
+            html += formHtml;
+            html += "</div>\n</body>\n</html>";
+            browser.setText(html);
             setControl(browser);
         }
 
