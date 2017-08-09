@@ -156,6 +156,7 @@ public abstract class EditorPartBase<T> extends EditorPart implements PropertyCh
             TableColumn tableColumn = new TableColumn(table, col.style);
             tableColumn.setText(Localization.getString(col.titleKey));
             tableColumn.setWidth(col.width);
+            tableColumn.setToolTipText(col.toolTipText);
             if (col.sort) {
                 tableColumn.addSelectionListener(createSelectionListener(viewer, comparator, tableColumn, index));
             }
@@ -255,6 +256,7 @@ public abstract class EditorPartBase<T> extends EditorPart implements PropertyCh
         private final int width;
         private final int style;
         private final boolean sort;
+        private String toolTipText;
 
         TableColumnDescription(String titleKey, int width, int style) {
             this(titleKey, width, style, true);
@@ -265,6 +267,10 @@ public abstract class EditorPartBase<T> extends EditorPart implements PropertyCh
             this.width = width;
             this.style = style;
             this.sort = sort;
+        }
+
+        void setToolTipText(String toolTipText) {
+            this.toolTipText = toolTipText;
         }
     }
 

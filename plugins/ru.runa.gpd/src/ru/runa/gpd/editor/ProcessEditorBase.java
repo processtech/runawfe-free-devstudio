@@ -69,6 +69,7 @@ public abstract class ProcessEditorBase extends MultiPageEditorPart implements I
     protected VariableEditorPage variablePage;
     protected VariableTypeEditorPage variableTypeEditorPage;
     protected TextEditor sourcePage;
+    protected VariablesUsageEditorPage variableUsagePage;
     private OutlineViewer outlineViewer;
 
     @Override
@@ -167,7 +168,9 @@ public abstract class ProcessEditorBase extends MultiPageEditorPart implements I
                 variableTypeEditorPage = addNewPage(new VariableTypeEditorPage(this), "VariableUserType.collection");
             }
             sourcePage = addNewPage(new TextEditor(), "DesignerEditor.title.source");
-
+            if (!(definition instanceof SubprocessDefinition)) {
+                variableUsagePage = addNewPage(new VariablesUsageEditorPage(this), "DesignerEditor.title.variablesUsage");
+            }
             ProcessDefinitionValidator.validateDefinition(definition);
         } catch (PartInitException e) {
             PluginLogger.logError(Localization.getString("DesignerEditor.error.can_not_create_graphical_viewer"), e);
