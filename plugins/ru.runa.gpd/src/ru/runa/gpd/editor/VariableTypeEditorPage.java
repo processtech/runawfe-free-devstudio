@@ -372,8 +372,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             }
 
             for (VariableUserType userType : getDefinition().getVariableUserTypes()) {
-                // Данная проверка выполняется снаружи метода, чтобы избежать
-                // ситуации сравнения типа с самим собой.
+                // XXX: exclude same VariableUserType object
                 if (!type.equals(userType)) {
                     if (isUserTypeUsed(type, userType)) {
                         action = RemoveAction.TYPE_USAGE;
@@ -469,6 +468,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
                 variable.setFormat(wizard.getVariable().getFormat());
                 variable.setUserType(wizard.getVariable().getUserType());
                 variable.setDefaultValue(wizard.getVariable().getDefaultValue());
+                variable.setStoreType(wizard.getVariable().getStoreType());
                 getDefinition().setDirty();
                 updateAttributeViewer(variable);
             }
@@ -845,8 +845,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             boolean result = Objects.equal(leftType.getName(), rightType.getName());
             result = result && (leftType.getAttributes() == null ? rightType.getAttributes() == null : false);
             if (leftType.getAttributes() != null && rightType.getAttributes() != null) {
-                // не должно быть result && поскольку предыдущая проверка
-                // установит false _не верно_ при переходе сюда.
+                // XXX: fault accumulate "result &&" - wrong set "false" 
                 result = leftType.getAttributes().size() == rightType.getAttributes().size();
                 if (result) {
                     for (int i = 0; i < leftType.getAttributes().size(); i++) {

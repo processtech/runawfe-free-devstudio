@@ -82,10 +82,10 @@ public class ProcessCache {
             ProcessDefinition definition = CACHE_BY_FILE.remove(file);
             if (definition != null) {
                 CACHE_BY_NAME.remove(definition.getName());
-            }
-            if (!(definition instanceof SubprocessDefinition)) {
-                for (SubprocessDefinition subprocessDefinition : definition.getEmbeddedSubprocesses().values()) {
-                    processDefinitionWasDeleted(subprocessDefinition.getFile());
+                if (!(definition instanceof SubprocessDefinition)) {
+                    for (SubprocessDefinition subprocessDefinition : definition.getEmbeddedSubprocesses().values()) {
+                        processDefinitionWasDeleted(subprocessDefinition.getFile());
+                    }
                 }
             }
         } catch (Exception e) {

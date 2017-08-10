@@ -38,7 +38,7 @@
 		</repository>
 		<repository>
 			<id>emf-store</id>
-			<url>http://download.eclipse.org/emf-store/milestones/100RC5/</url>
+			<url>http://download.eclipse.org/emf-store/releases/100/</url>
 			<layout>p2</layout>
 		</repository>
 		<repository>
