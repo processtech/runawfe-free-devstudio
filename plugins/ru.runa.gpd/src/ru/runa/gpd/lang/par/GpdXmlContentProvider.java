@@ -9,15 +9,7 @@ import org.dom4j.Element;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
-import org.eclipse.graphiti.datatypes.ILocation;
-import org.eclipse.graphiti.features.IFeatureProvider;
-import org.eclipse.graphiti.mm.pictograms.Connection;
-import org.eclipse.graphiti.services.Graphiti;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.part.FileEditorInput;
 
-import ru.runa.gpd.editor.graphiti.GraphitiProcessEditor;
 import ru.runa.gpd.editor.graphiti.HasTextDecorator;
 import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.model.Action;
@@ -54,9 +46,6 @@ public class GpdXmlContentProvider extends AuxContentProvider {
     private static final String BENDPOINT = "bendpoint";
     private static final String LABEL = "label";
     private static final String TEXT_DECORATION = "textDecoration";
-
-    private static int MAGIC_NUMBER_X = 5;
-    private static int MAGIC_NUMBER_Y = 47;
 
     @Override
     public String getFileName() {
@@ -128,14 +117,6 @@ public class GpdXmlContentProvider extends AuxContentProvider {
     
     @Override
     public Document save(ProcessDefinition definition) throws Exception {
-        IFeatureProvider bpmnFeatureProvider = null;
-        if (definition.getLanguage() == Language.BPMN) {
-            IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-            GraphitiProcessEditor graphitiProcessEditor = (GraphitiProcessEditor) page.findEditor(new FileEditorInput(definition.getFile()));
-            if (graphitiProcessEditor != null) { // while copying/renaming
-                bpmnFeatureProvider = graphitiProcessEditor.getDiagramEditorPage().getDiagramTypeProvider().getFeatureProvider();
-            }
-        }
         Document document = XmlUtil.createDocument(PROCESS_DIAGRAM);
         Element root = document.getRootElement();
         addAttribute(root, NAME, definition.getName());
@@ -143,13 +124,20 @@ public class GpdXmlContentProvider extends AuxContentProvider {
         if (definition.getLanguage() == Language.BPMN) {
             addAttribute(root, RENDERED, "graphiti");
         }
+        Rectangle r = definition.getConstraint();
+        if (r != null) {
+            if (r.x != 0) {
+                addAttribute(root, X, String.valueOf(r.x));
+            }
+            if (r.y != 0) {
+                addAttribute(root, Y, String.valueOf(r.y));
+            }
+        }
         Dimension dimension = definition.getDimension();
         addAttribute(root, WIDTH, String.valueOf(dimension.width));
         addAttribute(root, HEIGHT, String.valueOf(dimension.height));
         addAttribute(root, SHOW_ACTIONS, String.valueOf(definition.isShowActions()));
         addAttribute(root, SHOW_GRID, String.valueOf(definition.isShowGrid()));
-        int diagramX = MAGIC_NUMBER_X;
-        int diagramY = MAGIC_NUMBER_Y;
         int xOffset = 0;
         int yOffset = 0;
         int canvasShift = 0;
@@ -171,13 +159,6 @@ public class GpdXmlContentProvider extends AuxContentProvider {
             if (graphElement instanceof Node) {
                 Node node = (Node) graphElement;
                 for (Transition transition : node.getLeavingTransitions()) {
-                    Point lableLocation = transition.getLabelLocation();
-                    if (bpmnFeatureProvider != null && lableLocation != null) {
-                        Connection connection = (Connection) bpmnFeatureProvider.getPictogramElementForBusinessObject(transition);
-                        ILocation midpoint = Graphiti.getPeService().getConnectionMidpoint(connection, 0.5d);
-                        diagramX = min(diagramX, lableLocation.x + midpoint.getX());
-                        diagramY = min(diagramY, lableLocation.y + midpoint.getY());
-                    }
                     for (Point bendpoint : transition.getBendpoints()) {
                         // canvasShift for BPMN connections = 0;
                         xOffset = min(xOffset, bendpoint.x);
@@ -191,30 +172,6 @@ public class GpdXmlContentProvider extends AuxContentProvider {
                     xOffset = min(xOffset, decorationNode.getConstraint().x - canvasShift);
                     yOffset = min(yOffset, decorationNode.getConstraint().y - canvasShift);
                 }
-            }
-        }
-        if (diagramX < 0) {
-            addAttribute(root, X, String.valueOf(-diagramX + MAGIC_NUMBER_X));
-            setX(definition, -diagramX + MAGIC_NUMBER_X);
-        } else if (diagramX < MAGIC_NUMBER_X) {
-            addAttribute(root, X, String.valueOf(MAGIC_NUMBER_X - diagramX));
-            setX(definition, MAGIC_NUMBER_X - diagramX);
-        } else if (bpmnFeatureProvider == null) {
-            Rectangle r = definition.getConstraint();
-            if (r != null && r.x != 0) {
-                addAttribute(root, X, String.valueOf(r.x));
-            }
-        }
-        if (diagramY < 0) {
-            addAttribute(root, Y, String.valueOf(-diagramY + MAGIC_NUMBER_Y));
-            setY(definition, -diagramY + MAGIC_NUMBER_Y);
-        } else if (diagramY < MAGIC_NUMBER_Y) {
-            addAttribute(root, Y, String.valueOf(MAGIC_NUMBER_Y - diagramY));
-            setY(definition, MAGIC_NUMBER_Y - diagramY);
-        } else if (bpmnFeatureProvider == null) {
-            Rectangle r = definition.getConstraint();
-            if (r != null && r.y != 0) {
-                addAttribute(root, Y, String.valueOf(r.y));
             }
         }
         for (GraphElement graphElement : definition.getElementsRecursive()) {
@@ -276,29 +233,13 @@ public class GpdXmlContentProvider extends AuxContentProvider {
         return document;
     }
 
-    private void setX(ProcessDefinition pd, int x) {
-        if (pd.getConstraint() == null) {
-            pd.setConstraint(new Rectangle());
-        }
-        pd.getConstraint().x = x;
-    }
-
-    private void setY(ProcessDefinition pd, int y) {
-        if (pd.getConstraint() == null) {
-            pd.setConstraint(new Rectangle());
-        }
-        pd.getConstraint().y = y;
-    }
-
     private void addProcessDiagramInfo(ProcessDefinition definition, Element processDiagramInfo) {
-        int x = getIntAttribute(processDiagramInfo, X, 0);
-        int y = getIntAttribute(processDiagramInfo, Y, 0);
-        if (x + y > 0) {
-            definition.setConstraint(new Rectangle(x, y, 0, 0));
-        }
         int width = getIntAttribute(processDiagramInfo, WIDTH, 0);
         int height = getIntAttribute(processDiagramInfo, HEIGHT, 0);
         definition.setDimension(new Dimension(width, height));
+        int x = getIntAttribute(processDiagramInfo, X, 0);
+        int y = getIntAttribute(processDiagramInfo, Y, 0);
+        definition.setConstraint(new Rectangle(x, y, width, height));
         if (!(definition instanceof SubprocessDefinition)) {
             definition.setShowActions(getBooleanAttribute(processDiagramInfo, SHOW_ACTIONS, false));
             definition.setShowGrid(getBooleanAttribute(processDiagramInfo, SHOW_GRID, false));

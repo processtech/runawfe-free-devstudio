@@ -24,26 +24,30 @@ public class Variable extends NamedGraphElement implements Describable {
     private boolean publicVisibility;
     private String defaultValue;
     private VariableUserType userType;
+    private VariableStoreType storeType = VariableStoreType.DEFAULT;
 
     public Variable() {
     }
 
-    public Variable(String name, String scriptingName, String format, VariableUserType userType, boolean publicVisibility, String defaultValue) {
+    public Variable(String name, String scriptingName, String format, VariableUserType userType) {
         super(name);
         setScriptingName(scriptingName);
         setFormat(format);
-        this.userType = userType;
-        this.publicVisibility = publicVisibility;
-        this.defaultValue = defaultValue;
+        setUserType(userType);
     }
 
     public Variable(Variable variable) {
-        this(variable.getName(), variable.getScriptingName(), variable.getFormat(), variable.getUserType(), variable.isPublicVisibility(), variable
-                .getDefaultValue());
+        this(variable.getName(), variable.getScriptingName(), variable.getFormat(), variable.getUserType());
+        setPublicVisibility(variable.isPublicVisibility());
+        setDefaultValue(variable.getDefaultValue());
+        setStoreType(variable.getStoreType());
     }
 
     public Variable(String name, String scriptingName, Variable variable) {
-        this(name, scriptingName, variable.getFormat(), variable.getUserType(), variable.isPublicVisibility(), variable.getDefaultValue());
+        this(name, scriptingName, variable.getFormat(), variable.getUserType());
+        setPublicVisibility(variable.isPublicVisibility());
+        setDefaultValue(variable.getDefaultValue());
+        setStoreType(variable.getStoreType());
     }
 
     public VariableUserType getUserType() {
@@ -161,6 +165,16 @@ public class Variable extends NamedGraphElement implements Describable {
         firePropertyChange(PROPERTY_DEFAULT_VALUE, old, this.defaultValue);
     }
 
+    public VariableStoreType getStoreType() {
+        return storeType;
+    }
+
+    public void setStoreType(VariableStoreType storeType) {
+        VariableStoreType old = this.storeType;
+        this.storeType = storeType != null ? storeType : VariableStoreType.DEFAULT;
+        firePropertyChange(PROPERTY_STORE_TYPE, old, this.storeType);
+    }
+
     @Override
     public void populateCustomPropertyDescriptors(List<IPropertyDescriptor> descriptors) {
         super.populateCustomPropertyDescriptors(descriptors);
@@ -168,6 +182,7 @@ public class Variable extends NamedGraphElement implements Describable {
         descriptors.add(new PropertyDescriptor(PROPERTY_FORMAT, Localization.getString("Variable.property.format")));
         descriptors.add(new PropertyDescriptor(PROPERTY_PUBLIC_VISIBILITY, Localization.getString("Variable.property.publicVisibility")));
         descriptors.add(new PropertyDescriptor(PROPERTY_DEFAULT_VALUE, Localization.getString("Variable.property.defaultValue")));
+        descriptors.add(new PropertyDescriptor(PROPERTY_STORE_TYPE, Localization.getString("Variable.property.storeType")));
     }
 
     @Override
@@ -183,6 +198,9 @@ public class Variable extends NamedGraphElement implements Describable {
         }
         if (PROPERTY_DEFAULT_VALUE.equals(id)) {
             return defaultValue == null ? "" : defaultValue;
+        }
+        if (PROPERTY_STORE_TYPE.equals(id)) {
+            return getStoreType() != null ? getStoreType() : VariableStoreType.DEFAULT;
         }
         return super.getPropertyValue(id);
     }
@@ -213,6 +231,7 @@ public class Variable extends NamedGraphElement implements Describable {
         copyVariable.setScriptingName(getScriptingName());
         copyVariable.setDefaultValue(getDefaultValue());
         copyVariable.setPublicVisibility(isPublicVisibility());
+        copyVariable.setStoreType(getStoreType());
         super.fillCopyCustomFields(copyVariable);
     }
 

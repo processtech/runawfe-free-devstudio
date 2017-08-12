@@ -8,7 +8,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 
 import ru.runa.gpd.extension.VariableFormatRegistry;
-import ru.runa.gpd.extension.handler.ParamDefConfig;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.bpmn.IMultiInstancesContainer;
 import ru.runa.gpd.util.MultiinstanceParameters;
@@ -35,8 +34,7 @@ public class MultiTaskState extends TaskState implements IMultiInstancesContaine
 
     @Override
     protected boolean isSwimlaneDisabled() {
-        return creationMode == MultiTaskCreationMode.BY_EXECUTORS
-                || discriminatorUsage.contains(VariableMapping.USAGE_DISCRIMINATOR_GROUP)
+        return creationMode == MultiTaskCreationMode.BY_EXECUTORS || discriminatorUsage.contains(VariableMapping.USAGE_DISCRIMINATOR_GROUP)
                 || discriminatorUsage.contains(VariableMapping.USAGE_DISCRIMINATOR_RELATION);
     }
 
@@ -181,7 +179,7 @@ public class MultiTaskState extends TaskState implements IMultiInstancesContaine
             }
             String componentFormat = VariableUtils.getListVariableComponentFormat(listVariable);
             VariableUserType userType = getProcessDefinition().getVariableUserType(componentFormat);
-            Variable variable = new Variable(mapping.getMappedName(), mapping.getMappedName(), componentFormat, userType, true, null);
+            Variable variable = new Variable(mapping.getMappedName(), mapping.getMappedName(), componentFormat, userType);
             if (expandComplexTypes && variable.isComplex()) {
                 formVariables.addAll(VariableUtils.expandComplexVariable(variable, variable));
             } else {
