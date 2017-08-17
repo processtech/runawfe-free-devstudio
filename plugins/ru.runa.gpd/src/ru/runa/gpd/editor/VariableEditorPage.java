@@ -21,6 +21,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 
@@ -49,6 +50,7 @@ import ru.runa.gpd.ui.dialog.UpdateVariableNameDialog;
 import ru.runa.gpd.ui.wizard.CompactWizardDialog;
 import ru.runa.gpd.ui.wizard.VariableWizard;
 import ru.runa.gpd.util.VariableUtils;
+import ru.runa.gpd.util.VariablesUsageXlsExporter;
 import ru.runa.gpd.util.WorkspaceOperations;
 
 import com.google.common.base.Function;
@@ -67,6 +69,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
     private Button deleteButton;
     private Button copyButton;
     private Button moveToTypeAttributeButton;
+    private Button usageReportButton;
 
     private static Function<Variable, String> joinVariableNamesFunction = new Function<Variable, String>() {
 
@@ -130,6 +133,9 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
         deleteButton = addButton(buttonsBar, "button.delete", new DeleteVariableSelectionListener(), true);
         moveToTypeAttributeButton = addButton(buttonsBar, "button.move", new MoveToTypeAttributeSelectionListener(), true);
 
+        usageReportButton = addButton(buttonsBar, "button.report", new ReportUsageSelectionListener(), true);
+        usageReportButton.setToolTipText(Localization.getString("DesignerVariableEditorPage.report.variablesUsage.tooltip"));
+
         updateViewer();
     }
 
@@ -166,6 +172,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
         enableAction(renameButton, selected.size() == 1);
         enableAction(copyButton, selected.size() > 0);
         enableAction(moveToTypeAttributeButton, selected.size() == 1);
+        enableAction(usageReportButton, variables.size() > 0);
     }
 
     private void updateViewer() {
@@ -459,6 +466,19 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
                 for (SubprocessDefinition subprocessDefinition : editor.getDefinition().getEmbeddedSubprocesses().values()) {
                     WorkspaceOperations.saveProcessDefinition(subprocessDefinition.getFile(), subprocessDefinition);
                 }
+            }
+        }
+    }
+
+    private class ReportUsageSelectionListener extends LoggingSelectionAdapter {
+        @Override
+        protected void onSelection(SelectionEvent e) throws Exception {
+            FileDialog fd = new FileDialog(getSite().getShell(), SWT.SAVE);
+            fd.setText(Localization.getString("DesignerVariableEditorPage.report.variablesUsage.dialog.title"));
+            fd.setFileName(editor.getDefinition().getName() + ".vars-usage.xls");
+            String filePath = fd.open();
+            if (filePath != null) {
+                VariablesUsageXlsExporter.go(editor.getDefinition(), filePath);
             }
         }
     }
