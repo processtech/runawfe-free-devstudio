@@ -165,7 +165,7 @@ public class ImportParWizardPage extends ImportWizardPage {
     private void setupServerDefinitionViewer(){
     	Map<WfDefinition, List<WfDefinition>> definitions = WFEServerProcessDefinitionImporter.getInstance().loadCachedData();
         //TreeObject treeDefinitions = createTree(getWfDefinitionsByType(definitions));
-    	MyTreeNode treeDefinitions = createTree(getWfDefinitionsByType(definitions));
+    	DefinitionNode treeDefinitions = createTree(getWfDefinitionsByType(definitions));
         serverDefinitionViewer.setInput(treeDefinitions);
         serverDefinitionViewer.refresh(true);
     }
@@ -202,7 +202,7 @@ public class ImportParWizardPage extends ImportWizardPage {
             	List<WfDefinition> defSelections = Lists.newArrayList();
                 for(int i = 0; i < selections.length; i++){
                 	Object selected = selections[i].getData();
-                	if (MyTreeNode.class.isInstance(selected))
+                	if (DefinitionNode.class.isInstance(selected))
                 		continue;
                     if (selected instanceof WfDefinition) {
                         defSelections.add((WfDefinition) selected);
@@ -257,6 +257,7 @@ public class ImportParWizardPage extends ImportWizardPage {
         return true;
     }
 
+    //not used
     public static class DefinitionTreeContentProvider implements ITreeContentProvider {
         @Override
         public Object[] getChildren(Object parentElement) {
@@ -315,7 +316,7 @@ public class ImportParWizardPage extends ImportWizardPage {
             this.definition = stub;
         }
     }
-
+//not used
     public static class DefinitionLabelProvider extends LabelProvider {
         @Override
         public String getText(Object element) {
@@ -412,14 +413,14 @@ public class ImportParWizardPage extends ImportWizardPage {
 
         @Override
         public String getText(Object obj) {
-            return obj.toString();
+            return ((DefinitionNode)obj).getName();
         }
 
         @Override
         public Image getImage(Object obj) {
-        	/*if (obj instanceof ProcessType) {
+        	if (((DefinitionNode)obj).isGroup()) {
                 return SharedImages.getImage("icons/project.gif");
-            }*/
+            }
             return SharedImages.getImage("icons/process.gif");            
         }
     }
@@ -465,24 +466,24 @@ public class ImportParWizardPage extends ImportWizardPage {
         
         @Override
         public Object getParent(Object child) {
-            if (child instanceof MyTreeNode) {
-                return ((MyTreeNode) child).getChildren();
+            if (child instanceof DefinitionNode) {
+                return ((DefinitionNode) child).getChildren();
             }
             return null;
         }
 
         @Override
         public Object[] getChildren(Object parent) {
-            if (parent instanceof MyTreeNode) {
-                return ((MyTreeNode) parent).getChildren().toArray();
+            if (parent instanceof DefinitionNode) {
+                return ((DefinitionNode) parent).getChildren().toArray();
             }
             return new Object[0];
         }
 
         @Override
         public boolean hasChildren(Object parent) {
-            if (parent instanceof MyTreeNode) {
-                return !((MyTreeNode) parent).getChildren().isEmpty();
+            if (parent instanceof DefinitionNode) {
+                return !((DefinitionNode) parent).getChildren().isEmpty();
             }
             return false;
         }
@@ -618,32 +619,37 @@ public class ImportParWizardPage extends ImportWizardPage {
     }
     */
 
-    private MyTreeNode<String> createTree(Map<String, List<CustomWfDefinition>> definitions) {
-    	MyTreeNode<String> root = new MyTreeNode<>("Root");
+    private DefinitionNode<String> createTree(Map<String, List<CustomWfDefinition>> definitions) {
+    	//DefinitionNode<String> root = new DefinitionNode<>("Root");
+    	/*DefinitionNode<String> root = new DefinitionNode<>("Root", null, true);
 
-    	MyTreeNode<String> child1 = new MyTreeNode<>("Child1");
-    	child1.addChild("Grandchild1");
-    	child1.addChild("Grandchild2");
+    	DefinitionNode<String> child1 = new DefinitionNode<>("Child1", 11L, true);
+    	DefinitionNode<String> child11 = new DefinitionNode<>("Child1", 11L, false);
+    	DefinitionNode<String> child111 = new DefinitionNode<>("Child1", 11L, false);
+    	
+    	child1.addChild(child11);
+    	child1.addChild(child111);
 
-    	MyTreeNode<String> child2 = new MyTreeNode<>("Child2");
+    	DefinitionNode<String> child2 = new DefinitionNode<>("Child2");
     	child2.addChild("Grandchild3");
 
-    	root.addChild(child1);
-    	root.addChild(child2);
-    	root.addChild("Child3");
+    	root.addChild(child1);*/
+    	//root.addChild(child2);
+    	//root.addChild("Child3");*/
 /*
     	root.addChildren(Arrays.asList(
-    	        new MyTreeNode<>("Child4"),
-    	        new MyTreeNode<>("Child5"),
-    	        new MyTreeNode<>("Child6")
+    	        new DefinitionNode<>("Child4"),
+    	        new DefinitionNode<>("Child5"),
+    	        new DefinitionNode<>("Child6")
     	));*/
     	 
-    	 return root;
+    	 
 
-    	/*
-    	Node root = new Node("");
-    	Node processType;
-    	Node historyProcessType;
+    	
+    	DefinitionNode<String> root = new DefinitionNode<>("Root", null, true);
+    	DefinitionNode<String> processType;
+    	DefinitionNode<String> historyProcessType;
+    	
         for (Map.Entry<String, List<CustomWfDefinition>> entry : definitions.entrySet()) {
             String groupName = entry.getKey();
             
@@ -655,21 +661,23 @@ public class ImportParWizardPage extends ImportWizardPage {
                 }
             	continue;
             }*/
- /*               
-            processType = new Node(groupName);
+                
+            processType = new DefinitionNode<>(groupName, null, true);
+            
             for (CustomWfDefinition definition : entry.getValue()) {
-            	Node treeObject = new Node(definition.getId(), definition.getName(), null);
+            	DefinitionNode treeObject = new DefinitionNode<>(definition.getName(), definition.getId(), false);
             	 
             	for (Map.Entry<String, List<CustomWfHistoryDefinition>> historyEntry : definition.getCustomWfHistoryDefinitions().entrySet()) {
-                     String historyGroupName = historyEntry.getKey();
-                     
-                     historyProcessType = new Node(historyGroupName);
+                     //String historyGroupName = historyEntry.getKey();
+            		String historyGroupName = "история";
+                     historyProcessType = new DefinitionNode(historyGroupName, null, true);
                      
                      for (CustomWfHistoryDefinition historyDefinition : historyEntry.getValue()) {
-                    	 historyProcessType.addChild(new Node(historyDefinition.getId(), historyDefinition.getName(), null));                    	 
+                    	 historyProcessType.addChild(new DefinitionNode<>(historyDefinition.getName(), historyDefinition.getId(), false));                    	 
                      }
                      
-                     treeObject.setParent(historyProcessType);                     
+                     //treeObject.setParent(historyProcessType); 
+                     treeObject.addChild(historyProcessType);
             	}
             	
             	
@@ -677,8 +685,8 @@ public class ImportParWizardPage extends ImportWizardPage {
                 processType.addChild(treeObject);
             }
             root.addChild(processType);
-        }*/
-        //return parentNode;
+        }
+        return root;
     }
     
     class CustomWfDefinition{
@@ -766,34 +774,72 @@ public class ImportParWizardPage extends ImportWizardPage {
         return root;
     }*/
     
-    public class MyTreeNode<T>{
+    public class DefinitionNode<T>{
         private T data = null;
-        private List<MyTreeNode> children = new ArrayList<>();
-        private MyTreeNode parent = null;
+        private List<DefinitionNode> children = new ArrayList<>();
+        private DefinitionNode parent = null;
+        
+        private String name;
+        private Long id;
+        private boolean isGroup;
 
-        public MyTreeNode(T data) {
+        public DefinitionNode(String name, Long id, boolean isGroup){
+        	this.name = name;
+            this.id = id;
+            this.isGroup = isGroup;
+        }
+                
+        public boolean isGroup() {
+			return isGroup;
+		}
+
+		public void setGroup(boolean isGroup) {
+			this.isGroup = isGroup;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		public Long getId() {
+			return id;
+		}
+
+		public void setId(Long id) {
+			this.id = id;
+		}
+
+		public void setChildren(List<DefinitionNode> children) {
+			this.children = children;
+		}
+
+		public DefinitionNode(T data) {
             this.data = data;
         }
 
-        public void addChild(MyTreeNode child) {
+        public void addChild(DefinitionNode child) {
             child.setParent(this);
             this.children.add(child);
         }
 
         public void addChild(T data) {
-            MyTreeNode<T> newChild = new MyTreeNode<>(data);
+            DefinitionNode<T> newChild = new DefinitionNode<>(data);
             newChild.setParent(this);
             children.add(newChild);
         }
 
-        public void addChildren(List<MyTreeNode> children) {
-            for(MyTreeNode t : children) {
+        public void addChildren(List<DefinitionNode> children) {
+            for(DefinitionNode t : children) {
                 t.setParent(this);
             }
             this.children.addAll(children);
         }
 
-        public List<MyTreeNode> getChildren() {
+        public List<DefinitionNode> getChildren() {
             return children;
         }
 
@@ -805,22 +851,12 @@ public class ImportParWizardPage extends ImportWizardPage {
             this.data = data;
         }
 
-        private void setParent(MyTreeNode parent) {
+        private void setParent(DefinitionNode parent) {
             this.parent = parent;
         }
 
-        public MyTreeNode getParent() {
+        public DefinitionNode getParent() {
             return parent;
         }
     }
 }
-
-/*
- * Node<String> parentNode = new Node<String>("Parent"); 
-Node<String> childNode1 = new Node<String>("Child 1", parentNode);
-Node<String> childNode2 = new Node<String>("Child 2");     
-
-childNode2.setParent(parentNode); 
-
-Node<String> grandchildNode = new Node<String>("Grandchild of parentNode. Child of childNode1", childNode1); 
-List<Node<String>> childrenNodes = parentNode.getChildren();*/
