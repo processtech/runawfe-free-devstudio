@@ -198,19 +198,19 @@ public class ImportParWizardPage extends ImportWizardPage {
                     parInputStreams[i] = new FileInputStream(fileName);
                 }
             } else {
-            	TreeItem[] selections = serverDefinitionViewer.getTree().getSelection();
-            	List<WfDefinition> defSelections = Lists.newArrayList();
-                for(int i = 0; i < selections.length; i++){
-                	Object selected = selections[i].getData();
-                	if (DefinitionNode.class.isInstance(selected))
-                		continue;
-                    if (selected instanceof WfDefinition) {
-                        defSelections.add((WfDefinition) selected);
-                    }
-                }                
-                if (defSelections.isEmpty()) {
-                    throw new Exception(Localization.getString("ImportParWizardPage.error.selectValidDefinition"));
-                }
+            	 TreeItem[] selections = serverDefinitionViewer.getTree().getSelection();
+                 List<WfDefinition> defSelections = Lists.newArrayList();
+                 for(int i = 0; i < selections.length; i++){
+                	 Object selected = selections[i].getData();
+                	 if (((DefinitionNode) selected).isGroup())
+                 		continue;
+                     if (selected instanceof WfDefinition) {
+                         defSelections.add((WfDefinition) selected);
+                     }
+                 }
+                 if (defSelections.isEmpty()) {
+                     throw new Exception(Localization.getString("ImportParWizardPage.error.selectValidDefinition"));
+                 }            	
                 processNames = new String[defSelections.size()];
                 parInputStreams = new InputStream[defSelections.size()];
                 for (int i = 0; i < processNames.length; i++) {
@@ -383,14 +383,15 @@ public class ImportParWizardPage extends ImportWizardPage {
 
             List<WfDefinition> historyDefinitions = entry.getValue();
             Map historyDefinitionsMap = null;
+            
             if(!historyDefinitions.isEmpty()){
             	historyDefinitionsMap = new HashMap<String, List<CustomWfHistoryDefinition>>();
             	List <CustomWfHistoryDefinition> customWfHistoryDefinitions = new ArrayList();
             	
             	for (WfDefinition historyDefinition : historyDefinitions) {
-            		customWfHistoryDefinitions.add(new CustomWfHistoryDefinition(historyDefinition.getName(), historyDefinition.getId()));
+            		customWfHistoryDefinitions.add(new CustomWfHistoryDefinition(historyDefinition.getVersion().toString(), historyDefinition.getId()));
             	}
-            	historyDefinitionsMap.put("история", customWfHistoryDefinitions);
+            	historyDefinitionsMap.put("Предыдущие версии", customWfHistoryDefinitions);
             }
             
             for (String category : categories) {
@@ -653,23 +654,23 @@ public class ImportParWizardPage extends ImportWizardPage {
         for (Map.Entry<String, List<CustomWfDefinition>> entry : definitions.entrySet()) {
             String groupName = entry.getKey();
             
-            /*
+            
             if(groupName.trim().isEmpty()){
-            	for (CustomWfDefinition definition : entry.getValue()) {
-                    
-            		root.addChild(new Node(definition.getId(), definition.getName()));
+            	for (CustomWfDefinition definition : entry.getValue()) {                    
+            		root.addChild(new DefinitionNode(definition.getName(), definition.getId(), false));
                 }
             	continue;
-            }*/
+            }
                 
             processType = new DefinitionNode<>(groupName, null, true);
             
             for (CustomWfDefinition definition : entry.getValue()) {
             	DefinitionNode treeObject = new DefinitionNode<>(definition.getName(), definition.getId(), false);
-            	 
+            	//add history 
+            	if(null != definition.getCustomWfHistoryDefinitions() && !definition.getCustomWfHistoryDefinitions().isEmpty())
             	for (Map.Entry<String, List<CustomWfHistoryDefinition>> historyEntry : definition.getCustomWfHistoryDefinitions().entrySet()) {
-                     //String historyGroupName = historyEntry.getKey();
-            		String historyGroupName = "история";
+                     String historyGroupName = historyEntry.getKey();
+            		//String historyGroupName = "Предыдущие версии";
                      historyProcessType = new DefinitionNode(historyGroupName, null, true);
                      
                      for (CustomWfHistoryDefinition historyDefinition : historyEntry.getValue()) {
@@ -774,7 +775,7 @@ public class ImportParWizardPage extends ImportWizardPage {
         return root;
     }*/
     
-    public class DefinitionNode<T>{
+    public class DefinitionNode<T> extends WfDefinition{
         private T data = null;
         private List<DefinitionNode> children = new ArrayList<>();
         private DefinitionNode parent = null;
