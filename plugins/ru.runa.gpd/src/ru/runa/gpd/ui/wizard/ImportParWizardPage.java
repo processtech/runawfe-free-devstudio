@@ -268,7 +268,7 @@ public class ImportParWizardPage extends ImportWizardPage {
             	List <CustomWfHistoryDefinition> customWfHistoryDefinitions = new ArrayList();
             	
             	for (WfDefinition historyDefinition : historyDefinitions) {
-            		customWfHistoryDefinitions.add(new CustomWfHistoryDefinition(historyDefinition.getVersion().toString(), historyDefinition.getId()));
+            		customWfHistoryDefinitions.add(new CustomWfHistoryDefinition(historyDefinition.getName(), historyDefinition.getId(), historyDefinition.getVersion()));
             	}
             	historyDefinitionsMap.put(Localization.getString("ImportParWizardPage.page.oldDefinitionVersions"), customWfHistoryDefinitions);
             }
@@ -434,12 +434,14 @@ public class ImportParWizardPage extends ImportWizardPage {
     
     class CustomWfHistoryDefinition{
     	private String name;
-  	    private Long id;  	    
+  	    private Long id;
+  	    private Long version;
   	    
-		public CustomWfHistoryDefinition(String name, Long id) {
+		public CustomWfHistoryDefinition(String name, Long id, Long version) {
 			super();
 			this.name = name;
 			this.id = id;
+			this.version = version;
 		}
 		public String getName() {
 			return name;
@@ -452,6 +454,12 @@ public class ImportParWizardPage extends ImportWizardPage {
 		}
 		public void setId(Long id) {
 			this.id = id;
+		}
+		public Long getVersion() {
+			return version;
+		}
+		public void setVersion(Long version) {
+			this.version = version;
 		}  	    
     }  
   
