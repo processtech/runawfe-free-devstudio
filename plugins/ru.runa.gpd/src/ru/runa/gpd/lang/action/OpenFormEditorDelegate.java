@@ -16,7 +16,7 @@ public abstract class OpenFormEditorDelegate extends BaseModelActionDelegate {
             String fileName = formNode.getFormFileName();
             IFile file = IOUtils.getAdjacentFile(getDefinitionFile(), fileName);
             openInEditor(file, formNode);
-        } catch (CoreException e) {
+        } catch (Exception e) {
             PluginLogger.logError(e);
         }
     }
