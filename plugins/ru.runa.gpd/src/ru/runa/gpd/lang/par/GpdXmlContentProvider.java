@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.dom4j.Document;
 import org.dom4j.Element;
-import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 
@@ -124,18 +123,15 @@ public class GpdXmlContentProvider extends AuxContentProvider {
         if (definition.getLanguage() == Language.BPMN) {
             addAttribute(root, RENDERED, "graphiti");
         }
-        Rectangle r = definition.getConstraint();
-        if (r != null) {
-            if (r.x != 0) {
-                addAttribute(root, X, String.valueOf(r.x));
-            }
-            if (r.y != 0) {
-                addAttribute(root, Y, String.valueOf(r.y));
-            }
+        Rectangle definitionRectangle = definition.getConstraint();
+        if (definitionRectangle.x != 0) {
+            addAttribute(root, X, String.valueOf(definitionRectangle.x));
         }
-        Dimension dimension = definition.getDimension();
-        addAttribute(root, WIDTH, String.valueOf(dimension.width));
-        addAttribute(root, HEIGHT, String.valueOf(dimension.height));
+        if (definitionRectangle.y != 0) {
+            addAttribute(root, Y, String.valueOf(definitionRectangle.y));
+        }
+        addAttribute(root, WIDTH, String.valueOf(definitionRectangle.width));
+        addAttribute(root, HEIGHT, String.valueOf(definitionRectangle.height));
         addAttribute(root, SHOW_ACTIONS, String.valueOf(definition.isShowActions()));
         addAttribute(root, SHOW_GRID, String.valueOf(definition.isShowGrid()));
         int xOffset = 0;
@@ -234,11 +230,10 @@ public class GpdXmlContentProvider extends AuxContentProvider {
     }
 
     private void addProcessDiagramInfo(ProcessDefinition definition, Element processDiagramInfo) {
-        int width = getIntAttribute(processDiagramInfo, WIDTH, 0);
-        int height = getIntAttribute(processDiagramInfo, HEIGHT, 0);
-        definition.setDimension(new Dimension(width, height));
         int x = getIntAttribute(processDiagramInfo, X, 0);
         int y = getIntAttribute(processDiagramInfo, Y, 0);
+        int width = getIntAttribute(processDiagramInfo, WIDTH, 0);
+        int height = getIntAttribute(processDiagramInfo, HEIGHT, 0);
         definition.setConstraint(new Rectangle(x, y, width, height));
         if (!(definition instanceof SubprocessDefinition)) {
             definition.setShowActions(getBooleanAttribute(processDiagramInfo, SHOW_ACTIONS, false));

@@ -40,7 +40,6 @@ public class GEFImageHelper {
         IFigure figure = lm.getLayer(LayerConstants.PRINTABLE_LAYERS);
         try {
             Rectangle r = figure.getBounds();
-            definition.setDimension(new Dimension(r.width, r.height));
             definition.setConstraint(r.getCopy());
             image = new Image(Display.getDefault(), r.width, r.height);
             gc = new GC(image);

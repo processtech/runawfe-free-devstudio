@@ -36,7 +36,6 @@ import com.google.common.collect.Maps;
 public class ProcessDefinition extends NamedGraphElement implements Describable {
     private Language language;
     private NodeAsyncExecution defaultNodeAsyncExecution = NodeAsyncExecution.DEFAULT;
-    private Dimension dimension;
     private boolean dirty;
     private boolean showActions;
     private boolean showGrid;
@@ -196,17 +195,6 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
             this.dirty = dirty;
             firePropertyChange(PROPERTY_DIRTY, !this.dirty, this.dirty);
         }
-    }
-
-    public void setDimension(Dimension dimension) {
-        this.dimension = dimension;
-    }
-
-    public Dimension getDimension() {
-        if (dimension == null) {
-            dimension = new Dimension(0, 0);
-        }
-        return dimension;
     }
 
     public void setNextNodeIdIfApplicable(String nodeId) {
