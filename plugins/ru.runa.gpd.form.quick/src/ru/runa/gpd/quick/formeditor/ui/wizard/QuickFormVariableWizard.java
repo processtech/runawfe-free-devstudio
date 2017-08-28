@@ -8,7 +8,6 @@ import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 
 import ru.runa.gpd.lang.model.FormNode;
-import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.quick.formeditor.QuickFormGpdVariable;
 
@@ -21,8 +20,7 @@ public class QuickFormVariableWizard extends Wizard implements INewWizard {
     private int editIndex = -1;
     private final List<QuickFormGpdVariable> quickFormVariableDefs;
 
-    public QuickFormVariableWizard(ProcessDefinition processDefinition, FormNode formNode, List<QuickFormGpdVariable> templatedVariableDefs,
-            int editIndex) {
+    public QuickFormVariableWizard(FormNode formNode, List<QuickFormGpdVariable> templatedVariableDefs, int editIndex) {
         this.formNode = formNode;
         this.quickFormVariableDefs = templatedVariableDefs;
         this.editIndex = editIndex;
