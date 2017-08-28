@@ -15,6 +15,7 @@ import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -177,8 +178,10 @@ public class ImportParWizardPage extends ImportWizardPage {
         serverDefinitionViewer.setInput(new Object());
     }
 
-    public boolean performFinish() {    	
+    public boolean performFinish() {
         InputStream[] parInputStreams = null;
+        String groupName = null;
+        Process[] processes = null;
         try {
             IContainer container = getSelectedContainer();
             String[] processNames;
@@ -194,7 +197,7 @@ public class ImportParWizardPage extends ImportWizardPage {
                     String fileName = selectedDirFileName + File.separator + selectedFileNames[i];
                     parInputStreams[i] = new FileInputStream(fileName);
                 }
-            } else {
+            } else {/*
             	 TreeItem[] selections = serverDefinitionViewer.getTree().getSelection();
                  List<WfDefinition> defSelections = Lists.newArrayList();
                  for(int i = 0; i < selections.length; i++){
@@ -204,26 +207,68 @@ public class ImportParWizardPage extends ImportWizardPage {
                      if (selected instanceof WfDefinition) {
                          defSelections.add((WfDefinition) selected);
                      }
-                 }
+                 }*/
+            	TreeItem[] selections = serverDefinitionViewer.getTree().getSelection();
+            	List<WfDefinition> defSelections = Lists.newArrayList();
+            	
+            	
+            	for(int i = 0; i < selections.length; i++){
+            		Object selected = selections[i].getData();
+            		//if selected group
+            		DefinitionNode selectedDefinitionNode = (DefinitionNode) selected;
+            		if (selectedDefinitionNode.isGroup()){
+            			groupName = selectedDefinitionNode.getName();
+               		 List<DefinitionNode> nodeList = ((DefinitionNode)selected).getChildren();
+               	     for(DefinitionNode definitionNode : nodeList){
+               	    	 defSelections.add((WfDefinition) definitionNode);
+               	     }
+               	   }else{
+               		    defSelections.add((WfDefinition) selected);
+               	   }
+            	}
+            	
+            	
                  if (defSelections.isEmpty()) {
                      throw new Exception(Localization.getString("ImportParWizardPage.error.selectValidDefinition"));
-                 }            	
-                processNames = new String[defSelections.size()];
+                 } 
+                 
+                processes = new Process[defSelections.size()];
                 parInputStreams = new InputStream[defSelections.size()];
-                for (int i = 0; i < processNames.length; i++) {
+                for (int i = 0; i < processes.length; i++) {
+                	DefinitionNode definitionNode = (DefinitionNode)defSelections.get(i);
+                    Process process = new Process(definitionNode.getName(), definitionNode.getPath());
+                    processes[i] = process;
                     WfDefinition stub = defSelections.get(i);
-                    processNames[i] = stub.getName();
                     byte[] par = WFEServerProcessDefinitionImporter.getInstance().loadPar(stub);
                     parInputStreams[i] = new ByteArrayInputStream(par);
                 }
             }
-            for (int i = 0; i < processNames.length; i++) {
-                String processName = processNames[i];
+            for (int i = 0; i < processes.length; i++) {
+                String processName = processes[i].getName();
+                String processPath = processes[i].getPath();
+                
+                processName = !processPath.trim().isEmpty() ? processPath.concat("/").concat(processName) : processName;
+                
                 IFolder processFolder = IOUtils.getProcessFolder(container, processName);
+                
+                //IOUtils.createFolder(IFolder folder)
+                //IPath path = new Path("name");
+                //IFile file = project.getFile(path);
+                
+                //IPath path = new Path(processPath); 
+                //IFolder folder = (IFolder) path;
+                //IOUtils.createFolder(folder);
+                
+                //IFolder folder = container.getFolder(path);
+                
+                
                 if (processFolder.exists()) {
                     throw new Exception(Localization.getString("ImportParWizardPage.error.processWithSameNameExists"));
                 }
-                processFolder.create(true, true, null);
+                
+                IOUtils.createFolder(processFolder);
+                //processFolder.create(true, true, null);
+                
                 IOUtils.extractArchiveToFolder(parInputStreams[i], processFolder);
                 IFile definitionFile = IOUtils.getProcessDefinitionFile(processFolder);
                 ProcessDefinition definition = ProcessCache.newProcessDefinitionWasCreated(definitionFile);
@@ -253,7 +298,7 @@ public class ImportParWizardPage extends ImportWizardPage {
         }
         return true;
     }
-
+    
     private Map<String, List<CustomWfDefinition>> getWfDefinitionsByType(Map<WfDefinition, List<WfDefinition>> definitions) {
         Map<String, List<CustomWfDefinition>> grouppedDefinitionsMap = new HashMap<String, List<CustomWfDefinition>>();
         for (Map.Entry<WfDefinition, List<WfDefinition>> entry : definitions.entrySet()) {
@@ -355,7 +400,7 @@ public class ImportParWizardPage extends ImportWizardPage {
 
     private DefinitionNode createTree(Map<String, List<CustomWfDefinition>> definitions) {
     	
-    	DefinitionNode root = new DefinitionNode("Root", null, null, true, false);
+    	DefinitionNode root = new DefinitionNode("Root", null, null, true, false, null);
     	DefinitionNode processType;
     	DefinitionNode historyProcessType;
     	
@@ -364,23 +409,23 @@ public class ImportParWizardPage extends ImportWizardPage {
             
             if(groupName.trim().isEmpty()){
             	for (CustomWfDefinition definition : entry.getValue()) {                    
-            		root.addChild(new DefinitionNode(definition.getName(), definition.getId(), null, false, false));
+            		root.addChild(new DefinitionNode(definition.getName(), definition.getId(), null, false, false, groupName));
                 }
             	continue;
             }
                 
-            processType = new DefinitionNode(groupName, null, null, true, false);
+            processType = new DefinitionNode(groupName, null, null, true, false, null);
             
             for (CustomWfDefinition definition : entry.getValue()) {
-            	DefinitionNode treeObject = new DefinitionNode(definition.getName(), definition.getId(), null, false, false);
+            	DefinitionNode treeObject = new DefinitionNode(definition.getName(), definition.getId(), null, false, false, groupName);
             	//add history 
             	if(null != definition.getCustomWfHistoryDefinitions() && !definition.getCustomWfHistoryDefinitions().isEmpty())
             	for (Map.Entry<String, List<CustomWfHistoryDefinition>> historyEntry : definition.getCustomWfHistoryDefinitions().entrySet()) {
                      String historyGroupName = historyEntry.getKey();
-            		 historyProcessType = new DefinitionNode(historyGroupName, null, null, true, false);
+            		 historyProcessType = new DefinitionNode(historyGroupName, null, null, true, false, historyGroupName);
                      
                      for (CustomWfHistoryDefinition historyDefinition : historyEntry.getValue()) {
-                    	 historyProcessType.addChild(new DefinitionNode(historyDefinition.getName(), historyDefinition.getId(), historyDefinition.getVersion(), false, true));                    	 
+                    	 historyProcessType.addChild(new DefinitionNode(historyDefinition.getName(), historyDefinition.getId(), historyDefinition.getVersion(), false, true, historyGroupName));                    	 
                      } 
                      treeObject.addChild(historyProcessType);
             	}
@@ -470,16 +515,28 @@ public class ImportParWizardPage extends ImportWizardPage {
         private Long id = null;
         private boolean isGroup;
         private boolean isHistory;
+        private String path;
+        //historyDefinition.getName(), historyDefinition.getId(), historyDefinition.getVersion(), false, true));
+        public DefinitionNode(String name, Long id, Long version,
+				boolean isGroup, boolean isHistory, String path) {
+			super();
+			this.name = name;
+			this.id = id;
+			this.version = version;
+			this.isGroup = isGroup;
+			this.isHistory = isHistory;
+			this.path = path;
+		}
 
-        public DefinitionNode(String name, Long id, Long version, boolean isGroup, boolean isHistory){
-        	this.name = name;
-            this.id = id;
-            this.version = version;
-            this.isGroup = isGroup;
-            this.isHistory = isHistory;
-        }
-                
-        public boolean isHistory() {
+		public String getPath() {
+			return path;
+		}
+
+		public void setPath(String path) {
+			this.path = path;
+		}
+
+		public boolean isHistory() {
 			return isHistory;
 		}
 
@@ -547,4 +604,26 @@ public class ImportParWizardPage extends ImportWizardPage {
             return parent;
         }
     }
+    
+	class Process{
+		String name;
+		String path;
+		public Process(String name, String path) {
+			super();
+			this.name = name;
+			this.path = path;
+		}
+		public String getName() {
+			return name;
+		}
+		public void setName(String name) {
+			this.name = name;
+		}
+		public String getPath() {
+			return path;
+		}
+		public void setPath(String path) {
+			this.path = path;
+		}    		
+	}
 }
