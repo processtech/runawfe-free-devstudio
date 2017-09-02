@@ -128,14 +128,12 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
         copyButton = addButton(buttonsBar, "button.copy", new CopyVariableSelectionListener(), true);
         addButton(buttonsBar, "button.paste", new PasteVariableSelectionListener(), true);
         searchButton = addButton(buttonsBar, "button.search", new SearchVariableUsageSelectionListener(), true);
+        usageReportButton = addButton(buttonsBar, "button.report", new ReportUsageSelectionListener(), true);
+        usageReportButton.setToolTipText(Localization.getString("DesignerVariableEditorPage.report.variablesUsage.tooltip"));
         moveUpButton = addButton(buttonsBar, "button.up", new MoveVariableSelectionListener(true), true);
         moveDownButton = addButton(buttonsBar, "button.down", new MoveVariableSelectionListener(false), true);
         deleteButton = addButton(buttonsBar, "button.delete", new DeleteVariableSelectionListener(), true);
         moveToTypeAttributeButton = addButton(buttonsBar, "button.move", new MoveToTypeAttributeSelectionListener(), true);
-
-        usageReportButton = addButton(buttonsBar, "button.report", new ReportUsageSelectionListener(), true);
-        usageReportButton.setToolTipText(Localization.getString("DesignerVariableEditorPage.report.variablesUsage.tooltip"));
-
         updateViewer();
     }
 
