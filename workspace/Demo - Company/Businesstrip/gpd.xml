@@ -3,6 +3,7 @@
 <process-diagram name="Businesstrip" notation="bpmn" rendered="graphiti" width="1277" height="1408" showActions="true" showGrid="false">
   <node name="ID1" x="481" y="33" width="48" height="48">
     <transition name="tr1"/>
+    <textDecoration x="418" y="5"/>
   </node>
   <node name="ID2" x="470" y="243" width="155" height="91">
     <transition name="tr1">
@@ -46,11 +47,6 @@
       <bendpoint x="945" y="1103"/>
     </transition>
   </node>
-  <node name="ID132" x="322" y="163" width="132" height="91">
-    <transition name="tr1">
-      <bendpoint x="385" y="1364"/>
-    </transition>
-  </node>
   <node name="ID14" x="612" y="175" width="48" height="48">
     <transition name="tr2">
       <bendpoint x="551" y="199"/>
@@ -58,6 +54,19 @@
     <transition name="tr1">
       <bendpoint x="726" y="199"/>
     </transition>
+  </node>
+  <node name="ID3" x="482" y="103" width="48" height="48">
+    <transition name="to another region">
+      <label x="-77" y="7"/>
+      <bendpoint x="635" y="126"/>
+    </transition>
+    <transition name="local">
+      <label x="12" y="7"/>
+      <bendpoint x="387" y="126"/>
+    </transition>
+  </node>
+  <node name="ID52" x="481" y="1341" width="48" height="48">
+    <textDecoration x="496" y="1389"/>
   </node>
   <node name="ID96" x="702" y="363" width="48" height="48">
     <transition name="tr1">
@@ -116,15 +125,9 @@
       <bendpoint x="635" y="1365"/>
     </transition>
   </node>
-  <node name="ID3" x="482" y="103" width="48" height="48">
-    <transition name="to another region">
-      <label x="-77" y="7"/>
-      <bendpoint x="635" y="126"/>
-    </transition>
-    <transition name="local">
-      <label x="12" y="7"/>
-      <bendpoint x="387" y="126"/>
+  <node name="ID132" x="322" y="163" width="132" height="91">
+    <transition name="tr1">
+      <bendpoint x="385" y="1364"/>
     </transition>
   </node>
-  <node name="ID52" x="481" y="1341" width="48" height="48"/>
 </process-diagram>
