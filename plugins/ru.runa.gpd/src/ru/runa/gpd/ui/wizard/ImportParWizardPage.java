@@ -1,5 +1,8 @@
 package ru.runa.gpd.ui.wizard;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -35,6 +38,8 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.PlatformUI;
 
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
@@ -163,7 +168,7 @@ public class ImportParWizardPage extends ImportWizardPage {
 
     private void setupServerDefinitionViewer(){
     	Map<WfDefinition, List<WfDefinition>> definitions = WFEServerProcessDefinitionImporter.getInstance().loadCachedData();
-        DefinitionNode treeDefinitions = createTree(getWfDefinitionsByType(definitions));
+    	DefinitionNode treeDefinitions = createTree(definitions);
         serverDefinitionViewer.setInput(treeDefinitions);
         serverDefinitionViewer.refresh(true);
     }
@@ -221,7 +226,8 @@ public class ImportParWizardPage extends ImportWizardPage {
                 parInputStreams = new InputStream[defSelections.size()];
                 for (int i = 0; i < processes.length; i++) {
                 	DefinitionNode definitionNode = (DefinitionNode)defSelections.get(i);
-                    Process process = new Process(definitionNode.getName(), definitionNode.getPath());
+                    //Process process = new Process(definitionNode.getName(), definitionNode.getPath());
+                	Process process = new Process(definitionNode.getName(), definitionNode.incrementalPath);
                     processes[i] = process;
                     WfDefinition stub = defSelections.get(i);
                     byte[] par = WFEServerProcessDefinitionImporter.getInstance().loadPar(stub);
@@ -322,7 +328,8 @@ public class ImportParWizardPage extends ImportWizardPage {
         @Override
         public String getText(Object obj) {
         	DefinitionNode definitionNode = (DefinitionNode)obj;
-            return definitionNode.isHistory() ? definitionNode.getVersion().toString() : definitionNode.getName();
+            //return definitionNode.isHistory() ? definitionNode.getVersion().toString() : definitionNode.getName();
+        	return definitionNode.isHistory() ? definitionNode.getVersion().toString() : definitionNode.getName();
         }
 
         @Override
@@ -331,6 +338,36 @@ public class ImportParWizardPage extends ImportWizardPage {
         	return definitionNode.isGroup ? SharedImages.getImage("icons/project.gif") : SharedImages.getImage("icons/process.gif");        	            
         }
     }
+    /*
+    class ViewLabelProvider extends LabelProvider {
+
+		public String getText(Object obj) {
+			return obj.toString();
+		}
+
+		public Image getImage(Object obj) {
+			String imageKey = ISharedImages.IMG_OBJ_ELEMENT;
+			if (obj instanceof MXMNode)
+				imageKey = ISharedImages.IMG_OBJ_FOLDER;
+			return PlatformUI.getWorkbench().getSharedImages()
+					.getImage(imageKey);
+		}
+	}*/
+    /*temp
+    class ViewLabelProvider extends LabelProvider {
+
+        @Override
+        public String getText(Object obj) {
+        	DefinitionNode definitionNode = (DefinitionNode)obj;
+            return definitionNode.isHistory() ? definitionNode.getVersion().toString() : definitionNode.getName();
+        }
+
+        @Override
+        public Image getImage(Object obj) {
+        	DefinitionNode definitionNode = (DefinitionNode)obj;
+        	return definitionNode.isGroup ? SharedImages.getImage("icons/project.gif") : SharedImages.getImage("icons/process.gif");        	            
+        }
+    }*/
 
     class ViewContentProvider implements IStructuredContentProvider, ITreeContentProvider {
 
@@ -372,6 +409,297 @@ public class ImportParWizardPage extends ImportWizardPage {
         }
     }
 
+    class DefinitionNode extends WfDefinition{    	
+    	
+        private List<DefinitionNode> childs;
+        private List<DefinitionNode> leafs;
+        private String name;
+        private String incrementalPath;
+        
+        //private String name = null;
+        private Long id = null;    
+        private Long version = null;
+            
+        private boolean isGroup;
+        private boolean isHistory;
+
+        public DefinitionNode( String name, String incrementalPath, Long id, Long version, boolean isGroup, boolean isHistory ) {
+            this.childs = new ArrayList<DefinitionNode>();
+            this.leafs = new ArrayList<DefinitionNode>();
+            this.name = name;
+            this.incrementalPath = incrementalPath;
+            
+            this.id = id;
+            this.version = version;
+            this.isGroup = isGroup;
+            this.isHistory = isHistory;
+        }        
+  /*    
+        public String getData() {
+			return data;
+		}
+
+		public void setData(String data) {
+			this.data = data;
+		}
+*/
+		public String getName() {
+			return name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		public Long getId() {
+			return id;
+		}
+
+		public void setId(Long id) {
+			this.id = id;
+		}
+
+		public Long getVersion() {
+			return version;
+		}
+
+		public void setVersion(Long version) {
+			this.version = version;
+		}
+
+		public boolean isHistory() {
+			return isHistory;
+		}
+
+		public void setHistory(boolean isHistory) {
+			this.isHistory = isHistory;
+		}
+
+		public boolean isGroup() {
+			return isGroup;
+		}
+
+		public void setGroup(boolean isGroup) {
+			this.isGroup = isGroup;
+		}
+
+		public boolean isLeaf() {
+            return childs.isEmpty() && leafs.isEmpty();
+        }
+	
+        public void addElement(String currentPath, String[] list, WfDefinition wfDefinition, List<WfDefinition> historyDefinitions) {
+//String nodeValue, String incrementalPath, Long id, Long version, boolean isGroup, boolean isHistory
+            //MXMNode currentChild = new MXMNode(list[0], currentPath+"/"+list[0], wfDefinition.getId(), wfDefinition.getVersion(), false, false);
+            /* 
+        	Map<String, List<CustomWfHistoryDefinition>> historyDefinitionsMap = null;
+*/
+             
+
+        	
+        	//if is group
+        	if ( list.length == 1 ) {
+                //leafs.add( currentChild );
+        		DefinitionNode currentChild = new DefinitionNode(list[0], currentPath+"/"+list[0], wfDefinition.getId(), wfDefinition.getVersion(), false, false);
+        		if(historyDefinitions != null && !historyDefinitions.isEmpty()){
+        			removeExistedDefinitionFromHistory(wfDefinition, historyDefinitions);
+        			currentChild.getChildren().add(getHistoryGroup(historyDefinitions));
+        			}
+        			//currentChild.addElement(currentPath, list, wfDefinition, historyDefinitions)
+            	childs.add( currentChild );
+                return;
+            } else {
+            	
+            	DefinitionNode currentChild = new DefinitionNode(list[0], currentPath+"/"+list[0], null, null, true, false);
+                int index = childs.indexOf( currentChild );
+                if ( index == -1 ) {
+                	//if is leaf in new group
+                    childs.add( currentChild );
+                    currentChild.addElement(currentChild.incrementalPath, Arrays.copyOfRange(list, 1, list.length), wfDefinition, historyDefinitions);
+                } else {
+                	//if is leaf in existed group
+                	DefinitionNode nextChild = childs.get(index);
+                    nextChild.addElement(currentChild.incrementalPath, Arrays.copyOfRange(list, 1, list.length), wfDefinition, historyDefinitions);
+                }
+            }
+        }
+        
+        
+        /*
+        public void addElement(String currentPath, String[] list) {
+        
+            MXMNode currentChild = new MXMNode(list[0], currentPath+"/"+list[0]);
+            if ( list.length == 1 ) {
+                //leafs.add( currentChild );
+            	childs.add( currentChild );
+                return;
+            } else {
+                int index = childs.indexOf( currentChild );
+                if ( index == -1 ) {
+                    childs.add( currentChild );
+                    currentChild.addElement(currentChild.incrementalPath, Arrays.copyOfRange(list, 1, list.length));
+                } else {
+                    MXMNode nextChild = childs.get(index);
+                    nextChild.addElement(currentChild.incrementalPath, Arrays.copyOfRange(list, 1, list.length));
+                }
+            }
+        }*/
+
+        @Override
+        public boolean equals(Object obj) {
+        	DefinitionNode cmpObj = (DefinitionNode)obj;
+            return incrementalPath.equals( cmpObj.incrementalPath ) && name.equals( cmpObj.name );
+        }
+
+        public void printNode( int increment ) {
+            for (int i = 0; i < increment; i++) {
+                System.out.print(" ");
+            }
+            System.out.println(incrementalPath + (isLeaf() ? " -> " + name : "")  );
+            for( DefinitionNode n: childs)
+                n.printNode(increment+2);
+            for( DefinitionNode n: leafs)
+                n.printNode(increment+2);
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+
+        
+    	public List<DefinitionNode> getChildren() {
+    		return childs;
+    	}
+
+    }
+    
+    class DefinitionTree {
+
+    	DefinitionNode root;
+    	DefinitionNode commonRoot;
+
+        public DefinitionTree( DefinitionNode root ) {
+            this.root = root;
+            commonRoot = null;
+        }
+/*
+        public void addElement( String elementValue ) { 
+            String[] list = elementValue.split("/");
+
+            // latest element of the list is the filename.extrension
+            root.addElement(root.incrementalPath, list);
+
+        }*/
+
+        public void addElement(WfDefinition wfDefinition, List<WfDefinition> historyDefinitions) {
+        	List<String> arrayList = new ArrayList<String>();
+        	for(String category : wfDefinition.getCategories()){
+        		arrayList.add(category);
+        	}
+        	
+        	arrayList.add(wfDefinition.getName());
+        	
+        	String[] list = arrayList.toArray(new String[0]);
+        	
+            // latest element of the list is the filename.extrension
+            root.addElement(root.incrementalPath, list, wfDefinition, historyDefinitions);
+            System.out.println();
+
+        }
+  /*      
+        public void printTree() {
+            //I move the tree common root to the current common root because I don't mind about initial folder
+            //that has only 1 child (and no leaf)
+            getCommonRoot();
+            //commonRoot.printNode(0);
+        }
+*/
+        public DefinitionNode getCommonRoot() {
+            if ( commonRoot != null)
+                return commonRoot;
+            else {
+            	DefinitionNode current = root;
+                while ( current.leafs.size() <= 0 ) {
+                    current = current.childs.get(0);
+                }
+                commonRoot = current;
+                return commonRoot;
+            }
+
+        }
+
+
+    }
+    
+    private DefinitionNode createTree(Map<WfDefinition, List<WfDefinition>> definitions /*Map<String, List<CustomWfDefinition>> definitions*/) {
+		/*
+    	String slist[] = new String[] { 
+				
+				"mnt/file7file",
+				"mnt/123file7file",
+				"mnt/my/newfile" 
+				/*"/mnt/my/new/folder2/d/file711.file",
+	            
+				"/mnt/sdcard/folder2/d/file7.file", 
+	            "/mnt/sdcard/folder2/d/file8.file", 
+	            "/mnt/sdcard/file9.file", 
+				
+				"/mnt/sdcard/folder1/a/b/file1.file", 
+	            "/mnt/sdcard/folder1/a/b/file2.file", 
+	            "/mnt/sdcard/folder1/a/b/file3.file", 
+	            "/mnt/sdcard/folder1/a/b/file4.file",
+	            "/mnt/sdcard/folder1/a/b/file5.file", 
+	            "/mnt/sdcard/folder1/e/c/file6.file"*/
+	            
+	    /*};*/
+/*
+	    MXMTree tree = new MXMTree(new MXMNode("root", "root"));
+	    for (String data : slist) {
+	        tree.addElement(data);
+	    }*/
+    	//String nodeValue, String incrementalPath, Long id, Long version, boolean isGroup, boolean isHistory
+    	DefinitionTree tree = new DefinitionTree(new DefinitionNode("", "", null, null, false, false));
+    	
+    	int i =0;
+    	for (Map.Entry<WfDefinition, List<WfDefinition>> entry : definitions.entrySet()){
+    	
+    		//temp
+    		i++;
+    		//if(i > 1) break;
+    		
+            WfDefinition wfDefinition = entry.getKey(); 
+            List<WfDefinition> historyDefinitions = entry.getValue();           
+
+            tree.addElement(wfDefinition, historyDefinitions);
+            
+//add history
+            /*
+            
+            if(!historyDefinitions.isEmpty()){
+            	DefinitionNode historyGroup = null;
+            	 removeExistedDefinitionFromHistory(wfDefinition, historyDefinitions);
+            	
+           	 String oldDefinitionVersions = Localization.getString("ImportParWizardPage.page.oldDefinitionVersions");
+           	 
+           	 historyGroup = new DefinitionNode(oldDefinitionVersions, null, null, null, true, false);
+           	 
+           	 for(WfDefinition historyDefinition : historyDefinitions){
+           		 String name = historyDefinition.getName();
+           		 Long id = historyDefinition.getId();
+           		 Long version = historyDefinition.getVersion();
+           		 DefinitionNode historyDefinitionNode = new DefinitionNode(name, null, id, version, false, true);
+           		 historyGroup.getChildren().add(historyDefinitionNode);
+           	 }
+            	}
+            
+            */
+            
+            System.out.println();
+    	}
+    	
+    	return tree.root;
+	}
+	/*
     private DefinitionNode createTree(Map<String, List<CustomWfDefinition>> definitions) {
 
     	DefinitionNode root = new DefinitionNode("Root", null, null, true, false, null);
@@ -409,7 +737,7 @@ public class ImportParWizardPage extends ImportWizardPage {
         }
         return root;
     }
-
+*/
     class CustomWfDefinition{
     	private String name;
   	    private Long id; 
@@ -479,7 +807,33 @@ public class ImportParWizardPage extends ImportWizardPage {
 			this.version = version;
 		}
     }
+    
+    public DefinitionNode getHistoryGroup(List<WfDefinition> historyDefinitions){
+        DefinitionNode historyGroup = null;
+        String oldDefinitionVersions = Localization.getString("ImportParWizardPage.page.oldDefinitionVersions");
+        //DefinitionNode currentChild = new DefinitionNode(list[0], currentPath+"/"+list[0], wfDefinition.getId(), wfDefinition.getVersion(), false, false);
+        if(historyDefinitions != null && !historyDefinitions.isEmpty()){
+         
+       	 historyGroup = new DefinitionNode(oldDefinitionVersions, oldDefinitionVersions, null, null, true, false);
+       	 
+       	 for(WfDefinition historyDefinition : historyDefinitions){
+       		 String name = historyDefinition.getName();
+       		 Long id = historyDefinition.getId();
+       		 Long version = historyDefinition.getVersion();
+       		 DefinitionNode historyDefinitionNode = new DefinitionNode(name, oldDefinitionVersions+"/"+name, id, version, false, true);
+       		 historyGroup.getChildren().add(historyDefinitionNode);
+       	 }
+        	}
+        //DefinitionNode historyDefinitionNode = new DefinitionNode("old", oldDefinitionVersions+"/"+"test", null, null, true, false);
+  		 //historyGroup.getChildren().add(historyDefinitionNode);
+  		
+        //DefinitionNode nextChild = childs.get(index);
+        //nextChild.addElement(currentChild.incrementalPath, Arrays.copyOfRange(list, 1, list.length), wfDefinition, historyDefinitions);
+        
+         return 	historyGroup;	
+}
 
+/*
     class DefinitionNode extends WfDefinition{
         private List<DefinitionNode> children = new ArrayList<>();
         private DefinitionNode parent = null;
@@ -578,7 +932,7 @@ public class ImportParWizardPage extends ImportWizardPage {
             return parent;
         }
     }
-
+*/
 	class Process{
 		String name;
 		String path;
