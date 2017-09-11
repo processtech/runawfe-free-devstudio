@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
@@ -154,7 +155,7 @@ public class ImportParWizardPage extends ImportWizardPage {
 
     private void setupServerDefinitionViewer(){
     	Map<WfDefinition, List<WfDefinition>> definitions = WFEServerProcessDefinitionImporter.getInstance().loadCachedData();
-    	DefinitionNode treeDefinitions = createTree(definitions);
+    	DefinitionNode treeDefinitions = createTree(new TreeMap<>(definitions));
         serverDefinitionViewer.setInput(treeDefinitions);
         serverDefinitionViewer.refresh(true);
     }
@@ -211,7 +212,9 @@ public class ImportParWizardPage extends ImportWizardPage {
             		if (selectedDefinitionNode.isGroup()){ 
             			getChildNodes(selectedDefinitionNode, defSelections);     
                	   }else{
-               		    defSelections.add((WfDefinition) selected);
+               		    //in case we don't want group name to be imported
+               		    selectedDefinitionNode.incrementalPath = "";               		    
+               		    defSelections.add((WfDefinition) selectedDefinitionNode);
                	   }
             	}
 
@@ -223,7 +226,9 @@ public class ImportParWizardPage extends ImportWizardPage {
                 parInputStreams = new InputStream[defSelections.size()];
                 for (int i = 0; i < processes.length; i++) {
                 	DefinitionNode definitionNode = (DefinitionNode)defSelections.get(i);
-                    Process process = new Process(definitionNode.getName(), removeNameFromPath(definitionNode.incrementalPath), definitionNode.getVersion());
+                	//adjust path if not entire group is selected
+                	String path = !definitionNode.incrementalPath.isEmpty() ? removeNameFromPath(definitionNode.incrementalPath) : definitionNode.incrementalPath;
+                    Process process = new Process(definitionNode.getName(), path, definitionNode.getVersion());
                     processes[i] = process;
                     WfDefinition stub = defSelections.get(i);
                     byte[] par = WFEServerProcessDefinitionImporter.getInstance().loadPar(stub);
@@ -573,4 +578,8 @@ public class ImportParWizardPage extends ImportWizardPage {
     private String removeNameFromPath(String fullPath){
     	return fullPath.substring(0, fullPath.lastIndexOf("/"));
     }    
+    
+    private String getNameFromPath(String fullPath){
+    	return fullPath.substring(fullPath.lastIndexOf("/"), fullPath.length());
+    } 
 }
