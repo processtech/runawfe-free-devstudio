@@ -50,6 +50,7 @@ Bundle-ClassPath: lib/antlr-2.7.6.jar,
  lib/wfe-core.jar,
  lib/json-simple-1.1.1.jar,
  lib/freemarker-2.3.23.jar,
+ lib/poi-3.10-FINAL.jar,
  .
 Export-Package: antlr,
  antlr.ASdebug,
