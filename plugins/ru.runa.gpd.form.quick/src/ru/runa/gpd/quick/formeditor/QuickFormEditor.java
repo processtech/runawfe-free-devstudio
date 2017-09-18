@@ -226,6 +226,7 @@ public class QuickFormEditor extends EditorPart implements ISelectionListener, I
                 templateCombo.add(artifact.getLabel());
             }
         }
+        templateCombo.select(0);
         templateCombo.addSelectionListener(new LoggingSelectionAdapter() {
             @Override
             protected void onSelection(SelectionEvent e) throws Exception {
