@@ -26,6 +26,7 @@ import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.ProcessDefinition;
+import ru.runa.gpd.lang.model.StartState;
 import ru.runa.gpd.lang.model.Subprocess;
 import ru.runa.gpd.lang.model.Variable;
 
@@ -169,7 +170,11 @@ public class VariablesUsageXlsExporter {
         }
         for (FormNode fn : formNodes) {
             if (fn.hasForm()) {
-                formMap.put(asSortValue(fn.getLabel()), fn);
+                if (fn instanceof StartState) {
+                    formMap.put(String.valueOf((char) 0), fn);
+                } else {
+                    formMap.put(asSortValue(fn.getLabel()), fn);
+                }
             }
         }
         for (Subprocess sp : ge.getChildren(Subprocess.class)) {
@@ -200,7 +205,8 @@ public class VariablesUsageXlsExporter {
         int colNum = 2;
         for (FormNode form : formNodes) {
             cell = row.createCell(colNum++);
-            cell.setCellValue(form.getLabel());
+            cell.setCellValue((form instanceof StartState && Strings.isNullOrEmpty(form.getName()) ?
+                    Localization.getString("DesignerVariableEditorPage.report.variablesUsage.start") : "") + form.getLabel());
             cell.setCellStyle(style);
             forms.add(IOUtils.readStream(ge.getProcessDefinition().getFile().getParent().getFolder(null).getFile(form.getFormFileName()).getContents()));
         }
