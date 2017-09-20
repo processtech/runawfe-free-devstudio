@@ -53,7 +53,7 @@ import com.google.common.collect.Maps;
 
 public class VariableSearchVisitor {
 
-    public static final String REGEX_SCRIPT_VARIABLE = "[^\\p{Alnum}_&&[\"'{(, ]]%s[^\\p{Alnum}_&&[\"'}), ]]";
+    public static final String REGEX_SCRIPT_VARIABLE = "[\"'{(, ]%s[\"'}), .]";
 
     private final VariableSearchQuery query;
     private IProgressMonitor progressMonitor;
