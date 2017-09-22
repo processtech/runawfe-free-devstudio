@@ -241,7 +241,7 @@ public class VariableUtils {
         return getVariableByName(variableContainer, variableName.split(Pattern.quote(VariableUserType.DELIM))[0]);
     }
 
-    public static boolean isResizableVariable(Variable v) {
+    public static boolean isContainerVariable(Variable v) {
         String fcn = v.getFormatClassName();
         return fcn.equals(ListFormat.class.getName()) || fcn.equals(MapFormat.class.getName());
     }

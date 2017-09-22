@@ -11,10 +11,13 @@ import org.eclipse.ui.views.properties.IPropertyDescriptor;
 
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginConstants;
+import ru.runa.gpd.extension.regulations.NodeRegulationsProperties;
+import ru.runa.gpd.extension.regulations.NodeRegulationsPropertyDescriptor;
 import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEvent;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
+import ru.runa.gpd.settings.CommonPreferencePage;
 import ru.runa.gpd.util.Duration;
 
 import com.google.common.base.Objects;
@@ -24,6 +27,7 @@ public abstract class Node extends NamedGraphElement implements Describable {
     private boolean minimizedView = false;
     private NodeAsyncExecution asyncExecution = NodeAsyncExecution.DEFAULT;
     private boolean interruptingBoundaryEvent = true;
+    private NodeRegulationsProperties regulationsProperties = new NodeRegulationsProperties(this);
 
     public boolean isMinimizedView() {
         return minimizedView;
@@ -56,6 +60,51 @@ public abstract class Node extends NamedGraphElement implements Describable {
         }
     }
 
+    public NodeRegulationsProperties getRegulationsProperties() {
+        return regulationsProperties;
+    }
+
+    public void setRegulationsProperties(NodeRegulationsProperties newProperties) {
+        if (!Objects.equal(this.regulationsProperties, newProperties)) {
+            NodeRegulationsProperties oldProperties = this.regulationsProperties;
+            if (!Objects.equal(oldProperties.getPreviousNode(), newProperties.getPreviousNode())) {
+                // update next node link
+                if (oldProperties.getPreviousNode() != null) {
+                    oldProperties.getPreviousNode().getRegulationsProperties().setNextNode(null);
+                }
+                if (newProperties.getPreviousNode() != null) {
+                    newProperties.getPreviousNode().getRegulationsProperties().setNextNode(this);
+                }
+            }
+            if (!Objects.equal(oldProperties.getNextNode(), newProperties.getNextNode())) {
+                // update previous node link
+                if (oldProperties.getNextNode() != null) {
+                    oldProperties.getNextNode().getRegulationsProperties().setPreviousNode(null);
+                }
+                if (newProperties.getNextNode() != null) {
+                    newProperties.getNextNode().getRegulationsProperties().setPreviousNode(this);
+                }
+            }
+            this.regulationsProperties = newProperties;
+            firePropertyChange(PROPERTY_NODE_IN_REGULATIONS, oldProperties, newProperties);
+        }
+    }
+
+    public void updateRegulationsPropertiesOnDelete() {
+        if (regulationsProperties.getPreviousNode() != null) {
+            // update next node link
+            if (regulationsProperties.getPreviousNode() != null) {
+                regulationsProperties.getPreviousNode().getRegulationsProperties().setNextNode(null);
+            }
+        }
+        if (regulationsProperties.getNextNode() != null) {
+            // update previous node link
+            if (regulationsProperties.getNextNode() != null) {
+                regulationsProperties.getNextNode().getRegulationsProperties().setPreviousNode(null);
+            }
+        }
+    }
+
     @Override
     protected void populateCustomPropertyDescriptors(List<IPropertyDescriptor> descriptors) {
         super.populateCustomPropertyDescriptors(descriptors);
@@ -65,14 +114,9 @@ public abstract class Node extends NamedGraphElement implements Describable {
             descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_INTERRUPTING_BOUNDARY_EVENT, Localization.getString("property.interrupting"),
                     YesNoComboBoxTransformer.LABELS));
         }
-    }
-
-    @Override
-    public boolean testAttribute(Object target, String name, String value) {
-        if ("minimizedView".equals(name)) {
-            return Objects.equal(value, isMinimizedView());
+        if (CommonPreferencePage.isRegulationsMenuItemsEnabled()) {
+            descriptors.add(new NodeRegulationsPropertyDescriptor(this));
         }
-        return super.testAttribute(target, name, value);
     }
 
     @Override
@@ -88,6 +132,9 @@ public abstract class Node extends NamedGraphElement implements Describable {
         }
         if (PROPERTY_INTERRUPTING_BOUNDARY_EVENT.equals(id)) {
             return YesNoComboBoxTransformer.getPropertyValue(interruptingBoundaryEvent);
+        }
+        if (PROPERTY_NODE_IN_REGULATIONS.equals(id)) {
+            return getRegulationsProperties();
         }
         return super.getPropertyValue(id);
     }
@@ -106,6 +153,8 @@ public abstract class Node extends NamedGraphElement implements Describable {
             setAsyncExecution(NodeAsyncExecution.values()[(Integer) value]);
         } else if (PROPERTY_INTERRUPTING_BOUNDARY_EVENT.equals(id)) {
             setInterruptingBoundaryEvent(YesNoComboBoxTransformer.setPropertyValue(value));
+        } else if (PROPERTY_NODE_IN_REGULATIONS.equals(id)) {
+            setRegulationsProperties((NodeRegulationsProperties) value);
         } else {
             super.setPropertyValue(id, value);
         }

@@ -3,6 +3,10 @@
 <process-diagram name="ExecuteFormulaDemo" notation="bpmn" rendered="graphiti" width="1444" height="552" showActions="false" showGrid="false">
   <node name="ID1" x="48" y="58" width="48" height="48">
     <transition name="tr1"/>
+    <textDecoration x="60" y="31"/>
+  </node>
+  <node name="ID2" x="166" y="64" width="132" height="84" minimizedView="true">
+    <transition name="tr1"/>
   </node>
   <node name="ID3" x="227" y="40" width="132" height="84">
     <transition name="tr1"/>
@@ -13,6 +17,17 @@
   <node name="ID5" x="687" y="40" width="132" height="84">
     <transition name="tr1">
       <bendpoint x="864" y="81"/>
+    </transition>
+  </node>
+  <node name="ID10" x="387" y="64" width="132" height="84" minimizedView="true">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID11" x="617" y="64" width="132" height="84" minimizedView="true">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID12" x="847" y="125" width="132" height="84" minimizedView="true">
+    <transition name="tr1">
+      <bendpoint x="864" y="201"/>
     </transition>
   </node>
   <node name="ID13" x="686" y="160" width="132" height="84">
@@ -33,19 +48,8 @@
   <node name="ID18" x="5" y="274" width="132" height="84">
     <transition name="tr1"/>
   </node>
-  <node name="ID2" x="166" y="64" width="132" height="84" minimizedView="true">
-    <transition name="tr1"/>
-  </node>
-  <node name="ID10" x="387" y="64" width="132" height="84" minimizedView="true">
-    <transition name="tr1"/>
-  </node>
-  <node name="ID11" x="617" y="64" width="132" height="84" minimizedView="true">
-    <transition name="tr1"/>
-  </node>
-  <node name="ID12" x="847" y="125" width="132" height="84" minimizedView="true">
-    <transition name="tr1">
-      <bendpoint x="864" y="201"/>
-    </transition>
+  <node name="ID19" x="497" y="292" width="48" height="48">
+    <textDecoration x="512" y="340"/>
   </node>
   <node name="ID20" x="616" y="184" width="132" height="84" minimizedView="true">
     <transition name="tr1"/>
@@ -59,5 +63,4 @@
   <node name="ID24" x="165" y="298" width="132" height="84" minimizedView="true">
     <transition name="tr1"/>
   </node>
-  <node name="ID19" x="497" y="292" width="48" height="48"/>
 </process-diagram>

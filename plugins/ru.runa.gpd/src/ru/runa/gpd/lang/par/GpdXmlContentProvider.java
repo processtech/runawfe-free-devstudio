@@ -1,10 +1,11 @@
 package ru.runa.gpd.lang.par;
 
+import static java.lang.Math.min;
+
 import java.util.List;
 
 import org.dom4j.Document;
 import org.dom4j.Element;
-import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 
@@ -112,7 +113,7 @@ public class GpdXmlContentProvider extends AuxContentProvider {
             }
         }
     }
-
+    
     @Override
     public Document save(ProcessDefinition definition) throws Exception {
         Document document = XmlUtil.createDocument(PROCESS_DIAGRAM);
@@ -122,9 +123,15 @@ public class GpdXmlContentProvider extends AuxContentProvider {
         if (definition.getLanguage() == Language.BPMN) {
             addAttribute(root, RENDERED, "graphiti");
         }
-        Dimension dimension = definition.getDimension();
-        addAttribute(root, WIDTH, String.valueOf(dimension.width));
-        addAttribute(root, HEIGHT, String.valueOf(dimension.height));
+        Rectangle definitionRectangle = definition.getConstraint();
+        if (definitionRectangle.x != 0) {
+            addAttribute(root, X, String.valueOf(definitionRectangle.x));
+        }
+        if (definitionRectangle.y != 0) {
+            addAttribute(root, Y, String.valueOf(definitionRectangle.y));
+        }
+        addAttribute(root, WIDTH, String.valueOf(definitionRectangle.width));
+        addAttribute(root, HEIGHT, String.valueOf(definitionRectangle.height));
         addAttribute(root, SHOW_ACTIONS, String.valueOf(definition.isShowActions()));
         addAttribute(root, SHOW_GRID, String.valueOf(definition.isShowGrid()));
         int xOffset = 0;
@@ -143,35 +150,23 @@ public class GpdXmlContentProvider extends AuxContentProvider {
                 continue;
             }
             Rectangle constraint = graphElement.getConstraint();
-            if (constraint.x - canvasShift < xOffset) {
-                xOffset = constraint.x - canvasShift;
-            }
-            if (constraint.y - canvasShift < yOffset) {
-                yOffset = constraint.y - canvasShift;
-            }
+            xOffset = min(xOffset, constraint.x - canvasShift);
+            yOffset = min(yOffset, constraint.y - canvasShift);
             if (graphElement instanceof Node) {
                 Node node = (Node) graphElement;
                 for (Transition transition : node.getLeavingTransitions()) {
                     for (Point bendpoint : transition.getBendpoints()) {
                         // canvasShift for BPMN connections = 0;
-                        if (bendpoint.x < xOffset) {
-                            xOffset = bendpoint.x;
-                        }
-                        if (bendpoint.y < yOffset) {
-                            yOffset = bendpoint.y;
-                        }
+                        xOffset = min(xOffset, bendpoint.x);
+                        yOffset = min(yOffset, bendpoint.y);
                     }
                 }
             }
             if (graphElement instanceof HasTextDecorator) {
                 TextDecorationNode decorationNode = ((HasTextDecorator) graphElement).getTextDecoratorEmulation().getDefinition();
                 if (decorationNode != null && decorationNode.getConstraint() != null) {
-                    if (decorationNode.getConstraint().x - canvasShift < xOffset) {
-                        xOffset = decorationNode.getConstraint().x - canvasShift;
-                    }
-                    if (decorationNode.getConstraint().y - canvasShift < yOffset) {
-                        yOffset = decorationNode.getConstraint().y - canvasShift;
-                    }
+                    xOffset = min(xOffset, decorationNode.getConstraint().x - canvasShift);
+                    yOffset = min(yOffset, decorationNode.getConstraint().y - canvasShift);
                 }
             }
         }
@@ -235,9 +230,11 @@ public class GpdXmlContentProvider extends AuxContentProvider {
     }
 
     private void addProcessDiagramInfo(ProcessDefinition definition, Element processDiagramInfo) {
+        int x = getIntAttribute(processDiagramInfo, X, 0);
+        int y = getIntAttribute(processDiagramInfo, Y, 0);
         int width = getIntAttribute(processDiagramInfo, WIDTH, 0);
         int height = getIntAttribute(processDiagramInfo, HEIGHT, 0);
-        definition.setDimension(new Dimension(width, height));
+        definition.setConstraint(new Rectangle(x, y, width, height));
         if (!(definition instanceof SubprocessDefinition)) {
             definition.setShowActions(getBooleanAttribute(processDiagramInfo, SHOW_ACTIONS, false));
             definition.setShowGrid(getBooleanAttribute(processDiagramInfo, SHOW_GRID, false));

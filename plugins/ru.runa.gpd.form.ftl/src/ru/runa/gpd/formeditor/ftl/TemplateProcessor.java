@@ -7,15 +7,11 @@ import java.io.Writer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import ru.runa.gpd.EditorsPlugin;
-
 import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 
-import freemarker.Mode;
 import freemarker.core.Environment;
-import freemarker.log.Logger;
 import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
 import freemarker.template.Template;
@@ -24,31 +20,25 @@ import freemarker.template.TemplateExceptionHandler;
 import freemarker.template.TemplateModel;
 
 public class TemplateProcessor {
+    private static final Configuration configuration = new Configuration(Configuration.VERSION_2_3_23);
     static {
-        Mode.setDesignerMode();
-        try {
-            if (!EditorsPlugin.DEBUG) {
-                Logger.selectLoggerLibrary(Logger.LIBRARY_NONE);
-            }
-        } catch (ClassNotFoundException e) {
-        }
+        configuration.setObjectWrapper(new DefaultObjectWrapper());
+        configuration.setLocalizedLookup(false);
+        configuration.setStrictBeanModels(false);
+        configuration.setTemplateExceptionHandler(new CustomTemplateExceptionHandler());
+        configuration.setDefaultEncoding(Charsets.UTF_8.name());
     }
 
-    public static String process(byte[] templateData, TemplateModel model) throws Exception {
-        return process(new String(templateData, Charsets.UTF_8), model);
+    public static String process(String templateName, byte[] templateData, TemplateModel model) {
+        return process(templateName, new String(templateData, Charsets.UTF_8), model);
     }
 
-    public static String process(String templateData, TemplateModel model) {
+    public static String process(String templateName, String templateData, TemplateModel model) {
         if (Strings.isNullOrEmpty(templateData)) {
             return templateData;
         }
         try {
-            Configuration configuration = new Configuration();
-            configuration.setObjectWrapper(new DefaultObjectWrapper());
-            configuration.setLocalizedLookup(false);
-            configuration.setStrictBeanModels(false);
-            configuration.setTemplateExceptionHandler(new CustomTemplateExceptionHandler());
-            Template template = new Template("template", new StringReader(templateData), configuration, Charsets.UTF_8.name());
+            Template template = new Template("template", new StringReader(templateData), configuration);
             StringWriter out = new StringWriter();
             template.process(model, out);
             out.flush();

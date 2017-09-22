@@ -3,14 +3,9 @@
 <process-diagram name="MessageQuery" notation="bpmn" rendered="graphiti" width="723" height="692" showActions="false" showGrid="false">
   <node name="ID1" x="150" y="33" width="48" height="48">
     <transition name="tr1"/>
+    <textDecoration x="150" y="5"/>
   </node>
   <node name="ID2" x="108" y="113" width="132" height="84">
-    <transition name="tr1"/>
-  </node>
-  <node name="ID5" x="109" y="443" width="132" height="84">
-    <transition name="tr1"/>
-  </node>
-  <node name="ID12" x="156" y="223" width="132" height="84" minimizedView="true">
     <transition name="tr1"/>
   </node>
   <node name="ID3" x="151" y="283" width="48" height="48">
@@ -19,5 +14,13 @@
   <node name="ID4" x="151" y="363" width="48" height="48">
     <transition name="tr1"/>
   </node>
-  <node name="ID6" x="151" y="553" width="48" height="48"/>
+  <node name="ID5" x="109" y="443" width="132" height="84">
+    <transition name="tr1"/>
+  </node>
+  <node name="ID6" x="151" y="553" width="48" height="48">
+    <textDecoration x="148" y="601"/>
+  </node>
+  <node name="ID12" x="156" y="223" width="132" height="84" minimizedView="true">
+    <transition name="tr1"/>
+  </node>
 </process-diagram>

@@ -65,7 +65,7 @@
 		try {
 			var editor = CKEDITOR.replace("editor");
 			onLoadCallback();
-			editor.on( 'change', function( evt ) {
+			editor.on("change", function() {
 				onModification();
 			});
 		} catch (e) {

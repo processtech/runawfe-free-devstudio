@@ -3,6 +3,7 @@
 <process-diagram name="Overtime Work" notation="bpmn" rendered="graphiti" width="759" height="636" showActions="true" showGrid="false">
   <node name="ID1" x="301" y="40" width="48" height="48">
     <transition name="tr1"/>
+    <textDecoration x="269" y="12"/>
   </node>
   <node name="ID2" x="7" y="160" width="132" height="84">
     <transition name="tr1">
@@ -18,5 +19,7 @@
       <bendpoint x="585" y="345"/>
     </transition>
   </node>
-  <node name="ID5" x="301" y="320" width="48" height="48"/>
+  <node name="ID5" x="301" y="320" width="48" height="48">
+    <textDecoration x="316" y="368"/>
+  </node>
 </process-diagram>

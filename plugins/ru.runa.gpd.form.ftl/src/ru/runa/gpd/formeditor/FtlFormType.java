@@ -31,7 +31,7 @@ public class FtlFormType extends BaseHtmlFormType {
     @Override
     protected Map<String, FormVariableAccess> getTypeSpecificVariableNames(FormNode formNode, byte[] formBytes) throws Exception {
         VariableSearchHashModel model = new VariableSearchHashModel(formNode.getProcessDefinition());
-        TemplateProcessor.process(formBytes, model);
+        TemplateProcessor.process(formNode.getProcessDefinition().getName() + formNode.getId(), formBytes, model);
         return model.getUsedVariables();
     }
 
@@ -39,7 +39,7 @@ public class FtlFormType extends BaseHtmlFormType {
     public void validate(FormNode formNode, byte[] formData, FormNodeValidation validation, List<ValidationError> errors) throws Exception {
         super.validate(formNode, formData, validation, errors);
         ValidationHashModel model = new ValidationHashModel(formNode.getProcessDefinition());
-        TemplateProcessor.process(formData, model);
+        TemplateProcessor.process(formNode.getProcessDefinition().getName() + formNode.getId(), formData, model);
         for (Component component : model.getComponents()) {
             IComponentValidator validator = component.getType().getValidator();
             List<ValidationError> list = validator.validate(formNode, component);

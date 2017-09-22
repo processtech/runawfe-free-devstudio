@@ -27,9 +27,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.ide.IDE;
 
-import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.Localization;
-import ru.runa.gpd.ProcessCache;
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.clipboard.VariableTransfer;
 import ru.runa.gpd.editor.clipboard.VariableUserTypeTransfer;
 import ru.runa.gpd.lang.model.FormNode;
@@ -341,10 +340,8 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
     }
 
     private enum RemoveAction {
-        NONE(""),
-        OK("UserDefinedVariableType.deletion.NoUsageFound"),
-        VAR_USAGE("UserDefinedVariableType.deletion.VariablesWillBeRemoved"),
-        TYPE_USAGE("UserDefinedVariableType.deletion.UserTypeIsUsed");
+        NONE(""), OK("UserDefinedVariableType.deletion.NoUsageFound"), VAR_USAGE("UserDefinedVariableType.deletion.VariablesWillBeRemoved"), TYPE_USAGE(
+                "UserDefinedVariableType.deletion.UserTypeIsUsed");
 
         private final String messageKey;
 
@@ -375,8 +372,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             }
 
             for (VariableUserType userType : getDefinition().getVariableUserTypes()) {
-                // Данная проверка выполняется снаружи метода, чтобы избежать
-                // ситуации сравнения типа с самим собой.
+                // XXX: exclude same VariableUserType object
                 if (!type.equals(userType)) {
                     if (isUserTypeUsed(type, userType)) {
                         action = RemoveAction.TYPE_USAGE;
@@ -472,6 +468,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
                 variable.setFormat(wizard.getVariable().getFormat());
                 variable.setUserType(wizard.getVariable().getUserType());
                 variable.setDefaultValue(wizard.getVariable().getDefaultValue());
+                variable.setStoreType(wizard.getVariable().getStoreType());
                 getDefinition().setDirty();
                 updateAttributeViewer(variable);
             }
@@ -562,7 +559,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             if (useLtk && editor.getDefinition().getEmbeddedSubprocesses().size() > 0) {
                 IDE.saveAllEditors(new IResource[] { projectRoot }, false);
                 for (SubprocessDefinition subprocessDefinition : editor.getDefinition().getEmbeddedSubprocesses().values()) {
-                    WorkspaceOperations.saveProcessDefinition(ProcessCache.getProcessDefinitionFile(subprocessDefinition), subprocessDefinition);
+                    WorkspaceOperations.saveProcessDefinition(subprocessDefinition.getFile(), subprocessDefinition);
                 }
             }
         }
@@ -598,7 +595,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             if (useLtk && editor.getDefinition().getEmbeddedSubprocesses().size() > 0) {
                 IDE.saveAllEditors(new IResource[] { projectRoot }, false);
                 for (SubprocessDefinition subprocessDefinition : editor.getDefinition().getEmbeddedSubprocesses().values()) {
-                    WorkspaceOperations.saveProcessDefinition(ProcessCache.getProcessDefinitionFile(subprocessDefinition), subprocessDefinition);
+                    WorkspaceOperations.saveProcessDefinition(subprocessDefinition.getFile(), subprocessDefinition);
                 }
             }
         }
@@ -711,7 +708,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             if (useLtk && editor.getDefinition().getEmbeddedSubprocesses().size() > 0) {
                 IDE.saveAllEditors(new IResource[] { projectRoot }, false);
                 for (SubprocessDefinition subprocessDefinition : editor.getDefinition().getEmbeddedSubprocesses().values()) {
-                    WorkspaceOperations.saveProcessDefinition(ProcessCache.getProcessDefinitionFile(subprocessDefinition), subprocessDefinition);
+                    WorkspaceOperations.saveProcessDefinition(subprocessDefinition.getFile(), subprocessDefinition);
                 }
             }
         }
@@ -769,7 +766,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             if (useLtk && editor.getDefinition().getEmbeddedSubprocesses().size() > 0) {
                 IDE.saveAllEditors(new IResource[] { projectRoot }, false);
                 for (SubprocessDefinition subprocessDefinition : editor.getDefinition().getEmbeddedSubprocesses().values()) {
-                    WorkspaceOperations.saveProcessDefinition(ProcessCache.getProcessDefinitionFile(subprocessDefinition), subprocessDefinition);
+                    WorkspaceOperations.saveProcessDefinition(subprocessDefinition.getFile(), subprocessDefinition);
                 }
             }
         }
@@ -848,8 +845,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             boolean result = Objects.equal(leftType.getName(), rightType.getName());
             result = result && (leftType.getAttributes() == null ? rightType.getAttributes() == null : false);
             if (leftType.getAttributes() != null && rightType.getAttributes() != null) {
-                // не должно быть result && поскольку предыдущая проверка
-                // установит false _не верно_ при переходе сюда.
+                // XXX: fault accumulate "result &&" - wrong set "false" 
                 result = leftType.getAttributes().size() == rightType.getAttributes().size();
                 if (result) {
                     for (int i = 0; i < leftType.getAttributes().size(); i++) {

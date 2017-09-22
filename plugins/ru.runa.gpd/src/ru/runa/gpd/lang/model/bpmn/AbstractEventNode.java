@@ -73,4 +73,10 @@ public class AbstractEventNode extends MessageNode {
         }
     }
 
+    @Override
+    public AbstractEventNode makeCopy(GraphElement parent) {
+        AbstractEventNode copy = (AbstractEventNode) super.makeCopy(parent);
+        copy.setEventNodeType(getEventNodeType());
+        return copy;
+    }
 }

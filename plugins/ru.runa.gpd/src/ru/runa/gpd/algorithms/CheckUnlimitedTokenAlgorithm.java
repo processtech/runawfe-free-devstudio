@@ -161,13 +161,13 @@ public class CheckUnlimitedTokenAlgorithm {
     }
 
     private void init() {
-        populateVvectorList();
+        populateVectorList();
         Vector vector = new Vector(transitions.size() + 1);
         vector.setElementValue(0, 1);
         graphList.add(vector);
     }
 
-    private void populateVvectorList() {
+    private void populateVectorList() {
         for (Node node : nodes) {
             if (node instanceof StartState) {
                 for (Transition transition : transitions) {

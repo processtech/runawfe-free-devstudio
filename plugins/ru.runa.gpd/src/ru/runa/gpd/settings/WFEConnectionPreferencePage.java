@@ -21,6 +21,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.ui.custom.Dialogs;
+import ru.runa.gpd.wfe.DataImporter;
 import ru.runa.gpd.wfe.WFEServerConnector;
 import ru.runa.gpd.wfe.WFEServerConnectorRegistry;
 import ru.runa.gpd.wfe.WFEServerConnectorRegistry.Entry;
@@ -111,4 +112,11 @@ public class WFEConnectionPreferencePage extends FieldEditorPreferencePage imple
         super.updateApplyButton();
         testButton.setEnabled(isValid());
     }
+
+    @Override
+    public boolean performOk() {
+        DataImporter.clearCache();
+        return super.performOk();
+    }
+    
 }

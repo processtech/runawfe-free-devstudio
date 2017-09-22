@@ -3,6 +3,7 @@ package ru.runa.gpd.ui.wizard;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -117,19 +118,20 @@ public class ImportParWizardPage extends ImportWizardPage {
         });
         importFromServerButton = new Button(importGroup, SWT.RADIO);
         importFromServerButton.setText(Localization.getString("ImportParWizardPage.page.importFromServerButton"));
-        SyncUIHelper.createHeader(importGroup, WFEServerProcessDefinitionImporter.getInstance(), WFEConnectionPreferencePage.class, new ConnectorCallback() {
-            
-            @Override
-            public void onSynchronizationFailed(Exception e) {
-                Dialogs.error(Localization.getString("error.Synchronize"), e);
-            }
-            
-            @Override
-            public void onSynchronizationCompleted() {
-                serverDefinitionViewer.setInput(WFEServerProcessDefinitionImporter.getInstance().loadCachedData());
-                serverDefinitionViewer.refresh(true);
-            }
-        });
+        SyncUIHelper.createHeader(importGroup, WFEServerProcessDefinitionImporter.getInstance(), WFEConnectionPreferencePage.class,
+                new ConnectorCallback() {
+
+                    @Override
+                    public void onSynchronizationFailed(Exception e) {
+                        Dialogs.error(Localization.getString("error.Synchronize"), e);
+                    }
+
+                    @Override
+                    public void onSynchronizationCompleted() {
+                        serverDefinitionViewer.setInput(WFEServerProcessDefinitionImporter.getInstance().loadCachedData());
+                        serverDefinitionViewer.refresh(true);
+                    }
+                });
         createServerDefinitionsGroup(importGroup);
         setControl(pageControl);
     }
@@ -164,10 +166,10 @@ public class ImportParWizardPage extends ImportWizardPage {
     }
 
     public boolean performFinish() {
+        InputStream[] parInputStreams = null;
         try {
             IContainer container = getSelectedContainer();
             String[] processNames;
-            InputStream[] parInputStreams;
             boolean fromFile = importFromFileButton.getSelection();
             if (fromFile) {
                 if (selectedDirFileName == null) {
@@ -202,13 +204,12 @@ public class ImportParWizardPage extends ImportWizardPage {
             }
             for (int i = 0; i < processNames.length; i++) {
                 String processName = processNames[i];
-                InputStream parInputStream = parInputStreams[i];
                 IFolder processFolder = IOUtils.getProcessFolder(container, processName);
                 if (processFolder.exists()) {
                     throw new Exception(Localization.getString("ImportParWizardPage.error.processWithSameNameExists"));
                 }
                 processFolder.create(true, true, null);
-                IOUtils.extractArchiveToFolder(parInputStream, processFolder);
+                IOUtils.extractArchiveToFolder(parInputStreams[i], processFolder);
                 IFile definitionFile = IOUtils.getProcessDefinitionFile(processFolder);
                 ProcessDefinition definition = ProcessCache.newProcessDefinitionWasCreated(definitionFile);
                 if (definition != null && !Objects.equal(definition.getName(), processFolder.getName())) {
@@ -225,6 +226,15 @@ public class ImportParWizardPage extends ImportWizardPage {
             PluginLogger.logErrorWithoutDialog("import par", exception);
             setErrorMessage(Throwables.getRootCause(exception).getMessage());
             return false;
+        } finally {
+            if (parInputStreams != null) {
+                for (InputStream inputStream : parInputStreams) {
+                    try {
+                        inputStream.close();
+                    } catch (IOException e) {
+                    }
+                }
+            }
         }
         return true;
     }
