@@ -254,8 +254,10 @@ public class VariableUtils {
             List<Variable> attributes = userType.getAttributes();
             for (Variable attribute : attributes) {
                 for (String typeUsage : typeUsages) {
-                    attribute.setFormat(attribute.getFormat().replaceAll(MessageFormat.format(typeUsage, oldTypeName),
-                            MessageFormat.format(typeUsage, newTypeName)));
+                    String oldTypeUsage = MessageFormat.format(typeUsage, oldTypeName);
+                    if (attribute.getFormat().contains(oldTypeUsage)) {
+                        attribute.setFormat(attribute.getFormat().replaceAll(oldTypeUsage, MessageFormat.format(typeUsage, newTypeName)));
+                    }
                 }
             }
         }
@@ -268,8 +270,10 @@ public class VariableUtils {
                 }
             } else if (variable.getFormat().contains(oldTypeName)) {
                 for (String typeUsage : typeUsages) {
-                    variable.setFormat(variable.getFormat().replaceAll(MessageFormat.format(typeUsage, oldTypeName),
-                            MessageFormat.format(typeUsage, newTypeName)));
+                    String oldTypeUsage = MessageFormat.format(typeUsage, oldTypeName);
+                    if (variable.getFormat().contains(oldTypeUsage)) {
+                        variable.setFormat(variable.getFormat().replaceAll(oldTypeUsage, MessageFormat.format(typeUsage, newTypeName)));
+                    }
                 }
             }
         }

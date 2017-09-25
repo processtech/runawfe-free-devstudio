@@ -94,11 +94,22 @@ final class Serializator {
                 VariableUserType vut = new VariableUserType();
                 read(in, vut, processDefinition);
                 if (processDefinition.getVariableUserType(vut.getName()) == null) {
-                    processDefinition.addVariableUserType(vut);
+                    addVariableUserType(processDefinition, vut);
                 }
             }
         }
         variable.setStoreType((VariableStoreType) in.readObject());
+    }
+
+    private static void addVariableUserType(ProcessDefinition pd, VariableUserType type) {
+        pd.addVariableUserType(type);
+        for (Variable v : type.getAttributes()) {
+            if (v.isComplex()) {
+                if (pd.getVariableUserType(v.getUserType().getName()) == null) {
+                    addVariableUserType(pd, v.getUserType());
+                }
+            }
+        }
     }
 
     static void write(ObjectOutputStream out, VariableUserType type) throws IOException {
