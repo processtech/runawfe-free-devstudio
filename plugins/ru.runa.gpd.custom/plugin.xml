@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="ru.runa.gpd.groovyStuff">
+      <type
+            label="java.util.Date">
+      </type>
+      <type
+            label="java.util.List">
+      </type>
+      <type
+            label="java.util.ArrayList">
+      </type>
+      <type
+            label="java.util.Map">
+      </type>
+      <type
+            label="java.util.HashMap">
+      </type>
+      <method
+            label="j.l.Math.max(,)">
+            java.lang.Math.max(, )
+      </method>
+      <method
+            label="java.lang.Math.random()">
+      </method>
+      <method
+            label="java.lang.String.valueOf(, , )">
+      </method>
+      <constant
+            label="j.l.Math.E">
+            java.lang.Math.E
+      </constant>
+      <constant
+            label="java.lang.Math.PI">
+      </constant>
+      <constant
+            label="PI as double">
+            3.14159265358979323846
+      </constant>
+      <constant
+            label="&quot;This is very loooooooooooooooooooooooooong string.&quot;">
+      </constant>
+      <statement
+            label="if">
+if () {
+}
+      </statement>
+      <statement
+            label="if/else">
+if () {
+} else {
+}
+      </statement>
+      <statement
+            label="if/else if/else">
+if () {
+} else if () {
+} else {
+}
+      </statement>
+      <statement
+            label="switch">
+switch () {
+case :
+   break
+case :
+   break
+default:
+}
+      </statement>
+   </extension>
+
+</plugin>

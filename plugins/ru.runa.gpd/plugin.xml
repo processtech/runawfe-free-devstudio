@@ -12,6 +12,7 @@
    <extension-point id="wfeConnectors" name="wfeConnectors" schema="schema/wfeConnectors.exsd"/>
    <extension-point id="cssTemplates" name="form CSS templates" schema="schema/cssTemplates.exsd"/>
    <extension-point id="regulations" name="regulations" schema="schema/regulations.exsd"/>
+   <extension-point id="groovyStuff" name="Groovy stuff" schema="schema/groovyStuff.exsd"/>
 
   <extension point = "org.eclipse.ui.editors">
     <editor
