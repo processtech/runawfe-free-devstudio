@@ -1,0 +1,8 @@
+<config>
+  <input>
+    <param name="username" label="username" formatFilter="java.lang.String"/>
+    <param name="project" label="project" formatFilter="java.lang.String"/>
+	<param name="files" label="files" formatFilter="ru.runa.wfe.var.ComplexVariable"/>
+    <param name="issue" label="issue" formatFilter="ru.runa.wfe.var.ComplexVariable"/>
+  </input>
+</config>
