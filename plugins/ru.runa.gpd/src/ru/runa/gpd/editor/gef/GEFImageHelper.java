@@ -30,6 +30,10 @@ public class GEFImageHelper {
     private static final boolean BUG70949_WORKAROUND = "true".equals(System.getProperty("ru.runa.gpd.workaround.bug70949"));
 
     public static void save(GraphicalViewer viewer, ProcessDefinition definition, String filePath) {
+        save(viewer, definition, filePath, SWT.IMAGE_PNG);
+    }
+
+    public static void save(GraphicalViewer viewer, ProcessDefinition definition, String filePath, int imageFormat) {
         // we remove the selection in order to generate valid graph picture
         viewer.deselectAll();
         viewer.flush();
@@ -52,7 +56,7 @@ public class GEFImageHelper {
             } else {
                 imageLoader.data = new ImageData[] { image.getImageData() };
             }
-            imageLoader.save(filePath, SWT.IMAGE_PNG);
+            imageLoader.save(filePath, imageFormat);
         } catch (Exception e) {
             PluginLogger.logError("graphimage: saving failed", e);
         } finally {

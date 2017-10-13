@@ -319,6 +319,35 @@
           id="processdefinition"
           objectClass="ru.runa.gpd.lang.model.ProcessDefinition">
        <menu
+             id="exportDiagram"
+             label="%label.action.exportDiagram"
+             path="additions">
+          <separator
+                name="exportDiagramSeparator1">
+          </separator>
+          <separator
+                name="exportDiagramSeparator2">
+          </separator>
+       </menu>
+       <action
+             class="ru.runa.gpd.lang.action.ExportDiagramToJpgAction"
+             id="exportToJpg"
+             label="%label.action.exportDiagram.jpg"
+             menubarPath="exportDiagram/exportDiagramSeparator1">
+       </action>
+       <action
+             class="ru.runa.gpd.lang.action.ExportDiagramToPngAction"
+             id="exportToPng"
+             label="%label.action.exportDiagram.png"
+             menubarPath="exportDiagram/exportDiagramSeparator1">
+       </action>
+       <action
+             class="ru.runa.gpd.lang.action.ExportDiagramToPdfAction"
+             id="exportToPdf"
+             label="%label.action.exportDiagram.pdf"
+             menubarPath="exportDiagram/exportDiagramSeparator1">
+       </action>
+       <menu
              id="formCss"
              label="%label.action.formCSS"
              path="additions">
