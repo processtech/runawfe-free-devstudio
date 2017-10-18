@@ -1,0 +1,10 @@
+<config>
+  <input>
+    <param name="username" label="username" formatFilter="java.lang.String"/>
+    <param name="project" label="project" formatFilter="java.lang.String"/>
+    <param name="comment" label="comment" formatFilter="java.lang.String"/>
+    <param name="hours" label="hours" formatFilter="java.lang.Double"/>
+    <param name="activityType" label="activityType" formatFilter="java.lang.Long"/>
+    <param name="issue" label="issue" formatFilter="ru.runa.wfe.var.ComplexVariable"/>
+  </input>
+</config> 

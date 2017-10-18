@@ -1321,6 +1321,24 @@
             botTaskHandler="true"
             decisionHandler="false"
             cellEditorProvider="ru.runa.gpd.extension.handler.ConfigBasedProvider"
+            className="ru.runa.wfe.redmine.CreateTimeEntryIssueHandler"
+            enabled="true"
+            label="%ru.runa.wfe.redmine.CreateTimeEntryIssueHandler" />
+      <handler
+            actionHandler="true"
+            assignmentHandler="false"
+            botTaskHandler="true"
+            decisionHandler="false"
+            cellEditorProvider="ru.runa.gpd.extension.handler.ConfigBasedProvider"
+            className="ru.runa.wfe.redmine.AttachFileIssueHandler"
+            enabled="true"
+            label="%ru.runa.wfe.redmine.AttachFileIssueHandler" />
+      <handler
+            actionHandler="true"
+            assignmentHandler="false"
+            botTaskHandler="true"
+            decisionHandler="false"
+            cellEditorProvider="ru.runa.gpd.extension.handler.ConfigBasedProvider"
             className="ru.runa.wfe.redmine.CreateIssueHandler"
             enabled="true"
             label="%ru.runa.wfe.redmine.CreateIssueHandler" />
