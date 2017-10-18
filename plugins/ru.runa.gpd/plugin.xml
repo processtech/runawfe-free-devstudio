@@ -319,35 +319,6 @@
           id="processdefinition"
           objectClass="ru.runa.gpd.lang.model.ProcessDefinition">
        <menu
-             id="exportDiagram"
-             label="%label.action.exportDiagram"
-             path="additions">
-          <separator
-                name="exportDiagramSeparator1">
-          </separator>
-          <separator
-                name="exportDiagramSeparator2">
-          </separator>
-       </menu>
-       <action
-             class="ru.runa.gpd.lang.action.ExportDiagramToJpgAction"
-             id="exportToJpg"
-             label="%label.action.exportDiagram.jpg"
-             menubarPath="exportDiagram/exportDiagramSeparator1">
-       </action>
-       <action
-             class="ru.runa.gpd.lang.action.ExportDiagramToPngAction"
-             id="exportToPng"
-             label="%label.action.exportDiagram.png"
-             menubarPath="exportDiagram/exportDiagramSeparator1">
-       </action>
-       <action
-             class="ru.runa.gpd.lang.action.ExportDiagramToPdfAction"
-             id="exportToPdf"
-             label="%label.action.exportDiagram.pdf"
-             menubarPath="exportDiagram/exportDiagramSeparator1">
-       </action>
-       <menu
              id="formCss"
              label="%label.action.formCSS"
              path="additions">
@@ -2850,6 +2821,97 @@
           <instanceof value="ru.runa.gpd.ltk.RenameVariableRefactoringStatusContext"/>
        </enablement>
     </statusContextViewer>
+ </extension>
+ <extension
+       point="org.eclipse.ui.menus">
+    <menuContribution
+          allPopups="false"
+          locationURI="popup:org.eclipse.ui.popup.any?endof=additions">
+       <menu
+             label="%label.action.exportDiagram">
+          <menu
+                label="%label.action.exportDiagram.pdf">
+             <command
+                   commandId="ru.runa.gpd.lang.action.ExportDiagramToPdf"
+                   label="%label.action.exportDiagram.pdf.a3"
+                   style="push">
+                <parameter
+                      name="paperSize"
+                      value="A3">
+                </parameter>
+             </command>
+             <command
+                   commandId="ru.runa.gpd.lang.action.ExportDiagramToPdf"
+                   label="%label.action.exportDiagram.pdf.a4"
+                   style="push">
+                <parameter
+                      name="paperSize"
+                      value="A4">
+                </parameter>
+             </command>
+             <command
+                   commandId="ru.runa.gpd.lang.action.ExportDiagramToPdf"
+                   label="%label.action.exportDiagram.pdf.a5"
+                   style="push">
+                <parameter
+                      name="paperSize"
+                      value="A5">
+                </parameter>
+             </command>
+             <command
+                   commandId="ru.runa.gpd.lang.action.ExportDiagramToPdf"
+                   label="%label.action.exportDiagram.pdf.a6"
+                   style="push">
+                <parameter
+                      name="paperSize"
+                      value="A6">
+                </parameter>
+             </command>
+          </menu>
+          <command
+                commandId="ru.runa.gpd.lang.action.ExportDiagramToPng"
+                label="%label.action.exportDiagram.png"
+                style="push">
+          </command>
+          <command
+                commandId="ru.runa.gpd.lang.action.ExportDiagramToJpg"
+                label="%label.action.exportDiagram.jpg"
+                style="push">
+          </command>
+          <visibleWhen
+                checkEnabled="false">
+             <with
+                   variable="activeEditor">
+                <instanceof
+                      value="ru.runa.gpd.editor.ProcessEditorBase">
+                </instanceof>
+             </with>
+          </visibleWhen>
+       </menu>
+    </menuContribution>
+ </extension>
+ <extension
+       point="org.eclipse.ui.commands">
+    <command
+          defaultHandler="ru.runa.gpd.lang.action.ExportDiagramToPdfHandler"
+          id="ru.runa.gpd.lang.action.ExportDiagramToPdf"
+          name="Export Diagram to PDF">
+       <commandParameter
+             id="paperSize"
+             name="paperSize"
+             optional="false">
+       </commandParameter>
+    </command>
+    <command
+          defaultHandler="ru.runa.gpd.lang.action.ExportDiagramToPngHandler"
+          id="ru.runa.gpd.lang.action.ExportDiagramToPng"
+          name="Export Diagram to PNG">
+    </command>
+    <command
+          defaultHandler="ru.runa.gpd.lang.action.ExportDiagramToJpgHandler"
+          id="ru.runa.gpd.lang.action.ExportDiagramToJpg"
+          name="Export Diagram to JPG">
+    </command>
  </extension>
 
 </plugin>
