@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.GraphElement;
+import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableContainer;
 import ru.runa.gpd.lang.model.VariableUserType;
@@ -235,6 +236,10 @@ public class VariableUtils {
 
     public static Variable getComplexVariableByExpandedAttribute(VariableContainer variableContainer, String variableName) {
         return getVariableByName(variableContainer, variableName.split(Pattern.quote(VariableUserType.DELIM))[0]);
+    }
+
+    public static boolean variableExists(String variableName, ProcessDefinition processDefinition) {
+        return processDefinition.getVariableNames(true, false).contains(variableName);
     }
 
 }
