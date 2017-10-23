@@ -47,9 +47,9 @@ public class RegulationsUtil {
         }
         return node.getName() + " [" + node.getId() + "]";
     }
-
-    public static String generate(ProcessDefinition processDefinition) throws Exception {
-        Template template = new Template("regulations", RegulationsRegistry.getTemplate(), configuration);
+    
+    public static String generate(ProcessDefinition processDefinition, String templateContent) throws Exception {
+        Template template = new Template("regulations", templateContent, configuration);
         List<Node> listOfNodes = getSequencedNodes(processDefinition);
         List<NodeModel> nodeModels = Lists.newArrayList();
         for (Node node : listOfNodes) {
@@ -66,6 +66,10 @@ public class RegulationsUtil {
         Writer writer = new StringWriter();
         template.process(map, writer);
         return writer.toString();
+    }
+
+    public static String generate(ProcessDefinition processDefinition) throws Exception {
+        return generate(processDefinition, RegulationsRegistry.getTemplate());
     }
 
     public static List<Node> getSequencedNodes(ProcessDefinition processDefinition) {
@@ -157,4 +161,17 @@ public class RegulationsUtil {
         }
     }
 
+    public static void defaultRegulation(ProcessDefinition processDefinition) {
+        Node last = null;
+        for (Node node : processDefinition.getNodes()) {
+            if (node.getRegulationsProperties().isEnabled()) {
+                if (last != null) {
+                    last.getRegulationsProperties().setNextNode(node);
+                    node.getRegulationsProperties().setPreviousNode(last);
+                }
+                
+                last = node;
+            }
+        }
+    }
 }

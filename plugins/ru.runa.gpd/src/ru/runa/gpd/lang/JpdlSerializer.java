@@ -30,6 +30,7 @@ import ru.runa.gpd.lang.model.MultiTaskState;
 import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.NodeAsyncExecution;
+import ru.runa.gpd.lang.model.ProcessRegulations;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.StartState;
 import ru.runa.gpd.lang.model.Subprocess;
@@ -499,6 +500,10 @@ public class JpdlSerializer extends ProcessSerializer {
         String nodeAsyncExecutionValue = root.attributeValue(NODE_ASYNC_EXECUTION);
         if (!Strings.isNullOrEmpty(nodeAsyncExecutionValue)) {
             definition.setDefaultNodeAsyncExecution(NodeAsyncExecution.getByValueNotNull(nodeAsyncExecutionValue));
+        }
+        String processRequlationValue = root.attributeValue(PROCESS_REGULATIONS);
+        if (!Strings.isNullOrEmpty(processRequlationValue)) {
+            definition.setDefaultProcessRegulations(ProcessRegulations.getByValueNotNull(processRequlationValue));
         }
         List<Element> swimlanes = root.elements(SWIMLANE);
         for (Element node : swimlanes) {
