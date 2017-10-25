@@ -100,6 +100,7 @@ public class BotCache {
     private static void cacheBotTask(String botStationName, String botName, IFile botTaskFile, List<BotTask> botTasks) {
         try {
             InputStreamReader reader = null;
+            botTaskFile.getParent().refreshLocal(IResource.DEPTH_ONE, null);
             try {
                 reader = new InputStreamReader(botTaskFile.getContents(), Charsets.UTF_8);
                 List<String> lines = CharStreams.readLines(reader);

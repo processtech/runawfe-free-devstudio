@@ -75,7 +75,8 @@ public class AddTransitionFeature extends AbstractAddFeature {
         IGaService gaService = Graphiti.getGaService();
         Polyline polyline = gaService.createPolyline(connection);
         polyline.setLineStyle(LineStyle.SOLID);
-        polyline.setForeground(Graphiti.getGaService().manageColor(getDiagram(), IColorConstant.BLACK));
+        polyline.setLineWidth(1);
+        polyline.setStyle(StyleUtil.getStyleForTransition(getDiagram()));
         // create link and wire it
         link(connection, transition);
         // add dynamic text decorator for the reference name
@@ -91,16 +92,17 @@ public class AddTransitionFeature extends AbstractAddFeature {
 
     private void createLabel(Connection connection, String transitionName, org.eclipse.draw2d.geometry.Point location, boolean visible) {
         ConnectionDecorator connectionDecorator = Graphiti.getPeCreateService().createConnectionDecorator(connection, true, 0.5, true);
-        Text text = Graphiti.getGaService().createDefaultText(getDiagram(), connectionDecorator);
+        Text text = Graphiti.getGaService().createText(connectionDecorator);
         text.setHorizontalAlignment(Orientation.ALIGNMENT_LEFT);
         text.setVerticalAlignment(Orientation.ALIGNMENT_CENTER);
+        text.setStyle(StyleUtil.getStyleForText(getDiagram(), "transition"));
         if (location != null) {
             Graphiti.getGaService().setLocation(text, location.x, location.y);
         } else {
             Graphiti.getGaService().setLocation(text, 10, 0);
         }
         text.setValue(transitionName);
-        IDimension textDimension = GraphitiUi.getUiLayoutService().calculateTextSize(transitionName, text.getFont());
+        IDimension textDimension = GraphitiUi.getUiLayoutService().calculateTextSize(transitionName, text.getStyle().getFont());
         Graphiti.getGaService().setSize(text, textDimension.getWidth(), textDimension.getHeight());
         connectionDecorator.getProperties().add(new GaProperty(GaProperty.ID, GaProperty.NAME));
         connectionDecorator.setVisible(visible);
@@ -111,6 +113,7 @@ public class AddTransitionFeature extends AbstractAddFeature {
         int xy[] = new int[] { -10, -5, 0, 0, -10, 5, -8, 0 };
         int beforeAfter[] = new int[] { 3, 3, 0, 0, 3, 3, 3, 3 };
         Polygon polyline = Graphiti.getGaCreateService().createPolygon(connectionDecorator, xy, beforeAfter);
+        polyline.setLineWidth(1);
         polyline.setStyle(StyleUtil.getStyleForPolygonArrow(getDiagram()));
     }
 
@@ -119,6 +122,7 @@ public class AddTransitionFeature extends AbstractAddFeature {
         int xy[] = new int[] { -7, -4, 0, 0, -7, 4, -14, 0 };
         int beforeAfter[] = new int[] { 0, 0, 0, 0, 0, 0, 0, 0 };
         Polygon polyline = Graphiti.getGaCreateService().createPolygon(connectionDecorator, xy, beforeAfter);
+        polyline.setLineWidth(1);
         polyline.setStyle(StyleUtil.getStyleForPolygonDiamond(getDiagram()));
         connectionDecorator.getProperties().add(new GaProperty(GaProperty.ID, GaProperty.EXCLUSIVE_FLOW));
         connectionDecorator.setVisible(visible);
