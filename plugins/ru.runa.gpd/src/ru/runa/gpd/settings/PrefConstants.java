@@ -7,6 +7,45 @@ public interface PrefConstants {
     public static final String LOGIN_MODE_LOGIN_PASSWORD = "login.mode.login_password";
     public static final String LOGIN_MODE_KERBEROS = "login.mode.kerberos";
     public static final String P_BPMN_SHOW_SWIMLANE = "showSwimlane";
+    public static final String P_BPMN_FONT = "bpmnFont";
+    public static final String P_BPMN_COLOR_FONT = "bpmnColorFont";
+    public static final String P_BPMN_COLOR_BACKGROUND = "bpmnColorBackground";
+    public static final String P_BPMN_COLOR_BASE = "bpmnColorBase";
+    public static final String P_BPMN_COLOR_TRANSITION = "bpmnColorTransition";
+    
+    public static final String P_BPMN_STATE_FONT = "bpmnStateFont";
+    public static final String P_BPMN_STATE_FONT_COLOR = "bpmnStateFontColor";
+    public static final String P_BPMN_STATE_BACKGROUND_COLOR = "bpmnStateBackgroundColor";
+    public static final String P_BPMN_STATE_BASE_COLOR = "bpmnStateBaseColor";
+    
+    public static final String P_BPMN_ENDTOKEN_FONT = "bpmnEndTokenFont";
+    public static final String P_BPMN_ENDTOKEN_FONT_COLOR = "bpmnEndTokenFontColor";
+    
+    public static final String P_BPMN_SCRIPTTASK_FONT = "bpmnScriptTaskFont";
+    public static final String P_BPMN_SCRIPTTASK_FONT_COLOR = "bpmnScriptTaskFontColor";
+    public static final String P_BPMN_SCRIPTTASK_BACKGROUND_COLOR = "bpmnScriptTaskBackgroundColor";
+    public static final String P_BPMN_SCRIPTTASK_BASE_COLOR = "bpmnScriptTaskBaseColor";
+    
+    public static final String P_BPMN_MULTITASKSTATE_FONT = "bpmnMultiTaskStateFont";
+    public static final String P_BPMN_MULTITASKSTATE_FONT_COLOR = "bpmnMultiTaskStateFontColor";
+    public static final String P_BPMN_MULTITASKSTATE_BACKGROUND_COLOR = "bpmnMultiTaskStateBackgroundColor";
+    public static final String P_BPMN_MULTITASKSTATE_BASE_COLOR = "bpmnMultiTaskStateBaseColor";
+    
+    public static final String P_BPMN_MULTISUBPROCESS_FONT = "bpmnMultiSubprocessFont";
+    public static final String P_BPMN_MULTISUBPROCESS_FONT_COLOR = "bpmnMultiSubprocessFontColor";
+    public static final String P_BPMN_MULTISUBPROCESS_BACKGROUND_COLOR = "bpmnMultiSubprocessBackgroundColor";
+    public static final String P_BPMN_MULTISUBPROCESS_BASE_COLOR = "bpmnMultiSubprocessBaseColor";
+    
+    public static final String P_BPMN_STARTSTATE_FONT = "bpmnStartStateFont";
+    public static final String P_BPMN_STARTSTATE_FONT_COLOR = "bpmnStartStateFontColor";
+
+    public static final String P_BPMN_END_FONT = "bpmnEndFont";
+    public static final String P_BPMN_END_FONT_COLOR = "bpmnEndFontColor";
+    
+    public static final String P_BPMN_SUBPROCESS_FONT = "bpmnSubprocessFont";
+    public static final String P_BPMN_SUBPROCESS_FONT_COLOR = "bpmnSubprocessFontColor";
+    public static final String P_BPMN_SUBPROCESS_BACKGROUND_COLOR = "bpmnSubprocessBackgroundColor";
+    public static final String P_BPMN_SUBPROCESS_BASE_COLOR = "bpmnSubprocessBaseColor";
     public static final String P_LANGUAGE_NODE_NAME_PATTERN = "nodeNamePattern";
     public static final String P_LANGUAGE_NODE_WIDTH = "nodeWidth";
     public static final String P_LANGUAGE_NODE_HEIGHT = "nodeHeight";
