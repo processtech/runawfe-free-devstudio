@@ -103,63 +103,64 @@ public class LanguageElementPreferencePage extends FieldEditorPreferencePage imp
 			heightEditor.setEnabled(!fixedSize, getFieldEditorParent());
 			addField(widthEditor);
 			addField(heightEditor);
-
-			switch (definition.getBpmnElementName()) {
-			case "scriptTask":
-				addField(new FontFieldEditor(P_BPMN_SCRIPTTASK_FONT,
-						Localization.getString(PREF_COMMON_BPMN + P_BPMN_SCRIPTTASK_FONT),
-						getFieldEditorParent()));
-				addColorField(store, P_BPMN_SCRIPTTASK_FONT_COLOR);
-				addColorField(store, P_BPMN_SCRIPTTASK_BACKGROUND_COLOR);
-				addColorField(store, P_BPMN_SCRIPTTASK_BASE_COLOR);
-				break;
-			case "userTask":
-				addField(new FontFieldEditor(P_BPMN_STATE_FONT,
-						Localization.getString(PREF_COMMON_BPMN + P_BPMN_STATE_FONT), getFieldEditorParent()));
-				addColorField(store, P_BPMN_STATE_FONT_COLOR);
-				addColorField(store, P_BPMN_STATE_BACKGROUND_COLOR);
-				addColorField(store, P_BPMN_STATE_BASE_COLOR);
-				break;
-			case "endTokenEvent":
-				addField(new FontFieldEditor(P_BPMN_ENDTOKEN_FONT,
-						Localization.getString(PREF_COMMON_BPMN + P_BPMN_ENDTOKEN_FONT), getFieldEditorParent()));
-				addColorField(store, P_BPMN_ENDTOKEN_FONT_COLOR);
-				break;
-			case "endEvent":
-				addField(new FontFieldEditor(P_BPMN_END_FONT,
-						Localization.getString(PREF_COMMON_BPMN + P_BPMN_END_FONT), getFieldEditorParent()));
-				addColorField(store, P_BPMN_END_FONT_COLOR);
-				break;
-			case "startEvent":
-				addField(new FontFieldEditor(P_BPMN_STARTSTATE_FONT,
-						Localization.getString(PREF_COMMON_BPMN + P_BPMN_STARTSTATE_FONT),
-						getFieldEditorParent()));
-				addColorField(store, P_BPMN_STARTSTATE_FONT_COLOR);
-				break;
-			case "multiTask":
-				addField(new FontFieldEditor(P_BPMN_MULTITASKSTATE_FONT,
-						Localization.getString(PREF_COMMON_BPMN + P_BPMN_MULTITASKSTATE_FONT),
-						getFieldEditorParent()));
-				addColorField(store, P_BPMN_MULTITASKSTATE_FONT_COLOR);
-				addColorField(store, P_BPMN_MULTITASKSTATE_BACKGROUND_COLOR);
-				addColorField(store, P_BPMN_MULTITASKSTATE_BASE_COLOR);
-				break;
-			case "multiProcess":
-				addField(new FontFieldEditor(P_BPMN_MULTISUBPROCESS_FONT,
-						Localization.getString(PREF_COMMON_BPMN + P_BPMN_MULTISUBPROCESS_FONT),
-						getFieldEditorParent()));
-				addColorField(store, P_BPMN_MULTISUBPROCESS_FONT_COLOR);
-				addColorField(store, P_BPMN_MULTISUBPROCESS_BACKGROUND_COLOR);
-				addColorField(store, P_BPMN_MULTISUBPROCESS_BASE_COLOR);
-				break;
-			case "subProcess":
-				addField(new FontFieldEditor(P_BPMN_SUBPROCESS_FONT,
-						Localization.getString(PREF_COMMON_BPMN + P_BPMN_SUBPROCESS_FONT),
-						getFieldEditorParent()));
-				addColorField(store, P_BPMN_SUBPROCESS_FONT_COLOR);
-				addColorField(store, P_BPMN_SUBPROCESS_BACKGROUND_COLOR);
-				addColorField(store, P_BPMN_SUBPROCESS_BASE_COLOR);
-				break;
+			if (language == Language.BPMN){
+				switch (definition.getBpmnElementName()) {
+				case "scriptTask":
+					addField(new FontFieldEditor(P_BPMN_SCRIPTTASK_FONT,
+							Localization.getString(PREF_COMMON_BPMN + P_BPMN_SCRIPTTASK_FONT),
+							getFieldEditorParent()));
+					addColorField(store, P_BPMN_SCRIPTTASK_FONT_COLOR);
+					addColorField(store, P_BPMN_SCRIPTTASK_BACKGROUND_COLOR);
+					addColorField(store, P_BPMN_SCRIPTTASK_BASE_COLOR);
+					break;
+				case "userTask":
+					addField(new FontFieldEditor(P_BPMN_STATE_FONT,
+							Localization.getString(PREF_COMMON_BPMN + P_BPMN_STATE_FONT), getFieldEditorParent()));
+					addColorField(store, P_BPMN_STATE_FONT_COLOR);
+					addColorField(store, P_BPMN_STATE_BACKGROUND_COLOR);
+					addColorField(store, P_BPMN_STATE_BASE_COLOR);
+					break;
+				case "endTokenEvent":
+					addField(new FontFieldEditor(P_BPMN_ENDTOKEN_FONT,
+							Localization.getString(PREF_COMMON_BPMN + P_BPMN_ENDTOKEN_FONT), getFieldEditorParent()));
+					addColorField(store, P_BPMN_ENDTOKEN_FONT_COLOR);
+					break;
+				case "endEvent":
+					addField(new FontFieldEditor(P_BPMN_END_FONT,
+							Localization.getString(PREF_COMMON_BPMN + P_BPMN_END_FONT), getFieldEditorParent()));
+					addColorField(store, P_BPMN_END_FONT_COLOR);
+					break;
+				case "startEvent":
+					addField(new FontFieldEditor(P_BPMN_STARTSTATE_FONT,
+							Localization.getString(PREF_COMMON_BPMN + P_BPMN_STARTSTATE_FONT),
+							getFieldEditorParent()));
+					addColorField(store, P_BPMN_STARTSTATE_FONT_COLOR);
+					break;
+				case "multiTask":
+					addField(new FontFieldEditor(P_BPMN_MULTITASKSTATE_FONT,
+							Localization.getString(PREF_COMMON_BPMN + P_BPMN_MULTITASKSTATE_FONT),
+							getFieldEditorParent()));
+					addColorField(store, P_BPMN_MULTITASKSTATE_FONT_COLOR);
+					addColorField(store, P_BPMN_MULTITASKSTATE_BACKGROUND_COLOR);
+					addColorField(store, P_BPMN_MULTITASKSTATE_BASE_COLOR);
+					break;
+				case "multiProcess":
+					addField(new FontFieldEditor(P_BPMN_MULTISUBPROCESS_FONT,
+							Localization.getString(PREF_COMMON_BPMN + P_BPMN_MULTISUBPROCESS_FONT),
+							getFieldEditorParent()));
+					addColorField(store, P_BPMN_MULTISUBPROCESS_FONT_COLOR);
+					addColorField(store, P_BPMN_MULTISUBPROCESS_BACKGROUND_COLOR);
+					addColorField(store, P_BPMN_MULTISUBPROCESS_BASE_COLOR);
+					break;
+				case "subProcess":
+					addField(new FontFieldEditor(P_BPMN_SUBPROCESS_FONT,
+							Localization.getString(PREF_COMMON_BPMN + P_BPMN_SUBPROCESS_FONT),
+							getFieldEditorParent()));
+					addColorField(store, P_BPMN_SUBPROCESS_FONT_COLOR);
+					addColorField(store, P_BPMN_SUBPROCESS_BACKGROUND_COLOR);
+					addColorField(store, P_BPMN_SUBPROCESS_BASE_COLOR);
+					break;
+				}
 			}
 		}
 		if (element instanceof TaskState) {
