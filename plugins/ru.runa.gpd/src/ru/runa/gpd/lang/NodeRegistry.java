@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.dom4j.Document;
+import org.eclipse.core.internal.resources.ResourceException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -95,24 +96,10 @@ public class NodeRegistry {
 
     public static ProcessDefinition parseProcessDefinition(IFile definitionFile) throws Exception {
         try {
-            syncFile(definitionFile);
             return parseProcessDefinitionInternal(definitionFile);
-        } catch (CoreException e) {
-            if (e.getMessage() != null && e.getMessage().startsWith("Resource is out of sync with the file system")) {
-                // Workaround for 'resource out of sync'
-                definitionFile.getParent().refreshLocal(IResource.DEPTH_ONE, null);
-                return parseProcessDefinitionInternal(definitionFile);
-            }
-            throw e;
-        }
-    }
-
-    private static void syncFile(IFile formFile) throws CoreException {
-        try {
-            formFile.getParent().refreshLocal(IResource.DEPTH_ONE, null);
-        } catch (CoreException e) {
-            PluginLogger.logError("refresh local error", e);
-            throw e;
+        } catch (ResourceException e) {
+            definitionFile.getParent().refreshLocal(IResource.DEPTH_ONE, null);
+            return parseProcessDefinitionInternal(definitionFile);
         }
     }
 
