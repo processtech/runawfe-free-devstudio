@@ -35,9 +35,11 @@ public class AddTextAnnotationFeature extends AddElementFeature {
         polyline.setStyle(StyleUtil.getStyleForTask(getDiagram()));
         polyline.setLineWidth(2);
         final Shape textShape = Graphiti.getPeCreateService().createShape(containerShape, false);
-        MultiText text = Graphiti.getGaService().createDefaultMultiText(getDiagram(), textShape, annotation.getDescription());
+        MultiText text = Graphiti.getGaService().createMultiText(textShape, annotation.getDescription());
         text.getProperties().add(new GaProperty(GaProperty.ID, GaProperty.DESCRIPTION));
         text.setVerticalAlignment(Orientation.ALIGNMENT_TOP);
+        String bpmnName = annotation.getTypeDefinition().getBpmnElementName();
+        text.setStyle(StyleUtil.getStyleForText(getDiagram(), bpmnName));
         // link both, the container as well as the text shape so direct editing
         // works together
         // with updating and property handling
