@@ -103,7 +103,7 @@ public class BotCache {
                 if (lines.size() > 1) {
                     String configurationFileName = lines.get(1);
                     if (!Strings.isNullOrEmpty(configurationFileName)) {
-                        IFile confFile = ((IFolder) botTaskFile.getParent()).getFile(configurationFileName);
+                        IFile confFile = IOUtils.getAdjacentFile(botTaskFile, configurationFileName);
                         if (confFile.exists()) {
                             configurationFileData = IOUtils.readStream(confFile.getContents());
                         }
