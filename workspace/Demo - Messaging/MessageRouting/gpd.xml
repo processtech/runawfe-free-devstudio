@@ -4,6 +4,7 @@
   <node name="ID0" x="20" y="10" width="971" height="451"/>
   <node name="ID1" x="70" y="30" width="48" height="48">
     <transition name="tr1"/>
+    <textDecoration x="63" y="6"/>
   </node>
   <node name="ID2" x="190" y="110" width="132" height="91">
     <transition name="tr1"/>
@@ -52,7 +53,9 @@
   <node name="ID9" x="780" y="128" width="48" height="48">
     <transition name="tr1"/>
   </node>
-  <node name="ID12" x="500" y="410" width="48" height="48"/>
+  <node name="ID12" x="500" y="410" width="48" height="48">
+    <textDecoration x="495" y="448"/>
+  </node>
   <node name="ID27" x="310" y="220" width="96" height="36"/>
   <node name="ID28" x="650" y="150" width="96" height="36"/>
   <node name="ID29" x="840" y="150" width="96" height="36"/>

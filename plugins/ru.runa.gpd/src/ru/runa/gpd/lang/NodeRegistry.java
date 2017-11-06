@@ -72,6 +72,10 @@ public class NodeRegistry {
         throw new RuntimeException("No type found by name " + name);
     }
 
+    public static boolean hasNodeTypeDefinition(Class<? extends GraphElement> clazz) {
+        return typesByModelClass.containsKey(clazz.getName());
+    }
+
     public static NodeTypeDefinition getNodeTypeDefinition(Class<? extends GraphElement> clazz) {
         if (!typesByModelClass.containsKey(clazz.getName())) {
             throw new RuntimeException("No type found by class " + clazz);

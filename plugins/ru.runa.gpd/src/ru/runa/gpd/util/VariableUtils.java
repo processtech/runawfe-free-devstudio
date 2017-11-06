@@ -241,7 +241,7 @@ public class VariableUtils {
         return getVariableByName(variableContainer, variableName.split(Pattern.quote(VariableUserType.DELIM))[0]);
     }
 
-    public static boolean isResizableVariable(Variable v) {
+    public static boolean isContainerVariable(Variable v) {
         String fcn = v.getFormatClassName();
         return fcn.equals(ListFormat.class.getName()) || fcn.equals(MapFormat.class.getName());
     }
@@ -253,9 +253,10 @@ public class VariableUtils {
         for (VariableUserType userType : userTypes) {
             List<Variable> attributes = userType.getAttributes();
             for (Variable attribute : attributes) {
-                for (String typeUsage : typeUsages) {
-                    attribute.setFormat(attribute.getFormat().replaceAll(MessageFormat.format(typeUsage, oldTypeName),
-                            MessageFormat.format(typeUsage, newTypeName)));
+                if (attribute.getFormat().contains(oldTypeName)) {
+                    for (String typeUsage : typeUsages) {
+                        attribute.setFormat(attribute.getFormat().replaceAll(MessageFormat.format(typeUsage, oldTypeName), MessageFormat.format(typeUsage, newTypeName)));
+                    }
                 }
             }
         }
@@ -268,8 +269,7 @@ public class VariableUtils {
                 }
             } else if (variable.getFormat().contains(oldTypeName)) {
                 for (String typeUsage : typeUsages) {
-                    variable.setFormat(variable.getFormat().replaceAll(MessageFormat.format(typeUsage, oldTypeName),
-                            MessageFormat.format(typeUsage, newTypeName)));
+                    variable.setFormat(variable.getFormat().replaceAll(MessageFormat.format(typeUsage, oldTypeName), MessageFormat.format(typeUsage, newTypeName)));
                 }
             }
         }

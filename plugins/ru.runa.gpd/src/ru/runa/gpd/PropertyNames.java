@@ -23,6 +23,7 @@ public interface PropertyNames {
     public static final String PROPERTY_FORMAT = "format";
     public static final String PROPERTY_PUBLIC_VISIBILITY = "publicVisibility";
     public static final String PROPERTY_DEFAULT_VALUE = "defaultValue";
+    public static final String PROPERTY_STORE_TYPE = "storeType";
     public static final String PROPERTY_EVENT_TYPE = "eventType";
     public static final String PROPERTY_ESCALATION = "escalation";
     public static final String PROPERTY_ESCALATION_DURATION = "escalationDuration";
@@ -32,6 +33,7 @@ public interface PropertyNames {
     public static final String PROPERTY_IGNORE_SUBSTITUTION_RULES = "ignoreSubstitutionRules";
     public static final String PROPERTY_SUBPROCESS = "subprocess";
     public static final String PROPERTY_NODE_ASYNC_EXECUTION = "asyncExecution";
+    public static final String PROPERTY_NODE_IN_REGULATIONS = "nodeRegulationsProperties";
     public static final String NODE_REMOVED = "NODE_REMOVED";
     public static final String PROPERTY_CHILDREN_CHANGED = "NODE_CHILDREN_CHANGED";
     public static final String NODE_LEAVING_TRANSITION_ADDED = "LEAVING_TRANSITION_ADDED";

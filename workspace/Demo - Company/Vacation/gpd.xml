@@ -3,6 +3,7 @@
 <process-diagram name="Vacation" notation="bpmn" rendered="graphiti" width="736" height="777" showActions="true" showGrid="false">
   <node name="ID1" x="110" y="33" width="48" height="48">
     <transition name="tr1"/>
+    <textDecoration x="79" y="5"/>
   </node>
   <node name="ID2" x="68" y="113" width="132" height="84">
     <transition name="tr1"/>
@@ -53,5 +54,7 @@
     </transition>
     <transition name="correct"/>
   </node>
-  <node name="ID23" x="110" y="710" width="48" height="48"/>
+  <node name="ID23" x="110" y="710" width="48" height="48">
+    <textDecoration x="125" y="758"/>
+  </node>
 </process-diagram>

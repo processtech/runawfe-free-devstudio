@@ -26,18 +26,6 @@ public class WebServerUtils {
     private static int SERVER_PORT;
     private static String lastUsedEditor = null;
 
-    /**
-     * The FCKeditor directory name.
-     */
-    private static String getEditorDirectoryName() {
-        String pref = Activator.getPrefString(PrefConstants.P_FORM_DEFAULT_FCK_EDITOR);
-        if (PrefConstants.FORM_CK_EDITOR4.equals(pref)) {
-            return "CKeditor4";
-        } else {
-            return "FCKeditor";
-        }
-    }
-
     public static File getEditorDirectory() {
         File result;
         if (useCKEditor()) {
@@ -69,34 +57,36 @@ public class WebServerUtils {
         return url;
     }
 
+    public static String getRegulationsViewerUrl() {
+        return "http://localhost:" + SERVER_PORT + "/regulations.html";
+    }
+
     public static boolean useCKEditor() {
         String pref = Activator.getPrefString(PrefConstants.P_FORM_DEFAULT_FCK_EDITOR);
         return PrefConstants.FORM_CK_EDITOR4.equals(pref);
     }
 
-    private static IPath getStateLocation() {
-        return EditorsPlugin.getDefault().getStateLocation();
-    }
-
-    public static void startWebServer(IProgressMonitor monitor, int allProgressCount) throws Exception {
-        int remain = allProgressCount;
-        monitor.subTask(Messages.getString("editor.subtask.copy_resources"));
+    public static File copyEditor(IProgressMonitor monitor, int allProgressCount) throws Exception {
         IPath location = getStateLocation();
-        File fckRootFolder = new File(location.toFile(), getEditorDirectoryName());
+        File editorFolder = new File(location.toFile(), getEditorDirectoryName());
         if (!getEditorDirectoryName().equals(lastUsedEditor)) {
             lastUsedEditor = getEditorDirectoryName();
-            fckRootFolder.mkdir();
-            int progressForFck = remain - 1;
-            copyFolderWithProgress(location, getEditorDirectoryName(), monitor, progressForFck);
-            remain = 1;
+            editorFolder.mkdir();
+            copyFolderWithProgress(location, getEditorDirectoryName(), monitor, allProgressCount);
             if (isWebServerStarted()) {
                 server.stop();
             }
         }
+        return editorFolder;
+    }
+
+    public static void startWebServer(IProgressMonitor monitor, int allProgressCount) throws Exception {
+        monitor.subTask(Messages.getString("editor.subtask.copy_resources"));
+        File editorFolder = copyEditor(monitor, allProgressCount);
         monitor.subTask(Messages.getString("editor.subtask.start_server"));
         if (!isWebServerStarted()) {
             server = new Server();
-            WebApplicationContext applicationContext = new WebApplicationContext(fckRootFolder.getAbsolutePath());
+            WebApplicationContext applicationContext = new WebApplicationContext(editorFolder.getAbsolutePath());
             applicationContext.setContextPath("/");
             applicationContext.addHandler(new ResourceHandler());
             server.addContext(applicationContext);
@@ -109,17 +99,30 @@ public class WebServerUtils {
             server.addListener(new InetAddrPort(SERVER_PORT));
             server.start();
         }
-        monitor.worked(remain);
-    }
-
-    private static boolean isWebServerStarted() {
-        return server != null && server.isStarted();
+        monitor.worked(1);
     }
 
     public static void stopWebServer() throws Exception {
         if (isWebServerStarted()) {
             server.stop();
         }
+    }
+
+    private static String getEditorDirectoryName() {
+        String pref = Activator.getPrefString(PrefConstants.P_FORM_DEFAULT_FCK_EDITOR);
+        if (PrefConstants.FORM_CK_EDITOR4.equals(pref)) {
+            return "CKeditor4";
+        } else {
+            return "FCKeditor";
+        }
+    }
+
+    private static IPath getStateLocation() {
+        return EditorsPlugin.getDefault().getStateLocation();
+    }
+
+    private static boolean isWebServerStarted() {
+        return server != null && server.isStarted();
     }
 
     private static void copyFolderWithProgress(IPath root, String path, IProgressMonitor monitor, int allProgressCount) throws IOException {
@@ -145,7 +148,9 @@ public class WebServerUtils {
                 IOUtils.copyStream(in, out);
                 filesSize++;
                 if (filesSize == filesForUnitWork) {
-                    monitor.worked(1);
+                    if (monitor != null) {
+                        monitor.worked(1);
+                    }
                     filesSize = 0;
                 }
             }

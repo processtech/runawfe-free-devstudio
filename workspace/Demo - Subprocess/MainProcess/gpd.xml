@@ -3,6 +3,7 @@
 <process-diagram name="MainProcess" notation="bpmn" rendered="graphiti" width="1407" height="569" showActions="true" showGrid="false">
   <node name="ID1" x="146" y="40" width="48" height="48">
     <transition name="tr1"/>
+    <textDecoration x="151" y="12"/>
   </node>
   <node name="ID2" x="240" y="104" width="132" height="84">
     <transition name="tr1"/>
@@ -13,5 +14,7 @@
   <node name="ID3" x="62" y="187" width="132" height="84">
     <transition name="tr1"/>
   </node>
-  <node name="ID5" x="146" y="370" width="48" height="48"/>
+  <node name="ID5" x="146" y="370" width="48" height="48">
+    <textDecoration x="161" y="418"/>
+  </node>
 </process-diagram>

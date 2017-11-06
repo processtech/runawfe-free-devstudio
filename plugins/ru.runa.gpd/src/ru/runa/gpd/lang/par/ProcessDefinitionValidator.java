@@ -22,18 +22,23 @@ import com.google.common.collect.Lists;
 
 public class ProcessDefinitionValidator {
 
+    public static int NO_ERRORS = 0;
+    public static int WARNINGS = 1;
+    public static int ERRORS = 2;
+
     /**
      * 0 = no errors 1 = only warnings 2 = errors
      */
-    public static int validateDefinition(IFile definitionFile, ProcessDefinition definition) {
+    public static int validateDefinition(ProcessDefinition processDefinition) {
         try {
             boolean hasErrors = false;
             boolean hasWarnings = false;
+            IFile definitionFile = processDefinition.getFile();
             definitionFile.deleteMarkers(ValidationErrorsView.ID, true, IResource.DEPTH_INFINITE);
             List<ValidationError> errors = Lists.newArrayList();
-            definition.validate(errors, definitionFile);
+            processDefinition.validate(errors, definitionFile);
             for (ValidationError validationError : errors) {
-                addError(definitionFile, definition, validationError);
+                addError(definitionFile, processDefinition, validationError);
                 if (validationError.getSeverity() == IMarker.SEVERITY_WARNING) {
                     hasWarnings = true;
                 }
@@ -42,15 +47,15 @@ public class ProcessDefinitionValidator {
                 }
             }
             if (hasErrors) {
-                return 2;
+                return ERRORS;
             }
             if (hasWarnings) {
-                return 1;
+                return WARNINGS;
             }
-            return 0;
+            return NO_ERRORS;
         } catch (Throwable e) {
             PluginLogger.logError(e);
-            return 2;
+            return ERRORS;
         }
     }
 

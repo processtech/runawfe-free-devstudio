@@ -31,7 +31,7 @@ import org.eclipse.ui.forms.widgets.Section;
 import ru.runa.gpd.formeditor.ftl.ComponentParameter;
 import ru.runa.gpd.formeditor.ftl.ComponentType;
 import ru.runa.gpd.formeditor.ftl.ComponentTypeRegistry;
-import ru.runa.gpd.lang.model.ProcessDefinition;
+import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.quick.Messages;
 import ru.runa.gpd.quick.formeditor.QuickFormGpdVariable;
@@ -43,8 +43,7 @@ import ru.runa.gpd.ui.custom.LoggingSelectionChangedAdapter;
 import ru.runa.gpd.util.VariableUtils;
 
 public class QuickFormVariabliesToDisplayWizardPage extends WizardPage {
-
-    private final ProcessDefinition processDefinition;
+    private final FormNode formNode;
     private Button checkAllCheckbox;
     private final List<QuickFormGpdVariable> selectedVariables = new ArrayList<QuickFormGpdVariable>();
     private final List<QuickFormGpdVariable> initialVariables = new ArrayList<QuickFormGpdVariable>();
@@ -52,11 +51,11 @@ public class QuickFormVariabliesToDisplayWizardPage extends WizardPage {
     private final Map<String, Boolean> sectionState = new HashMap<String, Boolean>();
     private ScrolledComposite scrolledComposite;
 
-    protected QuickFormVariabliesToDisplayWizardPage(ProcessDefinition processDefinition, List<QuickFormGpdVariable> quickFormVariableDefs) {
+    protected QuickFormVariabliesToDisplayWizardPage(FormNode formNode, List<QuickFormGpdVariable> quickFormVariableDefs) {
         super(Messages.getString("QuickFormVariabliesToDisplayWizardPage.page.title"));
         setTitle(Messages.getString("QuickFormVariabliesToDisplayWizardPage.page.title"));
         setDescription(Messages.getString("QuickFormVariabliesToDisplayWizardPage.page.description"));
-        this.processDefinition = processDefinition;
+        this.formNode = formNode;
         if (quickFormVariableDefs != null && quickFormVariableDefs.size() > 0) {
             for (QuickFormGpdVariable variable : quickFormVariableDefs) {
                 selectedVariables.add(variable);
@@ -117,7 +116,7 @@ public class QuickFormVariabliesToDisplayWizardPage extends WizardPage {
         gridData.verticalAlignment = SWT.TOP;
         checkboxesArea.setLayoutData(gridData);
 
-        List<String> names = processDefinition.getVariableNames(true);
+        List<String> names = formNode.getVariableNames(true);
 
         for (String name : names) {
             QuickFormGpdVariable paramVariable = null;
@@ -129,7 +128,7 @@ public class QuickFormVariabliesToDisplayWizardPage extends WizardPage {
             }
             if (paramVariable == null) {
                 paramVariable = new QuickFormGpdVariable();
-                Variable variable = VariableUtils.getVariableByName(processDefinition, name);
+                Variable variable = VariableUtils.getVariableByName(formNode, name);
                 paramVariable.setTagName(QuickFormType.READ_TAG);
                 paramVariable.setName(variable.getName());
                 paramVariable.setScriptingName(variable.getScriptingName());

@@ -23,7 +23,6 @@ import org.eclipse.search.ui.NewSearchUI;
 import org.eclipse.search.ui.text.Match;
 
 import ru.runa.gpd.BotCache;
-import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.extension.handler.ParamDefConfig;
 import ru.runa.gpd.form.FormVariableAccess;
@@ -79,8 +78,7 @@ public class VariableSearchVisitor {
         map.put(query.getMainProcessDefinition(), query.getMainProcessdefinitionFile());
         numberOfElementsToScan = query.getMainProcessDefinition().getChildrenRecursive(GraphElement.class).size();
         for (SubprocessDefinition subprocessDefinition : query.getMainProcessDefinition().getEmbeddedSubprocesses().values()) {
-            IFile subprocessDefinitionFile = ProcessCache.getProcessDefinitionFile(subprocessDefinition);
-            map.put(subprocessDefinition, subprocessDefinitionFile);
+            map.put(subprocessDefinition, subprocessDefinition.getFile());
             numberOfElementsToScan = subprocessDefinition.getChildrenRecursive(GraphElement.class).size();
         }
         progressMonitor = monitor == null ? new NullProgressMonitor() : monitor;

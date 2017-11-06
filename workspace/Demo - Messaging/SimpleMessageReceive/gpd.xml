@@ -3,6 +3,7 @@
 <process-diagram name="SimpleMessageReceive" notation="bpmn" rendered="graphiti" width="723" height="567" showActions="false" showGrid="false">
   <node name="ID1" x="185" y="40" width="48" height="48">
     <transition name="tr1"/>
+    <textDecoration x="194" y="12"/>
   </node>
   <node name="ID3" x="143" y="190" width="132" height="84">
     <transition name="tr1"/>
@@ -10,5 +11,7 @@
   <node name="ID2" x="185" y="110" width="48" height="48">
     <transition name="tr1"/>
   </node>
-  <node name="ID4" x="186" y="303" width="48" height="48"/>
+  <node name="ID4" x="186" y="303" width="48" height="48">
+    <textDecoration x="201" y="351"/>
+  </node>
 </process-diagram>

@@ -5,7 +5,7 @@
     <extensionElements>
       <runa:property name="showSwimlane" value="none"/>
       <runa:property name="documentation" value="Demo for element timer (no start form provided)"/>
-      <runa:property name="version" value="4.2.1.201506302219"/>
+      <runa:property name="version" value="4.2.0.M20150318-1835"/>
       <runa:property name="accessType" value="Process"/>
     </extensionElements>
     <laneSet id="laneSet1">

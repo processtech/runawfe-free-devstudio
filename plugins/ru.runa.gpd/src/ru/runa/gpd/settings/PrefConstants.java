@@ -44,4 +44,5 @@ public interface PrefConstants {
     public static final String P_LDAP_CONNECTION_DC = "ldapDc";
     public static final String P_DEFAULT_LANGUAGE = "defaultLanguage";
     public static final String P_DATE_FORMAT_PATTERN = "dateFormat";
+    public static final String P_ENABLE_REGULATIONS_MENU_ITEMS = "enabledRegulationsMenuItems";
 }

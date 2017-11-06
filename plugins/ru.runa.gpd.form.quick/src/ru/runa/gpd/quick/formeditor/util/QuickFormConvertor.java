@@ -75,8 +75,9 @@ public final class QuickFormConvertor {
     }
 
     private static void applyTemplateToForm(ConverterSource converterSource) throws CoreException {
-        Bundle bundle = QuickTemplateRegister.getBundle(converterSource.getFormNode().getTemplateFileName());
-        String templateHtml = QuickFormXMLUtil.getTemplateFromRegister(bundle, converterSource.getFormNode().getTemplateFileName());
+        FormNode formNode = converterSource.getFormNode();
+        Bundle bundle = QuickTemplateRegister.getBundle(formNode.getTemplateFileName());
+        String templateHtml = QuickFormXMLUtil.getTemplateFromRegister(bundle, formNode.getTemplateFileName());
 
         Map<String, Object> variables = new HashMap<String, Object>();
         variables.put("variables", converterSource.getQuickForm().getVariables());
@@ -87,7 +88,7 @@ public final class QuickFormConvertor {
         MapDelegableVariableProvider variableProvider = new MapDelegableVariableProvider(variables, null);
         FormHashModelGpdWrap model = new FormHashModelGpdWrap(null, variableProvider, null);
 
-        String out = TemplateProcessor.process(templateHtml, model);
+        String out = TemplateProcessor.process(formNode.getProcessDefinition().getName() + formNode.getId(), templateHtml, model);
         ByteArrayInputStream stream = new ByteArrayInputStream(out.getBytes(Charsets.UTF_8));
         converterSource.getQuickFormFile().setContents(stream, true, true, null);
     }
@@ -128,7 +129,8 @@ public final class QuickFormConvertor {
     }
 
     private static void deleteTemplate(ConverterSource converterSource) throws CoreException {
-        if (!QuickFormEditorUtil.isTemplateUsingInForms(converterSource.getProcessDefinition(), converterSource.getFormNode(), converterSource.getFormNode().getTemplateFileName())) {
+        if (!QuickFormEditorUtil.isTemplateUsingInForms(converterSource.getProcessDefinition(), converterSource.getFormNode(), converterSource
+                .getFormNode().getTemplateFileName())) {
             IFolder folder = (IFolder) converterSource.getQuickFormFile().getParent();
             IFile templateFile = folder.getFile(converterSource.getFormNode().getTemplateFileName());
             templateFile.delete(true, null);

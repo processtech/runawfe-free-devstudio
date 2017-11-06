@@ -3,6 +3,9 @@
 <process-diagram name="Hello World" notation="bpmn" rendered="graphiti" width="1407" height="569" showActions="false" showGrid="false">
   <node name="ID1" x="100" y="40" width="48" height="48">
     <transition name="tr1"/>
+    <textDecoration x="97" y="12"/>
   </node>
-  <node name="ID2" x="101" y="190" width="48" height="48"/>
+  <node name="ID2" x="101" y="190" width="48" height="48">
+    <textDecoration x="116" y="238"/>
+  </node>
 </process-diagram>

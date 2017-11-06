@@ -7,19 +7,16 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 
-import ru.runa.gpd.lang.model.ProcessDefinition;
-import ru.runa.gpd.lang.model.Variable;
+import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.quick.formeditor.QuickFormGpdVariable;
-import ru.runa.gpd.quick.formeditor.QuickFormType;
-import ru.runa.gpd.util.VariableUtils;
 
 public class QuickFormVariabliesToDisplayWizard extends Wizard implements INewWizard {
-    private ProcessDefinition processDefinition;
+    private FormNode formNode;
     private List<QuickFormGpdVariable> quickFormVariableDefs;
     private QuickFormVariabliesToDisplayWizardPage page;
 
-    public QuickFormVariabliesToDisplayWizard(ProcessDefinition processDefinition, List<QuickFormGpdVariable> templatedVariableDefs) {
-        this.processDefinition = processDefinition;
+    public QuickFormVariabliesToDisplayWizard(FormNode formNode, List<QuickFormGpdVariable> templatedVariableDefs) {
+        this.formNode = formNode;
         this.quickFormVariableDefs = templatedVariableDefs;
     }
 
@@ -30,8 +27,7 @@ public class QuickFormVariabliesToDisplayWizard extends Wizard implements INewWi
     @Override
     public void addPages() {
         super.addPages();
-        page = new QuickFormVariabliesToDisplayWizardPage(processDefinition, quickFormVariableDefs);
-
+        page = new QuickFormVariabliesToDisplayWizardPage(formNode, quickFormVariableDefs);
         addPage(page);
     }
 

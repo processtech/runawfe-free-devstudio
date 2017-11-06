@@ -53,8 +53,11 @@ public abstract class NamedGraphElement extends GraphElement implements Comparab
 
     @Override
     public int compareTo(NamedGraphElement o) {
-        if (name == null || o.name == null) {
+        if (name == null) {
             return -1;
+        }
+        if (o == null || o.name == null) {
+            return 1;
         }
         return name.compareTo(o.name);
     }

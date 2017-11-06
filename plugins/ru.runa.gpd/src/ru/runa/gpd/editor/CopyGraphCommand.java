@@ -497,9 +497,34 @@ public class CopyGraphCommand extends Command {
             }
             addedVariable = (Variable) sourceVariable.makeCopy(targetDefinition);
             adjustLocation(addedVariable);
-            if (addedVariable.isComplex() && targetDefinition.getVariableUserType(addedVariable.getUserType().getName()) == null) {
-                addedUserType = addedVariable.getUserType().getCopy();
-                targetDefinition.addVariableUserType(addedUserType);
+            copyUserType(sourceVariable);
+        }
+
+        private void copyUserType(Variable srcVar) {
+            if (srcVar.isComplex()) {
+                if (targetDefinition.getVariableUserType(srcVar.getUserType().getName()) == null) {
+                    targetDefinition.addVariableUserType(srcVar.getUserType().getCopy());
+                    for (Variable v : srcVar.getUserType().getAttributes()) {
+                        if (v.isComplex() || VariableUtils.isContainerVariable(v)) {
+                            copyUserType(v);
+                        }
+                    }
+                }
+            } else if (VariableUtils.isContainerVariable(srcVar)) {
+                String[] componentNames = srcVar.getFormatComponentClassNames();
+                for (String componentName : componentNames) {
+                    if (componentName.indexOf(".") < 0) { // UserType?
+                        VariableUserType vut = srcVar.getProcessDefinition().getVariableUserType(componentName);
+                        if (vut != null && targetDefinition.getVariableUserType(vut.getName()) == null) {
+                            targetDefinition.addVariableUserType(vut.getCopy());
+                            for (Variable v : vut.getAttributes()) {
+                                if (v.isComplex() || VariableUtils.isContainerVariable(v)) {
+                                    copyUserType(v);
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
 

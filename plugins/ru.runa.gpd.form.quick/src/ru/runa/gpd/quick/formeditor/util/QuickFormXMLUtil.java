@@ -16,7 +16,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.osgi.framework.Bundle;
 
 import ru.runa.gpd.extension.Artifact;
-import ru.runa.gpd.lang.model.ProcessDefinition;
+import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.quick.extension.QuickTemplateArtifact;
 import ru.runa.gpd.quick.extension.QuickTemplateRegister;
@@ -28,6 +28,7 @@ import ru.runa.gpd.util.VariableUtils;
 import ru.runa.gpd.util.XmlUtil;
 
 import com.google.common.base.Charsets;
+import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 
 public class QuickFormXMLUtil {
@@ -89,14 +90,14 @@ public class QuickFormXMLUtil {
     }
 
     @SuppressWarnings("unchecked")
-    public static final QuickForm getQuickFormFromXML(IFile file, ProcessDefinition processDefinition, String templateFileName) {
+    public static final QuickForm getQuickFormFromXML(IFile file, FormNode formNode) {
         QuickForm quickForm = new QuickForm();
         if (file.exists() && getContentLenght(file.getLocation().toString()) != 0) {
             try {
                 Document document = XmlUtil.parseWithoutValidation(file.getContents());
 
-                if (!Strings.isNullOrEmpty(templateFileName)) {
-                    IFile confFile = ((IFolder) file.getParent()).getFile(templateFileName);
+                if (!Strings.isNullOrEmpty(formNode.getTemplateFileName())) {
+                    IFile confFile = ((IFolder) file.getParent()).getFile(formNode.getTemplateFileName());
                     if (confFile.exists()) {
                         String configuration = IOUtils.readStream(confFile.getContents());
                         quickForm.setDelegationConfiguration(configuration);
@@ -117,7 +118,7 @@ public class QuickFormXMLUtil {
                         for (Element paramElement : paramElements) {
                             if (index == 0) {
                                 templatedVariableDef.setName(paramElement.getText());
-                                variable = VariableUtils.getVariableByName(processDefinition, templatedVariableDef.getName());
+                                variable = VariableUtils.getVariableByName(formNode, templatedVariableDef.getName());
                                 if (variable == null) {
                                     break;
                                 }
@@ -149,7 +150,7 @@ public class QuickFormXMLUtil {
                         quickFormGpdProperty.setName(varElement.elementText(ATTRIBUTE_NAME));
                         quickFormGpdProperty.setValue(varElement.elementText(ATTRIBUTE_VALUE));
                         for (QuickTemplateArtifact artifact : QuickTemplateRegister.getInstance().getAll(true)) {
-                            if (templateFileName != null && templateFileName.equals(artifact.getFileName())) {
+                            if (Objects.equal(formNode.getTemplateFileName(), artifact.getFileName())) {
                                 for (Artifact parameter : artifact.getParameters()) {
                                     if (quickFormGpdProperty.getName() != null && quickFormGpdProperty.getName().equalsIgnoreCase(parameter.getName())) {
                                         quickFormGpdProperty.setLabel(parameter.getLabel());
