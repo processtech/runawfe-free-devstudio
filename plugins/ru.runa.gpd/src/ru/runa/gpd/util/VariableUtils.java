@@ -284,7 +284,7 @@ public class VariableUtils {
     }
 
     public static boolean variableExists(String variableName, ProcessDefinition processDefinition) {
-        return processDefinition.getVariableNames(true, false).contains(variableName);
+        return processDefinition.getVariableNames(true, true).contains(variableName);
     }
 
 }
