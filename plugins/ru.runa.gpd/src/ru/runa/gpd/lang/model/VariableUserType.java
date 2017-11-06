@@ -82,14 +82,12 @@ public class VariableUserType extends EventSupport implements VariableContainer,
     }
 
     public void addAttribute(Variable variable) {
-        variable.setParent(processDefinition);
         attributes.add(variable);
         firePropertyChange(PROPERTY_CHILDREN_CHANGED, null, variable);
     }
 
     public void changeAttributePosition(Variable attribute, int position) {
         if (position != -1 && attributes.remove(attribute)) {
-            attribute.setParent(processDefinition);
             attributes.add(position, attribute);
             firePropertyChange(PROPERTY_CHILDREN_CHANGED, null, attribute);
         }

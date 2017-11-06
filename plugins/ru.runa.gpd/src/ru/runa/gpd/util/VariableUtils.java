@@ -246,6 +246,10 @@ public class VariableUtils {
         return fcn.equals(ListFormat.class.getName()) || fcn.equals(MapFormat.class.getName());
     }
 
+    public static boolean isValidUserTypeName(String value) {
+        return value.indexOf(".") < 0;
+    }
+
     public static void renameUserType(ProcessDefinition pd, VariableUserType type, String newTypeName) {
         final String[] typeUsages = { "\\({0}\\)", "\\({0},", ", {0}\\)", ", {0}," };
         String oldTypeName = type.getName();

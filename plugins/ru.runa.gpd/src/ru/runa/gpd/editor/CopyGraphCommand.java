@@ -115,9 +115,9 @@ public class CopyGraphCommand extends Command {
                     if (variable instanceof Swimlane) {
                         copyAction = new CopySwimlaneAction((Swimlane) variable);
                     } else if (variable.isUserTypeAttribute()) {
-                        copyAction = new CopyUserTypeAttributeAction(variable, node.getProcessDefinition());
+                        copyAction = new CopyUserTypeAttributeAction(node.getProcessDefinition(), variable);
                     } else {
-                        copyAction = new CopyVariableAction(variable);
+                        copyAction = new CopyVariableAction(node.getProcessDefinition(), variable);
                     }
                     copyActions.add(copyAction);
                 }
@@ -167,9 +167,9 @@ public class CopyGraphCommand extends Command {
                         if (variable instanceof Swimlane) {
                             copyAction = new CopySwimlaneAction((Swimlane) variable);
                         } else if (variable.isUserTypeAttribute()) {
-                            copyAction = new CopyUserTypeAttributeAction(variable, node.getProcessDefinition());
+                            copyAction = new CopyUserTypeAttributeAction(node.getProcessDefinition(), variable);
                         } else {
-                            copyAction = new CopyVariableAction(variable);
+                            copyAction = new CopyVariableAction(node.getProcessDefinition(), variable);
                         }
                         copyActions.add(copyAction);
                     }
@@ -465,13 +465,15 @@ public class CopyGraphCommand extends Command {
     }
 
     private class CopyVariableAction extends ExtraCopyAction {
+    	private final ProcessDefinition sourceProcessDefinition;
         private final Variable sourceVariable;
         private final Variable oldVariable;
         private Variable addedVariable;
         private VariableUserType addedUserType;
 
-        public CopyVariableAction(Variable sourceVariable) {
+        public CopyVariableAction(ProcessDefinition sourceProcessDefinition, Variable sourceVariable) {
             super(CopyBuffer.GROUP_VARIABLES, sourceVariable.getName());
+            this.sourceProcessDefinition = sourceProcessDefinition;
             this.sourceVariable = sourceVariable;
             this.oldVariable = VariableUtils.getVariableByName(targetDefinition, sourceVariable.getName());
             if (oldVariable != null) {
@@ -496,7 +498,6 @@ public class CopyGraphCommand extends Command {
                 targetDefinition.removeChild(oldVariable);
             }
             addedVariable = (Variable) sourceVariable.makeCopy(targetDefinition);
-            adjustLocation(addedVariable);
             copyUserType(sourceVariable);
         }
 
@@ -513,8 +514,8 @@ public class CopyGraphCommand extends Command {
             } else if (VariableUtils.isContainerVariable(srcVar)) {
                 String[] componentNames = srcVar.getFormatComponentClassNames();
                 for (String componentName : componentNames) {
-                    if (componentName.indexOf(".") < 0) { // UserType?
-                        VariableUserType vut = srcVar.getProcessDefinition().getVariableUserType(componentName);
+                    if (VariableUtils.isValidUserTypeName(componentName)) {
+                        VariableUserType vut = sourceProcessDefinition.getVariableUserType(componentName);
                         if (vut != null && targetDefinition.getVariableUserType(vut.getName()) == null) {
                             targetDefinition.addVariableUserType(vut.getCopy());
                             for (Variable v : vut.getAttributes()) {
@@ -542,17 +543,15 @@ public class CopyGraphCommand extends Command {
     }
 
     private class CopyUserTypeAttributeAction extends ExtraCopyAction {
-        private final Variable sourceVariable;
         private final Variable complexVariable;
         private final List<VariableUserType> usedUserTypes = Lists.newArrayList();
         private Variable addedVariable;
         private final List<VariableUserType> addedUserTypes = Lists.newArrayList();
 
-        public CopyUserTypeAttributeAction(Variable sourceVariable, ProcessDefinition processDefinition) {
+        public CopyUserTypeAttributeAction(ProcessDefinition sourceProcessDefinition, Variable sourceVariable) {
             super(CopyBuffer.GROUP_VARIABLES, sourceVariable.getName());
-            this.sourceVariable = sourceVariable;
-            this.complexVariable = VariableUtils.getComplexVariableByExpandedAttribute(processDefinition, sourceVariable.getName());
-            this.usedUserTypes.addAll(VariableUtils.getUsedUserTypes(processDefinition, sourceVariable.getName()));
+            this.complexVariable = VariableUtils.getComplexVariableByExpandedAttribute(sourceProcessDefinition, sourceVariable.getName());
+            this.usedUserTypes.addAll(VariableUtils.getUsedUserTypes(sourceProcessDefinition, sourceVariable.getName()));
         }
 
         @Override
@@ -564,7 +563,6 @@ public class CopyGraphCommand extends Command {
             }
             if (oldComplexVariable == null) {
                 addedVariable = (Variable) complexVariable.makeCopy(targetDefinition);
-                adjustLocation(addedVariable);
             }
             for (VariableUserType userType : usedUserTypes) {
                 if (targetDefinition.getVariableUserType(userType.getName()) == null) {
