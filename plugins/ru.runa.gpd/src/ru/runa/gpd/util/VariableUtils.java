@@ -14,6 +14,7 @@ import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableContainer;
 import ru.runa.gpd.lang.model.VariableUserType;
+import ru.runa.wfe.var.UserType;
 import ru.runa.wfe.var.format.ListFormat;
 import ru.runa.wfe.var.format.MapFormat;
 
@@ -250,6 +251,21 @@ public class VariableUtils {
         return value.indexOf(".") < 0;
     }
 
+    public static List<String> getUserTypeExpandedAttributeNames(VariableUserType userType) {
+        List<String> result = Lists.newArrayList();
+        if (userType != null) {
+            for (Variable variable : userType.getAttributes()) {
+                result.add(variable.getName());
+                if (variable.isComplex()) {
+                    for (String childAttributeName : getUserTypeExpandedAttributeNames(variable.getUserType())) {
+                        result.add(variable.getName() + UserType.DELIM + childAttributeName);
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
     public static void renameUserType(ProcessDefinition pd, VariableUserType type, String newTypeName) {
         final String[] typeUsages = { "\\({0}\\)", "\\({0},", ", {0}\\)", ", {0}," };
         String oldTypeName = type.getName();
@@ -259,7 +275,8 @@ public class VariableUtils {
             for (Variable attribute : attributes) {
                 if (attribute.getFormat().contains(oldTypeName)) {
                     for (String typeUsage : typeUsages) {
-                        attribute.setFormat(attribute.getFormat().replaceAll(MessageFormat.format(typeUsage, oldTypeName), MessageFormat.format(typeUsage, newTypeName)));
+                        attribute.setFormat(attribute.getFormat().replaceAll(MessageFormat.format(typeUsage, oldTypeName),
+                                MessageFormat.format(typeUsage, newTypeName)));
                     }
                 }
             }
@@ -273,7 +290,8 @@ public class VariableUtils {
                 }
             } else if (variable.getFormat().contains(oldTypeName)) {
                 for (String typeUsage : typeUsages) {
-                    variable.setFormat(variable.getFormat().replaceAll(MessageFormat.format(typeUsage, oldTypeName), MessageFormat.format(typeUsage, newTypeName)));
+                    variable.setFormat(variable.getFormat().replaceAll(MessageFormat.format(typeUsage, oldTypeName),
+                            MessageFormat.format(typeUsage, newTypeName)));
                 }
             }
         }
