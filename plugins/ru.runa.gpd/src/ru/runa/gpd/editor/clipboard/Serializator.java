@@ -3,14 +3,17 @@ package ru.runa.gpd.editor.clipboard;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.List;
 
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableStoreType;
 import ru.runa.gpd.lang.model.VariableUserType;
+import ru.runa.gpd.util.VariableUtils;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 
 /**
  * Recursive serialization for {@link org.eclipse.swt.dnd.Clipboard}.
@@ -46,6 +49,26 @@ final class Serializator {
         if (variable.isComplex()) {
             write(out, variable.getUserType());
         }
+        else {
+            boolean containerVariable = variable.getProcessDefinition() != null && VariableUtils.isContainerVariable(variable);
+            out.writeBoolean(containerVariable);
+            if (containerVariable) {
+                String[] componentNames = variable.getFormatComponentClassNames();
+                List<VariableUserType> vuts = Lists.newArrayList();
+                for (String componentName : componentNames) {
+                    if (VariableUtils.isValidUserTypeName(componentName)) {
+                        VariableUserType vut = variable.getProcessDefinition().getVariableUserType(componentName);
+                        if (vut != null) {
+                            vuts.add(vut);
+                        }
+                    }
+                }
+                out.writeInt(vuts.size());
+                for (VariableUserType vut : vuts) {
+                    write(out, vut);
+                }
+            }
+        }
         out.writeObject(variable.getStoreType());
     }
 
@@ -65,7 +88,28 @@ final class Serializator {
             read(in, type, processDefinition);
             variable.setUserType(type);
         }
+        else if (in.readBoolean()) {
+            int vutSize = in.readInt();
+            for (int i = 0; i < vutSize; i++) {
+                VariableUserType vut = new VariableUserType();
+                read(in, vut, processDefinition);
+                if (processDefinition.getVariableUserType(vut.getName()) == null) {
+                    addVariableUserType(processDefinition, vut);
+                }
+            }
+        }
         variable.setStoreType((VariableStoreType) in.readObject());
+    }
+
+    private static void addVariableUserType(ProcessDefinition pd, VariableUserType type) {
+        pd.addVariableUserType(type);
+        for (Variable v : type.getAttributes()) {
+            if (v.isComplex()) {
+                if (pd.getVariableUserType(v.getUserType().getName()) == null) {
+                    addVariableUserType(pd, v.getUserType());
+                }
+            }
+        }
     }
 
     static void write(ObjectOutputStream out, VariableUserType type) throws IOException {
@@ -84,6 +128,6 @@ final class Serializator {
             read(in, var, processDefinition);
             type.getAttributes().add(var);
         }
-
     }
+
 }
