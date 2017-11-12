@@ -1,5 +1,6 @@
 package ru.runa.gpd.office.excel;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
@@ -12,6 +13,7 @@ import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.office.FilesSupplierMode;
 import ru.runa.gpd.office.InputOutputModel;
 import ru.runa.gpd.office.Messages;
+import ru.runa.gpd.util.VariableUtils;
 import ru.runa.gpd.util.XmlUtil;
 
 import com.google.common.base.Strings;
@@ -68,7 +70,8 @@ public class ExcelModel extends Observable {
         for (ConstraintsModel constraintsModel : constraints) {
             if (Strings.isNullOrEmpty(constraintsModel.variableName)) {
                 errors.add(ValidationError.createError(graphElement, Messages.getString("model.validation.xlsx.constraint.variable.empty")));
-                break;
+            } else if (!VariableUtils.variableExists(constraintsModel.variableName, graphElement.getProcessDefinition())) {
+                errors.add(ValidationError.createError(graphElement, MessageFormat.format(Messages.getString("model.validation.xlsx.constraint.variable.dontexist"), constraintsModel.variableName)));
             }
         }
         inOutModel.validate(graphElement, mode, errors);
