@@ -2823,5 +2823,54 @@
        </enablement>
     </statusContextViewer>
  </extension>
+   <extension
+         point="ru.runa.gpd.groovyStuff">
+      <type
+            label="java.util.Date">
+      </type>
+      <type
+            label="java.util.ArrayList">
+      </type>
+      <type
+            label="java.util.HashMap">
+      </type>
+      <type
+            label="ru.runa.wfe.var.UserTypeMap">
+      </type>
+      <method
+            label="java.lang.Math.random()">
+      </method>
+      <constant
+            label="java.lang.Math.PI">
+      </constant>
+      <statement
+            label="if">
+if () {
+}
+      </statement>
+      <statement
+            label="if/else">
+if () {
+} else {
+}
+      </statement>
+      <statement
+            label="if/else if/else">
+if () {
+} else if () {
+} else {
+}
+      </statement>
+      <statement
+            label="switch">
+switch () {
+case :
+   break
+case :
+   break
+default:
+}
+      </statement>
+   </extension>
 
 </plugin>
