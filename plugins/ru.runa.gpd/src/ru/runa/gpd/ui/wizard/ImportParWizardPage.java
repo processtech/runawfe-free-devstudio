@@ -357,8 +357,10 @@ public class ImportParWizardPage extends ImportWizardPage {
 
         @Override
         public boolean equals(Object obj) {
-            DefinitionTreeNode cmpObj = (DefinitionTreeNode) obj;
-            return path.equals(cmpObj.path);
+            if (obj instanceof DefinitionTreeNode) {
+                return path.equals(((DefinitionTreeNode) obj).path);
+            }
+            return super.equals(obj);
         }
 
         @Override
