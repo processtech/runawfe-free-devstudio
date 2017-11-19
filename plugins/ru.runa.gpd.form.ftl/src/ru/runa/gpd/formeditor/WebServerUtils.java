@@ -58,7 +58,7 @@ public class WebServerUtils {
     }
 
     public static String getRegulationsViewerUrl() {
-        return "http://localhost:" + SERVER_PORT + "/regulations.html";
+        return "http://localhost:" + SERVER_PORT + "/regulation.html";
     }
 
     public static boolean useCKEditor() {
