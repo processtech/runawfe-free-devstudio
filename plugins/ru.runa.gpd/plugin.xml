@@ -174,20 +174,6 @@
     </objectContribution>
     <objectContribution
           adaptable="false"
-          id="node.regulationProperties"
-          objectClass="ru.runa.gpd.lang.model.Node">
-       <filter
-             name="regulationsEnabled"
-             value="true">
-       </filter>
-        <action
-             class="ru.runa.gpd.extension.regulations.ui.EditNodeRegulationsPropertiesAction"
-             id="editNodeRegulationsProperties"
-             label="%label.action.editNodeRegulationProperties">
-        </action>
-    </objectContribution>
-    <objectContribution
-          adaptable="false"
           id="subprocess.compactview"
           objectClass="ru.runa.gpd.lang.model.Subprocess">
        <action
@@ -2657,6 +2643,11 @@
             id="ru.runa.gpd.commands.delete"
             name="ru.runa.gpd.commands.delete">
       </command>
+      <command
+            defaultHandler="ru.runa.gpd.extension.regulations.ui.EditNodeRegulationsPropertiesHandler"
+            id="ru.runa.gpd.extension.regulations.ui.EditNodeRegulationsProperties"
+            name="ru.runa.gpd.extension.regulations.ui.EditNodeRegulationsProperties">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.contexts">
@@ -2821,6 +2812,40 @@
           <instanceof value="ru.runa.gpd.ltk.RenameVariableRefactoringStatusContext"/>
        </enablement>
     </statusContextViewer>
+ </extension>
+ <extension
+       point="org.eclipse.ui.menus">
+    <menuContribution
+          allPopups="false"
+          locationURI="popup:org.eclipse.ui.popup.any?after=additions">
+       <command
+             commandId="ru.runa.gpd.extension.regulations.ui.EditNodeRegulationsProperties"
+             label="%label.action.editNodeRegulationProperties"
+             style="push">
+          <visibleWhen
+                checkEnabled="false">
+             <and>
+	             <test
+	                   property="ru.runa.gpd.extension.regulations.ui.regulationsEnabled"
+	                   value="true">
+	             </test>
+	             <test
+	                   property="ru.runa.gpd.extension.regulations.ui.canEditNodeRegulations">
+	             </test>
+             </and>
+          </visibleWhen>
+       </command>
+    </menuContribution>
+ </extension>
+ <extension
+       point="org.eclipse.core.expressions.propertyTesters">
+    <propertyTester
+          class="ru.runa.gpd.extension.regulations.ui.EditNodeRegulationsPropertiesTester"
+          id="ru.runa.gpd.extension.regulations.ui.EditNodeRegulationsPropertiesTester"
+          namespace="ru.runa.gpd.extension.regulations.ui"
+          properties="regulationsEnabled,canEditNodeRegulations"
+          type="java.lang.Object">
+    </propertyTester>
  </extension>
 
 </plugin>
