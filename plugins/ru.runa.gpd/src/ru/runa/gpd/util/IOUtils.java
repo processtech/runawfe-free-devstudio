@@ -44,6 +44,7 @@ import ru.runa.gpd.lang.par.ParContentProvider;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
+import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Closeables;
@@ -150,10 +151,12 @@ public class IOUtils {
 
     public static IFile getFile(IFolder folder, String fileName) {
         IFile file = folder.getFile(fileName);
-        try {
-            file.refreshLocal(IResource.DEPTH_ONE, null);
-        } catch (CoreException e) {
-            PluginLogger.logErrorWithoutDialog("", e);
+        if (!file.isSynchronized(IResource.DEPTH_ONE)) {
+            try {
+                file.refreshLocal(IResource.DEPTH_ONE, null);
+            } catch (CoreException e) {
+                Throwables.propagate(e);
+            }
         }
         return file;
     }
@@ -195,7 +198,7 @@ public class IOUtils {
 
     public static IFile moveFileSafely(IFile file, String fileName) throws CoreException {
         IFolder folder = (IFolder) file.getParent();
-        IFile testFile = folder.getFile(fileName);
+        IFile testFile = getFile(folder, fileName);
         try {
             file.move(testFile.getFullPath(), true, null);
             return testFile;
@@ -219,7 +222,7 @@ public class IOUtils {
                 if (ext.length() != 0) {
                     tryFileName += "." + ext;
                 }
-                testFile = folder.getFile(tryFileName);
+                testFile = getFile(folder, tryFileName);
                 if (!testFile.exists()) {
                     break;
                 }
@@ -235,7 +238,7 @@ public class IOUtils {
         ZipEntry entry = zis.getNextEntry();
         while (entry != null) {
             if (!entry.getName().contains("META-INF")) {
-                IFile file = folder.getFile(entry.getName());
+                IFile file = getFile(folder, entry.getName());
                 ByteArrayOutputStream baos = new ByteArrayOutputStream(buf.length);
                 int n;
                 while ((n = zis.read(buf, 0, 1024)) > -1) {
@@ -549,7 +552,7 @@ public class IOUtils {
     }
 
     public static IFile getProcessDefinitionFile(IFolder folder) {
-        return folder.getFile(ParContentProvider.PROCESS_DEFINITION_FILE_NAME);
+        return getFile(folder, ParContentProvider.PROCESS_DEFINITION_FILE_NAME);
     }
 
     public static IResource getProcessSelectionResource(IStructuredSelection selection) {

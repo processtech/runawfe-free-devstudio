@@ -197,7 +197,8 @@ public class ExportParWizardPage extends WizardArchiveFileResourceExportPage1 {
         for (String selectedDefinitionName : selectedDefinitionNames) {
             try {
                 IFile definitionFile = definitionNameFileMap.get(selectedDefinitionName);
-                definitionFile.getParent().refreshLocal(IResource.DEPTH_ONE, null);
+                IFolder processFolder = (IFolder) definitionFile.getParent();
+                processFolder.refreshLocal(IResource.DEPTH_ONE, null);
                 ProcessDefinition definition = ProcessCache.getProcessDefinition(definitionFile);
                 int validationResult = ProcessDefinitionValidator.validateDefinition(definition);
                 if (!exportToFile && validationResult != 0) {
@@ -218,8 +219,6 @@ public class ExportParWizardPage extends WizardArchiveFileResourceExportPage1 {
                 }
                 definition.getLanguage().getSerializer().validateProcessDefinitionXML(definitionFile);
                 List<IFile> resourcesToExport = new ArrayList<IFile>();
-                IFolder processFolder = (IFolder) definitionFile.getParent();
-                processFolder.refreshLocal(1, null);
                 IResource[] members = processFolder.members();
                 for (IResource resource : members) {
                     if (resource instanceof IFile) {
@@ -288,8 +287,8 @@ public class ExportParWizardPage extends WizardArchiveFileResourceExportPage1 {
         }
 
         protected void exportResource(IFileExporter exporter, IFile fileResource, IProgressMonitor progressMonitor) throws IOException, CoreException {
-            if (!fileResource.isSynchronized(1)) {
-                fileResource.refreshLocal(1, null);
+            if (!fileResource.isSynchronized(IResource.DEPTH_ONE)) {
+                fileResource.refreshLocal(IResource.DEPTH_ONE, null);
             }
             if (!fileResource.isAccessible()) {
                 return;
