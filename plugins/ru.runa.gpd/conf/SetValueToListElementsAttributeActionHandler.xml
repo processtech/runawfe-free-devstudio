@@ -1,0 +1,10 @@
+<config>
+  <input>
+    <param name="list" formatFilter="java.util.List" label.key="Param.List" />
+    <param name="attribute" formatFilter="java.lang.String" label.key="Param.Attribute" presentation="richcombo" />
+    <param name="value" label.key="Param.Value" presentation="richcombo" />
+  </input>
+  <output>
+    <param name="result" formatFilter="java.util.List" label.key="Param.Result" />
+  </output>
+</config>

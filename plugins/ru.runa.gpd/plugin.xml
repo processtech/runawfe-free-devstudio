@@ -1516,6 +1516,15 @@
             botTaskHandler="true"
             decisionHandler="false"
             cellEditorProvider="ru.runa.gpd.extension.handler.ConfigBasedProvider"
+            className="ru.runa.wfe.extension.handler.var.SetValueToListElementsAttributeActionHandler"
+            enabled="true"
+            label="%ru.runa.wfe.extension.handler.var.SetValueToListElementsAttributeActionHandler" />
+      <handler
+            actionHandler="true"
+            assignmentHandler="false"
+            botTaskHandler="true"
+            decisionHandler="false"
+            cellEditorProvider="ru.runa.gpd.extension.handler.ConfigBasedProvider"
             className="ru.runa.wfe.extension.handler.var.GetObjectFromListActionHandler"
             enabled="true"
             label="%ru.runa.wfe.extension.handler.var.GetObjectFromListActionHandler" />
