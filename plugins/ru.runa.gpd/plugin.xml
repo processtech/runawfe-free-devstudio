@@ -2841,35 +2841,52 @@
             label="java.lang.Math.random()">
       </method>
       <constant
+            label="null">
+      </constant>
+      <constant
+            label="true">
+            Boolean.TRUE
+      </constant>
+      <constant
+            label="false">
+            Boolean.FALSE
+      </constant>
+      <constant
             label="java.lang.Math.PI">
       </constant>
       <statement
             label="if">
-if () {
+if ( CONDITION ) {
 }
       </statement>
       <statement
             label="if/else">
-if () {
+if ( CONDITION ) {
 } else {
 }
       </statement>
       <statement
             label="if/else if/else">
-if () {
-} else if () {
+if ( CONDITION1 ) {
+} else if ( CONDITION2 ) {
 } else {
 }
       </statement>
       <statement
             label="switch">
-switch () {
-case :
+switch ( VALUE ) {
+case CONDITION1 :
    break
-case :
+case CONDITION2 :
    break
 default:
 }
+      </statement>
+      <statement
+            label="%ru.runa.gpd.groovyStuff.setListVariableAttributeValue">
+for (java.util.Map map : LIST_VARIABLE) {
+   map.put("ATTRIBUTE_NAME", VALUE);
+}      
       </statement>
    </extension>
 
