@@ -45,10 +45,13 @@ import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionChangedAdapter;
 import ru.runa.gpd.ui.custom.SWTUtils;
+import ru.runa.gpd.ui.dialog.ChooseGroovyStuffDialog;
 import ru.runa.gpd.ui.dialog.ChooseVariableNameDialog;
 import ru.runa.gpd.ui.wizard.ValidatorWizard.ParametersComposite;
 import ru.runa.gpd.ui.wizard.ValidatorWizard.ValidatorInfoControl;
+import ru.runa.gpd.util.GroovyStuff;
 import ru.runa.gpd.util.VariableUtils;
+import ru.runa.gpd.util.GroovyStuff.Item;
 import ru.runa.gpd.validation.FormNodeValidation;
 import ru.runa.gpd.validation.ValidatorConfig;
 import ru.runa.gpd.validation.ValidatorDefinition;
@@ -298,9 +301,65 @@ public class GlobalValidatorsWizardPage extends WizardPage {
             tabs[1] = new TabItem(tabFolder, SWT.NULL);
             tabs[1].setText(Localization.getString("GroovyEditor.title.code"));
             Composite codeComposite = new Composite(tabFolder, SWT.BORDER);
-            codeComposite.setLayout(new GridLayout());
+            codeComposite.setLayout(new GridLayout(5, false));
             codeComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
             tabs[1].setControl(codeComposite);
+            if (GroovyStuff.TYPE.getAll().size() > 0) {
+                SWTUtils.createLink(codeComposite, Localization.getString("Insert.TYPE.link"), new LoggingHyperlinkAdapter() {
+                    @Override
+                    public void onLinkActivated(HyperlinkEvent e) {
+                        Item item = new ChooseGroovyStuffDialog(GroovyStuff.TYPE).openDialog();
+                        if (item != null) {
+                            String insert = item.getBody();
+                            codeText.insert(insert);
+                            codeText.setCaretOffset(codeText.getCaretOffset() + insert.length());
+                            codeText.setFocus();
+                        }
+                    }
+                }).setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            }
+            if (GroovyStuff.CONSTANT.getAll().size() > 0) {
+                SWTUtils.createLink(codeComposite, Localization.getString("Insert.CONSTANT.link"), new LoggingHyperlinkAdapter() {
+                    @Override
+                    public void onLinkActivated(HyperlinkEvent e) {
+                        Item item = new ChooseGroovyStuffDialog(GroovyStuff.CONSTANT).openDialog();
+                        if (item != null) {
+                            String insert = item.getBody();
+                            codeText.insert(insert);
+                            codeText.setCaretOffset(codeText.getCaretOffset() + insert.length());
+                            codeText.setFocus();
+                        }
+                    }
+                }).setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            }
+            if (GroovyStuff.STATEMENT.getAll().size() > 0) {
+                SWTUtils.createLink(codeComposite, Localization.getString("Insert.STATEMENT.link"), new LoggingHyperlinkAdapter() {
+                    @Override
+                    public void onLinkActivated(HyperlinkEvent e) {
+                        Item item = new ChooseGroovyStuffDialog(GroovyStuff.STATEMENT).openDialog();
+                        if (item != null) {
+                            String insert = item.getBody();
+                            codeText.insert(insert);
+                            codeText.setCaretOffset(codeText.getCaretOffset() + insert.length());
+                            codeText.setFocus();
+                        }
+                    }
+                }).setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            }
+            if (GroovyStuff.METHOD.getAll().size() > 0) {
+                SWTUtils.createLink(codeComposite, Localization.getString("Insert.METHOD.link"), new LoggingHyperlinkAdapter() {
+                    @Override
+                    public void onLinkActivated(HyperlinkEvent e) {
+                        Item item = new ChooseGroovyStuffDialog(GroovyStuff.METHOD).openDialog();
+                        if (item != null) {
+                            String insert = item.getBody();
+                            codeText.insert(insert);
+                            codeText.setCaretOffset(codeText.getCaretOffset() + insert.length());
+                            codeText.setFocus();
+                        }
+                    }
+                }).setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            }
             SWTUtils.createLink(codeComposite, Localization.getString("button.insert_variable"), new LoggingHyperlinkAdapter() {
                 @Override
                 protected void onLinkActivated(HyperlinkEvent e) throws Exception {
@@ -312,11 +371,11 @@ public class GlobalValidatorsWizardPage extends WizardPage {
                         codeText.setCaretOffset(codeText.getCaretOffset() + variableName.length());
                     }
                 }
-            }).setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            }).setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
 
             codeText = new FeaturedStyledText(codeComposite, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL, EnumSet.of(
                     FeaturedStyledText.Feature.LINE_NUMBER, FeaturedStyledText.Feature.UNDO_REDO));
-            codeText.setLayoutData(new GridData(GridData.FILL_BOTH));
+            codeText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 5, 1));
             codeText.addLineStyleListener(new JavaHighlightTextStyling(contextVariableNames));
         }
 
