@@ -145,6 +145,9 @@ public abstract class AbstractWebServicesConnector extends WFEServerConnector {
             if (isLoadProcessDefinitionsHistory()) {
                 try {
                     historyDefinitions = WfDefinitionAdapter.toDTOs(api.getProcessDefinitionHistory(getUser(), latestDefinition.getName()));
+                    if (!historyDefinitions.isEmpty()) {
+                        historyDefinitions.remove(0);
+                    }
                 } catch (Exception e) {
                     PluginLogger.logErrorWithoutDialog("definition '" + latestDefinition.getName() + "' sync", e);
                 }
