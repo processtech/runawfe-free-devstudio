@@ -24,6 +24,7 @@ import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.Subprocess;
 import ru.runa.gpd.lang.model.TaskState;
+import ru.runa.gpd.lang.model.Transition;
 
 public class LanguageElementPreferencePage extends FieldEditorPreferencePage implements PrefConstants {
     private final String id;
@@ -116,6 +117,11 @@ public class LanguageElementPreferencePage extends FieldEditorPreferencePage imp
                     addField(new FontFieldEditor(P_BPMN_END_FONT, Localization.getString(PREF_COMMON_BPMN + P_BPMN_FONT), getFieldEditorParent()));
                     addColorField(P_BPMN_END_FONT_COLOR, P_BPMN_FONT_COLOR);
                     break;
+                case "textAnnotation":
+                    addField(new FontFieldEditor(P_BPMN_TEXT_ANNOTATION_FONT, Localization.getString(PREF_COMMON_BPMN + P_BPMN_FONT),
+                            getFieldEditorParent()));
+                    addColorField(P_BPMN_TEXT_ANNOTATION_FONT_COLOR, P_BPMN_FONT_COLOR);
+                    break;
                 case "startEvent":
                     addField(new FontFieldEditor(P_BPMN_STARTSTATE_FONT, Localization.getString(PREF_COMMON_BPMN + P_BPMN_FONT),
                             getFieldEditorParent()));
@@ -142,6 +148,8 @@ public class LanguageElementPreferencePage extends FieldEditorPreferencePage imp
                     addColorField(P_BPMN_SUBPROCESS_BACKGROUND_COLOR, P_BPMN_BACKGROUND_COLOR);
                     addColorField(P_BPMN_SUBPROCESS_BASE_COLOR, P_BPMN_BASE_COLOR);
                     break;
+                default:
+                    break;
                 }
             }
         }
@@ -160,6 +168,10 @@ public class LanguageElementPreferencePage extends FieldEditorPreferencePage imp
         if (element instanceof Subprocess) {
             addField(new BooleanFieldEditor(getKey(P_LANGUAGE_SUB_PROCESS_ASYNC_INPUT_DATA),
                     Localization.getString("Subprocess.inputDataAllowedInAsyncSubprocess"), getFieldEditorParent()));
+        }
+
+        if (element instanceof Transition) {
+            addColorField(P_BPMN_TRANSITION_COLOR, P_BPMN_TRANSITION_COLOR);
         }
     }
 
@@ -196,4 +208,10 @@ public class LanguageElementPreferencePage extends FieldEditorPreferencePage imp
             }
         }
     }
+
+    @Override
+    protected void performDefaults() {
+        super.performDefaults();
+    }
+
 }

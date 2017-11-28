@@ -1,22 +1,14 @@
 package ru.runa.gpd.settings;
 
-import java.awt.Font;
-
-import org.eclipse.jface.preference.ColorFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
-import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.swt.graphics.FontData;
+import org.eclipse.jface.preference.IPreferenceNode;
+import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.PlatformUI;
 
 import ru.runa.gpd.Activator;
-import ru.runa.gpd.Localization;
-import ru.runa.gpd.editor.graphiti.GraphitiProcessEditor;
 
 public class BPMNPreferencePage extends FieldEditorPreferencePage implements PrefConstants, IWorkbenchPreferencePage {
     private static final String PREF_COMMON_BPMN = "pref.common.bpmn.";
@@ -32,13 +24,7 @@ public class BPMNPreferencePage extends FieldEditorPreferencePage implements Pre
 
     @Override
     public void createFieldEditors() {
-        final IPreferenceStore store = Activator.getDefault().getPreferenceStore();
-        store.setDefault(P_BPMN_FONT, new FontData("Arial", 8, Font.PLAIN).toString());
-        addColorField(store, P_BPMN_TRANSITION_COLOR);
-    }
 
-    private void addColorField(IPreferenceStore store, String name) {
-        addField(new ColorFieldEditor(name, Localization.getString(PREF_COMMON_BPMN + name), getFieldEditorParent()));
     }
 
     @Override
@@ -47,27 +33,46 @@ public class BPMNPreferencePage extends FieldEditorPreferencePage implements Pre
     }
 
     @Override
+    protected void performApply() {
+        setDefaults(false);
+    }
+
+    @Override
+    protected void performDefaults() {
+        setDefaults(true);
+    }
+
+    private void setDefaults(boolean apply) {
+        PreferenceManager pm = PlatformUI.getWorkbench().getPreferenceManager();
+        IPreferenceNode[] nodes = pm.getRootSubNodes();
+        IPreferenceNode preferenceNodeBPMN = null;
+        for (IPreferenceNode preferenceNode : nodes) {
+            if (preferenceNode.getId().equals("gpd.pref.language")) {
+                preferenceNodeBPMN = preferenceNode.findSubNode(LanguageElementPreferenceNode.BPMN_ID);
+                IPreferenceNode[] preferenceNodeBPMNsubNodes = preferenceNodeBPMN.getSubNodes();
+                for (IPreferenceNode subNode : preferenceNodeBPMNsubNodes) {
+                    LanguageElementPreferencePage page = (LanguageElementPreferencePage) subNode.getPage();
+                    if (page == null) {
+                        continue;
+                    }
+                    if (!apply) {
+                        page.performApply();
+                    } else {
+                        page.performDefaults();
+                    }
+                }
+                break;
+            }
+        }
+    }
+
+    @Override
     public boolean performOk() {
         boolean performOk = super.performOk();
         if (performOk) {
-            applyStyles();
+            performApply();
         }
         return performOk;
     }
 
-    @Override
-    protected void performApply() {
-        super.performApply();
-        applyStyles();
-    }
-
-    private void applyStyles() {
-        IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-        for (IEditorReference ref : page.getEditorReferences()) {
-            IEditorPart editor = ref.getEditor(true);
-            if (editor instanceof GraphitiProcessEditor) {
-                ((GraphitiProcessEditor) editor).getDiagramEditorPage().applyStyles();
-            }
-        }
-    }
 }

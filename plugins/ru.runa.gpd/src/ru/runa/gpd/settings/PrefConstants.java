@@ -36,6 +36,8 @@ public interface PrefConstants {
     public static final String P_BPMN_MULTISUBPROCESS_BASE_COLOR = "bpmnMultiSubprocessBaseColor";
     public static final String P_BPMN_STARTSTATE_FONT = "bpmnStartStateFont";
     public static final String P_BPMN_STARTSTATE_FONT_COLOR = "bpmnStartStateFontColor";
+    public static final String P_BPMN_TEXT_ANNOTATION_FONT = "bpmnTextAnnotationFont";
+    public static final String P_BPMN_TEXT_ANNOTATION_FONT_COLOR = "bpmnTextAnnotationFontColor";
     public static final String P_BPMN_END_FONT = "bpmnEndFont";
     public static final String P_BPMN_END_FONT_COLOR = "bpmnEndFontColor";
     public static final String P_BPMN_SUBPROCESS_FONT = "bpmnSubprocessFont";
@@ -84,4 +86,5 @@ public interface PrefConstants {
     public static final String DEFAULT_FONT_COLOR = "100, 100, 100";
     public static final String DEFAULT_BACKGROUND_COLOR = "250, 251, 252";
     public static final String DEFAULT_BASE_COLOR = "3, 104, 154";
+    public static final String DEFAULT_TRANSITION_COLOR = "0, 0, 0";
 }

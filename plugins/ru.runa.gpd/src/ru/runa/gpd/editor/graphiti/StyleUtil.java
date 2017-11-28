@@ -49,6 +49,7 @@ public class StyleUtil implements PrefConstants {
         bpmnNames.add("subProcess");
         bpmnNames.add("startTextDecoration");
         bpmnNames.add("endTextDecoration");
+        bpmnNames.add("textAnnotation");
     }
 
     public static Style getStyleForEvent(Diagram diagram, String bpmnName) {
@@ -329,6 +330,9 @@ public class StyleUtil implements PrefConstants {
             break;
         case "transition":
             updateStyleForText(diagram, style, P_BPMN_SUBPROCESS_FONT, P_BPMN_TRANSITION_COLOR);
+            break;
+        case "textAnnotation":
+            updateStyleForText(diagram, style, P_BPMN_TEXT_ANNOTATION_FONT, P_BPMN_TEXT_ANNOTATION_FONT_COLOR);
             break;
         default:
             updateStyleForText(diagram, style, P_BPMN_FONT, P_BPMN_FONT_COLOR);

@@ -35,7 +35,7 @@
           name="bot task editor">
     </editor>
   </extension> 
-  	
+    
   <extension
         name="Graph actions"
         point="org.eclipse.ui.popupMenus">
@@ -664,7 +664,7 @@
          name="commons"
          point="ru.runa.gpd.elements">
       <element
-      		type="connection"
+          type="connection"
             model="ru.runa.gpd.lang.model.Transition"
             jpdl="transition"
             bpmn="sequenceFlow"
@@ -690,7 +690,7 @@
             label="%label.element.textAnnotation"
             icon="textAnnotation.png"
             model="ru.runa.gpd.lang.model.bpmn.TextAnnotation"
-            type="artifact">
+            type="node">
          <graphiti
                add="ru.runa.gpd.editor.graphiti.add.AddTextAnnotationFeature"
                create="ru.runa.gpd.editor.graphiti.create.CreateAnnotationFeature"
@@ -702,30 +702,30 @@
          </graphiti>
       </element>
       <element
-      		bpmn="startTextDecoration"
-      		label="%label.element.textAnnotation"
-      		model="ru.runa.gpd.lang.model.bpmn.StartTextDecoration"
-      		type="artifact">
-      	<graphiti
-      		add="ru.runa.gpd.editor.graphiti.add.AddStartTextDecorationFeature"
-      		create="ru.runa.gpd.editor.graphiti.create.CreateElementFeature"
-      		fixedSize="true"
-      		height="3"
-      		width="8">
-      	</graphiti>
+          bpmn="startTextDecoration"
+          label="%label.element.textAnnotation"
+          model="ru.runa.gpd.lang.model.bpmn.StartTextDecoration"
+          type="artifact">
+        <graphiti
+          add="ru.runa.gpd.editor.graphiti.add.AddStartTextDecorationFeature"
+          create="ru.runa.gpd.editor.graphiti.create.CreateElementFeature"
+          fixedSize="true"
+          height="3"
+          width="8">
+        </graphiti>
       </element>
       <element
-      		bpmn="endTextDecoration"
-      		label="%label.element.textAnnotation"
-      		model="ru.runa.gpd.lang.model.bpmn.EndTextDecoration"
-      		type="artifact">
-      	<graphiti
-      		add="ru.runa.gpd.editor.graphiti.add.AddEndTextDecorationFeature"
-      		create="ru.runa.gpd.editor.graphiti.create.CreateElementFeature"
-      		fixedSize="true"
-      		height="3"
-      		width="8">
-      	</graphiti>
+          bpmn="endTextDecoration"
+          label="%label.element.textAnnotation"
+          model="ru.runa.gpd.lang.model.bpmn.EndTextDecoration"
+          type="artifact">
+        <graphiti
+          add="ru.runa.gpd.editor.graphiti.add.AddEndTextDecorationFeature"
+          create="ru.runa.gpd.editor.graphiti.create.CreateElementFeature"
+          fixedSize="true"
+          height="3"
+          width="8">
+        </graphiti>
       </element>
       <element
             bpmn="lane"
@@ -748,7 +748,7 @@
          </graphiti>
       </element>
       <element
-      		type="node"
+          type="node"
             model="ru.runa.gpd.lang.model.StartState"
             jpdl="start-state"
             bpmn="startEvent"
@@ -769,7 +769,7 @@
          </graphiti>
       </element>
       <element
-      		type="node"
+          type="node"
             model="ru.runa.gpd.lang.model.TaskState"
             jpdl="task-node"
             bpmn="userTask"
@@ -832,7 +832,7 @@
       </element>
       <element
             bpmn="multiTask"
- 	    type="node"
+      type="node"
             model="ru.runa.gpd.lang.model.MultiTaskState"
             jpdl="multi-task-node"
             icon="multitaskstate.png"
@@ -935,7 +935,7 @@
          </graphiti>
       </element>
       <element
-      		type="node"
+          type="node"
             model="ru.runa.gpd.lang.model.ActionImpl"
             jpdl="action"
             bpmn="actionHandler"
@@ -1093,7 +1093,7 @@
          </graphiti>
       </element>
       <element
-      		type="deprecated"
+          type="deprecated"
             label="action node (deprecated)"
             model="ru.runa.gpd.lang.model.jpdl.ActionNode"
             jpdl="node">
@@ -1125,7 +1125,7 @@
          </graphiti>
       </element>
       <element
-      		type="node"
+          type="node"
             model="ru.runa.gpd.lang.model.EndState"
             jpdl="end-state"
             bpmn="endEvent"
@@ -1918,14 +1918,14 @@
       </element>
    </extension>
    <extension
-    	id="FileSearchPage"
+      id="FileSearchPage"
         point="org.eclipse.search.searchResultViewPages">
-		<viewPage
-			id="ru.runa.gpd.search.SearchPage"
-			searchResultClass="ru.runa.gpd.search.SearchResult"
-			class="ru.runa.gpd.search.SearchPage">
-		</viewPage>
-	</extension>
+    <viewPage
+      id="ru.runa.gpd.search.SearchPage"
+      searchResultClass="ru.runa.gpd.search.SearchResult"
+      class="ru.runa.gpd.search.SearchPage">
+    </viewPage>
+  </extension>
     <extension
           point="ru.runa.gpd.validators">
        <validator
@@ -2162,7 +2162,7 @@
              name="%pref.form">
        </page>
        <page
-			 class="ru.runa.gpd.settings.EmptyPreferencePage"
+       class="ru.runa.gpd.settings.EmptyPreferencePage"
              id="gpd.pref.task.escalation"
              name="%pref.task.escalation">
        </page>
@@ -2190,7 +2190,7 @@
              name="%pref.connection.ldap">
        </page>
        <page
-			 class="ru.runa.gpd.settings.EmptyPreferencePage"
+       class="ru.runa.gpd.settings.EmptyPreferencePage"
              id="gpd.pref.extensions"
              name="%pref.extensions">
        </page>
@@ -2201,7 +2201,7 @@
              name="%pref.extensions.localization">
        </page>
        <page
-			 class="ru.runa.gpd.settings.LanguagePreferencePage"
+       class="ru.runa.gpd.settings.LanguagePreferencePage"
              id="gpd.pref.language"
              name="%pref.language">
        </page>
@@ -2309,30 +2309,30 @@
                toolbarPath="normal/processes"
                tooltip="%tooltip.menu.newProject"/>
          <action
-         		class="ru.runa.gpd.ui.action.NewBotTaskAction"
-         		icon="icons/bot_task.gif"
-         		id="ru.runa.gpd.ui.action.newBotTask"
-         		label="%label.menu.newBotTask"
-         		menubarPath="file/newFile/common"
-         		style="push"
+            class="ru.runa.gpd.ui.action.NewBotTaskAction"
+            icon="icons/bot_task.gif"
+            id="ru.runa.gpd.ui.action.newBotTask"
+            label="%label.menu.newBotTask"
+            menubarPath="file/newFile/common"
+            style="push"
                 toolbarPath="normal/bots"
                 tooltip="%tooltip.menu.newBotTask"/>
          <action
-         		class="ru.runa.gpd.ui.action.NewBotAction"
-         		icon="icons/add_bot.gif"
-         		id="ru.runa.gpd.ui.action.newBot"
-         		label="%label.menu.newBot"
-         		menubarPath="file/newFile/common"
-         		style="push"
+            class="ru.runa.gpd.ui.action.NewBotAction"
+            icon="icons/add_bot.gif"
+            id="ru.runa.gpd.ui.action.newBot"
+            label="%label.menu.newBot"
+            menubarPath="file/newFile/common"
+            style="push"
                 toolbarPath="normal/bots"
                 tooltip="%tooltip.menu.newBot"/>
          <action
-         		class="ru.runa.gpd.ui.action.NewBotStationAction"
-         		icon="icons/add_bot_station.gif"
-         		id="ru.runa.gpd.ui.action.newBotStation"
-         		label="%label.menu.newBotStation"
-         		menubarPath="file/newFile/common"
-         		style="push"
+            class="ru.runa.gpd.ui.action.NewBotStationAction"
+            icon="icons/add_bot_station.gif"
+            id="ru.runa.gpd.ui.action.newBotStation"
+            label="%label.menu.newBotStation"
+            menubarPath="file/newFile/common"
+            style="push"
                 toolbarPath="normal/bots"
                 tooltip="%tooltip.menu.newBotStation"/>
          <action
@@ -2783,11 +2783,11 @@
             label="%ru.runa.wfe.var.format.ProcessIdFormat">
       </format>
    </extension>
-	<extension id="botStationNature" name="specific nature for bot station project" point="org.eclipse.core.resources.natures">
-	      <runtime>
-	         <run class="ru.runa.gpd.BotStationNature"></run>
-	      </runtime>
-	</extension>
+  <extension id="botStationNature" name="specific nature for bot station project" point="org.eclipse.core.resources.natures">
+        <runtime>
+           <run class="ru.runa.gpd.BotStationNature"></run>
+        </runtime>
+  </extension>
  <extension
        id="processNature"
        name="specific nature for process project (used since 4.1.0)"
