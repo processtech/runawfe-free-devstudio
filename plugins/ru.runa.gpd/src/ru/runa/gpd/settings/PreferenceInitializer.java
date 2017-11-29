@@ -33,5 +33,31 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer impleme
         store.setDefault(P_LDAP_CONNECTION_PROVIDER_URL, "ldap://192.168.0.1/dc=domain,dc=com");
         store.setDefault(P_DATE_FORMAT_PATTERN, "dd.MM.yyyy");
         store.setDefault(P_ENABLE_REGULATIONS_MENU_ITEMS, Localization.getString("disable"));
+        store.setDefault(P_BPMN_STATE_FONT, DEFAULT_FONT);
+        store.setDefault(P_BPMN_STATE_FONT_COLOR, DEFAULT_FONT_COLOR);
+        store.setDefault(P_BPMN_STATE_BACKGROUND_COLOR, DEFAULT_BACKGROUND_COLOR);
+        store.setDefault(P_BPMN_STATE_BASE_COLOR, DEFAULT_BASE_COLOR);
+        store.setDefault(P_BPMN_ENDTOKEN_FONT, DEFAULT_FONT);
+        store.setDefault(P_BPMN_ENDTOKEN_FONT_COLOR, DEFAULT_FONT_COLOR);
+        store.setDefault(P_BPMN_SCRIPTTASK_FONT, DEFAULT_FONT);
+        store.setDefault(P_BPMN_SCRIPTTASK_FONT_COLOR, DEFAULT_FONT_COLOR);
+        store.setDefault(P_BPMN_SCRIPTTASK_BACKGROUND_COLOR, DEFAULT_BACKGROUND_COLOR);
+        store.setDefault(P_BPMN_SCRIPTTASK_BASE_COLOR, DEFAULT_BASE_COLOR);
+        store.setDefault(P_BPMN_MULTITASKSTATE_FONT, DEFAULT_FONT);
+        store.setDefault(P_BPMN_MULTITASKSTATE_FONT_COLOR, DEFAULT_FONT_COLOR);
+        store.setDefault(P_BPMN_MULTITASKSTATE_BACKGROUND_COLOR, DEFAULT_BACKGROUND_COLOR);
+        store.setDefault(P_BPMN_MULTITASKSTATE_BASE_COLOR, DEFAULT_BASE_COLOR);
+        store.setDefault(P_BPMN_MULTISUBPROCESS_FONT, DEFAULT_FONT);
+        store.setDefault(P_BPMN_MULTISUBPROCESS_FONT_COLOR, DEFAULT_FONT_COLOR);
+        store.setDefault(P_BPMN_MULTISUBPROCESS_BACKGROUND_COLOR, DEFAULT_BACKGROUND_COLOR);
+        store.setDefault(P_BPMN_MULTISUBPROCESS_BASE_COLOR, DEFAULT_BASE_COLOR);
+        store.setDefault(P_BPMN_STARTSTATE_FONT, DEFAULT_FONT);
+        store.setDefault(P_BPMN_STARTSTATE_FONT_COLOR, DEFAULT_FONT_COLOR);
+        store.setDefault(P_BPMN_END_FONT, DEFAULT_FONT);
+        store.setDefault(P_BPMN_END_FONT_COLOR, DEFAULT_FONT_COLOR);
+        store.setDefault(P_BPMN_SUBPROCESS_FONT, DEFAULT_FONT);
+        store.setDefault(P_BPMN_SUBPROCESS_FONT_COLOR, DEFAULT_FONT_COLOR);
+        store.setDefault(P_BPMN_SUBPROCESS_BACKGROUND_COLOR, DEFAULT_BACKGROUND_COLOR);
+        store.setDefault(P_BPMN_SUBPROCESS_BASE_COLOR, DEFAULT_BASE_COLOR);
     }
 }
