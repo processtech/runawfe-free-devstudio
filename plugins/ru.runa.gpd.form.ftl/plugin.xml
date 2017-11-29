@@ -85,6 +85,11 @@
             id="varlist">
       </type>
       <type
+            class="ru.runa.gpd.formeditor.ftl.parameter.VariableFinderParameter"
+            validator="ru.runa.gpd.formeditor.ftl.validation.DefaultParameterTypeValidator"
+            id="varfinder">
+      </type>
+      <type
             class="ru.runa.gpd.formeditor.ftl.parameter.TextListParameter"
             validator="ru.runa.gpd.formeditor.ftl.validation.DefaultParameterTypeValidator"
             id="textlist">
@@ -180,7 +185,7 @@
             order="-99">
          <param
                name="%Param.Variable"
-               type="varcombo"
+               type="varfinder"
                variableAccess="WRITE"
                variableTypeFilter="java.lang.Object">
          </param>
@@ -193,7 +198,7 @@
             order="-98">
          <param
                name="%Param.Variable"
-               type="varcombo"
+               type="varfinder"
                variableTypeFilter="java.lang.Object"
                variableAccess="READ">
          </param>
@@ -217,7 +222,7 @@
             name="%Method.ChooseActor">
          <param
                name="%Param.ActorVariable"
-               type="varcombo"
+               type="varfinder"
                variableTypeFilter="ru.runa.wfe.user.Executor"
                variableAccess="WRITE">
          </param>
@@ -241,7 +246,7 @@
             name="%Method.ChooseGroup">
          <param
                name="%Param.GroupVariable"
-               type="varcombo"
+               type="varfinder"
                variableTypeFilter="ru.runa.wfe.user.Group"
                variableAccess="WRITE">
          </param>
@@ -269,7 +274,7 @@
             name="%Method.InputDateTime">
          <param
                name="%Param.DateVariable"
-               type="varcombo"
+               type="varfinder"
                variableTypeFilter="java.util.Date"
                variableAccess="WRITE">
          </param>
@@ -298,7 +303,7 @@
             order="-97">
          <param
                name="%Param.ActorVariable"
-               type="varcombo"
+               type="varfinder"
                variableTypeFilter="ru.runa.wfe.user.Actor"
                variableAccess="WRITE">
          </param>
@@ -328,7 +333,7 @@
             name="%Method.DisplayActor">
          <param
                name="%Param.ActorVariable"
-               type="varcombo"
+               type="varfinder"
                variableTypeFilter="ru.runa.wfe.user.Actor"
                variableAccess="READ">
          </param>
@@ -353,7 +358,7 @@
             order="-96">
          <param
                name="%Param.FileVariable"
-               type="varcombo"
+               type="varfinder"
                variableTypeFilter="ru.runa.wfe.var.file.FileVariable"
                variableAccess="READ">
          </param>
@@ -389,7 +394,7 @@
             name="%Method.DownloadFile">
          <param
                name="%Param.FileVariable"
-               type="varcombo"
+               type="varfinder"
                variableTypeFilter="ru.runa.wfe.var.file.FileVariable"
                variableAccess="READ">
          </param>
@@ -400,7 +405,7 @@
             name="%Method.DisplayExecutor">
          <param
                name="%Param.GroupVariable"
-               type="varcombo"
+               type="varfinder"
                variableTypeFilter="ru.runa.wfe.user.Group"
                variableAccess="READ">
          </param>
@@ -412,13 +417,13 @@
             order="-95">
          <param
                name="%Param.GroupVariable"
-               type="varcombo"
+               type="varfinder"
                variableTypeFilter="ru.runa.wfe.user.Group"
                variableAccess="WRITE">
          </param>
          <param
                name="%Param.ActorVariable"
-               type="varcombo"
+               type="varfinder"
                variableTypeFilter="ru.runa.wfe.user.Actor"
                variableAccess="WRITE">
          </param>
@@ -430,7 +435,7 @@
          <param
                name="%Param.RelationName"
                optional="false"
-               type="varcombo"
+               type="varfinder"
                variableAccess="WRITE"
                variableTypeFilter="java.lang.String">
          </param>
@@ -442,7 +447,7 @@
             order="-94">
          <param
                name="%Param.ActorVariable"
-               type="varcombo"
+               type="varfinder"
                variableTypeFilter="ru.runa.wfe.user.Actor"
                variableAccess="WRITE">
          </param>
@@ -479,7 +484,7 @@
             order="-93">
          <param
                name="%Param.Variable"
-               type="varcombo"
+               type="varfinder"
                variableTypeFilter="ru.runa.wfe.user.Executor"
                variableAccess="WRITE">
          </param>
@@ -516,7 +521,7 @@
             order="-92">
          <param
                name="%Param.Variable"
-               type="varcombo"
+               type="varfinder"
                variableTypeFilter="ru.runa.wfe.user.Executor"
                variableAccess="WRITE">
          </param>
@@ -547,13 +552,13 @@
             name="%Method.MultipleSelect">
          <param
                name="%Param.ListVariable"
-               type="varcombo"
+               type="varfinder"
                variableTypeFilter="java.util.List"
                variableAccess="WRITE">
          </param>
          <param
                name="%Param.InputData"
-               type="varcombo"
+               type="varfinder"
                variableTypeFilter="java.util.List"
                variableAccess="READ">
          </param>
@@ -564,7 +569,7 @@
             name="%Method.EditStringList">
          <param
                name="%Param.ListVariable"
-               type="varcombo"
+               type="varfinder"
                variableTypeFilter="java.util.List"
                variableAccess="WRITE">
          </param>
@@ -575,7 +580,7 @@
             name="%Method.ViewList">
          <param
                name="%Param.ListVariable"
-               type="varcombo"
+               type="varfinder"
                variableTypeFilter="java.util.List"
                variableAccess="READ">
          </param>
@@ -728,7 +733,7 @@
             name="%Method.DisplayFormattedText">
          <param
                name="%Param.String"
-               type="varcombo"
+               type="varfinder"
                variableTypeFilter="java.lang.String"
                variableAccess="READ">
          </param>
@@ -739,7 +744,7 @@
             name="%Method.ActorsMultiSelect">
          <param
                name="%Param.ListVariable"
-               type="varcombo"
+               type="varfinder"
                variableTypeFilter="java.util.List"
                variableAccess="WRITE">
          </param>
@@ -770,7 +775,7 @@
             order="-88">
          <param
                name="%Param.ListVariable"
-               type="varcombo"
+               type="varfinder"
                variableTypeFilter="java.util.List"
                variableAccess="READ">
          </param>
@@ -788,7 +793,7 @@
             order="-87">
          <param
                name="%Param.ListVariable"
-               type="varcombo"
+               type="varfinder"
                variableTypeFilter="java.util.Map"
                variableAccess="READ">
          </param>
@@ -806,13 +811,13 @@
             order="-86">
          <param
                name="%Param.Variable"
-               type="varcombo"
+               type="varfinder"
                variableTypeFilter="java.util.List"
                variableAccess="WRITE">
          </param>
          <param
                name="%Param.InputData"
-               type="varcombo"
+               type="varfinder"
                variableTypeFilter="java.util.List"
                variableAccess="READ">
          </param>
@@ -837,13 +842,13 @@
             name="%Method.DisplayMultipleSelectInList">
          <param
                name="%Param.Variable"
-               type="varcombo"
+               type="varfinder"
                variableTypeFilter="java.util.List"
                variableAccess="READ">
          </param>
          <param
                name="%Param.InputData"
-               type="varcombo"
+               type="varfinder"
                variableTypeFilter="java.util.List"
                variableAccess="READ">
          </param>
@@ -855,13 +860,13 @@
             order="-85">
          <param
                name="%Param.Variable"
-               type="varcombo"
+               type="varfinder"
                variableTypeFilter="java.lang.Object"
                variableAccess="WRITE">
          </param>
          <param
                name="%Param.InputData"
-               type="varcombo"
+               type="varfinder"
                variableTypeFilter="java.util.List"
                variableAccess="READ">
          </param>
@@ -873,13 +878,13 @@
             order="-85">
          <param
                name="%Param.Variable"
-               type="varcombo"
+               type="varfinder"
                variableTypeFilter="java.lang.Object"
                variableAccess="WRITE">
          </param>
          <param
                name="%Param.InputData"
-               type="varcombo"
+               type="varfinder"
                variableTypeFilter="java.util.List"
                variableAccess="READ">
          </param>
@@ -905,13 +910,13 @@
             order="-85">
          <param
                name="%Param.Variable"
-               type="varcombo"
+               type="varfinder"
                variableTypeFilter="java.lang.Object"
                variableAccess="WRITE">
          </param>
          <param
                name="%Param.InputData"
-               type="varcombo"
+               type="varfinder"
                variableTypeFilter="java.util.List"
                variableAccess="READ">
          </param>
@@ -922,7 +927,7 @@
             name="%Method.SelectFromValueList">
          <param
                name="%Param.Variable"
-               type="varcombo"
+               type="varfinder"
                variableTypeFilter="java.lang.Object"
                variableAccess="WRITE">
          </param>
@@ -938,7 +943,7 @@
             name="%Method.SelectFromValueList">
          <param
                name="%Param.Variable"
-               type="varcombo"
+               type="varfinder"
                variableTypeFilter="java.lang.Object"
                variableAccess="WRITE">
          </param>
