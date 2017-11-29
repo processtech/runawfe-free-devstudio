@@ -25,6 +25,7 @@ public class AddStateNodeFeature extends AddNodeFeature {
     @Override
     public PictogramElement add(IAddContext context) {
         Node node = (Node) context.getNewObject();
+        String bpmnName = node.getTypeDefinition().getBpmnElementName();
         //
         ContainerShape containerShape = Graphiti.getPeCreateService().createContainerShape(context.getTargetContainer(), true);
         Rectangle main = Graphiti.getGaService().createInvisibleRectangle(containerShape);
@@ -34,17 +35,18 @@ public class AddStateNodeFeature extends AddNodeFeature {
         RoundedRectangle border = Graphiti.getGaService().createRoundedRectangle(main, 20, 20);
         border.getProperties().add(new GaProperty(GaProperty.ID, LayoutStateNodeFeature.BORDER_RECT));
         border.setLineWidth(2);
-        border.setForeground(Graphiti.getGaService().manageColor(getDiagram(), StyleUtil.LIGHT_BLUE));
-        border.setBackground(Graphiti.getGaService().manageColor(getDiagram(), StyleUtil.VERY_LIGHT_BLUE));
-        border.setStyle(StyleUtil.getStyleForEvent(getDiagram()));
+        border.setStyle(StyleUtil.getStyleForEvent(getDiagram(), bpmnName));
         if (node instanceof SwimlanedNode && node.getProcessDefinition().getSwimlaneDisplayMode() == SwimlaneDisplayMode.none) {
-            Text swimlaneText = Graphiti.getGaService().createDefaultText(getDiagram(), border, ((SwimlanedNode) node).getSwimlaneLabel());
+            Text swimlaneText = Graphiti.getGaService().createText(border, ((SwimlanedNode) node).getSwimlaneLabel());
             swimlaneText.getProperties().add(new GaProperty(GaProperty.ID, GaProperty.SWIMLANE_NAME));
             swimlaneText.setHorizontalAlignment(Orientation.ALIGNMENT_CENTER);
+            swimlaneText.setStyle(StyleUtil.getStyleForText(getDiagram(), bpmnName));
         }
-        MultiText nameText = Graphiti.getGaService().createDefaultMultiText(getDiagram(), border, node.getName());
+        MultiText nameText = Graphiti.getGaService().createMultiText(border, node.getName());
         nameText.getProperties().add(new GaProperty(GaProperty.ID, GaProperty.NAME));
         nameText.setHorizontalAlignment(Orientation.ALIGNMENT_CENTER);
+        nameText.setStyle(StyleUtil.getStyleForText(getDiagram(), bpmnName));
+
         containerShape.getProperties().add(new GaProperty(GaProperty.MINIMAZED_VIEW, String.valueOf(node.isMinimizedView())));
         //
         Image image = Graphiti.getGaService().createImage(main, NodeRegistry.getNodeTypeDefinition(node.getClass()).getPaletteIcon());
