@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 
 import ru.runa.gpd.Localization;
@@ -50,8 +51,8 @@ import ru.runa.gpd.ui.dialog.ChooseVariableNameDialog;
 import ru.runa.gpd.ui.wizard.ValidatorWizard.ParametersComposite;
 import ru.runa.gpd.ui.wizard.ValidatorWizard.ValidatorInfoControl;
 import ru.runa.gpd.util.GroovyStuff;
-import ru.runa.gpd.util.VariableUtils;
 import ru.runa.gpd.util.GroovyStuff.Item;
+import ru.runa.gpd.util.VariableUtils;
 import ru.runa.gpd.validation.FormNodeValidation;
 import ru.runa.gpd.validation.ValidatorConfig;
 import ru.runa.gpd.validation.ValidatorDefinition;
@@ -220,7 +221,7 @@ public class GlobalValidatorsWizardPage extends WizardPage {
                 }
             }
 
-            parametersComposite = new GroovyParamsComposite(this, SWT.BORDER);
+            parametersComposite = new GroovyParamsComposite2(this, SWT.BORDER);
             parametersComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
             parametersComposite.setLayout(new GridLayout(1, true));
             errorMessageText.addModifyListener(new LoggingModifyTextAdapter() {
@@ -467,4 +468,244 @@ public class GlobalValidatorsWizardPage extends WizardPage {
             }
         }
     }
+
+    public class GroovyParamsComposite2 extends ParametersComposite {
+        private final StyledText codeText;
+        private Variable variable1;
+        private final Combo comboBoxOp;
+        private List<String> varNames = new ArrayList<>();
+        private String varName2;
+        private final TabFolder tabFolder;
+
+        private Text txtVarName1;
+        private Text txtVarName2;
+
+        public GroovyParamsComposite2(ValidatorInfoControl parent, int style) {
+            super(parent, style);
+
+            tabFolder = new TabFolder(this, SWT.NULL);
+            tabFolder.setLayout(new GridLayout(2, true));
+            tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
+            tabFolder.addSelectionListener(new LoggingSelectionAdapter() {
+                @Override
+                protected void onSelection(SelectionEvent event) throws Exception {
+                    if (tabFolder.getSelectionIndex() == 1) {
+                        toCode();
+                    }
+                }
+            });
+            TabItem[] tabs = new TabItem[2];
+            tabs[0] = new TabItem(tabFolder, SWT.NULL);
+            tabs[0].setText(Localization.getString("GroovyEditor.title.constructor"));
+            Composite constrComposite = new Composite(tabFolder, SWT.BORDER);
+            constrComposite.setLayout(new GridLayout(3, false));
+            constrComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
+            tabs[0].setControl(constrComposite);
+
+            Composite varComposite1 = new Composite(constrComposite, SWT.NONE);
+            varComposite1.setLayoutData(getComboGridData());
+            varComposite1.setLayout(new GridLayout(2, false));
+            txtVarName1 = new Text(varComposite1, SWT.READ_ONLY | SWT.BORDER);
+            txtVarName1.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            Button selectButton1 = new Button(varComposite1, SWT.PUSH);
+            selectButton1.setText("...");
+            selectButton1.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+            selectButton1.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    String result = new ChooseVariableNameDialog(variableNames).openDialog();
+                    if (result != null) {
+                        variable1 = VariableUtils.getVariableByScriptingName(variables, result);
+                        txtVarName1.setText(variable1.getScriptingName());
+                        refreshCombos();
+                    }
+                }
+            });
+
+            comboBoxOp = new Combo(constrComposite, SWT.READ_ONLY);
+            comboBoxOp.setLayoutData(getComboGridData());
+
+            Composite varComposite2 = new Composite(constrComposite, SWT.NONE);
+            varComposite2.setLayoutData(getComboGridData());
+            varComposite2.setLayout(new GridLayout(2, false));
+            txtVarName2 = new Text(varComposite2, SWT.READ_ONLY | SWT.BORDER);
+            txtVarName2.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            Button selectButton2 = new Button(varComposite2, SWT.PUSH);
+            selectButton2.setText("...");
+            selectButton2.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+            selectButton2.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    String result = new ChooseVariableNameDialog(varNames).openDialog();
+                    if (result != null) {
+                        varName2 = result;
+                        txtVarName2.setText(varName2);
+                    }
+                }
+            });
+
+            tabs[1] = new TabItem(tabFolder, SWT.NULL);
+            tabs[1].setText(Localization.getString("GroovyEditor.title.code"));
+            Composite codeComposite = new Composite(tabFolder, SWT.BORDER);
+            codeComposite.setLayout(new GridLayout(5, false));
+            codeComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
+            tabs[1].setControl(codeComposite);
+            if (GroovyStuff.TYPE.getAll().size() > 0) {
+                SWTUtils.createLink(codeComposite, Localization.getString("Insert.TYPE.link"), new LoggingHyperlinkAdapter() {
+                    @Override
+                    public void onLinkActivated(HyperlinkEvent e) {
+                        Item item = new ChooseGroovyStuffDialog(GroovyStuff.TYPE).openDialog();
+                        if (item != null) {
+                            String insert = item.getBody();
+                            codeText.insert(insert);
+                            codeText.setCaretOffset(codeText.getCaretOffset() + insert.length());
+                            codeText.setFocus();
+                        }
+                    }
+                }).setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            }
+            if (GroovyStuff.CONSTANT.getAll().size() > 0) {
+                SWTUtils.createLink(codeComposite, Localization.getString("Insert.CONSTANT.link"), new LoggingHyperlinkAdapter() {
+                    @Override
+                    public void onLinkActivated(HyperlinkEvent e) {
+                        Item item = new ChooseGroovyStuffDialog(GroovyStuff.CONSTANT).openDialog();
+                        if (item != null) {
+                            String insert = item.getBody();
+                            codeText.insert(insert);
+                            codeText.setCaretOffset(codeText.getCaretOffset() + insert.length());
+                            codeText.setFocus();
+                        }
+                    }
+                }).setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            }
+            if (GroovyStuff.STATEMENT.getAll().size() > 0) {
+                SWTUtils.createLink(codeComposite, Localization.getString("Insert.STATEMENT.link"), new LoggingHyperlinkAdapter() {
+                    @Override
+                    public void onLinkActivated(HyperlinkEvent e) {
+                        Item item = new ChooseGroovyStuffDialog(GroovyStuff.STATEMENT).openDialog();
+                        if (item != null) {
+                            String insert = item.getBody();
+                            codeText.insert(insert);
+                            codeText.setCaretOffset(codeText.getCaretOffset() + insert.length());
+                            codeText.setFocus();
+                        }
+                    }
+                }).setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            }
+            if (GroovyStuff.METHOD.getAll().size() > 0) {
+                SWTUtils.createLink(codeComposite, Localization.getString("Insert.METHOD.link"), new LoggingHyperlinkAdapter() {
+                    @Override
+                    public void onLinkActivated(HyperlinkEvent e) {
+                        Item item = new ChooseGroovyStuffDialog(GroovyStuff.METHOD).openDialog();
+                        if (item != null) {
+                            String insert = item.getBody();
+                            codeText.insert(insert);
+                            codeText.setCaretOffset(codeText.getCaretOffset() + insert.length());
+                            codeText.setFocus();
+                        }
+                    }
+                }).setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            }
+            SWTUtils.createLink(codeComposite, Localization.getString("button.insert_variable"), new LoggingHyperlinkAdapter() {
+                @Override
+                protected void onLinkActivated(HyperlinkEvent e) throws Exception {
+                    ChooseVariableNameDialog dialog = new ChooseVariableNameDialog(contextVariableNames);
+                    String variableName = dialog.openDialog();
+                    if (variableName != null) {
+                        codeText.insert(variableName);
+                        codeText.setFocus();
+                        codeText.setCaretOffset(codeText.getCaretOffset() + variableName.length());
+                    }
+                }
+            }).setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
+
+            codeText = new FeaturedStyledText(codeComposite, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL, EnumSet.of(
+                    FeaturedStyledText.Feature.LINE_NUMBER, FeaturedStyledText.Feature.UNDO_REDO));
+            codeText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 5, 1));
+            codeText.addLineStyleListener(new JavaHighlightTextStyling(contextVariableNames));
+        }
+
+        private GridData getComboGridData() {
+            GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
+            gridData.minimumWidth = 100;
+            return gridData;
+        }
+
+        private void refreshCombos() {
+            List<Operation> operations = Operation.getAll(GroovyTypeSupport.get(variable1.getJavaClassName()));
+            comboBoxOp.setItems(new String[0]);
+            for (Operation operation : operations) {
+                comboBoxOp.add(operation.getVisibleName());
+            }
+            varNames = getCombo2VariableNames(variable1);
+        }
+
+        private List<String> getCombo2VariableNames(Variable variable1) {
+            List<String> names = new ArrayList<String>();
+            GroovyTypeSupport typeSupport1 = GroovyTypeSupport.get(variable1.getJavaClassName());
+            for (Variable variable : variables) {
+                GroovyTypeSupport typeSupport = GroovyTypeSupport.get(variable.getJavaClassName());
+                // formats are equals, variable not selected in the first combo
+                if (typeSupport1 == typeSupport && variable1 != variable && variableNames.contains(variable1.getScriptingName())) {
+                    names.add(variable.getScriptingName());
+                }
+            }
+            return names;
+        }
+
+        private void toCode() {
+            if (variable1 != null && comboBoxOp.getText().length() > 0 && varName2 != null && varName2.length() > 0) {
+                String operationName = comboBoxOp.getItem(comboBoxOp.getSelectionIndex());
+                Variable variable2 = VariableUtils.getVariableByScriptingName(variables, varName2);
+                GroovyTypeSupport typeSupport = GroovyTypeSupport.get(variable1.getJavaClassName());
+                Operation operation = Operation.getByName(operationName, typeSupport);
+                String code = operation.generateCode(variable1, variable2);
+                codeText.setText(code);
+            } else {
+                // don't change code
+            }
+        }
+
+        @Override
+        protected void clear() {
+        }
+
+        @Override
+        protected void build(ValidatorDefinition definition, Map<String, String> configParams) {
+            String textData = configParams.get(ValidatorDefinition.EXPRESSION_PARAM_NAME);
+            try {
+                Expr expr = GroovyValidationModel.fromCode(textData, variables);
+                if (expr != null) {
+                    Variable variable = expr.getVariable1();
+                    if (variableNames.contains(variable.getScriptingName())) {
+                        variable1 = variable;
+                        txtVarName1.setText(variable.getScriptingName());
+                        refreshCombos();
+                        comboBoxOp.setText(expr.getOperation().getVisibleName());
+                        txtVarName2.setText(expr.getVariable2().getScriptingName());
+                        textData = expr.generateCode();
+                    }
+                } else if (!Strings.isNullOrEmpty(textData)) {
+                    tabFolder.setSelection(1);
+                }
+            } catch (Exception e) {
+                tabFolder.setSelection(1);
+            }
+            codeText.setText(textData != null ? textData : "");
+        }
+
+        @Override
+        protected void updateConfigParams(ValidatorDefinition definition, ValidatorConfig config) {
+            if (tabFolder.getSelectionIndex() == 0) {
+                toCode();
+            }
+            String textData = codeText.getText().trim();
+            if (textData.length() != 0) {
+                config.getParams().put(ValidatorDefinition.EXPRESSION_PARAM_NAME, textData);
+            } else {
+                config.getParams().remove(ValidatorDefinition.EXPRESSION_PARAM_NAME);
+            }
+        }
+    }
+
 }
