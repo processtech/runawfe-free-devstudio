@@ -1,5 +1,7 @@
 package ru.runa.gpd.ui.dialog;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.swt.SWT;
@@ -16,6 +18,7 @@ public class FilterBox extends Composite {
     
     private Text text;
     private Button button;
+    private int selectedIndex = -1;
     private List<String> items;
     private SelectionListener selectionListener;
 
@@ -25,7 +28,7 @@ public class FilterBox extends Composite {
 
     public FilterBox(Composite parent, List<String> items, String selectedItem) {
         super(parent, SWT.NONE);
-        this.items = items;
+        setItems(items);
         setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         setLayout(new GridLayout(2, false));
         text = new Text(this, SWT.READ_ONLY | SWT.BORDER);
@@ -45,7 +48,9 @@ public class FilterBox extends Composite {
                 String result = dialog.openDialog();
                 if (result != null) {
                     text.setText(result);
+                    selectedIndex = FilterBox.this.items.indexOf(result);
                     if (selectionListener != null) {
+                        e.widget = FilterBox.this;
                         e.text = result;
                         selectionListener.widgetSelected(e);
                     }
@@ -58,17 +63,73 @@ public class FilterBox extends Composite {
     public void setSelectionListener (SelectionListener listener) {
         selectionListener = listener;
     }
-    
+
     public void setItems(List<String> items) {
-        this.items = items;
+        if (items == null) {
+            this.items = new ArrayList<>();
+        } else {
+            this.items = items;
+        }
     }
-    
+
+    public void setItems(String[] items) {
+        setItems(new ArrayList<>(Arrays.asList(items)));
+    }
+
     public void setSelectedItem(String selectedItem) {
         text.setText(selectedItem);
+        selectedIndex = items.indexOf(selectedItem);
     }
     
     public String getSelectedItem() {
         return text.getText();
+    }
+
+    public void select(int index) {
+        if (items != null && index >=0 && items.size() > index) {
+            selectedIndex = index;
+            text.setText(items.get(index));
+        }
+    }
+
+    public void remove(int index) {
+        if (items != null && items.size() > index) {
+            if (text.getText().equals(items.get(index))) {
+                text.setText("");
+            }
+            items.remove(index);
+        }
+    }
+
+    public void add(String value, int index) {
+        if (items != null) {
+            items.add(index, value);
+        }
+    }
+
+    public void deselectAll() {
+        text.setText("");
+    }
+
+    public String getText() {
+        return getSelectedItem();
+    }
+
+    public void add(String item) {
+        if (items != null && item != null) {
+            items.add(item);
+        }
+    }
+
+    public int getSelectionIndex() {
+        return selectedIndex;
+    }
+
+    public String getItem(int index) {
+        if (items != null && items.size() > index) {
+            return items.get(index);
+        }
+        return null;
     }
 
 }
