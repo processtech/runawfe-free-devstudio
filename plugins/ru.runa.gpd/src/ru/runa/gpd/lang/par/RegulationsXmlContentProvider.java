@@ -59,7 +59,7 @@ public class RegulationsXmlContentProvider extends AuxContentProvider {
         Document document = XmlUtil.createDocument(NODES_SETTINGS);
         Element root = document.getRootElement();
         for (Node node : definition.getNodes()) {
-            if (node.getRegulationsProperties().isEmpty()) {
+            if (node.getRegulationsProperties().isDefault()) {
                 continue;
             }
             Element element = root.addElement(NODE_SETTINGS);

@@ -269,7 +269,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             VariableUserType type = getSelection();
             VariableUserTypeDialog dialog = new VariableUserTypeDialog(getDefinition(), type);
             if (dialog.open() == Window.OK) {
-                type.setName(dialog.getName());
+                VariableUtils.renameUserType(getDefinition(), type, dialog.getName());
             }
         }
     }

@@ -171,7 +171,7 @@ public class SQLTasksModel extends Observable {
 
         public void serialize(Document document, Element parent) {
             Element queryElement = parent.addElement("query", XmlUtil.RUNA_NAMESPACE);
-            queryElement.addAttribute("sql", query);
+            queryElement.addAttribute("sql", query.replaceAll("\n", "&#10;"));
             for (SQLQueryParameterModel model : params) {
                 model.serialize(document, queryElement);
             }
@@ -182,7 +182,7 @@ public class SQLTasksModel extends Observable {
 
         public static SQLQueryModel deserialize(Element element) {
             SQLQueryModel model = new SQLQueryModel();
-            model.query = element.attributeValue("sql");
+            model.query = element.attributeValue("sql").replaceAll("&#10;", "\n");
             List<Element> children = element.elements();
             for (Element child : children) {
                 SQLQueryParameterModel parameterModel = SQLQueryParameterModel.deserialize(child);

@@ -51,14 +51,14 @@ CKEDITOR.plugins.add('tabs', {
 			}
 		});
 		editor.on('dataReady', function(event) {
-			$('.tabs').tabs();
-			$("li a[href^=#tabs]").each(function() {
+			$(".tabs").tabs();
+			$(".tabs > ul > li > a").each(function() {
 				$(this).parent().focus(function() {
 					$(this).find("a").click();
 					activeTab = $(this).find("a").attr('href');
 				});
 			});
-			if(activeTab != null) {
+			if (activeTab != null) {
 				$("li a[href=" + activeTab + "]").click();
 			}
 		});

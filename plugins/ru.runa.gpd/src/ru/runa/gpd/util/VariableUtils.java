@@ -1,5 +1,6 @@
 package ru.runa.gpd.util;
 
+import java.text.MessageFormat;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -9,9 +10,13 @@ import java.util.regex.Pattern;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.GraphElement;
+import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableContainer;
 import ru.runa.gpd.lang.model.VariableUserType;
+import ru.runa.wfe.var.UserType;
+import ru.runa.wfe.var.format.ListFormat;
+import ru.runa.wfe.var.format.MapFormat;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
@@ -235,6 +240,69 @@ public class VariableUtils {
 
     public static Variable getComplexVariableByExpandedAttribute(VariableContainer variableContainer, String variableName) {
         return getVariableByName(variableContainer, variableName.split(Pattern.quote(VariableUserType.DELIM))[0]);
+    }
+
+    public static boolean isContainerVariable(Variable v) {
+        String fcn = v.getFormatClassName();
+        return fcn.equals(ListFormat.class.getName()) || fcn.equals(MapFormat.class.getName());
+    }
+
+    public static boolean isValidUserTypeName(String value) {
+        return value.indexOf(".") < 0;
+    }
+
+    public static List<String> getUserTypeExpandedAttributeNames(VariableUserType userType) {
+        List<String> result = Lists.newArrayList();
+        if (userType != null) {
+            for (Variable variable : userType.getAttributes()) {
+                result.add(variable.getName());
+                if (variable.isComplex()) {
+                    for (String childAttributeName : getUserTypeExpandedAttributeNames(variable.getUserType())) {
+                        result.add(variable.getName() + UserType.DELIM + childAttributeName);
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    public static void renameUserType(ProcessDefinition pd, VariableUserType type, String newTypeName) {
+        final String[] typeUsages = { "\\({0}\\)", "\\({0},", ", {0}\\)", ", {0}," };
+        String oldTypeName = type.getName();
+        List<VariableUserType> userTypes = pd.getVariableUserTypes();
+        for (VariableUserType userType : userTypes) {
+            List<Variable> attributes = userType.getAttributes();
+            for (Variable attribute : attributes) {
+                if (attribute.getFormat().contains(oldTypeName)) {
+                    for (String typeUsage : typeUsages) {
+                        attribute.setFormat(attribute.getFormat().replaceAll(MessageFormat.format(typeUsage, oldTypeName),
+                                MessageFormat.format(typeUsage, newTypeName)));
+                    }
+                }
+            }
+        }
+        List<Variable> complexVariables = Lists.newArrayList();
+        List<Variable> variables = pd.getVariables(false, true);
+        for (Variable variable : variables) {
+            if (variable.isComplex()) {
+                if (variable.getUserType().getName().equals(oldTypeName)) {
+                    complexVariables.add(variable);
+                }
+            } else if (variable.getFormat().contains(oldTypeName)) {
+                for (String typeUsage : typeUsages) {
+                    variable.setFormat(variable.getFormat().replaceAll(MessageFormat.format(typeUsage, oldTypeName),
+                            MessageFormat.format(typeUsage, newTypeName)));
+                }
+            }
+        }
+        type.setName(newTypeName);
+        for (Variable variable : complexVariables) {
+            variable.setUserType(type);
+        }
+    }
+
+    public static boolean variableExists(String variableName, ProcessDefinition processDefinition) {
+        return processDefinition.getVariableNames(true, true).contains(variableName);
     }
 
 }

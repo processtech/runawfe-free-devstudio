@@ -35,9 +35,12 @@ import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.custom.SWTUtils;
 import ru.runa.gpd.ui.custom.TypedUserInputCombo;
+import ru.runa.gpd.ui.dialog.ChooseGroovyStuffDialog;
 import ru.runa.gpd.ui.dialog.ChooseVariableNameDialog;
 import ru.runa.gpd.ui.dialog.UserInputDialog;
+import ru.runa.gpd.util.GroovyStuff;
 import ru.runa.gpd.util.VariableUtils;
+import ru.runa.gpd.util.GroovyStuff.Item;
 
 public class GroovyEditorDialog extends Dialog {
     private static final Image upImage = SharedImages.getImage("icons/up.gif");
@@ -106,6 +109,62 @@ public class GroovyEditorDialog extends Dialog {
         sourceView.setLayout(new GridLayout());
         sourceView.setLayoutData(new GridData(GridData.FILL_BOTH));
         sourceHeader = new ErrorHeaderComposite(sourceView);
+        if (GroovyStuff.TYPE.getAll().size() > 0) {
+            SWTUtils.createLink(sourceHeader, Localization.getString("Insert.TYPE.link"), new LoggingHyperlinkAdapter() {
+                @Override
+                public void onLinkActivated(HyperlinkEvent e) {
+                    Item item = new ChooseGroovyStuffDialog(GroovyStuff.TYPE).openDialog();
+                    if (item != null) {
+                        String insert = item.getBody();
+                        styledText.insert(insert);
+                        styledText.setCaretOffset(styledText.getCaretOffset() + insert.length());
+                        styledText.setFocus();
+                    }
+                }
+            }).setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+        }
+        if (GroovyStuff.CONSTANT.getAll().size() > 0) {
+            SWTUtils.createLink(sourceHeader, Localization.getString("Insert.CONSTANT.link"), new LoggingHyperlinkAdapter() {
+                @Override
+                public void onLinkActivated(HyperlinkEvent e) {
+                    Item item = new ChooseGroovyStuffDialog(GroovyStuff.CONSTANT).openDialog();
+                    if (item != null) {
+                        String insert = item.getBody();
+                        styledText.insert(insert);
+                        styledText.setCaretOffset(styledText.getCaretOffset() + insert.length());
+                        styledText.setFocus();
+                    }
+                }
+            }).setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+        }
+        if (GroovyStuff.STATEMENT.getAll().size() > 0) {
+            SWTUtils.createLink(sourceHeader, Localization.getString("Insert.STATEMENT.link"), new LoggingHyperlinkAdapter() {
+                @Override
+                public void onLinkActivated(HyperlinkEvent e) {
+                    Item item = new ChooseGroovyStuffDialog(GroovyStuff.STATEMENT).openDialog();
+                    if (item != null) {
+                        String insert = item.getBody();
+                        styledText.insert(insert);
+                        styledText.setCaretOffset(styledText.getCaretOffset() + insert.length());
+                        styledText.setFocus();
+                    }
+                }
+            }).setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+        }
+        if (GroovyStuff.METHOD.getAll().size() > 0) {
+            SWTUtils.createLink(sourceHeader, Localization.getString("Insert.METHOD.link"), new LoggingHyperlinkAdapter() {
+                @Override
+                public void onLinkActivated(HyperlinkEvent e) {
+                    Item item = new ChooseGroovyStuffDialog(GroovyStuff.METHOD).openDialog();
+                    if (item != null) {
+                        String insert = item.getBody();
+                        styledText.insert(insert);
+                        styledText.setCaretOffset(styledText.getCaretOffset() + insert.length());
+                        styledText.setFocus();
+                    }
+                }
+            }).setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+        }
         SWTUtils.createLink(sourceHeader, Localization.getString("button.insert_variable"), new LoggingHyperlinkAdapter() {
             @Override
             protected void onLinkActivated(HyperlinkEvent e) throws Exception {
@@ -423,7 +482,7 @@ public class GroovyEditorDialog extends Dialog {
         public ErrorHeaderComposite(Composite parent) {
             super(parent, SWT.NONE);
             setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            setLayout(new GridLayout(2, false));
+            setLayout(new GridLayout(6, false));
             errorLabel = new Label(this, SWT.NONE);
             errorLabel.setForeground(ColorConstants.red);
             errorLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
