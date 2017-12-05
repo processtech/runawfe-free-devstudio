@@ -184,7 +184,7 @@ public class EditNodeRegulationsPropertiesDialog extends Dialog {
                 browser = new Browser(descriptionComposite, SWT.NONE);
                 new GetHTMLCallbackFunction(browser);
                 new OnLoadCallbackFunction(browser);
-                browser.setUrl(new File(editorFolder, "regulations.html").getAbsolutePath());
+                browser.setUrl(new File(editorFolder, "regulation.html").getAbsolutePath());
                 browser.setLayoutData(dateGridData7);
             } else {
                 Dialogs.warning(Localization.getString("EditNodeRegulationsPropertiesDialog.unableToFindEditor"));

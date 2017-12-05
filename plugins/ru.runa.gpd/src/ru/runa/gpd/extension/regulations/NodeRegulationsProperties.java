@@ -12,6 +12,7 @@ import com.google.common.base.Strings;
 
 public class NodeRegulationsProperties {
     private final GraphElement parent;
+    private boolean enabledByDefault;
     private boolean enabled = true;
     private Node previousNode;
     private Node nextNode;
@@ -20,12 +21,17 @@ public class NodeRegulationsProperties {
     public NodeRegulationsProperties(GraphElement parent) {
         this.parent = parent;
         if (NodeRegistry.hasNodeTypeDefinition(parent.getClass())) {
-            setEnabled(parent.getTypeDefinition().isEnabledInRegulationsByDefault());
+            setEnabledByDefault(parent.getTypeDefinition().isEnabledInRegulationsByDefault());
         }
     }
 
     public GraphElement getParent() {
         return parent;
+    }
+
+    public void setEnabledByDefault(boolean enabledByDefault) {
+        this.enabledByDefault = enabledByDefault;
+        setEnabled(enabledByDefault);
     }
 
     public boolean isEnabled() {
@@ -81,8 +87,8 @@ public class NodeRegulationsProperties {
         return true;
     }
 
-    public boolean isEmpty() {
-        return previousNode == null && nextNode == null && Strings.isNullOrEmpty(description);
+    public boolean isDefault() {
+        return previousNode == null && nextNode == null && Strings.isNullOrEmpty(description) && enabledByDefault == enabled;
     }
 
     @Override

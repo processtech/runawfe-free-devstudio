@@ -67,14 +67,7 @@ public class BotCache {
                                 try {
                                     cacheBotTask(botStationProject.getName(), botName, botTaskFile, botTasks);
                                 } catch (Exception e) {
-                                    if (e.getCause() != null && e.getCause().getMessage() != null
-                                            && e.getCause().getMessage().startsWith("Resource is out of sync with the file system")) {
-                                        // Workaround for 'resource out of sync'
-                                        botTaskFile.getParent().refreshLocal(IResource.DEPTH_ONE, null);
-                                        cacheBotTask(botStationProject.getName(), botName, botTaskFile, botTasks);
-                                    } else {
-                                        PluginLogger.logError(e);
-                                    }
+                                    PluginLogger.logError(e);
                                 }
                             }
                         }
@@ -100,6 +93,9 @@ public class BotCache {
     private static void cacheBotTask(String botStationName, String botName, IFile botTaskFile, List<BotTask> botTasks) {
         try {
             InputStreamReader reader = null;
+            if (!botTaskFile.isSynchronized(IResource.DEPTH_ONE)) {
+                botTaskFile.refreshLocal(IResource.DEPTH_ONE, null);
+            }
             try {
                 reader = new InputStreamReader(botTaskFile.getContents(), Charsets.UTF_8);
                 List<String> lines = CharStreams.readLines(reader);
@@ -107,7 +103,7 @@ public class BotCache {
                 if (lines.size() > 1) {
                     String configurationFileName = lines.get(1);
                     if (!Strings.isNullOrEmpty(configurationFileName)) {
-                        IFile confFile = ((IFolder) botTaskFile.getParent()).getFile(configurationFileName);
+                        IFile confFile = IOUtils.getAdjacentFile(botTaskFile, configurationFileName);
                         if (confFile.exists()) {
                             configurationFileData = IOUtils.readStream(confFile.getContents());
                         }

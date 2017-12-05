@@ -2,6 +2,7 @@ package ru.runa.gpd.util;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -421,12 +422,14 @@ public class WorkspaceOperations {
                 ByteArrayInputStream stream = new ByteArrayInputStream(configuration.getBytes(Charsets.UTF_8));
                 IOUtils.createOrUpdateFile(configurationFile, stream);
                 info.append(configurationFileName);
+                stream.close();
             }
             info.append("\n");
             InputStream infoStream = new ByteArrayInputStream(info.toString().getBytes(Charsets.UTF_8));
             IOUtils.createOrUpdateFile(botTaskFile, infoStream);
             BotCache.invalidateBotTask(botTaskFile, botTask);
-        } catch (CoreException e) {
+            infoStream.close();
+        } catch (CoreException | IOException e) {
             throw new InternalApplicationException(e);
         }
     }

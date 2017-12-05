@@ -3,14 +3,19 @@ package ru.runa.gpd.editor.gef;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
+import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.SWTGraphics;
-import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.GraphicalViewer;
 import org.eclipse.gef.LayerConstants;
+import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
 import org.eclipse.gef.editparts.LayerManager;
+import org.eclipse.graphiti.ui.internal.figures.GFText;
+import org.eclipse.graphiti.ui.internal.parts.ConnectionDecoratorEditPart;
+import org.eclipse.graphiti.ui.internal.parts.IDiagramEditPart;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
@@ -29,6 +34,8 @@ import ru.runa.gpd.lang.model.ProcessDefinition;
 public class GEFImageHelper {
     private static final boolean BUG70949_WORKAROUND = "true".equals(System.getProperty("ru.runa.gpd.workaround.bug70949"));
 
+    private static final int BPMN_CANVAS_SHIFT = 5;
+
     public static void save(GraphicalViewer viewer, ProcessDefinition definition, String filePath) {
         // we remove the selection in order to generate valid graph picture
         viewer.deselectAll();
@@ -39,8 +46,7 @@ public class GEFImageHelper {
         LayerManager lm = (LayerManager) viewer.getEditPartRegistry().get(LayerManager.ID);
         IFigure figure = lm.getLayer(LayerConstants.PRINTABLE_LAYERS);
         try {
-            Rectangle r = figure.getBounds();
-            definition.setConstraint(r.getCopy());
+            Rectangle r = figure.getBounds().getCopy();
             image = new Image(Display.getDefault(), r.width, r.height);
             gc = new GC(image);
             g = new SWTGraphics(gc);
@@ -53,6 +59,59 @@ public class GEFImageHelper {
                 imageLoader.data = new ImageData[] { image.getImageData() };
             }
             imageLoader.save(filePath, SWT.IMAGE_PNG);
+            if (r.x < 0 || r.y < 0) {
+                int xMin = 0, xMin2 = 0;
+                int yMin = 0, yMin2 = 0;
+                Map.Entry<Figure, AbstractGraphicalEditPart> xVisual = null;
+                Map.Entry<Figure, AbstractGraphicalEditPart> yVisual = null;
+                Map visuals = viewer.getVisualPartMap();
+                for (Map.Entry<Figure, AbstractGraphicalEditPart> visual : (Set<Map.Entry<Figure, AbstractGraphicalEditPart>>) visuals.entrySet()) {
+                    if (!(visual.getValue() instanceof IDiagramEditPart)) {
+                        Rectangle rect = visual.getKey().getBounds();
+                        if (r.x < 0) {
+                            if (rect.x < xMin) {
+                                xVisual = visual;
+                                xMin = rect.x;
+                                if (!isConnectionLabel(visual)) {
+                                    xMin2 = Math.min(xMin2, xMin);
+                                }
+                            }
+                        }
+                        if (r.y < 0) {
+                            if (rect.y < yMin) {
+                                yVisual = visual;
+                                yMin = rect.y;
+                                if (!isConnectionLabel(visual)) {
+                                    yMin2 = Math.min(yMin2, yMin);
+                                }
+                            }
+                        }
+                    }
+                }
+                if (xVisual != null) {
+                    if (isConnectionLabel(xVisual)) {
+                        if (xMin2 < 0) {
+                            r.x -= xMin2 - BPMN_CANVAS_SHIFT;
+                        }
+                    } else {
+                        r.x = 0;
+                    }
+                } else if (r.x < 0) {
+                    r.x = 0;
+                }
+                if (yVisual != null) {
+                    if (isConnectionLabel(yVisual)) {
+                        if (yMin2 < 0) {
+                            r.y -= yMin2 - BPMN_CANVAS_SHIFT;
+                        }
+                    } else {
+                        r.y = 0;
+                    }
+                } else if (r.y < 0) {
+                    r.y = 0;
+                }
+            }
+            definition.setConstraint(r);
         } catch (Exception e) {
             PluginLogger.logError("graphimage: saving failed", e);
         } finally {
@@ -66,6 +125,10 @@ public class GEFImageHelper {
                 image.dispose();
             }
         }
+    }
+
+    private static boolean isConnectionLabel(Map.Entry<?, ?> visual) {
+        return visual.getKey() instanceof GFText && visual.getValue() instanceof ConnectionDecoratorEditPart;
     }
 
     public static ImageData downSample(Image image) {

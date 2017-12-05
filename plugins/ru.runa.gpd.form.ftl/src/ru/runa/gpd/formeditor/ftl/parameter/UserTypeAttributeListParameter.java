@@ -22,8 +22,8 @@ import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
+import ru.runa.gpd.util.VariableUtils;
 
-import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 
@@ -86,16 +86,7 @@ public class UserTypeAttributeListParameter extends ParameterType {
 
     protected List<String> getAttributes(Component component) {
         VariableUserType userType = getUserType(component);
-        if (userType == null) {
-            return Lists.newArrayList();
-        }
-        return Lists.transform(userType.getAttributes(), new Function<Variable, String>() {
-
-            @Override
-            public String apply(Variable variable) {
-                return variable.getName();
-            }
-        });
+        return VariableUtils.getUserTypeExpandedAttributeNames(userType);
     }
 
     private final VariableUserType getUserType(Component component) {
