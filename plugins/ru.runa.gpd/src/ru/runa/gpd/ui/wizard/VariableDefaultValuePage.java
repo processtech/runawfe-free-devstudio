@@ -93,11 +93,12 @@ public class VariableDefaultValuePage extends DynaContentWizardPage {
                     }
                 } if (formatPage.getComponentClassNames().length > 0) { // List|Map
                     try {
-                        if (!(new JSONParser().parse(defaultValue.replaceAll("&quot;", "\"")) instanceof JSONArray)) {
+                        Object json = new JSONParser().parse(defaultValue.replaceAll("&quot;", "\""));
+                        if (!(json instanceof JSONObject || json instanceof JSONArray)) {
                             throw new Exception();
                         }
                     } catch (Exception e) { // ParseException's message is null
-                        throw new Exception("Invalid List values");
+                        throw new Exception("Invalid values");
                     }
                 } else {
                     String className = formatPage.getType().getJavaClassName();
