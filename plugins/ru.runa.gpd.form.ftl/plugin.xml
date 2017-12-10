@@ -321,6 +321,19 @@
                   value="raw">
             </paramValue>
          </param>
+         <param
+               name="%Param.UseCurrentUserAsDefault"
+               type="combo"
+               variableAccess="NONE">
+            <paramValue
+                  name="%Param.Value.No"
+                  value="false">
+            </paramValue>
+            <paramValue
+                  name="%Param.Value.Yes"
+                  value="true">
+            </paramValue>
+         </param>
       </component>
       <component
             enabled="false"
