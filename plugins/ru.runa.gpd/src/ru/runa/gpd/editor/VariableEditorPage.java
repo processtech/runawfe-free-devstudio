@@ -116,7 +116,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
             }
         }), new TableColumnDescription("property.name", 200, SWT.LEFT), new TableColumnDescription("Variable.property.format", 200, SWT.LEFT),
                 new TableColumnDescription("Variable.property.defaultValue", 200, SWT.LEFT, false), new TableColumnDescription(
-                        "Variable.property.defaultValue", 200, SWT.LEFT));
+                        "Variable.property.storeType", 200, SWT.LEFT));
 
         Composite buttonsBar = createActionBar(allVariablesComposite);
         addButton(buttonsBar, "button.create", new CreateVariableSelectionListener(), false);
