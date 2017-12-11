@@ -37,6 +37,10 @@ public class GEFImageHelper {
     private static final int BPMN_CANVAS_SHIFT = 5;
 
     public static void save(GraphicalViewer viewer, ProcessDefinition definition, String filePath) {
+        save(viewer, definition, filePath, SWT.IMAGE_PNG);
+    }
+
+    public static void save(GraphicalViewer viewer, ProcessDefinition definition, String filePath, int imageFormat) {
         // we remove the selection in order to generate valid graph picture
         viewer.deselectAll();
         viewer.flush();
@@ -58,7 +62,8 @@ public class GEFImageHelper {
             } else {
                 imageLoader.data = new ImageData[] { image.getImageData() };
             }
-            imageLoader.save(filePath, SWT.IMAGE_PNG);
+            imageLoader.save(filePath, imageFormat);
+
             if (r.x < 0 || r.y < 0) {
                 int xMin = 0, xMin2 = 0;
                 int yMin = 0, yMin2 = 0;
