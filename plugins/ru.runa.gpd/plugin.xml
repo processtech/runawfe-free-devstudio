@@ -175,20 +175,6 @@
     </objectContribution>
     <objectContribution
           adaptable="false"
-          id="node.regulationProperties"
-          objectClass="ru.runa.gpd.lang.model.Node">
-       <filter
-             name="regulationsEnabled"
-             value="true">
-       </filter>
-        <action
-             class="ru.runa.gpd.extension.regulations.ui.EditNodeRegulationsPropertiesAction"
-             id="editNodeRegulationsProperties"
-             label="%label.action.editNodeRegulationProperties">
-        </action>
-    </objectContribution>
-    <objectContribution
-          adaptable="false"
           id="subprocess.compactview"
           objectClass="ru.runa.gpd.lang.model.Subprocess">
        <action
