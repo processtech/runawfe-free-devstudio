@@ -12,6 +12,7 @@
    <extension-point id="wfeConnectors" name="wfeConnectors" schema="schema/wfeConnectors.exsd"/>
    <extension-point id="cssTemplates" name="form CSS templates" schema="schema/cssTemplates.exsd"/>
    <extension-point id="regulations" name="regulations" schema="schema/regulations.exsd"/>
+   <extension-point id="groovyStuff" name="Groovy stuff" schema="schema/groovyStuff.exsd"/>
 
   <extension point = "org.eclipse.ui.editors">
     <editor
@@ -171,20 +172,6 @@
              label="%label.action.feature.compactView"
              menubarPath="features/sp1">
        </action>
-    </objectContribution>
-    <objectContribution
-          adaptable="false"
-          id="node.regulationProperties"
-          objectClass="ru.runa.gpd.lang.model.Node">
-       <filter
-             name="regulationsEnabled"
-             value="true">
-       </filter>
-        <action
-             class="ru.runa.gpd.extension.regulations.ui.EditNodeRegulationsPropertiesAction"
-             id="editNodeRegulationsProperties"
-             label="%label.action.editNodeRegulationProperties">
-        </action>
     </objectContribution>
     <objectContribution
           adaptable="false"
@@ -631,6 +618,40 @@
        </action>
     </objectContribution>
   </extension>
+ <extension
+       point="org.eclipse.ui.menus">
+    <menuContribution
+          allPopups="false"
+          locationURI="popup:org.eclipse.ui.popup.any?after=additions">
+       <command
+             commandId="ru.runa.gpd.extension.regulations.ui.EditNodeRegulationsProperties"
+             label="%label.action.editNodeRegulationProperties"
+             style="push">
+          <visibleWhen
+                checkEnabled="false">
+             <and>
+	             <test
+	                   property="ru.runa.gpd.extension.regulations.ui.regulationsEnabled"
+	                   value="true">
+	             </test>
+	             <test
+	                   property="ru.runa.gpd.extension.regulations.ui.canEditNodeRegulations">
+	             </test>
+             </and>
+          </visibleWhen>
+       </command>
+    </menuContribution>
+ </extension>
+ <extension
+       point="org.eclipse.core.expressions.propertyTesters">
+    <propertyTester
+          class="ru.runa.gpd.extension.regulations.ui.EditNodeRegulationsPropertiesTester"
+          id="ru.runa.gpd.extension.regulations.ui.EditNodeRegulationsPropertiesTester"
+          namespace="ru.runa.gpd.extension.regulations.ui"
+          properties="regulationsEnabled,canEditNodeRegulations"
+          type="java.lang.Object">
+    </propertyTester>
+ </extension>
   
    <extension
          point="org.eclipse.ui.newWizards">
@@ -2657,6 +2678,11 @@
             id="ru.runa.gpd.commands.delete"
             name="ru.runa.gpd.commands.delete">
       </command>
+      <command
+            defaultHandler="ru.runa.gpd.extension.regulations.ui.EditNodeRegulationsPropertiesHandler"
+            id="ru.runa.gpd.extension.regulations.ui.EditNodeRegulationsProperties"
+            name="ru.runa.gpd.extension.regulations.ui.EditNodeRegulationsProperties">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.contexts">
@@ -2822,5 +2848,161 @@
        </enablement>
     </statusContextViewer>
  </extension>
-
+ <extension
+       point="org.eclipse.ui.menus">
+    <menuContribution
+          allPopups="false"
+          locationURI="popup:org.eclipse.ui.popup.any?endof=additions">
+       <menu
+             label="%label.action.exportDiagram">
+          <menu
+                label="%label.action.exportDiagram.pdf">
+             <command
+                   commandId="ru.runa.gpd.lang.action.ExportDiagramToPdf"
+                   label="%label.action.exportDiagram.pdf.a3"
+                   style="push">
+                <parameter
+                      name="paperSize"
+                      value="A3">
+                </parameter>
+             </command>
+             <command
+                   commandId="ru.runa.gpd.lang.action.ExportDiagramToPdf"
+                   label="%label.action.exportDiagram.pdf.a4"
+                   style="push">
+                <parameter
+                      name="paperSize"
+                      value="A4">
+                </parameter>
+             </command>
+             <command
+                   commandId="ru.runa.gpd.lang.action.ExportDiagramToPdf"
+                   label="%label.action.exportDiagram.pdf.a5"
+                   style="push">
+                <parameter
+                      name="paperSize"
+                      value="A5">
+                </parameter>
+             </command>
+             <command
+                   commandId="ru.runa.gpd.lang.action.ExportDiagramToPdf"
+                   label="%label.action.exportDiagram.pdf.a6"
+                   style="push">
+                <parameter
+                      name="paperSize"
+                      value="A6">
+                </parameter>
+             </command>
+          </menu>
+          <command
+                commandId="ru.runa.gpd.lang.action.ExportDiagramToPng"
+                label="%label.action.exportDiagram.png"
+                style="push">
+          </command>
+          <command
+                commandId="ru.runa.gpd.lang.action.ExportDiagramToJpg"
+                label="%label.action.exportDiagram.jpg"
+                style="push">
+          </command>
+          <visibleWhen
+                checkEnabled="false">
+             <with
+                   variable="activeEditor">
+                <instanceof
+                      value="ru.runa.gpd.editor.ProcessEditorBase">
+                </instanceof>
+             </with>
+          </visibleWhen>
+       </menu>
+    </menuContribution>
+ </extension>
+ <extension
+       point="org.eclipse.ui.commands">
+    <command
+          defaultHandler="ru.runa.gpd.lang.action.ExportDiagramToPdfHandler"
+          id="ru.runa.gpd.lang.action.ExportDiagramToPdf"
+          name="Export Diagram to PDF">
+       <commandParameter
+             id="paperSize"
+             name="paperSize"
+             optional="false">
+       </commandParameter>
+    </command>
+    <command
+          defaultHandler="ru.runa.gpd.lang.action.ExportDiagramToPngHandler"
+          id="ru.runa.gpd.lang.action.ExportDiagramToPng"
+          name="Export Diagram to PNG">
+    </command>
+    <command
+          defaultHandler="ru.runa.gpd.lang.action.ExportDiagramToJpgHandler"
+          id="ru.runa.gpd.lang.action.ExportDiagramToJpg"
+          name="Export Diagram to JPG">
+    </command>
+ </extension>
+ <extension
+         point="ru.runa.gpd.groovyStuff">
+      <type
+            label="java.util.Date">
+      </type>
+      <type
+            label="java.util.ArrayList">
+      </type>
+      <type
+            label="java.util.HashMap">
+      </type>
+      <type
+            label="ru.runa.wfe.var.UserTypeMap">
+      </type>
+      <method
+            label="java.lang.Math.random()">
+      </method>
+      <constant
+            label="null">
+      </constant>
+      <constant
+            label="true">
+            Boolean.TRUE
+      </constant>
+      <constant
+            label="false">
+            Boolean.FALSE
+      </constant>
+      <constant
+            label="java.lang.Math.PI">
+      </constant>
+      <statement
+            label="if">
+if ( CONDITION ) {
+}
+      </statement>
+      <statement
+            label="if/else">
+if ( CONDITION ) {
+} else {
+}
+      </statement>
+      <statement
+            label="if/else if/else">
+if ( CONDITION1 ) {
+} else if ( CONDITION2 ) {
+} else {
+}
+      </statement>
+      <statement
+            label="switch">
+switch ( VALUE ) {
+case CONDITION1 :
+   break
+case CONDITION2 :
+   break
+default:
+}
+      </statement>
+      <statement
+            label="%ru.runa.gpd.groovyStuff.setListVariableAttributeValue">
+for (java.util.Map map : LIST_VARIABLE) {
+   map.put("ATTRIBUTE_NAME", VALUE);
+}      
+      </statement>
+ </extension>
 </plugin>

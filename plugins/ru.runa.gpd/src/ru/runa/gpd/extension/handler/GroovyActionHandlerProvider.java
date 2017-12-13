@@ -22,7 +22,10 @@ import ru.runa.gpd.search.VariableSearchVisitor;
 import ru.runa.gpd.ui.custom.JavaHighlightTextStyling;
 import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
 import ru.runa.gpd.ui.custom.SWTUtils;
+import ru.runa.gpd.ui.dialog.ChooseGroovyStuffDialog;
 import ru.runa.gpd.ui.dialog.ChooseVariableNameDialog;
+import ru.runa.gpd.util.GroovyStuff;
+import ru.runa.gpd.util.GroovyStuff.Item;
 import ru.runa.gpd.util.VariableUtils;
 
 import com.google.common.base.Strings;
@@ -72,9 +75,65 @@ public class GroovyActionHandlerProvider extends DelegableProvider {
         @Override
         protected void createDialogHeader(Composite parent) {
             Composite composite = new Composite(parent, SWT.NONE);
-            composite.setLayout(new GridLayout(2, false));
+            composite.setLayout(new GridLayout(5, false));
             composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            SWTUtils.createLink(parent, Localization.getString("button.insert_variable"), new LoggingHyperlinkAdapter() {
+            if (GroovyStuff.TYPE.getAll().size() > 0) {
+                SWTUtils.createLink(composite, Localization.getString("Insert.TYPE.link"), new LoggingHyperlinkAdapter() {
+                    @Override
+                    public void onLinkActivated(HyperlinkEvent e) {
+                        Item item = new ChooseGroovyStuffDialog(GroovyStuff.TYPE).openDialog();
+                        if (item != null) {
+                            String insert = item.getBody();
+                            styledText.insert(insert);
+                            styledText.setCaretOffset(styledText.getCaretOffset() + insert.length());
+                            styledText.setFocus();
+                        }
+                    }
+                }).setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            }
+            if (GroovyStuff.CONSTANT.getAll().size() > 0) {
+                SWTUtils.createLink(composite, Localization.getString("Insert.CONSTANT.link"), new LoggingHyperlinkAdapter() {
+                    @Override
+                    public void onLinkActivated(HyperlinkEvent e) {
+                        Item item = new ChooseGroovyStuffDialog(GroovyStuff.CONSTANT).openDialog();
+                        if (item != null) {
+                            String insert = item.getBody();
+                            styledText.insert(insert);
+                            styledText.setCaretOffset(styledText.getCaretOffset() + insert.length());
+                            styledText.setFocus();
+                        }
+                    }
+                }).setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            }
+            if (GroovyStuff.STATEMENT.getAll().size() > 0) {
+                SWTUtils.createLink(composite, Localization.getString("Insert.STATEMENT.link"), new LoggingHyperlinkAdapter() {
+                    @Override
+                    public void onLinkActivated(HyperlinkEvent e) {
+                        Item item = new ChooseGroovyStuffDialog(GroovyStuff.STATEMENT).openDialog();
+                        if (item != null) {
+                            String insert = item.getBody();
+                            styledText.insert(insert);
+                            styledText.setCaretOffset(styledText.getCaretOffset() + insert.length());
+                            styledText.setFocus();
+                        }
+                    }
+                }).setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            }
+            if (GroovyStuff.METHOD.getAll().size() > 0) {
+                SWTUtils.createLink(composite, Localization.getString("Insert.METHOD.link"), new LoggingHyperlinkAdapter() {
+                    @Override
+                    public void onLinkActivated(HyperlinkEvent e) {
+                        Item item = new ChooseGroovyStuffDialog(GroovyStuff.METHOD).openDialog();
+                        if (item != null) {
+                            String insert = item.getBody();
+                            styledText.insert(insert);
+                            styledText.setCaretOffset(styledText.getCaretOffset() + insert.length());
+                            styledText.setFocus();
+                        }
+                    }
+                }).setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            }
+            SWTUtils.createLink(composite, Localization.getString("button.insert_variable"), new LoggingHyperlinkAdapter() {
 
                 @Override
                 protected void onLinkActivated(HyperlinkEvent e) throws Exception {
@@ -94,4 +153,5 @@ public class GroovyActionHandlerProvider extends DelegableProvider {
             styledText.addLineStyleListener(new JavaHighlightTextStyling(variableNames));
         }
     }
+
 }

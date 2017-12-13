@@ -91,7 +91,7 @@ public class ChooseItemDialog<T extends Comparable<? super T>> extends Dialog {
         GridData listData = new GridData(GridData.FILL_BOTH);
         listData.minimumHeight = 200;
         listData.heightHint = 200;
-        listData.minimumWidth = 100;
+        listData.minimumWidth = 300;
         itemsList.getControl().setLayoutData(listData);
         itemsList.setContentProvider(new ArrayContentProvider());
         if (sort) {
@@ -162,7 +162,7 @@ public class ChooseItemDialog<T extends Comparable<? super T>> extends Dialog {
         @Override
         public boolean select(Viewer viewer, Object parentElement, Object element) {
             String elementText = labelProvider != null ? labelProvider.getText(element) : element.toString();
-            return elementText.toLowerCase().startsWith(filterText.getText().toLowerCase());
+            return elementText.toLowerCase().contains(filterText.getText().toLowerCase());
         }
     }
 }

@@ -14,6 +14,8 @@
    </configIni>
 
    <launcherArgs>
+      <vmArgs>-Dorg.eclipse.swt.internal.gtk.disablePrinting
+      </vmArgs>
    </launcherArgs>
 
    <windowImages i16="/ru.runa.gpd.app/icons/logo/16.gif" i32="/ru.runa.gpd.app/icons/logo/32.gif" i48="/ru.runa.gpd.app/icons/logo/48.gif" i64="/ru.runa.gpd.app/icons/logo/64.gif" i128="/ru.runa.gpd.app/icons/logo/128.gif"/>

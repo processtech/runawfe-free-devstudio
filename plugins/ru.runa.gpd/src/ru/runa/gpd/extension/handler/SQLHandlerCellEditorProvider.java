@@ -111,9 +111,11 @@ public class SQLHandlerCellEditorProvider extends XmlBasedConstructorProvider<SQ
             data.horizontalSpan = 3;
             group.setLayoutData(data);
             group.setLayout(new GridLayout(2, false));
-            final Text text = new Text(group, SWT.BORDER);
+            final Text text = new Text(group, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
             text.setText(queryModel.query);
-            text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            GridData textData = new GridData(GridData.FILL_BOTH);
+            textData.heightHint = 100;
+            text.setLayoutData(textData);
             text.addModifyListener(new ModifyListener() {
                 @Override
                 public void modifyText(ModifyEvent event) {
