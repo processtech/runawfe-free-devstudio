@@ -53,11 +53,6 @@ public abstract class FormType {
             case DOUBTFUL:
                 errors.add(ValidationError.createLocalizedWarning(formNode, "formNode.formVariableTagUnknown", formEntry.getKey()));
                 continue;
-            case WRITE:
-                if (!validation.getVariableNames().contains(formEntry.getKey())) {
-                    errors.add(ValidationError.createLocalizedWarning(formNode, "formNode.formVariableOutOfValidation", formEntry.getKey()));
-                }
-                break;
             case READ:
                 if (validation.getVariableNames().contains(formEntry.getKey())) {
                     errors.add(ValidationError.createLocalizedWarning(formNode, "formNode.formReadAccessVariableExistsInValidation",
