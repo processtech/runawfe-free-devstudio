@@ -22,8 +22,8 @@ public class EndTextDecoration extends TextDecorationNode {
 
     public class EndDefinitionUI implements UIContainer {
 
-        private final PictogramElement owner;
-        private final Text name;
+        private PictogramElement owner;
+        private Text name;
 
         public EndDefinitionUI(PictogramElement owner, Text name) {
             this.owner = owner;
