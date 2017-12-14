@@ -23,7 +23,7 @@ public class AddStartTextDecorationFeature extends AddNodeFeature {
         }
 
         ContainerShape containerShape = Graphiti.getPeCreateService().createContainerShape(context.getTargetContainer(), true);
-        
+
         IGaService gaService = Graphiti.getGaService();
 
         // create UI element for definition
@@ -31,9 +31,9 @@ public class AddStartTextDecorationFeature extends AddNodeFeature {
         gaService.setLocation(rect, context.getX(), context.getY());
         Text textSwimlane = gaService.createText(rect, labelSwimline);
         String bpmnName = node.getTypeDefinition().getBpmnElementName();
-        textSwimlane.setStyle(StyleUtil.getStyleForText(getDiagram(), bpmnName));
+        textSwimlane.setStyle(StyleUtil.getStyleForText(getDiagram(), bpmnName, node));
         Text textName = gaService.createText(rect, labelName);
-        textName.setStyle(StyleUtil.getStyleForText(getDiagram(), bpmnName));
+        textName.setStyle(StyleUtil.getStyleForText(getDiagram(), bpmnName, node));
         node.setUiContainer(node.new StartDefinitionUI(containerShape, rect, textName, textSwimlane));
 
         link(containerShape, node);

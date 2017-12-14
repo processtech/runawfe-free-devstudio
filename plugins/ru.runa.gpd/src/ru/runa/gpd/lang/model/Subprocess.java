@@ -21,7 +21,6 @@ import ru.runa.gpd.util.VariableMapping;
 import ru.runa.gpd.util.VariableUtils;
 import ru.runa.wfe.lang.AsyncCompletionMode;
 
-
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
@@ -33,6 +32,14 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
     private AsyncCompletionMode asyncCompletionMode = AsyncCompletionMode.ON_MAIN_PROCESS_END;
     public static List<String> PLACEHOLDERS = Lists.newArrayList(VariableUtils.CURRENT_PROCESS_ID, VariableUtils.CURRENT_PROCESS_DEFINITION_NAME,
             VariableUtils.CURRENT_NODE_ID, VariableUtils.CURRENT_NODE_NAME);
+
+    public Subprocess() {
+        super();
+        this.font = P_BPMN_SUBPROCESS_FONT;
+        this.fontColor = P_BPMN_SUBPROCESS_FONT_COLOR;
+        this.backgroundColor = P_BPMN_SUBPROCESS_BACKGROUND_COLOR;
+        this.baseColor = P_BPMN_SUBPROCESS_BASE_COLOR;
+    }
 
     @Override
     public void validate(List<ValidationError> errors, IFile definitionFile) {

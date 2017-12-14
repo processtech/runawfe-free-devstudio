@@ -61,6 +61,8 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer impleme
         store.setDefault(P_BPMN_SUBPROCESS_FONT_COLOR, DEFAULT_FONT_COLOR);
         store.setDefault(P_BPMN_SUBPROCESS_BACKGROUND_COLOR, DEFAULT_BACKGROUND_COLOR);
         store.setDefault(P_BPMN_SUBPROCESS_BASE_COLOR, DEFAULT_BASE_COLOR);
+        store.setDefault(P_BPMN_TRANSITION_FONT, DEFAULT_FONT);
+        store.setDefault(P_BPMN_TRANSITION_FONT_COLOR, DEFAULT_FONT_COLOR);
         store.setDefault(P_BPMN_TRANSITION_COLOR, DEFAULT_TRANSITION_COLOR);
     }
 }

@@ -50,6 +50,14 @@ public class TaskState extends FormNode implements ActionContainer, ITimed, Sync
     private boolean reassignSwimlaneToInitializerValue = false;
     private boolean reassignSwimlaneToTaskPerformer = true;
 
+    public TaskState() {
+        super();
+        this.font = P_BPMN_STATE_FONT;
+        this.fontColor = P_BPMN_STATE_FONT_COLOR;
+        this.backgroundColor = P_BPMN_STATE_BACKGROUND_COLOR;
+        this.baseColor = P_BPMN_STATE_BASE_COLOR;
+    }
+
     @Override
     public Timer getTimer() {
         return getFirstChild(Timer.class);

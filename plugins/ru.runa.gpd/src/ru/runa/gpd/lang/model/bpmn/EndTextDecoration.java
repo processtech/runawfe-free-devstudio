@@ -9,6 +9,12 @@ import ru.runa.gpd.editor.graphiti.UIContainer;
 
 public class EndTextDecoration extends TextDecorationNode {
 
+    public EndTextDecoration() {
+        super();
+        this.font = P_BPMN_END_FONT;
+        this.fontColor = P_BPMN_END_FONT_COLOR;
+    }
+
     @Override
     public AbstractEndTextDecorated getTarget() {
         return (AbstractEndTextDecorated) target;
@@ -16,8 +22,8 @@ public class EndTextDecoration extends TextDecorationNode {
 
     public class EndDefinitionUI implements UIContainer {
 
-        private PictogramElement owner;
-        private Text name;
+        private final PictogramElement owner;
+        private final Text name;
 
         public EndDefinitionUI(PictogramElement owner, Text name) {
             this.owner = owner;
@@ -27,15 +33,15 @@ public class EndTextDecoration extends TextDecorationNode {
 
         @Override
         public void pack() {
-        	IDimension nameDimension = GraphitiUi.getUiLayoutService().calculateTextSize(target.getName(), getFont(name));
+            IDimension nameDimension = GraphitiUi.getUiLayoutService().calculateTextSize(target.getName(), getFont(name));
             name.setWidth(nameDimension.getWidth());
             name.setHeight(nameDimension.getHeight());
         }
 
         @Override
         public void update() {
-        	name.setValue(getTarget().getName());
-        	IDimension nameDim = GraphitiUi.getUiLayoutService().calculateTextSize(getTarget().getName(), getFont(name));
+            name.setValue(getTarget().getName());
+            IDimension nameDim = GraphitiUi.getUiLayoutService().calculateTextSize(getTarget().getName(), getFont(name));
             int oldWidth = name.getWidth();
             name.setWidth(nameDim.getWidth());
             name.setX(name.getX() + (oldWidth - nameDim.getWidth()) / 2);

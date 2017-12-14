@@ -22,7 +22,7 @@ public class AddEndTextDecorationFeature extends AddNodeFeature {
         IGaService gaService = Graphiti.getGaService();
         String bpmnElementName = node.getTypeDefinition().getBpmnElementName();
         Text textName = gaService.createText(containerShape, labelName);
-        textName.setStyle(StyleUtil.getStyleForText(getDiagram(), bpmnElementName));
+        textName.setStyle(StyleUtil.getStyleForText(getDiagram(), bpmnElementName, node));
         gaService.setLocation(textName, context.getX(), context.getY());
         node.setUiContainer(node.new EndDefinitionUI(containerShape, textName));
 

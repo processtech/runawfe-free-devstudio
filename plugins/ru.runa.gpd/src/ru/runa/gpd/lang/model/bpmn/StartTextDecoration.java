@@ -16,6 +16,12 @@ import ru.runa.gpd.util.SwimlaneDisplayMode;
 
 public class StartTextDecoration extends TextDecorationNode {
 
+    public StartTextDecoration() {
+        super();
+        this.font = P_BPMN_STARTSTATE_FONT;
+        this.fontColor = P_BPMN_STARTSTATE_FONT_COLOR;
+    }
+
     @Override
     public StartState getTarget() {
         return (StartState) target;
@@ -50,12 +56,12 @@ public class StartTextDecoration extends TextDecorationNode {
             IDimension swimlineDim = new DimensionImpl(0, 0);
 
             if (SwimlaneDisplayMode.none == target.getProcessDefinition().getSwimlaneDisplayMode()) {
-            	swimlineDim = GraphitiUi.getUiLayoutService().calculateTextSize(labelSwimline, getFont(swimlane));
-            	maxRectWidth = swimlineDim.getWidth();
+                swimlineDim = GraphitiUi.getUiLayoutService().calculateTextSize(labelSwimline, getFont(swimlane));
+                maxRectWidth = swimlineDim.getWidth();
                 swimlane.setHorizontalAlignment(Orientation.ALIGNMENT_CENTER);
             }
 
-            IDimension nameDim = GraphitiUi.getUiLayoutService().calculateTextSize(labelName, getFont(name));            
+            IDimension nameDim = GraphitiUi.getUiLayoutService().calculateTextSize(labelName, getFont(name));
             maxRectWidth = Math.max(nameDim.getWidth(), maxRectWidth);
             name.setHorizontalAlignment(Orientation.ALIGNMENT_CENTER);
             gaService.setLocationAndSize(name, 0, swimlineDim.getHeight(), maxRectWidth, nameDim.getHeight());
