@@ -1,9 +1,11 @@
 package ru.runa.gpd.editor.graphiti;
 
 import java.awt.Font;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.graphiti.mm.StyleContainer;
@@ -27,6 +29,17 @@ import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.RGB;
 
 import ru.runa.gpd.Activator;
+import ru.runa.gpd.lang.model.MultiSubprocess;
+import ru.runa.gpd.lang.model.MultiTaskState;
+import ru.runa.gpd.lang.model.NamedGraphElement;
+import ru.runa.gpd.lang.model.Node;
+import ru.runa.gpd.lang.model.Subprocess;
+import ru.runa.gpd.lang.model.TaskState;
+import ru.runa.gpd.lang.model.Transition;
+import ru.runa.gpd.lang.model.bpmn.EndTextDecoration;
+import ru.runa.gpd.lang.model.bpmn.ScriptTask;
+import ru.runa.gpd.lang.model.bpmn.StartTextDecoration;
+import ru.runa.gpd.lang.model.bpmn.TextAnnotation;
 import ru.runa.gpd.settings.PrefConstants;
 
 public class StyleUtil implements PrefConstants {
@@ -35,59 +48,40 @@ public class StyleUtil implements PrefConstants {
     public static final IColorConstant VERY_LIGHT_BLUE = new ColorConstant(250, 251, 252);
     public static final IColorConstant LIGHT_BLUE = new ColorConstant(3, 104, 154);
     public static final IColorConstant BPMN_CLASS_FOREGROUND = new ColorConstant(0, 0, 0);
-    private static List<String> bpmnNames = new ArrayList<String>();
+    private static Map<String, NamedGraphElement> bpmnNames = new HashMap<String, NamedGraphElement>();
     private static final String POLYGON_DIAMOND_STYLE_ID = "BPMN-POLYGON-DIAMOND";
     private static final String TASK_STYLE_ID = "TASK";
     private static final String TRANSITION_STYLE_ID = "BPMN-TRANSITION";
     private static final String POLYGON_ARROW_STYLE_ID = "BPMN-POLYGON-ARROW";
     private static IGaService gaService = Graphiti.getGaService();
     static {
-        bpmnNames.add("multiTask");
-        bpmnNames.add("multiProcess");
-        bpmnNames.add("scriptTask");
-        bpmnNames.add("userTask");
-        bpmnNames.add("subProcess");
-        bpmnNames.add("startTextDecoration");
-        bpmnNames.add("endTextDecoration");
-        bpmnNames.add("textAnnotation");
+        bpmnNames.put("multiTask", new MultiTaskState());
+        bpmnNames.put("multiProcess", new MultiSubprocess());
+        bpmnNames.put("scriptTask", new ScriptTask());
+        bpmnNames.put("userTask", new TaskState());
+        bpmnNames.put("subProcess", new Subprocess());
+        bpmnNames.put("startTextDecoration", new StartTextDecoration());
+        bpmnNames.put("endTextDecoration", new EndTextDecoration());
+        bpmnNames.put("textAnnotation", new TextAnnotation());
+        bpmnNames.put("transition", new Transition());
     }
 
-    public static Style getStyleForEvent(Diagram diagram, String bpmnName) {
+    public static Style getStyleForEvent(Diagram diagram, String bpmnName, Node node) {
         final String styleId = bpmnName + "EVENT"; //$NON-NLS-1$
         Style style = findStyle(diagram, styleId);
         if (style == null) { // style not found - create new style
             style = gaService.createStyle(diagram, styleId);
-            initStyleForEvent(diagram, bpmnName, style);
+            initStyleForEvent(diagram, bpmnName, style, node);
         }
         return style;
     }
 
-    private static void initStyleForEvent(Diagram diagram, String bpmnName, Style style) {
+    private static void initStyleForEvent(Diagram diagram, String bpmnName, Style style, NamedGraphElement node) {
         if (style == null) {
             String styleId = bpmnName + "EVENT";
             style = getStyle(diagram, styleId);
         }
-        Color color = null;
-        switch (bpmnName) {
-        case "multiTask":
-            color = initColor(style, P_BPMN_MULTITASKSTATE_BASE_COLOR, P_BPMN_MULTITASKSTATE_BACKGROUND_COLOR, diagram);
-            break;
-        case "multiProcess":
-            color = initColor(style, P_BPMN_MULTISUBPROCESS_BASE_COLOR, P_BPMN_MULTISUBPROCESS_BACKGROUND_COLOR, diagram);
-            break;
-        case "scriptTask":
-            color = initColor(style, P_BPMN_SCRIPTTASK_BASE_COLOR, P_BPMN_SCRIPTTASK_BACKGROUND_COLOR, diagram);
-            break;
-        case "userTask":
-            color = initColor(style, P_BPMN_STATE_BASE_COLOR, P_BPMN_STATE_BACKGROUND_COLOR, diagram);
-            break;
-        case "subProcess":
-            color = initColor(style, P_BPMN_SUBPROCESS_BASE_COLOR, P_BPMN_SUBPROCESS_BACKGROUND_COLOR, diagram);
-            break;
-        default:
-            color = initColor(style, P_BPMN_BASE_COLOR, P_BPMN_BACKGROUND_COLOR, diagram);
-            break;
-        }
+        Color color = initColor(style, node.getBaseColor(), node.getBackgroundColor(), diagram);
         gaService.setRenderingStyle(style, getDefaultEventColor(diagram, color));
     }
 
@@ -288,55 +282,22 @@ public class StyleUtil implements PrefConstants {
         return gaService.manageColor(diagram, color);
     }
 
-    public static Style getStyleForText(Diagram diagram, String bpmnName) {
+    public static Style getStyleForText(Diagram diagram, String bpmnName, NamedGraphElement node) {
         String styleId = bpmnName + "-Text";
         Style style = findStyle(diagram, styleId);
         if (style == null) { // style not found - create new style
             style = gaService.createStyle(diagram, styleId);
-            initStyleForText(diagram, bpmnName, style);
+            initStyleForText(diagram, bpmnName, style, node);
         }
         return style;
     }
 
-    private static void initStyleForText(Diagram diagram, String bpmnName, Style style) {
+    private static void initStyleForText(Diagram diagram, String bpmnName, Style style, NamedGraphElement node) {
         if (style == null) {
             String styleId = bpmnName + "-Text";
             style = getStyle(diagram, styleId);
         }
-        switch (bpmnName) {
-        case "scriptTask":
-            updateStyleForText(diagram, style, P_BPMN_SCRIPTTASK_FONT, P_BPMN_SCRIPTTASK_FONT_COLOR);
-            break;
-        case "userTask":
-            updateStyleForText(diagram, style, P_BPMN_STATE_FONT, P_BPMN_STATE_FONT_COLOR);
-            break;
-        case "endTokenEvent":
-            updateStyleForText(diagram, style, P_BPMN_ENDTOKEN_FONT, P_BPMN_ENDTOKEN_FONT_COLOR);
-            break;
-        case "endTextDecoration":
-            updateStyleForText(diagram, style, P_BPMN_END_FONT, P_BPMN_END_FONT_COLOR);
-            break;
-        case "startTextDecoration":
-            updateStyleForText(diagram, style, P_BPMN_STARTSTATE_FONT, P_BPMN_STARTSTATE_FONT_COLOR);
-            break;
-        case "multiTask":
-            updateStyleForText(diagram, style, P_BPMN_MULTITASKSTATE_FONT, P_BPMN_MULTITASKSTATE_FONT_COLOR);
-            break;
-        case "multiProcess":
-            updateStyleForText(diagram, style, P_BPMN_MULTISUBPROCESS_FONT, P_BPMN_MULTISUBPROCESS_FONT_COLOR);
-            break;
-        case "subProcess":
-            updateStyleForText(diagram, style, P_BPMN_SUBPROCESS_FONT, P_BPMN_SUBPROCESS_FONT_COLOR);
-            break;
-        case "transition":
-            updateStyleForText(diagram, style, P_BPMN_SUBPROCESS_FONT, P_BPMN_TRANSITION_COLOR);
-            break;
-        case "textAnnotation":
-            updateStyleForText(diagram, style, P_BPMN_TEXT_ANNOTATION_FONT, P_BPMN_TEXT_ANNOTATION_FONT_COLOR);
-            break;
-        default:
-            updateStyleForText(diagram, style, P_BPMN_FONT, P_BPMN_FONT_COLOR);
-        }
+        updateStyleForText(diagram, style, node.getFont(), node.getFontColor());
     }
 
     private static void updateStyleForText(Diagram diagram, Style style, String font, String fontColor) {
@@ -357,13 +318,18 @@ public class StyleUtil implements PrefConstants {
     }
 
     public static void resetStyles(Diagram diagram) {
-        for (String bpmnName : bpmnNames) {
-            initStyleForEvent(diagram, bpmnName, null);
+        Set entrySet = bpmnNames.entrySet();
+        Iterator it = entrySet.iterator();
+        while (it.hasNext()) {
+            Map.Entry me = (Map.Entry) it.next();
+            String bpmnName = (String) me.getKey();
+            NamedGraphElement node = (NamedGraphElement) me.getValue();
+            initStyleForEvent(diagram, bpmnName, null, node);
             initStyleForTask(diagram, null);
             initStyleForTransition(diagram, null);
             initStyleForPolygonArrow(diagram, null);
             initStyleForPolygonDiamond(diagram, null);
-            initStyleForText(diagram, bpmnName, null);
+            initStyleForText(diagram, bpmnName, null, node);
         }
     }
 }

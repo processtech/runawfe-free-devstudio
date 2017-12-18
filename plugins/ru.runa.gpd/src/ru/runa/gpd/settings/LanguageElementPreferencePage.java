@@ -171,6 +171,8 @@ public class LanguageElementPreferencePage extends FieldEditorPreferencePage imp
         }
 
         if (element instanceof Transition) {
+            addField(new FontFieldEditor(P_BPMN_TRANSITION_FONT, Localization.getString(PREF_COMMON_BPMN + P_BPMN_FONT), getFieldEditorParent()));
+            addColorField(P_BPMN_TRANSITION_FONT_COLOR, P_BPMN_FONT_COLOR);
             addColorField(P_BPMN_TRANSITION_COLOR, P_BPMN_TRANSITION_COLOR);
         }
     }

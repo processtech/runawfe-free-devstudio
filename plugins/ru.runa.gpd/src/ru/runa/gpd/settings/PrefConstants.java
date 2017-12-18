@@ -16,6 +16,8 @@ public interface PrefConstants {
     public static final String P_BPMN_BACKGROUND_COLOR = "backgroundColor";
     public static final String P_BPMN_BASE_COLOR = "baseColor";
     public static final String P_BPMN_TRANSITION_COLOR = "transitionColor";
+    public static final String P_BPMN_TRANSITION_FONT = "transitionFont";
+    public static final String P_BPMN_TRANSITION_FONT_COLOR = "transitionFontColor";
     public static final String P_BPMN_STATE_FONT = "bpmnStateFont";
     public static final String P_BPMN_STATE_FONT_COLOR = "bpmnStateFontColor";
     public static final String P_BPMN_STATE_BACKGROUND_COLOR = "bpmnStateBackgroundColor";

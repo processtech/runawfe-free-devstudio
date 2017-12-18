@@ -1,7 +1,14 @@
 package ru.runa.gpd.lang.model;
 
-public abstract class NamedGraphElement extends GraphElement implements Comparable<NamedGraphElement> {
+import ru.runa.gpd.settings.PrefConstants;
+
+public abstract class NamedGraphElement extends GraphElement implements Comparable<NamedGraphElement>, PrefConstants {
     private String name;
+    protected String font;
+    protected String fontColor;
+    protected String backgroundColor;
+    protected String baseColor;
+    protected String transitionColor;
 
     public NamedGraphElement() {
     }
@@ -67,5 +74,25 @@ public abstract class NamedGraphElement extends GraphElement implements Comparab
         NamedGraphElement copy = (NamedGraphElement) super.makeCopy(parent);
         copy.setName(getName());
         return copy;
+    }
+
+    public String getFont() {
+        return font;
+    }
+
+    public String getFontColor() {
+        return fontColor;
+    }
+
+    public String getBackgroundColor() {
+        return backgroundColor;
+    }
+
+    public String getBaseColor() {
+        return baseColor;
+    }
+
+    public String getTransitionColor() {
+        return transitionColor;
     }
 }

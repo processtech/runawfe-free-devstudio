@@ -80,21 +80,22 @@ public class AddTransitionFeature extends AbstractAddFeature {
         link(connection, transition);
         // add dynamic text decorator for the reference name
         boolean nameLabelVisible = !Strings.isNullOrEmpty(transition.getLabel());
-        createLabel(connection, transition.getLabel(), transition.getLabelLocation(), nameLabelVisible);
+        createLabel(connection, transition.getLabel(), transition.getLabelLocation(), nameLabelVisible, transition);
         // add static graphical decorators (composition and navigable)
         createArrow(connection);
         boolean exclusive = transition.getSource().isExclusive() && transition.getSource().getLeavingTransitions().size() > 1;
         createExclusiveDiamond(connection, exclusive);
-        //createDefaultFlow(connection);
+        // createDefaultFlow(connection);
         return connection;
     }
 
-    private void createLabel(Connection connection, String transitionName, org.eclipse.draw2d.geometry.Point location, boolean visible) {
+    private void createLabel(Connection connection, String transitionName, org.eclipse.draw2d.geometry.Point location, boolean visible,
+            Transition transition) {
         ConnectionDecorator connectionDecorator = Graphiti.getPeCreateService().createConnectionDecorator(connection, true, 0.5, true);
         Text text = Graphiti.getGaService().createText(connectionDecorator);
         text.setHorizontalAlignment(Orientation.ALIGNMENT_LEFT);
         text.setVerticalAlignment(Orientation.ALIGNMENT_CENTER);
-        text.setStyle(StyleUtil.getStyleForText(getDiagram(), "transition"));
+        text.setStyle(StyleUtil.getStyleForText(getDiagram(), "transition", transition));
         if (location != null) {
             Graphiti.getGaService().setLocation(text, location.x, location.y);
         } else {

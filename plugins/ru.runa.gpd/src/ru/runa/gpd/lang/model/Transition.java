@@ -32,6 +32,13 @@ public class Transition extends NamedGraphElement implements ActionContainer {
     private boolean defaultFlow;
     private Point labelLocation;
 
+    public Transition() {
+        super();
+        this.font = P_BPMN_TRANSITION_FONT;
+        this.fontColor = P_BPMN_TRANSITION_FONT_COLOR;
+        this.transitionColor = P_BPMN_TRANSITION_COLOR;
+    }
+
     public Point getLabelLocation() {
         return labelLocation;
     }
@@ -184,6 +191,7 @@ public class Transition extends NamedGraphElement implements ActionContainer {
         return getParent().toString() + " -> (" + getName() + ") -> " + target.toString();
     }
 
+    @Override
     public String getLabel() {
         StringBuilder result = new StringBuilder();
         if (getSource() instanceof ExclusiveGateway) {

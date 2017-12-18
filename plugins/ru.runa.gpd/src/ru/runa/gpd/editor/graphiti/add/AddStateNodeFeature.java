@@ -35,17 +35,17 @@ public class AddStateNodeFeature extends AddNodeFeature {
         RoundedRectangle border = Graphiti.getGaService().createRoundedRectangle(main, 20, 20);
         border.getProperties().add(new GaProperty(GaProperty.ID, LayoutStateNodeFeature.BORDER_RECT));
         border.setLineWidth(2);
-        border.setStyle(StyleUtil.getStyleForEvent(getDiagram(), bpmnName));
+        border.setStyle(StyleUtil.getStyleForEvent(getDiagram(), bpmnName, node));
         if (node instanceof SwimlanedNode && node.getProcessDefinition().getSwimlaneDisplayMode() == SwimlaneDisplayMode.none) {
             Text swimlaneText = Graphiti.getGaService().createText(border, ((SwimlanedNode) node).getSwimlaneLabel());
             swimlaneText.getProperties().add(new GaProperty(GaProperty.ID, GaProperty.SWIMLANE_NAME));
             swimlaneText.setHorizontalAlignment(Orientation.ALIGNMENT_CENTER);
-            swimlaneText.setStyle(StyleUtil.getStyleForText(getDiagram(), bpmnName));
+            swimlaneText.setStyle(StyleUtil.getStyleForText(getDiagram(), bpmnName, node));
         }
         MultiText nameText = Graphiti.getGaService().createMultiText(border, node.getName());
         nameText.getProperties().add(new GaProperty(GaProperty.ID, GaProperty.NAME));
         nameText.setHorizontalAlignment(Orientation.ALIGNMENT_CENTER);
-        nameText.setStyle(StyleUtil.getStyleForText(getDiagram(), bpmnName));
+        nameText.setStyle(StyleUtil.getStyleForText(getDiagram(), bpmnName, node));
 
         containerShape.getProperties().add(new GaProperty(GaProperty.MINIMAZED_VIEW, String.valueOf(node.isMinimizedView())));
         //

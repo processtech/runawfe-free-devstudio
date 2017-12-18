@@ -32,6 +32,14 @@ public class MultiTaskState extends TaskState implements IMultiInstancesContaine
     private MultiTaskCreationMode creationMode = MultiTaskCreationMode.BY_DISCRIMINATOR;
     private final List<VariableMapping> variableMappings = Lists.newArrayList();
 
+    public MultiTaskState() {
+        super();
+        this.font = P_BPMN_MULTITASKSTATE_FONT;
+        this.fontColor = P_BPMN_MULTITASKSTATE_FONT_COLOR;
+        this.backgroundColor = P_BPMN_MULTITASKSTATE_BACKGROUND_COLOR;
+        this.baseColor = P_BPMN_MULTITASKSTATE_BASE_COLOR;
+    }
+
     @Override
     protected boolean isSwimlaneDisabled() {
         return creationMode == MultiTaskCreationMode.BY_EXECUTORS || discriminatorUsage.contains(VariableMapping.USAGE_DISCRIMINATOR_GROUP)

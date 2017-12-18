@@ -1,5 +1,6 @@
 package ru.runa.gpd.settings;
 
+import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IPreferenceNode;
 import org.eclipse.jface.preference.PreferenceManager;
@@ -7,6 +8,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.PlatformUI;
+import org.osgi.service.prefs.BackingStoreException;
+import org.osgi.service.prefs.Preferences;
 
 import ru.runa.gpd.Activator;
 
@@ -53,9 +56,15 @@ public class BPMNPreferencePage extends FieldEditorPreferencePage implements Pre
                 for (IPreferenceNode subNode : preferenceNodeBPMNsubNodes) {
                     LanguageElementPreferencePage page = (LanguageElementPreferencePage) subNode.getPage();
                     if (page == null) {
-                        continue;
+                        subNode.createPage();
+                        page = (LanguageElementPreferencePage) subNode.getPage();
                     }
                     if (!apply) {
+                        try {
+                            Preferences preferences = InstanceScope.INSTANCE.getNode("ru.runa.gpd");
+                            preferences.clear();
+                        } catch (BackingStoreException e) {
+                        }
                         page.performApply();
                     } else {
                         page.performDefaults();
@@ -65,14 +74,4 @@ public class BPMNPreferencePage extends FieldEditorPreferencePage implements Pre
             }
         }
     }
-
-    @Override
-    public boolean performOk() {
-        boolean performOk = super.performOk();
-        if (performOk) {
-            performApply();
-        }
-        return performOk;
-    }
-
 }
