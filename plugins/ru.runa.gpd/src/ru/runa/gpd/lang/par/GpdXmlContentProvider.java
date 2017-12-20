@@ -124,14 +124,16 @@ public class GpdXmlContentProvider extends AuxContentProvider {
             addAttribute(root, RENDERED, "graphiti");
         }
         Rectangle definitionRectangle = definition.getConstraint();
-        if (definitionRectangle.x != 0) {
-            addAttribute(root, X, String.valueOf(definitionRectangle.x));
+        if (definitionRectangle != null) {
+            if (definitionRectangle.x != 0) {
+                addAttribute(root, X, String.valueOf(definitionRectangle.x));
+            }
+            if (definitionRectangle.y != 0) {
+                addAttribute(root, Y, String.valueOf(definitionRectangle.y));
+            }
+            addAttribute(root, WIDTH, String.valueOf(definitionRectangle.width));
+            addAttribute(root, HEIGHT, String.valueOf(definitionRectangle.height));
         }
-        if (definitionRectangle.y != 0) {
-            addAttribute(root, Y, String.valueOf(definitionRectangle.y));
-        }
-        addAttribute(root, WIDTH, String.valueOf(definitionRectangle.width));
-        addAttribute(root, HEIGHT, String.valueOf(definitionRectangle.height));
         addAttribute(root, SHOW_ACTIONS, String.valueOf(definition.isShowActions()));
         addAttribute(root, SHOW_GRID, String.valueOf(definition.isShowGrid()));
         int xOffset = 0;
