@@ -36,6 +36,7 @@ import com.google.common.collect.Maps;
 public class ProcessDefinition extends NamedGraphElement implements Describable {
     private Language language;
     private NodeAsyncExecution defaultNodeAsyncExecution = NodeAsyncExecution.DEFAULT;
+    private ProcessRegulations defaultProcessRegulations = ProcessRegulations.DEFAULT;
     private boolean dirty;
     private boolean showActions;
     private boolean showGrid;
@@ -145,6 +146,16 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
         NodeAsyncExecution old = this.defaultNodeAsyncExecution;
         this.defaultNodeAsyncExecution = defaultNodeAsyncExecution;
         firePropertyChange(PROPERTY_NODE_ASYNC_EXECUTION, old, this.defaultNodeAsyncExecution);
+    }
+    
+    public ProcessRegulations getDefaultProcessRegulations() {
+        return defaultProcessRegulations;
+    }
+
+    public void setDefaultProcessRegulations(ProcessRegulations defaultProcessRegulations) {
+        ProcessRegulations old = this.defaultProcessRegulations;
+        this.defaultProcessRegulations = defaultProcessRegulations;
+        firePropertyChange(PROPERTY_PROCESS_REGULATIONS, old, this.defaultProcessRegulations);
     }
 
     public boolean isShowActions() {
@@ -370,6 +381,8 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
                     array));
             descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_NODE_ASYNC_EXECUTION, Localization
                     .getString("ProcessDefinition.property.nodeAsyncExecution"), NodeAsyncExecution.LABELS));
+            descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_PROCESS_REGULATIONS, Localization
+                    .getString("ProcessDefinition.property.processRegulations"), ProcessRegulations.LABELS));
         }
     }
 
@@ -390,6 +403,10 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
         if (PROPERTY_NODE_ASYNC_EXECUTION.equals(id)) {
             return defaultNodeAsyncExecution.ordinal();
         }
+        if (PROPERTY_PROCESS_REGULATIONS.equals(id)) {
+            return defaultProcessRegulations.ordinal();
+        }
+        
         return super.getPropertyValue(id);
     }
 
@@ -402,6 +419,9 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
             setAccessType(ProcessDefinitionAccessType.values()[i]);
         } else if (PROPERTY_NODE_ASYNC_EXECUTION.equals(id)) {
             setDefaultNodeAsyncExecution(NodeAsyncExecution.values()[(Integer) value]);
+        }
+        else if (PROPERTY_PROCESS_REGULATIONS.equals(id)) {
+            setDefaultProcessRegulations(ProcessRegulations.values()[(Integer) value]);
         } else {
             super.setPropertyValue(id, value);
         }

@@ -28,12 +28,20 @@ public class RegulationsRegistry {
         }
     }
 
-    public static String getTemplate() {
+    public synchronized static String getTemplate() {
         return template;
     }
+    
+    public synchronized static void setTemplate(String template) {
+        RegulationsRegistry.template = template;
+    }
 
-    public static String getCssStyles() {
+    public synchronized static String getCssStyles() {
         return cssStyles;
+    }
+    
+    public synchronized static void setCssStyles(String cssStyle) {
+        RegulationsRegistry.cssStyles = cssStyle;
     }
 
     private static void init() throws IOException {
@@ -60,7 +68,7 @@ public class RegulationsRegistry {
         if (path == null) {
             return null;
         }
-        URL url = FileLocator.find(bundle, path, Collections.EMPTY_MAP);
+        URL url = FileLocator.find(bundle, path, Collections.emptyMap());
         URL fileUrl = FileLocator.toFileURL(url);
         InputStream input = fileUrl.openConnection().getInputStream();
         return IOUtils.readStream(input);

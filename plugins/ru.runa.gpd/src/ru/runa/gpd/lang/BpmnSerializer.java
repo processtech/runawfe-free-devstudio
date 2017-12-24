@@ -1,5 +1,5 @@
 package ru.runa.gpd.lang;
-
+    
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +28,7 @@ import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.NodeAsyncExecution;
 import ru.runa.gpd.lang.model.ProcessDefinition;
+import ru.runa.gpd.lang.model.ProcessRegulations;
 import ru.runa.gpd.lang.model.StartState;
 import ru.runa.gpd.lang.model.Subprocess;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
@@ -646,6 +647,9 @@ public class BpmnSerializer extends ProcessSerializer {
         }
         if (processProperties.containsKey(NODE_ASYNC_EXECUTION)) {
             definition.setDefaultNodeAsyncExecution(NodeAsyncExecution.getByValueNotNull(processProperties.get(NODE_ASYNC_EXECUTION)));
+        }
+        if (processProperties.containsKey(PROCESS_REGULATIONS)) {
+            definition.setDefaultProcessRegulations(ProcessRegulations.getByValueNotNull(processProperties.get(PROCESS_REGULATIONS)));
         }
         String swimlaneDisplayModeName = processProperties.get(SHOW_SWIMLANE);
         if (swimlaneDisplayModeName != null) {
