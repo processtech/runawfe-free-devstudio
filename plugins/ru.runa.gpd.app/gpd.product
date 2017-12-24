@@ -17,22 +17,23 @@
       </vmArgs>
    </launcherArgs>
 
-   <windowImages i16="/ru.runa.gpd.app/icons/logo/16.gif" i32="/ru.runa.gpd.app/icons/logo/32.gif" i48="/ru.runa.gpd.app/icons/logo/48.gif" i64="/ru.runa.gpd.app/icons/logo/64.gif" i128="/ru.runa.gpd.app/icons/logo/128.gif"/>
+   <windowImages i16="icons/logo/16.gif" i32="icons/logo/32.gif" i48="icons/logo/48.gif" i64="icons/logo/64.gif" i128="icons/logo/128.gif"/>
 
    <splash
       location="ru.runa.gpd.app" />
    <launcher name="runa-gpd">
-      <linux icon="/ru.runa.gpd.app/icons/logo/16.xpm"/>
-      <macosx icon="/ru.runa.gpd.app/icons/logo/16.icns"/>
+      <linux icon="icons/logo/16.xpm"/>
+      <macosx icon="icons/logo/16.icns"/>
       <solaris/>
-      <win useIco="false">
+      <win useIco="true">
+         <ico path="icons/logo/icons.ico"/>
          <bmp
-            winSmallHigh="/ru.runa.gpd.app/icons/logo/16_32.bmp"
-            winSmallLow="/ru.runa.gpd.app/icons/logo/16_8.bmp"
-            winMediumHigh="/ru.runa.gpd.app/icons/logo/32_32.bmp"
-            winMediumLow="/ru.runa.gpd.app/icons/logo/32_8.bmp"
-            winLargeHigh="/ru.runa.gpd.app/icons/logo/48_32.bmp"
-            winLargeLow="/ru.runa.gpd.app/icons/logo/48_8.bmp"/>
+            winSmallHigh="icons/logo/16_32.bmp"
+            winSmallLow="icons/logo/16_8.bmp"
+            winMediumHigh="icons/logo/32_32.bmp"
+            winMediumLow="icons/logo/32_8.bmp"
+            winLargeHigh="icons/logo/48_32.bmp"
+            winLargeLow="icons/logo/48_8.bmp"/>
       </win>
    </launcher>
 
