@@ -77,6 +77,11 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
         if ("regulationsEnabled".equals(name)) {
             return Objects.equal(value, String.valueOf(CommonPreferencePage.isRegulationsMenuItemsEnabled()));
         }
+        if ("editRegulationsEnabled".equals(name)) {
+            return Objects.equal(value, String.valueOf(CommonPreferencePage.isRegulationsMenuItemsEnabled())) &&
+                !getProcessDefinition().getDefaultProcessRegulations().equals(ProcessRegulations.DEFAULT);
+        }
+		
         return false;
     }
 

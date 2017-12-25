@@ -25,6 +25,8 @@ public abstract class ProcessSerializer {
     public static final String EMBEDDED = "embedded";
     public static final String NODE_ASYNC_EXECUTION = "asyncExecution";
     public static final String PROCESS_REGULATIONS = "processRegulations";
+	public static final String PROCESS_REGULATION_SWIMLANE = "processRegulationSwimlane";
+	public static final String PROCESS_REGULATION_VARIABLE = "processRegulationVariable";
     public static final String BEHAVIOR = "behavior";
 
     public abstract boolean isSupported(Document document);

@@ -228,9 +228,13 @@ public class PropertiesView extends ViewPart implements ISelectionListener, Prop
                 propFound = true;
             }
         }
+        if ("processRegulations".equals(
+        		evt.getPropertyName())) {
+        	propFound = false;
+        }
         if (propFound) {
             tree.redraw();
-        } else {
+        }  else {
             updateChildren();
         }
     }

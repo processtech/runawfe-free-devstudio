@@ -70,4 +70,6 @@ public interface PropertyNames {
     public static final String PROPERTY_PROCESS_VERSION_COMMENT = "versionComment";
     public static final String PROPERTY_INTERRUPTING_BOUNDARY_EVENT = "interruptingBoundaryEvent";
     public static final String PROPERTY_PROCESS_REGULATIONS = "processRegulations";
+	public static final String PROPERTY_PROCESS_REGULATION_SWIMLANE = "processRegulationSwimlane";
+	public static final String PROPERTY_PROCESS_REGULATION_VARIABLE = "processRegulationVariable";
 }

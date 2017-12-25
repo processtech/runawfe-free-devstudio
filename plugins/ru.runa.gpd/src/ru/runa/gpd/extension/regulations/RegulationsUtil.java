@@ -17,9 +17,14 @@ import ru.runa.gpd.extension.regulations.ui.RegulationsNotesView;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
+import ru.runa.gpd.lang.model.ProcessRegulations;
 import ru.runa.gpd.lang.model.StartState;
 import ru.runa.gpd.lang.model.Subprocess;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
+import ru.runa.gpd.lang.model.Swimlane;
+import ru.runa.gpd.lang.model.Variable;
+import ru.runa.gpd.lang.model.ProcessRegulationSwimlane;
+import ru.runa.gpd.lang.model.ProcessRegulationVariable;
 import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.util.EditorUtils;
 import ru.runa.gpd.util.IOUtils;
@@ -55,8 +60,22 @@ public class RegulationsUtil {
         for (Node node : listOfNodes) {
             nodeModels.add(new NodeModel(node));
         }
+        List<Swimlane> swimlaneModels = processDefinition.getSwimlanes();
+		List<Variable> variableModels = processDefinition.getVariables(true, false);
         Map<String, Object> map = Maps.newHashMap();
         map.put("nodeModels", nodeModels);
+		map.put("swimlaneModels", swimlaneModels);
+		map.put("variableModels", variableModels);
+
+        if (processDefinition.getDefaultProcessRegulations().equals(ProcessRegulations.DEFAULT)) {
+            map.put("swimlaneModelEnable", false);
+            map.put("variableModelEnable", false);
+        }
+        else {
+            map.put("swimlaneModelEnable", processDefinition.getDefaultProcessRegulationSwimlane().equals(ProcessRegulationSwimlane.YES));
+            map.put("variableModelEnable", processDefinition.getDefaultProcessRegulationVariable().equals(ProcessRegulationVariable.YES));
+        }
+
         Map<String, ValidatorDefinition> validatorDefinitions = ValidatorDefinitionRegistry.getValidatorDefinitions();
         map.put("validatorDefinitions", validatorDefinitions);
         IFile htmlDescriptionFile = IOUtils.getAdjacentFile(processDefinition.getFile(), ParContentProvider.PROCESS_DEFINITION_DESCRIPTION_FILE_NAME);
@@ -164,6 +183,7 @@ public class RegulationsUtil {
     public static void defaultRegulation(ProcessDefinition processDefinition) {
         Node last = null;
         for (Node node : processDefinition.getNodes()) {
+            node.getRegulationsProperties().setEnabled(true);
             if (node.getRegulationsProperties().isEnabled()) {
                 if (last != null) {
                     last.getRegulationsProperties().setNextNode(node);

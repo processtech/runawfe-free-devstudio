@@ -29,6 +29,8 @@ import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.NodeAsyncExecution;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.ProcessRegulations;
+import ru.runa.gpd.lang.model.ProcessRegulationSwimlane;
+import ru.runa.gpd.lang.model.ProcessRegulationVariable;
 import ru.runa.gpd.lang.model.StartState;
 import ru.runa.gpd.lang.model.Subprocess;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
@@ -167,6 +169,9 @@ public class BpmnSerializer extends ProcessSerializer {
         if (definition.getDefaultNodeAsyncExecution() != NodeAsyncExecution.DEFAULT) {
             processProperties.put(NODE_ASYNC_EXECUTION, definition.getDefaultNodeAsyncExecution().getValue());
         }
+        processProperties.put(PROCESS_REGULATIONS, definition.getDefaultProcessRegulations().getValue());
+		processProperties.put(PROCESS_REGULATION_SWIMLANE, definition.getDefaultProcessRegulationSwimlane().getValue());
+		processProperties.put(PROCESS_REGULATION_VARIABLE, definition.getDefaultProcessRegulationVariable().getValue());
         writeExtensionElements(processElement, processProperties);
         if (definition.getClass() != SubprocessDefinition.class) {
             Element laneSetElement = processElement.addElement(LANE_SET).addAttribute(ID, "laneSet1");
@@ -650,6 +655,14 @@ public class BpmnSerializer extends ProcessSerializer {
         }
         if (processProperties.containsKey(PROCESS_REGULATIONS)) {
             definition.setDefaultProcessRegulations(ProcessRegulations.getByValueNotNull(processProperties.get(PROCESS_REGULATIONS)));
+        } else {
+            definition.setDefaultProcessRegulations(ProcessRegulations.USER_ORDER);
+        }
+		if (processProperties.containsKey(PROCESS_REGULATION_SWIMLANE)) {
+            definition.setDefaultProcessRegulationSwimlane(ProcessRegulationSwimlane.getByValueNotNull(processProperties.get(PROCESS_REGULATION_SWIMLANE)));
+        }
+		if (processProperties.containsKey(PROCESS_REGULATION_VARIABLE)) {
+            definition.setDefaultProcessRegulationVariable(ProcessRegulationVariable.getByValueNotNull(processProperties.get(PROCESS_REGULATION_VARIABLE)));
         }
         String swimlaneDisplayModeName = processProperties.get(SHOW_SWIMLANE);
         if (swimlaneDisplayModeName != null) {

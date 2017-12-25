@@ -23,6 +23,7 @@ import ru.runa.gpd.form.FormCSSTemplateRegistry;
 import ru.runa.gpd.lang.BpmnSerializer;
 import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.ProcessSerializer;
+import ru.runa.gpd.lang.model.ProcessRegulations;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.util.IOUtils;
@@ -108,6 +109,7 @@ public class NewProcessDefinitionWizard extends Wizard implements INewWizard {
                     properties.put(BpmnSerializer.SHOW_SWIMLANE, page.getSwimlaneDisplayMode().name());
                 }
                 properties.put(ProcessSerializer.ACCESS_TYPE, accessType.name());
+				properties.put(ProcessSerializer.PROCESS_REGULATIONS, ProcessRegulations.DEFAULT.getValue());
                 Document document = language.getSerializer().getInitialProcessDefinitionDocument(processName, properties);
                 byte[] bytes = XmlUtil.writeXml(document);
                 definitionFile.create(new ByteArrayInputStream(bytes), true, null);

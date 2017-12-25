@@ -177,7 +177,7 @@
           id="node.regulationProperties"
           objectClass="ru.runa.gpd.lang.model.Node">
        <filter
-             name="regulationsEnabled"
+             name="editRegulationsEnabled"
              value="true">
        </filter>
         <action

@@ -37,6 +37,8 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
     private Language language;
     private NodeAsyncExecution defaultNodeAsyncExecution = NodeAsyncExecution.DEFAULT;
     private ProcessRegulations defaultProcessRegulations = ProcessRegulations.DEFAULT;
+	private ProcessRegulationSwimlane defaultProcessRegulationSwimlane = ProcessRegulationSwimlane.NO;
+	private ProcessRegulationVariable defaultProcessRegulationVariable = ProcessRegulationVariable.NO;
     private boolean dirty;
     private boolean showActions;
     private boolean showGrid;
@@ -156,6 +158,26 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
         ProcessRegulations old = this.defaultProcessRegulations;
         this.defaultProcessRegulations = defaultProcessRegulations;
         firePropertyChange(PROPERTY_PROCESS_REGULATIONS, old, this.defaultProcessRegulations);
+    }
+	
+	public ProcessRegulationSwimlane getDefaultProcessRegulationSwimlane() {
+        return defaultProcessRegulationSwimlane;
+    }
+	
+	public void setDefaultProcessRegulationSwimlane(ProcessRegulationSwimlane defaultProcessRegulationSwimlane) {
+        ProcessRegulationSwimlane old = this.defaultProcessRegulationSwimlane;
+        this.defaultProcessRegulationSwimlane = defaultProcessRegulationSwimlane;
+        firePropertyChange(PROPERTY_PROCESS_REGULATION_SWIMLANE, old, this.defaultProcessRegulationSwimlane);
+    }
+	
+	public ProcessRegulationVariable getDefaultProcessRegulationVariable() {
+        return defaultProcessRegulationVariable;
+    }
+	
+	public void setDefaultProcessRegulationVariable(ProcessRegulationVariable defaultProcessRegulationVariable) {
+        ProcessRegulationVariable old = this.defaultProcessRegulationVariable;
+        this.defaultProcessRegulationVariable = defaultProcessRegulationVariable;
+        firePropertyChange(PROPERTY_PROCESS_REGULATION_VARIABLE, old, this.defaultProcessRegulationVariable);
     }
 
     public boolean isShowActions() {
@@ -383,6 +405,12 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
                     .getString("ProcessDefinition.property.nodeAsyncExecution"), NodeAsyncExecution.LABELS));
             descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_PROCESS_REGULATIONS, Localization
                     .getString("ProcessDefinition.property.processRegulations"), ProcessRegulations.LABELS));
+            if (!defaultProcessRegulations.equals(ProcessRegulations.DEFAULT)) {
+                descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_PROCESS_REGULATION_SWIMLANE, Localization
+                        .getString("ProcessDefinition.property.processRegulationSwimlane"), ProcessRegulationSwimlane.LABELS));
+                descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_PROCESS_REGULATION_VARIABLE, Localization
+                        .getString("ProcessDefinition.property.processRegulationVariable"), ProcessRegulationVariable.LABELS));
+            }
         }
     }
 
@@ -406,6 +434,12 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
         if (PROPERTY_PROCESS_REGULATIONS.equals(id)) {
             return defaultProcessRegulations.ordinal();
         }
+		if (PROPERTY_PROCESS_REGULATION_SWIMLANE.equals(id)) {
+            return defaultProcessRegulationSwimlane.ordinal();
+        }
+		if (PROPERTY_PROCESS_REGULATION_VARIABLE.equals(id)) {
+            return defaultProcessRegulationVariable.ordinal();
+        }
         
         return super.getPropertyValue(id);
     }
@@ -419,9 +453,14 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
             setAccessType(ProcessDefinitionAccessType.values()[i]);
         } else if (PROPERTY_NODE_ASYNC_EXECUTION.equals(id)) {
             setDefaultNodeAsyncExecution(NodeAsyncExecution.values()[(Integer) value]);
-        }
-        else if (PROPERTY_PROCESS_REGULATIONS.equals(id)) {
+        } else if (PROPERTY_PROCESS_REGULATIONS.equals(id)) {
             setDefaultProcessRegulations(ProcessRegulations.values()[(Integer) value]);
+            setPropertyValue(PROPERTY_PROCESS_REGULATION_SWIMLANE, ProcessRegulationSwimlane.YES.ordinal());
+            setPropertyValue(PROPERTY_PROCESS_REGULATION_VARIABLE, ProcessRegulationVariable.YES.ordinal());
+		} else if (PROPERTY_PROCESS_REGULATION_SWIMLANE.equals(id)) {
+            setDefaultProcessRegulationSwimlane(ProcessRegulationSwimlane.values()[(Integer) value]);
+        } else if (PROPERTY_PROCESS_REGULATION_VARIABLE.equals(id)) {
+            setDefaultProcessRegulationVariable(ProcessRegulationVariable.values()[(Integer) value]);
         } else {
             super.setPropertyValue(id, value);
         }

@@ -83,3 +83,29 @@
 		</div>
 	</#list>
 </div>
+<#if swimlaneModelEnable >
+	<div class="swimlanes">	
+		<br />
+		<div class="header">Список ролей:</div>
+		<#list swimlaneModels as model>
+			<div id="${model.id}" class="node">
+				<div class="header">
+					<span class="name">${model.name}</span>
+				</div>
+			</div>
+		</#list>
+	</div>
+</#if>
+<#if variableModelEnable >
+	<div class="variables">
+		<br />
+		<div class="header">Список переменных:</div>
+		<#list variableModels as model>
+			<div id="${model.id}" class="node">
+				<div class="header">
+					<span class="name">${model.name}</span>
+				</div>
+			</div>
+		</#list>
+	</div>
+</#if>
