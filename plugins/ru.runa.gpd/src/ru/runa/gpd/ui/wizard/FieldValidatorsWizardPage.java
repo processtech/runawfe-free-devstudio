@@ -356,6 +356,14 @@ public class FieldValidatorsWizardPage extends WizardPage {
     }
 
     public void performFinish() {
+        List<Variable> taskVariables = formNode.getVariables(true, false);
+        List<String> fields = new ArrayList<String>(fieldConfigs.keySet());
+        for (Variable variable : taskVariables) {
+            String variableName = variable.getName();
+            if (!fields.contains(variableName)) {
+                fieldConfigs.put(variableName, new HashMap<String, ValidatorConfig>());
+            }
+        }
         infoGroup.saveConfig();
     }
 
