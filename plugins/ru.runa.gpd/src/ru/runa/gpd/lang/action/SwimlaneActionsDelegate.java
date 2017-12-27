@@ -113,6 +113,9 @@ public class SwimlaneActionsDelegate extends BaseModelDropDownActionDelegate {
     private void setSwimlane(String swimlaneName) {
         if (swimlaneName != null) {
             Swimlane swimlane = definition.getSwimlaneByName(swimlaneName);
+            if (swimlane == null) {
+                swimlane = definition.getGlobalSwimlaneByName(swimlaneName);
+            }
             swimlanedNode.setSwimlane(swimlane);
         } else {
             swimlanedNode.setSwimlane(null);

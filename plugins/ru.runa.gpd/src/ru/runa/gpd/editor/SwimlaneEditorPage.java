@@ -134,15 +134,16 @@ public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
 
     @Override
     protected void updateUI() {
-        List<?> swimlanes = (List<?>) tableViewer.getInput();
-        List<?> selected = ((IStructuredSelection) tableViewer.getSelection()).toList();
-        enableAction(searchButton, selected.size() == 1);
-        enableAction(changeButton, selected.size() == 1);
-        enableAction(moveUpButton, selected.size() == 1 && swimlanes.indexOf(selected.get(0)) > 0);
-        enableAction(moveDownButton, selected.size() == 1 && swimlanes.indexOf(selected.get(0)) < swimlanes.size() - 1);
-        enableAction(deleteButton, swimlanesCreateDeleteEnabled && selected.size() > 0);
-        enableAction(renameButton, selected.size() == 1);
-        enableAction(copyButton, selected.size() > 0);
+        List<Swimlane> swimlanes = (List<Swimlane>) tableViewer.getInput();
+        List<Swimlane> selected = ((IStructuredSelection) tableViewer.getSelection()).toList();
+        boolean withoutGlobals = withoutGlobals(selected);
+        enableAction(searchButton, withoutGlobals && selected.size() == 1);
+        enableAction(changeButton, withoutGlobals && selected.size() == 1);
+        enableAction(moveUpButton, withoutGlobals && selected.size() == 1 && swimlanes.indexOf(selected.get(0)) > 0);
+        enableAction(moveDownButton, withoutGlobals && selected.size() == 1 && swimlanes.indexOf(selected.get(0)) < swimlanes.size() - 1);
+        enableAction(deleteButton, withoutGlobals && swimlanesCreateDeleteEnabled && selected.size() > 0);
+        enableAction(renameButton, withoutGlobals && selected.size() == 1);
+        enableAction(copyButton, withoutGlobals && selected.size() > 0);
         boolean pasteEnabled = false;
         if (Clipboard.getDefault().getContents() instanceof List) {
             List<?> list = (List<?>) Clipboard.getDefault().getContents();
@@ -151,6 +152,15 @@ public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
             }
         }
         enableAction(pasteButton, swimlanesCreateDeleteEnabled && pasteEnabled);
+    }
+
+    private boolean withoutGlobals(List<Swimlane> list) {
+        for (Swimlane swimlane : list) {
+            if (swimlane.isGlobal()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void updateViewer() {

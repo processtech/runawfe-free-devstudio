@@ -37,6 +37,7 @@ import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Timer;
 import ru.runa.gpd.lang.model.TimerAction;
 import ru.runa.gpd.lang.model.Transition;
+import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.bpmn.AbstractEventNode;
 import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
 import ru.runa.gpd.lang.model.bpmn.EventNodeType;
@@ -116,6 +117,8 @@ public class BpmnSerializer extends ProcessSerializer {
     public static final String END_TEXT_DECORATION = "endTextDecoration";
     private static final String ACTION_HANDLER = "actionHandler";
     private static final String EVENT_TYPE = "eventType";
+    private static final String USE_GLOBALS = "useGlobals";
+    private static final String GLOBAL = "global";
 
     @Override
     public boolean isSupported(Document document) {
@@ -165,6 +168,9 @@ public class BpmnSerializer extends ProcessSerializer {
         }
         if (definition.getDefaultNodeAsyncExecution() != NodeAsyncExecution.DEFAULT) {
             processProperties.put(NODE_ASYNC_EXECUTION, definition.getDefaultNodeAsyncExecution().getValue());
+        }
+        if (definition.isUseGlobals()) {
+            processProperties.put(USE_GLOBALS, "true");
         }
         writeExtensionElements(processElement, processProperties);
         if (definition.getClass() != SubprocessDefinition.class) {
@@ -294,7 +300,10 @@ public class BpmnSerializer extends ProcessSerializer {
     private Element writeTaskState(Element parent, SwimlanedNode swimlanedNode) {
         Element nodeElement = writeElement(parent, swimlanedNode);
         Map<String, String> properties = Maps.newLinkedHashMap();
-        properties.put(LANE, swimlanedNode.getSwimlaneName());
+        String swimlaneName = swimlanedNode.getSwimlaneName();
+        if (((ProcessDefinition) swimlanedNode.getParent()).getSwimlaneByName(swimlaneName) != null) {
+            properties.put(LANE, swimlaneName);
+        }
         if (swimlanedNode instanceof TaskState) {
             TaskState taskState = (TaskState) swimlanedNode;
             if (taskState.isAsync()) {
@@ -519,6 +528,9 @@ public class BpmnSerializer extends ProcessSerializer {
         properties.put(CLASS, delegable.getDelegationClassName());
         Element extensionsElement = writeExtensionElements(parent, properties);
         extensionsElement.addElement(RUNA_PREFIX + ":" + PROPERTY).addAttribute(NAME, CONFIG).addCDATA(delegable.getDelegationConfiguration());
+        if (delegable instanceof Variable && ((Variable) delegable).isGlobal()) {
+            extensionsElement.addElement(RUNA_PREFIX + ":" + PROPERTY).addAttribute(NAME, GLOBAL).addAttribute(VALUE, "true");
+        }
     }
 
     @Override
@@ -586,6 +598,9 @@ public class BpmnSerializer extends ProcessSerializer {
         if (element instanceof TaskState) {
             parseActionHandlers(node, element);
         }
+        if (element instanceof Variable && properties.containsKey(GLOBAL)) {
+            ((Variable) element).setGlobal("true".equals(properties.get(GLOBAL)));
+        }
     }
 
     private Map<String, String> parseExtensionProperties(Element element) {
@@ -647,6 +662,9 @@ public class BpmnSerializer extends ProcessSerializer {
         if (processProperties.containsKey(NODE_ASYNC_EXECUTION)) {
             definition.setDefaultNodeAsyncExecution(NodeAsyncExecution.getByValueNotNull(processProperties.get(NODE_ASYNC_EXECUTION)));
         }
+        if (processProperties.containsKey(USE_GLOBALS)) {
+            definition.setUseGlobals("true".equals(processProperties.get(USE_GLOBALS)));
+        }
         String swimlaneDisplayModeName = processProperties.get(SHOW_SWIMLANE);
         if (swimlaneDisplayModeName != null) {
             definition.setSwimlaneDisplayMode(SwimlaneDisplayMode.valueOf(swimlaneDisplayModeName));
@@ -656,13 +674,15 @@ public class BpmnSerializer extends ProcessSerializer {
         if (swimlaneSetElement != null) {
             List<Element> swimlanes = swimlaneSetElement.elements(LANE);
             for (Element swimlaneElement : swimlanes) {
-                Swimlane swimlane = create(swimlaneElement, definition);
-                List<Element> flowNodeRefElements = swimlaneElement.elements(FLOW_NODE_REF);
-                List<String> flowNodeIds = Lists.newArrayList();
-                for (Element flowNodeRefElement : flowNodeRefElements) {
-                    flowNodeIds.add(flowNodeRefElement.getTextTrim());
+                if (!"true".equals(parseExtensionProperties(swimlaneElement).get(GLOBAL))) {
+                    Swimlane swimlane = create(swimlaneElement, definition);
+                    List<Element> flowNodeRefElements = swimlaneElement.elements(FLOW_NODE_REF);
+                    List<String> flowNodeIds = Lists.newArrayList();
+                    for (Element flowNodeRefElement : flowNodeRefElements) {
+                        flowNodeIds.add(flowNodeRefElement.getTextTrim());
+                    }
+                    swimlaneElementIds.put(swimlane, flowNodeIds);
                 }
-                swimlaneElementIds.put(swimlane, flowNodeIds);
             }
         }
         List<Element> startStates = processElement.elements(START_EVENT);
