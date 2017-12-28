@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.DoubleClickEvent;
@@ -40,6 +41,9 @@ import org.eclipse.swt.widgets.TableColumn;
 
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.SharedImages;
+import ru.runa.gpd.form.FormType;
+import ru.runa.gpd.form.FormTypeProvider;
+import ru.runa.gpd.form.FormVariableAccess;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.ProcessDefinition;
@@ -53,6 +57,7 @@ import ru.runa.gpd.ui.dialog.TimeInputDialog;
 import ru.runa.gpd.ui.dialog.UserInputDialog;
 import ru.runa.gpd.ui.wizard.ValidatorWizard.ParametersComposite;
 import ru.runa.gpd.ui.wizard.ValidatorWizard.ValidatorInfoControl;
+import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.VariableUtils;
 import ru.runa.gpd.validation.FormNodeValidation;
 import ru.runa.gpd.validation.ValidationUtil;
@@ -356,15 +361,28 @@ public class FieldValidatorsWizardPage extends WizardPage {
     }
 
     public void performFinish() {
-        List<Variable> taskVariables = formNode.getVariables(true, false);
-        List<String> fields = new ArrayList<String>(fieldConfigs.keySet());
-        for (Variable variable : taskVariables) {
-            String variableName = variable.getName();
-            if (!fields.contains(variableName)) {
-                fieldConfigs.put(variableName, new HashMap<String, ValidatorConfig>());
+        fillFieldConfigs();
+        infoGroup.saveConfig();
+    }
+
+    private void fillFieldConfigs() {
+        IFile formFile = IOUtils.getAdjacentFile(processDefinition.getFile(), formNode.getFormFileName());
+        if (formFile.exists()) {
+            FormType formType = FormTypeProvider.getFormType(formNode.getFormType());
+            byte[] formData;
+            Map<String, FormVariableAccess> formVariables = null;
+            try {
+                formData = IOUtils.readStreamAsBytes(formFile.getContents(true));
+                formVariables = formType.getFormVariableNames(formNode, formData);
+                for (Map.Entry<String, FormVariableAccess> entry : formVariables.entrySet()) {
+                    if (entry.getValue() == FormVariableAccess.WRITE && !fieldConfigs.containsKey(entry.getKey())) {
+                        fieldConfigs.put(entry.getKey(), new HashMap<String, ValidatorConfig>());
+                    }
+                }
+            } catch (Exception e) {
+                // no need to catch
             }
         }
-        infoGroup.saveConfig();
     }
 
     private void updateVariableSelection() {
