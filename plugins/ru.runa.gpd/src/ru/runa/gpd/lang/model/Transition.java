@@ -114,11 +114,21 @@ public class Transition extends NamedGraphElement implements ActionContainer {
             IFile file = EditorUtils.getCurrentEditor().getDefinitionFile();
             FormNodeValidation validation = formNode.getValidation(file);
             boolean changed = false;
-            for (Map<String, ValidatorConfig> map : validation.getFieldConfigs().values()) {
-                for (ValidatorConfig config : map.values()) {
-                    if (config.getTransitionNames().remove(oldName)) {
-                        config.getTransitionNames().add(newName);
-                        changed = true;
+            for (ValidatorConfig config : validation.getGlobalConfigs()) {
+                if (config.getTransitionNames().remove(oldName)) {
+                    config.getTransitionNames().add(newName);
+                    changed = true;
+                    break;
+                }
+            }
+            if (!changed) {
+                test: for (Map<String, ValidatorConfig> map : validation.getFieldConfigs().values()) {
+                    for (ValidatorConfig config : map.values()) {
+                        if (config.getTransitionNames().remove(oldName)) {
+                            config.getTransitionNames().add(newName);
+                            changed = true;
+                            break test;
+                        }
                     }
                 }
             }
