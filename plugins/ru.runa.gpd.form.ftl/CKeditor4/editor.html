@@ -68,6 +68,9 @@
 			editor.on("change", function() {
 				onModification();
 			});
+			editor.on("afterPaste", function(event) {
+				refreshViewCallback();
+			});
 		} catch (e) {
 			alertError(e, "CKEDITOR.replace");
 		}
