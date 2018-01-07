@@ -23,6 +23,8 @@ import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.Variable;
 
+import com.google.common.base.Objects;
+import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 
 public class GroovyDecisionProvider extends DelegableProvider implements IDecisionProvider {
