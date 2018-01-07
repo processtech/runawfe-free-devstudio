@@ -17,6 +17,13 @@
             id="jboss7.ws"
             name="%jboss7.ws.connector.name">
       </connector>
+      <connector
+            class="ru.runa.gpd.connector.wfe.ws.WFEWildFlyWebServicesConnector"
+            defaultPort="8080"
+            description="%wildfly.ws.connector.description"
+            id="wildfly.ws"
+            name="%wildfly.ws.connector.name">
+      </connector>
    </extension>
 
 </plugin>
