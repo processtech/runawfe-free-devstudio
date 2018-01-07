@@ -19,15 +19,7 @@ import ru.runa.gpd.formeditor.ftl.Component;
 import ru.runa.gpd.formeditor.ftl.ComponentParameter;
 import ru.runa.gpd.ui.dialog.ChooseVariableNameDialog;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
-
 public class VariableFinderParameter extends ParameterType {
-    private static final String VALUES_DELIM = ",";
-
-    public VariableFinderParameter() {
-        super(true, true);
-    }
 
     @Override
     public PropertyDescriptor createPropertyDescriptor(Component component, ComponentParameter parameter, int propertyId) {
@@ -42,8 +34,7 @@ public class VariableFinderParameter extends ParameterType {
         final Text text = new Text(composite, SWT.READ_ONLY | SWT.BORDER);
         text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         if (oldValue != null) {
-            text.setText(Joiner.on(VALUES_DELIM).join((List<String>) oldValue));
-            text.setData(oldValue);
+            text.setText((String) oldValue);
         }
         Button selectButton = new Button(composite, SWT.PUSH);
         selectButton.setText("...");
@@ -54,10 +45,8 @@ public class VariableFinderParameter extends ParameterType {
             public void widgetSelected(SelectionEvent e) {
                 String result = new ChooseVariableNameDialog(variableNames).openDialog();
                 if (result != null) {
-                    List<String> resultList = Lists.newArrayList(result);
-                    text.setText(Joiner.on(VALUES_DELIM).join(resultList));
-                    text.setData(resultList);
-                    listener.propertyChange(new PropertyChangeEvent(text, PropertyNames.PROPERTY_VALUE, oldValue, resultList));
+                    text.setText(result);
+                    listener.propertyChange(new PropertyChangeEvent(text, PropertyNames.PROPERTY_VALUE, oldValue, result));
                 }
             }
         });

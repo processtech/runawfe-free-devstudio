@@ -132,4 +132,9 @@ public class FilterBox extends Composite {
         return null;
     }
 
+    @Override
+    public void setEnabled(boolean enabled) {
+        button.setEnabled(enabled);
+        super.setEnabled(enabled);
+    }
 }

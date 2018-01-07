@@ -10,6 +10,8 @@ import ru.runa.gpd.formeditor.wysiwyg.FormEditor;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
+// use VariableFinderParameter
+@Deprecated
 public class VariableComboParameter extends ComboParameter {
 
     @Override

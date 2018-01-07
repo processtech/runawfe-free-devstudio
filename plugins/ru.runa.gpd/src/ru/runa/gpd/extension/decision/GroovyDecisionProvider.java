@@ -23,8 +23,6 @@ import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.Variable;
 
-import com.google.common.base.Objects;
-import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 
 public class GroovyDecisionProvider extends DelegableProvider implements IDecisionProvider {
@@ -39,7 +37,7 @@ public class GroovyDecisionProvider extends DelegableProvider implements IDecisi
         for (Transition transition : transitions) {
             transitionNames.add(transition.getName());
         }
-        GroovyEditorDialog2 dialog = new GroovyEditorDialog2(definition, transitionNames, delegable.getDelegationConfiguration());
+        GroovyEditorDialog dialog = new GroovyEditorDialog(definition, transitionNames, delegable.getDelegationConfiguration());
         if (dialog.open() == Window.OK) {
             return dialog.getResult();
         }
