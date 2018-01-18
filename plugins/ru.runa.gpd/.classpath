@@ -20,5 +20,6 @@
 	<classpathentry exported="true" kind="lib" path="lib/freemarker-2.3.23.jar"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="lib" path="lib/poi-3.10-FINAL.jar"/>
+	<classpathentry kind="lib" path="lib/pdfbox-2.0.7.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
