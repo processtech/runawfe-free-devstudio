@@ -40,27 +40,27 @@ public class UserTypeAttributeListValidator extends DefaultParameterTypeValidato
     protected VariableUserType getUserType(FormNode formNode, Component component) {
         for (ComponentParameter componentParameter : component.getType().getParameters()) {
             if (componentParameter.getType() instanceof UserTypeVariableListComboParameter) {
-                return getListVariableUserType(formNode, component, componentParameter);
+                return getVariableUserType(formNode, component, componentParameter);
             }
         }
         return null;
     }
 
-    protected final VariableUserType getListVariableUserType(FormNode formNode, Component component, ComponentParameter componentParameter) {
+    protected final VariableUserType getVariableUserType(FormNode formNode, Component component, ComponentParameter componentParameter) {
         final String variableName = (String) component.getParameterValue(componentParameter);
         if (!Strings.isNullOrEmpty(variableName)) {
-            return getListVariableUserType(formNode, VariableUtils.getVariableByName(formNode.getProcessDefinition(), variableName));
+            return getVariableUserType(formNode, VariableUtils.getVariableByName(formNode.getProcessDefinition(), variableName));
         }
         return null;
     }
 
-    private VariableUserType getListVariableUserType(FormNode formNode, Variable variable) {
+    private VariableUserType getVariableUserType(FormNode formNode, Variable variable) {
         if (variable == null) {
             return null;
         }
         String[] componentFormats = variable.getFormatComponentClassNames();
-        if (componentFormats.length != 1) {
-            return null;
+        if (componentFormats.length == 0) {
+            return variable.getUserType();
         }
         String userTypeName = componentFormats[0];
         return formNode.getProcessDefinition().getVariableUserType(userTypeName);

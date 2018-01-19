@@ -78,13 +78,13 @@ public abstract class ParameterType {
         return FormEditor.getCurrent().getVariables(parameter.getVariableTypeFilter());
     }
 
-    protected VariableUserType getListVariableUserType(Variable variable) {
+    protected VariableUserType getVariableUserType(Variable variable) {
         if (variable == null) {
             return null;
         }
         String[] componentFormats = variable.getFormatComponentClassNames();
-        if (componentFormats.length != 1) {
-            return null;
+        if (componentFormats.length == 0) {
+            return variable.getUserType();
         }
         String userTypeName = componentFormats[0];
         return FormEditor.getCurrent().getVariableUserType(userTypeName);
