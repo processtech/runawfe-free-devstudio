@@ -37,6 +37,12 @@ public class UserTypeAttributeParameter extends ComboParameter {
                     Variable variable = getVariables(componentParameter).get(variableName);
                     return getListVariableUserType(variable);
                 }
+            } else if (componentParameter.getType() instanceof VariableComboParameter) {
+                String variableName = (String) component.getParameterValue(componentParameter);
+                if (!Strings.isNullOrEmpty(variableName)) {
+                    Variable variable = getVariables(componentParameter).get(variableName);
+                    return variable.getUserType();
+                }
             }
         }
         return null;
