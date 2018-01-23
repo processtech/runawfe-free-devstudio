@@ -69,4 +69,6 @@ public interface PropertyNames {
     public static final String PROPERTY_PROCESS_VERSION_DATE = "versionDate";
     public static final String PROPERTY_PROCESS_VERSION_COMMENT = "versionComment";
     public static final String PROPERTY_INTERRUPTING_BOUNDARY_EVENT = "interruptingBoundaryEvent";
+    public static final String PROPERTY_USE_GLOBALS = "useGlobals";
+    public static final String PROPERTY_GLOBAL = "global";
 }
