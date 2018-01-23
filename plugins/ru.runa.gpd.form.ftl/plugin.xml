@@ -111,6 +111,11 @@
             validator="ru.runa.gpd.formeditor.ftl.validation.UserTypeAttributeListValidator"
             id="usertypeattributelist">
       </type>
+      <type
+            class="ru.runa.gpd.formeditor.ftl.parameter.SwimlaneComboParameter"
+            validator="ru.runa.gpd.formeditor.ftl.validation.SwimlaneParameterValidator"
+            id="swimlanecombo">
+      </type>
    </extension>
    
    <extension
