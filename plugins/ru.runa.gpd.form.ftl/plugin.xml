@@ -71,12 +71,12 @@
       </type>
       <type
             class="ru.runa.gpd.formeditor.ftl.parameter.VariableFinderParameter"
-            validator="ru.runa.gpd.formeditor.ftl.validation.DefaultParameterTypeValidator"
+            validator="ru.runa.gpd.formeditor.ftl.validation.VariableParameterTypeValidator"
             id="varfinder">
       </type>
       <type
             class="ru.runa.gpd.formeditor.ftl.parameter.VariableComboParameter"
-            validator="ru.runa.gpd.formeditor.ftl.validation.DefaultParameterTypeValidator"
+            validator="ru.runa.gpd.formeditor.ftl.validation.VariableParameterTypeValidator"
             id="varcombo">               
       </type>
       <type
@@ -86,7 +86,7 @@
       </type>
       <type
             class="ru.runa.gpd.formeditor.ftl.parameter.VariableListParameter"
-            validator="ru.runa.gpd.formeditor.ftl.validation.DefaultParameterTypeValidator"
+            validator="ru.runa.gpd.formeditor.ftl.validation.VariableParameterTypeValidator"
             id="varlist">
       </type>
       <type
@@ -96,7 +96,7 @@
       </type>
       <type
             class="ru.runa.gpd.formeditor.ftl.parameter.UserTypeVariableListComboParameter"
-            validator="ru.runa.gpd.formeditor.ftl.validation.DefaultParameterTypeValidator"
+            validator="ru.runa.gpd.formeditor.ftl.validation.VariableParameterTypeValidator"
             id="usertypevarlistcombo">
       </type>
       <type
