@@ -105,21 +105,8 @@ public class GroovyDecisionProvider extends DelegableProvider implements IDecisi
 
     @Override
     public String getConfigurationOnVariableRename(Delegable delegable, Variable currentVariable, Variable previewVariable) {
-        try {
-            List<Variable> variables = ((GraphElement) delegable).getProcessDefinition().getVariables(true, true);
-            GroovyDecisionModel model = new GroovyDecisionModel(delegable.getDelegationConfiguration(), variables);
-            for (IfExpr expr : model.getIfExprs()) {
-                if (Objects.equal(expr.getVariable1(), currentVariable)) {
-                    expr.setVariable1(previewVariable);
-                }
-                if (Objects.equal(expr.getLexem2(), currentVariable)) {
-                    expr.setLexem2(previewVariable);
-                }
-            }
-            return model.toString();
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
+        return delegable.getDelegationConfiguration().replaceAll(Pattern.quote(currentVariable.getScriptingName()),
+                Matcher.quoteReplacement(previewVariable.getScriptingName()));
     }
 
 }

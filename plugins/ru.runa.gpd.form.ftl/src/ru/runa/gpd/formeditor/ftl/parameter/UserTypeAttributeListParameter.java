@@ -31,7 +31,7 @@ public class UserTypeAttributeListParameter extends ParameterType {
     private static final String VALUES_DELIM = ",";
 
     public UserTypeAttributeListParameter() {
-        super(true, true);
+        super(true);
     }
 
     @Override

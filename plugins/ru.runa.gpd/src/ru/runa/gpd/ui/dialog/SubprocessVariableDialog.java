@@ -18,6 +18,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.util.VariableMapping;
@@ -78,31 +79,50 @@ public class SubprocessVariableDialog extends Dialog {
         Label labelProcessVariable = new Label(composite, SWT.NONE);
         labelProcessVariable.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
         labelProcessVariable.setText(Localization.getString("Subprocess.ProcessVariableName") + ":");
-        final Combo processVariableField = new Combo(composite, SWT.BORDER);
+
+        Composite varComposite1 = new Composite(composite, SWT.NONE);
         GridData processVariableTextData = new GridData(GridData.FILL_HORIZONTAL);
         processVariableTextData.minimumWidth = 200;
-        processVariableField.setItems(processVariables.toArray(new String[processVariables.size()]));
-        processVariableField.setLayoutData(processVariableTextData);
-        processVariableField.setText(getProcessVariable());
-        processVariableField.addModifyListener(new ModifyListener() {
+        varComposite1.setLayoutData(processVariableTextData);
+        varComposite1.setLayout(new GridLayout(2, false));
+        final Text varName1 = new Text(varComposite1, SWT.READ_ONLY | SWT.BORDER);
+        varName1.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        varName1.setText(getProcessVariable());
+        Button selectButton = new Button(varComposite1, SWT.PUSH);
+        selectButton.setText("...");
+        selectButton.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+        selectButton.addSelectionListener(new SelectionAdapter() {
             @Override
-            public void modifyText(ModifyEvent e) {
-                processVariable = processVariableField.getText();
+            public void widgetSelected(SelectionEvent e) {
+                String result = new ChooseVariableNameDialog(processVariables).openDialog();
+                if (result != null) {
+                    processVariable = result;
+                    varName1.setText(processVariable);
+                }
             }
         });
+
         Label labelSubprocessVariable = new Label(composite, SWT.NONE);
         labelSubprocessVariable.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
         labelSubprocessVariable.setText(Localization.getString("Subprocess.SubprocessVariableName") + ":");
-        final Combo subprocessVariableField = new Combo(composite, SWT.BORDER);
-        GridData subprocessVariableTextData = new GridData(GridData.FILL_HORIZONTAL);
-        subprocessVariableTextData.minimumWidth = 200;
-        subprocessVariableField.setItems(subprocessVariables.toArray(new String[subprocessVariables.size()]));
-        subprocessVariableField.setLayoutData(subprocessVariableTextData);
-        subprocessVariableField.setText(getSubprocessVariable());
-        subprocessVariableField.addModifyListener(new ModifyListener() {
+
+        Composite varComposite2 = new Composite(composite, SWT.NONE);
+        varComposite2.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        varComposite2.setLayout(new GridLayout(2, false));
+        final Text varName2 = new Text(varComposite2, SWT.READ_ONLY | SWT.BORDER);
+        varName2.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        varName2.setText(getSubprocessVariable());
+        Button selectButton2 = new Button(varComposite2, SWT.PUSH);
+        selectButton2.setText("...");
+        selectButton2.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+        selectButton2.addSelectionListener(new SelectionAdapter() {
             @Override
-            public void modifyText(ModifyEvent e) {
-                subprocessVariable = subprocessVariableField.getText();
+            public void widgetSelected(SelectionEvent e) {
+                String result = new ChooseVariableNameDialog(subprocessVariables).openDialog();
+                if (result != null) {
+                    subprocessVariable = result;
+                    varName2.setText(subprocessVariable);
+                }
             }
         });
 
