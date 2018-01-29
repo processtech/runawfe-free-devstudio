@@ -88,7 +88,6 @@ import ru.runa.gpd.util.EditorUtils;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.VariableMapping;
 import ru.runa.gpd.util.VariableUtils;
-import ru.runa.gpd.validation.ValidationUtil;
 import ru.runa.wfe.InternalApplicationException;
 import ru.runa.wfe.commons.ClassLoaderUtil;
 import ru.runa.wfe.commons.TypeConversionUtil;
@@ -102,6 +101,7 @@ import com.google.common.base.Strings;
 
 public class QuickFormEditor extends EditorPart implements ISelectionListener, IResourceChangeListener, PropertyChangeListener {
     public static final int CLOSED = 198;
+    public static final int SAVED = 257;
     public static final String ID = "ru.runa.gpd.quick.formeditor.QuickFormEditor";
     private Composite editorComposite;
     private TableViewer tableViewer;
@@ -154,19 +154,7 @@ public class QuickFormEditor extends EditorPart implements ISelectionListener, I
             @Override
             public void propertyChanged(Object source, int propId) {
                 if (propId == QuickFormEditor.CLOSED && formFile.exists()) {
-                    String op = "create";
-                    try {
-                        if (!formNode.hasFormValidation()) {
-                            String fileName = formNode.getId() + "." + FormNode.VALIDATION_SUFFIX;
-                            formNode.setValidationFileName(fileName);
-                            ValidationUtil.createNewValidationUsingForm(formFile, formNode);
-                        } else {
-                            op = "update";
-                            ValidationUtil.updateValidation(formFile, formNode);
-                        }
-                    } catch (Exception e) {
-                        PluginLogger.logError("Failed to " + op + " form validation", e);
-                    }
+                    EditorUtils.createOrUpdateValidation(formNode, formFile);
                 }
             }
         });
@@ -184,6 +172,7 @@ public class QuickFormEditor extends EditorPart implements ISelectionListener, I
             // }
             if (formNode != null) {
                 formNode.setDirty();
+                EditorUtils.createOrUpdateValidation(formNode, formFile);
             }
             setDirty(false);
             updateButtons();

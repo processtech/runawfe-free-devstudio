@@ -72,7 +72,6 @@ import ru.runa.gpd.ui.view.SelectionProvider;
 import ru.runa.gpd.util.EditorUtils;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.VariableUtils;
-import ru.runa.gpd.validation.ValidationUtil;
 import ru.runa.wfe.InternalApplicationException;
 
 import com.google.common.base.Objects;
@@ -151,7 +150,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
             public void propertyChanged(Object source, int propId) {
                 if (propId == FormEditor.CLOSED) {
                     if (formFile.exists()) {
-                        createOrUpdateFormValidation();
+                        EditorUtils.createOrUpdateValidation(formNode, formFile);
                     }
                     boolean formEditorsAvailable = false;
                     IWorkbenchPage workbenchPage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
@@ -381,7 +380,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
         sourceEditor.doSave(monitor);
         if (formNode != null) {
             formNode.setDirty();
-            createOrUpdateFormValidation();
+            EditorUtils.createOrUpdateValidation(formNode, formFile);
         }
         if (isBrowserLoaded()) {
             browser.execute("setHTMLSaved()");
@@ -389,21 +388,6 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
         setDirty(false);
     }
 
-    private void createOrUpdateFormValidation() {
-        String op = "create";
-        try {
-            if (!formNode.hasFormValidation()) {
-                String fileName = formNode.getId() + "." + FormNode.VALIDATION_SUFFIX;
-                formNode.setValidationFileName(fileName);
-                ValidationUtil.createNewValidationUsingForm(formFile, formNode);
-            } else {
-                op = "update";
-                ValidationUtil.updateValidation(formFile, formNode);
-            }
-        } catch (Exception e) {
-            PluginLogger.logError("Failed to " + op + " form validation", e);
-        }
-    }
 
     @Override
     public boolean isSaveAsAllowed() {

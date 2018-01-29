@@ -1,6 +1,7 @@
 package ru.runa.gpd.validation;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -65,9 +66,20 @@ public class ValidationUtil {
             PluginLogger.logErrorWithoutDialog("", e);
             validation = new FormNodeValidation();
         }
+
         FormNodeValidation newValidation = getInitialFormValidation(adjacentFile, formNode);
+        Collection<String> variablesNames = validation.getVariableNames();
+        List<String> missingVariableNames = new ArrayList<String>();
+        for (String variableName : variablesNames) {
+            if (!newValidation.getVariableNames().contains(variableName)) {
+                missingVariableNames.add(variableName);
+                changed = true;
+            }
+        }
+        variablesNames.removeAll(missingVariableNames);
+
         for (String variableName : newValidation.getVariableNames()) {
-            if (!validation.getVariableNames().contains(variableName)) {
+            if (!variablesNames.contains(variableName)) {
                 validation.addFieldConfigs(variableName, newValidation.getFieldConfigs().get(variableName));
                 changed = true;
             }
