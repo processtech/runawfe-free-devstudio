@@ -6,9 +6,11 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
@@ -60,19 +62,29 @@ public class MultiTaskVariableDialog extends Dialog {
         Label labelProcessVariable = new Label(composite, SWT.NONE);
         labelProcessVariable.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
         labelProcessVariable.setText(Localization.getString("Subprocess.ProcessVariableName") + ":");
-        final Combo processVariableField = new Combo(composite, SWT.BORDER);
+
+        Composite varComposite = new Composite(composite, SWT.NONE);
+        varComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        varComposite.setLayout(new GridLayout(2, false));
+        final Text varName = new Text(varComposite, SWT.READ_ONLY | SWT.BORDER);
         GridData processVariableTextData = new GridData(GridData.FILL_HORIZONTAL);
         processVariableTextData.minimumWidth = 200;
-        processVariableField.setItems(processVariables.toArray(new String[processVariables.size()]));
-        processVariableField.setLayoutData(processVariableTextData);
-        processVariableField.setText(getProcessVariable());
-        processVariableField.addModifyListener(new ModifyListener() {
+        varName.setLayoutData(processVariableTextData);
+        varName.setText(getProcessVariable());
+        Button selectButton = new Button(varComposite, SWT.PUSH);
+        selectButton.setText("...");
+        selectButton.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+        selectButton.addSelectionListener(new SelectionAdapter() {
             @Override
-            public void modifyText(ModifyEvent e) {
-                processVariable = processVariableField.getText();
-                updateButtons();
+            public void widgetSelected(SelectionEvent e) {
+                String result = new ChooseVariableNameDialog(processVariables).openDialog();
+                if (result != null) {
+                    processVariable = result;
+                    varName.setText(processVariable);
+                }
             }
         });
+
         Label labelTaskVariable = new Label(composite, SWT.NONE);
         labelTaskVariable.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
         labelTaskVariable.setText(Localization.getString("MultiTask.FormVariableName") + ":");

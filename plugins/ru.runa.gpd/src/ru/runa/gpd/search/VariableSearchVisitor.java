@@ -53,7 +53,7 @@ import com.google.common.collect.Maps;
 
 public class VariableSearchVisitor {
 
-    public static final String REGEX_SCRIPT_VARIABLE = "[^\\p{Alnum}_&&[\"'{(, ]]%s[^\\p{Alnum}_&&[\"'}), ]]";
+    public static final String REGEX_SCRIPT_VARIABLE = "[\"'{(,\\s=]%s[\"'}),.;\\s=]";
 
     private final VariableSearchQuery query;
     private IProgressMonitor progressMonitor;
@@ -179,10 +179,10 @@ public class VariableSearchVisitor {
         for (Match match : matches) {
             query.getSearchResult().addMatch(match);
         }
-        if (!HandlerRegistry.SCRIPT_HANDLER_CLASS_NAMES.contains(delegable.getDelegationClassName())
+        if (matches.isEmpty() && !HandlerRegistry.SCRIPT_HANDLER_CLASS_NAMES.contains(delegable.getDelegationClassName())
                 && !query.getVariable().getName().equals(query.getVariable().getScriptingName())) {
             matches = findInString(elementMatch, "(" + conf + ")", matcherScriptingName);
-            elementMatch.setPotentialMatchesCount(elementMatch.getPotentialMatchesCount() + matches.size());
+            elementMatch.setPotentialMatchesCount(matches.size());
             for (Match match : matches) {
                 query.getSearchResult().addMatch(match);
             }
@@ -261,9 +261,6 @@ public class VariableSearchVisitor {
                 elementMatch.setPotentialMatchesCount(matches.size() - matchesCount);
                 for (Match match : matches) {
                     query.getSearchResult().addMatch(match);
-                }
-                if (formNode.hasFormScript()) {
-                    // TODO
                 }
             }
             if (formNode.hasFormValidation()) {

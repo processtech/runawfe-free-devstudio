@@ -68,8 +68,11 @@ public class DurationEditDialog extends Dialog {
                 @Override
                 protected void onSelection(SelectionEvent e) throws Exception {
                     ChooseDurationDialog dialog = new ChooseDurationDialog(processDefinition);
-                    editable.setVariableName(dialog.openDialog());
-                    updateGUI();
+                    String result = dialog.openDialog();
+                    if (result != null) {
+                        editable.setVariableName(result);
+                        updateGUI();
+                    }
                 }
             }).setEnabled(processDefinition != null);
         }

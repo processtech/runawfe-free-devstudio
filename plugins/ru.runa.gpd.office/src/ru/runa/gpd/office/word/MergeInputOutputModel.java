@@ -17,6 +17,7 @@ public class MergeInputOutputModel extends InputOutputModel {
 
     private List<String> inputPathList = new ArrayList<String>();
     private List<String> inputVariableList = new ArrayList<String>();;
+    private List<String> inputAddBreakList = new ArrayList<>();
 
     public void serialize(Document document, Element parent) {
         initMultiIn(parent);
@@ -38,6 +39,7 @@ public class MergeInputOutputModel extends InputOutputModel {
             for (Element input : inputList) {
                 model.inputPathList.add(input.attributeValue("path"));
                 model.inputVariableList.add(input.attributeValue("variable"));
+                model.inputAddBreakList.add(input.attributeValue("addBreak", "true"));
             }
         }
         initOutModel(output, model);
@@ -64,21 +66,29 @@ public class MergeInputOutputModel extends InputOutputModel {
         return inputVariableList;
     }
 
+    public List<String> getInputAddBreakList() {
+        return inputAddBreakList;
+    }
+
     private void initMultiIn(Element parent) {
         final int size = Math.max(inputPathList.size(), inputVariableList.size());
         for (int i = 0; i < size; ++i) {
-            initIn(parent, i < inputPathList.size() ? inputPathList.get(i) : null, i < inputVariableList.size() ? inputVariableList.get(i) : null);
+            initIn(parent, i < inputPathList.size() ? inputPathList.get(i) : null, i < inputVariableList.size() ? inputVariableList.get(i) : null,
+                    i < inputAddBreakList.size() ? inputAddBreakList.get(i) : null);
         }
 
     }
 
-    private void initIn(Element parent, String inputPath, String inputVariable) {
+    private void initIn(Element parent, String inputPath, String inputVariable, String addBreak) {
         Element input = parent.addElement("input");
         if (!Strings.isNullOrEmpty(inputPath)) {
             input.addAttribute("path", inputPath);
         }
         if (!Strings.isNullOrEmpty(inputVariable)) {
             input.addAttribute("variable", inputVariable);
+        }
+        if (!Strings.isNullOrEmpty(addBreak)) {
+            input.addAttribute("addBreak", addBreak);
         }
     }
 

@@ -145,15 +145,11 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
                 case 1:
                     result = o1.getFormatLabel().compareTo(o2.getFormatLabel());
                     break;
-                case 3:
-                    result = Strings.nullToEmpty(o1.getDescription()).compareTo(Strings.nullToEmpty(o2.getDescription()));
-                    break;
                 }
                 return result;
             }
         }), new TableColumnDescription("property.name", 200, SWT.LEFT), new TableColumnDescription("Variable.property.format", 200, SWT.LEFT),
-                new TableColumnDescription("Variable.property.defaultValue", 200, SWT.LEFT, false), new TableColumnDescription(
-                        "property.description", 200, SWT.LEFT));
+                new TableColumnDescription("Variable.property.defaultValue", 200, SWT.LEFT, false));
 
         Composite attributeButtonsBar = createActionBar(rightComposite);
         createAttributeButton = addButton(attributeButtonsBar, "button.create", new CreateAttributeSelectionListener(), false);
@@ -269,7 +265,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             VariableUserType type = getSelection();
             VariableUserTypeDialog dialog = new VariableUserTypeDialog(getDefinition(), type);
             if (dialog.open() == Window.OK) {
-                type.setName(dialog.getName());
+                VariableUtils.renameUserType(getDefinition(), type, dialog.getName());
             }
         }
     }
@@ -340,8 +336,10 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
     }
 
     private enum RemoveAction {
-        NONE(""), OK("UserDefinedVariableType.deletion.NoUsageFound"), VAR_USAGE("UserDefinedVariableType.deletion.VariablesWillBeRemoved"), TYPE_USAGE(
-                "UserDefinedVariableType.deletion.UserTypeIsUsed");
+        NONE(""),
+        OK("UserDefinedVariableType.deletion.NoUsageFound"),
+        VAR_USAGE("UserDefinedVariableType.deletion.VariablesWillBeRemoved"),
+        TYPE_USAGE("UserDefinedVariableType.deletion.UserTypeIsUsed");
 
         private final String messageKey;
 
@@ -845,7 +843,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             boolean result = Objects.equal(leftType.getName(), rightType.getName());
             result = result && (leftType.getAttributes() == null ? rightType.getAttributes() == null : false);
             if (leftType.getAttributes() != null && rightType.getAttributes() != null) {
-                // XXX: fault accumulate "result &&" - wrong set "false" 
+                // XXX: fault accumulate "result &&" - wrong set "false"
                 result = leftType.getAttributes().size() == rightType.getAttributes().size();
                 if (result) {
                     for (int i = 0; i < leftType.getAttributes().size(); i++) {
@@ -892,8 +890,6 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
                 return variable.getFormatLabel();
             case 2:
                 return Strings.nullToEmpty(variable.getDefaultValue());
-            case 3:
-                return Strings.nullToEmpty(variable.getDescription());
             default:
                 return "unknown " + index;
             }
