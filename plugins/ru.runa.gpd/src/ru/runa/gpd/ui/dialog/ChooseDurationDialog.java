@@ -12,7 +12,7 @@ import ru.runa.gpd.util.Duration;
 public class ChooseDurationDialog extends ChooseItemDialog<String> {
 
     public ChooseDurationDialog(ProcessDefinition definition) {
-        super(Localization.getString("ChooseVariable.title"), createItems(definition), false, null, false);
+        super(Localization.getString("ChooseVariable.title"), createItems(definition), false, null, true);
     }
 
     private static List<String> createItems(ProcessDefinition definition) {

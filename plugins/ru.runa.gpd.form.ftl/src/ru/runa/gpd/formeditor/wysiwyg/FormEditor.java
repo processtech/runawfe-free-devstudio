@@ -262,6 +262,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
             new GetHTMLCallbackFunction(browser);
             new OnLoadCallbackFunction(browser);
             new MarkEditorDirtyCallbackFunction(browser);
+            new RefreshViewCallbackFunction(browser);
             browser.addProgressListener(new ProgressAdapter() {
                 @Override
                 public void completed(ProgressEvent event) {
@@ -505,12 +506,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
                 if (editor != null && !editor.isDirty()) {
                     editor.setDirty(true);
                 }
-                try {
-                    syncBrowser2Editor();
-                    syncEditor2Browser();
-                } catch (Exception e) {
-                    PluginLogger.logError(e);
-                }
+                refreshView();
             }
         });
         components.put(component.getId(), component);
@@ -566,12 +562,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
                 final Component component = dialog.openDialog();
                 if (component != null) {
                     components.put(componentId, component);
-                    try {
-                        syncBrowser2Editor();
-                        syncEditor2Browser();
-                    } catch (Exception e) {
-                        PluginLogger.logError(e);
-                    }
+                    refreshView();
                 }
             }
         });
@@ -579,6 +570,10 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
 
     @Override
     public void doDrop() {
+        refreshView();
+    }
+
+    public void refreshView() {
         try {
             syncBrowser2Editor();
             syncEditor2Browser();
@@ -644,6 +639,19 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
         @Override
         public Object function(Object[] arguments) {
             setDirty(true);
+            return null;
+        }
+    }
+
+    private class RefreshViewCallbackFunction extends BrowserFunction {
+
+        public RefreshViewCallbackFunction(Browser browser) {
+            super(browser, "refreshViewCallback");
+        }
+
+        @Override
+        public Object function(Object[] arguments) {
+            refreshView();
             return null;
         }
     }

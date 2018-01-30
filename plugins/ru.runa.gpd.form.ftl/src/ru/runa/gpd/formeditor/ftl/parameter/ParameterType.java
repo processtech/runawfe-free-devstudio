@@ -16,25 +16,19 @@ import ru.runa.gpd.lang.model.VariableUserType;
 
 public abstract class ParameterType {
     private final boolean multiple;
-    private final boolean surroundBrackets;
     private String depends;
     private IParameterTypeValidator validator;
 
-    public ParameterType(boolean multiple, boolean surroundBrackets) {
+    public ParameterType(boolean multiple) {
         this.multiple = multiple;
-        this.surroundBrackets = surroundBrackets;
     }
 
     public ParameterType() {
-        this(false, true);
+        this(false);
     }
 
     public boolean isMultiple() {
         return multiple;
-    }
-
-    public boolean isSurroundBrackets() {
-        return surroundBrackets;
     }
 
     public String getDepends() {
