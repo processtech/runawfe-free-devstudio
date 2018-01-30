@@ -88,6 +88,7 @@ import ru.runa.gpd.util.EditorUtils;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.VariableMapping;
 import ru.runa.gpd.util.VariableUtils;
+import ru.runa.gpd.validation.ValidationUtil;
 import ru.runa.wfe.InternalApplicationException;
 import ru.runa.wfe.commons.ClassLoaderUtil;
 import ru.runa.wfe.commons.TypeConversionUtil;
@@ -154,7 +155,7 @@ public class QuickFormEditor extends EditorPart implements ISelectionListener, I
             @Override
             public void propertyChanged(Object source, int propId) {
                 if (propId == QuickFormEditor.CLOSED && formFile.exists()) {
-                    EditorUtils.createOrUpdateValidation(formNode, formFile);
+                    ValidationUtil.createOrUpdateValidation(formNode, formFile);
                 }
             }
         });
@@ -172,7 +173,7 @@ public class QuickFormEditor extends EditorPart implements ISelectionListener, I
             // }
             if (formNode != null) {
                 formNode.setDirty();
-                EditorUtils.createOrUpdateValidation(formNode, formFile);
+                ValidationUtil.createOrUpdateValidation(formNode, formFile);
             }
             setDirty(false);
             updateButtons();

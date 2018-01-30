@@ -67,11 +67,18 @@ public class ValidationUtil {
             validation = new FormNodeValidation();
         }
 
+        IFile formFile = IOUtils.getAdjacentFile(adjacentFile, formNode.getFormFileName());
+        FormType formType = FormTypeProvider.getFormType(formNode.getFormType());
+        byte[] formData = IOUtils.readStreamAsBytes(formFile.getContents(true));
+        Map<String, FormVariableAccess> formVariables = formType.getFormVariableNames(formNode, formData);
+
+        List<String> variableNames = formNode.getProcessDefinition().getVariableNames(true);
+
         FormNodeValidation newValidation = getInitialFormValidation(adjacentFile, formNode);
         Collection<String> variablesNames = validation.getVariableNames();
         List<String> missingVariableNames = new ArrayList<String>();
         for (String variableName : variablesNames) {
-            if (!newValidation.getVariableNames().contains(variableName)) {
+            if (!(newValidation.getVariableNames().contains(variableName) || formVariables.get(variableName) == FormVariableAccess.DOUBTFUL)) {
                 missingVariableNames.add(variableName);
                 changed = true;
             }
@@ -98,5 +105,21 @@ public class ValidationUtil {
         IFile validationFile = IOUtils.getAdjacentFile(file, formNode.getValidationFileName());
         ValidatorParser.writeValidation(validationFile, formNode, validation);
         return validationFile;
+    }
+
+    public static void createOrUpdateValidation(FormNode formNode, IFile formFile) {
+        String op = "create";
+        try {
+            if (!formNode.hasFormValidation()) {
+                String fileName = formNode.getId() + "." + FormNode.VALIDATION_SUFFIX;
+                formNode.setValidationFileName(fileName);
+                createNewValidationUsingForm(formFile, formNode);
+            } else {
+                op = "update";
+                updateValidation(formFile, formNode);
+            }
+        } catch (Exception e) {
+            PluginLogger.logError("Failed to " + op + " form validation", e);
+        }
     }
 }

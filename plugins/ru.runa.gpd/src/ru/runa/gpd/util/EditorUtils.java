@@ -16,8 +16,6 @@ import org.eclipse.ui.PlatformUI;
 
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.editor.ProcessEditorBase;
-import ru.runa.gpd.lang.model.FormNode;
-import ru.runa.gpd.validation.ValidationUtil;
 
 import com.google.common.base.Objects;
 
@@ -91,22 +89,6 @@ public class EditorUtils {
                 PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().hideView(viewReference);
                 return;
             }
-        }
-    }
-
-    public static void createOrUpdateValidation(FormNode formNode, IFile formFile) {
-        String op = "create";
-        try {
-            if (!formNode.hasFormValidation()) {
-                String fileName = formNode.getId() + "." + FormNode.VALIDATION_SUFFIX;
-                formNode.setValidationFileName(fileName);
-                ValidationUtil.createNewValidationUsingForm(formFile, formNode);
-            } else {
-                op = "update";
-                ValidationUtil.updateValidation(formFile, formNode);
-            }
-        } catch (Exception e) {
-            PluginLogger.logError("Failed to " + op + " form validation", e);
         }
     }
 }
