@@ -43,18 +43,23 @@ public class AddSwimlaneFeature extends AddElementFeature {
     @Override
     public PictogramElement add(IAddContext context) {
         Swimlane swimlane = (Swimlane) context.getNewObject();
+        String bpmnName = swimlane.getTypeDefinition().getBpmnElementName();
         Dimension bounds = getBounds(context);
         //
         ContainerShape containerShape = Graphiti.getPeCreateService().createContainerShape(context.getTargetContainer(), true);
         containerShape.getProperties().add(new GaProperty(GaProperty.SWIMLANE_DISPLAY_VERTICAL, String.valueOf(isVerticalLayout())));
         Rectangle main = Graphiti.getGaService().createRectangle(containerShape);
-        main.setStyle(StyleUtil.getStyleForEvent(getDiagram(), null, null));
+        main.setForeground(Graphiti.getGaService().manageColor(getDiagram(), StyleUtil.LIGHT_BLUE));
+        main.setBackground(Graphiti.getGaService().manageColor(getDiagram(), StyleUtil.VERY_LIGHT_BLUE));
+        main.setStyle(StyleUtil.getStyleForSwimlane(getDiagram()));
         main.setLineWidth(1);
         Graphiti.getGaService().setLocationAndSize(main, context.getX(), context.getY(), bounds.width, bounds.height);
         //
         Rectangle nameRectangle = Graphiti.getGaService().createRectangle(main);
         nameRectangle.getProperties().add(new GaProperty(GaProperty.ID, LayoutSwimlaneFeature.NAME_RECT));
-        nameRectangle.setStyle(StyleUtil.getStyleForEvent(getDiagram(), null, null));
+        nameRectangle.setForeground(Graphiti.getGaService().manageColor(getDiagram(), StyleUtil.LIGHT_BLUE));
+        nameRectangle.setBackground(Graphiti.getGaService().manageColor(getDiagram(), StyleUtil.VERY_LIGHT_BLUE));
+        nameRectangle.setStyle(StyleUtil.getStyleForSwimlane(getDiagram()));
         //
         Text nameText = Graphiti.getGaService().createDefaultText(getDiagram(), nameRectangle, swimlane.getName());
         nameText.getProperties().add(new GaProperty(GaProperty.ID, GaProperty.NAME));
@@ -63,8 +68,7 @@ public class AddSwimlaneFeature extends AddElementFeature {
         }
         nameText.setHorizontalAlignment(Orientation.ALIGNMENT_CENTER);
         nameText.setVerticalAlignment(Orientation.ALIGNMENT_CENTER);
-        String bpmnName = swimlane.getTypeDefinition().getBpmnElementName();
-        nameText.setStyle(StyleUtil.getStyleForText(getDiagram(), bpmnName, null));
+        nameText.setStyle(StyleUtil.getStyleForText(getDiagram(), bpmnName, swimlane));
         //
         link(containerShape, swimlane);
         //

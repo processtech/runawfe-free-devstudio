@@ -6,9 +6,11 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -81,18 +83,26 @@ public class MessageVariableDialog extends Dialog {
 
             });
         } else {
-            final Combo variableCombo = new Combo(composite, SWT.BORDER);
-            GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
-            gridData.minimumWidth = 200;
-            variableCombo.setItems(variableNames.toArray(new String[variableNames.size()]));
-            variableCombo.setLayoutData(gridData);
-            variableCombo.setText(getVariable());
-            variableCombo.addSelectionListener(new LoggingSelectionAdapter() {
-
+            Composite varComposite = new Composite(composite, SWT.NONE);
+            varComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            varComposite.setLayout(new GridLayout(2, false));
+            final Text varName = new Text(varComposite, SWT.READ_ONLY | SWT.BORDER);
+            GridData processVariableTextData = new GridData(GridData.FILL_HORIZONTAL);
+            processVariableTextData.minimumWidth = 200;
+            varName.setLayoutData(processVariableTextData);
+            varName.setText(getVariable());
+            Button selectButton = new Button(varComposite, SWT.PUSH);
+            selectButton.setText("...");
+            selectButton.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+            selectButton.addSelectionListener(new SelectionAdapter() {
                 @Override
-                protected void onSelection(SelectionEvent e) throws Exception {
-                    variable = variableCombo.getText();
-                    aliasText.setText(variable);
+                public void widgetSelected(SelectionEvent e) {
+                    String result = new ChooseVariableNameDialog(variableNames).openDialog();
+                    if (result != null) {
+                        variable = result;
+                        varName.setText(variable);
+                        aliasText.setText(variable);
+                    }
                 }
             });
         }

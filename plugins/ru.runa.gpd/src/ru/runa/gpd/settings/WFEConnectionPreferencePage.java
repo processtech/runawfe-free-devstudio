@@ -56,6 +56,7 @@ public class WFEConnectionPreferencePage extends FieldEditorPreferencePage imple
         loginEditor = new StringFieldEditor(P_WFE_CONNECTION_LOGIN, Localization.getString("pref.connection.login"), getFieldEditorParent());
         passwordEditor = new StringFieldEditor(P_WFE_CONNECTION_PASSWORD, Localization.getString("pref.connection.password"), getFieldEditorParent());
         passwordEditor.setEmptyStringAllowed(true);
+        passwordEditor.getTextControl(getFieldEditorParent()).setEchoChar('*');
         boolean enabled = LOGIN_MODE_LOGIN_PASSWORD.equals(Activator.getPrefString(P_WFE_CONNECTION_LOGIN_MODE));
         loginEditor.setEnabled(enabled, getFieldEditorParent());
         passwordEditor.setEnabled(enabled, getFieldEditorParent());
@@ -118,5 +119,5 @@ public class WFEConnectionPreferencePage extends FieldEditorPreferencePage imple
         DataImporter.clearCache();
         return super.performOk();
     }
-    
+
 }

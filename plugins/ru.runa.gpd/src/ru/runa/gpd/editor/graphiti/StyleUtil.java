@@ -332,4 +332,18 @@ public class StyleUtil implements PrefConstants {
             initStyleForText(diagram, bpmnName, null, node);
         }
     }
+
+    public static Style getStyleForSwimlane(Diagram diagram) {
+        final String styleId = "SWIMLANE"; //$NON-NLS-1$
+        Style style = findStyle(diagram, styleId);
+        if (style == null) { // style not found - create new style
+            IGaService gaService = Graphiti.getGaService();
+            style = gaService.createStyle(diagram, styleId);
+            style.setForeground(gaService.manageColor(diagram, FOREGROUND));
+            gaService.setRenderingStyle(style, getDefaultEventColor(diagram, initColor(style, "03689A", "FFFFFF", diagram)));
+            style.setLineWidth(20);
+        }
+        return style;
+    }
+
 }
