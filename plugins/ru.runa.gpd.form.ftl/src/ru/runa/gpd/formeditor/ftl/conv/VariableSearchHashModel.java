@@ -71,11 +71,9 @@ public class VariableSearchHashModel extends SimpleHash {
                 return wrapParameter(variable);
             }
             return new SimpleScalar("${" + variable.getName() + "}");
-        } else {
-            stageRenderingParams = true;
-            return new ComponentModel(ComponentTypeRegistry.getNotNull("UserComponentVariable"));
         }
 
+        return new UndefinedMethodModel();
     }
 
     private class ComponentModel implements TemplateMethodModel {
@@ -97,9 +95,6 @@ public class VariableSearchHashModel extends SimpleHash {
                 if (parameter == null) {
                     continue;
                 }
-                if (this.componentType.getId().equals("UserComponentVariable")) {
-                    usedVariables.put(arg, FormVariableAccess.DOUBTFUL);
-                }
                 if (parameter.getVariableAccess() == VariableAccess.WRITE) {
                     usedVariables.put(arg, FormVariableAccess.WRITE);
                 } else if (parameter.getVariableAccess() == VariableAccess.READ) {
@@ -107,6 +102,21 @@ public class VariableSearchHashModel extends SimpleHash {
                         usedVariables.put(arg, FormVariableAccess.READ);
                     }
                 }
+            }
+            return "noop";
+        }
+    }
+
+    private class UndefinedMethodModel implements TemplateMethodModel {
+
+        @Override
+        public Object exec(List args) throws TemplateModelException {
+            for (int i = 0; i < args.size(); i++) {
+                String arg = (String) args.get(i);
+                if (Strings.isNullOrEmpty(arg)) {
+                    continue;
+                }
+                usedVariables.put(arg, FormVariableAccess.DOUBTFUL);
             }
             return "noop";
         }

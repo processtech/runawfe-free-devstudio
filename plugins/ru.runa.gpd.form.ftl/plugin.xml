@@ -182,19 +182,6 @@
    </extension>
    <extension
          point="ru.runa.gpd.form.ftl.components">
-       <component
-            enabled="false"
-            id="UserComponentVariable"
-            imageProvider="ru.runa.gpd.formeditor.ftl.image.VariableComponentImageProvider"
-            name="UserComponentVariable"
-            order="-100">
-         <param
-               name="%Param.Variable"
-               type="varfinder"
-               variableAccess="NONE"
-               variableTypeFilter="java.lang.Object">
-         </param>
-      </component>
       <component
             enabled="true"
             id="InputVariable"

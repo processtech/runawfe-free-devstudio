@@ -59,20 +59,12 @@ public class ValidationUtil {
 
     public static void updateValidation(IFile adjacentFile, FormNode formNode) throws Exception {
         boolean changed = false;
-        FormNodeValidation validation;
-        try {
-            validation = formNode.getValidation(adjacentFile);
-        } catch (Exception e) {
-            PluginLogger.logErrorWithoutDialog("", e);
-            validation = new FormNodeValidation();
-        }
+        FormNodeValidation validation = formNode.getValidation(adjacentFile);
 
         IFile formFile = IOUtils.getAdjacentFile(adjacentFile, formNode.getFormFileName());
         FormType formType = FormTypeProvider.getFormType(formNode.getFormType());
         byte[] formData = IOUtils.readStreamAsBytes(formFile.getContents(true));
         Map<String, FormVariableAccess> formVariables = formType.getFormVariableNames(formNode, formData);
-
-        List<String> variableNames = formNode.getProcessDefinition().getVariableNames(true);
 
         FormNodeValidation newValidation = getInitialFormValidation(adjacentFile, formNode);
         Collection<String> variablesNames = validation.getVariableNames();
