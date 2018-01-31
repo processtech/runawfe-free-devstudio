@@ -116,7 +116,9 @@ public class VariableSearchHashModel extends SimpleHash {
                 if (Strings.isNullOrEmpty(arg)) {
                     continue;
                 }
-                usedVariables.put(arg, FormVariableAccess.DOUBTFUL);
+                if (usedVariables.get(arg) != FormVariableAccess.WRITE) {
+                    usedVariables.put(arg, FormVariableAccess.DOUBTFUL);
+                }
             }
             return "noop";
         }
