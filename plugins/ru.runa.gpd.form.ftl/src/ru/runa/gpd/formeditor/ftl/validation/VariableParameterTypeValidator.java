@@ -33,6 +33,9 @@ public class VariableParameterTypeValidator extends DefaultParameterTypeValidato
 
     private void validateVariable(FormNode formNode, Component component, ComponentParameter parameter, List<ValidationError> list,
             String variableName) {
+        if (!parameter.isRequired() && Strings.isNullOrEmpty(variableName)) {
+            return;
+        }
         Variable variable = VariableUtils.getVariableByName(formNode, variableName);
         if (variable == null) {
             list.add(ValidationError.createError(formNode,
