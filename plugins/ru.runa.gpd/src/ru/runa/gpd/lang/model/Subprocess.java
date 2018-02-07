@@ -5,6 +5,7 @@ import java.util.List;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.ui.views.properties.ComboBoxPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
 
@@ -21,7 +22,6 @@ import ru.runa.gpd.util.VariableMapping;
 import ru.runa.gpd.util.VariableUtils;
 import ru.runa.wfe.lang.AsyncCompletionMode;
 
-
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
@@ -30,6 +30,7 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
     protected List<VariableMapping> variableMappings = Lists.newArrayList();
     private boolean embedded;
     private boolean async;
+    private boolean transaction;
     private AsyncCompletionMode asyncCompletionMode = AsyncCompletionMode.ON_MAIN_PROCESS_END;
     public static List<String> PLACEHOLDERS = Lists.newArrayList(VariableUtils.CURRENT_PROCESS_ID, VariableUtils.CURRENT_PROCESS_DEFINITION_NAME,
             VariableUtils.CURRENT_NODE_ID, VariableUtils.CURRENT_NODE_NAME);
@@ -141,6 +142,8 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
     public void populateCustomPropertyDescriptors(List<IPropertyDescriptor> descriptors) {
         super.populateCustomPropertyDescriptors(descriptors);
         descriptors.add(new PropertyDescriptor(PROPERTY_SUBPROCESS, Localization.getString("Subprocess.Name")));
+        descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_TRANSACTION, Localization.getString("Subprocess.Transaction"),
+                YesNoComboBoxTransformer.LABELS));
     }
 
     @Override
@@ -148,8 +151,16 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
         if (PROPERTY_SUBPROCESS.equals(id)) {
             return subProcessName;
         }
+        if (PROPERTY_TRANSACTION.equals(id)) {
+            if (transaction) {
+                return Integer.valueOf(0);
+            } else {
+                return Integer.valueOf(1);
+            }
+        }
         return super.getPropertyValue(id);
     }
+
 
     public boolean isEmbedded() {
         return embedded;
@@ -211,6 +222,26 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
             }
         }
         return result;
+    }
+
+    public boolean isTransaction() {
+        return transaction;
+    }
+
+    public void setTransaction(boolean transaction) {
+        boolean old = this.transaction;
+        this.transaction = transaction;
+        firePropertyChange(PROPERTY_TRANSACTION, old, this.transaction);
+    }
+
+    @Override
+    public void setPropertyValue(Object id, Object value) {
+        if (PROPERTY_TRANSACTION.equals(id)) {
+            setTransaction(YesNoComboBoxTransformer.setPropertyValue(value));
+            // this.transaction = YesNoComboBoxTransformer.setPropertyValue(value);
+        } else {
+            super.setPropertyValue(id, value);
+        }
     }
 
 }
