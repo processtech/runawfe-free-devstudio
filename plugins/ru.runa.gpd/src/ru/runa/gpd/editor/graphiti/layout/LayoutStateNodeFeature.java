@@ -73,7 +73,7 @@ public class LayoutStateNodeFeature extends LayoutElementFeature {
             int x = bounds.width - 3 * GRID_SIZE;
             int y = bounds.height - 2 * GRID_SIZE;
             if (isAsync) {
-                x -= 14 / 2;
+                x -= 14 / 2 + GRID_SIZE;
             }
             Graphiti.getGaService().setLocationAndSize(multipleInstancesImage, x, y, 16, 12);
         }
@@ -88,7 +88,7 @@ public class LayoutStateNodeFeature extends LayoutElementFeature {
         GraphicsAlgorithm asyncImage = PropertyUtil.findGaRecursiveByName(ga, GaProperty.ASYNC);
         if (asyncImage != null) {
             int size = ((Synchronizable) node).isAsync() ? 14 : 1;
-            Graphiti.getGaService().setLocationAndSize(asyncImage, bounds.width - 2 * GRID_SIZE, bounds.height - 2 * GRID_SIZE - 1, size, size);
+            Graphiti.getGaService().setLocationAndSize(asyncImage, bounds.width - 3 * GRID_SIZE, bounds.height - 2 * GRID_SIZE - 1, size, size);
         }
         for (Shape shape : containerShape.getChildren()) {
             layoutPictogramElement(shape);
