@@ -3,6 +3,7 @@ package ru.runa.gpd.formeditor.ftl;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -18,7 +19,14 @@ import ru.runa.gpd.formeditor.ftl.parameter.ParameterType;
 import ru.runa.gpd.formeditor.ftl.validation.IParameterTypeValidator;
 import ru.runa.wfe.InternalApplicationException;
 
+import com.google.common.base.CharMatcher;
+import com.google.common.base.Function;
+import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -80,21 +88,7 @@ public class ComponentTypeRegistry {
                         IConfigurationElement[] paramElements = componentElement.getChildren();
                         for (IConfigurationElement paramElement : paramElements) {
                             ComponentParameter componentParameter = new ComponentParameter(paramElement);
-                            if (componentParameter.getType().getDepends() != null) {
-                                ParameterType dependsOnType = parameters.get(componentParameter.getType().getDepends());
-                                Preconditions.checkNotNull(dependsOnType, componentParameter.getType().getDepends());
-                                boolean dependentAdded = false;
-                                for (ComponentParameter testParameter : type.getParameters()) {
-                                    if (testParameter.getType() == dependsOnType) {
-                                        testParameter.getDependents().add(componentParameter);
-                                        dependentAdded = true;
-                                    }
-                                }
-                                if (!dependentAdded) {
-                                    throw new InternalApplicationException("Not found dependent component "
-                                            + componentParameter.getType().getDepends());
-                                }
-                            }
+                            validateComponentTypeParameterDepends(type, componentParameter);
                             type.getParameters().add(componentParameter);
                         }
                         if (EditorsPlugin.DEBUG) {
@@ -153,6 +147,32 @@ public class ComponentTypeRegistry {
         }
         Collections.sort(tags, new ComponentTypeComparator());
         return tags;
+    }
+
+    private static final void validateComponentTypeParameterDepends(ComponentType type, ComponentParameter componentParameter)
+            throws InternalApplicationException {
+        final String dependsArg = componentParameter.getType().getDepends();
+        if (Strings.isNullOrEmpty(dependsArg)) {
+            return;
+        }
+        boolean dependentAdded = false;
+        for (final String depends : Splitter.on(CharMatcher.is(',')).trimResults().split(dependsArg)) {
+            final ParameterType dependsOnType = parameters.get(depends);
+            Preconditions.checkNotNull(dependsOnType, depends);
+            final Iterator<ComponentParameter> found = Iterables.filter(type.getParameters(), new Predicate<ComponentParameter>() {
+                @Override
+                public boolean apply(ComponentParameter param) {
+                    return Objects.equal(param.getType(), dependsOnType);
+                }
+            }).iterator();
+            if (found.hasNext()) {
+                found.next().getDependents().add(componentParameter);
+                dependentAdded = true;
+            }
+        }
+        if (!dependentAdded) {
+            throw new InternalApplicationException("Not found dependent component(s) " + componentParameter.getType().getDepends());
+        }
     }
 
     private static class ComponentTypeComparator implements Comparator<ComponentType> {

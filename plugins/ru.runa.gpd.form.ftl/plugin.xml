@@ -101,8 +101,8 @@
       </type>
       <type
             class="ru.runa.gpd.formeditor.ftl.parameter.UserTypeAttributeParameter"
-            depends="usertypevarlistcombo"
-            validator="ru.runa.gpd.formeditor.ftl.validation.UserTypeAttributeListValidator"
+            depends="usertypevarlistcombo,varcombo,varfinder"
+            validator="ru.runa.gpd.formeditor.ftl.validation.UserTypeAttributeValidator"
             id="usertypeattribute">
       </type>
       <type
