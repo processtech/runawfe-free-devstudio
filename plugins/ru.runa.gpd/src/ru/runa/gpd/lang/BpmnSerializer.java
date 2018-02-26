@@ -199,6 +199,7 @@ public class BpmnSerializer extends ProcessSerializer {
         for (Timer timer : timers) {
             Element intermediateEventElement = processElement.addElement(INTERMEDIATE_CATCH_EVENT);
             writeTimer(intermediateEventElement, timer);
+            writeBoundaryEvents(processElement, timer);
             writeTransitions(processElement, timer);
         }
         List<ScriptTask> scriptTasks = definition.getChildren(ScriptTask.class);
