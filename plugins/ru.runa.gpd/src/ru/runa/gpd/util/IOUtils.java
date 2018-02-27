@@ -10,12 +10,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.dom4j.Document;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -37,10 +39,14 @@ import ru.runa.gpd.BotCache;
 import ru.runa.gpd.BotStationNature;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessProjectNature;
+import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.form.FormType;
 import ru.runa.gpd.form.FormTypeProvider;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.par.ParContentProvider;
+import ru.runa.wfe.InternalApplicationException;
+import ru.runa.wfe.datasource.DataSourceStuff;
+import ru.runa.wfe.datasource.DataSourceType;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
@@ -425,7 +431,7 @@ public class IOUtils {
         List<IProject> result = new ArrayList<IProject>();
         try {
             for (IProject project : getWorkspaceProjects()) {
-                if (project.isOpen() && project.getNature(BotStationNature.NATURE_ID) == null) {
+                if (project.isOpen() && project.getNature(ProcessProjectNature.NATURE_ID) != null) {
                     result.add(project);
                 }
             }
@@ -589,4 +595,70 @@ public class IOUtils {
         }
         return false;
     }
+
+    public static IProject getDataSourcesProject() {
+        return ResourcesPlugin.getWorkspace().getRoot().getProject("DataSources");
+    }
+
+    public static List<IFile> getAllDataSources() {
+        List<IFile> fileList = new ArrayList<>();
+        try {
+            for (IResource resource : getDataSourcesProject().members()) {
+                if (resource instanceof IFile && ((IFile) resource).getName().endsWith(DataSourceStuff.DATA_SOURCE_FILE_SUFFIX)) {
+                    fileList.add((IFile) resource);
+                }
+            }
+        } catch (CoreException e) {
+            throw new InternalApplicationException(e);
+        }
+        return fileList;
+    }
+
+    public static List<IFile> getDataSourcesByType(DataSourceType ...types) {
+        List<IFile> fileList = new ArrayList<>();
+        List<DataSourceType> typeList = Arrays.asList(types);
+        for (IFile dsFile : getAllDataSources()) {
+            try (InputStream is = dsFile.getContents()) {
+                if (typeList.contains(DataSourceType.valueOf(XmlUtil.parseWithoutValidation(is).getRootElement().attribute("type").getValue()))) {
+                    fileList.add(dsFile);
+                }
+            } catch (IOException | CoreException e) {
+                Throwables.propagate(e);
+            }
+        }
+        return fileList;
+    }
+
+    public static void extractArchiveToProject(InputStream archiveStream, IProject project) throws IOException, CoreException {
+        ZipInputStream zis = new ZipInputStream(archiveStream);
+        byte[] buf = new byte[1024];
+        ZipEntry entry = zis.getNextEntry();
+        while (entry != null) {
+            if (!entry.getName().contains("META-INF")) {
+                IFile file = getFile(project, entry.getName());
+                ByteArrayOutputStream baos = new ByteArrayOutputStream(buf.length);
+                int n;
+                while ((n = zis.read(buf, 0, 1024)) > -1) {
+                    baos.write(buf, 0, n);
+                }
+                createFile(file, new ByteArrayInputStream(baos.toByteArray()));
+            }
+            zis.closeEntry();
+            entry = zis.getNextEntry();
+        }
+        zis.close();
+    }
+
+    public static IFile getFile(IProject project, String fileName) {
+        IFile file = project.getFile(fileName);
+        if (!file.isSynchronized(IResource.DEPTH_ONE)) {
+            try {
+                file.refreshLocal(IResource.DEPTH_ONE, null);
+            } catch (CoreException e) {
+                Throwables.propagate(e);
+            }
+        }
+        return file;
+    }
+
 }

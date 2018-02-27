@@ -119,6 +119,7 @@ public abstract class BaseCommonStorageHandlerCellEditorProvider extends XmlBase
                         buildFromModel();
                     }
                 }).setLayoutData(new GridData(GridData.GRAB_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
+                model.getInOutModel().canWorkWithDataSource = true;
                 new InputOutputComposite(this, delegable, model.getInOutModel(), getMode(), "xlsx");
                 for (StorageConstraintsModel c : model.constraints) {
                     new ArrtibuteComposite(c);
