@@ -17,16 +17,9 @@ import org.eclipse.ui.views.properties.PropertyDescriptor;
 import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.formeditor.ftl.Component;
 import ru.runa.gpd.formeditor.ftl.ComponentParameter;
-import ru.runa.gpd.formeditor.ftl.ui.VariableListDialog;
+import ru.runa.gpd.ui.dialog.ChooseVariableNameDialog;
 
-import com.google.common.base.Joiner;
-
-public class VariableListParameter extends ParameterType {
-    private static final String VALUES_DELIM = ",";
-
-    public VariableListParameter() {
-        super(true);
-    }
+public class VariableFinderParameter extends ParameterType {
 
     @Override
     public PropertyDescriptor createPropertyDescriptor(Component component, ComponentParameter parameter, int propertyId) {
@@ -41,8 +34,7 @@ public class VariableListParameter extends ParameterType {
         final Text text = new Text(composite, SWT.READ_ONLY | SWT.BORDER);
         text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         if (oldValue != null) {
-            text.setText(Joiner.on(VALUES_DELIM).join((List<String>) oldValue));
-            text.setData(oldValue);
+            text.setText((String) oldValue);
         }
         Button selectButton = new Button(composite, SWT.PUSH);
         selectButton.setText("...");
@@ -51,12 +43,9 @@ public class VariableListParameter extends ParameterType {
         selectButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                List<String> value = (List<String>) text.getData();
-                VariableListDialog dialog = new VariableListDialog(variableNames, value);
-                List<String> result = dialog.openDialog();
+                String result = new ChooseVariableNameDialog(variableNames).openDialog();
                 if (result != null) {
-                    text.setText(Joiner.on(VALUES_DELIM).join(result));
-                    text.setData(result);
+                    text.setText(result);
                     listener.propertyChange(new PropertyChangeEvent(text, PropertyNames.PROPERTY_VALUE, oldValue, result));
                 }
             }

@@ -111,15 +111,12 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
                 case 1:
                     result = o1.getFormatLabel().compareTo(o2.getFormatLabel());
                     break;
-                case 3:
-                    result = Strings.nullToEmpty(o1.getDescription()).compareTo(Strings.nullToEmpty(o2.getDescription()));
-                    break;
                 }
                 return result;
             }
         }), new TableColumnDescription("property.name", 200, SWT.LEFT), new TableColumnDescription("Variable.property.format", 200, SWT.LEFT),
                 new TableColumnDescription("Variable.property.defaultValue", 200, SWT.LEFT, false), new TableColumnDescription(
-                        "property.description", 200, SWT.LEFT));
+                        "Variable.property.storeType", 200, SWT.LEFT));
 
         Composite buttonsBar = createActionBar(allVariablesComposite);
         addButton(buttonsBar, "button.create", new CreateVariableSelectionListener(), false);
@@ -152,7 +149,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
             updateViewer();
         } else if (evt.getSource() instanceof Variable) {
             if (PropertyNames.PROPERTY_NAME.equals(type) || PropertyNames.PROPERTY_FORMAT.equals(type)
-                    || PropertyNames.PROPERTY_DEFAULT_VALUE.equals(type)) {
+                    || PropertyNames.PROPERTY_DEFAULT_VALUE.equals(type) || PropertyNames.PROPERTY_STORE_TYPE.equals(type)) {
                 tableViewer.refresh(evt.getSource());
             }
         }
@@ -493,7 +490,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
             case 2:
                 return Strings.nullToEmpty(variable.getDefaultValue());
             case 3:
-                return Strings.nullToEmpty(variable.getDescription());
+                return variable.getStoreType().getDescription();
             default:
                 return "unknown " + index;
             }

@@ -8,7 +8,8 @@ import ru.runa.gpd.Localization;
  */
 public enum VariableStoreType {
     DEFAULT(Localization.getString("VariableStoreType.default.description")),
-    BLOB(Localization.getString("VariableStoreType.blob.description"));
+    BLOB(Localization.getString("VariableStoreType.blob.description")),
+    TRANSIENT(Localization.getString("VariableStoreType.transient.description"));
 
     private final String description;
 

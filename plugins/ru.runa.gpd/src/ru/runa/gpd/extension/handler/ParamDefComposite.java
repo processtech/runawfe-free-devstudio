@@ -24,6 +24,7 @@ import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.ui.custom.InsertVariableTextMenuDetectListener;
 import ru.runa.gpd.ui.custom.SWTUtils;
 import ru.runa.gpd.ui.custom.TypedUserInputCombo;
+import ru.runa.gpd.ui.dialog.FilterBox;
 import ru.runa.gpd.util.VariableUtils;
 
 import com.google.common.base.Objects;
@@ -64,8 +65,10 @@ public class ParamDefComposite extends Composite {
                     helpLabel.setText(param.getHelp());
                 }
                 Presentation presentation = param.getPresentation();
-                if (presentation == Presentation.combo || presentation == Presentation.richcombo) {
-                    addComboField(param, presentation == Presentation.richcombo);
+                if (presentation == Presentation.combo) {
+                    addFilterBoxField(param);
+                } else if (presentation == Presentation.richcombo) {
+                    addComboField(param, true);
                 } else if (presentation == Presentation.checkbox) {
                     addCheckboxField(param);
                 } else {
@@ -188,6 +191,42 @@ public class ParamDefComposite extends Composite {
         return combo;
     }
 
+    private void addFilterBoxField(final ParamDef paramDef) {
+        String selectedValue = properties.get(paramDef.getName());
+        if (selectedValue == null) {
+            selectedValue = paramDef.getDefaultValue();
+        }
+        List<String> variableNames = new ArrayList<String>();
+        if (paramDef.isUseVariable()) {
+            variableNames.addAll(delegable.getVariableNames(true, paramDef.getFormatFiltersAsArray()));
+        }
+        boolean localizeTextValue = false;
+        for (String option : paramDef.getComboItems()) {
+            variableNames.add(Localization.getString(option));
+            if (Objects.equal(option, selectedValue)) {
+                localizeTextValue = true;
+            }
+        }
+        Collections.sort(variableNames);
+        if (paramDef.isOptional()) {
+            variableNames.add(0, "");
+        }
+        comboItems.put(paramDef.getName(), variableNames);
+        Label label = new Label(this, SWT.NONE);
+        GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
+        gridData.minimumWidth = 200;
+        label.setLayoutData(gridData);
+        label.setText(getLabelText(paramDef));
+        FilterBox filterBox = new FilterBox(this, variableNames);
+        filterBox.setData(paramDef.getName());
+        GridData typeComboData = new GridData(GridData.FILL_HORIZONTAL);
+        typeComboData.minimumWidth = 200;
+        filterBox.setLayoutData(typeComboData);
+        if (selectedValue != null) {
+            filterBox.setSelectedItem(localizeTextValue ? Localization.getString(selectedValue) : selectedValue);
+        }
+    }
+
     private Button addCheckboxField(final ParamDef paramDef) {
         Label label = new Label(this, SWT.NONE);
         GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
@@ -253,8 +292,12 @@ public class ParamDefComposite extends Composite {
                             propertyValue = "false";
                         }
                     }
-                } else { // Combo
-                    propertyValue = ((Combo) control).getText();
+                } else { // Combo | FilterBox
+                    if (control instanceof Combo) {
+                        propertyValue = ((Combo) control).getText();
+                    } else {
+                        propertyValue = ((FilterBox) control).getSelectedItem();
+                    }
                     String[] comboItems = config.getParamDef(propertyName).getComboItems();
                     for (String comboValue : comboItems) {
                         // TODO ILocalization from plugin
