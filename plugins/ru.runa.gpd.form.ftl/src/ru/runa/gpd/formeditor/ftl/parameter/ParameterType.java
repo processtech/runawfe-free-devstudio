@@ -16,25 +16,19 @@ import ru.runa.gpd.lang.model.VariableUserType;
 
 public abstract class ParameterType {
     private final boolean multiple;
-    private final boolean surroundBrackets;
     private String depends;
     private IParameterTypeValidator validator;
 
-    public ParameterType(boolean multiple, boolean surroundBrackets) {
+    public ParameterType(boolean multiple) {
         this.multiple = multiple;
-        this.surroundBrackets = surroundBrackets;
     }
 
     public ParameterType() {
-        this(false, true);
+        this(false);
     }
 
     public boolean isMultiple() {
         return multiple;
-    }
-
-    public boolean isSurroundBrackets() {
-        return surroundBrackets;
     }
 
     public String getDepends() {
@@ -78,13 +72,13 @@ public abstract class ParameterType {
         return FormEditor.getCurrent().getVariables(parameter.getVariableTypeFilter());
     }
 
-    protected VariableUserType getListVariableUserType(Variable variable) {
+    protected VariableUserType getVariableUserType(Variable variable) {
         if (variable == null) {
             return null;
         }
         String[] componentFormats = variable.getFormatComponentClassNames();
-        if (componentFormats.length != 1) {
-            return null;
+        if (componentFormats.length == 0) {
+            return variable.getUserType();
         }
         String userTypeName = componentFormats[0];
         return FormEditor.getCurrent().getVariableUserType(userTypeName);

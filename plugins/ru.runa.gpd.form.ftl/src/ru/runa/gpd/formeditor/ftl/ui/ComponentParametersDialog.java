@@ -3,6 +3,7 @@ package ru.runa.gpd.formeditor.ftl.ui;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Map;
+import java.util.Objects;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -60,6 +61,7 @@ public class ComponentParametersDialog extends Dialog {
         SWTUtils.createLabel(parametersComposite, Messages.getString("ComponentParametersDialog.component"));
         final Combo componentsCombo = new Combo(parametersComposite, SWT.READ_ONLY);
         componentsCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
         for (ComponentType tag : ComponentTypeRegistry.getEnabled()) {
             componentsCombo.add(tag.getLabel());
         }
@@ -72,7 +74,16 @@ public class ComponentParametersDialog extends Dialog {
                 if (!component.getType().getLabel().equals(type)) {
                     for (ComponentType componentType : ComponentTypeRegistry.getEnabled()) {
                         if (componentType.getLabel().equals(type)) {
+                            Component previousComponent = component;
                             component = new Component(componentType, component.getId());
+                            int commonParametersCount = Math.min(previousComponent.getType().getParameters().size(), component.getType().getParameters().size());
+                            for (int i = 0; i < commonParametersCount; i++) {
+                                ComponentParameter previousParameter = previousComponent.getType().getParameters().get(i);
+                                ComponentParameter parameter = component.getType().getParameters().get(i);
+                                if (Objects.equals(previousParameter.getLabel(), parameter.getLabel())) {
+                                    component.setParameterValue(parameter, previousComponent.getParameterValue(previousParameter));
+                                    }
+                            }
                             break;
                         }
                     }
