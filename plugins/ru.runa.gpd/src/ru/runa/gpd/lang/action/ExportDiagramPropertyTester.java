@@ -16,7 +16,7 @@ public class ExportDiagramPropertyTester extends PropertyTester {
             IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
             if (window != null) {
                 ISelection selection = window.getSelectionService().getSelection();
-                if (selection != null) {
+                if (selection instanceof IStructuredSelection) {
                     Object editPart = ((IStructuredSelection) selection).getFirstElement();
                     return editPart instanceof IDiagramEditPart;
                 }
