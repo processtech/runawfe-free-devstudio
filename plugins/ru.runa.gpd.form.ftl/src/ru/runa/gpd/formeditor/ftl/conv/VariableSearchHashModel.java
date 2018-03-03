@@ -58,6 +58,7 @@ public class VariableSearchHashModel extends SimpleHash {
             return new ComponentModel(ComponentTypeRegistry.getNotNull(key));
         }
         // add output variables / read access
+
         Variable variable = VariableUtils.getVariableByName(definition, key);
         if (variable == null) {
             variable = VariableUtils.getVariableByScriptingName(definition.getVariables(true, true), key);
@@ -71,7 +72,7 @@ public class VariableSearchHashModel extends SimpleHash {
             }
             return new SimpleScalar("${" + variable.getName() + "}");
         }
-        usedVariables.put(key, FormVariableAccess.DOUBTFUL);
+
         return new UndefinedMethodModel();
     }
 
@@ -110,6 +111,15 @@ public class VariableSearchHashModel extends SimpleHash {
 
         @Override
         public Object exec(List args) throws TemplateModelException {
+            for (int i = 0; i < args.size(); i++) {
+                String arg = (String) args.get(i);
+                if (Strings.isNullOrEmpty(arg)) {
+                    continue;
+                }
+                if (usedVariables.get(arg) != FormVariableAccess.WRITE) {
+                    usedVariables.put(arg, FormVariableAccess.DOUBTFUL);
+                }
+            }
             return "noop";
         }
     }
