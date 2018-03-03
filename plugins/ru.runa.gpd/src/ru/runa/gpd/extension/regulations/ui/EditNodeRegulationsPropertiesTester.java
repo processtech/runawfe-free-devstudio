@@ -14,8 +14,6 @@ import ru.runa.gpd.settings.CommonPreferencePage;
 import com.google.common.base.Objects;
 
 public class EditNodeRegulationsPropertiesTester extends PropertyTester {
-
-    public static final String PROPERTY_NAMESPACE = "ru.runa.gpd.extension.regulations.ui";
     public static final String PROPERTY_REGULATIONS_ENABLED = "regulationsEnabled";
     public static final String PROPERTY_CAN_EDIT_NODE_REGULATIONS = "canEditNodeRegulations";
 
@@ -27,9 +25,10 @@ public class EditNodeRegulationsPropertiesTester extends PropertyTester {
             IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
             if (window != null) {
                 ISelection selection = window.getSelectionService().getSelection();
-                if (selection != null) {
+                if (selection instanceof IStructuredSelection) {
                     Object editPart = ((IStructuredSelection) selection).getFirstElement();
-                    return editPart instanceof NodeGraphicalEditPart || editPart instanceof ContainerShapeEditPart && !(editPart instanceof IDiagramEditPart);
+                    return editPart instanceof NodeGraphicalEditPart || editPart instanceof ContainerShapeEditPart
+                            && !(editPart instanceof IDiagramEditPart);
                 }
             }
         }
