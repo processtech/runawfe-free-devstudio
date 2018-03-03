@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 
-import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.wfe.definition.DefinitionAlreadyExistException;
 import ru.runa.wfe.definition.DefinitionDoesNotExistException;
@@ -72,10 +71,7 @@ public class WFEServerProcessDefinitionImporter extends DataImporter {
                     break;
                 }
             }
-            if (updateLatestVersion) {
-                if (oldVersion == null) {
-                    throw new Exception(Localization.getString("ExportParWizardPage.page.exportToServer.updateMode.unavailable", definitionName));
-                }
+            if (updateLatestVersion && oldVersion != null) {
                 getConnector().updateProcessDefinitionArchive(oldVersion.getId(), par);
             } else {
                 WfDefinition lastDefinition;
