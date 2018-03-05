@@ -200,7 +200,7 @@ public class SQLHandlerCellEditorProvider extends XmlBasedConstructorProvider<SQ
 
         private Combo createDataSourceSelector(Composite owner) {
             final Combo cb = new Combo(owner, SWT.NONE);
-            for (IFile dsFile : IOUtils.getDataSourcesByType(DataSourceType.JDBC, DataSourceType.JBoss, DataSourceType.WildFly)) {
+            for (IFile dsFile : IOUtils.getDataSourcesByType(DataSourceType.JDBC, DataSourceType.JNDI)) {
                 String dsName = dsFile.getName();
                 cb.add(dsName.substring(0, dsName.length() - DataSourceStuff.DATA_SOURCE_FILE_SUFFIX.length()));
             }

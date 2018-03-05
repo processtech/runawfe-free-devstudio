@@ -109,8 +109,7 @@ public class DataSourceDialog extends Dialog implements DataSourceStuff {
         panes.setLayout(stackLayout);
         createExcelPane(panes);
         createJdbcPane(panes);
-        createWildFlyPane(panes);
-        createJBossPane(panes);
+        createJndiPane(panes);
 
         initWidgets();
 
@@ -172,7 +171,7 @@ public class DataSourceDialog extends Dialog implements DataSourceStuff {
         paneCache.put(DataSourceType.JDBC, pane);
     }
     
-    private void createWildFlyPane(Composite parent) {
+    private void createJndiPane(Composite parent) {
         Composite pane = new Composite(parent, SWT.FILL);
         pane.setLayoutData(new GridData(GridData.FILL_BOTH));
         pane.setLayout(createPaneLayout());
@@ -182,11 +181,7 @@ public class DataSourceDialog extends Dialog implements DataSourceStuff {
         txtJndiName = new Text(pane, SWT.BORDER);
         txtJndiName.setText(JNDI_NAME_SAMPLE);
         txtJndiName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        paneCache.put(DataSourceType.WildFly, pane);
-    }
-    
-    private void createJBossPane(Composite parent) {
-        paneCache.put(DataSourceType.JBoss, paneCache.get(DataSourceType.WildFly));
+        paneCache.put(DataSourceType.JNDI, pane);
     }
     
     private GridLayout createPaneLayout() {
@@ -215,7 +210,7 @@ public class DataSourceDialog extends Dialog implements DataSourceStuff {
                     txtDbName.setText(root.element(ELEMENT_DB_NAME).getText());
                     txtUserName.setText(root.element(ELEMENT_USER_NAME).getText());
                     break;
-                default: // WildFly, JBoss
+                default: // JNDI
                     String jndiName = root.element(ELEMENT_JNDI_NAME).getText();
                     txtJndiName.setText(Strings.isNullOrEmpty(jndiName) ? JNDI_NAME_SAMPLE : jndiName);
                 }
@@ -241,7 +236,7 @@ public class DataSourceDialog extends Dialog implements DataSourceStuff {
             dataSource.addElement(ELEMENT_DB_NAME).addText(txtDbName.getText());
             dataSource.addElement(ELEMENT_USER_NAME).addText(txtUserName.getText());
             break;
-        default: // WildFly, JBoss
+        default: // JNDI
             dataSource.addElement(ELEMENT_JNDI_NAME).addText(txtJndiName.getText());
         }
         return XmlUtil.toString(document);

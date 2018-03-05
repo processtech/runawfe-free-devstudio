@@ -37,10 +37,8 @@ public class DataSourceResourcesLabelProvider extends LabelProvider {
                     return SharedImages.getImage("icons/MS-Excel-2013-icon.png");
                 case JDBC:
                     return SharedImages.getImage("icons/jdbc_16.gif");
-                case WildFly:
+                case JNDI:
                     return SharedImages.getImage("icons/wildfly_icon_16.png");
-                case JBoss:
-                    return SharedImages.getImage("icons/jboss.gif");
                 default:
                     return SharedImages.getImage("icons/column_error.gif");
                 }
