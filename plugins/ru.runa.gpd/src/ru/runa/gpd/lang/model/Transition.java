@@ -32,13 +32,6 @@ public class Transition extends NamedGraphElement implements ActionContainer {
     private boolean defaultFlow;
     private Point labelLocation;
 
-    public Transition() {
-        super();
-        this.font = P_BPMN_TRANSITION_FONT;
-        this.fontColor = P_BPMN_TRANSITION_FONT_COLOR;
-        this.transitionColor = P_BPMN_TRANSITION_COLOR;
-    }
-
     public Point getLabelLocation() {
         return labelLocation;
     }

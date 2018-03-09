@@ -1,8 +1,5 @@
 package ru.runa.gpd.settings;
 
-import java.awt.Font;
-
-import org.eclipse.swt.graphics.FontData;
 
 /**
  * Constant definitions for plug-in preferences
@@ -14,38 +11,8 @@ public interface PrefConstants {
     public static final String P_BPMN_FONT = "font";
     public static final String P_BPMN_FONT_COLOR = "fontColor";
     public static final String P_BPMN_BACKGROUND_COLOR = "backgroundColor";
-    public static final String P_BPMN_BASE_COLOR = "baseColor";
+    public static final String P_BPMN_FOREGROUND_COLOR = "foregroundColor";
     public static final String P_BPMN_TRANSITION_COLOR = "transitionColor";
-    public static final String P_BPMN_TRANSITION_FONT = "transitionFont";
-    public static final String P_BPMN_TRANSITION_FONT_COLOR = "transitionFontColor";
-    public static final String P_BPMN_STATE_FONT = "bpmnStateFont";
-    public static final String P_BPMN_STATE_FONT_COLOR = "bpmnStateFontColor";
-    public static final String P_BPMN_STATE_BACKGROUND_COLOR = "bpmnStateBackgroundColor";
-    public static final String P_BPMN_STATE_BASE_COLOR = "bpmnStateBaseColor";
-    public static final String P_BPMN_ENDTOKEN_FONT = "bpmnEndTokenFont";
-    public static final String P_BPMN_ENDTOKEN_FONT_COLOR = "bpmnEndTokenFontColor";
-    public static final String P_BPMN_SCRIPTTASK_FONT = "bpmnScriptTaskFont";
-    public static final String P_BPMN_SCRIPTTASK_FONT_COLOR = "bpmnScriptTaskFontColor";
-    public static final String P_BPMN_SCRIPTTASK_BACKGROUND_COLOR = "bpmnScriptTaskBackgroundColor";
-    public static final String P_BPMN_SCRIPTTASK_BASE_COLOR = "bpmnScriptTaskBaseColor";
-    public static final String P_BPMN_MULTITASKSTATE_FONT = "bpmnMultiTaskStateFont";
-    public static final String P_BPMN_MULTITASKSTATE_FONT_COLOR = "bpmnMultiTaskStateFontColor";
-    public static final String P_BPMN_MULTITASKSTATE_BACKGROUND_COLOR = "bpmnMultiTaskStateBackgroundColor";
-    public static final String P_BPMN_MULTITASKSTATE_BASE_COLOR = "bpmnMultiTaskStateBaseColor";
-    public static final String P_BPMN_MULTISUBPROCESS_FONT = "bpmnMultiSubprocessFont";
-    public static final String P_BPMN_MULTISUBPROCESS_FONT_COLOR = "bpmnMultiSubprocessFontColor";
-    public static final String P_BPMN_MULTISUBPROCESS_BACKGROUND_COLOR = "bpmnMultiSubprocessBackgroundColor";
-    public static final String P_BPMN_MULTISUBPROCESS_BASE_COLOR = "bpmnMultiSubprocessBaseColor";
-    public static final String P_BPMN_STARTSTATE_FONT = "bpmnStartStateFont";
-    public static final String P_BPMN_STARTSTATE_FONT_COLOR = "bpmnStartStateFontColor";
-    public static final String P_BPMN_TEXT_ANNOTATION_FONT = "bpmnTextAnnotationFont";
-    public static final String P_BPMN_TEXT_ANNOTATION_FONT_COLOR = "bpmnTextAnnotationFontColor";
-    public static final String P_BPMN_END_FONT = "bpmnEndFont";
-    public static final String P_BPMN_END_FONT_COLOR = "bpmnEndFontColor";
-    public static final String P_BPMN_SUBPROCESS_FONT = "bpmnSubprocessFont";
-    public static final String P_BPMN_SUBPROCESS_FONT_COLOR = "bpmnSubprocessFontColor";
-    public static final String P_BPMN_SUBPROCESS_BACKGROUND_COLOR = "bpmnSubprocessBackgroundColor";
-    public static final String P_BPMN_SUBPROCESS_BASE_COLOR = "bpmnSubprocessBaseColor";
     public static final String P_LANGUAGE_NODE_NAME_PATTERN = "nodeNamePattern";
     public static final String P_LANGUAGE_NODE_WIDTH = "nodeWidth";
     public static final String P_LANGUAGE_NODE_HEIGHT = "nodeHeight";
@@ -84,9 +51,4 @@ public interface PrefConstants {
     public static final String P_DEFAULT_LANGUAGE = "defaultLanguage";
     public static final String P_DATE_FORMAT_PATTERN = "dateFormat";
     public static final String P_ENABLE_REGULATIONS_MENU_ITEMS = "enabledRegulationsMenuItems";
-    public static final String DEFAULT_FONT = new FontData("Arial", 8, Font.PLAIN).toString();
-    public static final String DEFAULT_FONT_COLOR = "100, 100, 100";
-    public static final String DEFAULT_BACKGROUND_COLOR = "250, 251, 252";
-    public static final String DEFAULT_BASE_COLOR = "3, 104, 154";
-    public static final String DEFAULT_TRANSITION_COLOR = "0, 0, 0";
 }

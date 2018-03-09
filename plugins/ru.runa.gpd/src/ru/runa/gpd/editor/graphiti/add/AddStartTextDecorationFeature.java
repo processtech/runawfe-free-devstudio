@@ -3,6 +3,7 @@ package ru.runa.gpd.editor.graphiti.add;
 import org.eclipse.graphiti.features.context.IAddContext;
 import org.eclipse.graphiti.mm.algorithms.Rectangle;
 import org.eclipse.graphiti.mm.algorithms.Text;
+import org.eclipse.graphiti.mm.algorithms.styles.Style;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.services.Graphiti;
@@ -25,16 +26,16 @@ public class AddStartTextDecorationFeature extends AddNodeFeature {
         ContainerShape containerShape = Graphiti.getPeCreateService().createContainerShape(context.getTargetContainer(), true);
 
         IGaService gaService = Graphiti.getGaService();
+        Style textStyle = StyleUtil.getTextStyle(getDiagram());
 
         // create UI element for definition
         Rectangle rect = gaService.createInvisibleRectangle(containerShape);
         gaService.setLocation(rect, context.getX(), context.getY());
-        Text textSwimlane = gaService.createText(rect, labelSwimline);
-        String bpmnName = node.getTypeDefinition().getBpmnElementName();
-        textSwimlane.setStyle(StyleUtil.getStyleForText(getDiagram(), bpmnName, node));
-        Text textName = gaService.createText(rect, labelName);
-        textName.setStyle(StyleUtil.getStyleForText(getDiagram(), bpmnName, node));
-        node.setUiContainer(node.new StartDefinitionUI(containerShape, rect, textName, textSwimlane));
+        Text swimlaneText = gaService.createText(rect, labelSwimline);
+        swimlaneText.setStyle(textStyle);
+        Text nameText = gaService.createText(rect, labelName);
+        nameText.setStyle(textStyle);
+        node.setUiContainer(node.new StartDefinitionUI(containerShape, rect, nameText, swimlaneText));
 
         link(containerShape, node);
         Graphiti.getPeCreateService().createChopboxAnchor(containerShape);

@@ -783,7 +783,7 @@
             label="%label.element.textAnnotation"
             icon="textAnnotation.png"
             model="ru.runa.gpd.lang.model.bpmn.TextAnnotation"
-            type="node">
+            type="artifact">
          <graphiti
                add="ru.runa.gpd.editor.graphiti.add.AddTextAnnotationFeature"
                create="ru.runa.gpd.editor.graphiti.create.CreateAnnotationFeature"
@@ -795,10 +795,11 @@
          </graphiti>
       </element>
       <element
-          bpmn="startTextDecoration"
-          label="%label.element.textAnnotation"
-          model="ru.runa.gpd.lang.model.bpmn.StartTextDecoration"
-          type="artifact">
+            bpmn="startTextDecoration"
+            hasPreferencePage="false"
+            label="%label.element.textAnnotation"
+            model="ru.runa.gpd.lang.model.bpmn.StartTextDecoration"
+            type="artifact">
         <graphiti
           add="ru.runa.gpd.editor.graphiti.add.AddStartTextDecorationFeature"
           create="ru.runa.gpd.editor.graphiti.create.CreateElementFeature"
@@ -808,10 +809,11 @@
         </graphiti>
       </element>
       <element
-          bpmn="endTextDecoration"
-          label="%label.element.textAnnotation"
-          model="ru.runa.gpd.lang.model.bpmn.EndTextDecoration"
-          type="artifact">
+            bpmn="endTextDecoration"
+            hasPreferencePage="false"
+            label="%label.element.textAnnotation"
+            model="ru.runa.gpd.lang.model.bpmn.EndTextDecoration"
+            type="artifact">
         <graphiti
           add="ru.runa.gpd.editor.graphiti.add.AddEndTextDecorationFeature"
           create="ru.runa.gpd.editor.graphiti.create.CreateElementFeature"
@@ -822,9 +824,10 @@
       </element>
       <element
             bpmn="lane"
+            hasPreferencePage="true"
+            icon="swimlane.png"
             jpdl="swimlane"
             label="%default.swimlane.name"
-            icon="swimlane.png" 
             model="ru.runa.gpd.lang.model.Swimlane"
             type="artifact">
          <gef 
@@ -1028,12 +1031,13 @@
          </graphiti>
       </element>
       <element
-          type="node"
-            model="ru.runa.gpd.lang.model.ActionImpl"
-            jpdl="action"
             bpmn="actionHandler"
+            hasPreferencePage="false"
             icon="action.png"
-            label="%label.element.action">
+            jpdl="action"
+            label="%label.element.action"
+            model="ru.runa.gpd.lang.model.ActionImpl"
+            type="artifact">
          <gef 
             figure="ru.runa.gpd.editor.gef.figure.ActionFigure"
             graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.ActionGraphicalEditPart"
@@ -1050,6 +1054,7 @@
       </element>
       <element
             bpmn="ioSpecification"
+            hasPreferencePage="false"
             jpdl="variable"
             label="%default.variable.name"
             model="ru.runa.gpd.lang.model.Variable"
@@ -1060,6 +1065,7 @@
       </element>
       <element
             bpmn="process"
+            hasPreferencePage="false"
             jpdl="process-definition"
             label="process definition"
             model="ru.runa.gpd.lang.model.ProcessDefinition"
@@ -1186,10 +1192,11 @@
          </graphiti>
       </element>
       <element
-          type="deprecated"
+            hasPreferencePage="false"
+            jpdl="node"
             label="action node (deprecated)"
             model="ru.runa.gpd.lang.model.jpdl.ActionNode"
-            jpdl="node">
+            type="deprecated">
          <gef
                figure="ru.runa.gpd.editor.gef.figure.ActionNodeFigure"
                graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.ActionNodeGraphicalEditPart"

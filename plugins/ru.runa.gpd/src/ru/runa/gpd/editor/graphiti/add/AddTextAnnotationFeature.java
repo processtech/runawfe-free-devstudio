@@ -30,17 +30,15 @@ public class AddTextAnnotationFeature extends AddElementFeature {
         Rectangle main = Graphiti.getGaService().createInvisibleRectangle(containerShape);
         Graphiti.getGaService().setLocationAndSize(main, context.getX(), context.getY(), bounds.width, bounds.height);
         final Shape lineShape = Graphiti.getPeCreateService().createShape(containerShape, false);
-        Polyline polyline = Graphiti.getGaService().createPolyline(lineShape,
+        Polyline polyline = Graphiti.getGaService().createPlainPolyline(lineShape,
                 new int[] { LayoutTextAnnotationFeature.EDGE, 0, 0, 0, 0, 0, LayoutTextAnnotationFeature.EDGE, 0 });
         polyline.getProperties().add(new GaProperty(GaProperty.ID, LayoutTextAnnotationFeature.POLYLINE));
-        polyline.setStyle(StyleUtil.getStyleForTask(getDiagram()));
-        polyline.setLineWidth(2);
+        polyline.setStyle(StyleUtil.getTextAnnotationPolylineStyle(getDiagram()));
         final Shape textShape = Graphiti.getPeCreateService().createShape(containerShape, false);
-        MultiText text = Graphiti.getGaService().createMultiText(textShape, annotation.getDescription());
-        text.getProperties().add(new GaProperty(GaProperty.ID, GaProperty.DESCRIPTION));
-        text.setVerticalAlignment(Orientation.ALIGNMENT_TOP);
-        String bpmnName = annotation.getTypeDefinition().getBpmnElementName();
-        text.setStyle(StyleUtil.getStyleForText(getDiagram(), bpmnName, annotation));
+        MultiText descriptionText = Graphiti.getGaService().createMultiText(textShape, annotation.getDescription());
+        descriptionText.getProperties().add(new GaProperty(GaProperty.ID, GaProperty.DESCRIPTION));
+        descriptionText.setVerticalAlignment(Orientation.ALIGNMENT_TOP);
+        descriptionText.setStyle(StyleUtil.getTextStyle(getDiagram()));
         // link both, the container as well as the text shape so direct editing
         // works together
         // with updating and property handling

@@ -33,14 +33,6 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
     public static List<String> PLACEHOLDERS = Lists.newArrayList(VariableUtils.CURRENT_PROCESS_ID, VariableUtils.CURRENT_PROCESS_DEFINITION_NAME,
             VariableUtils.CURRENT_NODE_ID, VariableUtils.CURRENT_NODE_NAME);
 
-    public Subprocess() {
-        super();
-        this.font = P_BPMN_SUBPROCESS_FONT;
-        this.fontColor = P_BPMN_SUBPROCESS_FONT_COLOR;
-        this.backgroundColor = P_BPMN_SUBPROCESS_BACKGROUND_COLOR;
-        this.baseColor = P_BPMN_SUBPROCESS_BASE_COLOR;
-    }
-
     @Override
     public void validate(List<ValidationError> errors, IFile definitionFile) {
         super.validate(errors, definitionFile);
@@ -92,7 +84,7 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
             boolean inputDataAllowedInAsyncSubProcess = store.contains(propertyName) ? store.getBoolean(propertyName) : false;
             for (VariableMapping mapping : variableMappings) {
                 if (isAsync() && mapping.isWritable() && !inputDataAllowedInAsyncSubProcess) {
-                    errors.add(ValidationError.createLocalizedError(this, "subprocess.variablesInputInAsyncTask"));
+                    errors.add(ValidationError.createLocalizedError(this, "subprocess.asyncVariablesInput"));
                     break;
                 }
             }

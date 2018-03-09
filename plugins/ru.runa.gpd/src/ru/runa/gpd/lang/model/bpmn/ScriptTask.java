@@ -9,14 +9,6 @@ import ru.runa.gpd.lang.model.Transition;
 
 public class ScriptTask extends Node implements Delegable, IBoundaryEventContainer {
 
-    public ScriptTask() {
-        super();
-        this.font = P_BPMN_SCRIPTTASK_FONT;
-        this.fontColor = P_BPMN_SCRIPTTASK_FONT_COLOR;
-        this.backgroundColor = P_BPMN_SCRIPTTASK_BACKGROUND_COLOR;
-        this.baseColor = P_BPMN_SCRIPTTASK_BASE_COLOR;
-    }
-
     @Override
     public String getDelegationType() {
         return HandlerArtifact.ACTION;

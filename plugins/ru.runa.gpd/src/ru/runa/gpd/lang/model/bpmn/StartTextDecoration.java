@@ -16,12 +16,6 @@ import ru.runa.gpd.util.SwimlaneDisplayMode;
 
 public class StartTextDecoration extends TextDecorationNode {
 
-    public StartTextDecoration() {
-        super();
-        this.font = P_BPMN_STARTSTATE_FONT;
-        this.fontColor = P_BPMN_STARTSTATE_FONT_COLOR;
-    }
-
     @Override
     public StartState getTarget() {
         return (StartState) target;

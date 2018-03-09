@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Schema file written by PDE -->
 <schema targetNamespace="ru.runa.gpd" xmlns="http://www.w3.org/2001/XMLSchema">
-   <annotation>
+<annotation>
       <appinfo>
          <meta.schema plugin="ru.runa.gpd" id="elements" name="Graph Element Extensions"/>
       </appinfo>
@@ -122,6 +122,13 @@
             <annotation>
                <documentation>
                   
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="hasPreferencePage" type="boolean">
+            <annotation>
+               <documentation>
+                  Element settings (color, font) available in preference page
                </documentation>
             </annotation>
          </attribute>
@@ -246,15 +253,6 @@
 
    <annotation>
       <appinfo>
-         <meta.section type="apiInfo"/>
-      </appinfo>
-      <documentation>
-         [Enter API information here.]
-      </documentation>
-   </annotation>
-
-   <annotation>
-      <appinfo>
          <meta.section type="since"/>
       </appinfo>
       <documentation>
@@ -277,6 +275,16 @@
       </appinfo>
       <documentation>
          [Enter information about supplied implementation of this extension point.]
+      </documentation>
+   </annotation>
+
+
+   <annotation>
+      <appinfo>
+         <meta.section type="apiInfo"/>
+      </appinfo>
+      <documentation>
+         [Enter API information here.]
       </documentation>
    </annotation>
 

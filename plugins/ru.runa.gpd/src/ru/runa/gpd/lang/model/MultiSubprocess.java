@@ -15,14 +15,6 @@ public class MultiSubprocess extends Subprocess implements IMultiInstancesContai
 
     private String discriminatorCondition;
 
-    public MultiSubprocess() {
-        super();
-        this.font = P_BPMN_MULTISUBPROCESS_FONT;
-        this.fontColor = P_BPMN_MULTISUBPROCESS_FONT_COLOR;
-        this.backgroundColor = P_BPMN_MULTISUBPROCESS_BACKGROUND_COLOR;
-        this.baseColor = P_BPMN_MULTISUBPROCESS_BASE_COLOR;
-    }
-
     @Override
     public void validate(List<ValidationError> errors, IFile definitionFile) {
         super.validate(errors, definitionFile);

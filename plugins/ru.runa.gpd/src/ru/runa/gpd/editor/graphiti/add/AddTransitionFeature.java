@@ -7,7 +7,6 @@ import org.eclipse.graphiti.features.impl.AbstractAddFeature;
 import org.eclipse.graphiti.mm.algorithms.Polygon;
 import org.eclipse.graphiti.mm.algorithms.Polyline;
 import org.eclipse.graphiti.mm.algorithms.Text;
-import org.eclipse.graphiti.mm.algorithms.styles.LineStyle;
 import org.eclipse.graphiti.mm.algorithms.styles.Orientation;
 import org.eclipse.graphiti.mm.algorithms.styles.Point;
 import org.eclipse.graphiti.mm.algorithms.styles.StylesFactory;
@@ -72,10 +71,8 @@ public class AddTransitionFeature extends AbstractAddFeature {
             connection.getBendpoints().add(point);
         }
         IGaService gaService = Graphiti.getGaService();
-        Polyline polyline = gaService.createPolyline(connection);
-        polyline.setLineStyle(LineStyle.SOLID);
-        polyline.setLineWidth(1);
-        polyline.setStyle(StyleUtil.getStyleForTransition(getDiagram()));
+        Polyline polyline = gaService.createPlainPolyline(connection);
+        polyline.setStyle(StyleUtil.getTransitionPolylineStyle(getDiagram()));
         // create link and wire it
         link(connection, transition);
         // add dynamic text decorator for the reference name
@@ -95,7 +92,7 @@ public class AddTransitionFeature extends AbstractAddFeature {
         Text text = Graphiti.getGaService().createText(connectionDecorator);
         text.setHorizontalAlignment(Orientation.ALIGNMENT_LEFT);
         text.setVerticalAlignment(Orientation.ALIGNMENT_CENTER);
-        text.setStyle(StyleUtil.getStyleForText(getDiagram(), "transition", transition));
+        text.setStyle(StyleUtil.getTextStyle(getDiagram()));
         if (location != null) {
             Graphiti.getGaService().setLocation(text, location.x, location.y);
         } else {
@@ -112,18 +109,16 @@ public class AddTransitionFeature extends AbstractAddFeature {
         ConnectionDecorator connectionDecorator = Graphiti.getPeCreateService().createConnectionDecorator(connection, false, 1.0, true);
         int xy[] = new int[] { -10, -5, 0, 0, -10, 5, -8, 0 };
         int beforeAfter[] = new int[] { 3, 3, 0, 0, 3, 3, 3, 3 };
-        Polygon polyline = Graphiti.getGaCreateService().createPolygon(connectionDecorator, xy, beforeAfter);
-        polyline.setLineWidth(1);
-        polyline.setStyle(StyleUtil.getStyleForPolygonArrow(getDiagram()));
+        Polygon polyline = Graphiti.getGaCreateService().createPlainPolygon(connectionDecorator, xy, beforeAfter);
+        polyline.setStyle(StyleUtil.getTransitionPolylineStyle(getDiagram()));
     }
 
     private void createExclusiveDiamond(Connection connection, boolean visible) {
         ConnectionDecorator connectionDecorator = Graphiti.getPeCreateService().createConnectionDecorator(connection, false, 0.0, true);
         int xy[] = new int[] { -7, -4, 0, 0, -7, 4, -14, 0 };
         int beforeAfter[] = new int[] { 0, 0, 0, 0, 0, 0, 0, 0 };
-        Polygon polyline = Graphiti.getGaCreateService().createPolygon(connectionDecorator, xy, beforeAfter);
-        polyline.setLineWidth(1);
-        polyline.setStyle(StyleUtil.getStyleForPolygonDiamond(getDiagram()));
+        Polygon polyline = Graphiti.getGaCreateService().createPlainPolygon(connectionDecorator, xy, beforeAfter);
+        polyline.setStyle(StyleUtil.getTransitionDiamondPolylineStyle(getDiagram()));
         connectionDecorator.getProperties().add(new GaProperty(GaProperty.ID, GaProperty.EXCLUSIVE_FLOW));
         connectionDecorator.setVisible(visible);
     }

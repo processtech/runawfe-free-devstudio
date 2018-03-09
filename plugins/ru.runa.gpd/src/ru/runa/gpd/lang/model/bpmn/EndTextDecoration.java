@@ -9,12 +9,6 @@ import ru.runa.gpd.editor.graphiti.UIContainer;
 
 public class EndTextDecoration extends TextDecorationNode {
 
-    public EndTextDecoration() {
-        super();
-        this.font = P_BPMN_END_FONT;
-        this.fontColor = P_BPMN_END_FONT_COLOR;
-    }
-
     @Override
     public AbstractEndTextDecorated getTarget() {
         return (AbstractEndTextDecorated) target;
@@ -22,8 +16,8 @@ public class EndTextDecoration extends TextDecorationNode {
 
     public class EndDefinitionUI implements UIContainer {
 
-        private PictogramElement owner;
-        private Text name;
+        private final PictogramElement owner;
+        private final Text name;
 
         public EndDefinitionUI(PictogramElement owner, Text name) {
             this.owner = owner;

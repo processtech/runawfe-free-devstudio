@@ -20,11 +20,10 @@ public class AddEndTextDecorationFeature extends AddNodeFeature {
         ContainerShape containerShape = Graphiti.getPeCreateService().createContainerShape(context.getTargetContainer(), true);
 
         IGaService gaService = Graphiti.getGaService();
-        String bpmnElementName = node.getTypeDefinition().getBpmnElementName();
-        Text textName = gaService.createText(containerShape, labelName);
-        textName.setStyle(StyleUtil.getStyleForText(getDiagram(), bpmnElementName, node));
-        gaService.setLocation(textName, context.getX(), context.getY());
-        node.setUiContainer(node.new EndDefinitionUI(containerShape, textName));
+        Text nameText = gaService.createText(containerShape, labelName);
+        nameText.setStyle(StyleUtil.getTextStyle(getDiagram()));
+        gaService.setLocation(nameText, context.getX(), context.getY());
+        node.setUiContainer(node.new EndDefinitionUI(containerShape, nameText));
 
         link(containerShape, node);
         Graphiti.getPeCreateService().createChopboxAnchor(containerShape);
