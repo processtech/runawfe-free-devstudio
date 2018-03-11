@@ -31,7 +31,7 @@ public class UserTypeAttributeListParameter extends ParameterType {
     private static final String VALUES_DELIM = ",";
 
     public UserTypeAttributeListParameter() {
-        super(true, true);
+        super(true);
     }
 
     @Override
@@ -95,7 +95,7 @@ public class UserTypeAttributeListParameter extends ParameterType {
                 String variableName = (String) component.getParameterValue(componentParameter);
                 if (variableName != null) {
                     Variable variable = getVariables(componentParameter).get(variableName);
-                    return getListVariableUserType(variable);
+                    return getVariableUserType(variable);
                 }
             }
         }

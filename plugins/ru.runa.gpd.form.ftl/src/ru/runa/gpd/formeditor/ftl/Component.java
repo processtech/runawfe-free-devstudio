@@ -146,20 +146,21 @@ public class Component extends EventSupport implements IPropertySource {
     public String toString() {
         List<String> args = new ArrayList<String>();
         for (ComponentParameter parameter : type.getParameters()) {
-            final boolean surroundWithBrackets = parameter.getType().isSurroundBrackets();
-            // multiple type argument, by convention, is always the last one
-            // and its items should be appended directly to the args list
             if (parameter.getType().isMultiple()) {
+                if (type.getParameters().indexOf(parameter) != type.getParameters().size() - 1) {
+                    // due to items should be appended directly to the args list
+                    throw new RuntimeException("Multiple type parameter should be the last one: " + parameter.getLabel());
+                }
                 List<String> list = Lists.transform((List<String>) getParameterValue(parameter), new Function<String, String>() {
                     @Override
                     public String apply(String string) {
-                        return surroundWithBrackets ? stringQuotation(string) : string;
+                        return stringQuotation(string);
                     }
                 });
                 args.addAll(list);
             } else {
-                String s = getParameterValue(parameter).toString();
-                args.add(surroundWithBrackets ? stringQuotation(s) : s);
+                String string = stringQuotation((String) getParameterValue(parameter));
+                args.add(string);
             }
         }
         return "${" + type.getId() + "(" + Joiner.on(PARAMETERS_DELIM).join(args) + ")}";

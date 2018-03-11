@@ -82,19 +82,16 @@ public class SearchResult extends AbstractTextSearchResult implements IEditorMat
 
     @Override
     public int getMatchCount(Object element) {
-        int count = 0;
-        for (Match match : getMatches(element)) {
-            ElementMatch elementMatch = (ElementMatch) match.getElement();
-            count += elementMatch.getMatchesCount() + elementMatch.getPotentialMatchesCount();
-        }
-        return count;
+        return getMatches(element).length;
     }
 
     public int getPotentialMatchCount(Object element) {
         int count = 0;
         for (Match match : getMatches(element)) {
             ElementMatch elementMatch = (ElementMatch) match.getElement();
-            count += elementMatch.getPotentialMatchesCount();
+            if (elementMatch.getPotentialMatchesCount() > 0) {
+                count++;
+            }
         }
         return count;
     }
@@ -103,7 +100,9 @@ public class SearchResult extends AbstractTextSearchResult implements IEditorMat
         int count = 0;
         for (Match match : getMatches(element)) {
             ElementMatch elementMatch = (ElementMatch) match.getElement();
-            count += elementMatch.getMatchesCount();
+            if (elementMatch.getMatchesCount() > 0) {
+                count++;
+            }
         }
         return count;
     }
