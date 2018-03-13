@@ -1,6 +1,5 @@
 package ru.runa.gpd.settings;
 
-
 /**
  * Constant definitions for plug-in preferences
  */
@@ -12,7 +11,7 @@ public interface PrefConstants {
     public static final String P_BPMN_FONT_COLOR = "fontColor";
     public static final String P_BPMN_BACKGROUND_COLOR = "backgroundColor";
     public static final String P_BPMN_FOREGROUND_COLOR = "foregroundColor";
-    public static final String P_BPMN_TRANSITION_COLOR = "transitionColor";
+    public static final String P_BPMN_LINE_WIDTH = "lineWidth";
     public static final String P_LANGUAGE_NODE_NAME_PATTERN = "nodeNamePattern";
     public static final String P_LANGUAGE_NODE_WIDTH = "nodeWidth";
     public static final String P_LANGUAGE_NODE_HEIGHT = "nodeHeight";

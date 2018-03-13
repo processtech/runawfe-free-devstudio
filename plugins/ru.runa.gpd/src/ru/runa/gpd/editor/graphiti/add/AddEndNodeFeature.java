@@ -7,10 +7,10 @@ import org.eclipse.graphiti.features.context.impl.AddContext;
 import org.eclipse.graphiti.features.context.impl.AreaContext;
 import org.eclipse.graphiti.mm.algorithms.styles.Font;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
-import org.eclipse.graphiti.services.Graphiti;
 import org.eclipse.graphiti.ui.services.GraphitiUi;
 
 import ru.runa.gpd.editor.graphiti.DiagramFeatureProvider;
+import ru.runa.gpd.editor.graphiti.StyleUtil;
 import ru.runa.gpd.lang.BpmnSerializer;
 import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.NodeRegistry;
@@ -40,8 +40,8 @@ public class AddEndNodeFeature extends AddNodeWithImageFeature {
             y = node.getTextDecoratorEmulation().getDefinitionLocation().y();
         } else {
             // calc position under end point image
-            Font defFont = Graphiti.getGaService().manageDefaultFont(getDiagram());
-            IDimension nameDim = GraphitiUi.getUiLayoutService().calculateTextSize(node.getName(), defFont);
+            Font font = StyleUtil.getTextStyle(getDiagram(), node).getFont();
+            IDimension nameDim = GraphitiUi.getUiLayoutService().calculateTextSize(node.getName(), font);
             y = context.getY() + bounds.height;
             x = (context.getX() + bounds.width / 2) - nameDim.getWidth() / 2;
         }

@@ -92,7 +92,7 @@ public class AddTransitionFeature extends AbstractAddFeature {
         Text text = Graphiti.getGaService().createText(connectionDecorator);
         text.setHorizontalAlignment(Orientation.ALIGNMENT_LEFT);
         text.setVerticalAlignment(Orientation.ALIGNMENT_CENTER);
-        text.setStyle(StyleUtil.getTextStyle(getDiagram()));
+        text.setStyle(StyleUtil.getTextStyle(getDiagram(), transition));
         if (location != null) {
             Graphiti.getGaService().setLocation(text, location.x, location.y);
         } else {

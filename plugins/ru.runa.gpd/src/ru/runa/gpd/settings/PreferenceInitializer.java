@@ -7,6 +7,7 @@ import org.eclipse.swt.graphics.FontData;
 
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
+import ru.runa.gpd.editor.graphiti.StyleUtil;
 import ru.runa.gpd.lang.Language;
 
 /**
@@ -40,6 +41,9 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer impleme
         store.setDefault(LanguageElementPreferenceNode.getBpmnDefaultPropertyName(P_BPMN_FONT_COLOR), "100, 100, 100");
         store.setDefault(LanguageElementPreferenceNode.getBpmnDefaultPropertyName(P_BPMN_BACKGROUND_COLOR), "250, 251, 252");
         store.setDefault(LanguageElementPreferenceNode.getBpmnDefaultPropertyName(P_BPMN_FOREGROUND_COLOR), "3, 104, 154");
-        store.setDefault(LanguageElementPreferenceNode.getBpmnPropertyName("textAnnotation", P_BPMN_FOREGROUND_COLOR), "0, 0, 0");
+        store.setDefault(LanguageElementPreferenceNode.getBpmnDefaultPropertyName(P_BPMN_LINE_WIDTH), 2);
+        store.setDefault(LanguageElementPreferenceNode.getBpmnPropertyName(StyleUtil.TEXT_ANNOTATION_BPMN_NAME, P_BPMN_FOREGROUND_COLOR), "0, 0, 0");
+        store.setDefault(LanguageElementPreferenceNode.getBpmnPropertyName(StyleUtil.TRANSITION_BPMN_NAME, P_BPMN_FOREGROUND_COLOR), "0, 0, 0");
+        store.setDefault(LanguageElementPreferenceNode.getBpmnPropertyName(StyleUtil.TRANSITION_BPMN_NAME, P_BPMN_LINE_WIDTH), 1);
     }
 }

@@ -21,6 +21,9 @@ import ru.runa.gpd.settings.LanguageElementPreferenceNode;
 import ru.runa.gpd.settings.PrefConstants;
 
 public class StyleUtil implements PrefConstants {
+    public static final String DEFAULT_BPMN_NAME = "default";
+    public static final String TRANSITION_BPMN_NAME = "sequenceFlow";
+    public static final String TEXT_ANNOTATION_BPMN_NAME = "textAnnotation";
     private static Map<String, StyleInitializer> initializers = new HashMap<>();
 
     public static Style getStateNodeOuterRectangleStyle(Diagram diagram, GraphElement graphElement) {
@@ -33,8 +36,9 @@ public class StyleUtil implements PrefConstants {
         return findOrCreateStyle(diagram, bpmnName + "BoundaryEventEllipse", new StateNodeOuterRectangleStyleInitializer(bpmnName));
     }
 
-    public static Style getTextStyle(Diagram diagram) {
-        return findOrCreateStyle(diagram, "bpmnText", new TextStyleInitializer());
+    public static Style getTextStyle(Diagram diagram, GraphElement graphElement) {
+        String bpmnName = graphElement.getTypeDefinition().getBpmnElementName();
+        return findOrCreateStyle(diagram, bpmnName + "Text", new TextStyleInitializer(bpmnName));
     }
 
     public static Style getTextAnnotationPolylineStyle(Diagram diagram) {
@@ -71,16 +75,20 @@ public class StyleUtil implements PrefConstants {
     }
 
     private static Color getColor(Diagram diagram, String bpmnName, String propertyName) {
-        String elementPropertyName = LanguageElementPreferenceNode.getBpmnPropertyName(bpmnName, propertyName);
-        if (Activator.getDefault().getPreferenceStore().contains(elementPropertyName)) {
-            return getColor(diagram, elementPropertyName);
+        String fullPropertyName = LanguageElementPreferenceNode.getBpmnPropertyName(bpmnName, propertyName);
+        if (!Activator.getDefault().getPreferenceStore().contains(fullPropertyName)) {
+            fullPropertyName = LanguageElementPreferenceNode.getBpmnDefaultPropertyName(propertyName);
         }
-        return getColor(diagram, LanguageElementPreferenceNode.getBpmnDefaultPropertyName(propertyName));
+        RGB colorPref = PreferenceConverter.getColor(Activator.getDefault().getPreferenceStore(), fullPropertyName);
+        return Graphiti.getGaService().manageColor(diagram, new ColorConstant(colorPref.red, colorPref.green, colorPref.blue));
     }
 
-    private static Color getColor(Diagram diagram, String propertyName) {
-        RGB colorPref = PreferenceConverter.getColor(Activator.getDefault().getPreferenceStore(), propertyName);
-        return Graphiti.getGaService().manageColor(diagram, new ColorConstant(colorPref.red, colorPref.green, colorPref.blue));
+    private static int getInt(Diagram diagram, String bpmnName, String propertyName) {
+        String fullPropertyName = LanguageElementPreferenceNode.getBpmnPropertyName(bpmnName, propertyName);
+        if (!Activator.getDefault().getPreferenceStore().contains(fullPropertyName)) {
+            fullPropertyName = LanguageElementPreferenceNode.getBpmnDefaultPropertyName(propertyName);
+        }
+        return Activator.getDefault().getPreferenceStore().getInt(fullPropertyName);
     }
 
     public static void resetStyles(Diagram diagram) {
@@ -105,7 +113,7 @@ public class StyleUtil implements PrefConstants {
         @Override
         public void init(Diagram diagram, Style style) {
             initColors(diagram, style, bpmnName);
-            style.setLineWidth(2);
+            style.setLineWidth(getInt(diagram, bpmnName, P_BPMN_LINE_WIDTH));
         }
 
     }
@@ -122,22 +130,31 @@ public class StyleUtil implements PrefConstants {
             // does not work here
             // style.setFilled(Boolean.FALSE);
             style.setForeground(getColor(diagram, bpmnName, P_BPMN_FOREGROUND_COLOR));
-            style.setLineWidth(2);
+            style.setLineWidth(getInt(diagram, bpmnName, P_BPMN_LINE_WIDTH));
         }
 
     }
 
     public static class TextStyleInitializer extends StyleInitializer {
+        private final String bpmnName;
+
+        public TextStyleInitializer(String bpmnName) {
+            this.bpmnName = bpmnName;
+        }
 
         @Override
         public void init(Diagram diagram, Style style) {
-            String fontPropertyName = LanguageElementPreferenceNode.getBpmnDefaultPropertyName(P_BPMN_FONT);
+            String fontPropertyName = LanguageElementPreferenceNode.getBpmnPropertyName(bpmnName, P_BPMN_FONT);
+            if (!Activator.getDefault().getPreferenceStore().contains(fontPropertyName)) {
+                fontPropertyName = LanguageElementPreferenceNode.getBpmnDefaultPropertyName(P_BPMN_FONT);
+            }
             FontData fontData = PreferenceConverter.getFontData(Activator.getDefault().getPreferenceStore(), fontPropertyName);
             boolean italic = (fontData.getStyle() & SWT.ITALIC) != 0;
             boolean bold = (fontData.getStyle() & SWT.BOLD) != 0;
             Font font = Graphiti.getGaService().manageFont(diagram, fontData.getName(), fontData.getHeight(), italic, bold);
             style.setFont(font);
-            Color color = getColor(diagram, LanguageElementPreferenceNode.getBpmnDefaultPropertyName(P_BPMN_FONT_COLOR));
+
+            Color color = getColor(diagram, bpmnName, P_BPMN_FONT_COLOR);
             style.setForeground(color);
             style.setBackground(color);
         }
@@ -148,9 +165,10 @@ public class StyleUtil implements PrefConstants {
 
         @Override
         public void init(Diagram diagram, Style style) {
-            Color color = getColor(diagram, "sequenceFlow", P_BPMN_TRANSITION_COLOR);
+            Color color = getColor(diagram, TRANSITION_BPMN_NAME, P_BPMN_FOREGROUND_COLOR);
             style.setForeground(color);
             style.setBackground(color);
+            style.setLineWidth(getInt(diagram, TRANSITION_BPMN_NAME, P_BPMN_LINE_WIDTH));
         }
     }
 
@@ -158,8 +176,8 @@ public class StyleUtil implements PrefConstants {
 
         @Override
         public void init(Diagram diagram, Style style) {
-            style.setForeground(getColor(diagram, "sequenceFlow", P_BPMN_TRANSITION_COLOR));
-            style.setBackground(getColor(diagram, LanguageElementPreferenceNode.getBpmnDefaultPropertyName(P_BPMN_BACKGROUND_COLOR)));
+            style.setForeground(getColor(diagram, TRANSITION_BPMN_NAME, P_BPMN_FOREGROUND_COLOR));
+            style.setBackground(getColor(diagram, TRANSITION_BPMN_NAME, P_BPMN_BACKGROUND_COLOR));
         }
 
     }
@@ -168,8 +186,8 @@ public class StyleUtil implements PrefConstants {
 
         @Override
         public void init(Diagram diagram, Style style) {
-            style.setForeground(getColor(diagram, "textAnnotation", P_BPMN_FOREGROUND_COLOR));
-            style.setLineWidth(2);
+            style.setForeground(getColor(diagram, TEXT_ANNOTATION_BPMN_NAME, P_BPMN_FOREGROUND_COLOR));
+            style.setLineWidth(getInt(diagram, TEXT_ANNOTATION_BPMN_NAME, P_BPMN_LINE_WIDTH));
         }
 
     }

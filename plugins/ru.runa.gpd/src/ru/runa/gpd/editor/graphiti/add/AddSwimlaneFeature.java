@@ -52,14 +52,14 @@ public class AddSwimlaneFeature extends AddElementFeature {
         Rectangle nameRectangle = Graphiti.getGaService().createPlainRectangle(main);
         nameRectangle.getProperties().add(new GaProperty(GaProperty.ID, LayoutSwimlaneFeature.NAME_RECT));
         nameRectangle.setStyle(StyleUtil.getStateNodeOuterRectangleStyle(getDiagram(), swimlane));
-        Text nameText = Graphiti.getGaService().createDefaultText(getDiagram(), nameRectangle, swimlane.getName());
+        Text nameText = Graphiti.getGaService().createText(nameRectangle, swimlane.getName());
         nameText.getProperties().add(new GaProperty(GaProperty.ID, GaProperty.NAME));
         if (getProcessDefinition().getSwimlaneDisplayMode() == SwimlaneDisplayMode.horizontal) {
             nameText.setAngle(270);
         }
         nameText.setHorizontalAlignment(Orientation.ALIGNMENT_CENTER);
         nameText.setVerticalAlignment(Orientation.ALIGNMENT_CENTER);
-        nameText.setStyle(StyleUtil.getTextStyle(getDiagram()));
+        nameText.setStyle(StyleUtil.getTextStyle(getDiagram(), swimlane));
         //
         link(containerShape, swimlane);
         //

@@ -35,7 +35,7 @@ public class AddStateNodeFeature extends AddNodeFeature {
         RoundedRectangle outerRoundedRectangle = Graphiti.getGaService().createPlainRoundedRectangle(main, 20, 20);
         outerRoundedRectangle.getProperties().add(new GaProperty(GaProperty.ID, LayoutStateNodeFeature.BORDER_RECT));
         outerRoundedRectangle.setStyle(StyleUtil.getStateNodeOuterRectangleStyle(getDiagram(), node));
-        Style textStyle = StyleUtil.getTextStyle(getDiagram());
+        Style textStyle = StyleUtil.getTextStyle(getDiagram(), node);
         if (node instanceof SwimlanedNode && node.getProcessDefinition().getSwimlaneDisplayMode() == SwimlaneDisplayMode.none) {
             Text swimlaneText = Graphiti.getGaService().createText(outerRoundedRectangle, ((SwimlanedNode) node).getSwimlaneLabel());
             swimlaneText.getProperties().add(new GaProperty(GaProperty.ID, GaProperty.SWIMLANE_NAME));
