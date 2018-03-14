@@ -1015,8 +1015,8 @@
                create="ru.runa.gpd.editor.graphiti.create.CreateElementFeature"
                fixedSize="false"
                height="10"
-               layout="ru.runa.gpd.editor.graphiti.layout.LayoutStateNodeFeature"
-               update="ru.runa.gpd.editor.graphiti.update.UpdateStateNodeFeature"
+               layout="ru.runa.gpd.editor.graphiti.layout.LayoutSubprocessNodeFeature"
+               update="ru.runa.gpd.editor.graphiti.update.UpdateSubprocessNodeFeature"
                width="15">
          </graphiti>
       </element>

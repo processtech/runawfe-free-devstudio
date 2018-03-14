@@ -37,6 +37,7 @@ public class UpdateStateNodeFeature extends UpdateFeature {
         if (async != null && !Objects.equal(async, String.valueOf(((Synchronizable)bo).isAsync()))) {
             return Reason.createTrueReason();
         }
+
         return Reason.createFalseReason();
     }
 

@@ -3,11 +3,15 @@ package ru.runa.gpd.editor.graphiti.add;
 import org.eclipse.graphiti.features.context.IAddContext;
 import org.eclipse.graphiti.mm.GraphicsAlgorithmContainer;
 import org.eclipse.graphiti.mm.algorithms.Image;
+import org.eclipse.graphiti.mm.algorithms.RoundedRectangle;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.services.Graphiti;
 
 import ru.runa.gpd.editor.graphiti.GaProperty;
+import ru.runa.gpd.editor.graphiti.StyleUtil;
+import ru.runa.gpd.editor.graphiti.layout.LayoutSubprocessNodeFeature;
 import ru.runa.gpd.lang.model.Node;
+import ru.runa.gpd.lang.model.Subprocess;
 import ru.runa.gpd.lang.model.Synchronizable;
 
 public class AddSubProcessFeature extends AddStateNodeFeature {
@@ -15,7 +19,20 @@ public class AddSubProcessFeature extends AddStateNodeFeature {
     protected void addCustomGraphics(Node node, IAddContext context, GraphicsAlgorithmContainer container, ContainerShape containerShape) {
         Image image = Graphiti.getGaService().createImage(container, "graph/subprocess.png");
         image.getProperties().add(new GaProperty(GaProperty.ID, GaProperty.SUBPROCESS));
-        Graphiti.getGaService().setLocation(image, node.getConstraint().width / 2 - 7, node.getConstraint().height - 2 * GRID_SIZE);
+        
+        RoundedRectangle secondBorder = Graphiti.getGaService().createPlainRoundedRectangle(container, 14, 14);
+        secondBorder.getProperties().add(new GaProperty(GaProperty.ID, LayoutSubprocessNodeFeature.SECOND_BORDER_RECT));
+        secondBorder.setFilled(false);
+        secondBorder.setForeground(Graphiti.getGaService().manageColor(getDiagram(), StyleUtil.LIGHT_BLUE));
+        if (((Subprocess) node).isTransaction()) {
+            containerShape.getProperties().add(new GaProperty(GaProperty.TRANSACTION, GaProperty.TRUE));
+            secondBorder.setLineVisible(true);
+        } else {
+            containerShape.getProperties().add(new GaProperty(GaProperty.TRANSACTION, GaProperty.FALSE));
+            secondBorder.setLineVisible(false);
+        }
+        
+        Graphiti.getGaService().setLocation(image, node.getConstraint().width / 2 - 7, node.getConstraint().height - 3 * GRID_SIZE);
         addAsyncImage(node, context, container, containerShape);
     }
 
