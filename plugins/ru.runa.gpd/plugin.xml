@@ -2957,6 +2957,30 @@
       <method
             label="java.lang.Math.random()">
       </method>
+      <method label="Functions.executeFunction(&quot;current_date&quot;)"></method>
+      <method label="Functions.executeFunction(&quot;current_time&quot;)"></method>
+      <method label="Functions.executeFunction(&quot;date&quot;, d1)"></method>
+      <method label="Functions.executeFunction(&quot;time&quot;, d1)"></method>
+      <method label="Functions.executeFunction(&quot;hours_round_up&quot;, n1)"></method>
+      <method label="Functions.executeFunction(&quot;round&quot;, n1)"></method>
+      <method label="Functions.executeFunction(&quot;round&quot;, n1, n2)"></method>
+      <method label="Functions.executeFunction(&quot;round_down&quot;, n1)"></method>
+      <method label="Functions.executeFunction(&quot;round_down&quot;, n1, n2)"></method>
+      <method label="Functions.executeFunction(&quot;round_up&quot;, n1)"></method>
+      <method label="Functions.executeFunction(&quot;round_up&quot;, n1, n2)"></method>
+      <method label="Functions.executeFunction(&quot;number_to_string_ru&quot;, n1)"></method>
+      <method label="Functions.executeFunction(&quot;number_to_string_ru&quot;, n1, s2, s3, s4, s5)"></method>
+      <method label="Functions.executeFunction(&quot;number_to_short_string_ru&quot;, n1, s2, s3, s4, s5)"></method>
+      <method label="Functions.executeFunction(&quot;FIO_case_ru&quot;, fio, caseNumber, mode)"></method>
+      <method label="Functions.executeFunction(&quot;FIO_case_ru_with_fixed_sex&quot;, fio, caseNumber, sex, mode)"></method>
+      <method label="Functions.executeFunction(&quot;isExecutorInGroup&quot;, group, executor)"></method>
+      <method label="Functions.executeFunction(&quot;ListToString&quot;, list)"></method>
+      <method label="Functions.executeFunction(&quot;GetListMatchedIndexes&quot;, list, argument)"></method>
+      <method label="Functions.executeFunction(&quot;GetListMismatchedIndexes&quot;, list1, list2)"></method>
+      <method label="Functions.executeFunction(&quot;CreateSubListByIndexes&quot;, list, indexes)"></method>
+      <method label="Functions.executeFunction(&quot;DeleteListElementsByIndexes&quot;, list, indexes)"></method>
+      <method label="Functions.executeFunction(&quot;ToList&quot;, [argument1, argumentN])"></method>
+      <method label="Functions.executeFunction(&quot;GetSize&quot;,container)"></method>
       <constant
             label="null">
       </constant>
