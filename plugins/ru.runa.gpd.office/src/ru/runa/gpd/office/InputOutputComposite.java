@@ -224,7 +224,7 @@ public class InputOutputComposite extends Composite {
             }
             final Combo combo = new Combo(composite, SWT.NONE);
             combo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            for (IFile dsFile : IOUtils.getDataSourcesByType(DataSourceType.Excel)) {
+            for (IFile dsFile : IOUtils.getAllDataSources()) {
                 String dsName = dsFile.getName();
                 combo.add(dsName.substring(0, dsName.length() - DataSourceStuff.DATA_SOURCE_FILE_SUFFIX.length()));
             }

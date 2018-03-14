@@ -75,7 +75,7 @@ public class DataSourceDialog extends Dialog implements DataSourceStuff {
         label.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
         label.setText(Localization.getString("datasource.property.name") + ":");
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.minimumWidth = 300;
+        gd.minimumWidth = 350;
         txtName = new Text(composite, SWT.BORDER);
         txtName.setLayoutData(gd);
         txtName.addModifyListener(new ModifyListener() {
