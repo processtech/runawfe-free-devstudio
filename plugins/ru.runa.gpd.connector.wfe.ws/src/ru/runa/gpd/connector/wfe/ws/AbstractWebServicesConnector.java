@@ -176,6 +176,25 @@ public abstract class AbstractWebServicesConnector extends WFEServerConnector {
     }
 
     @Override
+    public WfDefinition updateProcessDefinitionArchive(Long definitionId, byte[] par) {
+        try {
+            return WfDefinitionAdapter.toDTO(getDefinitionService().updateProcessDefinition(getUser(), definitionId, par));
+        } catch (Exception e) {
+            if (e.getMessage() != null && e.getMessage().contains("DefinitionDoesNotExistException")) {
+                throw new DefinitionDoesNotExistException(String.valueOf(definitionId));
+            }
+            if (e.getMessage() != null && e.getMessage().contains("Definition") && e.getMessage().contains("does not exists")) {
+                // jboss4
+                throw new DefinitionDoesNotExistException(String.valueOf(definitionId));
+            }
+            if (e.getMessage() != null && e.getMessage().contains("DefinitionNameMismatchException")) {
+                throw new DefinitionNameMismatchException(e.getMessage(), "", "");
+            }
+            throw Throwables.propagate(e);
+        }
+    }
+
+    @Override
     public WfDefinition redeployProcessDefinitionArchive(Long definitionId, byte[] par, List<String> types) {
         try {
             return WfDefinitionAdapter.toDTO(getDefinitionService().redeployProcessDefinition(getUser(), definitionId, par, types));

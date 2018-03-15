@@ -1,6 +1,7 @@
 package ru.runa.gpd.validation;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -58,16 +59,26 @@ public class ValidationUtil {
 
     public static void updateValidation(IFile adjacentFile, FormNode formNode) throws Exception {
         boolean changed = false;
-        FormNodeValidation validation;
-        try {
-            validation = formNode.getValidation(adjacentFile);
-        } catch (Exception e) {
-            PluginLogger.logErrorWithoutDialog("", e);
-            validation = new FormNodeValidation();
-        }
+        FormNodeValidation validation = formNode.getValidation(adjacentFile);
+
+        IFile formFile = IOUtils.getAdjacentFile(adjacentFile, formNode.getFormFileName());
+        FormType formType = FormTypeProvider.getFormType(formNode.getFormType());
+        byte[] formData = IOUtils.readStreamAsBytes(formFile.getContents(true));
+        Map<String, FormVariableAccess> formVariables = formType.getFormVariableNames(formNode, formData);
+
         FormNodeValidation newValidation = getInitialFormValidation(adjacentFile, formNode);
+        Collection<String> variablesNames = validation.getVariableNames();
+        List<String> missingVariableNames = new ArrayList<String>();
+        for (String variableName : variablesNames) {
+            if (!(newValidation.getVariableNames().contains(variableName) || formVariables.get(variableName) == FormVariableAccess.DOUBTFUL)) {
+                missingVariableNames.add(variableName);
+                changed = true;
+            }
+        }
+        variablesNames.removeAll(missingVariableNames);
+
         for (String variableName : newValidation.getVariableNames()) {
-            if (!validation.getVariableNames().contains(variableName)) {
+            if (!variablesNames.contains(variableName)) {
                 validation.addFieldConfigs(variableName, newValidation.getFieldConfigs().get(variableName));
                 changed = true;
             }
@@ -86,5 +97,21 @@ public class ValidationUtil {
         IFile validationFile = IOUtils.getAdjacentFile(file, formNode.getValidationFileName());
         ValidatorParser.writeValidation(validationFile, formNode, validation);
         return validationFile;
+    }
+
+    public static void createOrUpdateValidation(FormNode formNode, IFile formFile) {
+        String op = "create";
+        try {
+            if (!formNode.hasFormValidation()) {
+                String fileName = formNode.getId() + "." + FormNode.VALIDATION_SUFFIX;
+                formNode.setValidationFileName(fileName);
+                createNewValidationUsingForm(formFile, formNode);
+            } else {
+                op = "update";
+                updateValidation(formFile, formNode);
+            }
+        } catch (Exception e) {
+            PluginLogger.logError("Failed to " + op + " form validation", e);
+        }
     }
 }
