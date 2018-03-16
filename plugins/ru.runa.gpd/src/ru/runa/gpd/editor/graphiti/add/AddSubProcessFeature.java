@@ -22,8 +22,7 @@ public class AddSubProcessFeature extends AddStateNodeFeature {
 
         RoundedRectangle secondBorder = Graphiti.getGaService().createPlainRoundedRectangle(container, 14, 14);
         secondBorder.getProperties().add(new GaProperty(GaProperty.ID, LayoutSubprocessNodeFeature.SECOND_BORDER_RECT));
-        secondBorder.setFilled(false);
-        secondBorder.setForeground(Graphiti.getGaService().manageColor(getDiagram(), StyleUtil.LIGHT_BLUE));
+        secondBorder.setStyle(StyleUtil.getSubprocessNodeTransactionalStyle(getDiagram(), (Subprocess) node));
         if (((Subprocess) node).isTransaction()) {
             containerShape.getProperties().add(new GaProperty(GaProperty.TRANSACTION, GaProperty.TRUE));
             secondBorder.setLineVisible(true);

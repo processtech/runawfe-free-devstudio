@@ -3,6 +3,7 @@ package ru.runa.gpd.editor.graphiti.add;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.graphiti.features.context.IAddContext;
 import org.eclipse.graphiti.features.context.impl.LocationContext;
+import org.eclipse.graphiti.mm.algorithms.Ellipse;
 import org.eclipse.graphiti.mm.algorithms.Image;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
@@ -12,7 +13,8 @@ import org.eclipse.graphiti.services.IGaService;
 import org.eclipse.graphiti.services.IPeCreateService;
 
 import ru.runa.gpd.editor.GEFConstants;
-import ru.runa.gpd.editor.graphiti.GraphUtil;
+import ru.runa.gpd.editor.graphiti.GaProperty;
+import ru.runa.gpd.editor.graphiti.StyleUtil;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
@@ -25,7 +27,7 @@ public class AddCatchEventNodeFeature extends AddEventNodeFeature implements GEF
         if (super.canAdd(context)) {
             return true;
         }
-        
+
         GraphElement container = (GraphElement) getBusinessObjectForPictogramElement(context.getTargetContainer());
         GraphElement containerParent = container.getParent();
         return container instanceof IBoundaryEventContainer && !(containerParent instanceof IBoundaryEventContainer);
@@ -33,7 +35,7 @@ public class AddCatchEventNodeFeature extends AddEventNodeFeature implements GEF
 
     @Override
     public PictogramElement add(IAddContext context) {
-    	GraphElement container = (GraphElement) getBusinessObjectForPictogramElement(context.getTargetContainer());
+        GraphElement container = (GraphElement) getBusinessObjectForPictogramElement(context.getTargetContainer());
         GraphElement containerParent = container.getParent();
         if (container instanceof IBoundaryEventContainer && !(containerParent instanceof IBoundaryEventContainer)) {
             CatchEventNode catchEventNode = (CatchEventNode) context.getNewObject();
@@ -51,7 +53,11 @@ public class AddCatchEventNodeFeature extends AddEventNodeFeature implements GEF
             gaService.setLocationAndSize(image, context.getX(), context.getY(), bounds.width, bounds.height);
 
             Shape ellipseShape = createService.createShape(containerShape, false);
-            GraphUtil.createBoundaryEventEllipse(getDiagram(), ellipseShape, catchEventNode, bounds.width, bounds.height);
+            Ellipse ellipse = Graphiti.getGaService().createPlainEllipse(ellipseShape);
+            ellipse.getProperties().add(new GaProperty(GaProperty.ID, GaProperty.BOUNDARY_ELLIPSE));
+            ellipse.setStyle(StyleUtil.getStateNodeBoundaryEventEllipseStyle(getDiagram(), catchEventNode));
+            ellipse.setLineVisible(!catchEventNode.isInterruptingBoundaryEvent());
+            Graphiti.getGaService().setLocationAndSize(ellipse, 0, 0, bounds.width, bounds.height);
 
             link(containerShape, catchEventNode);
             createService.createChopboxAnchor(containerShape);

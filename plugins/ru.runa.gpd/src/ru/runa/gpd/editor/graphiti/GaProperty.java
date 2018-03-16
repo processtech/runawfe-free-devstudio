@@ -23,6 +23,7 @@ public class GaProperty extends PropertyImpl {
     public static final String ACTIVE = "active";
     public static final String TRUE = "true";
     public static final String FALSE = "false";
+    public static final String BOUNDARY_ELLIPSE = "boundaryEllipse";
 
     public GaProperty(String name, String value) {
         setKey(name);
