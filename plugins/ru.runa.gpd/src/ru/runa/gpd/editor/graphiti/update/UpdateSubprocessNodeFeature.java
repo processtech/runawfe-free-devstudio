@@ -20,8 +20,8 @@ public class UpdateSubprocessNodeFeature extends UpdateStateNodeFeature {
     public IReason updateNeeded(IUpdateContext context) {
         PictogramElement pe = context.getPictogramElement();
         Subprocess bo = (Subprocess) getBusinessObjectForPictogramElement(pe);
-        String transaction = PropertyUtil.getPropertyValue(pe, GaProperty.TRANSACTION);
-        if (transaction != null && !Objects.equal(transaction, String.valueOf(bo.isTransaction()))) {
+        String transactional = PropertyUtil.getPropertyValue(pe, GaProperty.TRANSACTIONAL);
+        if (transactional != null && !Objects.equal(transactional, String.valueOf(bo.isTransactional()))) {
             return Reason.createTrueReason();
         }
         return Reason.createFalseReason();
@@ -35,13 +35,13 @@ public class UpdateSubprocessNodeFeature extends UpdateStateNodeFeature {
         GraphicsAlgorithm ga = containerShape.getGraphicsAlgorithm();
 
         GraphicsAlgorithm secondBorder = PropertyUtil.findGaRecursiveByName(ga, LayoutSubprocessNodeFeature.SECOND_BORDER_RECT);
-        if (bo.isTransaction()) {
+        if (bo.isTransactional()) {
             secondBorder.setLineVisible(true);
         } else {
             secondBorder.setLineVisible(false);
         }
 
-        PropertyUtil.setPropertyValue(pe, GaProperty.TRANSACTION, String.valueOf(bo.isTransaction()));
+        PropertyUtil.setPropertyValue(pe, GaProperty.TRANSACTIONAL, String.valueOf(bo.isTransactional()));
         return super.update(context);
     }
 

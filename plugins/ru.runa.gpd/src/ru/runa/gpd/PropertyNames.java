@@ -49,7 +49,7 @@ public interface PropertyNames {
     public static final String PROPERTY_DIRTY = "dirty";
     public static final String PROPERTY_TASK_DEADLINE = "taskDeadline";
     public static final String PROPERTY_ASYNC = "async";
-    public static final String PROPERTY_TRANSACTION = "transaction";
+    public static final String PROPERTY_TRANSACTIONAL = "transactional";
     public static final String PROPERTY_ASYNC_COMPLETION_MODE = "asyncCompletionMode";
     public static final String PROPERTY_MULTI_TASK_SYNCHRONIZATION_MODE = "multiTaskSynchronizationMode";
     public static final String PROPERTY_MULTI_TASK_CREATION_MODE = "multiTaskCreationMode";

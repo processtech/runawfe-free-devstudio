@@ -30,7 +30,7 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
     protected List<VariableMapping> variableMappings = Lists.newArrayList();
     private boolean embedded;
     private boolean async;
-    private boolean transaction;
+    private boolean transactional;
     private AsyncCompletionMode asyncCompletionMode = AsyncCompletionMode.ON_MAIN_PROCESS_END;
     public static List<String> PLACEHOLDERS = Lists.newArrayList(VariableUtils.CURRENT_PROCESS_ID, VariableUtils.CURRENT_PROCESS_DEFINITION_NAME,
             VariableUtils.CURRENT_NODE_ID, VariableUtils.CURRENT_NODE_NAME);
@@ -142,8 +142,10 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
     public void populateCustomPropertyDescriptors(List<IPropertyDescriptor> descriptors) {
         super.populateCustomPropertyDescriptors(descriptors);
         descriptors.add(new PropertyDescriptor(PROPERTY_SUBPROCESS, Localization.getString("Subprocess.Name")));
-        descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_TRANSACTION, Localization.getString("Subprocess.Transaction"),
-                YesNoComboBoxTransformer.LABELS));
+        if (isEmbedded()) {
+            descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_TRANSACTIONAL, Localization.getString("Subprocess.Transactional"),
+                    YesNoComboBoxTransformer.LABELS));
+        }
     }
 
     @Override
@@ -151,8 +153,8 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
         if (PROPERTY_SUBPROCESS.equals(id)) {
             return subProcessName;
         }
-        if (PROPERTY_TRANSACTION.equals(id)) {
-            if (transaction) {
+        if (PROPERTY_TRANSACTIONAL.equals(id)) {
+            if (transactional) {
                 return Integer.valueOf(0);
             } else {
                 return Integer.valueOf(1);
@@ -223,21 +225,20 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
         return result;
     }
 
-    public boolean isTransaction() {
-        return transaction;
+    public boolean isTransactional() {
+        return transactional;
     }
 
-    public void setTransaction(boolean transaction) {
-        boolean old = this.transaction;
-        this.transaction = transaction;
-        firePropertyChange(PROPERTY_TRANSACTION, old, this.transaction);
+    public void setTransactional(boolean transactional) {
+        boolean old = this.transactional;
+        this.transactional = transactional;
+        firePropertyChange(PROPERTY_TRANSACTIONAL, old, this.transactional);
     }
 
     @Override
     public void setPropertyValue(Object id, Object value) {
-        if (PROPERTY_TRANSACTION.equals(id)) {
-            setTransaction(YesNoComboBoxTransformer.setPropertyValue(value));
-            // this.transaction = YesNoComboBoxTransformer.setPropertyValue(value);
+        if (PROPERTY_TRANSACTIONAL.equals(id)) {
+            setTransactional(YesNoComboBoxTransformer.setPropertyValue(value));
         } else {
             super.setPropertyValue(id, value);
         }

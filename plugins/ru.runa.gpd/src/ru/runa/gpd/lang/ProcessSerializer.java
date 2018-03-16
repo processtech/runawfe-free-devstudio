@@ -23,7 +23,7 @@ public abstract class ProcessSerializer {
     public static final String CLASS = "class";
     public static final String IGNORE_SUBSTITUTION_RULES = "ignoreSubstitutionRules";
     public static final String EMBEDDED = "embedded";
-    public static final String TRANSACTION = "transaction";
+    public static final String TRANSACTIONAL = "transactional";
     public static final String NODE_ASYNC_EXECUTION = "asyncExecution";
     public static final String BEHAVIOR = "behavior";
 
