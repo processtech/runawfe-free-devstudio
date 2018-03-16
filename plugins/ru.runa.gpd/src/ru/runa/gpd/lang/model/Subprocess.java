@@ -161,7 +161,6 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
         return super.getPropertyValue(id);
     }
 
-
     public boolean isEmbedded() {
         return embedded;
     }

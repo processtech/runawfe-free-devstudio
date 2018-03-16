@@ -29,16 +29,16 @@ public class UpdateSubprocessNodeFeature extends UpdateStateNodeFeature {
 
     @Override
     public boolean update(IUpdateContext context) {
-    	ContainerShape containerShape = (ContainerShape) context.getPictogramElement();
-    	PictogramElement pe = context.getPictogramElement();
+        ContainerShape containerShape = (ContainerShape) context.getPictogramElement();
+        PictogramElement pe = context.getPictogramElement();
         Subprocess bo = (Subprocess) getBusinessObjectForPictogramElement(pe);
         GraphicsAlgorithm ga = containerShape.getGraphicsAlgorithm();
-        
+
         GraphicsAlgorithm secondBorder = PropertyUtil.findGaRecursiveByName(ga, LayoutSubprocessNodeFeature.SECOND_BORDER_RECT);
         if (bo.isTransaction()) {
-        	secondBorder.setLineVisible(true);
+            secondBorder.setLineVisible(true);
         } else {
-        	secondBorder.setLineVisible(false);
+            secondBorder.setLineVisible(false);
         }
 
         PropertyUtil.setPropertyValue(pe, GaProperty.TRANSACTION, String.valueOf(bo.isTransaction()));

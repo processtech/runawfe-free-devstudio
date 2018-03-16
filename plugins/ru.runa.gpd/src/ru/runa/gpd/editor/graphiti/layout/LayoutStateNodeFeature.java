@@ -1,9 +1,7 @@
 package ru.runa.gpd.editor.graphiti.layout;
 
 import org.eclipse.draw2d.geometry.Dimension;
-import org.eclipse.graphiti.features.context.IAddContext;
 import org.eclipse.graphiti.features.context.ILayoutContext;
-import org.eclipse.graphiti.mm.GraphicsAlgorithmContainer;
 import org.eclipse.graphiti.mm.Property;
 import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
@@ -92,16 +90,16 @@ public class LayoutStateNodeFeature extends LayoutElementFeature {
             int size = ((Synchronizable) node).isAsync() ? 14 : 1;
             Graphiti.getGaService().setLocationAndSize(asyncImage, bounds.width - 2 * GRID_SIZE, bounds.height - 2 * GRID_SIZE - 1, size, size);
         }
-        
+
         doCustomLayout(node, context, mainRectangle, containerShape);
-        
+
         for (Shape shape : containerShape.getChildren()) {
             layoutPictogramElement(shape);
         }
         return true;
     }
-    
+
     protected void doCustomLayout(Node node, ILayoutContext context, GraphicsAlgorithm container, ContainerShape containerShape) {
-    	
+
     }
 }

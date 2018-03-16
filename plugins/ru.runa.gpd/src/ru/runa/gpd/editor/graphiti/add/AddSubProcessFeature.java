@@ -19,7 +19,7 @@ public class AddSubProcessFeature extends AddStateNodeFeature {
     protected void addCustomGraphics(Node node, IAddContext context, GraphicsAlgorithmContainer container, ContainerShape containerShape) {
         Image image = Graphiti.getGaService().createImage(container, "graph/subprocess.png");
         image.getProperties().add(new GaProperty(GaProperty.ID, GaProperty.SUBPROCESS));
-        
+
         RoundedRectangle secondBorder = Graphiti.getGaService().createPlainRoundedRectangle(container, 14, 14);
         secondBorder.getProperties().add(new GaProperty(GaProperty.ID, LayoutSubprocessNodeFeature.SECOND_BORDER_RECT));
         secondBorder.setFilled(false);
@@ -31,7 +31,7 @@ public class AddSubProcessFeature extends AddStateNodeFeature {
             containerShape.getProperties().add(new GaProperty(GaProperty.TRANSACTION, GaProperty.FALSE));
             secondBorder.setLineVisible(false);
         }
-        
+
         Graphiti.getGaService().setLocation(image, node.getConstraint().width / 2 - 7, node.getConstraint().height - 3 * GRID_SIZE);
         addAsyncImage(node, context, container, containerShape);
     }
