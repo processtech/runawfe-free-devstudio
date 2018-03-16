@@ -3,12 +3,22 @@ package ru.runa.gpd.editor.graphiti;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.emf.common.util.EList;
+import org.eclipse.graphiti.mm.algorithms.styles.AdaptedGradientColoredAreas;
 import org.eclipse.graphiti.mm.algorithms.styles.Color;
 import org.eclipse.graphiti.mm.algorithms.styles.Font;
+import org.eclipse.graphiti.mm.algorithms.styles.GradientColoredArea;
+import org.eclipse.graphiti.mm.algorithms.styles.GradientColoredAreas;
+import org.eclipse.graphiti.mm.algorithms.styles.LocationType;
 import org.eclipse.graphiti.mm.algorithms.styles.Style;
+import org.eclipse.graphiti.mm.algorithms.styles.StylesFactory;
 import org.eclipse.graphiti.mm.pictograms.Diagram;
 import org.eclipse.graphiti.services.Graphiti;
+import org.eclipse.graphiti.services.IGaService;
 import org.eclipse.graphiti.util.ColorConstant;
+import org.eclipse.graphiti.util.ColorUtil;
+import org.eclipse.graphiti.util.IGradientType;
+import org.eclipse.graphiti.util.IPredefinedRenderingStyle;
 import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.FontData;
@@ -114,8 +124,70 @@ public class StyleUtil implements PrefConstants {
         public void init(Diagram diagram, Style style) {
             initColors(diagram, style, bpmnName);
             style.setLineWidth(getInt(diagram, bpmnName, P_BPMN_LINE_WIDTH));
+            Graphiti.getGaService().setRenderingStyle(style, getDefaultEventColor(diagram, style.getBackground()));
         }
 
+        private AdaptedGradientColoredAreas getDefaultEventColor(Diagram diagram, Color color) {
+            AdaptedGradientColoredAreas agca = StylesFactory.eINSTANCE.createAdaptedGradientColoredAreas();
+            agca.setDefinedStyleId("bpmnEventStyle");
+            agca.setGradientType(IGradientType.VERTICAL);
+            GradientColoredAreas defaultGradientColoredAreas = StylesFactory.eINSTANCE.createGradientColoredAreas();
+            defaultGradientColoredAreas.setStyleAdaption(IPredefinedRenderingStyle.STYLE_ADAPTATION_DEFAULT);
+            EList<GradientColoredArea> gcas = defaultGradientColoredAreas.getGradientColor();
+            Color colorEnd = Graphiti.getGaService().manageColor(diagram,
+                    new ColorConstant(Math.max(0, color.getRed() - 1), Math.max(0, color.getGreen() - 1), Math.max(0, color.getBlue() - 1)));
+            addGradientColoredArea(gcas, color, 0, LocationType.LOCATION_TYPE_ABSOLUTE_START, colorEnd, 0, LocationType.LOCATION_TYPE_ABSOLUTE_END,
+                    diagram);
+            agca.getAdaptedGradientColoredAreas().add(IPredefinedRenderingStyle.STYLE_ADAPTATION_DEFAULT, defaultGradientColoredAreas);
+            GradientColoredAreas primarySelectedGradientColoredAreas = StylesFactory.eINSTANCE.createGradientColoredAreas();
+            primarySelectedGradientColoredAreas.setStyleAdaption(IPredefinedRenderingStyle.STYLE_ADAPTATION_DEFAULT);
+            EList<GradientColoredArea> selectedGcas = primarySelectedGradientColoredAreas.getGradientColor();
+            addGradientColoredArea(selectedGcas, "E5E5C2", 0, LocationType.LOCATION_TYPE_ABSOLUTE_START, "E5E5C2", 0,
+                    LocationType.LOCATION_TYPE_ABSOLUTE_END, diagram);
+            agca.getAdaptedGradientColoredAreas().add(IPredefinedRenderingStyle.STYLE_ADAPTATION_PRIMARY_SELECTED,
+                    primarySelectedGradientColoredAreas);
+            GradientColoredAreas secondarySelectedGradientColoredAreas = StylesFactory.eINSTANCE.createGradientColoredAreas();
+            secondarySelectedGradientColoredAreas.setStyleAdaption(IPredefinedRenderingStyle.STYLE_ADAPTATION_DEFAULT);
+            EList<GradientColoredArea> secondarySelectedGcas = secondarySelectedGradientColoredAreas.getGradientColor();
+            addGradientColoredArea(secondarySelectedGcas, "E5E5C2", 0, LocationType.LOCATION_TYPE_ABSOLUTE_START, "E5E5C2", 0,
+                    LocationType.LOCATION_TYPE_ABSOLUTE_END, diagram);
+            agca.getAdaptedGradientColoredAreas().add(IPredefinedRenderingStyle.STYLE_ADAPTATION_SECONDARY_SELECTED,
+                    secondarySelectedGradientColoredAreas);
+            return agca;
+        }
+
+        private void addGradientColoredArea(EList<GradientColoredArea> gcas, String colorStart, int locationValueStart,
+                LocationType locationTypeStart, String colorEnd, int locationValueEnd, LocationType locationTypeEnd, Diagram diagram) {
+            GradientColoredArea gca = StylesFactory.eINSTANCE.createGradientColoredArea();
+            gcas.add(gca);
+            gca.setStart(StylesFactory.eINSTANCE.createGradientColoredLocation());
+            IGaService gaService = Graphiti.getGaService();
+            Color startColor = gaService.manageColor(diagram, ColorUtil.getRedFromHex(colorStart), ColorUtil.getGreenFromHex(colorStart),
+                    ColorUtil.getBlueFromHex(colorStart));
+            gca.getStart().setColor(startColor);
+            gca.getStart().setLocationType(locationTypeStart);
+            gca.getStart().setLocationValue(locationValueStart);
+            gca.setEnd(StylesFactory.eINSTANCE.createGradientColoredLocation());
+            Color endColor = gaService.manageColor(diagram, ColorUtil.getRedFromHex(colorEnd), ColorUtil.getGreenFromHex(colorEnd),
+                    ColorUtil.getBlueFromHex(colorEnd));
+            gca.getEnd().setColor(endColor);
+            gca.getEnd().setLocationType(locationTypeEnd);
+            gca.getEnd().setLocationValue(locationValueEnd);
+        }
+
+        private void addGradientColoredArea(EList<GradientColoredArea> gcas, Color startColor, int locationValueStart,
+                LocationType locationTypeStart, Color endColor, int locationValueEnd, LocationType locationTypeEnd, Diagram diagram) {
+            GradientColoredArea gca = StylesFactory.eINSTANCE.createGradientColoredArea();
+            gcas.add(gca);
+            gca.setStart(StylesFactory.eINSTANCE.createGradientColoredLocation());
+            gca.getStart().setColor(startColor);
+            gca.getStart().setLocationType(locationTypeStart);
+            gca.getStart().setLocationValue(locationValueStart);
+            gca.setEnd(StylesFactory.eINSTANCE.createGradientColoredLocation());
+            gca.getEnd().setColor(endColor);
+            gca.getEnd().setLocationType(locationTypeEnd);
+            gca.getEnd().setLocationValue(locationValueEnd);
+        }
     }
 
     public static class StateNodeBoundaryEventEllipseStyleInitializer extends StyleInitializer {
