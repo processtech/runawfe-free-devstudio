@@ -5,9 +5,13 @@ import org.eclipse.graphiti.features.context.ICreateConnectionContext;
 import org.eclipse.graphiti.features.context.impl.AddConnectionContext;
 import org.eclipse.graphiti.features.impl.AbstractCreateConnectionFeature;
 import org.eclipse.graphiti.mm.pictograms.Anchor;
+import org.eclipse.graphiti.mm.pictograms.AnchorContainer;
 import org.eclipse.graphiti.mm.pictograms.Connection;
+import org.eclipse.graphiti.mm.pictograms.ContainerShape;
+import org.eclipse.graphiti.mm.pictograms.PictogramElement;
+import org.eclipse.graphiti.mm.pictograms.Shape;
+import org.eclipse.graphiti.services.Graphiti;
 
-import ru.runa.gpd.editor.graphiti.GraphUtil;
 import ru.runa.gpd.lang.NodeRegistry;
 import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.lang.model.Node;
@@ -73,14 +77,33 @@ public class CreateTransitionFeature extends AbstractCreateConnectionFeature {
         // add connection for business object
         Anchor sourceAnchor = context.getSourceAnchor();
         if (sourceAnchor == null) {
-            sourceAnchor = GraphUtil.getChopboxAnchor(context.getSourcePictogramElement());
+            sourceAnchor = getChopboxAnchor(context.getSourcePictogramElement());
         }
         Anchor targetAnchor = context.getTargetAnchor();
         if (targetAnchor == null) {
-            targetAnchor = GraphUtil.getChopboxAnchor(context.getTargetPictogramElement());
+            targetAnchor = getChopboxAnchor(context.getTargetPictogramElement());
         }
         AddConnectionContext addConnectionContext = new AddConnectionContext(sourceAnchor, targetAnchor);
         addConnectionContext.setNewObject(transition);
         return (Connection) getFeatureProvider().addIfPossible(addConnectionContext);
     }
+
+    private Anchor getChopboxAnchor(PictogramElement pe) {
+        if (pe instanceof AnchorContainer) {
+            Anchor anchor = Graphiti.getPeService().getChopboxAnchor((AnchorContainer) pe);
+            if (anchor != null) {
+                return anchor;
+            }
+        }
+        if (pe instanceof ContainerShape) {
+            for (Shape shape : ((ContainerShape) pe).getChildren()) {
+                Anchor anchor = getChopboxAnchor(shape);
+                if (anchor != null) {
+                    return anchor;
+                }
+            }
+        }
+        return null;
+    }
+
 }

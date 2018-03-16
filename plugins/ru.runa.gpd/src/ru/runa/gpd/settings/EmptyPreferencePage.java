@@ -12,6 +12,7 @@ public class EmptyPreferencePage extends FieldEditorPreferencePage implements IW
 
     @Override
     public void init(IWorkbench workbench) {
+        noDefaultAndApplyButton();
     }
 
 }

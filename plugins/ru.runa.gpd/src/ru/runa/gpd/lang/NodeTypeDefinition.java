@@ -39,6 +39,7 @@ public class NodeTypeDefinition {
     private final GraphitiEntry graphitiEntry;
     private final Bundle bundle;
     private final boolean enabledInRegulationsByDefault;
+    private final boolean preferencePageExist;
 
     public NodeTypeDefinition(IConfigurationElement configElement) throws CoreException {
         bundle = Platform.getBundle(configElement.getDeclaringExtension().getNamespaceIdentifier());
@@ -64,6 +65,11 @@ public class NodeTypeDefinition {
             this.enabledInRegulationsByDefault = Boolean.valueOf(configElement.getAttribute("enabledInRegulationsByDefault"));
         } else {
             this.enabledInRegulationsByDefault = true;
+        }
+        if (configElement.getAttribute("hasPreferencePage") != null) {
+            this.preferencePageExist = Boolean.valueOf(configElement.getAttribute("hasPreferencePage"));
+        } else {
+            this.preferencePageExist = true;
         }
     }
 
@@ -133,13 +139,16 @@ public class NodeTypeDefinition {
         String key = LanguageElementPreferenceNode.getId(this, language) + '.' + PrefConstants.P_LANGUAGE_NODE_NAME_PATTERN;
         if (store.contains(key)) {
             return store.getString(key);
-        } else {
-            return this.label;
         }
+        return this.label;
     }
 
     public boolean isEnabledInRegulationsByDefault() {
         return this.enabledInRegulationsByDefault;
+    }
+
+    public boolean isPreferencePageExist() {
+        return preferencePageExist;
     }
 
     private <T> T createExecutableExtension(String propertyName) {

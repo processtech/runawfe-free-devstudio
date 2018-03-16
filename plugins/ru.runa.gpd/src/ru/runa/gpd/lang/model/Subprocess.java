@@ -86,7 +86,7 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
             boolean inputDataAllowedInAsyncSubProcess = store.contains(propertyName) ? store.getBoolean(propertyName) : false;
             for (VariableMapping mapping : variableMappings) {
                 if (isAsync() && mapping.isWritable() && !inputDataAllowedInAsyncSubProcess) {
-                    errors.add(ValidationError.createLocalizedError(this, "subprocess.variablesInputInAsyncTask"));
+                    errors.add(ValidationError.createLocalizedError(this, "subprocess.asyncVariablesInput"));
                     break;
                 }
             }
