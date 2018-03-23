@@ -7,6 +7,10 @@ import org.eclipse.gef.ui.parts.GraphicalEditor;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.views.properties.IPropertySource;
 
 import ru.runa.gpd.PropertyNames;
@@ -15,6 +19,16 @@ import ru.runa.gpd.lang.model.GraphElement;
 
 public class GraphitiProcessEditor extends ProcessEditorBase {
     public final static String ID = "ru.runa.gpd.GraphitiProcessEditor";
+
+    public static void refreshAllActiveEditors() {
+        IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+        for (IEditorReference ref : page.getEditorReferences()) {
+            IEditorPart editor = ref.getEditor(true);
+            if (editor instanceof GraphitiProcessEditor) {
+                ((GraphitiProcessEditor) editor).getDiagramEditorPage().applyStyles();
+            }
+        }
+    }
 
     @Override
     protected GraphicalEditor createGraphPage() {

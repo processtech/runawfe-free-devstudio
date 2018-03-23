@@ -21,7 +21,6 @@ import org.eclipse.graphiti.tb.DefaultToolBehaviorProvider;
 import org.eclipse.graphiti.tb.IContextButtonPadData;
 
 import ru.runa.gpd.Localization;
-import ru.runa.gpd.editor.graphiti.create.CreateAnnotationFeature;
 import ru.runa.gpd.editor.graphiti.create.CreateElementFeature;
 import ru.runa.gpd.editor.graphiti.create.CreateStartNodeFeature;
 import ru.runa.gpd.editor.graphiti.create.CreateSwimlaneFeature;
@@ -113,8 +112,7 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
             createElementButton.setIconId("elements.png");
             data.getDomainSpecificContextButtons().add(createElementButton);
             for (ICreateFeature feature : getFeatureProvider().getCreateFeatures()) {
-                if (feature instanceof CreateSwimlaneFeature || feature instanceof CreateAnnotationFeature
-                        || feature instanceof CreateStartNodeFeature) {
+                if (feature instanceof CreateSwimlaneFeature || feature instanceof CreateStartNodeFeature) {
                     continue;
                 }
                 if (feature instanceof CreateElementFeature && feature.canCreate(createContext)) {

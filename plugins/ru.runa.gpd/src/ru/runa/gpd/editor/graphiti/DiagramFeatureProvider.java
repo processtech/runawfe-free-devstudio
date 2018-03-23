@@ -83,9 +83,6 @@ public class DiagramFeatureProvider extends DefaultFeatureProvider {
                             continue;
                         }
                     }
-                    if ("actionHandler".equals(definition.getBpmnElementName()) && !processDefinition.isShowActions()) {
-                        continue;
-                    }
                     list.add((ICreateFeature) definition.getGraphitiEntry().createCreateFeature(this));
                 }
                 if (NodeTypeDefinition.TYPE_ARTIFACT.equals(definition.getType())) {
@@ -93,6 +90,9 @@ public class DiagramFeatureProvider extends DefaultFeatureProvider {
                         if (SwimlaneDisplayMode.none == processDefinition.getSwimlaneDisplayMode()) {
                             continue;
                         }
+                    }
+                    if ("actionHandler".equals(definition.getBpmnElementName()) && !processDefinition.isShowActions()) {
+                        continue;
                     }
                     if (BpmnSerializer.START_TEXT_DECORATION.equals(definition.getBpmnElementName())) {
                         continue;
