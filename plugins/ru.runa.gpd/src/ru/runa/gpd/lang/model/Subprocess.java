@@ -21,7 +21,6 @@ import ru.runa.gpd.util.VariableMapping;
 import ru.runa.gpd.util.VariableUtils;
 import ru.runa.wfe.lang.AsyncCompletionMode;
 
-
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
@@ -85,7 +84,7 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
             boolean inputDataAllowedInAsyncSubProcess = store.contains(propertyName) ? store.getBoolean(propertyName) : false;
             for (VariableMapping mapping : variableMappings) {
                 if (isAsync() && mapping.isWritable() && !inputDataAllowedInAsyncSubProcess) {
-                    errors.add(ValidationError.createLocalizedError(this, "subprocess.variablesInputInAsyncTask"));
+                    errors.add(ValidationError.createLocalizedError(this, "subprocess.asyncVariablesInput"));
                     break;
                 }
             }

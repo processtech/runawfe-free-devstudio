@@ -1,6 +1,8 @@
 package ru.runa.gpd.lang.model;
 
-public abstract class NamedGraphElement extends GraphElement implements Comparable<NamedGraphElement> {
+import ru.runa.gpd.settings.PrefConstants;
+
+public abstract class NamedGraphElement extends GraphElement implements Comparable<NamedGraphElement>, PrefConstants {
     private String name;
 
     public NamedGraphElement() {
@@ -68,4 +70,5 @@ public abstract class NamedGraphElement extends GraphElement implements Comparab
         copy.setName(getName());
         return copy;
     }
+
 }
