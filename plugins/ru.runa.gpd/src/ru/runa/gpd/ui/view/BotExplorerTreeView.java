@@ -43,6 +43,7 @@ import ru.runa.gpd.ui.wizard.ExportBotWizardPage;
 import ru.runa.gpd.ui.wizard.ImportBotStationWizardPage;
 import ru.runa.gpd.ui.wizard.ImportBotTaskWizardPage;
 import ru.runa.gpd.ui.wizard.ImportBotWizardPage;
+import ru.runa.gpd.util.UiUtil;
 import ru.runa.gpd.util.WorkspaceOperations;
 
 public class BotExplorerTreeView extends ViewPart implements ISelectionListener {
@@ -62,6 +63,7 @@ public class BotExplorerTreeView extends ViewPart implements ISelectionListener 
 
     @Override
     public void createPartControl(Composite parent) {
+        UiUtil.hideToolBar(getViewSite());
         viewer = new TreeViewer(parent, SWT.NONE);
         viewer.setContentProvider(new BotTreeContentProvider());
         viewer.setLabelProvider(new BotResourcesLabelProvider());
@@ -114,35 +116,42 @@ public class BotExplorerTreeView extends ViewPart implements ISelectionListener 
         final boolean menuOnBotStation = selectedObject instanceof IProject;
         final boolean menuOnBot = selectedObject instanceof IFolder;
         final boolean menuOnBotTask = selectedObject instanceof IFile;
-        manager.add(new Action(Localization.getString("BotExplorerTreeView.menu.label.newBotStation"), SharedImages.getImageDescriptor("icons/add_bot_station.gif")) {
+        manager.add(new Action(Localization.getString("BotExplorerTreeView.menu.label.newBotStation"),
+                SharedImages.getImageDescriptor("icons/add_bot_station.gif")) {
             @Override
             public void run() {
                 WorkspaceOperations.createNewBotStation(selection);
             }
         });
-        manager.add(new Action(Localization.getString("BotExplorerTreeView.menu.label.importBotStation"), SharedImages.getImageDescriptor("icons/import_bot.gif")) {
+        manager.add(new Action(Localization.getString("BotExplorerTreeView.menu.label.importBotStation"),
+                SharedImages.getImageDescriptor("icons/import_bot.gif")) {
             @Override
             public void run() {
-                WorkspaceOperations.importBotElement(selection, new ImportBotStationWizardPage(Localization.getString("ImportParWizard.wizard.title"), selection));
+                WorkspaceOperations.importBotElement(selection,
+                        new ImportBotStationWizardPage(Localization.getString("ImportParWizard.wizard.title"), selection));
             }
         });
         if (menuOnBotStation) {
-            manager.add(new Action(Localization.getString("BotExplorerTreeView.menu.label.exportBotStation"), SharedImages.getImageDescriptor("icons/export_bot.gif")) {
+            manager.add(new Action(Localization.getString("BotExplorerTreeView.menu.label.exportBotStation"),
+                    SharedImages.getImageDescriptor("icons/export_bot.gif")) {
                 @Override
                 public void run() {
                     WorkspaceOperations.exportBotElement(selection, new ExportBotStationWizardPage(selection));
                 }
             });
-            manager.add(new Action(Localization.getString("BotExplorerTreeView.menu.label.newBot"), SharedImages.getImageDescriptor("icons/add_bot.gif")) {
+            manager.add(new Action(Localization.getString("BotExplorerTreeView.menu.label.newBot"),
+                    SharedImages.getImageDescriptor("icons/add_bot.gif")) {
                 @Override
                 public void run() {
                     WorkspaceOperations.createNewBot(selection);
                 }
             });
-            manager.add(new Action(Localization.getString("BotExplorerTreeView.menu.label.importBot"), SharedImages.getImageDescriptor("icons/import_bot.gif")) {
+            manager.add(new Action(Localization.getString("BotExplorerTreeView.menu.label.importBot"),
+                    SharedImages.getImageDescriptor("icons/import_bot.gif")) {
                 @Override
                 public void run() {
-                    WorkspaceOperations.importBotElement(selection, new ImportBotWizardPage(Localization.getString("ImportParWizard.wizard.title"), selection));
+                    WorkspaceOperations.importBotElement(selection,
+                            new ImportBotWizardPage(Localization.getString("ImportParWizard.wizard.title"), selection));
                 }
             });
             manager.add(new Action(Localization.getString("RenameBotStationDialog.edit"), SharedImages.getImageDescriptor("icons/rename.gif")) {
@@ -153,31 +162,37 @@ public class BotExplorerTreeView extends ViewPart implements ISelectionListener 
             });
         }
         if (menuOnBot) {
-            manager.add(new Action(Localization.getString("BotExplorerTreeView.menu.label.newBot"), SharedImages.getImageDescriptor("icons/add_bot.gif")) {
+            manager.add(new Action(Localization.getString("BotExplorerTreeView.menu.label.newBot"),
+                    SharedImages.getImageDescriptor("icons/add_bot.gif")) {
                 @Override
                 public void run() {
                     WorkspaceOperations.createNewBot(selection);
                 }
             });
-            manager.add(new Action(Localization.getString("BotExplorerTreeView.menu.label.exportBot"), SharedImages.getImageDescriptor("icons/export_bot.gif")) {
+            manager.add(new Action(Localization.getString("BotExplorerTreeView.menu.label.exportBot"),
+                    SharedImages.getImageDescriptor("icons/export_bot.gif")) {
                 @Override
                 public void run() {
                     WorkspaceOperations.exportBotElement(selection, new ExportBotWizardPage(selection));
                 }
             });
-            manager.add(new Action(Localization.getString("BotExplorerTreeView.menu.label.newBotTask"), SharedImages.getImageDescriptor("icons/bot_task.gif")) {
+            manager.add(new Action(Localization.getString("BotExplorerTreeView.menu.label.newBotTask"),
+                    SharedImages.getImageDescriptor("icons/bot_task.gif")) {
                 @Override
                 public void run() {
                     WorkspaceOperations.createNewBotTask(selection);
                 }
             });
-            manager.add(new Action(Localization.getString("BotExplorerTreeView.menu.label.importBotTask"), SharedImages.getImageDescriptor("icons/import_bot.gif")) {
+            manager.add(new Action(Localization.getString("BotExplorerTreeView.menu.label.importBotTask"),
+                    SharedImages.getImageDescriptor("icons/import_bot.gif")) {
                 @Override
                 public void run() {
-                    WorkspaceOperations.importBotElement(selection, new ImportBotTaskWizardPage(Localization.getString("ImportParWizard.wizard.title"), selection));
+                    WorkspaceOperations.importBotElement(selection,
+                            new ImportBotTaskWizardPage(Localization.getString("ImportParWizard.wizard.title"), selection));
                 }
             });
-            manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.renameProcess"), SharedImages.getImageDescriptor("icons/rename.gif")) {
+            manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.renameProcess"),
+                    SharedImages.getImageDescriptor("icons/rename.gif")) {
                 @Override
                 public void run() {
                     WorkspaceOperations.renameBotFolder(selection);
@@ -185,19 +200,22 @@ public class BotExplorerTreeView extends ViewPart implements ISelectionListener 
             });
         }
         if (menuOnBotTask) {
-            manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.renameProcess"), SharedImages.getImageDescriptor("icons/rename.gif")) {
+            manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.renameProcess"),
+                    SharedImages.getImageDescriptor("icons/rename.gif")) {
                 @Override
                 public void run() {
                     WorkspaceOperations.renameBotTaskFile(selection);
                 }
             });
-            manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.copyProcess"), SharedImages.getImageDescriptor("icons/copy.gif")) {
-                @Override
-                public void run() {
-                    WorkspaceOperations.copyBotTask(selection);
-                }
-            });
-            manager.add(new Action(Localization.getString("BotExplorerTreeView.menu.label.exportBotTask"), SharedImages.getImageDescriptor("icons/export_bot.gif")) {
+            manager.add(
+                    new Action(Localization.getString("ExplorerTreeView.menu.label.copyProcess"), SharedImages.getImageDescriptor("icons/copy.gif")) {
+                        @Override
+                        public void run() {
+                            WorkspaceOperations.copyBotTask(selection);
+                        }
+                    });
+            manager.add(new Action(Localization.getString("BotExplorerTreeView.menu.label.exportBotTask"),
+                    SharedImages.getImageDescriptor("icons/export_bot.gif")) {
                 @Override
                 public void run() {
                     WorkspaceOperations.exportBotElement(selection, new ExportBotTaskWizardPage(selection));
@@ -205,12 +223,13 @@ public class BotExplorerTreeView extends ViewPart implements ISelectionListener 
             });
         }
         if (!selection.isEmpty()) {
-            manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.refresh"), SharedImages.getImageDescriptor("icons/refresh.gif")) {
-                @Override
-                public void run() {
-                    WorkspaceOperations.refreshResources(resources);
-                }
-            });
+            manager.add(
+                    new Action(Localization.getString("ExplorerTreeView.menu.label.refresh"), SharedImages.getImageDescriptor("icons/refresh.gif")) {
+                        @Override
+                        public void run() {
+                            WorkspaceOperations.refreshResources(resources);
+                        }
+                    });
             manager.add(new Action(Localization.getString("button.delete"), SharedImages.getImageDescriptor("icons/delete.gif")) {
                 @Override
                 public void run() {

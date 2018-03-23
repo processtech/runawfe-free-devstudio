@@ -17,6 +17,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
 
 import ru.runa.gpd.formeditor.ftl.ComponentType;
+import ru.runa.gpd.util.UiUtil;
 
 public class FormComponentsView extends ViewPart implements IPartListener2 {
     public static final String ID = "ru.runa.gpd.formeditor.ftl.formComponentsView";
@@ -36,6 +37,7 @@ public class FormComponentsView extends ViewPart implements IPartListener2 {
 
     @Override
     public void createPartControl(Composite parent) {
+        UiUtil.hideToolBar(getViewSite());
         viewer = new TableViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
         int operations = DND.DROP_COPY | DND.DROP_MOVE;
         Transfer[] transferTypes = new Transfer[] { TextTransfer.getInstance() };
@@ -91,15 +93,10 @@ public class FormComponentsView extends ViewPart implements IPartListener2 {
         public Image getColumnImage(Object element, int columnIndex) {
             // TODO palette icons support
             /*
-             * ToolPalleteMethodTag todo = (ToolPalleteMethodTag) element;
-             * double zoom = 1d/2; //scale to half of the size maintaining
-             * aspect ratio
+             * ToolPalleteMethodTag todo = (ToolPalleteMethodTag) element; double zoom = 1d/2; //scale to half of the size maintaining aspect ratio
              * 
-             * final int width = todo.getImage().getBounds().width; final int
-             * height = todo.getImage().getBounds().height; return new
-             * Image(Display.getDefault
-             * (),todo.getImage().getImageData().scaledTo((int)(width *
-             * zoom),(int)(height * zoom)));
+             * final int width = todo.getImage().getBounds().width; final int height = todo.getImage().getBounds().height; return new
+             * Image(Display.getDefault (),todo.getImage().getImageData().scaledTo((int)(width * zoom),(int)(height * zoom)));
              */
             return null;
         }

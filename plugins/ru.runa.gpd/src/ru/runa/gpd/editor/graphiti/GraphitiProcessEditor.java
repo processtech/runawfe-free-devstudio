@@ -43,7 +43,7 @@ public class GraphitiProcessEditor extends ProcessEditorBase {
         }
         return null;
     }
-    
+
     @Override
     protected void updateGridLayerVisibility(boolean enabled) {
         ((DiagramEditorPage) graphPage).updateGridLayerVisibility(enabled);
@@ -53,10 +53,11 @@ public class GraphitiProcessEditor extends ProcessEditorBase {
     public void propertyChange(PropertyChangeEvent evt) {
         super.propertyChange(evt);
         if (PropertyNames.PROPERTY_SHOW_ACTIONS.equals(evt.getPropertyName())) {
-            getDiagramEditorPage().refreshPalette();
+            getDiagramEditorPage().getDiagramBehavior().refreshPalette();
             getDiagramEditorPage().refreshActions();
-            //getDiagramEditorPage().getContentEditPart().refresh();
-            //getRootFigure().getUpdateManager().performUpdate();
+            // getDiagramEditorPage().getContentEditPart().refresh();
+            // getRootFigure().getUpdateManager().performUpdate();
+            getDiagramEditorPage().getDiagramBehavior().refreshContent();
         }
     }
 
