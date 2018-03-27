@@ -35,6 +35,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer impleme
         store.setDefault(P_LDAP_CONNECTION_PROVIDER_URL, "ldap://192.168.0.1/dc=domain,dc=com");
         store.setDefault(P_DATE_FORMAT_PATTERN, "dd.MM.yyyy");
         store.setDefault(P_ENABLE_REGULATIONS_MENU_ITEMS, Localization.getString("disable"));
+        store.setDefault(P_ENABLE_EXPORT_WITH_SCALING, Localization.getString("disable"));
         // PreferenceConverter.FONTDATA_DEFAULT_DEFAULT
         // backward compatibility
         store.setDefault(LanguageElementPreferenceNode.getBpmnDefaultPropertyName(P_BPMN_FONT), new FontData("Arial", 8, SWT.NORMAL).toString());
