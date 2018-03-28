@@ -118,6 +118,8 @@ public abstract class WFEServerConnector implements IConnector, PrefConstants {
 
     public abstract WfDefinition redeployProcessDefinitionArchive(Long definitionId, byte[] par, List<String> types);
 
+    public abstract WfDefinition updateProcessDefinitionArchive(Long definitionId, byte[] par);
+
     public abstract Map<Bot, List<BotTask>> getBots();
 
     public abstract byte[] getBotFile(Bot bot);

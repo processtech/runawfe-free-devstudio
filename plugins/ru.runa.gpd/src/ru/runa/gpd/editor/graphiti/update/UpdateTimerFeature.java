@@ -30,7 +30,7 @@ public class UpdateTimerFeature extends UpdateFeature {
         GraphicsAlgorithm ga = containerShape.getGraphicsAlgorithm();
         Timer timer = (Timer) getBusinessObjectForPictogramElement(containerShape);
         GraphUtil.createBoundaryEventEllipse(getDiagram(), containerShape.getChildren().get(0), timer, ga.getWidth(), ga.getHeight());
-        // this does not updates view immediately, only on diagram saving
+        // TODO this does not updates view immediately, only on diagram saving
         // containerShape.getChildren().get(0).setVisible(!timer.isInterruptingBoundaryEvent());
         layoutPictogramElement(containerShape);
         return true;

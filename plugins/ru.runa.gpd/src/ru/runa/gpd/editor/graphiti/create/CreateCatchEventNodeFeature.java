@@ -2,6 +2,7 @@ package ru.runa.gpd.editor.graphiti.create;
 
 import org.eclipse.graphiti.features.context.ICreateContext;
 
+import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 
 public class CreateCatchEventNodeFeature extends CreateElementFeature {
@@ -11,8 +12,10 @@ public class CreateCatchEventNodeFeature extends CreateElementFeature {
         if (super.canCreate(context)) {
             return true;
         }
-        Object parentObject = getBusinessObjectForPictogramElement(context.getTargetContainer());
-        return parentObject instanceof IBoundaryEventContainer;
+        
+        GraphElement container = (GraphElement) getBusinessObjectForPictogramElement(context.getTargetContainer());
+        GraphElement containerParent = container.getParent();
+        return container instanceof IBoundaryEventContainer && !(containerParent instanceof IBoundaryEventContainer);
     }
 
 }
