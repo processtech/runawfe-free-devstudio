@@ -43,6 +43,7 @@ import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.search.SubprocessSearchQuery;
 import ru.runa.gpd.ui.custom.LoggingDoubleClickAdapter;
 import ru.runa.gpd.util.IOUtils;
+import ru.runa.gpd.util.UiUtil;
 import ru.runa.gpd.util.WorkspaceOperations;
 import ru.runa.wfe.definition.ProcessDefinitionAccessType;
 
@@ -73,6 +74,7 @@ public class ProcessExplorerTreeView extends ViewPart implements ISelectionListe
 
     @Override
     public void createPartControl(Composite parent) {
+        UiUtil.hideToolBar(getViewSite());
         viewer = new TreeViewer(parent, SWT.NONE);
         viewer.setContentProvider(new ProcessExplorerContentProvider());
         viewer.setLabelProvider(new ProcessExplorerLabelProvider());
@@ -114,7 +116,7 @@ public class ProcessExplorerTreeView extends ViewPart implements ISelectionListe
         });
         viewer.getControl().setMenu(menu);
     }
-    
+
     private void openProcessDefinition(Object element) {
         if (element instanceof IFolder) {
             IFile definitionFile = IOUtils.getProcessDefinitionFile((IFolder) element);
@@ -148,7 +150,8 @@ public class ProcessExplorerTreeView extends ViewPart implements ISelectionListe
                 }
             });
         }
-        manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.newProject"), SharedImages.getImageDescriptor("icons/add_project.gif")) {
+        manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.newProject"),
+                SharedImages.getImageDescriptor("icons/add_project.gif")) {
             @Override
             public void run() {
                 WorkspaceOperations.createNewProject();
@@ -156,7 +159,8 @@ public class ProcessExplorerTreeView extends ViewPart implements ISelectionListe
         });
         if (menuOnContainer && !menuOnProcess) {
             if (IOUtils.isProjectHasProcessNature(((IContainer) selectedObject).getProject())) {
-                manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.newFolder"), SharedImages.getImageDescriptor("icons/add_folder.gif")) {
+                manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.newFolder"),
+                        SharedImages.getImageDescriptor("icons/add_folder.gif")) {
                     @Override
                     public void run() {
                         WorkspaceOperations.createNewFolder(selection);
@@ -165,13 +169,15 @@ public class ProcessExplorerTreeView extends ViewPart implements ISelectionListe
             }
         }
         if (menuOnContainer) {
-            manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.newProcess"), SharedImages.getImageDescriptor("icons/process.gif")) {
+            manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.newProcess"),
+                    SharedImages.getImageDescriptor("icons/process.gif")) {
                 @Override
                 public void run() {
                     WorkspaceOperations.createNewProcessDefinition(selection, ProcessDefinitionAccessType.Process);
                 }
             });
-            manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.importProcess"), SharedImages.getImageDescriptor("icons/import.gif")) {
+            manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.importProcess"),
+                    SharedImages.getImageDescriptor("icons/import.gif")) {
                 @Override
                 public void run() {
                     WorkspaceOperations.importProcessDefinition(selection);
@@ -179,24 +185,26 @@ public class ProcessExplorerTreeView extends ViewPart implements ISelectionListe
             });
         }
         if (menuOnProcess) {
-        	Action copy = new Action(Localization.getString("ExplorerTreeView.menu.label.copyProcess"), SharedImages.getImageDescriptor("icons/copy.gif")) {
+            Action copy = new Action(Localization.getString("ExplorerTreeView.menu.label.copyProcess"),
+                    SharedImages.getImageDescriptor("icons/copy.gif")) {
                 @Override
                 public void run() {
                     WorkspaceOperations.copyProcessDefinition(selection);
                 }
             };
-        	if (menuOnSubprocess) {
-        		copy.setEnabled(false);
-        	}
-        	manager.add(copy);
-            manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.exportProcess"), SharedImages.getImageDescriptor("icons/export.gif")) {
+            if (menuOnSubprocess) {
+                copy.setEnabled(false);
+            }
+            manager.add(copy);
+            manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.exportProcess"),
+                    SharedImages.getImageDescriptor("icons/export.gif")) {
                 @Override
                 public void run() {
                     WorkspaceOperations.exportProcessDefinition(selection);
                 }
             });
-            manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.renameProcess"), SharedImages
-                    .getImageDescriptor("icons/rename.gif")) {
+            manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.renameProcess"),
+                    SharedImages.getImageDescriptor("icons/rename.gif")) {
                 @Override
                 public void run() {
                     if (menuOnSubprocess) {
@@ -208,16 +216,17 @@ public class ProcessExplorerTreeView extends ViewPart implements ISelectionListe
             });
         }
         if (menuOnContainer) {
-            manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.refresh"), SharedImages.getImageDescriptor("icons/refresh.gif")) {
-                @Override
-                public void run() {
-                    WorkspaceOperations.refreshResources(resources);
-                }
-            });
+            manager.add(
+                    new Action(Localization.getString("ExplorerTreeView.menu.label.refresh"), SharedImages.getImageDescriptor("icons/refresh.gif")) {
+                        @Override
+                        public void run() {
+                            WorkspaceOperations.refreshResources(resources);
+                        }
+                    });
         }
         if (menuOnProcess) {
             manager.add(new Action(Localization.getString("button.findReferences"), SharedImages.getImageDescriptor("icons/search.gif")) {
-                
+
                 @Override
                 public void run() {
                     try {

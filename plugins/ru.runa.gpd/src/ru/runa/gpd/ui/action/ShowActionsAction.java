@@ -21,7 +21,7 @@ public class ShowActionsAction extends BaseActionDelegate {
                 GraphitiProcessEditor gpe = (GraphitiProcessEditor) pe;
                 if (gpe.getDefinition() instanceof SubprocessDefinition) {
                     gpe.getDiagramEditorPage().refreshActions();
-                    gpe.getDiagramEditorPage().refreshPalette();
+                    gpe.getDiagramEditorPage().getDiagramBehavior().refreshPalette();
                 }
             }
         }

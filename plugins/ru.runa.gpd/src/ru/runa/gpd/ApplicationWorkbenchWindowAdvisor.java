@@ -5,6 +5,7 @@ import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 
+import ru.runa.gpd.util.UiUtil;
 
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
     public ApplicationWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer) {
@@ -24,4 +25,11 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
         configurer.getWorkbenchConfigurer().setSaveAndRestore(true);
         configurer.setShowCoolBar(true);
     }
+
+    @Override
+    public void openIntro() {
+        UiUtil.hideQuickAccess();
+        super.openIntro();
+    }
+
 }
