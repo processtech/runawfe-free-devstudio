@@ -52,7 +52,7 @@ Bundle-ClassPath: lib/antlr-2.7.6.jar,
  lib/mail.jar,
  lib/wfe-core.jar,
  lib/json-simple-1.1.1.jar,
- lib/freemarker-2.3.23.jar,
+ lib/freemarker-2.3.28.jar,
  lib/poi-3.10-FINAL.jar,
  lib/pdfbox-2.0.7.jar,
  .
