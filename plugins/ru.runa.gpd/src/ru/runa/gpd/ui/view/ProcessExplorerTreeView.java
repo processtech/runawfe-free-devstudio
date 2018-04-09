@@ -9,6 +9,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
@@ -72,6 +73,19 @@ public class ProcessExplorerTreeView extends ViewPart implements ISelectionListe
         }
     }
 
+    private boolean nothingOrMarkersChanged(IResourceChangeEvent event) {
+        int flags = collectFlags(event.getDelta(), 0);
+        return flags == IResourceDelta.NO_CHANGE || (flags ^ IResourceDelta.MARKERS) == 0;
+    }
+
+    private int collectFlags(IResourceDelta delta, int flags) {
+        flags |= delta.getFlags();
+        for (IResourceDelta d : delta.getAffectedChildren()) {
+            flags = collectFlags(d, flags);
+        }
+        return flags;
+    }
+
     @Override
     public void createPartControl(Composite parent) {
         UiUtil.hideToolBar(getViewSite());
@@ -86,7 +100,19 @@ public class ProcessExplorerTreeView extends ViewPart implements ISelectionListe
                     PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
                         @Override
                         public void run() {
-                            if (!viewer.getControl().isDisposed()) {
+                            boolean refresh = false;
+                            switch (event.getType()) {
+                            case IResourceChangeEvent.PRE_CLOSE:
+                            case IResourceChangeEvent.PRE_DELETE:
+                                refresh = true;
+                                break;
+                            case IResourceChangeEvent.POST_CHANGE:
+                                if (!nothingOrMarkersChanged(event)) {
+                                    refresh = true;
+                                }
+                                break;
+                            }
+                            if (refresh && !viewer.getControl().isDisposed()) {
                                 viewer.refresh();
                             }
                         }
@@ -97,6 +123,7 @@ public class ProcessExplorerTreeView extends ViewPart implements ISelectionListe
             }
         });
         viewer.addDoubleClickListener(new LoggingDoubleClickAdapter() {
+
             @Override
             protected void onDoubleClick(DoubleClickEvent event) {
                 Object element = ((IStructuredSelection) event.getSelection()).getFirstElement();
@@ -152,6 +179,7 @@ public class ProcessExplorerTreeView extends ViewPart implements ISelectionListe
         }
         manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.newProject"),
                 SharedImages.getImageDescriptor("icons/add_project.gif")) {
+
             @Override
             public void run() {
                 WorkspaceOperations.createNewProject();
@@ -171,6 +199,7 @@ public class ProcessExplorerTreeView extends ViewPart implements ISelectionListe
         if (menuOnContainer) {
             manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.newProcess"),
                     SharedImages.getImageDescriptor("icons/process.gif")) {
+
                 @Override
                 public void run() {
                     WorkspaceOperations.createNewProcessDefinition(selection, ProcessDefinitionAccessType.Process);
@@ -246,10 +275,12 @@ public class ProcessExplorerTreeView extends ViewPart implements ISelectionListe
             });
         }
         manager.add(new Action(Localization.getString("button.delete"), SharedImages.getImageDescriptor("icons/delete.gif")) {
+
             @Override
             public void run() {
                 WorkspaceOperations.deleteResources(resources);
             }
+
         });
     }
 
