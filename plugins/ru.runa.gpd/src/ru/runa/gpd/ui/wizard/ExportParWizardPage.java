@@ -31,6 +31,7 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -50,6 +51,7 @@ import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.par.ProcessDefinitionValidator;
 import ru.runa.gpd.settings.WFEConnectionPreferencePage;
 import ru.runa.gpd.ui.custom.Dialogs;
+import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.custom.SyncUIHelper;
 import ru.runa.gpd.ui.view.ValidationErrorsView;
 import ru.runa.gpd.util.IOUtils;
@@ -64,6 +66,7 @@ public class ExportParWizardPage extends WizardArchiveFileResourceExportPage1 {
     private ListViewer definitionListViewer;
     private Button exportToFileButton;
     private Button exportToServerButton;
+    private Button updateLatestVersionButton;
 
     protected ExportParWizardPage(IStructuredSelection selection) {
         super(selection);
@@ -99,6 +102,16 @@ public class ExportParWizardPage extends WizardArchiveFileResourceExportPage1 {
         createDestinationGroup(exportGroup);
         exportToServerButton = new Button(exportGroup, SWT.RADIO);
         exportToServerButton.setText(Localization.getString("ExportParWizardPage.page.exportToServerButton"));
+        updateLatestVersionButton = new Button(exportGroup, SWT.CHECK);
+        updateLatestVersionButton.setEnabled(false);
+        updateLatestVersionButton.setText(Localization.getString("ExportParWizardPage.page.exportToServer.updateMode"));
+        exportToFileButton.addSelectionListener(new LoggingSelectionAdapter() {
+            @Override
+            protected void onSelection(SelectionEvent e) throws Exception {
+                updateLatestVersionButton.setEnabled(!exportToFileButton.getSelection());
+            }
+        });
+
         SyncUIHelper.createHeader(exportGroup, WFEServerProcessDefinitionImporter.getInstance(), WFEConnectionPreferencePage.class, null);
         restoreWidgetValues();
         giveFocusToDestination();
@@ -234,11 +247,11 @@ public class ExportParWizardPage extends WizardArchiveFileResourceExportPage1 {
                     String outputFileName = getDestinationValue() + definition.getName() + ".par";
                     new ParExportOperation(resourcesToExport, new FileOutputStream(outputFileName)).run(null);
                 } else {
-                    new ParDeployOperation(resourcesToExport, definition.getName()).run(null);
+                    new ParDeployOperation(resourcesToExport, definition.getName(), updateLatestVersionButton.getSelection()).run(null);
                 }
             } catch (Throwable th) {
                 PluginLogger.logErrorWithoutDialog(Localization.getString("ExportParWizardPage.error.export"), th);
-                setErrorMessage(Throwables.getRootCause(th).toString());
+                setErrorMessage(Throwables.getRootCause(th).getMessage());
                 return false;
             }
         }
@@ -318,10 +331,12 @@ public class ExportParWizardPage extends WizardArchiveFileResourceExportPage1 {
 
     private class ParDeployOperation extends ParExportOperation {
         private final String definitionName;
+        private final boolean updateLatestVersion;
 
-        public ParDeployOperation(List<IFile> resourcesToExport, String definitionName) {
+        public ParDeployOperation(List<IFile> resourcesToExport, String definitionName, boolean updateLatestVersion) {
             super(resourcesToExport, new ByteArrayOutputStream());
             this.definitionName = definitionName;
+            this.updateLatestVersion = updateLatestVersion;
         }
 
         @Override
@@ -332,7 +347,7 @@ public class ExportParWizardPage extends WizardArchiveFileResourceExportPage1 {
                 Display.getDefault().syncExec(new Runnable() {
                     @Override
                     public void run() {
-                        WFEServerProcessDefinitionImporter.getInstance().uploadPar(definitionName, baos.toByteArray(), true);
+                        WFEServerProcessDefinitionImporter.getInstance().uploadPar(definitionName, updateLatestVersion, baos.toByteArray(), true);
                     }
                 });
             } catch (Exception e) {

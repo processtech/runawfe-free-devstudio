@@ -194,6 +194,7 @@ public class Transition extends NamedGraphElement implements ActionContainer {
         return getParent().toString() + " -> (" + getName() + ") -> " + target.toString();
     }
 
+    @Override
     public String getLabel() {
         StringBuilder result = new StringBuilder();
         if (getSource() instanceof ExclusiveGateway) {

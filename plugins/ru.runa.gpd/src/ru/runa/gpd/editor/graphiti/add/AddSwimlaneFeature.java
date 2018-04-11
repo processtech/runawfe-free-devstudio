@@ -44,30 +44,23 @@ public class AddSwimlaneFeature extends AddElementFeature {
     public PictogramElement add(IAddContext context) {
         Swimlane swimlane = (Swimlane) context.getNewObject();
         Dimension bounds = getBounds(context);
-        //
         ContainerShape containerShape = Graphiti.getPeCreateService().createContainerShape(context.getTargetContainer(), true);
         containerShape.getProperties().add(new GaProperty(GaProperty.SWIMLANE_DISPLAY_VERTICAL, String.valueOf(isVerticalLayout())));
-        Rectangle main = Graphiti.getGaService().createRectangle(containerShape);
-        main.setForeground(Graphiti.getGaService().manageColor(getDiagram(), StyleUtil.LIGHT_BLUE));
-        main.setBackground(Graphiti.getGaService().manageColor(getDiagram(), StyleUtil.VERY_LIGHT_BLUE));
-        main.setStyle(StyleUtil.getStyleForEvent(getDiagram()));
-        main.setLineWidth(1);
+        Rectangle main = Graphiti.getGaService().createPlainRectangle(containerShape);
+        main.setStyle(StyleUtil.getStateNodeOuterRectangleStyle(getDiagram(), swimlane));
         Graphiti.getGaService().setLocationAndSize(main, context.getX(), context.getY(), bounds.width, bounds.height);
-        //
-        Rectangle nameRectangle = Graphiti.getGaService().createRectangle(main);
+        Rectangle nameRectangle = Graphiti.getGaService().createPlainRectangle(main);
         nameRectangle.getProperties().add(new GaProperty(GaProperty.ID, LayoutSwimlaneFeature.NAME_RECT));
-        nameRectangle.setForeground(Graphiti.getGaService().manageColor(getDiagram(), StyleUtil.LIGHT_BLUE));
-        nameRectangle.setBackground(Graphiti.getGaService().manageColor(getDiagram(), StyleUtil.VERY_LIGHT_BLUE));
-        nameRectangle.setStyle(StyleUtil.getStyleForEvent(getDiagram()));
-        // 
-        Text nameText = Graphiti.getGaService().createDefaultText(getDiagram(), nameRectangle, swimlane.getName());
+        nameRectangle.setStyle(StyleUtil.getStateNodeOuterRectangleStyle(getDiagram(), swimlane));
+        Text nameText = Graphiti.getGaService().createText(nameRectangle, swimlane.getName());
         nameText.getProperties().add(new GaProperty(GaProperty.ID, GaProperty.NAME));
         if (getProcessDefinition().getSwimlaneDisplayMode() == SwimlaneDisplayMode.horizontal) {
             nameText.setAngle(270);
         }
         nameText.setHorizontalAlignment(Orientation.ALIGNMENT_CENTER);
         nameText.setVerticalAlignment(Orientation.ALIGNMENT_CENTER);
-        // 
+        nameText.setStyle(StyleUtil.getTextStyle(getDiagram(), swimlane));
+        //
         link(containerShape, swimlane);
         //
         Graphiti.getPeCreateService().createChopboxAnchor(containerShape);

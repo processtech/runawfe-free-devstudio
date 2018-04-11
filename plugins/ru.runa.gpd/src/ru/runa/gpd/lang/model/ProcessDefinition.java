@@ -299,6 +299,9 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
                 result.add(variable);
             }
         }
+        if (useGlobals) {
+            result.addAll(getGlobalSwimlanes(true));
+        }
         return result;
     }
 
@@ -558,13 +561,13 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
             try {
                 for (IResource r : parent.members()) {
                     if (!r.getName().equals(resource.getName()) && r.getName().startsWith(".") && r.getType() == IResource.FOLDER) {
-                        IFile definitionFile = (IFile)((IFolder) r).findMember("processdefinition.xml");
+                        IFile definitionFile = (IFile)((IFolder) r).findMember(ParContentProvider.PROCESS_DEFINITION_FILE_NAME);
                         if (definitionFile != null) {
                             List<Swimlane> globalSwimlanes = ProcessCache.getProcessDefinition(definitionFile).getChildren(Swimlane.class);
                             for (Swimlane swimlane : globalSwimlanes) {
                                 Swimlane copy = new Swimlane();
-                                copy.setName(swimlane.getName());
-                                copy.setScriptingName(swimlane.getScriptingName());
+                                copy.setName("." + swimlane.getName());
+                                copy.setScriptingName("." + swimlane.getScriptingName());
                                 copy.setDescription(swimlane.getDescription());
                                 copy.setDefaultValue(swimlane.getDefaultValue());
                                 copy.setFormat(swimlane.getFormat());

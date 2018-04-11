@@ -32,7 +32,7 @@ public class UpdateCatchEventNodeFeature extends UpdateEventNodeFeature {
                 && catchEventNode.isInterruptingBoundaryEvent() == containerShape.getChildren().get(0).isVisible()) {
             GraphicsAlgorithm ga = containerShape.getGraphicsAlgorithm();
             GraphUtil.createBoundaryEventEllipse(getDiagram(), containerShape.getChildren().get(0), catchEventNode, ga.getWidth(), ga.getHeight());
-            // this does not updates view immediately, only on diagram saving
+            // TODO this does not updates view immediately, only on diagram saving
             // containerShape.getChildren().get(0).setVisible(!catchEventNode.isInterruptingBoundaryEvent());
         }
         return super.update(context);
