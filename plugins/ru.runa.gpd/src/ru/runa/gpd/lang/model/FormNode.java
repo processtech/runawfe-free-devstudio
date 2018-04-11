@@ -8,6 +8,10 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 
+import com.google.common.base.Objects;
+import com.google.common.base.Strings;
+import com.google.common.collect.Maps;
+
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.form.FormType;
@@ -23,10 +27,6 @@ import ru.runa.gpd.validation.ValidatorDefinition;
 import ru.runa.gpd.validation.ValidatorDefinition.Param;
 import ru.runa.gpd.validation.ValidatorDefinitionRegistry;
 import ru.runa.gpd.validation.ValidatorParser;
-
-import com.google.common.base.Objects;
-import com.google.common.base.Strings;
-import com.google.common.collect.Maps;
 
 public abstract class FormNode extends SwimlanedNode {
     public static final String EMPTY = "";

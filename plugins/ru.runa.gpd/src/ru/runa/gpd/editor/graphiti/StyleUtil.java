@@ -9,6 +9,7 @@ import org.eclipse.graphiti.mm.algorithms.styles.Color;
 import org.eclipse.graphiti.mm.algorithms.styles.Font;
 import org.eclipse.graphiti.mm.algorithms.styles.GradientColoredArea;
 import org.eclipse.graphiti.mm.algorithms.styles.GradientColoredAreas;
+import org.eclipse.graphiti.mm.algorithms.styles.LineStyle;
 import org.eclipse.graphiti.mm.algorithms.styles.LocationType;
 import org.eclipse.graphiti.mm.algorithms.styles.Style;
 import org.eclipse.graphiti.mm.algorithms.styles.StylesFactory;
@@ -26,6 +27,7 @@ import org.eclipse.swt.graphics.RGB;
 
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.lang.model.GraphElement;
+import ru.runa.gpd.lang.model.Subprocess;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEvent;
 import ru.runa.gpd.settings.LanguageElementPreferenceNode;
 import ru.runa.gpd.settings.PrefConstants;
@@ -43,7 +45,12 @@ public class StyleUtil implements PrefConstants {
 
     public static Style getStateNodeBoundaryEventEllipseStyle(Diagram diagram, IBoundaryEvent boundaryEvent) {
         String bpmnName = ((GraphElement) boundaryEvent).getParent().getTypeDefinition().getBpmnElementName();
-        return findOrCreateStyle(diagram, bpmnName + "BoundaryEventEllipse", new StateNodeOuterRectangleStyleInitializer(bpmnName));
+        return findOrCreateStyle(diagram, bpmnName + "BoundaryEventEllipse", new StateNodeBoundaryEventEllipseStyleInitializer(bpmnName));
+    }
+
+    public static Style getSubprocessNodeTransactionalStyle(Diagram diagram, Subprocess subprocess) {
+        String bpmnName = subprocess.getParent().getTypeDefinition().getBpmnElementName();
+        return findOrCreateStyle(diagram, bpmnName + "Transactional", new SubprocessNodeTransactionalStyleInitializer(bpmnName));
     }
 
     public static Style getTextStyle(Diagram diagram, GraphElement graphElement) {
@@ -199,8 +206,24 @@ public class StyleUtil implements PrefConstants {
 
         @Override
         public void init(Diagram diagram, Style style) {
-            // does not work here
-            // style.setFilled(Boolean.FALSE);
+            style.setFilled(Boolean.FALSE);
+            style.setForeground(getColor(diagram, bpmnName, P_BPMN_FOREGROUND_COLOR));
+            style.setLineWidth(getInt(diagram, bpmnName, P_BPMN_LINE_WIDTH));
+            style.setLineStyle(LineStyle.DASH);
+        }
+
+    }
+
+    public static class SubprocessNodeTransactionalStyleInitializer extends StyleInitializer {
+        private final String bpmnName;
+
+        public SubprocessNodeTransactionalStyleInitializer(String bpmnName) {
+            this.bpmnName = bpmnName;
+        }
+
+        @Override
+        public void init(Diagram diagram, Style style) {
+            style.setFilled(false);
             style.setForeground(getColor(diagram, bpmnName, P_BPMN_FOREGROUND_COLOR));
             style.setLineWidth(getInt(diagram, bpmnName, P_BPMN_LINE_WIDTH));
         }

@@ -1,5 +1,6 @@
 package ru.runa.gpd.editor.gef;
 
+import java.util.HashSet;
 import java.util.List;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -41,7 +42,7 @@ import ru.runa.gpd.editor.StructuredSelectionProvider;
 import ru.runa.gpd.lang.model.GraphElement;
 
 @SuppressWarnings({ "unchecked", "restriction" })
-public class DesignerGraphicalEditorPart extends GraphicalEditorWithFlyoutPalette implements CommandStackEventListener{
+public class DesignerGraphicalEditorPart extends GraphicalEditorWithFlyoutPalette implements CommandStackEventListener {
     private final ProcessEditorBase editor;
     private final DesignerPaletteRoot paletteRoot;
 
@@ -178,10 +179,7 @@ public class DesignerGraphicalEditorPart extends GraphicalEditorWithFlyoutPalett
                 graphElement = editor.getDefinition();
             }
             ISelectionProvider selectionProvider = new StructuredSelectionProvider(graphElement);
-            ObjectActionContributorManager.getManager().contributeObjectActions(editor, menu, selectionProvider);
-            // ObjectActionContributorManager.getManager().contributeObjectActions(editor,
-            // menu, selectionProvider, new
-            // HashSet<IObjectActionContributor>());
+            ObjectActionContributorManager.getManager().contributeObjectActions(editor, menu, selectionProvider, new HashSet<>());
         }
     }
 
@@ -199,4 +197,5 @@ public class DesignerGraphicalEditorPart extends GraphicalEditorWithFlyoutPalett
             }
         }
     }
+
 }
