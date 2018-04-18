@@ -55,6 +55,8 @@ import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.SwimlaneDisplayMode;
 import ru.runa.gpd.util.WorkspaceOperations;
 
+import com.google.common.base.Charsets;
+
 public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
 
     private TableViewer tableViewer;
@@ -314,10 +316,10 @@ public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
                 if (processDefinitionFile.exists()) {
                     if (!resource.getName().startsWith(".")) {
                         String content = IOUtils.readStream(processDefinitionFile.getContents());
-                        String oldReference = "=\"." + oldName + "\"";
+                        String oldReference = "=\"" + Swimlane.GLOBAL_ROLE_REF_PREFIX + oldName + "\"";
                         if (content.contains(oldReference)) {
-                            content = content.replaceAll(oldReference, "=\"." + (newName == null ? "" : newName) + "\"");
-                            processDefinitionFile.setContents(new ByteArrayInputStream(content.getBytes()), true, true, null);
+                            content = content.replaceAll(oldReference, "=\"" + (newName == null ? "" : Swimlane.GLOBAL_ROLE_REF_PREFIX + newName) + "\"");
+                            processDefinitionFile.setContents(new ByteArrayInputStream(content.getBytes(Charsets.UTF_8)), true, true, null);
                             ProcessCache.invalidateProcessDefinition(processDefinitionFile);
                         }
                     }

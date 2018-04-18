@@ -293,14 +293,14 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
                 }
             }
         }
+        if (includeSwimlanes && useGlobals) {
+            variables.addAll(getGlobalSwimlanes(true));
+        }
         List<Variable> result = Lists.newArrayList();
         for (Variable variable : variables) {
             if (VariableFormatRegistry.isApplicable(variable, typeClassNameFilters)) {
                 result.add(variable);
             }
-        }
-        if (useGlobals) {
-            result.addAll(getGlobalSwimlanes(true));
         }
         return result;
     }
@@ -561,22 +561,24 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
             try {
                 for (IResource r : parent.members()) {
                     if (!r.getName().equals(resource.getName()) && r.getName().startsWith(".") && r.getType() == IResource.FOLDER) {
-                        IFile definitionFile = (IFile)((IFolder) r).findMember(ParContentProvider.PROCESS_DEFINITION_FILE_NAME);
+                        IFile definitionFile = (IFile) ((IFolder) r).findMember(ParContentProvider.PROCESS_DEFINITION_FILE_NAME);
                         if (definitionFile != null) {
                             List<Swimlane> globalSwimlanes = ProcessCache.getProcessDefinition(definitionFile).getChildren(Swimlane.class);
                             for (Swimlane swimlane : globalSwimlanes) {
                                 Swimlane copy = new Swimlane();
-                                copy.setName("." + swimlane.getName());
-                                copy.setScriptingName("." + swimlane.getScriptingName());
-                                copy.setDescription(swimlane.getDescription());
-                                copy.setDefaultValue(swimlane.getDefaultValue());
-                                copy.setFormat(swimlane.getFormat());
-                                copy.setDelegationClassName(swimlane.getDelegationClassName());
-                                copy.setDelegationConfiguration(swimlane.getDelegationConfiguration());
-                                copy.setPublicVisibility(swimlane.isPublicVisibility());
-                                copy.setStoreType(swimlane.getStoreType());
-                                copy.setGlobal(true);
-                                swimlanes.add(copy);
+                                copy.setName(Swimlane.GLOBAL_ROLE_REF_PREFIX + swimlane.getName());
+                                if (!swimlanes.contains(copy)) {
+                                    copy.setScriptingName(Swimlane.GLOBAL_ROLE_REF_PREFIX + swimlane.getScriptingName());
+                                    copy.setDescription(swimlane.getDescription());
+                                    copy.setDefaultValue(swimlane.getDefaultValue());
+                                    copy.setFormat(swimlane.getFormat());
+                                    copy.setDelegationClassName(swimlane.getDelegationClassName());
+                                    copy.setDelegationConfiguration(swimlane.getDelegationConfiguration());
+                                    copy.setPublicVisibility(swimlane.isPublicVisibility());
+                                    copy.setStoreType(swimlane.getStoreType());
+                                    copy.setGlobal(true);
+                                    swimlanes.add(copy);
+                                }
                             }
                         }
                     }
