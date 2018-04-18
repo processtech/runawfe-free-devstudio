@@ -2,11 +2,8 @@ package ru.runa.gpd.editor;
 
 import java.beans.PropertyChangeEvent;
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.util.List;
 
-import org.dom4j.Document;
-import org.dom4j.Element;
 import org.eclipse.core.internal.resources.Folder;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -38,7 +35,6 @@ import ru.runa.gpd.editor.gef.command.ProcessDefinitionRemoveSwimlaneCommand;
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.lang.NodeRegistry;
-import ru.runa.gpd.lang.ProcessSerializer;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
@@ -58,6 +54,8 @@ import ru.runa.gpd.ui.dialog.UpdateSwimlaneNameDialog;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.SwimlaneDisplayMode;
 import ru.runa.gpd.util.WorkspaceOperations;
+
+import com.google.common.base.Charsets;
 
 public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
 
@@ -182,7 +180,7 @@ public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
         updateUI();
     }
 
-    private void delete(Swimlane swimlane) {
+    private void delete(Swimlane swimlane) throws Exception {
         boolean confirmationRequired = false;
         StringBuffer confirmationInfo = new StringBuffer();
         List<FormNode> nodesWithVar = ParContentProvider.getFormsWhereVariableUsed(editor.getDefinitionFile(), getDefinition(), swimlane.getName());
@@ -308,32 +306,27 @@ public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
         }
     }
 
-    private void replaceAllReferences(String oldName, String newName, IContainer parent) {
+    private void replaceAllReferences(String oldName, String newName, IContainer parent) throws Exception {
         if (parent == null) {
             parent = editor.getDefinitionFile().getParent().getParent();
         }
-        try {
-            for (IResource resource : parent.members()) {
-                if (resource instanceof Folder) {
-                    IFile processDefinitionFile = ((Folder) resource).getFile(ParContentProvider.PROCESS_DEFINITION_FILE_NAME);
-                    if (processDefinitionFile.exists()) {
-                        if (!resource.getName().startsWith(".")) {
-                            String content = IOUtils.readStream(processDefinitionFile.getContents());
-                            String oldReference = "=\"." + oldName + "\"";
-                            if (content.contains(oldReference)) {
-                                content = content.replaceAll(oldReference, "=\"." + (newName == null ? "" : newName) + "\"");
-                                processDefinitionFile.setContents(new ByteArrayInputStream(content.getBytes()), true, true, null);
-                                ProcessCache.invalidateProcessDefinition(processDefinitionFile);
-                            }
+        for (IResource resource : parent.members()) {
+            if (resource instanceof Folder) {
+                IFile processDefinitionFile = ((Folder) resource).getFile(ParContentProvider.PROCESS_DEFINITION_FILE_NAME);
+                if (processDefinitionFile.exists()) {
+                    if (!resource.getName().startsWith(".")) {
+                        String content = IOUtils.readStream(processDefinitionFile.getContents());
+                        String oldReference = "=\"" + Swimlane.GLOBAL_ROLE_REF_PREFIX + oldName + "\"";
+                        if (content.contains(oldReference)) {
+                            content = content.replaceAll(oldReference, "=\"" + (newName == null ? "" : Swimlane.GLOBAL_ROLE_REF_PREFIX + newName) + "\"");
+                            processDefinitionFile.setContents(new ByteArrayInputStream(content.getBytes(Charsets.UTF_8)), true, true, null);
+                            ProcessCache.invalidateProcessDefinition(processDefinitionFile);
                         }
-                    } else {
-                        replaceAllReferences(oldName, newName, (Folder) resource);
                     }
+                } else {
+                    replaceAllReferences(oldName, newName, (Folder) resource);
                 }
             }
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         }
     }
 
