@@ -74,16 +74,17 @@ public class ProcessExplorerTreeView extends ViewPart implements ISelectionListe
     }
 
     private boolean nothingOrMarkersChanged(IResourceChangeEvent event) {
-        int flags = collectFlags(event.getDelta(), 0);
-        return flags == IResourceDelta.NO_CHANGE || (flags ^ IResourceDelta.MARKERS) == 0;
+        int status = collectStatus(event.getDelta(), 0);
+        return status == IResourceDelta.NO_CHANGE
+                || (status & (IResourceDelta.ADDED | IResourceDelta.REMOVED)) == 0 && (status & IResourceDelta.MARKERS) != 0;
     }
 
-    private int collectFlags(IResourceDelta delta, int flags) {
-        flags |= delta.getFlags();
+    private int collectStatus(IResourceDelta delta, int status) {
+        status |= (delta.getKind() | delta.getFlags());
         for (IResourceDelta d : delta.getAffectedChildren()) {
-            flags = collectFlags(d, flags);
+            status = collectStatus(d, status);
         }
-        return flags;
+        return status;
     }
 
     @Override
