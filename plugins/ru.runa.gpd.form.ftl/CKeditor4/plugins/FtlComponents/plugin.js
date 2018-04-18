@@ -37,17 +37,13 @@ FtlComponents.OpenParametersDialog = function() {
 	return FtlComponents.ExecuteComponentCommand("OpenParametersDialog", null, FtlComponents.SelectedId);
 };
 
-FtlComponents.CreateComponent = function(type) {
-	return FtlComponents.ExecuteComponentCommand("CreateComponent", type);
-};
-
 FtlComponents.createFakeParserElement = function(realElement) {
 	var writer = new CKEDITOR.htmlParser.basicWriter();
 	realElement.writeHtml(writer);
 	var html = writer.getHtml();
 	var id = realElement.attributes["id"];
 	var attributes = {
-	    id : id != "undefined" ? id : FtlComponents.CreateComponent(realElement.attributes[TYPE_ATTRIBUTE]),
+	    id : id,
 		"class": "cke_ftl_component",
 		"data-cke-real-node-type": CKEDITOR.NODE_ELEMENT,
 		"cke-real-element-type": "ftl_component", 

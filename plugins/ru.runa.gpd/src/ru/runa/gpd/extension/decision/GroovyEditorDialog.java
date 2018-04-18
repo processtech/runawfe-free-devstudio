@@ -37,6 +37,7 @@ import ru.runa.gpd.ui.custom.SWTUtils;
 import ru.runa.gpd.ui.custom.TypedUserInputCombo;
 import ru.runa.gpd.ui.dialog.ChooseGroovyStuffDialog;
 import ru.runa.gpd.ui.dialog.ChooseVariableNameDialog;
+import ru.runa.gpd.ui.dialog.FilterBox;
 import ru.runa.gpd.ui.dialog.UserInputDialog;
 import ru.runa.gpd.util.GroovyStuff;
 import ru.runa.gpd.util.VariableUtils;
@@ -56,7 +57,8 @@ public class GroovyEditorDialog extends Dialog {
     private ErrorHeaderComposite constructorHeader;
     private ErrorHeaderComposite sourceHeader;
     private Label[] labels;
-    private Combo[][] comboBoxes;
+    private FilterBox[][] varBoxes;
+    private Combo[] operBoxes;
     private Combo defaultTransitionCombo;
     private String result;
 
@@ -227,27 +229,27 @@ public class GroovyEditorDialog extends Dialog {
                 transitionNames.add(newTransition);
             }
         }
-        comboBoxes = new Combo[transitionNames.size()][3];
+        varBoxes = new FilterBox[transitionNames.size()][2];
+        operBoxes = new Combo[transitionNames.size()];
         labels = new Label[transitionNames.size()];
         for (int i = 0; i < transitionNames.size(); i++) {
             labels[i] = new Label(constructor, SWT.NONE);
             labels[i].setText(transitionNames.get(i));
             labels[i].setLayoutData(getGridData());
-            comboBoxes[i][0] = new Combo(constructor, SWT.READ_ONLY);
-            for (Variable variable : variables) {
-                comboBoxes[i][0].add(variable.getScriptingName());
-            }
-            comboBoxes[i][0].setData(DATA_INDEX_KEY, new int[] { i, 0 });
-            comboBoxes[i][0].addSelectionListener(new ComboSelectionHandler());
-            comboBoxes[i][0].setLayoutData(getGridData());
-            comboBoxes[i][1] = new Combo(constructor, SWT.READ_ONLY);
-            comboBoxes[i][1].setData(DATA_INDEX_KEY, new int[] { i, 1 });
-            comboBoxes[i][1].addSelectionListener(new ComboSelectionHandler());
-            comboBoxes[i][1].setLayoutData(getGridData());
-            comboBoxes[i][2] = new Combo(constructor, SWT.READ_ONLY);
-            comboBoxes[i][2].setData(DATA_INDEX_KEY, new int[] { i, 2 });
-            comboBoxes[i][2].addSelectionListener(new ComboSelectionHandler());
-            comboBoxes[i][2].setLayoutData(getGridData());
+            varBoxes[i][0] = new FilterBox(constructor, VariableUtils.getVariableNamesForScripting(variables));
+            varBoxes[i][0].setData(DATA_INDEX_KEY, new int[] { i, 0 });
+            varBoxes[i][0].setSelectionListener(new FilterBoxSelectionHandler());
+            varBoxes[i][0].setLayoutData(getGridData());
+            
+            operBoxes[i] = new Combo(constructor, SWT.READ_ONLY);
+            operBoxes[i].setData(DATA_INDEX_KEY, new int[] { i, 1 });
+            operBoxes[i].addSelectionListener(new ComboSelectionHandler());
+            operBoxes[i].setLayoutData(getGridData());
+            
+            varBoxes[i][1] = new FilterBox(constructor, null);
+            varBoxes[i][1].setData(DATA_INDEX_KEY, new int[] { i, 2 });
+            varBoxes[i][1].setSelectionListener(new FilterBoxSelectionHandler());
+            varBoxes[i][1].setLayoutData(getGridData());
             if (i != 0) {
                 Button upButton = new Button(constructor, SWT.PUSH);
                 upButton.setImage(upImage);
@@ -262,9 +264,9 @@ public class GroovyEditorDialog extends Dialog {
                 new Label(constructor, SWT.NONE);
             }
         }
-        for (int i = 0; i < comboBoxes.length; i++) {
-            for (int j = 0; j < 3; j++) {
-                comboBoxes[i][j].setSize(100, 20);
+        for (int i = 0; i < varBoxes.length; i++) {
+            for (int j = 0; j < 2; j++) {
+                varBoxes[i][j].setSize(100, 20);
             }
         }
         if (transitionNames.size() > 0) {
@@ -284,9 +286,9 @@ public class GroovyEditorDialog extends Dialog {
                 protected void onSelection(SelectionEvent e) throws Exception {
                     for (int j = 0; j < labels.length; j++) {
                         boolean enabled = !labels[j].getText().equals(defaultTransitionCombo.getText());
-                        comboBoxes[j][0].setEnabled(enabled);
-                        comboBoxes[j][1].setEnabled(enabled);
-                        comboBoxes[j][2].setEnabled(enabled);
+                        varBoxes[j][0].setEnabled(enabled);
+                        operBoxes[j].setEnabled(enabled);
+                        varBoxes[j][1].setEnabled(enabled);
                     }
                 }
             });
@@ -300,42 +302,41 @@ public class GroovyEditorDialog extends Dialog {
             if (ifExpr != null) {
                 labels[i].setText(ifExpr.getTransition());
                 if (ifExpr.isByDefault()) {
-                    comboBoxes[i][0].setEnabled(false);
-                    comboBoxes[i][1].setEnabled(false);
-                    comboBoxes[i][2].setEnabled(false);
+                    varBoxes[i][0].setEnabled(false);
+                    operBoxes[i].setEnabled(false);
+                    varBoxes[i][1].setEnabled(false);
                     defaultTransitionCombo.setText(ifExpr.getTransition());
                 } else {
                     Variable variable = ifExpr.getVariable1();
                     int index = variables.indexOf(variable);
                     if (index == -1) {
-                        // required variable was deleted in process
-                        // definition
+                        // required variable was deleted in process definition
                         continue;
                     }
-                    comboBoxes[i][0].select(index);
-                    refreshComboItems(comboBoxes[i][0]);
+                    varBoxes[i][0].select(index);
+                    refresh(varBoxes[i][0]);
                     GroovyTypeSupport typeSupport = GroovyTypeSupport.get(variable.getJavaClassName());
                     index = Operation.getAll(typeSupport).indexOf(ifExpr.getOperation());
                     if (index == -1) {
                         // required operation was deleted !!!
                         continue;
                     }
-                    comboBoxes[i][1].select(index);
-                    refreshComboItems(comboBoxes[i][1]);
+                    operBoxes[i].select(index);
+                    refresh(operBoxes[i]);
                     String lexem2Text = ifExpr.getLexem2TextValue();
-                    int combo3index = 0;
+                    int var2index = 0;
                     if (VariableUtils.getVariableByScriptingName(variables, lexem2Text) != null) {
-                        combo3index = getCombo3VariableNames(variable).indexOf(lexem2Text);
+                        var2index = getVariable2Names(variable).indexOf(lexem2Text);
                     } else {
                         int predefinedIndex = typeSupport.getPredefinedValues(ifExpr.getOperation()).indexOf(lexem2Text);
                         if (predefinedIndex >= 0) {
-                            combo3index = getCombo3VariableNames(variable).size() + predefinedIndex;
+                            var2index = getVariable2Names(variable).size() + predefinedIndex;
                         } else {
-                            comboBoxes[i][2].add(lexem2Text, 0);
-                            comboBoxes[i][2].setData(DATA_USER_INPUT_KEY, lexem2Text);
+                            varBoxes[i][1].add(lexem2Text, 0);
+                            varBoxes[i][1].setData(DATA_USER_INPUT_KEY, lexem2Text);
                         }
                     }
-                    comboBoxes[i][2].select(combo3index);
+                    varBoxes[i][1].select(var2index);
                 }
             }
         }
@@ -356,96 +357,77 @@ public class GroovyEditorDialog extends Dialog {
         String recordText = labels[recordIndex].getText();
         labels[recordIndex].setText(labels[recordIndex - 1].getText());
         labels[recordIndex - 1].setText(recordText);
-        boolean enabledIndex = comboBoxes[recordIndex][0].getEnabled();
-        boolean enabledIndexPrev = comboBoxes[recordIndex - 1][0].getEnabled();
-        int combo1Index = comboBoxes[recordIndex][0].getSelectionIndex();
-        int combo2Index = comboBoxes[recordIndex][1].getSelectionIndex();
-        int combo3Index = comboBoxes[recordIndex][2].getSelectionIndex();
-        String combo3UserInput = (String) comboBoxes[recordIndex][2].getData(DATA_USER_INPUT_KEY);
-        comboBoxes[recordIndex][0].select(comboBoxes[recordIndex - 1][0].getSelectionIndex());
-        comboBoxes[recordIndex][0].setEnabled(enabledIndexPrev);
-        refreshComboItems(comboBoxes[recordIndex][0]);
-        comboBoxes[recordIndex][1].select(comboBoxes[recordIndex - 1][1].getSelectionIndex());
-        comboBoxes[recordIndex][1].setEnabled(enabledIndexPrev);
-        refreshComboItems(comboBoxes[recordIndex][1]);
-        String combo3UserInput2 = (String) comboBoxes[recordIndex - 1][2].getData(DATA_USER_INPUT_KEY);
-        if (combo3UserInput2 != null) {
-            comboBoxes[recordIndex][2].add(combo3UserInput2, 0);
-            comboBoxes[recordIndex][2].setData(DATA_USER_INPUT_KEY, combo3UserInput2);
+        boolean enabledIndex = varBoxes[recordIndex][0].getEnabled();
+        boolean enabledIndexPrev = varBoxes[recordIndex - 1][0].getEnabled();
+        int var1Index = varBoxes[recordIndex][0].getSelectionIndex();
+        int operIndex = operBoxes[recordIndex].getSelectionIndex();
+        int var2Index = varBoxes[recordIndex][1].getSelectionIndex();
+        String var2UserInput = (String) varBoxes[recordIndex][1].getData(DATA_USER_INPUT_KEY);
+        varBoxes[recordIndex][0].select(varBoxes[recordIndex - 1][0].getSelectionIndex());
+        varBoxes[recordIndex][0].setEnabled(enabledIndexPrev);
+        refresh(varBoxes[recordIndex][0]);
+        operBoxes[recordIndex].select(operBoxes[recordIndex - 1].getSelectionIndex());
+        operBoxes[recordIndex].setEnabled(enabledIndexPrev);
+        refresh(operBoxes[recordIndex]);
+        String var2UserInput2 = (String) varBoxes[recordIndex - 1][1].getData(DATA_USER_INPUT_KEY);
+        if (var2UserInput2 != null) {
+            varBoxes[recordIndex][1].add(var2UserInput2, 0);
+            varBoxes[recordIndex][1].setData(DATA_USER_INPUT_KEY, var2UserInput2);
         }
-        comboBoxes[recordIndex][2].select(comboBoxes[recordIndex - 1][2].getSelectionIndex());
-        comboBoxes[recordIndex][2].setEnabled(enabledIndexPrev);
-        comboBoxes[recordIndex - 1][0].select(combo1Index);
-        comboBoxes[recordIndex - 1][0].setEnabled(enabledIndex);
-        refreshComboItems(comboBoxes[recordIndex - 1][0]);
-        comboBoxes[recordIndex - 1][1].select(combo2Index);
-        comboBoxes[recordIndex - 1][1].setEnabled(enabledIndex);
-        refreshComboItems(comboBoxes[recordIndex - 1][1]);
-        if (combo3UserInput != null) {
-            comboBoxes[recordIndex - 1][2].add(combo3UserInput, 0);
-            comboBoxes[recordIndex - 1][2].setData(DATA_USER_INPUT_KEY, combo3UserInput);
+        varBoxes[recordIndex][1].select(varBoxes[recordIndex - 1][1].getSelectionIndex());
+        varBoxes[recordIndex][1].setEnabled(enabledIndexPrev);
+        varBoxes[recordIndex - 1][0].select(var1Index);
+        varBoxes[recordIndex - 1][0].setEnabled(enabledIndex);
+        refresh(varBoxes[recordIndex - 1][0]);
+        operBoxes[recordIndex - 1].select(operIndex);
+        operBoxes[recordIndex - 1].setEnabled(enabledIndex);
+        refresh(operBoxes[recordIndex - 1]);
+        if (var2UserInput != null) {
+            varBoxes[recordIndex - 1][1].add(var2UserInput, 0);
+            varBoxes[recordIndex - 1][1].setData(DATA_USER_INPUT_KEY, var2UserInput);
         }
-        comboBoxes[recordIndex - 1][2].select(combo3Index);
-        comboBoxes[recordIndex - 1][2].setEnabled(enabledIndex);
+        varBoxes[recordIndex - 1][1].select(var2Index);
+        varBoxes[recordIndex - 1][1].setEnabled(enabledIndex);
     }
 
-    private void refreshComboItems(Combo combo) {
+    private void refresh(FilterBox filterBox) {
         try {
-            int[] indexes = (int[]) combo.getData(DATA_INDEX_KEY);
+            int[] indexes = (int[]) filterBox.getData(DATA_INDEX_KEY);
             if (indexes[1] == 2) {
-                if (TypedUserInputCombo.INPUT_VALUE.equals(combo.getText())) {
-                    String oldUserInput = (String) combo.getData(DATA_USER_INPUT_KEY);
-                    Variable variable1 = (Variable) comboBoxes[indexes[0]][0].getData(DATA_VARIABLE_KEY);
+                if (TypedUserInputCombo.INPUT_VALUE.equals(filterBox.getSelectedItem())) {
+                    String oldUserInput = (String) filterBox.getData(DATA_USER_INPUT_KEY);
+                    Variable variable1 = (Variable) varBoxes[indexes[0]][0].getData(DATA_VARIABLE_KEY);
                     GroovyTypeSupport typeSupport = GroovyTypeSupport.get(variable1.getJavaClassName());
                     UserInputDialog inputDialog = typeSupport.createUserInputDialog();
                     inputDialog.setInitialValue(oldUserInput);
                     if (OK == inputDialog.open()) {
                         String userInput = inputDialog.getUserInput();
                         if (oldUserInput != null) {
-                            combo.remove(0);
+                            filterBox.remove(0);
                         }
-                        combo.setData(DATA_USER_INPUT_KEY, userInput);
-                        combo.add(userInput, 0);
-                        combo.select(0);
+                        filterBox.setData(DATA_USER_INPUT_KEY, userInput);
+                        filterBox.add(userInput, 0);
+                        filterBox.select(0);
                     } else {
-                        combo.deselectAll();
+                        filterBox.deselectAll();
                     }
                 } else {
-                    Variable variable = VariableUtils.getVariableByScriptingName(variables, combo.getText());
+                    Variable variable = VariableUtils.getVariableByScriptingName(variables, filterBox.getText());
                     if (variable != null) {
-                        combo.setData(DATA_VARIABLE_KEY, variable);
+                        filterBox.setData(DATA_VARIABLE_KEY, variable);
                     }
                 }
                 return;
             }
-            Combo targetCombo = comboBoxes[indexes[0]][indexes[1] + 1];
-            targetCombo.setItems(new String[0]);
             if (indexes[1] == 0) {
-                // there was changed value in first (variable) combo in 'i' row
-                Variable variable = VariableUtils.getVariableByScriptingName(variables, combo.getText());
-                combo.setData(DATA_VARIABLE_KEY, variable);
+                Combo operCombo = operBoxes[indexes[0]];
+                operCombo.setItems(new String[0]);
+                Variable variable = VariableUtils.getVariableByScriptingName(variables, filterBox.getText());
+                filterBox.setData(DATA_VARIABLE_KEY, variable);
                 if (variable != null) {
                     GroovyTypeSupport typeSupport = GroovyTypeSupport.get(variable.getJavaClassName());
                     for (Operation operation : Operation.getAll(typeSupport)) {
-                        targetCombo.add(operation.getVisibleName());
-                    }
-                }
-            } else if (indexes[1] == 1) {
-                // there was changed value in second (operation) combo in 'i'
-                // row
-                Variable variable1 = (Variable) comboBoxes[indexes[0]][0].getData(DATA_VARIABLE_KEY);
-                if (variable1 != null) {
-                    GroovyTypeSupport typeSupport = GroovyTypeSupport.get(variable1.getJavaClassName());
-                    Operation operation = Operation.getByName(combo.getText(), typeSupport);
-                    combo.setData(DATA_OPERATION_KEY, operation);
-                    for (String variableName : getCombo3VariableNames(variable1)) {
-                        targetCombo.add(variableName);
-                    }
-                    for (String pv : typeSupport.getPredefinedValues(operation)) {
-                        targetCombo.add(pv);
-                    }
-                    if (typeSupport.hasUserInputEditor()) {
-                        targetCombo.add(TypedUserInputCombo.INPUT_VALUE);
+                        operCombo.add(operation.getVisibleName());
                     }
                 }
             }
@@ -454,12 +436,36 @@ public class GroovyEditorDialog extends Dialog {
         }
     }
 
-    private List<String> getCombo3VariableNames(Variable variable1) {
+    private void refresh(Combo operCombo) {
+        try {
+            int[] indexes = (int[]) operCombo.getData(DATA_INDEX_KEY);
+            Variable variable1 = (Variable) varBoxes[indexes[0]][0].getData(DATA_VARIABLE_KEY);
+            if (variable1 != null) {
+                FilterBox targetCombo = varBoxes[indexes[0]][1];
+                targetCombo.setItems(new String[0]);
+                GroovyTypeSupport typeSupport = GroovyTypeSupport.get(variable1.getJavaClassName());
+                Operation operation = Operation.getByName(operCombo.getText(), typeSupport);
+                operCombo.setData(DATA_OPERATION_KEY, operation);
+                for (String variableName : getVariable2Names(variable1)) {
+                    targetCombo.add(variableName);
+                }
+                for (String pv : typeSupport.getPredefinedValues(operation)) {
+                    targetCombo.add(pv);
+                }
+                if (typeSupport.hasUserInputEditor()) {
+                    targetCombo.add(TypedUserInputCombo.INPUT_VALUE);
+                }
+            }
+        } catch (RuntimeException e) {
+            PluginLogger.logError(e);
+        }
+    }
+
+    private List<String> getVariable2Names(Variable variable1) {
         List<String> names = new ArrayList<String>();
         GroovyTypeSupport typeSupport1 = GroovyTypeSupport.get(variable1.getJavaClassName());
         for (Variable variable : variables) {
             GroovyTypeSupport typeSupport = GroovyTypeSupport.get(variable.getJavaClassName());
-            // formats are equals, variable not selected in the first combo
             if (typeSupport1.getClass() == typeSupport.getClass() && variable1 != variable) {
                 names.add(variable.getScriptingName());
             }
@@ -500,14 +506,21 @@ public class GroovyEditorDialog extends Dialog {
     private class ComboSelectionHandler extends SelectionAdapter {
         @Override
         public void widgetSelected(SelectionEvent e) {
-            refreshComboItems((Combo) e.widget);
+            refresh((Combo) e.widget);
+        }
+    }
+
+    private class FilterBoxSelectionHandler extends SelectionAdapter {
+        @Override
+        public void widgetSelected(SelectionEvent e) {
+            refresh((FilterBox) e.widget);
         }
     }
 
     private void toCode() {
-        for (int i = 0; i < comboBoxes.length; i++) {
-            for (int j = 0; j < 3; j++) {
-                if (comboBoxes[i][j].getText().length() == 0 && !labels[i].getText().equals(defaultTransitionCombo.getText())) {
+        for (int i = 0; i < varBoxes.length; i++) {
+            for (int j = 0; j < 2; j++) {
+                if (varBoxes[i][j].getText().length() == 0 && !labels[i].getText().equals(defaultTransitionCombo.getText())) {
                     setErrorLabelText(Localization.getString("GroovyEditor.fillAll"));
                     // we cannot construct while all data not filled
                     return;
@@ -522,9 +535,9 @@ public class GroovyEditorDialog extends Dialog {
                 if (labels[i].getText().equals(defaultTransitionCombo.getText())) {
                     ifExpr = new IfExpr(labels[i].getText());
                 } else {
-                    Variable variable1 = (Variable) comboBoxes[i][0].getData(DATA_VARIABLE_KEY);
-                    String operationName = comboBoxes[i][1].getItem(comboBoxes[i][1].getSelectionIndex());
-                    String lexem2Text = comboBoxes[i][2].getText();
+                    Variable variable1 = (Variable) varBoxes[i][0].getData(DATA_VARIABLE_KEY);
+                    String operationName = operBoxes[i].getItem(operBoxes[i].getSelectionIndex());
+                    String lexem2Text = varBoxes[i][1].getText();
                     Object lexem2;
                     Variable variable2 = VariableUtils.getVariableByScriptingName(variables, lexem2Text);
                     if (variable2 != null) {

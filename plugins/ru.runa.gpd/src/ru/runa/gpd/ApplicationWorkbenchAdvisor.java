@@ -10,12 +10,12 @@ import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchAdvisor;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 
-import com.google.common.base.Strings;
-
 import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.NodeRegistry;
 import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.settings.LanguageElementPreferenceNode;
+
+import com.google.common.base.Strings;
 
 public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
     private static final String PERSPECTIVE_ID = "ru.runa.gpd.perspective";
@@ -38,30 +38,28 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 
     @Override
     public void postStartup() {
-        PreferenceManager pm = PlatformUI.getWorkbench().getPreferenceManager();
-        IPreferenceNode[] nodes = pm.getRootSubNodes();
-        for (IPreferenceNode preferenceNode : nodes) {
-            if (preferenceNode.getId().contains("gpd")) {
-                if (preferenceNode.getId().equals("gpd.pref.language")) {
-                    IPreferenceNode preferenceNodeBPMN = preferenceNode.findSubNode(LanguageElementPreferenceNode.BPMN_ID);
-                    IPreferenceNode preferenceNodeJPDL = preferenceNode.findSubNode(LanguageElementPreferenceNode.JPDL_ID);
-                    for (final NodeTypeDefinition definition : NodeRegistry.getDefinitions()) {
-                        if (NodeTypeDefinition.TYPE_NODE.equals(definition.getType())
-                                || NodeTypeDefinition.TYPE_CONNECTION.equals(definition.getType())) {
-                            if (definition.getGraphitiEntry() != null && !Strings.isNullOrEmpty(definition.getBpmnElementName())) {
-                                PreferenceNode node = new LanguageElementPreferenceNode(definition, Language.BPMN);
-                                preferenceNodeBPMN.add(node);
-                            }
-                            if (definition.getGefEntry() != null && !Strings.isNullOrEmpty(definition.getJpdlElementName())) {
-                                PreferenceNode node = new LanguageElementPreferenceNode(definition, Language.JPDL);
-                                preferenceNodeJPDL.add(node);
-                            }
-                        }
-                    }
+        PreferenceManager preferenceManager = PlatformUI.getWorkbench().getPreferenceManager();
+        IPreferenceNode languagePreferenceNode = preferenceManager.find(LanguageElementPreferenceNode.ROOT_ID);
+        IPreferenceNode bpmnPreferenceNode = languagePreferenceNode.findSubNode(LanguageElementPreferenceNode.BPMN_ID);
+        IPreferenceNode jpdlPreferenceNode = languagePreferenceNode.findSubNode(LanguageElementPreferenceNode.JPDL_ID);
+        for (final NodeTypeDefinition definition : NodeRegistry.getDefinitions()) {
+            if (definition.isPreferencePageExist()) {
+                if (definition.getGraphitiEntry() != null && !Strings.isNullOrEmpty(definition.getBpmnElementName())) {
+                    PreferenceNode node = new LanguageElementPreferenceNode(definition, Language.BPMN);
+                    bpmnPreferenceNode.add(node);
                 }
+                if (definition.getGefEntry() != null && !Strings.isNullOrEmpty(definition.getJpdlElementName())) {
+                    PreferenceNode node = new LanguageElementPreferenceNode(definition, Language.JPDL);
+                    jpdlPreferenceNode.add(node);
+                }
+            }
+        }
+        // delete settings page which comes from eclipse
+        for (IPreferenceNode preferenceNode : preferenceManager.getRootSubNodes()) {
+            if (preferenceNode.getId().contains("gpd")) {
                 continue;
             }
-            pm.remove(preferenceNode.getId());
+            preferenceManager.remove(preferenceNode.getId());
         }
     }
 

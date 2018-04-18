@@ -14,14 +14,14 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
+import com.google.common.collect.Lists;
+
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.util.IOUtils;
 
-import com.google.common.collect.Lists;
-
 public class ProcessExplorerContentProvider implements ITreeContentProvider {
-    
+
     @Override
     public Object[] getChildren(Object parentElement) {
         List<IResource> resources = Lists.newArrayList();
@@ -32,7 +32,7 @@ public class ProcessExplorerContentProvider implements ITreeContentProvider {
             } else {
                 List<IFile> files = IOUtils.getProcessDefinitionFiles(project);
                 for (IFile file : files) {
-                    resources.add((IFolder) file.getParent());
+                    resources.add(file.getParent());
                 }
             }
         }
@@ -70,8 +70,8 @@ public class ProcessExplorerContentProvider implements ITreeContentProvider {
     private static void findSubProcessFiles(IContainer container, List<IResource> result) {
         try {
             for (IResource resource : container.members()) {
-                if (resource.getName().endsWith(ParContentProvider.PROCESS_DEFINITION_FILE_NAME) &&
-                        !resource.getName().equals(ParContentProvider.PROCESS_DEFINITION_FILE_NAME)) {
+                if (resource.getName().endsWith(ParContentProvider.PROCESS_DEFINITION_FILE_NAME)
+                        && !resource.getName().equals(ParContentProvider.PROCESS_DEFINITION_FILE_NAME)) {
                     result.add(resource);
                 }
             }

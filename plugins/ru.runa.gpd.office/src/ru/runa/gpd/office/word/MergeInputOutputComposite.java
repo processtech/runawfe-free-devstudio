@@ -10,6 +10,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -133,6 +134,23 @@ public class MergeInputOutputComposite extends Composite {
                     updateUI();
                 }
             };
+            String inputAddBreak = null;
+            if (i < model.getInputAddBreakList().size()) {
+                inputAddBreak = model.getInputAddBreakList().get(i);
+            } else {
+                model.getInputAddBreakList().add(null);
+            }
+            final Button addBreak = new Button(inputGroup, SWT.CHECK);
+            addBreak.setText(Messages.getString("label.inputAddBreak"));
+            addBreak.setSelection(!"false".equals(inputAddBreak));
+            final int index = i;
+            addBreak.addSelectionListener(new LoggingSelectionAdapter() {
+
+                @Override
+                protected void onSelection(SelectionEvent e) throws Exception {
+                    model.getInputAddBreakList().set(index, String.valueOf(addBreak.getSelection()));
+                }
+            });
         }
     }
 
@@ -149,7 +167,7 @@ public class MergeInputOutputComposite extends Composite {
     private void initInGroup() {
         inputGroup = new Group(this, SWT.NONE);
         inputGroup.setText(Messages.getString("label.input"));
-        inputGroup.setLayout(new GridLayout(2, false));
+        inputGroup.setLayout(new GridLayout(3, false));
     }
 
     private void addOutControls(final MergeInputOutputModel model) {

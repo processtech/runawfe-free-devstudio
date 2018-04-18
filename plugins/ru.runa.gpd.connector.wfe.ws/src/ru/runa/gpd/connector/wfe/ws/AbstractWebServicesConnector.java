@@ -9,6 +9,11 @@ import javax.xml.ws.soap.SOAPFaultException;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 
+import com.google.common.base.Throwables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.io.CharStreams;
+
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.wfe.WFEServerConnector;
@@ -34,11 +39,6 @@ import ru.runa.wfe.webservice.RelationAPI;
 import ru.runa.wfe.webservice.RelationWebService;
 import ru.runa.wfe.webservice.User;
 import ru.runa.wfe.webservice.WfExecutor;
-
-import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.io.CharStreams;
 
 public abstract class AbstractWebServicesConnector extends WFEServerConnector {
     private User user;
@@ -176,6 +176,25 @@ public abstract class AbstractWebServicesConnector extends WFEServerConnector {
     }
 
     @Override
+    public WfDefinition updateProcessDefinitionArchive(Long definitionId, byte[] par) {
+        try {
+            return WfDefinitionAdapter.toDTO(getDefinitionService().updateProcessDefinition(getUser(), definitionId, par));
+        } catch (Exception e) {
+            if (e.getMessage() != null && e.getMessage().contains("DefinitionDoesNotExistException")) {
+                throw new DefinitionDoesNotExistException(String.valueOf(definitionId));
+            }
+            if (e.getMessage() != null && e.getMessage().contains("Definition") && e.getMessage().contains("does not exist")) {
+                // jboss4
+                throw new DefinitionDoesNotExistException(String.valueOf(definitionId));
+            }
+            if (e.getMessage() != null && e.getMessage().contains("DefinitionNameMismatchException")) {
+                throw new DefinitionNameMismatchException(e.getMessage(), "", "");
+            }
+            throw Throwables.propagate(e);
+        }
+    }
+
+    @Override
     public WfDefinition redeployProcessDefinitionArchive(Long definitionId, byte[] par, List<String> types) {
         try {
             return WfDefinitionAdapter.toDTO(getDefinitionService().redeployProcessDefinition(getUser(), definitionId, par, types));
@@ -183,7 +202,7 @@ public abstract class AbstractWebServicesConnector extends WFEServerConnector {
             if (e.getMessage() != null && e.getMessage().contains("DefinitionDoesNotExistException")) {
                 throw new DefinitionDoesNotExistException(String.valueOf(definitionId));
             }
-            if (e.getMessage() != null && e.getMessage().contains("Definition") && e.getMessage().contains("does not exists")) {
+            if (e.getMessage() != null && e.getMessage().contains("Definition") && e.getMessage().contains("does not exist")) {
                 // jboss4
                 throw new DefinitionDoesNotExistException(String.valueOf(definitionId));
             }

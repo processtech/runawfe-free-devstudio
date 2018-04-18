@@ -43,11 +43,7 @@ public class FtlComponentServlet extends HttpServlet {
             }
             response.setContentType("text/xml; charset=UTF-8");
             response.setHeader("Cache-Control", "no-cache");
-            if ("CreateComponent".equals(command)) {
-                Component component = FormEditor.getCurrent().createComponent(componentType);
-                response.setContentType("application/json; charset=UTF-8");
-                resultHtml.append("{\"componentId\":").append(component.getId()).append("}");
-            } else if ("ComponentSelected".equals(command)) {
+            if ("ComponentSelected".equals(command)) {
                 FormEditor.getCurrent().componentSelected(componentId);
             } else if ("ComponentDeselected".equals(command)) {
                 FormEditor.getCurrent().componentDeselected();

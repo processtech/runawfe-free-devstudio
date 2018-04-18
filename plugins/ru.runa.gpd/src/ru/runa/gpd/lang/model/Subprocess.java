@@ -5,6 +5,7 @@ import java.util.List;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.ui.views.properties.ComboBoxPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
 
@@ -21,7 +22,6 @@ import ru.runa.gpd.util.VariableMapping;
 import ru.runa.gpd.util.VariableUtils;
 import ru.runa.wfe.lang.AsyncCompletionMode;
 
-
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
@@ -30,6 +30,7 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
     protected List<VariableMapping> variableMappings = Lists.newArrayList();
     private boolean embedded;
     private boolean async;
+    private boolean transactional;
     private AsyncCompletionMode asyncCompletionMode = AsyncCompletionMode.ON_MAIN_PROCESS_END;
     public static List<String> PLACEHOLDERS = Lists.newArrayList(VariableUtils.CURRENT_PROCESS_ID, VariableUtils.CURRENT_PROCESS_DEFINITION_NAME,
             VariableUtils.CURRENT_NODE_ID, VariableUtils.CURRENT_NODE_NAME);
@@ -85,7 +86,7 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
             boolean inputDataAllowedInAsyncSubProcess = store.contains(propertyName) ? store.getBoolean(propertyName) : false;
             for (VariableMapping mapping : variableMappings) {
                 if (isAsync() && mapping.isWritable() && !inputDataAllowedInAsyncSubProcess) {
-                    errors.add(ValidationError.createLocalizedError(this, "subprocess.variablesInputInAsyncTask"));
+                    errors.add(ValidationError.createLocalizedError(this, "subprocess.asyncVariablesInput"));
                     break;
                 }
             }
@@ -141,12 +142,23 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
     public void populateCustomPropertyDescriptors(List<IPropertyDescriptor> descriptors) {
         super.populateCustomPropertyDescriptors(descriptors);
         descriptors.add(new PropertyDescriptor(PROPERTY_SUBPROCESS, Localization.getString("Subprocess.Name")));
+        if (isEmbedded()) {
+            descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_TRANSACTIONAL, Localization.getString("Subprocess.Transactional"),
+                    YesNoComboBoxTransformer.LABELS));
+        }
     }
 
     @Override
     public Object getPropertyValue(Object id) {
         if (PROPERTY_SUBPROCESS.equals(id)) {
             return subProcessName;
+        }
+        if (PROPERTY_TRANSACTIONAL.equals(id)) {
+            if (transactional) {
+                return Integer.valueOf(0);
+            } else {
+                return Integer.valueOf(1);
+            }
         }
         return super.getPropertyValue(id);
     }
@@ -211,6 +223,25 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
             }
         }
         return result;
+    }
+
+    public boolean isTransactional() {
+        return transactional;
+    }
+
+    public void setTransactional(boolean transactional) {
+        boolean old = this.transactional;
+        this.transactional = transactional;
+        firePropertyChange(PROPERTY_TRANSACTIONAL, old, this.transactional);
+    }
+
+    @Override
+    public void setPropertyValue(Object id, Object value) {
+        if (PROPERTY_TRANSACTIONAL.equals(id)) {
+            setTransactional(YesNoComboBoxTransformer.setPropertyValue(value));
+        } else {
+            super.setPropertyValue(id, value);
+        }
     }
 
 }

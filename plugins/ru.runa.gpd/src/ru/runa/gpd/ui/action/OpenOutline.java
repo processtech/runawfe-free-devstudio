@@ -1,6 +1,5 @@
 package ru.runa.gpd.ui.action;
 
-
 public class OpenOutline extends OpenViewBaseAction {
 
     @Override

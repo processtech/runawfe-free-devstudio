@@ -37,10 +37,11 @@ import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 
+import com.google.common.base.Objects;
+
 import ru.runa.gpd.editor.graphiti.GraphitiProcessEditor;
 import ru.runa.gpd.lang.model.GraphElement;
-
-import com.google.common.base.Objects;
+import ru.runa.gpd.util.UiUtil;
 
 public class PropertiesView extends ViewPart implements ISelectionListener, PropertyChangeListener, IPartListener {
     public static final String ID = "ru.runa.gpd.propertiesView";
@@ -70,6 +71,7 @@ public class PropertiesView extends ViewPart implements ISelectionListener, Prop
 
     @Override
     public void createPartControl(Composite parent) {
+        UiUtil.hideToolBar(getViewSite());
         tree = new Tree(parent, SWT.FULL_SELECTION | SWT.SINGLE | SWT.HIDE_SELECTION);
         tree.setLinesVisible(true);
         tree.setHeaderVisible(true);
@@ -176,7 +178,7 @@ public class PropertiesView extends ViewPart implements ISelectionListener, Prop
                 if (sel instanceof IPropertySource) {
                     source = (IPropertySource) sel;
                 } else if (sel instanceof IAdaptable) {
-                    source = (IPropertySource) ((IAdaptable) sel).getAdapter(IPropertySource.class);
+                    source = ((IAdaptable) sel).getAdapter(IPropertySource.class);
                 }
             }
         }

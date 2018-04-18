@@ -231,8 +231,6 @@ public class FieldValidatorsWizardPage extends WizardPage {
         tabItem2.setText(Localization.getString("FieldValidatorsWizardPage.Swimlanes"));
         tabItem2.setControl(swimlanesTableViewer.getControl());
         Composite right = new Composite(mainComposite, SWT.NONE);
-        data = new GridData(GridData.FILL_BOTH);
-        data.minimumHeight = 300;
         right.setLayoutData(data);
         right.setLayout(new GridLayout(1, true));
 
@@ -240,7 +238,7 @@ public class FieldValidatorsWizardPage extends WizardPage {
         validatorsLabel.setText(Localization.getString("FieldValidatorsWizardPage.Validators"));
         validatorsTableViewer = createTableViewer(right, SWT.BORDER | SWT.V_SCROLL | SWT.FULL_SELECTION);
         validatorsTableViewer.setLabelProvider(new ValidatorDefinitionTableLabelProvider());
-        validatorsTableViewer.getControl().setLayoutData(data);
+        validatorsTableViewer.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
 
         GridData groupData = new GridData(GridData.FILL_BOTH);
         groupData.minimumHeight = 200;

@@ -32,6 +32,9 @@ import org.eclipse.graphiti.features.context.IUpdateContext;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.ui.features.DefaultFeatureProvider;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
+
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.editor.graphiti.add.AddTransitionBendpointFeature;
 import ru.runa.gpd.editor.graphiti.update.BOUpdateContext;
@@ -55,9 +58,6 @@ import ru.runa.gpd.lang.model.bpmn.TextAnnotation;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.SwimlaneDisplayMode;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
-
 @SuppressWarnings("unchecked")
 public class DiagramFeatureProvider extends DefaultFeatureProvider {
 
@@ -72,7 +72,8 @@ public class DiagramFeatureProvider extends DefaultFeatureProvider {
 
     @Override
     public ICreateFeature[] getCreateFeatures() {
-        ProcessDefinition processDefinition = ((DiagramEditorPage) getDiagramTypeProvider().getDiagramEditor()).getDefinition();
+        ProcessDefinition processDefinition = ((DiagramEditorPage) getDiagramTypeProvider().getDiagramBehavior().getDiagramContainer())
+                .getDefinition();
         List<ICreateFeature> list = Lists.newArrayList();
         for (NodeTypeDefinition definition : NodeRegistry.getDefinitions()) {
             if (definition.getGraphitiEntry() != null && !Strings.isNullOrEmpty(definition.getBpmnElementName())) {
@@ -82,9 +83,6 @@ public class DiagramFeatureProvider extends DefaultFeatureProvider {
                             continue;
                         }
                     }
-                    if ("actionHandler".equals(definition.getBpmnElementName()) && !processDefinition.isShowActions()) {
-                        continue;
-                    }
                     list.add((ICreateFeature) definition.getGraphitiEntry().createCreateFeature(this));
                 }
                 if (NodeTypeDefinition.TYPE_ARTIFACT.equals(definition.getType())) {
@@ -92,6 +90,9 @@ public class DiagramFeatureProvider extends DefaultFeatureProvider {
                         if (SwimlaneDisplayMode.none == processDefinition.getSwimlaneDisplayMode()) {
                             continue;
                         }
+                    }
+                    if ("actionHandler".equals(definition.getBpmnElementName()) && !processDefinition.isShowActions()) {
+                        continue;
                     }
                     if (BpmnSerializer.START_TEXT_DECORATION.equals(definition.getBpmnElementName())) {
                         continue;

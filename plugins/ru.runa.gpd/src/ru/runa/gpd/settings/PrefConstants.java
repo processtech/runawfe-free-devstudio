@@ -7,6 +7,11 @@ public interface PrefConstants {
     public static final String LOGIN_MODE_LOGIN_PASSWORD = "login.mode.login_password";
     public static final String LOGIN_MODE_KERBEROS = "login.mode.kerberos";
     public static final String P_BPMN_SHOW_SWIMLANE = "showSwimlane";
+    public static final String P_BPMN_FONT = "font";
+    public static final String P_BPMN_FONT_COLOR = "fontColor";
+    public static final String P_BPMN_BACKGROUND_COLOR = "backgroundColor";
+    public static final String P_BPMN_FOREGROUND_COLOR = "foregroundColor";
+    public static final String P_BPMN_LINE_WIDTH = "lineWidth";
     public static final String P_LANGUAGE_NODE_NAME_PATTERN = "nodeNamePattern";
     public static final String P_LANGUAGE_NODE_WIDTH = "nodeWidth";
     public static final String P_LANGUAGE_NODE_HEIGHT = "nodeHeight";
@@ -45,4 +50,5 @@ public interface PrefConstants {
     public static final String P_DEFAULT_LANGUAGE = "defaultLanguage";
     public static final String P_DATE_FORMAT_PATTERN = "dateFormat";
     public static final String P_ENABLE_REGULATIONS_MENU_ITEMS = "enabledRegulationsMenuItems";
+    public static final String P_ENABLE_EXPORT_WITH_SCALING = "enabledExportWithScaling";
 }

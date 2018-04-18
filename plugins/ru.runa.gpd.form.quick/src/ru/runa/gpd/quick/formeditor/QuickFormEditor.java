@@ -13,6 +13,7 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelection;
@@ -101,6 +102,7 @@ import com.google.common.base.Strings;
 
 public class QuickFormEditor extends EditorPart implements ISelectionListener, IResourceChangeListener, PropertyChangeListener {
     public static final int CLOSED = 198;
+    public static final int SAVED = 257;
     public static final String ID = "ru.runa.gpd.quick.formeditor.QuickFormEditor";
     private Composite editorComposite;
     private TableViewer tableViewer;
@@ -153,19 +155,7 @@ public class QuickFormEditor extends EditorPart implements ISelectionListener, I
             @Override
             public void propertyChanged(Object source, int propId) {
                 if (propId == QuickFormEditor.CLOSED && formFile.exists()) {
-                    String op = "create";
-                    try {
-                        if (!formNode.hasFormValidation()) {
-                            String fileName = formNode.getId() + "." + FormNode.VALIDATION_SUFFIX;
-                            formNode.setValidationFileName(fileName);
-                            ValidationUtil.createNewValidationUsingForm(formFile, formNode);
-                        } else {
-                            op = "update";
-                            ValidationUtil.updateValidation(formFile, formNode);
-                        }
-                    } catch (Exception e) {
-                        PluginLogger.logError("Failed to " + op + " form validation", e);
-                    }
+                    ValidationUtil.createOrUpdateValidation(formNode, formFile);
                 }
             }
         });
@@ -183,6 +173,7 @@ public class QuickFormEditor extends EditorPart implements ISelectionListener, I
             // }
             if (formNode != null) {
                 formNode.setDirty();
+                ValidationUtil.createOrUpdateValidation(formNode, formFile);
             }
             setDirty(false);
             updateButtons();
@@ -231,55 +222,7 @@ public class QuickFormEditor extends EditorPart implements ISelectionListener, I
             @Override
             protected void onSelection(SelectionEvent e) throws Exception {
                 String label = templateCombo.getText();
-                String filename = null;
-                for (QuickTemplateArtifact artifact : QuickTemplateRegister.getInstance().getAll(true)) {
-                    if (label != null && artifact.isEnabled() && label.equalsIgnoreCase(artifact.getLabel())) {
-                        filename = artifact.getFileName();
-                        break;
-                    }
-                }
-
-                if ((prevTemplateFileName == null && filename == null)
-                        || (!Strings.isNullOrEmpty(prevTemplateFileName) && prevTemplateFileName.equals(filename))) {
-                    return;
-                }
-
-                if (filename != null && filename.trim().length() > 0) {
-                    Bundle bundle = QuickTemplateRegister.getBundle(filename);
-                    String templateHtml = QuickFormXMLUtil.getTemplateFromRegister(bundle, filename);
-                    formNode.setTemplateFileName(filename);
-                    quickForm.setDelegationConfiguration(templateHtml);
-
-                    quickForm.getProperties().clear();
-                    QuickTemplateArtifact quickTemplateArtifact = QuickTemplateRegister.getInstance().getArtifactByFileName(filename);
-                    if (quickTemplateArtifact != null) {
-                        List<Artifact> parameters = quickTemplateArtifact.getParameters();
-                        if (parameters != null && parameters.size() > 0) {
-
-                            for (Artifact parameter : parameters) {
-                                QuickFormGpdProperty gpdProperty = new QuickFormGpdProperty();
-                                gpdProperty.setName(parameter.getName());
-                                gpdProperty.setLabel(parameter.getLabel());
-                                quickForm.getProperties().add(gpdProperty);
-                            }
-                        }
-                    }
-
-                    setPropertiesTableInput();
-                }
-
-                if (!Strings.isNullOrEmpty(prevTemplateFileName)) {
-                    if (!QuickFormEditorUtil.isTemplateUsingInForms(processDefinition, formNode, prevTemplateFileName)) {
-                        IFile confFile = definitionFolder.getFile(prevTemplateFileName);
-                        if (confFile.exists()) {
-                            confFile.delete(true, null);
-                        }
-                    }
-                }
-
-                prevTemplateFileName = filename;
-                setDirty(true);
-                updateConvertButton(!Strings.isNullOrEmpty(formNode.getTemplateFileName()));
+                setSelection(label);
             }
         });
         templateCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -364,7 +307,8 @@ public class QuickFormEditor extends EditorPart implements ISelectionListener, I
                 QuickFormGpdVariable row = (QuickFormGpdVariable) selection.getFirstElement();
                 for (QuickFormGpdVariable variableDef : quickForm.getVariables()) {
                     if (variableDef.getName().equals(row.getName())) {
-                        QuickFormVariableWizard wizard = new QuickFormVariableWizard(formNode, quickForm.getVariables(), quickForm.getVariables().indexOf(variableDef));
+                        QuickFormVariableWizard wizard = new QuickFormVariableWizard(formNode, quickForm.getVariables(), quickForm.getVariables()
+                                .indexOf(variableDef));
                         CompactWizardDialog dialog = new CompactWizardDialog(wizard);
                         if (dialog.open() == Window.OK) {
                             setTableInput();
@@ -611,8 +555,17 @@ public class QuickFormEditor extends EditorPart implements ISelectionListener, I
         });
 
         setPropertiesTableInput();
-
+        setDefaultSelection();
         composite.layout(true, true);
+    }
+
+    private void setDefaultSelection() {
+        if (templateCombo.getItemCount() != 0) {
+            int selectionIndex = templateCombo.getSelectionIndex();
+            setSelection(templateCombo.getItem(selectionIndex));
+        } else {
+            setSelection(null);
+        }
     }
 
     private void updateButtons() {
@@ -628,6 +581,61 @@ public class QuickFormEditor extends EditorPart implements ISelectionListener, I
 
     private void updateConvertButton(boolean isTemplateValid) {
         convertButton.setEnabled(isTemplateValid && !isDirty());
+    }
+
+    private void setSelection(String label) {
+        String filename = null;
+        for (QuickTemplateArtifact artifact : QuickTemplateRegister.getInstance().getAll(true)) {
+            if (label != null && artifact.isEnabled() && label.equalsIgnoreCase(artifact.getLabel())) {
+                filename = artifact.getFileName();
+                break;
+            }
+        }
+
+        if ((prevTemplateFileName == null && filename == null)
+                || (!Strings.isNullOrEmpty(prevTemplateFileName) && prevTemplateFileName.equals(filename))) {
+            return;
+        }
+
+        if (filename != null && filename.trim().length() > 0) {
+            Bundle bundle = QuickTemplateRegister.getBundle(filename);
+            String templateHtml = QuickFormXMLUtil.getTemplateFromRegister(bundle, filename);
+            formNode.setTemplateFileName(filename);
+            quickForm.setDelegationConfiguration(templateHtml);
+
+            quickForm.getProperties().clear();
+            QuickTemplateArtifact quickTemplateArtifact = QuickTemplateRegister.getInstance().getArtifactByFileName(filename);
+            if (quickTemplateArtifact != null) {
+                List<Artifact> parameters = quickTemplateArtifact.getParameters();
+                if (parameters != null && parameters.size() > 0) {
+
+                    for (Artifact parameter : parameters) {
+                        QuickFormGpdProperty gpdProperty = new QuickFormGpdProperty();
+                        gpdProperty.setName(parameter.getName());
+                        gpdProperty.setLabel(parameter.getLabel());
+                        quickForm.getProperties().add(gpdProperty);
+                    }
+                }
+            }
+
+            setPropertiesTableInput();
+        }
+
+        if (!Strings.isNullOrEmpty(prevTemplateFileName)) {
+            if (!QuickFormEditorUtil.isTemplateUsingInForms(processDefinition, formNode, prevTemplateFileName)) {
+                IFile confFile = definitionFolder.getFile(prevTemplateFileName);
+                if (confFile.exists()) {
+                    try {
+                        confFile.delete(true, null);
+                    } catch (CoreException e) {
+                    }
+                }
+            }
+        }
+
+        prevTemplateFileName = filename;
+        setDirty(true);
+        updateConvertButton(!Strings.isNullOrEmpty(formNode.getTemplateFileName()));
     }
 
     private static class TableLabelProvider extends LabelProvider implements ITableLabelProvider {
