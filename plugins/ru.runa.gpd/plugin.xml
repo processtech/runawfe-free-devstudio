@@ -705,6 +705,38 @@
              </and>
           </visibleWhen>
        </menu>
+       <command
+             commandId="ru.runa.gpd.lang.action.ExportDiagram"
+             label="%label.action.export"
+             style="push">
+             <visibleWhen
+                   checkEnabled="false">
+                <and>
+	                <test
+	                      property="ru.runa.gpd.lang.action.exportDiagramWithScalingActionEnabled"
+	                      value="true">
+	                </test>
+                </and>
+             </visibleWhen>
+       </command>
+       <command
+             commandId="ru.runa.gpd.lang.action.PrintDiagram"
+             label="%label.action.print"
+             style="push">
+             <visibleWhen
+                   checkEnabled="false">
+                <or>
+	                <test
+	                      property="ru.runa.gpd.lang.action.exportDiagramActionEnabled"
+	                      value="true">
+	                </test>
+	                <test
+	                      property="ru.runa.gpd.lang.action.exportDiagramWithScalingActionEnabled"
+	                      value="true">
+	                </test>
+                </or>
+             </visibleWhen>
+       </command>
     </menuContribution>
  </extension>
  <extension
@@ -721,6 +753,13 @@
           id="ru.runa.gpd.lang.action.ExportDiagramPropertyTester"
           namespace="ru.runa.gpd.lang.action"
           properties="exportDiagramActionEnabled"
+          type="java.lang.Object">
+    </propertyTester>
+    <propertyTester
+          class="ru.runa.gpd.lang.action.ExportDiagramWithScalingPropertyTester"
+          id="ru.runa.gpd.lang.action.ExportDiagramWithScalingPropertyTester"
+          namespace="ru.runa.gpd.lang.action"
+          properties="exportDiagramWithScalingActionEnabled"
           type="java.lang.Object">
     </propertyTester>
  </extension>
@@ -1093,8 +1132,8 @@
                create="ru.runa.gpd.editor.graphiti.create.CreateElementFeature"
                fixedSize="false"
                height="10"
-               layout="ru.runa.gpd.editor.graphiti.layout.LayoutStateNodeFeature"
-               update="ru.runa.gpd.editor.graphiti.update.UpdateStateNodeFeature"
+               layout="ru.runa.gpd.editor.graphiti.layout.LayoutSubprocessNodeFeature"
+               update="ru.runa.gpd.editor.graphiti.update.UpdateSubprocessNodeFeature"
                width="15">
          </graphiti>
       </element>
@@ -2781,6 +2820,16 @@
           defaultHandler="ru.runa.gpd.lang.action.ExportDiagramToJpgHandler"
           id="ru.runa.gpd.lang.action.ExportDiagramToJpg"
           name="Export Diagram to JPG">
+    </command>
+    <command
+          defaultHandler="ru.runa.gpd.lang.action.ExportDiagramHandler"
+          id="ru.runa.gpd.lang.action.ExportDiagram"
+          name="Export Diagram">
+    </command>
+    <command
+          defaultHandler="ru.runa.gpd.lang.action.PrintDiagramHandler"
+          id="ru.runa.gpd.lang.action.PrintDiagram"
+          name="Print Diagram">
     </command>
    </extension>
    <extension

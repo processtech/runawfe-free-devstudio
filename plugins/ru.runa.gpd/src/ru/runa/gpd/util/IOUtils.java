@@ -33,6 +33,14 @@ import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 
+import com.google.common.base.Charsets;
+import com.google.common.base.Strings;
+import com.google.common.base.Throwables;
+import com.google.common.collect.Lists;
+import com.google.common.io.ByteStreams;
+import com.google.common.io.Closeables;
+import com.google.common.io.Files;
+
 import ru.runa.gpd.BotCache;
 import ru.runa.gpd.BotStationNature;
 import ru.runa.gpd.PluginLogger;
@@ -41,14 +49,6 @@ import ru.runa.gpd.form.FormType;
 import ru.runa.gpd.form.FormTypeProvider;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.par.ParContentProvider;
-
-import com.google.common.base.Charsets;
-import com.google.common.base.Strings;
-import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
-import com.google.common.io.ByteStreams;
-import com.google.common.io.Closeables;
-import com.google.common.io.Files;
 
 public class IOUtils {
     private static final ByteArrayInputStream EMPTY_STREAM = new ByteArrayInputStream(new byte[0]);
@@ -400,10 +400,9 @@ public class IOUtils {
         try {
             IResource[] resources = botFolder.members();
             for (int i = 0; i < resources.length; i++) {
-                if (resources[i] instanceof IFile
-                        && (Strings.isNullOrEmpty(resources[i].getFileExtension()) || !(resources[i].getFileExtension().equals(
-                                BotCache.CONFIGURATION_FILE_EXTENSION) || resources[i].getFileExtension().equals(
-                                BotCache.WORD_TEMPLATE_FILE_EXTENSION)))) {
+                if (resources[i] instanceof IFile && (Strings.isNullOrEmpty(resources[i].getFileExtension())
+                        || !(resources[i].getFileExtension().equals(BotCache.CONFIGURATION_FILE_EXTENSION)
+                                || resources[i].getFileExtension().equals(BotCache.WORD_TEMPLATE_FILE_EXTENSION)))) {
                     fileList.add((IFile) resources[i]);
                 }
             }
@@ -564,7 +563,7 @@ public class IOUtils {
             }
             if (selectedElement instanceof IAdaptable) {
                 IAdaptable adaptable = (IAdaptable) selectedElement;
-                IResource resource = (IResource) adaptable.getAdapter(IResource.class);
+                IResource resource = adaptable.getAdapter(IResource.class);
                 if (resource instanceof IProject || resource instanceof IFile) {
                     return resource;
                 }

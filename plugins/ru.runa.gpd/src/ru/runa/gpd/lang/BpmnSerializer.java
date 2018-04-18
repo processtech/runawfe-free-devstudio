@@ -223,6 +223,9 @@ public class BpmnSerializer extends ProcessSerializer {
             if (subprocess.isEmbedded()) {
                 properties.put(EMBEDDED, true);
             }
+            if (subprocess.isTransactional()) {
+                properties.put(TRANSACTIONAL, true);
+            }
             if (subprocess.isAsync()) {
                 properties.put(ASYNC, Boolean.TRUE.toString());
                 properties.put(ASYNC_COMPLETION_MODE, subprocess.getAsyncCompletionMode().name());
@@ -755,6 +758,9 @@ public class BpmnSerializer extends ProcessSerializer {
             }
             if (properties.containsKey(EMBEDDED)) {
                 subprocess.setEmbedded(Boolean.parseBoolean(properties.get(EMBEDDED)));
+            }
+            if (properties.containsKey(TRANSACTIONAL)) {
+                subprocess.setTransactional(Boolean.parseBoolean(properties.get(TRANSACTIONAL)));
             }
             String async = properties.get(ASYNC);
             if (async != null) {

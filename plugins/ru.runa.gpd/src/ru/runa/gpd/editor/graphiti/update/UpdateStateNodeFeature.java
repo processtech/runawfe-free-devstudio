@@ -34,9 +34,10 @@ public class UpdateStateNodeFeature extends UpdateFeature {
             return Reason.createTrueReason();
         }
         String async = PropertyUtil.getPropertyValue(pe, GaProperty.ASYNC);
-        if (async != null && !Objects.equal(async, String.valueOf(((Synchronizable)bo).isAsync()))) {
+        if (async != null && !Objects.equal(async, String.valueOf(((Synchronizable) bo).isAsync()))) {
             return Reason.createTrueReason();
         }
+
         return Reason.createFalseReason();
     }
 
@@ -56,8 +57,8 @@ public class UpdateStateNodeFeature extends UpdateFeature {
             layoutPictogramElement(pe);
         }
         String async = PropertyUtil.getPropertyValue(pe, GaProperty.ASYNC);
-        if (async !=null && !Objects.equal(async, String.valueOf(((Synchronizable)bo).isAsync()))) {
-            PropertyUtil.setPropertyValue(pe, GaProperty.ASYNC, String.valueOf(((Synchronizable)bo).isAsync()));
+        if (async != null && !Objects.equal(async, String.valueOf(((Synchronizable) bo).isAsync()))) {
+            PropertyUtil.setPropertyValue(pe, GaProperty.ASYNC, String.valueOf(((Synchronizable) bo).isAsync()));
             layoutPictogramElement(pe);
         }
         return true;

@@ -32,15 +32,16 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.part.ViewPart;
 
-import ru.runa.gpd.Localization;
-import ru.runa.gpd.PluginLogger;
-import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
-import ru.runa.gpd.ui.custom.SWTUtils;
-
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
+
+import ru.runa.gpd.Localization;
+import ru.runa.gpd.PluginLogger;
+import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
+import ru.runa.gpd.ui.custom.SWTUtils;
+import ru.runa.gpd.util.UiUtil;
 
 public class SleakView extends ViewPart {
     public static final String ID = "ru.runa.gpd.sleak";
@@ -54,6 +55,7 @@ public class SleakView extends ViewPart {
 
     @Override
     public void createPartControl(Composite parent) {
+        UiUtil.hideToolBar(getViewSite());
         if (!Display.getCurrent().getDeviceData().tracking) {
             Composite composite = new Composite(parent, SWT.NONE);
             composite.setLayout(new GridLayout());
@@ -329,10 +331,10 @@ public class SleakView extends ViewPart {
             gc.drawString(string, 0, 0);
             return;
         }
-        //NOTHING TO DRAW FOR GC
-        //  if (object instanceof GC) {
-        //          return;
-        //  }
+        // NOTHING TO DRAW FOR GC
+        // if (object instanceof GC) {
+        // return;
+        // }
         if (object instanceof Image) {
             if (((Image) object).isDisposed()) {
                 return;

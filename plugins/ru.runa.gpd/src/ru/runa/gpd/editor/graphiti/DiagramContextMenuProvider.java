@@ -1,11 +1,14 @@
 package ru.runa.gpd.editor.graphiti;
 
+import java.util.HashSet;
+
 import org.eclipse.gef.EditPartViewer;
 import org.eclipse.gef.ui.actions.ActionRegistry;
 import org.eclipse.graphiti.dt.IDiagramTypeProvider;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.ui.editor.DiagramEditor;
 import org.eclipse.graphiti.ui.editor.DiagramEditorContextMenuProvider;
+import org.eclipse.graphiti.ui.platform.IConfigurationProvider;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.ui.internal.ObjectActionContributorManager;
@@ -17,17 +20,15 @@ public class DiagramContextMenuProvider extends DiagramEditorContextMenuProvider
 
     /**
      * @param viewer
-     *            The EditPartViewer, for which the context-menu shall be
-     *            displayed.
+     *            The EditPartViewer, for which the context-menu shall be displayed.
      * @param registry
-     *            The action-registry, which contains the actions corresponding
-     *            to the menu-items.
+     *            The action-registry, which contains the actions corresponding to the menu-items.
      * @param configurationProvider
      *            the configuration provider
      */
-    public DiagramContextMenuProvider(EditPartViewer viewer, ActionRegistry registry, IDiagramTypeProvider diagramTypeProvider) {
-        super(viewer, registry, diagramTypeProvider);
-        this.diagramTypeProvider = diagramTypeProvider;
+    public DiagramContextMenuProvider(EditPartViewer viewer, ActionRegistry registry, IConfigurationProvider configurationProvider) {
+        super(viewer, registry, configurationProvider);
+        this.diagramTypeProvider = configurationProvider.getDiagramTypeProvider();
     }
 
     @Override
@@ -52,7 +53,7 @@ public class DiagramContextMenuProvider extends DiagramEditorContextMenuProvider
         if (pes.length == 1) {
             Object object = getDiagramTypeProvider().getFeatureProvider().getBusinessObjectForPictogramElement(pes[0]);
             ISelectionProvider selectionProvider = new StructuredSelectionProvider(object);
-            ObjectActionContributorManager.getManager().contributeObjectActions(getEditor(), manager, selectionProvider);
+            ObjectActionContributorManager.getManager().contributeObjectActions(getEditor(), manager, selectionProvider, new HashSet<>());
         }
     }
 
@@ -65,6 +66,7 @@ public class DiagramContextMenuProvider extends DiagramEditorContextMenuProvider
     }
 
     private DiagramEditor getEditor() {
-        return (DiagramEditor) getDiagramTypeProvider().getDiagramEditor();
+        return (DiagramEditor) getDiagramTypeProvider().getDiagramBehavior().getDiagramContainer();
     }
+
 }

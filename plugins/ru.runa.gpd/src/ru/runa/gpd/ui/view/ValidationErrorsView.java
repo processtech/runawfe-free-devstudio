@@ -43,6 +43,7 @@ import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.jpdl.ActionContainer;
+import ru.runa.gpd.util.UiUtil;
 import ru.runa.gpd.util.WorkspaceOperations;
 
 public class ValidationErrorsView extends ViewPart implements ISelectionChangedListener {
@@ -53,6 +54,7 @@ public class ValidationErrorsView extends ViewPart implements ISelectionChangedL
 
     @Override
     public void createPartControl(Composite parent) {
+        UiUtil.hideToolBar(getViewSite());
         viewer = multiColumnViewer(parent);
         viewer.setContentProvider(new MarkerContentProvider());
         viewer.setLabelProvider(new MarkerLabelProvider());
