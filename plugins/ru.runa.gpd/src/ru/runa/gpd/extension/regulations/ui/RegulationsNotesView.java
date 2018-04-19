@@ -35,6 +35,7 @@ import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.editor.ProcessEditorBase;
 import ru.runa.gpd.lang.model.GraphElement;
+import ru.runa.gpd.util.UiUtil;
 import ru.runa.gpd.util.WorkspaceOperations;
 
 public class RegulationsNotesView extends ViewPart implements ISelectionChangedListener {
@@ -45,6 +46,7 @@ public class RegulationsNotesView extends ViewPart implements ISelectionChangedL
 
     @Override
     public void createPartControl(Composite parent) {
+        UiUtil.hideToolBar(getViewSite());
         viewer = multiColumnViewer(parent);
         viewer.setContentProvider(new MarkerContentProvider());
         viewer.setLabelProvider(new MarkerLabelProvider());

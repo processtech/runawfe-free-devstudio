@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.eclipse.gef.ui.actions.ActionRegistry;
 import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.ui.actions.ActionFactory;
 
 import ru.runa.gpd.editor.CopyAction;
@@ -23,6 +22,7 @@ public class GEFActionBarContributor extends ProcessEditorContributor {
         IAction pasteAction = new PasteAction(editor);
         pasteAction.setId(ActionFactory.PASTE.getId());
         registry.registerAction(pasteAction);
+        selectionActionIds.add(pasteAction.getId());
         // IAction leftAlignmentAction = new AlignmentAction((IWorkbenchPart)
         // editor, PositionConstants.LEFT);
         // registry.registerAction(leftAlignmentAction);
@@ -32,12 +32,9 @@ public class GEFActionBarContributor extends ProcessEditorContributor {
         // registry.registerAction(topAlignmentAction);
         // selectionActionIds.add(topAlignmentAction.getId());
         SelectAllAction selectAllAction = new SelectAllAction(editor);
+        selectAllAction.setId(ActionFactory.SELECT_ALL.getId());
         registry.registerAction(selectAllAction);
-    }
-
-    @Override
-    public void contributeToToolBar(IToolBarManager tbm) {
-        super.contributeToToolBar(tbm);
+        selectionActionIds.add(selectAllAction.getId());
     }
 
 }

@@ -157,6 +157,6 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
             }
             return toolTip;
         }
-        return super.getToolTip(ga);
+        return (String) super.getToolTip(ga);
     }
 }

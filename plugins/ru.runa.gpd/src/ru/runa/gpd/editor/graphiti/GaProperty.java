@@ -15,6 +15,7 @@ public class GaProperty extends PropertyImpl {
     public static final String MINIMAZED_VIEW = "minimazedView";
     public static final String SCRIPT = "script";
     public static final String ASYNC = "async";
+    public static final String TRANSACTIONAL = "transactional";
     public static final String ICON = "icon";
     public static final String CLASS = "class";
     public static final String ACTION_ICON = "actionIcon";
@@ -22,6 +23,7 @@ public class GaProperty extends PropertyImpl {
     public static final String ACTIVE = "active";
     public static final String TRUE = "true";
     public static final String FALSE = "false";
+    public static final String BOUNDARY_ELLIPSE = "boundaryEllipse";
 
     public GaProperty(String name, String value) {
         setKey(name);

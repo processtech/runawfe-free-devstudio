@@ -9,18 +9,18 @@ import org.eclipse.ui.PlatformUI;
 
 import ru.runa.gpd.settings.CommonPreferencePage;
 
-public class ExportDiagramPropertyTester extends PropertyTester {
-    public static final String PROPERTY_EXPORT_DIAGRAM_ENABLED = "exportDiagramActionEnabled";
+public class ExportDiagramWithScalingPropertyTester extends PropertyTester {
+    public static final String PROPERTY_EXPORT_DIAGRAM_WITH_SCALING_ENABLED = "exportDiagramWithScalingActionEnabled";
 
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
-        if (PROPERTY_EXPORT_DIAGRAM_ENABLED.equals(property)) {
+        if (PROPERTY_EXPORT_DIAGRAM_WITH_SCALING_ENABLED.equals(property)) {
             IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
             if (window != null) {
                 ISelection selection = window.getSelectionService().getSelection();
                 if (selection instanceof IStructuredSelection) {
                     Object editPart = ((IStructuredSelection) selection).getFirstElement();
-                    return editPart instanceof IDiagramEditPart && !CommonPreferencePage.isExportWithScalingEnabled();
+                    return editPart instanceof IDiagramEditPart && CommonPreferencePage.isExportWithScalingEnabled();
                 }
             }
         }
