@@ -3,8 +3,6 @@ package ru.runa.gpd.form;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
-import com.google.common.base.Charsets;
-
 public class FormCSSTemplate {
     private final String name;
     private final String content;
@@ -23,6 +21,6 @@ public class FormCSSTemplate {
     }
 
     public InputStream getContentAsStream() {
-        return new ByteArrayInputStream(content.getBytes(Charsets.UTF_8));
+        return new ByteArrayInputStream(content.getBytes());
     }
 }

@@ -14,8 +14,6 @@ import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.util.IOUtils;
 
-import com.google.common.base.Charsets;
-
 public class CreateRegulationsAction extends BaseModelActionDelegate {
 
     @Override
@@ -26,7 +24,7 @@ public class CreateRegulationsAction extends BaseModelActionDelegate {
             if (success) {
                 String html = RegulationsUtil.generate(processDefinition);
                 IFile file = IOUtils.getAdjacentFile(getDefinitionFile(), ParContentProvider.REGULATIONS_HTML_FILE_NAME);
-                IOUtils.createOrUpdateFile(file, new ByteArrayInputStream(html.getBytes(Charsets.UTF_8)));
+                IOUtils.createOrUpdateFile(file, new ByteArrayInputStream(html.getBytes()));
                 IDE.openEditor(getWorkbenchPage(), file);
             }
         } catch (Exception e) {

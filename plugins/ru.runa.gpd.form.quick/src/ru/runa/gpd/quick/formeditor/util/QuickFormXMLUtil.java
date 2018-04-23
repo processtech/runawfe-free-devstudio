@@ -27,7 +27,6 @@ import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.VariableUtils;
 import ru.runa.gpd.util.XmlUtil;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 
@@ -175,7 +174,7 @@ public class QuickFormXMLUtil {
         if (!Strings.isNullOrEmpty(quickForm.getDelegationConfiguration())) {
             String configurationFileName = templateFileName;
             IFile configurationFile = folder.getFile(configurationFileName);
-            ByteArrayInputStream stream = new ByteArrayInputStream(quickForm.getDelegationConfiguration().getBytes(Charsets.UTF_8));
+            ByteArrayInputStream stream = new ByteArrayInputStream(quickForm.getDelegationConfiguration().getBytes());
             if (configurationFile.exists()) {
                 configurationFile.setContents(stream, true, true, null);
             } else {
