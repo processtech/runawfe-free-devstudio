@@ -22,6 +22,7 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IStatus;
@@ -123,7 +124,7 @@ public class IOUtils {
     }
 
     public static String readStream(InputStream in) throws IOException {
-        return new String(readStreamAsBytes(in), Charsets.UTF_8);
+        return new String(readStreamAsBytes(in));
     }
 
     public static byte[] readStreamAsBytes(InputStream in) throws IOException {
@@ -180,9 +181,7 @@ public class IOUtils {
             throw new CoreException(new Status(IStatus.WARNING, "ru.runa.gpd", 0, "File already exist", null));
         }
         file.create(stream, true, null);
-        if (!Charsets.UTF_8.name().equals(file.getCharset())) {
-            file.setCharset(Charsets.UTF_8.name(), null);
-        }
+        Assert.isTrue(Charsets.UTF_8.name().equalsIgnoreCase(file.getCharset()));
     }
 
     public static void createOrUpdateFile(IFile file, InputStream stream) throws CoreException {
@@ -190,9 +189,7 @@ public class IOUtils {
             file.setContents(stream, true, false, null);
         } else {
             file.create(stream, true, null);
-            if (!Charsets.UTF_8.name().equals(file.getCharset())) {
-                file.setCharset(Charsets.UTF_8.name(), null);
-            }
+            Assert.isTrue(Charsets.UTF_8.name().equalsIgnoreCase(file.getCharset()));
         }
     }
 
@@ -273,9 +270,7 @@ public class IOUtils {
         }
         if (resource instanceof IFile) {
             IFile file = (IFile) resource;
-            if (!Charsets.UTF_8.name().equalsIgnoreCase(file.getCharset())) {
-                file.setCharset(Charsets.UTF_8.name(), null);
-            }
+            Assert.isTrue(Charsets.UTF_8.name().equalsIgnoreCase(file.getCharset()));
         }
         if (resource instanceof IContainer) {
             for (IResource member : ((IContainer) resource).members()) {

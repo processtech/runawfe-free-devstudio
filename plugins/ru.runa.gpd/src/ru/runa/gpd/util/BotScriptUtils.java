@@ -12,7 +12,6 @@ import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.extension.bot.IBotFileSupportProvider;
 import ru.runa.gpd.lang.model.BotTask;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
@@ -85,7 +84,7 @@ public class BotScriptUtils {
                 String embeddedFileName = botElement.attributeValue(EMBEDDED_FILE_ATTRIBUTE_NAME, "");
                 String configurationFileName = botElement.attributeValue(CONFIGURATION_STRING_ATTRIBUTE_NAME);
                 byte[] configurationFileData = files.remove(configurationFileName);
-                String configuration = configurationFileData != null ? new String(configurationFileData, Charsets.UTF_8) : "";
+                String configuration = configurationFileData != null ? new String(configurationFileData) : "";
                 BotTask botTask = BotTaskUtils.createBotTask(botStationName, botName, name, handler, configuration);
                 if (!Strings.isNullOrEmpty(embeddedFileName)) {
                     botTask.getFilesToSave().add(embeddedFileName);

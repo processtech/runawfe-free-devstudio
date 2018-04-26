@@ -17,12 +17,15 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -102,7 +105,7 @@ public class WorkspaceOperations {
                     throw new IllegalArgumentException("Unexpected " + resource);
                 }
                 if (Dialogs.confirm(Localization.getString(messageKey, resource.getName()))) {
-                	List<IFile> tmpFiles = new ArrayList<IFile>();
+                    List<IFile> tmpFiles = new ArrayList<IFile>();
                     if (projectResource) {
                         tmpFiles.addAll(IOUtils.getProcessDefinitionFiles((IProject) resource));
                     } else if (folderResource) {
@@ -118,9 +121,9 @@ public class WorkspaceOperations {
                             subprocessDefinition.getParent().getEmbeddedSubprocesses().remove(subprocessDefinition.getId());
                             for (Subprocess sp : subprocessDefinition.getParent().getChildren(Subprocess.class))
                             {
-                            	if (!sp.getSubProcessName().equals(subprocessDefinition.getName())) continue;
-                            	sp.setSubProcessName("");
-                            	break;
+                                if (!sp.getSubProcessName().equals(subprocessDefinition.getName())) continue;
+                                sp.setSubProcessName("");
+                                break;
                             }
                             subprocessDefinition.setName("");
                         } catch (Exception e) {
@@ -208,33 +211,55 @@ public class WorkspaceOperations {
     }
 
     public static void renameProcessDefinition(IStructuredSelection selection) {
-        IFolder definitionFolder = (IFolder) selection.getFirstElement();
-        IFile definitionFile = IOUtils.getProcessDefinitionFile(definitionFolder);
-        RenameProcessDefinitionDialog dialog = new RenameProcessDefinitionDialog(definitionFolder);
-        ProcessDefinition definition = ProcessCache.getProcessDefinition(definitionFile);
-        dialog.setName(definition.getName());
-        if (dialog.open() == IDialogConstants.OK_ID) {
-            String newName = dialog.getName();
-            try {
-                IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-                IEditorPart editor = page.findEditor(new FileEditorInput(definitionFile));
-                if (editor != null) {
-                    page.closeEditor(editor, false);
+        IFolder oldDefinitionFolder = (IFolder) selection.getFirstElement();
+        IFile oldDefinitionFile = IOUtils.getProcessDefinitionFile(oldDefinitionFolder);
+        RenameProcessDefinitionDialog dialog = new RenameProcessDefinitionDialog(oldDefinitionFolder);
+        ProcessDefinition definition = ProcessCache.getProcessDefinition(oldDefinitionFile);
+        String oldName = definition.getName();
+        dialog.setName(oldName);
+        if (dialog.open() != IDialogConstants.OK_ID) {
+            return;
+        }
+        String newName = dialog.getName();
+        try {
+            // Close ALL editors related to the process BEFORE renaiming it.
+            IProject project = oldDefinitionFolder.getProject();
+            IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+            IEditorReference[] editorRefs = page.getEditorReferences();
+            ArrayList<IEditorReference> editorRefsToClose = new ArrayList<IEditorReference>(editorRefs.length);
+            for (IEditorReference e : editorRefs) {
+                // Work only on IEditorReference-s since IEditorPart-s may be uninitialized and we don't want to "restore" them just to close.
+                if (e.getEditorInput() instanceof IFileEditorInput) {
+                    // We get here at least if e is GraphitiProcessEditor or FormEditor.
+                    IFile f = ((IFileEditorInput) e.getEditorInput()).getFile();
+                    if (f.getProject() == project && Objects.equal(f.getFullPath().segment(1), oldName)) {
+                        editorRefsToClose.add(e);
+                    }
                 }
-                IPath oldPath = definitionFolder.getFullPath();
-                IPath newPath = definitionFolder.getParent().getFolder(new Path(newName)).getFullPath();
-                definitionFolder.copy(newPath, true, null);
-                ProcessCache.processDefinitionWasDeleted(definitionFile);
-                definitionFolder = ResourcesPlugin.getWorkspace().getRoot().getFolder(newPath);
-                IFile newDefinitionFile = IOUtils.getProcessDefinitionFile(definitionFolder);
-                definition.setName(newName);
-                saveProcessDefinition(newDefinitionFile, definition);
-                ProcessCache.newProcessDefinitionWasCreated(newDefinitionFile);
-                ResourcesPlugin.getWorkspace().getRoot().getFolder(oldPath).delete(true, null);
-                refreshResource(definitionFolder);
-            } catch (Exception e) {
-                PluginLogger.logError(e);
             }
+            if (!editorRefsToClose.isEmpty()) {
+                // Close all at once! Otherwise, for example, when ProcessEditor is closed FormEditor may take focus and initialize.
+                // 2nd parameter save=false prevents "Save changed files?" dialog: they are saved anyway.
+                page.closeEditors(editorRefsToClose.toArray(new IEditorReference[editorRefsToClose.size()]), false);
+            }
+
+            // Do it BEFORE oldResource.move().
+            ProcessCache.processDefinitionWasDeleted(oldDefinitionFile);
+
+            IPath oldPath = oldDefinitionFolder.getFullPath();
+            IPath newPath = oldDefinitionFolder.getParent().getFolder(new Path(newName)).getFullPath();
+            IResource oldResource = ResourcesPlugin.getWorkspace().getRoot().findMember(oldPath);
+            // I use FORCE same as JDT's RenameJavaProjectChange does. Not sure what it does, but DS does not provide any other opportunity (including F5) anyway.
+            oldResource.move(newPath, IResource.FORCE | IResource.SHALLOW, new NullProgressMonitor());
+
+            IFolder newDefinitionFolder = ResourcesPlugin.getWorkspace().getRoot().getFolder(newPath);
+            IFile newDefinitionFile = IOUtils.getProcessDefinitionFile(newDefinitionFolder);
+            definition.setName(newName);
+            saveProcessDefinition(newDefinitionFile, definition);
+            ProcessCache.newProcessDefinitionWasCreated(newDefinitionFile);
+            refreshResource(newDefinitionFolder);
+        } catch (Exception e) {
+            PluginLogger.logError(e);
         }
     }
 

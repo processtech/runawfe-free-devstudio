@@ -16,7 +16,6 @@ import ru.runa.gpd.lang.model.BotTask;
 import ru.runa.gpd.util.BotTaskUtils;
 import ru.runa.gpd.util.IOUtils;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
@@ -97,7 +96,7 @@ public class BotCache {
                 botTaskFile.refreshLocal(IResource.DEPTH_ONE, null);
             }
             try {
-                reader = new InputStreamReader(botTaskFile.getContents(), Charsets.UTF_8);
+                reader = new InputStreamReader(botTaskFile.getContents());
                 List<String> lines = CharStreams.readLines(reader);
                 String configurationFileData = "";
                 if (lines.size() > 1) {

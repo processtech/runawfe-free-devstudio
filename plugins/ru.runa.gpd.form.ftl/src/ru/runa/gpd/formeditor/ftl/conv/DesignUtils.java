@@ -39,7 +39,7 @@ public class DesignUtils {
         if (html.length() == 0) {
             return html;
         }
-        Document document = BaseHtmlFormType.getDocument(new ByteArrayInputStream(html.getBytes(Charsets.UTF_8)));
+        Document document = BaseHtmlFormType.getDocument(new ByteArrayInputStream(html.getBytes()));
         NodeList componentElements = document.getElementsByTagName(getComponentHtmlElementName());
         List<Node> nodes = Lists.newArrayListWithExpectedSize(componentElements.getLength());
         for (int i = 0; i < componentElements.getLength(); i++) {
@@ -70,7 +70,7 @@ public class DesignUtils {
         transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
         transformer.setOutputProperty(OutputKeys.ENCODING, Charsets.UTF_8.name());
         transformer.transform(new DOMSource(node), new StreamResult(os));
-        return new String(os.toByteArray(), Charsets.UTF_8.name());
+        return new String(os.toByteArray());
     }
 
 }

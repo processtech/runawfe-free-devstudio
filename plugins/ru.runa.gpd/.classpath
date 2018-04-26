@@ -12,12 +12,12 @@
 	<classpathentry exported="true" kind="lib" path="lib/dom4j-1.6.1.jar" sourcepath="/home/dofs/.m2/repository/dom4j/dom4j/1.6.1/dom4j-1.6.1-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/ejb3-persistence.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/groovy-2.0.5.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/guava-12.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/guava-12.0.jar" sourcepath="C:/Users/me/.sourceattacher/guava-12.0-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/hibernate-annotations.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/mail.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/wfe-core.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/json-simple-1.1.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/freemarker-2.3.28.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/freemarker-2.3.28.jar" sourcepath="C:/Users/me/.sourceattacher/freemarker-2.3.28-sources.jar"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="lib" path="lib/poi-3.10-FINAL.jar"/>
 	<classpathentry kind="lib" path="lib/pdfbox-2.0.7.jar"/>
