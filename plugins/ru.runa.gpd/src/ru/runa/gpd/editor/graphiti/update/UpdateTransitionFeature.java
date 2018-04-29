@@ -6,13 +6,15 @@ import org.eclipse.graphiti.features.impl.Reason;
 import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
 import org.eclipse.graphiti.mm.algorithms.Text;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
-
-import ru.runa.gpd.editor.graphiti.GaProperty;
-import ru.runa.gpd.editor.graphiti.PropertyUtil;
-import ru.runa.gpd.lang.model.Transition;
+import org.eclipse.graphiti.ui.services.GraphitiUi;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
+
+import ru.runa.gpd.editor.graphiti.GaProperty;
+import ru.runa.gpd.editor.graphiti.PropertyUtil;
+import ru.runa.gpd.editor.graphiti.StyleUtil;
+import ru.runa.gpd.lang.model.Transition;
 
 public class UpdateTransitionFeature extends UpdateFeature {
     @Override
@@ -39,6 +41,18 @@ public class UpdateTransitionFeature extends UpdateFeature {
                 return Reason.createTrueReason();
             }
         }
+        Text colorMarkerGa = (Text) PropertyUtil.findGaRecursiveByName(pe, GaProperty.COLOR_MARKER);
+        if (colorMarkerGa != null) {
+            if (!Objects.equal(colorMarkerGa.getValue(), StyleUtil.getTransitionColorMarker(bo))) {
+                return Reason.createTrueReason();
+            }
+            if (!colorMarkerGa.getStyle().getId().endsWith(bo.getColor().name())) {
+                return Reason.createTrueReason();
+            }
+            if (colorMarkerGa.getY() != nameTextGa.getY() || colorMarkerGa.getX() + colorMarkerOffsetX(colorMarkerGa) != nameTextGa.getX()) {
+                return Reason.createTrueReason();
+            }
+        }
         return Reason.createFalseReason();
     }
 
@@ -62,6 +76,18 @@ public class UpdateTransitionFeature extends UpdateFeature {
             boolean nameLabelVisible = !Strings.isNullOrEmpty(bo.getLabel());
             nameTextGa.getPictogramElement().setVisible(nameLabelVisible);
         }
+        Text colorMarkerGa = (Text) PropertyUtil.findGaRecursiveByName(pe, GaProperty.COLOR_MARKER);
+        if (colorMarkerGa != null) {
+            colorMarkerGa.setValue(StyleUtil.getTransitionColorMarker(bo));
+            colorMarkerGa.setStyle(StyleUtil.getTransitionColorMarkerStyle(getDiagram(), bo, bo.getColor()));
+            colorMarkerGa.setY(nameTextGa.getY());
+            colorMarkerGa.setX(nameTextGa.getX() - colorMarkerOffsetX(colorMarkerGa));
+        }
         return true;
     }
+
+    private int colorMarkerOffsetX(Text colorMarkerGa) {
+        return GraphitiUi.getUiLayoutService().calculateTextSize(colorMarkerGa.getValue(), colorMarkerGa.getStyle().getFont()).getWidth() + 1;
+    }
+
 }

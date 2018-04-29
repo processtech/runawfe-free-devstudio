@@ -2,18 +2,24 @@ package ru.runa.gpd.lang.model;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.ui.views.properties.ComboBoxPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
 import org.eclipse.ui.views.properties.TextPropertyDescriptor;
+
+import com.google.common.base.Objects;
+import com.google.common.collect.Lists;
 
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.editor.GEFConstants;
 import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.extension.decision.IDecisionProvider;
+import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.model.bpmn.ExclusiveGateway;
 import ru.runa.gpd.lang.model.jpdl.ActionContainer;
 import ru.runa.gpd.util.EditorUtils;
@@ -22,15 +28,13 @@ import ru.runa.gpd.validation.FormNodeValidation;
 import ru.runa.gpd.validation.ValidationUtil;
 import ru.runa.gpd.validation.ValidatorConfig;
 
-import com.google.common.base.Objects;
-import com.google.common.collect.Lists;
-
 public class Transition extends NamedGraphElement implements ActionContainer {
     private Node target;
     private List<Point> bendpoints = Lists.newArrayList();
     private boolean exclusiveFlow;
     private boolean defaultFlow;
     private Point labelLocation;
+    private TransitionColor color = TransitionColor.DEFAULT;
 
     public Point getLabelLocation() {
         return labelLocation;
@@ -170,6 +174,10 @@ public class Transition extends NamedGraphElement implements ActionContainer {
                         Localization.getString("Transition.property.orderNum"));
                 orderNumPropertyDescriptor.setValidator(new TransitionOrderNumCellEditorValidator(getSource().getLeavingTransitions().size()));
                 descriptors.add(orderNumPropertyDescriptor);
+                if (getProcessDefinition().getLanguage().equals(Language.BPMN)) {
+                    descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_COLOR, Localization.getString("Transition.property.color"),
+                            Stream.of(TransitionColor.values()).map(e -> e.getLabel()).toArray(String[]::new)));
+                }
             }
         }
     }
@@ -182,6 +190,8 @@ public class Transition extends NamedGraphElement implements ActionContainer {
             return target != null ? target.getName() : "";
         } else if (PROPERTY_ORDERNUM.equals(id)) {
             return getSource() instanceof TaskState ? Integer.toString(getSource().getLeavingTransitions().indexOf(this) + 1) : null;
+        } else if (PROPERTY_COLOR.equals(id)) {
+            return getSource() instanceof TaskState ? getColor().ordinal() : null;
         }
         return super.getPropertyValue(id);
     }
@@ -254,8 +264,23 @@ public class Transition extends NamedGraphElement implements ActionContainer {
             getSource().swapChildren(this, anotherTransition);
             firePropertyChange(PROPERTY_ORDERNUM, oldOrderNum, value);
             anotherTransition.firePropertyChange(PROPERTY_ORDERNUM, value, oldOrderNum);
+        } else if (PROPERTY_COLOR.equals(id)) {
+            setColor(TransitionColor.values()[(int) value]);
         } else {
             super.setPropertyValue(id, value);
         }
     }
+
+    public TransitionColor getColor() {
+        return color;
+    }
+
+    public void setColor(TransitionColor color) {
+        if (this.color != color) {
+            TransitionColor oldColor = this.color;
+            this.color = color;
+            firePropertyChange(PROPERTY_COLOR, oldColor, this.color);
+        }
+    }
+
 }

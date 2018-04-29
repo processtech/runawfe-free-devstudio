@@ -28,6 +28,8 @@ import org.eclipse.swt.graphics.RGB;
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Subprocess;
+import ru.runa.gpd.lang.model.Transition;
+import ru.runa.gpd.lang.model.TransitionColor;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEvent;
 import ru.runa.gpd.settings.LanguageElementPreferenceNode;
 import ru.runa.gpd.settings.PrefConstants;
@@ -68,6 +70,20 @@ public class StyleUtil implements PrefConstants {
 
     public static Style getTransitionDiamondPolylineStyle(Diagram diagram) {
         return findOrCreateStyle(diagram, "transitionDiamondPolyline", new TransitionDiamondPolylineStyleInitializer());
+    }
+
+    public static Style getTransitionColorMarkerStyle(Diagram diagram, Transition transition, TransitionColor color) {
+        String bpmnName = transition.getTypeDefinition().getBpmnElementName();
+        return findOrCreateStyle(diagram, bpmnName + "ColorMarker" + color.name(), new TextStyleInitializer(bpmnName));
+    }
+
+    public static String getTransitionColorMarker(Transition transition) {
+        //
+        // Source: http://xahlee.info/comp/unicode_circled_numbers.html
+        // U+278a -> 1..10 (sans-serif), U+24eb -> 11..20, U+3251 -> 21..50
+        //
+        int index = transition.getSource().getLeavingTransitions().indexOf(transition);
+        return String.valueOf((char) ((index < 10 ? 0x278a : index < 20 ? 0x24eb - 10 : 0x3251 - 20) + index));
     }
 
     private static Style createStyle(Diagram diagram, String styleId, StyleInitializer styleInitializer) {
