@@ -16,6 +16,7 @@ import java.util.Set;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -39,6 +40,8 @@ import org.eclipse.graphiti.services.Graphiti;
 import org.eclipse.graphiti.ui.editor.DiagramEditorInput;
 import org.eclipse.graphiti.ui.internal.services.GraphitiUiInternal;
 import org.eclipse.graphiti.ui.services.GraphitiUi;
+
+import ru.runa.gpd.PluginLogger;
 
 public class DiagramCreator {
     private final static String TEMPFILE_EXTENSION = "bpmn2d";
@@ -77,7 +80,7 @@ public class DiagramCreator {
                     in.close();
                     out.close();
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    PluginLogger.logError(e);
                 }
             }
             createEmfFileForDiagram(uri, diagram);
@@ -158,7 +161,7 @@ public class DiagramCreator {
             try {
                 tempFile.delete(true, null);
             } catch (CoreException e) {
-                e.printStackTrace();
+                PluginLogger.logError(e);
             }
         }
         return tempFile;
@@ -307,4 +310,16 @@ public class DiagramCreator {
         printWriter.close();
         return result;
     }
+
+    public void disposeDiagram() {
+        if (diagramFile.exists()) {
+            try {
+                diagramFile.getParent().delete(true, null);
+                diagramFile.getParent().refreshLocal(IResource.DEPTH_ONE, null);
+            } catch (CoreException e) {
+                PluginLogger.logError(e);
+            }
+        }
+    }
+
 }

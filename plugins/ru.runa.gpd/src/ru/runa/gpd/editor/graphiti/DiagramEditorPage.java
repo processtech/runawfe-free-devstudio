@@ -55,6 +55,7 @@ import ru.runa.gpd.lang.model.Transition;
 public class DiagramEditorPage extends DiagramEditor implements PropertyChangeListener {
 
     private final ProcessEditorBase editor;
+    private DiagramCreator diagramCreator;
 
     public DiagramEditorPage(ProcessEditorBase editor) {
         this.editor = editor;
@@ -115,13 +116,16 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
     @Override
     public void dispose() {
         editor.getDefinition().unsetDelegatedListener(this);
+        if (diagramCreator != null) {
+            diagramCreator.disposeDiagram();
+        }
         super.dispose();
     }
 
     @Override
     protected void setInput(IEditorInput input) {
-        DiagramCreator creator = new DiagramCreator(editor.getDefinitionFile());
-        input = creator.createDiagram(null);
+        diagramCreator = new DiagramCreator(editor.getDefinitionFile());
+        input = diagramCreator.createDiagram(null);
         super.setInput(input);
         importDiagram();
     }
