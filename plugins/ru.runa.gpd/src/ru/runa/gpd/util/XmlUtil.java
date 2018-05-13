@@ -49,7 +49,7 @@ public class XmlUtil {
     }
 
     public static Document parseWithoutValidation(String data) {
-        return parseWithoutValidation(data.getBytes(Charsets.UTF_8));
+        return parseWithoutValidation(data.getBytes());
     }
 
     public static Document parseWithoutValidation(byte[] data) {
@@ -73,7 +73,7 @@ public class XmlUtil {
     }
 
     public static Document parseWithXSDValidation(String data) {
-        return parseWithXSDValidation(data.getBytes(Charsets.UTF_8));
+        return parseWithXSDValidation(data.getBytes());
     }
 
     public static Document parseWithXSDValidation(InputStream in, String xsdFileName) {
@@ -111,7 +111,7 @@ public class XmlUtil {
             }
             reader.setValidation(xsdValidation && xsdInputStream == null);
             reader.setErrorHandler(SimpleErrorHandler.getInstance());
-            return reader.read(new InputStreamReader(in, Charsets.UTF_8));
+            return reader.read(new InputStreamReader(in));
         } catch (Exception e) {
             throw new InternalApplicationException(e);
         }
@@ -146,11 +146,11 @@ public class XmlUtil {
     }
 
     public static String toString(Node node) {
-        return new String(writeXml(node), Charsets.UTF_8);
+        return new String(writeXml(node));
     }
 
     public static String toString(Node node, OutputFormat outputFormat) {
-        return new String(writeXml(node, outputFormat), Charsets.UTF_8);
+        return new String(writeXml(node, outputFormat));
     }
 
     public static Document createDocument(String rootElementName) {

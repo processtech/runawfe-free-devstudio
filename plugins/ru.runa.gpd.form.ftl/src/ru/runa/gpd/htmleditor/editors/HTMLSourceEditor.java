@@ -315,9 +315,10 @@ public class HTMLSourceEditor extends TextEditor {
         if (hyperlink != null && isFileEditorInput()) {
             hyperlink.setProject(((IFileEditorInput) getEditorInput()).getFile().getProject());
         }
-        if (validation && isFileEditorInput()) {
-            doValidate();
-        }
+        // Commented out, see https://rm.processtech.ru/issues/544#note-26
+//        if (validation && isFileEditorInput()) {
+//            doValidate();
+//        }
     }
 
     /**

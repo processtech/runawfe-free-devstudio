@@ -37,9 +37,6 @@ import freemarker.template.Template;
 
 public class RegulationsUtil {
     private static final Configuration configuration = new Configuration(Configuration.VERSION_2_3_23);
-    static {
-        // configuration.setDefaultEncoding(Charsets.UTF_8.name());
-    }
 
     public static String getNodeLabel(Node node) {
         if (Strings.isNullOrEmpty(node.getName())) {

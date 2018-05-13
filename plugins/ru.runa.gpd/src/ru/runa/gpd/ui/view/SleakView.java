@@ -32,7 +32,6 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.part.ViewPart;
 
-import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
@@ -403,7 +402,7 @@ public class SleakView extends ViewPart {
 
     private void dumpToFile() {
         try {
-            StringBuffer from = new StringBuffer();
+            StringBuilder from = new StringBuilder();
             from.append(getInfo()).append("\n\n");
             Map<String, java.util.List<String>> stackTraceToObjects = Maps.newHashMap();
             int max = 0;
@@ -483,7 +482,7 @@ public class SleakView extends ViewPart {
                     }
                 }
             }
-            Files.write(from, new File("swt.debug.dump"), Charsets.UTF_8);
+            Files.write(from.toString().getBytes(), new File("swt.debug.dump"));
         } catch (Exception e) {
             PluginLogger.logError(e);
         }

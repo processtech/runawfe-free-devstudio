@@ -14,7 +14,7 @@
    </configIni>
 
    <launcherArgs>
-      <vmArgs>-Dorg.eclipse.swt.internal.gtk.disablePrinting
+      <vmArgs>-Dorg.eclipse.swt.internal.gtk.disablePrinting -Dfile.encoding=UTF-8
       </vmArgs>
    </launcherArgs>
 

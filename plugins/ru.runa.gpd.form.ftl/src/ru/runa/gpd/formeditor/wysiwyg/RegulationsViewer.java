@@ -33,7 +33,6 @@ import ru.runa.gpd.htmleditor.editors.HTMLConfiguration;
 import ru.runa.gpd.htmleditor.editors.HTMLSourceEditor;
 import ru.runa.gpd.util.EditorUtils;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Throwables;
 import com.google.common.io.Files;
 
@@ -163,7 +162,7 @@ public class RegulationsViewer extends MultiPageEditorPart implements IResourceC
                 formCssFile.delete();
             }
             formCssFile.createNewFile();
-            Files.write(RegulationsRegistry.getCssStyles().getBytes(Charsets.UTF_8), formCssFile);
+            Files.write(RegulationsRegistry.getCssStyles().getBytes(), formCssFile);
         } catch (IOException e) {
             PluginLogger.logError(e);
         }

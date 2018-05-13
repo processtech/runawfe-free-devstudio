@@ -34,7 +34,6 @@ import ru.runa.gpd.swimlane.BotSwimlaneInitializer;
 import ru.runa.gpd.swimlane.SwimlaneInitializer;
 import ru.runa.gpd.swimlane.SwimlaneInitializerParser;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
@@ -104,12 +103,12 @@ public class BotTaskUtils {
     }
 
     public static InputStream createBotStationInfo(String botStationName, String rmiAddress) {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         buffer.append(botStationName);
         buffer.append("\n");
         buffer.append(rmiAddress);
         buffer.append("\n");
-        return new ByteArrayInputStream(buffer.toString().getBytes(Charsets.UTF_8));
+        return new ByteArrayInputStream(buffer.toString().getBytes());
     }
 
     public static BotTask createBotTask(String botStationName, String botName, String botTaskName, String handlerClassName, String configuration) {
