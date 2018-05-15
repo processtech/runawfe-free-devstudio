@@ -166,7 +166,7 @@ public class Transition extends NamedGraphElement implements ActionContainer {
         super.populateCustomPropertyDescriptors(descriptors);
         descriptors.add(new PropertyDescriptor(PROPERTY_SOURCE, Localization.getString("Transition.property.source")));
         descriptors.add(new PropertyDescriptor(PROPERTY_TARGET, Localization.getString("Transition.property.target")));
-        if (getSource() instanceof TaskState) {
+        if (FormNode.class.isAssignableFrom(getSource().getClass())) {
             if (getSource().getLeavingTransitions().size() == 1) {
                 descriptors.add(new PropertyDescriptor(PROPERTY_ORDERNUM, Localization.getString("Transition.property.orderNum")));
             } else {
@@ -174,10 +174,10 @@ public class Transition extends NamedGraphElement implements ActionContainer {
                         Localization.getString("Transition.property.orderNum"));
                 orderNumPropertyDescriptor.setValidator(new TransitionOrderNumCellEditorValidator(getSource().getLeavingTransitions().size()));
                 descriptors.add(orderNumPropertyDescriptor);
-                if (getProcessDefinition().getLanguage().equals(Language.BPMN)) {
-                    descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_COLOR, Localization.getString("Transition.property.color"),
-                            Stream.of(TransitionColor.values()).map(e -> e.getLabel()).toArray(String[]::new)));
-                }
+            }
+            if (getProcessDefinition().getLanguage().equals(Language.BPMN)) {
+                descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_COLOR, Localization.getString("Transition.property.color"),
+                        Stream.of(TransitionColor.values()).map(e -> e.getLabel()).toArray(String[]::new)));
             }
         }
     }
@@ -189,9 +189,9 @@ public class Transition extends NamedGraphElement implements ActionContainer {
         } else if (PROPERTY_TARGET.equals(id) && getTarget() != null) {
             return target != null ? target.getName() : "";
         } else if (PROPERTY_ORDERNUM.equals(id)) {
-            return getSource() instanceof TaskState ? Integer.toString(getSource().getLeavingTransitions().indexOf(this) + 1) : null;
+            return getSource() instanceof FormNode ? Integer.toString(getSource().getLeavingTransitions().indexOf(this) + 1) : null;
         } else if (PROPERTY_COLOR.equals(id)) {
-            return getSource() instanceof TaskState ? getColor().ordinal() : null;
+            return getSource() instanceof FormNode ? getColor().ordinal() : null;
         }
         return super.getPropertyValue(id);
     }

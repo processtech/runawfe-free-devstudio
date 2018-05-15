@@ -82,6 +82,7 @@ public class UpdateTransitionFeature extends UpdateFeature {
             colorMarkerGa.setStyle(StyleUtil.getTransitionColorMarkerStyle(getDiagram(), bo, bo.getColor()));
             colorMarkerGa.setY(nameTextGa.getY());
             colorMarkerGa.setX(nameTextGa.getX() - colorMarkerOffsetX(colorMarkerGa));
+            colorMarkerGa.getPictogramElement().setVisible(StyleUtil.isTransitionDecoratorVisible(bo));
         }
         return true;
     }

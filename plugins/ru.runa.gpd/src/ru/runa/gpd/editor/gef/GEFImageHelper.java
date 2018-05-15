@@ -8,7 +8,6 @@ import java.util.Set;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.SWTGraphics;
-import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.GraphicalViewer;
 import org.eclipse.gef.LayerConstants;
@@ -136,7 +135,7 @@ public class GEFImageHelper {
         return visual.getKey() instanceof GFText && visual.getValue() instanceof ConnectionDecoratorEditPart;
     }
 
-    public static ImageData downSample(Image image) {
+    private static ImageData downSample(Image image) {
         ImageData data = image.getImageData();
         if (!data.palette.isDirect && data.depth <= 8) {
             return data;

@@ -9,7 +9,6 @@ import org.eclipse.graphiti.mm.algorithms.Polyline;
 import org.eclipse.graphiti.mm.algorithms.Text;
 import org.eclipse.graphiti.mm.algorithms.styles.Orientation;
 import org.eclipse.graphiti.mm.algorithms.styles.Point;
-import org.eclipse.graphiti.mm.algorithms.styles.Style;
 import org.eclipse.graphiti.mm.algorithms.styles.StylesFactory;
 import org.eclipse.graphiti.mm.pictograms.Anchor;
 import org.eclipse.graphiti.mm.pictograms.Connection;
@@ -26,7 +25,7 @@ import com.google.common.base.Strings;
 import ru.runa.gpd.editor.graphiti.DiagramFeatureProvider;
 import ru.runa.gpd.editor.graphiti.GaProperty;
 import ru.runa.gpd.editor.graphiti.StyleUtil;
-import ru.runa.gpd.lang.model.TaskState;
+import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.TransitionColor;
 
@@ -104,26 +103,24 @@ public class AddTransitionFeature extends AbstractAddFeature {
         text.setValue(transitionName);
         IDimension textDimension = GraphitiUi.getUiLayoutService().calculateTextSize(transitionName, text.getStyle().getFont());
         Graphiti.getGaService().setSize(text, textDimension.getWidth(), textDimension.getHeight());
-        createColorMarker(connection, location, transition, visible);
+        createColorMarker(connection, location, transition);
         connectionDecorator.getProperties().add(new GaProperty(GaProperty.ID, GaProperty.NAME));
         connectionDecorator.setVisible(visible);
     }
 
-    private void createColorMarker(Connection connection, org.eclipse.draw2d.geometry.Point location, Transition transition, boolean visible) {
-        if (transition.getSource() instanceof TaskState && transition.getSource().getLeavingTransitions().size() > 1) {
+    private void createColorMarker(Connection connection, org.eclipse.draw2d.geometry.Point location, Transition transition) {
+        if (transition.getSource() instanceof FormNode) {
             TransitionColor transitionColor = transition.getColor();
-            Style style = StyleUtil.getTransitionColorMarkerStyle(getDiagram(), transition, transitionColor);
-            style.setForeground(manageColor(transitionColor.red, transitionColor.green, transitionColor.blue));
             ConnectionDecorator connectionDecorator = Graphiti.getPeCreateService().createConnectionDecorator(connection, true, 0.5, true);
             Text marker = Graphiti.getGaService().createText(connectionDecorator);
-            marker.setStyle(style);
+            marker.setStyle(StyleUtil.getTransitionColorMarkerStyle(getDiagram(), transition, transitionColor));
             marker.setValue(StyleUtil.getTransitionColorMarker(transition));
             IDimension textDimension = GraphitiUi.getUiLayoutService().calculateTextSize(marker.getValue(), marker.getStyle().getFont());
             Graphiti.getGaService().setSize(marker, textDimension.getWidth(), textDimension.getHeight());
             Graphiti.getGaService().setLocation(marker, (location == null ? 10 : location.x) - textDimension.getWidth() - 1,
                     location == null ? 0 : location.y);
             connectionDecorator.getProperties().add(new GaProperty(GaProperty.ID, GaProperty.COLOR_MARKER));
-            connectionDecorator.setVisible(visible);
+            connectionDecorator.setVisible(StyleUtil.isTransitionDecoratorVisible(transition));
         }
     }
 

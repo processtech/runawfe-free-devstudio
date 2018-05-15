@@ -5,7 +5,7 @@ import ru.runa.gpd.Localization;
 public enum TransitionColor {
     
     //
-    // Souurce: https://www.w3schools.com/colors/colors_names.asp
+    // Source: https://www.w3schools.com/colors/colors_names.asp
     //
     DEFAULT(169, 169, 169), // DarkGray
     // DEFAULT(0, 127, 127),

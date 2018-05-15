@@ -26,6 +26,7 @@ import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.RGB;
 
 import ru.runa.gpd.Activator;
+import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Subprocess;
 import ru.runa.gpd.lang.model.Transition;
@@ -72,9 +73,14 @@ public class StyleUtil implements PrefConstants {
         return findOrCreateStyle(diagram, "transitionDiamondPolyline", new TransitionDiamondPolylineStyleInitializer());
     }
 
+    public static boolean isTransitionDecoratorVisible(Transition transition) {
+        return transition.getSource() instanceof FormNode
+                && (transition.getColor() != TransitionColor.DEFAULT || transition.getSource().getLeavingTransitions().size() > 1);
+    }
+
     public static Style getTransitionColorMarkerStyle(Diagram diagram, Transition transition, TransitionColor color) {
         String bpmnName = transition.getTypeDefinition().getBpmnElementName();
-        return findOrCreateStyle(diagram, bpmnName + "ColorMarker" + color.name(), new TextStyleInitializer(bpmnName));
+        return findOrCreateStyle(diagram, bpmnName + "ColorMarker" + color.name(), new TransitionColorMarkerStyleInitializer(bpmnName, color));
     }
 
     public static String getTransitionColorMarker(Transition transition) {
@@ -268,6 +274,23 @@ public class StyleUtil implements PrefConstants {
             Color color = getColor(diagram, bpmnName, P_BPMN_FONT_COLOR);
             style.setForeground(color);
             style.setBackground(color);
+        }
+
+    }
+
+    public static class TransitionColorMarkerStyleInitializer extends TextStyleInitializer {
+
+        private final TransitionColor transitionColor;
+
+        public TransitionColorMarkerStyleInitializer(String bpmnName, TransitionColor transitionColor) {
+            super(bpmnName);
+            this.transitionColor = transitionColor;
+        }
+
+        @Override
+        public void init(Diagram diagram, Style style) {
+            super.init(diagram, style);
+            style.setForeground(Graphiti.getGaService().manageColor(diagram, transitionColor.red, transitionColor.green, transitionColor.blue));
         }
 
     }
