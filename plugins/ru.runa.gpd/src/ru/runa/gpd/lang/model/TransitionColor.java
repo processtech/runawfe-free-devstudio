@@ -8,11 +8,14 @@ public enum TransitionColor {
     // Source: https://www.w3schools.com/colors/colors_names.asp
     //
     DEFAULT(169, 169, 169), // DarkGray
-    // DEFAULT(0, 127, 127),
-    GREEN(34, 139, 34), // ForestGreen
-    YELLOW(218, 165, 32), // GoldenRod
+    // GREEN(34, 139, 34), // ForestGreen
+    GREEN(0, 128, 0), // Green
+    // YELLOW(218, 165, 32), // GoldenRod
+    // YELLOW(218, 165, 32), // GoldenRod
+    YELLOW(184, 134, 11), // DarkGoldenRod
     // RED(255, 69, 0); // OrangeRed
-    RED(205, 92, 92); // IndianRed
+    // RED(205, 92, 92); // IndianRed
+    RED(255, 0, 0); // Red
     
     public final int red;
     public final int green;

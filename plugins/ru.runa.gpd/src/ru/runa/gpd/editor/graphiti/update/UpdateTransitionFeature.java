@@ -3,6 +3,7 @@ package ru.runa.gpd.editor.graphiti.update;
 import org.eclipse.graphiti.features.IReason;
 import org.eclipse.graphiti.features.context.IUpdateContext;
 import org.eclipse.graphiti.features.impl.Reason;
+import org.eclipse.graphiti.mm.algorithms.Ellipse;
 import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
 import org.eclipse.graphiti.mm.algorithms.Text;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
@@ -22,34 +23,35 @@ public class UpdateTransitionFeature extends UpdateFeature {
         // retrieve name from pictogram element
         PictogramElement pe = context.getPictogramElement();
         // retrieve name from business model
-        Transition bo = (Transition) getBusinessObjectForPictogramElement(pe);
+        Transition transition = (Transition) getBusinessObjectForPictogramElement(pe);
         GraphicsAlgorithm defaultFlowGa = PropertyUtil.findGaRecursiveByName(pe, GaProperty.DEFAULT_FLOW);
-        if (defaultFlowGa != null && defaultFlowGa.getPictogramElement().isVisible() != bo.isDefaultFlow()) {
+        if (defaultFlowGa != null && defaultFlowGa.getPictogramElement().isVisible() != transition.isDefaultFlow()) {
             return Reason.createTrueReason();
         }
         GraphicsAlgorithm exclusiveFlowGa = PropertyUtil.findGaRecursiveByName(pe, GaProperty.EXCLUSIVE_FLOW);
-        if (exclusiveFlowGa != null && exclusiveFlowGa.getPictogramElement().isVisible() != bo.isExclusiveFlow()) {
+        if (exclusiveFlowGa != null && exclusiveFlowGa.getPictogramElement().isVisible() != transition.isExclusiveFlow()) {
             return Reason.createTrueReason();
         }
         Text nameTextGa = (Text) PropertyUtil.findGaRecursiveByName(pe, GaProperty.NAME);
         if (nameTextGa != null) {
-            boolean nameLabelVisible = !Strings.isNullOrEmpty(bo.getLabel());
+            boolean nameLabelVisible = !Strings.isNullOrEmpty(transition.getLabel());
             if (nameTextGa.getPictogramElement().isVisible() != nameLabelVisible) {
                 return Reason.createTrueReason();
             }
-            if (!Objects.equal(nameTextGa.getValue(), bo.getLabel())) {
+            if (!Objects.equal(nameTextGa.getValue(), transition.getLabel())) {
                 return Reason.createTrueReason();
             }
         }
-        Text colorMarkerGa = (Text) PropertyUtil.findGaRecursiveByName(pe, GaProperty.COLOR_MARKER);
-        if (colorMarkerGa != null) {
-            if (!Objects.equal(colorMarkerGa.getValue(), StyleUtil.getTransitionColorMarker(bo))) {
+        Text numberGa = (Text) PropertyUtil.findGaRecursiveByName(pe, GaProperty.TRANSITION_NUMBER);
+        if (numberGa != null) {
+            if (!Objects.equal(numberGa.getValue(), StyleUtil.getTransitionNumber(transition))) {
                 return Reason.createTrueReason();
             }
-            if (!colorMarkerGa.getStyle().getId().endsWith(bo.getColor().name())) {
+            if (!numberGa.getStyle().getId().endsWith(transition.getColor().name())) {
                 return Reason.createTrueReason();
             }
-            if (colorMarkerGa.getY() != nameTextGa.getY() || colorMarkerGa.getX() + colorMarkerOffsetX(colorMarkerGa) != nameTextGa.getX()) {
+            Ellipse colorMarkerGa = (Ellipse) PropertyUtil.findGaRecursiveByName(pe, GaProperty.TRANSITION_COLOR_MARKER);
+            if (numberGa.getY() != nameTextGa.getY() || numberGa.getX() + numberOffsetX(colorMarkerGa, numberGa) != nameTextGa.getX()) {
                 return Reason.createTrueReason();
             }
         }
@@ -61,34 +63,40 @@ public class UpdateTransitionFeature extends UpdateFeature {
         // retrieve name from pictogram element
         PictogramElement pe = context.getPictogramElement();
         // retrieve name from business model
-        Transition bo = (Transition) getBusinessObjectForPictogramElement(pe);
-        PropertyUtil.setTextValueProperty(pe, GaProperty.NAME, bo.getLabel());
+        Transition transition = (Transition) getBusinessObjectForPictogramElement(pe);
+        PropertyUtil.setTextValueProperty(pe, GaProperty.NAME, transition.getLabel());
         GraphicsAlgorithm defaultFlowGa = PropertyUtil.findGaRecursiveByName(pe, GaProperty.DEFAULT_FLOW);
         if (defaultFlowGa != null) {
-            defaultFlowGa.getPictogramElement().setVisible(bo.isDefaultFlow());
+            defaultFlowGa.getPictogramElement().setVisible(transition.isDefaultFlow());
         }
         GraphicsAlgorithm exclusiveFlowGa = PropertyUtil.findGaRecursiveByName(pe, GaProperty.EXCLUSIVE_FLOW);
         if (exclusiveFlowGa != null) {
-            exclusiveFlowGa.getPictogramElement().setVisible(bo.isExclusiveFlow());
+            exclusiveFlowGa.getPictogramElement().setVisible(transition.isExclusiveFlow());
         }
         GraphicsAlgorithm nameTextGa = PropertyUtil.findGaRecursiveByName(pe, GaProperty.NAME);
         if (nameTextGa != null) {
-            boolean nameLabelVisible = !Strings.isNullOrEmpty(bo.getLabel());
+            boolean nameLabelVisible = !Strings.isNullOrEmpty(transition.getLabel());
             nameTextGa.getPictogramElement().setVisible(nameLabelVisible);
         }
-        Text colorMarkerGa = (Text) PropertyUtil.findGaRecursiveByName(pe, GaProperty.COLOR_MARKER);
-        if (colorMarkerGa != null) {
-            colorMarkerGa.setValue(StyleUtil.getTransitionColorMarker(bo));
-            colorMarkerGa.setStyle(StyleUtil.getTransitionColorMarkerStyle(getDiagram(), bo, bo.getColor()));
-            colorMarkerGa.setY(nameTextGa.getY());
-            colorMarkerGa.setX(nameTextGa.getX() - colorMarkerOffsetX(colorMarkerGa));
-            colorMarkerGa.getPictogramElement().setVisible(StyleUtil.isTransitionDecoratorVisible(bo));
-        }
+        Ellipse colorMarkerGa = (Ellipse) PropertyUtil.findGaRecursiveByName(pe, GaProperty.TRANSITION_COLOR_MARKER);
+        colorMarkerGa.setStyle(StyleUtil.getTransitionColorMarkerStyle(getDiagram(), transition, transition.getColor()));
+        colorMarkerGa.setWidth((int) (colorMarkerGa.getStyle().getFont().getSize() * 2));
+        colorMarkerGa.setHeight((int) (colorMarkerGa.getStyle().getFont().getSize() * 1.75));
+        colorMarkerGa.setY(nameTextGa.getY());
+        colorMarkerGa.setX(nameTextGa.getX() - colorMarkerGa.getWidth() - 1);
+        colorMarkerGa.getPictogramElement().setVisible(StyleUtil.isTransitionDecoratorVisible(transition));
+        Text numberGa = (Text) PropertyUtil.findGaRecursiveByName(pe, GaProperty.TRANSITION_NUMBER);
+        numberGa.setValue(StyleUtil.getTransitionNumber(transition));
+        numberGa.setStyle(StyleUtil.getTransitionColorMarkerStyle(getDiagram(), transition, transition.getColor()));
+        numberGa.setY(nameTextGa.getY());
+        numberGa.setX(nameTextGa.getX() - numberOffsetX(colorMarkerGa, numberGa));
+        numberGa.getPictogramElement().setVisible(StyleUtil.isTransitionDecoratorVisible(transition));
         return true;
     }
 
-    private int colorMarkerOffsetX(Text colorMarkerGa) {
-        return GraphitiUi.getUiLayoutService().calculateTextSize(colorMarkerGa.getValue(), colorMarkerGa.getStyle().getFont()).getWidth() + 1;
+    private int numberOffsetX(Ellipse colorMarkerGa, Text numberGa) {
+        int numberWidth = GraphitiUi.getUiLayoutService().calculateTextSize(numberGa.getValue(), numberGa.getStyle().getFont()).getWidth();
+        return numberWidth + (colorMarkerGa.getWidth() - numberWidth) / 2 + 1;
     }
 
 }

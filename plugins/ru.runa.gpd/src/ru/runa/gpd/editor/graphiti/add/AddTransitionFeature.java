@@ -4,6 +4,7 @@ import org.eclipse.graphiti.datatypes.IDimension;
 import org.eclipse.graphiti.features.context.IAddConnectionContext;
 import org.eclipse.graphiti.features.context.IAddContext;
 import org.eclipse.graphiti.features.impl.AbstractAddFeature;
+import org.eclipse.graphiti.mm.algorithms.Ellipse;
 import org.eclipse.graphiti.mm.algorithms.Polygon;
 import org.eclipse.graphiti.mm.algorithms.Polyline;
 import org.eclipse.graphiti.mm.algorithms.Text;
@@ -111,16 +112,29 @@ public class AddTransitionFeature extends AbstractAddFeature {
     private void createColorMarker(Connection connection, org.eclipse.draw2d.geometry.Point location, Transition transition) {
         if (transition.getSource() instanceof FormNode) {
             TransitionColor transitionColor = transition.getColor();
-            ConnectionDecorator connectionDecorator = Graphiti.getPeCreateService().createConnectionDecorator(connection, true, 0.5, true);
-            Text marker = Graphiti.getGaService().createText(connectionDecorator);
-            marker.setStyle(StyleUtil.getTransitionColorMarkerStyle(getDiagram(), transition, transitionColor));
-            marker.setValue(StyleUtil.getTransitionColorMarker(transition));
-            IDimension textDimension = GraphitiUi.getUiLayoutService().calculateTextSize(marker.getValue(), marker.getStyle().getFont());
-            Graphiti.getGaService().setSize(marker, textDimension.getWidth(), textDimension.getHeight());
-            Graphiti.getGaService().setLocation(marker, (location == null ? 10 : location.x) - textDimension.getWidth() - 1,
+
+            ConnectionDecorator colorMarkerDecorator = Graphiti.getPeCreateService().createConnectionDecorator(connection, true, 0.5, true);
+            Ellipse ellipse = Graphiti.getGaService().createEllipse(colorMarkerDecorator);
+            ellipse.setStyle(StyleUtil.getTransitionColorMarkerStyle(getDiagram(), transition, transitionColor));
+            ellipse.setWidth((int) (ellipse.getStyle().getFont().getSize() * 2));
+            ellipse.setHeight((int) (ellipse.getStyle().getFont().getSize() * 1.75));
+            ellipse.setTransparency(.75);
+            Graphiti.getGaService().setLocation(ellipse, (location == null ? 10 : location.x) - ellipse.getWidth() - 1,
                     location == null ? 0 : location.y);
-            connectionDecorator.getProperties().add(new GaProperty(GaProperty.ID, GaProperty.COLOR_MARKER));
-            connectionDecorator.setVisible(StyleUtil.isTransitionDecoratorVisible(transition));
+            colorMarkerDecorator.getProperties().add(new GaProperty(GaProperty.ID, GaProperty.TRANSITION_COLOR_MARKER));
+            colorMarkerDecorator.setVisible(StyleUtil.isTransitionDecoratorVisible(transition));
+
+            ConnectionDecorator numberDecorator = Graphiti.getPeCreateService().createConnectionDecorator(connection, true, 0.5, true);
+            Text number = Graphiti.getGaService().createText(numberDecorator);
+            number.setStyle(StyleUtil.getTransitionColorMarkerStyle(getDiagram(), transition, transitionColor));
+            number.setValue(StyleUtil.getTransitionNumber(transition));
+            IDimension textDimension = GraphitiUi.getUiLayoutService().calculateTextSize(number.getValue(), number.getStyle().getFont());
+            Graphiti.getGaService().setSize(number, textDimension.getWidth(), textDimension.getHeight());
+            Graphiti.getGaService().setLocation(number,
+                    (location == null ? 10 : location.x) - (ellipse.getWidth() - textDimension.getWidth()) / 2 - textDimension.getWidth() - 1,
+                    location == null ? 0 : location.y);
+            numberDecorator.getProperties().add(new GaProperty(GaProperty.ID, GaProperty.TRANSITION_NUMBER));
+            numberDecorator.setVisible(StyleUtil.isTransitionDecoratorVisible(transition));
         }
     }
 

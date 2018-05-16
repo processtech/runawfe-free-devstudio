@@ -83,13 +83,8 @@ public class StyleUtil implements PrefConstants {
         return findOrCreateStyle(diagram, bpmnName + "ColorMarker" + color.name(), new TransitionColorMarkerStyleInitializer(bpmnName, color));
     }
 
-    public static String getTransitionColorMarker(Transition transition) {
-        //
-        // Source: http://xahlee.info/comp/unicode_circled_numbers.html
-        // U+278a -> 1..10 (sans-serif), U+24eb -> 11..20, U+3251 -> 21..50
-        //
-        int index = transition.getSource().getLeavingTransitions().indexOf(transition);
-        return String.valueOf((char) ((index < 10 ? 0x278a : index < 20 ? 0x24eb - 10 : 0x3251 - 20) + index));
+    public static String getTransitionNumber(Transition transition) {
+        return String.valueOf(transition.getSource().getLeavingTransitions().indexOf(transition) + 1);
     }
 
     private static Style createStyle(Diagram diagram, String styleId, StyleInitializer styleInitializer) {
@@ -290,7 +285,11 @@ public class StyleUtil implements PrefConstants {
         @Override
         public void init(Diagram diagram, Style style) {
             super.init(diagram, style);
-            style.setForeground(Graphiti.getGaService().manageColor(diagram, transitionColor.red, transitionColor.green, transitionColor.blue));
+            Font font = style.getFont();
+            style.setFont(Graphiti.getGaService().manageFont(diagram, font.getName(), font.getSize(), font.isItalic(), true));
+            Color color = Graphiti.getGaService().manageColor(diagram, transitionColor.red, transitionColor.green, transitionColor.blue);
+            style.setBackground(color);
+            style.setForeground(color);
         }
 
     }
