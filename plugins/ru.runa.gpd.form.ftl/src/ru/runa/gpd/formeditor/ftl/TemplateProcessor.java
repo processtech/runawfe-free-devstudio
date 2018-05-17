@@ -7,7 +7,6 @@ import java.io.Writer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 
@@ -26,11 +25,10 @@ public class TemplateProcessor {
         configuration.setLocalizedLookup(false);
         configuration.setStrictBeanModels(false);
         configuration.setTemplateExceptionHandler(new CustomTemplateExceptionHandler());
-        configuration.setDefaultEncoding(Charsets.UTF_8.name());
     }
 
     public static String process(String templateName, byte[] templateData, TemplateModel model) {
-        return process(templateName, new String(templateData, Charsets.UTF_8), model);
+        return process(templateName, new String(templateData), model);
     }
 
     public static String process(String templateName, String templateData, TemplateModel model) {
