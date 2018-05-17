@@ -54,6 +54,9 @@ public class UpdateTransitionFeature extends UpdateFeature {
             if (numberGa.getY() != nameTextGa.getY() || numberGa.getX() + numberOffsetX(colorMarkerGa, numberGa) != nameTextGa.getX()) {
                 return Reason.createTrueReason();
             }
+            if (colorMarkerGa.getY() != nameTextGa.getY() || colorMarkerGa.getX() + colorMarkerGa.getWidth() + 1 != nameTextGa.getX()) {
+                return Reason.createTrueReason();
+            }
         }
         return Reason.createFalseReason();
     }
@@ -78,19 +81,20 @@ public class UpdateTransitionFeature extends UpdateFeature {
             boolean nameLabelVisible = !Strings.isNullOrEmpty(transition.getLabel());
             nameTextGa.getPictogramElement().setVisible(nameLabelVisible);
         }
+        boolean visible = StyleUtil.isTransitionDecoratorVisible(transition);
         Ellipse colorMarkerGa = (Ellipse) PropertyUtil.findGaRecursiveByName(pe, GaProperty.TRANSITION_COLOR_MARKER);
         colorMarkerGa.setStyle(StyleUtil.getTransitionColorMarkerStyle(getDiagram(), transition, transition.getColor()));
         colorMarkerGa.setWidth((int) (colorMarkerGa.getStyle().getFont().getSize() * 2));
         colorMarkerGa.setHeight((int) (colorMarkerGa.getStyle().getFont().getSize() * 1.75));
         colorMarkerGa.setY(nameTextGa.getY());
         colorMarkerGa.setX(nameTextGa.getX() - colorMarkerGa.getWidth() - 1);
-        colorMarkerGa.getPictogramElement().setVisible(StyleUtil.isTransitionDecoratorVisible(transition));
+        colorMarkerGa.getPictogramElement().setVisible(visible);
         Text numberGa = (Text) PropertyUtil.findGaRecursiveByName(pe, GaProperty.TRANSITION_NUMBER);
         numberGa.setValue(StyleUtil.getTransitionNumber(transition));
         numberGa.setStyle(StyleUtil.getTransitionColorMarkerStyle(getDiagram(), transition, transition.getColor()));
         numberGa.setY(nameTextGa.getY());
         numberGa.setX(nameTextGa.getX() - numberOffsetX(colorMarkerGa, numberGa));
-        numberGa.getPictogramElement().setVisible(StyleUtil.isTransitionDecoratorVisible(transition));
+        numberGa.getPictogramElement().setVisible(visible);
         return true;
     }
 

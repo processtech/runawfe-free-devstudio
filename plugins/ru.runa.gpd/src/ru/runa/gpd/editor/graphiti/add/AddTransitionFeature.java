@@ -112,6 +112,7 @@ public class AddTransitionFeature extends AbstractAddFeature {
     private void createColorMarker(Connection connection, org.eclipse.draw2d.geometry.Point location, Transition transition) {
         if (transition.getSource() instanceof FormNode) {
             TransitionColor transitionColor = transition.getColor();
+            boolean visible = StyleUtil.isTransitionDecoratorVisible(transition);
 
             ConnectionDecorator colorMarkerDecorator = Graphiti.getPeCreateService().createConnectionDecorator(connection, true, 0.5, true);
             Ellipse ellipse = Graphiti.getGaService().createEllipse(colorMarkerDecorator);
@@ -122,7 +123,7 @@ public class AddTransitionFeature extends AbstractAddFeature {
             Graphiti.getGaService().setLocation(ellipse, (location == null ? 10 : location.x) - ellipse.getWidth() - 1,
                     location == null ? 0 : location.y);
             colorMarkerDecorator.getProperties().add(new GaProperty(GaProperty.ID, GaProperty.TRANSITION_COLOR_MARKER));
-            colorMarkerDecorator.setVisible(StyleUtil.isTransitionDecoratorVisible(transition));
+            colorMarkerDecorator.setVisible(visible);
 
             ConnectionDecorator numberDecorator = Graphiti.getPeCreateService().createConnectionDecorator(connection, true, 0.5, true);
             Text number = Graphiti.getGaService().createText(numberDecorator);
@@ -134,7 +135,7 @@ public class AddTransitionFeature extends AbstractAddFeature {
                     (location == null ? 10 : location.x) - (ellipse.getWidth() - textDimension.getWidth()) / 2 - textDimension.getWidth() - 1,
                     location == null ? 0 : location.y);
             numberDecorator.getProperties().add(new GaProperty(GaProperty.ID, GaProperty.TRANSITION_NUMBER));
-            numberDecorator.setVisible(StyleUtil.isTransitionDecoratorVisible(transition));
+            numberDecorator.setVisible(visible);
         }
     }
 
