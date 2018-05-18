@@ -3,7 +3,6 @@ package ru.runa.gpd.editor.graphiti.update;
 import org.eclipse.graphiti.features.IReason;
 import org.eclipse.graphiti.features.context.IUpdateContext;
 import org.eclipse.graphiti.features.impl.Reason;
-import org.eclipse.graphiti.mm.algorithms.Ellipse;
 import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
 import org.eclipse.graphiti.mm.algorithms.Text;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
@@ -50,7 +49,7 @@ public class UpdateTransitionFeature extends UpdateFeature {
             if (!numberGa.getStyle().getId().endsWith(transition.getColor().name())) {
                 return Reason.createTrueReason();
             }
-            Ellipse colorMarkerGa = (Ellipse) PropertyUtil.findGaRecursiveByName(pe, GaProperty.TRANSITION_COLOR_MARKER);
+            GraphicsAlgorithm colorMarkerGa = PropertyUtil.findGaRecursiveByName(pe, GaProperty.TRANSITION_COLOR_MARKER);
             if (numberGa.getY() != nameTextGa.getY() || numberGa.getX() + numberOffsetX(colorMarkerGa, numberGa) != nameTextGa.getX()) {
                 return Reason.createTrueReason();
             }
@@ -82,7 +81,7 @@ public class UpdateTransitionFeature extends UpdateFeature {
             nameTextGa.getPictogramElement().setVisible(nameLabelVisible);
         }
         boolean visible = StyleUtil.isTransitionDecoratorVisible(transition);
-        GraphicsAlgorithm colorMarkerGa = (Ellipse) PropertyUtil.findGaRecursiveByName(pe, GaProperty.TRANSITION_COLOR_MARKER);
+        GraphicsAlgorithm colorMarkerGa = PropertyUtil.findGaRecursiveByName(pe, GaProperty.TRANSITION_COLOR_MARKER);
         if (colorMarkerGa != null) {
             colorMarkerGa.setStyle(StyleUtil.getTransitionColorMarkerStyle(getDiagram(), transition, transition.getColor()));
             colorMarkerGa.setWidth((int) (colorMarkerGa.getStyle().getFont().getSize() * 2));
