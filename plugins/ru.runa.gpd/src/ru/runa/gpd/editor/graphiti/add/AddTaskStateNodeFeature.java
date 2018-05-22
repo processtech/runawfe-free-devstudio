@@ -22,7 +22,7 @@ public class AddTaskStateNodeFeature extends AddStateNodeFeature {
     private void addAsyncImage(Node node, IAddContext context, GraphicsAlgorithmContainer container, ContainerShape containerShape) {
         Image asyncImage = Graphiti.getGaService().createImage(container, "graph/async.png");
         asyncImage.getProperties().add(new GaProperty(GaProperty.ID, GaProperty.ASYNC));
-        Graphiti.getGaService().setLocation(asyncImage, node.getConstraint().width - 2 * GRID_SIZE, node.getConstraint().height - 2 * GRID_SIZE - 1);
+        Graphiti.getGaService().setLocation(asyncImage, node.getConstraint().width - 2 * GRID_SIZE, node.getConstraint().height - 3 * GRID_SIZE - 1);
         boolean async = ((Synchronizable) node).isAsync();
         containerShape.getProperties().add(new GaProperty(GaProperty.ASYNC, String.valueOf(async)));
     }

@@ -13,6 +13,7 @@ import org.eclipse.graphiti.features.custom.ICustomFeature;
 import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
 import org.eclipse.graphiti.mm.algorithms.Image;
 import org.eclipse.graphiti.mm.algorithms.Polyline;
+import org.eclipse.graphiti.mm.pictograms.ConnectionDecorator;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.mm.pictograms.Shape;
@@ -159,4 +160,16 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
         }
         return (String) super.getToolTip(ga);
     }
+
+    @Override
+    public PictogramElement getSelection(PictogramElement originalPe, PictogramElement[] oldSelection) {
+        if (originalPe instanceof ConnectionDecorator) {
+            if (PropertyUtil.hasProperty(originalPe, GaProperty.ID, GaProperty.TRANSITION_NUMBER)
+                    || PropertyUtil.hasProperty(originalPe, GaProperty.ID, GaProperty.TRANSITION_COLOR_MARKER)) {
+                return getDiagramTypeProvider().getDiagram();
+            }
+        }
+        return super.getSelection(originalPe, oldSelection);
+    }
+
 }

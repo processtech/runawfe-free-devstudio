@@ -4,6 +4,7 @@ import org.eclipse.graphiti.datatypes.IDimension;
 import org.eclipse.graphiti.features.context.IAddConnectionContext;
 import org.eclipse.graphiti.features.context.IAddContext;
 import org.eclipse.graphiti.features.impl.AbstractAddFeature;
+import org.eclipse.graphiti.mm.algorithms.Ellipse;
 import org.eclipse.graphiti.mm.algorithms.Polygon;
 import org.eclipse.graphiti.mm.algorithms.Polyline;
 import org.eclipse.graphiti.mm.algorithms.Text;
@@ -20,12 +21,14 @@ import org.eclipse.graphiti.services.IGaService;
 import org.eclipse.graphiti.services.IPeCreateService;
 import org.eclipse.graphiti.ui.services.GraphitiUi;
 
+import com.google.common.base.Strings;
+
 import ru.runa.gpd.editor.graphiti.DiagramFeatureProvider;
 import ru.runa.gpd.editor.graphiti.GaProperty;
 import ru.runa.gpd.editor.graphiti.StyleUtil;
+import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.Transition;
-
-import com.google.common.base.Strings;
+import ru.runa.gpd.lang.model.TransitionColor;
 
 public class AddTransitionFeature extends AbstractAddFeature {
     private DiagramFeatureProvider featureProvider;
@@ -101,8 +104,39 @@ public class AddTransitionFeature extends AbstractAddFeature {
         text.setValue(transitionName);
         IDimension textDimension = GraphitiUi.getUiLayoutService().calculateTextSize(transitionName, text.getStyle().getFont());
         Graphiti.getGaService().setSize(text, textDimension.getWidth(), textDimension.getHeight());
+        createColorMarker(connection, location, transition);
         connectionDecorator.getProperties().add(new GaProperty(GaProperty.ID, GaProperty.NAME));
         connectionDecorator.setVisible(visible);
+    }
+
+    private void createColorMarker(Connection connection, org.eclipse.draw2d.geometry.Point location, Transition transition) {
+        if (transition.getSource() instanceof FormNode) {
+            TransitionColor transitionColor = transition.getColor();
+            boolean visible = StyleUtil.isTransitionDecoratorVisible(transition);
+
+            ConnectionDecorator colorMarkerDecorator = Graphiti.getPeCreateService().createConnectionDecorator(connection, true, 0.5, true);
+            Ellipse ellipse = Graphiti.getGaService().createEllipse(colorMarkerDecorator);
+            ellipse.setStyle(StyleUtil.getTransitionColorMarkerStyle(getDiagram(), transition, transitionColor));
+            ellipse.setWidth((int) (ellipse.getStyle().getFont().getSize() * 2));
+            ellipse.setHeight((int) (ellipse.getStyle().getFont().getSize() * 1.75));
+            ellipse.setTransparency(.75);
+            Graphiti.getGaService().setLocation(ellipse, (location == null ? 10 : location.x) - ellipse.getWidth() - 1,
+                    location == null ? 0 : location.y);
+            colorMarkerDecorator.getProperties().add(new GaProperty(GaProperty.ID, GaProperty.TRANSITION_COLOR_MARKER));
+            colorMarkerDecorator.setVisible(visible);
+
+            ConnectionDecorator numberDecorator = Graphiti.getPeCreateService().createConnectionDecorator(connection, true, 0.5, true);
+            Text number = Graphiti.getGaService().createText(numberDecorator);
+            number.setStyle(StyleUtil.getTransitionColorMarkerStyle(getDiagram(), transition, transitionColor));
+            number.setValue(StyleUtil.getTransitionNumber(transition));
+            IDimension textDimension = GraphitiUi.getUiLayoutService().calculateTextSize(number.getValue(), number.getStyle().getFont());
+            Graphiti.getGaService().setSize(number, textDimension.getWidth(), textDimension.getHeight());
+            Graphiti.getGaService().setLocation(number,
+                    (location == null ? 10 : location.x) - (ellipse.getWidth() - textDimension.getWidth()) / 2 - textDimension.getWidth() - 1,
+                    location == null ? 0 : location.y);
+            numberDecorator.getProperties().add(new GaProperty(GaProperty.ID, GaProperty.TRANSITION_NUMBER));
+            numberDecorator.setVisible(visible);
+        }
     }
 
     private void createArrow(Connection connection) {
