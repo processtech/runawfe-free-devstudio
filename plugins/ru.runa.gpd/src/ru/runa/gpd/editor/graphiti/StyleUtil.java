@@ -26,8 +26,11 @@ import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.RGB;
 
 import ru.runa.gpd.Activator;
+import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Subprocess;
+import ru.runa.gpd.lang.model.Transition;
+import ru.runa.gpd.lang.model.TransitionColor;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEvent;
 import ru.runa.gpd.settings.LanguageElementPreferenceNode;
 import ru.runa.gpd.settings.PrefConstants;
@@ -68,6 +71,20 @@ public class StyleUtil implements PrefConstants {
 
     public static Style getTransitionDiamondPolylineStyle(Diagram diagram) {
         return findOrCreateStyle(diagram, "transitionDiamondPolyline", new TransitionDiamondPolylineStyleInitializer());
+    }
+
+    public static boolean isTransitionDecoratorVisible(Transition transition) {
+        return transition.getSource() instanceof FormNode
+                && (transition.getColor() != TransitionColor.DEFAULT || transition.getSource().getLeavingTransitions().size() > 1);
+    }
+
+    public static Style getTransitionColorMarkerStyle(Diagram diagram, Transition transition, TransitionColor color) {
+        String bpmnName = transition.getTypeDefinition().getBpmnElementName();
+        return findOrCreateStyle(diagram, bpmnName + "ColorMarker" + color.name(), new TransitionColorMarkerStyleInitializer(bpmnName, color));
+    }
+
+    public static String getTransitionNumber(Transition transition) {
+        return String.valueOf(transition.getSource().getLeavingTransitions().indexOf(transition) + 1);
     }
 
     private static Style createStyle(Diagram diagram, String styleId, StyleInitializer styleInitializer) {
@@ -252,6 +269,27 @@ public class StyleUtil implements PrefConstants {
             Color color = getColor(diagram, bpmnName, P_BPMN_FONT_COLOR);
             style.setForeground(color);
             style.setBackground(color);
+        }
+
+    }
+
+    public static class TransitionColorMarkerStyleInitializer extends TextStyleInitializer {
+
+        private final TransitionColor transitionColor;
+
+        public TransitionColorMarkerStyleInitializer(String bpmnName, TransitionColor transitionColor) {
+            super(bpmnName);
+            this.transitionColor = transitionColor;
+        }
+
+        @Override
+        public void init(Diagram diagram, Style style) {
+            super.init(diagram, style);
+            Font font = style.getFont();
+            style.setFont(Graphiti.getGaService().manageFont(diagram, font.getName(), font.getSize(), font.isItalic(), true));
+            Color color = Graphiti.getGaService().manageColor(diagram, transitionColor.red, transitionColor.green, transitionColor.blue);
+            style.setBackground(color);
+            style.setForeground(color);
         }
 
     }

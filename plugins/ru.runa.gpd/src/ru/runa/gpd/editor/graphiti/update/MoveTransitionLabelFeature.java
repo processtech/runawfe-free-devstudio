@@ -5,6 +5,7 @@ import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.IMoveConnectionDecoratorContext;
 import org.eclipse.graphiti.features.impl.DefaultMoveConnectionDecoratorFeature;
 import org.eclipse.graphiti.mm.pictograms.Connection;
+import org.eclipse.graphiti.mm.pictograms.ConnectionDecorator;
 
 import ru.runa.gpd.editor.graphiti.GaProperty;
 import ru.runa.gpd.editor.graphiti.PropertyUtil;
@@ -26,7 +27,11 @@ public class MoveTransitionLabelFeature extends DefaultMoveConnectionDecoratorFe
 
     @Override
     public boolean canMoveConnectionDecorator(IMoveConnectionDecoratorContext context) {
-        return !PropertyUtil.hasProperty(context.getConnectionDecorator(), GaProperty.CLASS, GaProperty.ACTION_ICON) && super.canMoveConnectionDecorator(context);
+        ConnectionDecorator decorator = context.getConnectionDecorator();
+        return !(PropertyUtil.hasProperty(decorator, GaProperty.CLASS, GaProperty.ACTION_ICON)
+                || PropertyUtil.hasProperty(decorator, GaProperty.ID, GaProperty.TRANSITION_NUMBER)
+                || PropertyUtil.hasProperty(decorator, GaProperty.ID, GaProperty.TRANSITION_COLOR_MARKER))
+                && super.canMoveConnectionDecorator(context);
     }
     
 }
