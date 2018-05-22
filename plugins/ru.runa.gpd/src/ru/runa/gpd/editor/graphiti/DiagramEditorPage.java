@@ -338,6 +338,7 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
             addContext.setNewObject(transition);
             drawActions((Connection) getDiagramTypeProvider().getFeatureProvider().addIfPossible(addContext), transition);
         }
+        setPictogramElementForSelection(null);
     }
 
     @Override
