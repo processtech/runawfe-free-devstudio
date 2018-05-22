@@ -151,7 +151,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
             public void propertyChanged(Object source, int propId) {
                 if (propId == FormEditor.CLOSED) {
                     if (formFile.exists()) {
-                        createOrUpdateFormValidation();
+                        ValidationUtil.createOrUpdateValidation(formNode, formFile);
                     }
                     boolean formEditorsAvailable = false;
                     IWorkbenchPage workbenchPage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
@@ -262,6 +262,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
             new GetHTMLCallbackFunction(browser);
             new OnLoadCallbackFunction(browser);
             new MarkEditorDirtyCallbackFunction(browser);
+            new RefreshViewCallbackFunction(browser);
             browser.addProgressListener(new ProgressAdapter() {
                 @Override
                 public void completed(ProgressEvent event) {
@@ -380,7 +381,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
         sourceEditor.doSave(monitor);
         if (formNode != null) {
             formNode.setDirty();
-            createOrUpdateFormValidation();
+            ValidationUtil.createOrUpdateValidation(formNode, formFile);
         }
         if (isBrowserLoaded()) {
             browser.execute("setHTMLSaved()");
@@ -388,21 +389,6 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
         setDirty(false);
     }
 
-    private void createOrUpdateFormValidation() {
-        String op = "create";
-        try {
-            if (!formNode.hasFormValidation()) {
-                String fileName = formNode.getId() + "." + FormNode.VALIDATION_SUFFIX;
-                formNode.setValidationFileName(fileName);
-                ValidationUtil.createNewValidationUsingForm(formFile, formNode);
-            } else {
-                op = "update";
-                ValidationUtil.updateValidation(formFile, formNode);
-            }
-        } catch (Exception e) {
-            PluginLogger.logError("Failed to " + op + " form validation", e);
-        }
-    }
 
     @Override
     public boolean isSaveAsAllowed() {
@@ -505,12 +491,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
                 if (editor != null && !editor.isDirty()) {
                     editor.setDirty(true);
                 }
-                try {
-                    syncBrowser2Editor();
-                    syncEditor2Browser();
-                } catch (Exception e) {
-                    PluginLogger.logError(e);
-                }
+                refreshView();
             }
         });
         components.put(component.getId(), component);
@@ -566,12 +547,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
                 final Component component = dialog.openDialog();
                 if (component != null) {
                     components.put(componentId, component);
-                    try {
-                        syncBrowser2Editor();
-                        syncEditor2Browser();
-                    } catch (Exception e) {
-                        PluginLogger.logError(e);
-                    }
+                    refreshView();
                 }
             }
         });
@@ -579,6 +555,10 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
 
     @Override
     public void doDrop() {
+        refreshView();
+    }
+
+    public void refreshView() {
         try {
             syncBrowser2Editor();
             syncEditor2Browser();
@@ -644,6 +624,19 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
         @Override
         public Object function(Object[] arguments) {
             setDirty(true);
+            return null;
+        }
+    }
+
+    private class RefreshViewCallbackFunction extends BrowserFunction {
+
+        public RefreshViewCallbackFunction(Browser browser) {
+            super(browser, "refreshViewCallback");
+        }
+
+        @Override
+        public Object function(Object[] arguments) {
+            refreshView();
             return null;
         }
     }

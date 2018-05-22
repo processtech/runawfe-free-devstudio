@@ -8,6 +8,7 @@ import org.eclipse.graphiti.mm.algorithms.Rectangle;
 import org.eclipse.graphiti.mm.algorithms.RoundedRectangle;
 import org.eclipse.graphiti.mm.algorithms.Text;
 import org.eclipse.graphiti.mm.algorithms.styles.Orientation;
+import org.eclipse.graphiti.mm.algorithms.styles.Style;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.services.Graphiti;
@@ -31,20 +32,21 @@ public class AddStateNodeFeature extends AddNodeFeature {
         Graphiti.getGaService().setLocationAndSize(main, context.getX(), context.getY(), context.getWidth(), context.getHeight());
         main.getProperties().add(new GaProperty(GaProperty.ID, LayoutStateNodeFeature.MAIN_RECT));
         //
-        RoundedRectangle border = Graphiti.getGaService().createRoundedRectangle(main, 20, 20);
-        border.getProperties().add(new GaProperty(GaProperty.ID, LayoutStateNodeFeature.BORDER_RECT));
-        border.setLineWidth(2);
-        border.setForeground(Graphiti.getGaService().manageColor(getDiagram(), StyleUtil.LIGHT_BLUE));
-        border.setBackground(Graphiti.getGaService().manageColor(getDiagram(), StyleUtil.VERY_LIGHT_BLUE));
-        border.setStyle(StyleUtil.getStyleForEvent(getDiagram()));
+        RoundedRectangle outerRoundedRectangle = Graphiti.getGaService().createPlainRoundedRectangle(main, 20, 20);
+        outerRoundedRectangle.getProperties().add(new GaProperty(GaProperty.ID, LayoutStateNodeFeature.BORDER_RECT));
+        outerRoundedRectangle.setStyle(StyleUtil.getStateNodeOuterRectangleStyle(getDiagram(), node));
+        Style textStyle = StyleUtil.getTextStyle(getDiagram(), node);
         if (node instanceof SwimlanedNode && node.getProcessDefinition().getSwimlaneDisplayMode() == SwimlaneDisplayMode.none) {
-            Text swimlaneText = Graphiti.getGaService().createDefaultText(getDiagram(), border, ((SwimlanedNode) node).getSwimlaneLabel());
+            Text swimlaneText = Graphiti.getGaService().createText(outerRoundedRectangle, ((SwimlanedNode) node).getSwimlaneLabel());
             swimlaneText.getProperties().add(new GaProperty(GaProperty.ID, GaProperty.SWIMLANE_NAME));
             swimlaneText.setHorizontalAlignment(Orientation.ALIGNMENT_CENTER);
+            swimlaneText.setStyle(textStyle);
         }
-        MultiText nameText = Graphiti.getGaService().createDefaultMultiText(getDiagram(), border, node.getName());
+        MultiText nameText = Graphiti.getGaService().createMultiText(outerRoundedRectangle, node.getName());
         nameText.getProperties().add(new GaProperty(GaProperty.ID, GaProperty.NAME));
         nameText.setHorizontalAlignment(Orientation.ALIGNMENT_CENTER);
+        nameText.setStyle(textStyle);
+
         containerShape.getProperties().add(new GaProperty(GaProperty.MINIMAZED_VIEW, String.valueOf(node.isMinimizedView())));
         //
         Image image = Graphiti.getGaService().createImage(main, NodeRegistry.getNodeTypeDefinition(node.getClass()).getPaletteIcon());

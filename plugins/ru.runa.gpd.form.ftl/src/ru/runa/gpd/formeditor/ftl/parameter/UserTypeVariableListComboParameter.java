@@ -16,7 +16,7 @@ public class UserTypeVariableListComboParameter extends ComboParameter {
     protected List<ComboOption> getOptions(Component component, ComponentParameter parameter) {
         List<ComboOption> result = Lists.newArrayList();
         for (Variable variable : getVariables(parameter).values()) {
-            VariableUserType userType = getListVariableUserType(variable);
+            VariableUserType userType = getVariableUserType(variable);
             if (userType == null) {
                 continue;
             }

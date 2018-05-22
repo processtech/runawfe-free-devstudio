@@ -1,13 +1,15 @@
 package ru.runa.gpd.editor.graphiti;
 
-import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.emf.common.util.EList;
-import org.eclipse.graphiti.mm.StyleContainer;
 import org.eclipse.graphiti.mm.algorithms.styles.AdaptedGradientColoredAreas;
 import org.eclipse.graphiti.mm.algorithms.styles.Color;
+import org.eclipse.graphiti.mm.algorithms.styles.Font;
 import org.eclipse.graphiti.mm.algorithms.styles.GradientColoredArea;
 import org.eclipse.graphiti.mm.algorithms.styles.GradientColoredAreas;
+import org.eclipse.graphiti.mm.algorithms.styles.LineStyle;
 import org.eclipse.graphiti.mm.algorithms.styles.LocationType;
 import org.eclipse.graphiti.mm.algorithms.styles.Style;
 import org.eclipse.graphiti.mm.algorithms.styles.StylesFactory;
@@ -16,150 +18,311 @@ import org.eclipse.graphiti.services.Graphiti;
 import org.eclipse.graphiti.services.IGaService;
 import org.eclipse.graphiti.util.ColorConstant;
 import org.eclipse.graphiti.util.ColorUtil;
-import org.eclipse.graphiti.util.IColorConstant;
 import org.eclipse.graphiti.util.IGradientType;
 import org.eclipse.graphiti.util.IPredefinedRenderingStyle;
+import org.eclipse.jface.preference.PreferenceConverter;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.graphics.RGB;
 
-public class StyleUtil {
-    public static final IColorConstant FOREGROUND = new ColorConstant(0, 0, 0);
-    public static final IColorConstant VERY_LIGHT_BLUE = new ColorConstant(246, 247, 255);
-    public static final IColorConstant LIGHT_BLUE = new ColorConstant(3, 104, 154);
-    public static final IColorConstant BPMN_CLASS_FOREGROUND = new ColorConstant(0, 0, 0);
+import ru.runa.gpd.Activator;
+import ru.runa.gpd.lang.model.FormNode;
+import ru.runa.gpd.lang.model.GraphElement;
+import ru.runa.gpd.lang.model.Subprocess;
+import ru.runa.gpd.lang.model.Transition;
+import ru.runa.gpd.lang.model.TransitionColor;
+import ru.runa.gpd.lang.model.bpmn.IBoundaryEvent;
+import ru.runa.gpd.settings.LanguageElementPreferenceNode;
+import ru.runa.gpd.settings.PrefConstants;
 
-    public static Style getStyleForEvent(Diagram diagram) {
-        final String styleId = "EVENT"; //$NON-NLS-1$
-        Style style = findStyle(diagram, styleId);
-        if (style == null) { // style not found - create new style
-            IGaService gaService = Graphiti.getGaService();
-            style = gaService.createStyle(diagram, styleId);
-            style.setForeground(gaService.manageColor(diagram, FOREGROUND));
-            gaService.setRenderingStyle(style, getDefaultEventColor(diagram));
-            style.setLineWidth(20);
-        }
+public class StyleUtil implements PrefConstants {
+    public static final String DEFAULT_BPMN_NAME = "default";
+    public static final String TRANSITION_BPMN_NAME = "sequenceFlow";
+    public static final String TEXT_ANNOTATION_BPMN_NAME = "textAnnotation";
+    private static Map<String, StyleInitializer> initializers = new HashMap<>();
+
+    public static Style getStateNodeOuterRectangleStyle(Diagram diagram, GraphElement graphElement) {
+        String bpmnName = graphElement.getTypeDefinition().getBpmnElementName();
+        return findOrCreateStyle(diagram, bpmnName + "OuterRectangle", new StateNodeOuterRectangleStyleInitializer(bpmnName));
+    }
+
+    public static Style getStateNodeBoundaryEventEllipseStyle(Diagram diagram, IBoundaryEvent boundaryEvent) {
+        String bpmnName = ((GraphElement) boundaryEvent).getParent().getTypeDefinition().getBpmnElementName();
+        return findOrCreateStyle(diagram, bpmnName + "BoundaryEventEllipse", new StateNodeBoundaryEventEllipseStyleInitializer(bpmnName));
+    }
+
+    public static Style getSubprocessNodeTransactionalStyle(Diagram diagram, Subprocess subprocess) {
+        String bpmnName = subprocess.getParent().getTypeDefinition().getBpmnElementName();
+        return findOrCreateStyle(diagram, bpmnName + "Transactional", new SubprocessNodeTransactionalStyleInitializer(bpmnName));
+    }
+
+    public static Style getTextStyle(Diagram diagram, GraphElement graphElement) {
+        String bpmnName = graphElement.getTypeDefinition().getBpmnElementName();
+        return findOrCreateStyle(diagram, bpmnName + "Text", new TextStyleInitializer(bpmnName));
+    }
+
+    public static Style getTextAnnotationPolylineStyle(Diagram diagram) {
+        return findOrCreateStyle(diagram, "textAnnotationPolyline", new TextAnnotationPolylineStyleInitializer());
+    }
+
+    public static Style getTransitionPolylineStyle(Diagram diagram) {
+        return findOrCreateStyle(diagram, "transitionPolyline", new TransitionPolylineStyleInitializer());
+    }
+
+    public static Style getTransitionDiamondPolylineStyle(Diagram diagram) {
+        return findOrCreateStyle(diagram, "transitionDiamondPolyline", new TransitionDiamondPolylineStyleInitializer());
+    }
+
+    public static boolean isTransitionDecoratorVisible(Transition transition) {
+        return transition.getSource() instanceof FormNode
+                && (transition.getColor() != TransitionColor.DEFAULT || transition.getSource().getLeavingTransitions().size() > 1);
+    }
+
+    public static Style getTransitionColorMarkerStyle(Diagram diagram, Transition transition, TransitionColor color) {
+        String bpmnName = transition.getTypeDefinition().getBpmnElementName();
+        return findOrCreateStyle(diagram, bpmnName + "ColorMarker" + color.name(), new TransitionColorMarkerStyleInitializer(bpmnName, color));
+    }
+
+    public static String getTransitionNumber(Transition transition) {
+        return String.valueOf(transition.getSource().getLeavingTransitions().indexOf(transition) + 1);
+    }
+
+    private static Style createStyle(Diagram diagram, String styleId, StyleInitializer styleInitializer) {
+        Style style = Graphiti.getGaService().createStyle(diagram, styleId);
+        styleInitializer.init(diagram, style);
+        initializers.put(styleId, styleInitializer);
         return style;
     }
 
-    public static Style getStyleForTask(Diagram diagram) {
-        final String styleId = "TASK"; //$NON-NLS-1$
-        Style style = findStyle(diagram, styleId);
-        if (style == null) { // style not found - create new style
-            IGaService gaService = Graphiti.getGaService();
-            style = gaService.createStyle(diagram, styleId);
-            style.setForeground(gaService.manageColor(diagram, BPMN_CLASS_FOREGROUND));
-            gaService.setRenderingStyle(style, getDefaultTaskColor(diagram));
-            style.setLineWidth(20);
-        }
-        return style;
+    private static void initColors(Diagram diagram, Style style, String bpmnName) {
+        style.setForeground(getColor(diagram, bpmnName, P_BPMN_FOREGROUND_COLOR));
+        style.setBackground(getColor(diagram, bpmnName, P_BPMN_BACKGROUND_COLOR));
     }
 
-    private static AdaptedGradientColoredAreas getDefaultTaskColor(final Diagram diagram) {
-        final AdaptedGradientColoredAreas agca = StylesFactory.eINSTANCE.createAdaptedGradientColoredAreas();
-        agca.setDefinedStyleId("bpmnTaskStyle");
-        agca.setGradientType(IGradientType.VERTICAL);
-        final GradientColoredAreas defaultGradientColoredAreas = StylesFactory.eINSTANCE.createGradientColoredAreas();
-        defaultGradientColoredAreas.setStyleAdaption(IPredefinedRenderingStyle.STYLE_ADAPTATION_DEFAULT);
-        final EList<GradientColoredArea> gcas = defaultGradientColoredAreas.getGradientColor();
-        addGradientColoredArea(gcas, "FAFBFC", 0, LocationType.LOCATION_TYPE_ABSOLUTE_START, "FFFFCC", 0, //$NON-NLS-1$ //$NON-NLS-2$
-                LocationType.LOCATION_TYPE_ABSOLUTE_END, diagram);
-        agca.getAdaptedGradientColoredAreas().add(IPredefinedRenderingStyle.STYLE_ADAPTATION_DEFAULT, defaultGradientColoredAreas);
-        final GradientColoredAreas primarySelectedGradientColoredAreas = StylesFactory.eINSTANCE.createGradientColoredAreas();
-        primarySelectedGradientColoredAreas.setStyleAdaption(IPredefinedRenderingStyle.STYLE_ADAPTATION_DEFAULT);
-        final EList<GradientColoredArea> selectedGcas = primarySelectedGradientColoredAreas.getGradientColor();
-        addGradientColoredArea(selectedGcas, "E5E5C2", 0, LocationType.LOCATION_TYPE_ABSOLUTE_START, "E5E5C2", 0, //$NON-NLS-1$ //$NON-NLS-2$
-                LocationType.LOCATION_TYPE_ABSOLUTE_END, diagram);
-        agca.getAdaptedGradientColoredAreas().add(IPredefinedRenderingStyle.STYLE_ADAPTATION_PRIMARY_SELECTED, primarySelectedGradientColoredAreas);
-        final GradientColoredAreas secondarySelectedGradientColoredAreas = StylesFactory.eINSTANCE.createGradientColoredAreas();
-        secondarySelectedGradientColoredAreas.setStyleAdaption(IPredefinedRenderingStyle.STYLE_ADAPTATION_DEFAULT);
-        final EList<GradientColoredArea> secondarySelectedGcas = secondarySelectedGradientColoredAreas.getGradientColor();
-        addGradientColoredArea(secondarySelectedGcas, "E5E5C2", 0, LocationType.LOCATION_TYPE_ABSOLUTE_START, "E5E5C2", 0, //$NON-NLS-1$ //$NON-NLS-2$
-                LocationType.LOCATION_TYPE_ABSOLUTE_END, diagram);
-        agca.getAdaptedGradientColoredAreas().add(IPredefinedRenderingStyle.STYLE_ADAPTATION_SECONDARY_SELECTED, secondarySelectedGradientColoredAreas);
-        return agca;
-    }
-
-    // find the style with a given id in the style-container, can return null
-    private static Style findStyle(StyleContainer styleContainer, String id) {
-        // find and return style
-        Collection<Style> styles = styleContainer.getStyles();
-        if (styles != null) {
-            for (Style style : styles) {
-                if (id.equals(style.getId())) {
-                    return style;
-                }
+    private static Style findOrCreateStyle(Diagram diagram, String styleId, StyleInitializer styleInitializer) {
+        for (Style style : diagram.getStyles()) {
+            if (styleId.equals(style.getId())) {
+                return style;
             }
         }
-        return null;
+        return createStyle(diagram, styleId, styleInitializer);
     }
 
-    private static AdaptedGradientColoredAreas getDefaultEventColor(Diagram diagram) {
-        AdaptedGradientColoredAreas agca = StylesFactory.eINSTANCE.createAdaptedGradientColoredAreas();
-        agca.setDefinedStyleId("bpmnEventStyle");
-        agca.setGradientType(IGradientType.VERTICAL);
-        GradientColoredAreas defaultGradientColoredAreas = StylesFactory.eINSTANCE.createGradientColoredAreas();
-        defaultGradientColoredAreas.setStyleAdaption(IPredefinedRenderingStyle.STYLE_ADAPTATION_DEFAULT);
-        EList<GradientColoredArea> gcas = defaultGradientColoredAreas.getGradientColor();
-        addGradientColoredArea(gcas, "FAFBFC", 0, LocationType.LOCATION_TYPE_ABSOLUTE_START, "FAFBFC", 0, //$NON-NLS-1$ //$NON-NLS-2$
-                LocationType.LOCATION_TYPE_ABSOLUTE_END, diagram);
-        agca.getAdaptedGradientColoredAreas().add(IPredefinedRenderingStyle.STYLE_ADAPTATION_DEFAULT, defaultGradientColoredAreas);
-        GradientColoredAreas primarySelectedGradientColoredAreas = StylesFactory.eINSTANCE.createGradientColoredAreas();
-        primarySelectedGradientColoredAreas.setStyleAdaption(IPredefinedRenderingStyle.STYLE_ADAPTATION_DEFAULT);
-        EList<GradientColoredArea> selectedGcas = primarySelectedGradientColoredAreas.getGradientColor();
-        addGradientColoredArea(selectedGcas, "E5E5C2", 0, LocationType.LOCATION_TYPE_ABSOLUTE_START, "E5E5C2", 0, //$NON-NLS-1$ //$NON-NLS-2$
-                LocationType.LOCATION_TYPE_ABSOLUTE_END, diagram);
-        agca.getAdaptedGradientColoredAreas().add(IPredefinedRenderingStyle.STYLE_ADAPTATION_PRIMARY_SELECTED, primarySelectedGradientColoredAreas);
-        GradientColoredAreas secondarySelectedGradientColoredAreas = StylesFactory.eINSTANCE.createGradientColoredAreas();
-        secondarySelectedGradientColoredAreas.setStyleAdaption(IPredefinedRenderingStyle.STYLE_ADAPTATION_DEFAULT);
-        EList<GradientColoredArea> secondarySelectedGcas = secondarySelectedGradientColoredAreas.getGradientColor();
-        addGradientColoredArea(secondarySelectedGcas, "E5E5C2", 0, LocationType.LOCATION_TYPE_ABSOLUTE_START, "E5E5C2", 0, //$NON-NLS-1$ //$NON-NLS-2$
-                LocationType.LOCATION_TYPE_ABSOLUTE_END, diagram);
-        agca.getAdaptedGradientColoredAreas().add(IPredefinedRenderingStyle.STYLE_ADAPTATION_SECONDARY_SELECTED, secondarySelectedGradientColoredAreas);
-        return agca;
-    }
-
-    private static void addGradientColoredArea(EList<GradientColoredArea> gcas, String colorStart, int locationValueStart, LocationType locationTypeStart, String colorEnd,
-            int locationValueEnd, LocationType locationTypeEnd, Diagram diagram) {
-        GradientColoredArea gca = StylesFactory.eINSTANCE.createGradientColoredArea();
-        gcas.add(gca);
-        gca.setStart(StylesFactory.eINSTANCE.createGradientColoredLocation());
-        IGaService gaService = Graphiti.getGaService();
-        Color startColor = gaService.manageColor(diagram, ColorUtil.getRedFromHex(colorStart), ColorUtil.getGreenFromHex(colorStart), ColorUtil.getBlueFromHex(colorStart));
-        gca.getStart().setColor(startColor);
-        //    gca.getStart().setColor(StylesFactory.eINSTANCE.createColor());
-        //    gca.getStart().getColor().setBlue(ColorUtil.getBlueFromHex(colorStart));
-        //    gca.getStart().getColor().setGreen(ColorUtil.getGreenFromHex(colorStart));
-        //    gca.getStart().getColor().setRed(ColorUtil.getRedFromHex(colorStart));
-        gca.getStart().setLocationType(locationTypeStart);
-        gca.getStart().setLocationValue(locationValueStart);
-        gca.setEnd(StylesFactory.eINSTANCE.createGradientColoredLocation());
-        Color endColor = gaService.manageColor(diagram, ColorUtil.getRedFromHex(colorEnd), ColorUtil.getGreenFromHex(colorEnd), ColorUtil.getBlueFromHex(colorEnd));
-        gca.getEnd().setColor(endColor);
-        gca.getEnd().setLocationType(locationTypeEnd);
-        gca.getEnd().setLocationValue(locationValueEnd);
-    }
-
-    public static Style getStyleForPolygonArrow(Diagram diagram) {
-        final String styleId = "BPMN-POLYGON-ARROW"; //$NON-NLS-1$
-        Style style = findStyle(diagram, styleId);
-        if (style == null) { // style not found - create new style
-            IGaService gaService = Graphiti.getGaService();
-            style = gaService.createStyle(diagram, styleId);
-            style.setForeground(gaService.manageColor(diagram, IColorConstant.BLACK));
-            style.setBackground(gaService.manageColor(diagram, IColorConstant.BLACK));
-            style.setLineWidth(1);
+    private static Color getColor(Diagram diagram, String bpmnName, String propertyName) {
+        String fullPropertyName = LanguageElementPreferenceNode.getBpmnPropertyName(bpmnName, propertyName);
+        if (!Activator.getDefault().getPreferenceStore().contains(fullPropertyName)) {
+            fullPropertyName = LanguageElementPreferenceNode.getBpmnDefaultPropertyName(propertyName);
         }
-        return style;
+        RGB colorPref = PreferenceConverter.getColor(Activator.getDefault().getPreferenceStore(), fullPropertyName);
+        return Graphiti.getGaService().manageColor(diagram, new ColorConstant(colorPref.red, colorPref.green, colorPref.blue));
     }
 
-    public static Style getStyleForPolygonDiamond(Diagram diagram) {
-        final String styleId = "BPMN-POLYGON-DIAMOND";
-        Style style = findStyle(diagram, styleId);
-        if (style == null) { // style not found - create new style
-            IGaService gaService = Graphiti.getGaService();
-            style = gaService.createStyle(diagram, styleId);
-            style.setForeground(gaService.manageColor(diagram, IColorConstant.BLACK));
-            style.setBackground(gaService.manageColor(diagram, IColorConstant.WHITE));
-            style.setLineWidth(1);
+    private static int getInt(Diagram diagram, String bpmnName, String propertyName) {
+        String fullPropertyName = LanguageElementPreferenceNode.getBpmnPropertyName(bpmnName, propertyName);
+        if (!Activator.getDefault().getPreferenceStore().contains(fullPropertyName)) {
+            fullPropertyName = LanguageElementPreferenceNode.getBpmnDefaultPropertyName(propertyName);
         }
-        return style;
+        return Activator.getDefault().getPreferenceStore().getInt(fullPropertyName);
     }
+
+    public static void resetStyles(Diagram diagram) {
+        for (Style style : diagram.getStyles()) {
+            initializers.get(style.getId()).init(diagram, style);
+        }
+    }
+
+    public static abstract class StyleInitializer {
+
+        public abstract void init(Diagram diagram, Style style);
+
+    }
+
+    public static class StateNodeOuterRectangleStyleInitializer extends StyleInitializer {
+        private final String bpmnName;
+
+        public StateNodeOuterRectangleStyleInitializer(String bpmnName) {
+            this.bpmnName = bpmnName;
+        }
+
+        @Override
+        public void init(Diagram diagram, Style style) {
+            initColors(diagram, style, bpmnName);
+            style.setLineWidth(getInt(diagram, bpmnName, P_BPMN_LINE_WIDTH));
+            Graphiti.getGaService().setRenderingStyle(style, getDefaultEventColor(diagram, style.getBackground()));
+        }
+
+        private AdaptedGradientColoredAreas getDefaultEventColor(Diagram diagram, Color color) {
+            AdaptedGradientColoredAreas agca = StylesFactory.eINSTANCE.createAdaptedGradientColoredAreas();
+            agca.setDefinedStyleId("bpmnEventStyle");
+            agca.setGradientType(IGradientType.VERTICAL);
+            GradientColoredAreas defaultGradientColoredAreas = StylesFactory.eINSTANCE.createGradientColoredAreas();
+            defaultGradientColoredAreas.setStyleAdaption(IPredefinedRenderingStyle.STYLE_ADAPTATION_DEFAULT);
+            EList<GradientColoredArea> gcas = defaultGradientColoredAreas.getGradientColor();
+            Color colorEnd = Graphiti.getGaService().manageColor(diagram,
+                    new ColorConstant(Math.max(0, color.getRed() - 1), Math.max(0, color.getGreen() - 1), Math.max(0, color.getBlue() - 1)));
+            addGradientColoredArea(gcas, color, 0, LocationType.LOCATION_TYPE_ABSOLUTE_START, colorEnd, 0, LocationType.LOCATION_TYPE_ABSOLUTE_END,
+                    diagram);
+            agca.getAdaptedGradientColoredAreas().add(IPredefinedRenderingStyle.STYLE_ADAPTATION_DEFAULT, defaultGradientColoredAreas);
+            GradientColoredAreas primarySelectedGradientColoredAreas = StylesFactory.eINSTANCE.createGradientColoredAreas();
+            primarySelectedGradientColoredAreas.setStyleAdaption(IPredefinedRenderingStyle.STYLE_ADAPTATION_DEFAULT);
+            EList<GradientColoredArea> selectedGcas = primarySelectedGradientColoredAreas.getGradientColor();
+            addGradientColoredArea(selectedGcas, "E5E5C2", 0, LocationType.LOCATION_TYPE_ABSOLUTE_START, "E5E5C2", 0,
+                    LocationType.LOCATION_TYPE_ABSOLUTE_END, diagram);
+            agca.getAdaptedGradientColoredAreas().add(IPredefinedRenderingStyle.STYLE_ADAPTATION_PRIMARY_SELECTED,
+                    primarySelectedGradientColoredAreas);
+            GradientColoredAreas secondarySelectedGradientColoredAreas = StylesFactory.eINSTANCE.createGradientColoredAreas();
+            secondarySelectedGradientColoredAreas.setStyleAdaption(IPredefinedRenderingStyle.STYLE_ADAPTATION_DEFAULT);
+            EList<GradientColoredArea> secondarySelectedGcas = secondarySelectedGradientColoredAreas.getGradientColor();
+            addGradientColoredArea(secondarySelectedGcas, "E5E5C2", 0, LocationType.LOCATION_TYPE_ABSOLUTE_START, "E5E5C2", 0,
+                    LocationType.LOCATION_TYPE_ABSOLUTE_END, diagram);
+            agca.getAdaptedGradientColoredAreas().add(IPredefinedRenderingStyle.STYLE_ADAPTATION_SECONDARY_SELECTED,
+                    secondarySelectedGradientColoredAreas);
+            return agca;
+        }
+
+        private void addGradientColoredArea(EList<GradientColoredArea> gcas, String colorStart, int locationValueStart,
+                LocationType locationTypeStart, String colorEnd, int locationValueEnd, LocationType locationTypeEnd, Diagram diagram) {
+            GradientColoredArea gca = StylesFactory.eINSTANCE.createGradientColoredArea();
+            gcas.add(gca);
+            gca.setStart(StylesFactory.eINSTANCE.createGradientColoredLocation());
+            IGaService gaService = Graphiti.getGaService();
+            Color startColor = gaService.manageColor(diagram, ColorUtil.getRedFromHex(colorStart), ColorUtil.getGreenFromHex(colorStart),
+                    ColorUtil.getBlueFromHex(colorStart));
+            gca.getStart().setColor(startColor);
+            gca.getStart().setLocationType(locationTypeStart);
+            gca.getStart().setLocationValue(locationValueStart);
+            gca.setEnd(StylesFactory.eINSTANCE.createGradientColoredLocation());
+            Color endColor = gaService.manageColor(diagram, ColorUtil.getRedFromHex(colorEnd), ColorUtil.getGreenFromHex(colorEnd),
+                    ColorUtil.getBlueFromHex(colorEnd));
+            gca.getEnd().setColor(endColor);
+            gca.getEnd().setLocationType(locationTypeEnd);
+            gca.getEnd().setLocationValue(locationValueEnd);
+        }
+
+        private void addGradientColoredArea(EList<GradientColoredArea> gcas, Color startColor, int locationValueStart,
+                LocationType locationTypeStart, Color endColor, int locationValueEnd, LocationType locationTypeEnd, Diagram diagram) {
+            GradientColoredArea gca = StylesFactory.eINSTANCE.createGradientColoredArea();
+            gcas.add(gca);
+            gca.setStart(StylesFactory.eINSTANCE.createGradientColoredLocation());
+            gca.getStart().setColor(startColor);
+            gca.getStart().setLocationType(locationTypeStart);
+            gca.getStart().setLocationValue(locationValueStart);
+            gca.setEnd(StylesFactory.eINSTANCE.createGradientColoredLocation());
+            gca.getEnd().setColor(endColor);
+            gca.getEnd().setLocationType(locationTypeEnd);
+            gca.getEnd().setLocationValue(locationValueEnd);
+        }
+    }
+
+    public static class StateNodeBoundaryEventEllipseStyleInitializer extends StyleInitializer {
+        private final String bpmnName;
+
+        public StateNodeBoundaryEventEllipseStyleInitializer(String bpmnName) {
+            this.bpmnName = bpmnName;
+        }
+
+        @Override
+        public void init(Diagram diagram, Style style) {
+            style.setFilled(Boolean.FALSE);
+            style.setForeground(getColor(diagram, bpmnName, P_BPMN_FOREGROUND_COLOR));
+            style.setLineWidth(getInt(diagram, bpmnName, P_BPMN_LINE_WIDTH));
+            style.setLineStyle(LineStyle.DASH);
+        }
+
+    }
+
+    public static class SubprocessNodeTransactionalStyleInitializer extends StyleInitializer {
+        private final String bpmnName;
+
+        public SubprocessNodeTransactionalStyleInitializer(String bpmnName) {
+            this.bpmnName = bpmnName;
+        }
+
+        @Override
+        public void init(Diagram diagram, Style style) {
+            style.setFilled(false);
+            style.setForeground(getColor(diagram, bpmnName, P_BPMN_FOREGROUND_COLOR));
+            style.setLineWidth(getInt(diagram, bpmnName, P_BPMN_LINE_WIDTH));
+        }
+
+    }
+
+    public static class TextStyleInitializer extends StyleInitializer {
+        private final String bpmnName;
+
+        public TextStyleInitializer(String bpmnName) {
+            this.bpmnName = bpmnName;
+        }
+
+        @Override
+        public void init(Diagram diagram, Style style) {
+            String fontPropertyName = LanguageElementPreferenceNode.getBpmnPropertyName(bpmnName, P_BPMN_FONT);
+            if (!Activator.getDefault().getPreferenceStore().contains(fontPropertyName)) {
+                fontPropertyName = LanguageElementPreferenceNode.getBpmnDefaultPropertyName(P_BPMN_FONT);
+            }
+            FontData fontData = PreferenceConverter.getFontData(Activator.getDefault().getPreferenceStore(), fontPropertyName);
+            boolean italic = (fontData.getStyle() & SWT.ITALIC) != 0;
+            boolean bold = (fontData.getStyle() & SWT.BOLD) != 0;
+            Font font = Graphiti.getGaService().manageFont(diagram, fontData.getName(), fontData.getHeight(), italic, bold);
+            style.setFont(font);
+
+            Color color = getColor(diagram, bpmnName, P_BPMN_FONT_COLOR);
+            style.setForeground(color);
+            style.setBackground(color);
+        }
+
+    }
+
+    public static class TransitionColorMarkerStyleInitializer extends TextStyleInitializer {
+
+        private final TransitionColor transitionColor;
+
+        public TransitionColorMarkerStyleInitializer(String bpmnName, TransitionColor transitionColor) {
+            super(bpmnName);
+            this.transitionColor = transitionColor;
+        }
+
+        @Override
+        public void init(Diagram diagram, Style style) {
+            super.init(diagram, style);
+            Font font = style.getFont();
+            style.setFont(Graphiti.getGaService().manageFont(diagram, font.getName(), font.getSize(), font.isItalic(), true));
+            Color color = Graphiti.getGaService().manageColor(diagram, transitionColor.red, transitionColor.green, transitionColor.blue);
+            style.setBackground(color);
+            style.setForeground(color);
+        }
+
+    }
+
+    public static class TransitionPolylineStyleInitializer extends StyleInitializer {
+
+        @Override
+        public void init(Diagram diagram, Style style) {
+            Color color = getColor(diagram, TRANSITION_BPMN_NAME, P_BPMN_FOREGROUND_COLOR);
+            style.setForeground(color);
+            style.setBackground(color);
+            style.setLineWidth(getInt(diagram, TRANSITION_BPMN_NAME, P_BPMN_LINE_WIDTH));
+        }
+    }
+
+    public static class TransitionDiamondPolylineStyleInitializer extends StyleInitializer {
+
+        @Override
+        public void init(Diagram diagram, Style style) {
+            style.setForeground(getColor(diagram, TRANSITION_BPMN_NAME, P_BPMN_FOREGROUND_COLOR));
+            style.setBackground(getColor(diagram, TRANSITION_BPMN_NAME, P_BPMN_BACKGROUND_COLOR));
+        }
+
+    }
+
+    public static class TextAnnotationPolylineStyleInitializer extends StyleInitializer {
+
+        @Override
+        public void init(Diagram diagram, Style style) {
+            style.setForeground(getColor(diagram, TEXT_ANNOTATION_BPMN_NAME, P_BPMN_FOREGROUND_COLOR));
+            style.setLineWidth(getInt(diagram, TEXT_ANNOTATION_BPMN_NAME, P_BPMN_LINE_WIDTH));
+        }
+
+    }
+
 }

@@ -13,6 +13,7 @@ import org.eclipse.graphiti.features.custom.ICustomFeature;
 import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
 import org.eclipse.graphiti.mm.algorithms.Image;
 import org.eclipse.graphiti.mm.algorithms.Polyline;
+import org.eclipse.graphiti.mm.pictograms.ConnectionDecorator;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.mm.pictograms.Shape;
@@ -21,7 +22,6 @@ import org.eclipse.graphiti.tb.DefaultToolBehaviorProvider;
 import org.eclipse.graphiti.tb.IContextButtonPadData;
 
 import ru.runa.gpd.Localization;
-import ru.runa.gpd.editor.graphiti.create.CreateAnnotationFeature;
 import ru.runa.gpd.editor.graphiti.create.CreateElementFeature;
 import ru.runa.gpd.editor.graphiti.create.CreateStartNodeFeature;
 import ru.runa.gpd.editor.graphiti.create.CreateSwimlaneFeature;
@@ -113,8 +113,7 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
             createElementButton.setIconId("elements.png");
             data.getDomainSpecificContextButtons().add(createElementButton);
             for (ICreateFeature feature : getFeatureProvider().getCreateFeatures()) {
-                if (feature instanceof CreateSwimlaneFeature || feature instanceof CreateAnnotationFeature
-                        || feature instanceof CreateStartNodeFeature) {
+                if (feature instanceof CreateSwimlaneFeature || feature instanceof CreateStartNodeFeature) {
                     continue;
                 }
                 if (feature instanceof CreateElementFeature && feature.canCreate(createContext)) {
@@ -159,6 +158,18 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
             }
             return toolTip;
         }
-        return super.getToolTip(ga);
+        return (String) super.getToolTip(ga);
     }
+
+    @Override
+    public PictogramElement getSelection(PictogramElement originalPe, PictogramElement[] oldSelection) {
+        if (originalPe instanceof ConnectionDecorator) {
+            if (PropertyUtil.hasProperty(originalPe, GaProperty.ID, GaProperty.TRANSITION_NUMBER)
+                    || PropertyUtil.hasProperty(originalPe, GaProperty.ID, GaProperty.TRANSITION_COLOR_MARKER)) {
+                return getDiagramTypeProvider().getDiagram();
+            }
+        }
+        return super.getSelection(originalPe, oldSelection);
+    }
+
 }

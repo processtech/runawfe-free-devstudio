@@ -25,7 +25,7 @@ public class TextListParameter extends ParameterType {
     private static final String VALUES_DELIM = ",";
 
     public TextListParameter() {
-        super(true, true);
+        super(true);
     }
 
     @Override

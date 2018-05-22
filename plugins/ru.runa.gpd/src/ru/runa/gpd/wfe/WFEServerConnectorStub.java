@@ -55,6 +55,11 @@ public class WFEServerConnectorStub extends WFEServerConnector {
     }
 
     @Override
+    public WfDefinition updateProcessDefinitionArchive(Long definitionId, byte[] par) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public Map<Bot, List<BotTask>> getBots() {
         return Maps.newHashMap();
     }

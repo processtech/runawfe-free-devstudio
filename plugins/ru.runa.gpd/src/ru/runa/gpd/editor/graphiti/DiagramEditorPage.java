@@ -10,13 +10,10 @@ import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.transaction.RecordingCommand;
 import org.eclipse.emf.transaction.TransactionalEditingDomain;
 import org.eclipse.emf.transaction.util.TransactionUtil;
-import org.eclipse.gef.ContextMenuProvider;
-import org.eclipse.gef.KeyHandler;
 import org.eclipse.gef.LayerConstants;
 import org.eclipse.gef.commands.CommandStack;
 import org.eclipse.gef.editparts.LayerManager;
 import org.eclipse.gef.editparts.ScalableFreeformRootEditPart;
-import org.eclipse.gef.editparts.ZoomManager;
 import org.eclipse.graphiti.features.IAddFeature;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.impl.AddConnectionContext;
@@ -33,15 +30,17 @@ import org.eclipse.graphiti.mm.pictograms.Diagram;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.mm.pictograms.Shape;
 import org.eclipse.graphiti.services.Graphiti;
-import org.eclipse.graphiti.ui.editor.DiagramEditor2;
+import org.eclipse.graphiti.ui.editor.DiagramBehavior;
+import org.eclipse.graphiti.ui.editor.DiagramEditor;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 
+import com.google.common.base.Objects;
+
 import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.ProcessEditorBase;
-import ru.runa.gpd.editor.ProcessEditorContributor;
 import ru.runa.gpd.editor.gef.GEFActionBarContributor;
 import ru.runa.gpd.editor.graphiti.update.BOUpdateContext;
 import ru.runa.gpd.lang.model.Action;
@@ -53,12 +52,9 @@ import ru.runa.gpd.lang.model.SwimlanedNode;
 import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Transition;
 
-import com.google.common.base.Objects;
-
-public class DiagramEditorPage extends DiagramEditor2 implements PropertyChangeListener {
+public class DiagramEditorPage extends DiagramEditor implements PropertyChangeListener {
 
     private final ProcessEditorBase editor;
-    private KeyHandler keyHandler;
 
     public DiagramEditorPage(ProcessEditorBase editor) {
         this.editor = editor;
@@ -68,6 +64,7 @@ public class DiagramEditorPage extends DiagramEditor2 implements PropertyChangeL
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
         super.init(site, input);
         editor.getDefinition().setDelegatedListener(this);
+
     }
 
     public ProcessDefinition getDefinition() {
@@ -150,16 +147,8 @@ public class DiagramEditorPage extends DiagramEditor2 implements PropertyChangeL
     }
 
     @Override
-    protected ContextMenuProvider createContextMenuProvider() {
-        return new DiagramContextMenuProvider(getGraphicalViewer(), getActionRegistry(), getDiagramTypeProvider());
-    }
-
-    @Override
-    protected KeyHandler getCommonKeyHandler() {
-        if (keyHandler == null) {
-            keyHandler = ((ProcessEditorContributor) getEditor().getEditorSite().getActionBarContributor()).createKeyHandler(getActionRegistry());
-        }
-        return keyHandler;
+    protected DiagramBehavior createDiagramBehavior() {
+        return new CustomDiagramBehavior(this);
     }
 
     @Override
@@ -201,7 +190,7 @@ public class DiagramEditorPage extends DiagramEditor2 implements PropertyChangeL
 
     @Override
     public void doSave(IProgressMonitor monitor) {
-        refresh();
+        getDiagramBehavior().refresh();
     }
 
     public void refreshActions() {
@@ -223,7 +212,7 @@ public class DiagramEditorPage extends DiagramEditor2 implements PropertyChangeL
                 }
             }
         }
-        refresh();
+        getDiagramBehavior().refresh();
     }
 
     private void refreshActions(ContainerShape containerShape) {
@@ -321,8 +310,8 @@ public class DiagramEditorPage extends DiagramEditor2 implements PropertyChangeL
         for (Transition transition : transitions) {
             Anchor sourceAnchor = null;
             Anchor targetAnchor = null;
-            AnchorContainer sourceShape = (AnchorContainer) getDiagramTypeProvider().getFeatureProvider().getPictogramElementForBusinessObject(
-                    transition.getSource());
+            AnchorContainer sourceShape = (AnchorContainer) getDiagramTypeProvider().getFeatureProvider()
+                    .getPictogramElementForBusinessObject(transition.getSource());
             if (sourceShape == null) {
                 continue;
             }
@@ -333,8 +322,8 @@ public class DiagramEditorPage extends DiagramEditor2 implements PropertyChangeL
                     break;
                 }
             }
-            AnchorContainer targetShape = (AnchorContainer) getDiagramTypeProvider().getFeatureProvider().getPictogramElementForBusinessObject(
-                    transition.getTarget());
+            AnchorContainer targetShape = (AnchorContainer) getDiagramTypeProvider().getFeatureProvider()
+                    .getPictogramElementForBusinessObject(transition.getTarget());
             if (targetShape == null) {
                 continue;
             }
@@ -349,12 +338,27 @@ public class DiagramEditorPage extends DiagramEditor2 implements PropertyChangeL
             addContext.setNewObject(transition);
             drawActions((Connection) getDiagramTypeProvider().getFeatureProvider().addIfPossible(addContext), transition);
         }
+        setPictogramElementForSelection(null);
     }
 
     @Override
-    protected void initActionRegistry(ZoomManager zoomManager) {
-        super.initActionRegistry(zoomManager);
+    protected void initializeActionRegistry() {
+        super.initializeActionRegistry();
         GEFActionBarContributor.createCustomGEFActions(getActionRegistry(), editor, getSelectionActions());
     }
 
+    public void applyStyles() {
+        getEditingDomain().getCommandStack().execute(new RecordingCommand(getEditingDomain()) {
+            @Override
+            protected void doExecute() {
+                StyleUtil.resetStyles(getDiagramTypeProvider().getDiagram());
+            }
+
+            @Override
+            public boolean canUndo() {
+                return false;
+            }
+        });
+        getDiagramBehavior().refresh();
+    }
 }

@@ -25,7 +25,7 @@ public class VariableListParameter extends ParameterType {
     private static final String VALUES_DELIM = ",";
 
     public VariableListParameter() {
-        super(true, true);
+        super(true);
     }
 
     @Override

@@ -17,8 +17,7 @@ import ru.runa.gpd.editor.ProcessEditorContributor;
 // see org.eclipse.graphiti.ui.editor.DiagramEditorActionBarContributor
 public class DiagramActionBarContributor extends ProcessEditorContributor {
     /**
-     * Creates and initialises all Actions. See the corresponding method in the
-     * super class.
+     * Creates and initialises all Actions. See the corresponding method in the super class.
      * 
      * @see org.eclipse.gef.ui.actions.ActionBarContributor
      */
@@ -56,14 +55,14 @@ public class DiagramActionBarContributor extends ProcessEditorContributor {
         // shall be shown or not
         RetargetAction toggleContextPadAction = new RetargetAction(ToggleContextButtonPadAction.ACTION_ID, ToggleContextButtonPadAction.TEXT,
                 IAction.AS_CHECK_BOX);
-        toggleContextPadAction.setImageDescriptor(GraphitiUi.getImageService().getImageDescriptorForId(IPlatformImageConstants.IMG_TOGGLE_PAD));
+        toggleContextPadAction.setImageDescriptor(
+                GraphitiUi.getImageService().getImageDescriptorForId("ru.runa.wfe.GraphitiTypeProvider", IPlatformImageConstants.IMG_TOGGLE_PAD));
         addRetargetAction(toggleContextPadAction);
         // End bug 323351
     }
 
     /**
-     * Adds Actions to the given IToolBarManager, which is displayed above the
-     * editor. See the corresponding method in the super class.
+     * Adds Actions to the given IToolBarManager, which is displayed above the editor. See the corresponding method in the super class.
      * 
      * @param tbm
      *            the {@link IToolBarManager}
@@ -97,4 +96,5 @@ public class DiagramActionBarContributor extends ProcessEditorContributor {
         tbm.add(zoomCombo);
         super.contributeToToolBar(tbm);
     }
+
 }

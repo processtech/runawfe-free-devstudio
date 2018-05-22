@@ -32,8 +32,6 @@ import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.WorkspaceOperations;
 import ru.runa.wfe.var.MapDelegableVariableProvider;
 
-import com.google.common.base.Charsets;
-
 public final class QuickFormConvertor {
     public interface ConverterSource {
         QuickForm getQuickForm();
@@ -89,7 +87,7 @@ public final class QuickFormConvertor {
         FormHashModelGpdWrap model = new FormHashModelGpdWrap(null, variableProvider, null);
 
         String out = TemplateProcessor.process(formNode.getProcessDefinition().getName() + formNode.getId(), templateHtml, model);
-        ByteArrayInputStream stream = new ByteArrayInputStream(out.getBytes(Charsets.UTF_8));
+        ByteArrayInputStream stream = new ByteArrayInputStream(out.getBytes());
         converterSource.getQuickFormFile().setContents(stream, true, true, null);
     }
 

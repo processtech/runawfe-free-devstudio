@@ -25,7 +25,6 @@ import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.util.BotTaskUtils;
 import ru.runa.gpd.util.IOUtils;
 
-import com.google.common.base.Charsets;
 import com.google.common.io.ByteStreams;
 
 public class BotStationImportCommand extends BotSyncCommand {
@@ -78,7 +77,7 @@ public class BotStationImportCommand extends BotSyncCommand {
     }
 
     private void importBotStation(ZipInputStream zin) throws IOException, CoreException {
-        BufferedReader r = new BufferedReader(new InputStreamReader(zin, Charsets.UTF_8));
+        BufferedReader r = new BufferedReader(new InputStreamReader(zin));
         botStationName = r.readLine();
         String rmiAddress = r.readLine();
         if (BotCache.getAllBotStationNames().contains(botStationName)) {

@@ -9,6 +9,11 @@ import org.dom4j.Element;
 import org.dom4j.QName;
 import org.eclipse.core.resources.IFile;
 
+import com.google.common.base.Objects;
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+
 import ru.runa.gpd.Application;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
@@ -37,6 +42,7 @@ import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Timer;
 import ru.runa.gpd.lang.model.TimerAction;
 import ru.runa.gpd.lang.model.Transition;
+import ru.runa.gpd.lang.model.TransitionColor;
 import ru.runa.gpd.lang.model.bpmn.AbstractEventNode;
 import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
 import ru.runa.gpd.lang.model.bpmn.EventNodeType;
@@ -57,11 +63,6 @@ import ru.runa.wfe.definition.ProcessDefinitionAccessType;
 import ru.runa.wfe.lang.AsyncCompletionMode;
 import ru.runa.wfe.lang.MultiTaskCreationMode;
 import ru.runa.wfe.lang.MultiTaskSynchronizationMode;
-
-import com.google.common.base.Objects;
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 @SuppressWarnings("unchecked")
 public class BpmnSerializer extends ProcessSerializer {
@@ -199,6 +200,7 @@ public class BpmnSerializer extends ProcessSerializer {
         for (Timer timer : timers) {
             Element intermediateEventElement = processElement.addElement(INTERMEDIATE_CATCH_EVENT);
             writeTimer(intermediateEventElement, timer);
+            writeBoundaryEvents(processElement, timer);
             writeTransitions(processElement, timer);
         }
         List<ScriptTask> scriptTasks = definition.getChildren(ScriptTask.class);
@@ -221,6 +223,9 @@ public class BpmnSerializer extends ProcessSerializer {
             }
             if (subprocess.isEmbedded()) {
                 properties.put(EMBEDDED, true);
+            }
+            if (subprocess.isTransactional()) {
+                properties.put(TRANSACTIONAL, true);
             }
             if (subprocess.isAsync()) {
                 properties.put(ASYNC, Boolean.TRUE.toString());
@@ -433,6 +438,11 @@ public class BpmnSerializer extends ProcessSerializer {
             transitionElement.addAttribute(SOURCE_REF, sourceNodeId);
             transitionElement.addAttribute(TARGET_REF, targetNodeId);
             writeActionHandlers(transitionElement, transition);
+            if (transition.getColor() != TransitionColor.DEFAULT) {
+                Map<String, String> properties = Maps.newLinkedHashMap();
+                properties.put(PropertyNames.PROPERTY_COLOR, transition.getColor().name().toLowerCase());
+                writeExtensionElements(transitionElement, properties);
+            }
         }
     }
 
@@ -755,6 +765,9 @@ public class BpmnSerializer extends ProcessSerializer {
             if (properties.containsKey(EMBEDDED)) {
                 subprocess.setEmbedded(Boolean.parseBoolean(properties.get(EMBEDDED)));
             }
+            if (properties.containsKey(TRANSACTIONAL)) {
+                subprocess.setTransactional(Boolean.parseBoolean(properties.get(TRANSACTIONAL)));
+            }
             String async = properties.get(ASYNC);
             if (async != null) {
                 subprocess.setAsync(Boolean.parseBoolean(async));
@@ -827,6 +840,10 @@ public class BpmnSerializer extends ProcessSerializer {
             transition.setName(transitionElement.attributeValue(NAME));
             transition.setTarget(target);
             parseActionHandlers(transitionElement, transition);
+            Map<String, String> properties = parseExtensionProperties(transitionElement);
+            if (properties.containsKey(PropertyNames.PROPERTY_COLOR)) {
+                transition.setColor(TransitionColor.findByValue(properties.get(PropertyNames.PROPERTY_COLOR)));
+            }
             source.addLeavingTransition(transition);
         }
         for (Map.Entry<Swimlane, List<String>> entry : swimlaneElementIds.entrySet()) {
