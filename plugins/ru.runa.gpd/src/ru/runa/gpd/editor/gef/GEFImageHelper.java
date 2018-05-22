@@ -8,7 +8,6 @@ import java.util.Set;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.SWTGraphics;
-import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.GraphicalViewer;
 import org.eclipse.gef.LayerConstants;
@@ -101,8 +100,6 @@ public class GEFImageHelper {
                     } else {
                         r.x = 0;
                     }
-                } else if (r.x < 0) {
-                    r.x = 0;
                 }
                 if (yVisual != null) {
                     if (isConnectionLabel(yVisual)) {
@@ -112,8 +109,6 @@ public class GEFImageHelper {
                     } else {
                         r.y = 0;
                     }
-                } else if (r.y < 0) {
-                    r.y = 0;
                 }
             }
             definition.setConstraint(r);
