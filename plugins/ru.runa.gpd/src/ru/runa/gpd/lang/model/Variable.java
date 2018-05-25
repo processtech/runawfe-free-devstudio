@@ -25,6 +25,7 @@ public class Variable extends NamedGraphElement implements Describable {
     private String defaultValue;
     private VariableUserType userType;
     private VariableStoreType storeType = VariableStoreType.DEFAULT;
+    private boolean global;
 
     public Variable() {
     }
@@ -232,7 +233,33 @@ public class Variable extends NamedGraphElement implements Describable {
         copyVariable.setDefaultValue(getDefaultValue());
         copyVariable.setPublicVisibility(isPublicVisibility());
         copyVariable.setStoreType(getStoreType());
+        copyVariable.setGlobal(isGlobal());
         super.fillCopyCustomFields(copyVariable);
+    }
+
+    public boolean isGlobal() {
+        return global;
+    }
+
+    public void setGlobal(boolean global) {
+        if (this.global != global) {
+            this.global = global;
+            firePropertyChange(PROPERTY_GLOBAL, !this.global, this.global);
+        }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        return getName().equals(((Variable) obj).getName());
     }
 
 }

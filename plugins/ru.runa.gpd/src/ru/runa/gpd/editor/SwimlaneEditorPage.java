@@ -1,8 +1,12 @@
 package ru.runa.gpd.editor;
 
 import java.beans.PropertyChangeEvent;
+import java.io.ByteArrayInputStream;
 import java.util.List;
 
+import org.eclipse.core.internal.resources.Folder;
+import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.gef.ui.actions.Clipboard;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -25,6 +29,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 
 import ru.runa.gpd.Localization;
+import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.gef.command.ProcessDefinitionRemoveSwimlaneCommand;
 import ru.runa.gpd.extension.DelegableProvider;
@@ -46,8 +51,11 @@ import ru.runa.gpd.ui.custom.DragAndDropAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.custom.TableViewerLocalDragAndDropSupport;
 import ru.runa.gpd.ui.dialog.UpdateSwimlaneNameDialog;
+import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.SwimlaneDisplayMode;
 import ru.runa.gpd.util.WorkspaceOperations;
+
+import com.google.common.base.Charsets;
 
 public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
 
@@ -134,15 +142,16 @@ public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
 
     @Override
     protected void updateUI() {
-        List<?> swimlanes = (List<?>) tableViewer.getInput();
-        List<?> selected = ((IStructuredSelection) tableViewer.getSelection()).toList();
-        enableAction(searchButton, selected.size() == 1);
-        enableAction(changeButton, selected.size() == 1);
-        enableAction(moveUpButton, selected.size() == 1 && swimlanes.indexOf(selected.get(0)) > 0);
-        enableAction(moveDownButton, selected.size() == 1 && swimlanes.indexOf(selected.get(0)) < swimlanes.size() - 1);
-        enableAction(deleteButton, swimlanesCreateDeleteEnabled && selected.size() > 0);
-        enableAction(renameButton, selected.size() == 1);
-        enableAction(copyButton, selected.size() > 0);
+        List<Swimlane> swimlanes = (List<Swimlane>) tableViewer.getInput();
+        List<Swimlane> selected = ((IStructuredSelection) tableViewer.getSelection()).toList();
+        boolean withoutGlobals = withoutGlobals(selected);
+        enableAction(searchButton, withoutGlobals && selected.size() == 1);
+        enableAction(changeButton, withoutGlobals && selected.size() == 1);
+        enableAction(moveUpButton, withoutGlobals && selected.size() == 1 && swimlanes.indexOf(selected.get(0)) > 0);
+        enableAction(moveDownButton, withoutGlobals && selected.size() == 1 && swimlanes.indexOf(selected.get(0)) < swimlanes.size() - 1);
+        enableAction(deleteButton, withoutGlobals && swimlanesCreateDeleteEnabled && selected.size() > 0);
+        enableAction(renameButton, withoutGlobals && selected.size() == 1);
+        enableAction(copyButton, withoutGlobals && selected.size() > 0);
         boolean pasteEnabled = false;
         if (Clipboard.getDefault().getContents() instanceof List) {
             List<?> list = (List<?>) Clipboard.getDefault().getContents();
@@ -151,6 +160,15 @@ public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
             }
         }
         enableAction(pasteButton, swimlanesCreateDeleteEnabled && pasteEnabled);
+    }
+
+    private boolean withoutGlobals(List<Swimlane> list) {
+        for (Swimlane swimlane : list) {
+            if (swimlane.isGlobal()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void updateViewer() {
@@ -162,7 +180,7 @@ public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
         updateUI();
     }
 
-    private void delete(Swimlane swimlane) {
+    private void delete(Swimlane swimlane) throws Exception {
         boolean confirmationRequired = false;
         StringBuffer confirmationInfo = new StringBuffer();
         List<FormNode> nodesWithVar = ParContentProvider.getFormsWhereVariableUsed(editor.getDefinitionFile(), getDefinition(), swimlane.getName());
@@ -209,6 +227,9 @@ public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
             // TODO Ctrl+Z support (form validation)
             // editor.getCommandStack().execute(command);
             command.execute();
+            if (editor.getPartName().startsWith(".")) { // globals
+                replaceAllReferences(swimlane.getName(), null, null);
+            }
         }
     }
 
@@ -269,6 +290,7 @@ public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
                     }
                 }
             }
+            String oldName = swimlane.getName();
             // update name
             swimlane.setName(newName);
             swimlane.setScriptingName(newScriptingName);
@@ -276,6 +298,33 @@ public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
                 IDE.saveAllEditors(new IResource[] { projectRoot }, false);
                 for (SubprocessDefinition subprocessDefinition : editor.getDefinition().getEmbeddedSubprocesses().values()) {
                     WorkspaceOperations.saveProcessDefinition(subprocessDefinition.getFile(), subprocessDefinition);
+                }
+            }
+            if (editor.getPartName().startsWith(".")) { // globals
+                replaceAllReferences(oldName, swimlane.getName(), null);
+            }
+        }
+    }
+
+    private void replaceAllReferences(String oldName, String newName, IContainer parent) throws Exception {
+        if (parent == null) {
+            parent = editor.getDefinitionFile().getParent().getParent();
+        }
+        for (IResource resource : parent.members()) {
+            if (resource instanceof Folder) {
+                IFile processDefinitionFile = ((Folder) resource).getFile(ParContentProvider.PROCESS_DEFINITION_FILE_NAME);
+                if (processDefinitionFile.exists()) {
+                    if (!resource.getName().startsWith(".")) {
+                        String content = IOUtils.readStream(processDefinitionFile.getContents());
+                        String oldReference = "=\"" + Swimlane.GLOBAL_ROLE_REF_PREFIX + oldName + "\"";
+                        if (content.contains(oldReference)) {
+                            content = content.replaceAll(oldReference, "=\"" + (newName == null ? "" : Swimlane.GLOBAL_ROLE_REF_PREFIX + newName) + "\"");
+                            processDefinitionFile.setContents(new ByteArrayInputStream(content.getBytes(Charsets.UTF_8)), true, true, null);
+                            ProcessCache.invalidateProcessDefinition(processDefinitionFile);
+                        }
+                    }
+                } else {
+                    replaceAllReferences(oldName, newName, (Folder) resource);
                 }
             }
         }

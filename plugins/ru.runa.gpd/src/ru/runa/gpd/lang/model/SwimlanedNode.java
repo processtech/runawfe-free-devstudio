@@ -66,8 +66,11 @@ public abstract class SwimlanedNode extends Node implements PropertyChangeListen
     @Override
     public void validate(List<ValidationError> errors, IFile definitionFile) {
         super.validate(errors, definitionFile);
-        if (getSwimlane() == null && !isSwimlaneDisabled()) {
+        if (swimlane == null && !isSwimlaneDisabled()) {
             errors.add(ValidationError.createLocalizedError(this, "swimlaneNotSet"));
+        }
+        if (swimlane != null && !getProcessDefinition().getSwimlanes().contains(swimlane)) {
+            errors.add(ValidationError.createLocalizedError(this, "swimlaneDoesNotExist", swimlane.getName()));
         }
     }
 
