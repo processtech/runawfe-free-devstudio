@@ -117,8 +117,6 @@ public class BpmnSerializer extends ProcessSerializer {
     public static final String END_TEXT_DECORATION = "endTextDecoration";
     private static final String ACTION_HANDLER = "actionHandler";
     private static final String EVENT_TYPE = "eventType";
-    private static final String USE_GLOBALS = "useGlobals";
-    private static final String GLOBAL = "global";
 
     @Override
     public boolean isSupported(Document document) {

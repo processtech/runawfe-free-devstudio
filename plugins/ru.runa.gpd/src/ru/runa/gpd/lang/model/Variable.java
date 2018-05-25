@@ -233,6 +233,7 @@ public class Variable extends NamedGraphElement implements Describable {
         copyVariable.setDefaultValue(getDefaultValue());
         copyVariable.setPublicVisibility(isPublicVisibility());
         copyVariable.setStoreType(getStoreType());
+        copyVariable.setGlobal(isGlobal());
         super.fillCopyCustomFields(copyVariable);
     }
 

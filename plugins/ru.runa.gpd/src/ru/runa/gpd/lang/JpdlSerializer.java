@@ -41,6 +41,7 @@ import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Timer;
 import ru.runa.gpd.lang.model.TimerAction;
 import ru.runa.gpd.lang.model.Transition;
+import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.bpmn.Conjunction;
 import ru.runa.gpd.lang.model.jpdl.ActionNode;
 import ru.runa.gpd.lang.model.jpdl.Fork;
@@ -138,6 +139,9 @@ public class JpdlSerializer extends ProcessSerializer {
         }
         if (definition.getDefaultNodeAsyncExecution() != NodeAsyncExecution.DEFAULT) {
             root.addAttribute(NODE_ASYNC_EXECUTION, definition.getDefaultNodeAsyncExecution().getValue());
+        }
+        if (definition.isUseGlobals()) {
+            root.addAttribute(USE_GLOBALS, "true");
         }
         if (!Strings.isNullOrEmpty(definition.getDescription())) {
             Element desc = root.addElement(DESCRIPTION);
@@ -294,7 +298,10 @@ public class JpdlSerializer extends ProcessSerializer {
         Element nodeElement = writeElement(parent, swimlanedNode);
         Element taskElement = nodeElement.addElement(TASK);
         setAttribute(taskElement, NAME, swimlanedNode.getName());
-        setAttribute(taskElement, SWIMLANE, swimlanedNode.getSwimlaneName());
+        String swimlaneName = swimlanedNode.getSwimlaneName();
+        if (((ProcessDefinition) swimlanedNode.getParent()).getSwimlaneByName(swimlaneName) != null) {
+            setAttribute(taskElement, SWIMLANE, swimlaneName);
+        }
         if (swimlanedNode instanceof TaskState) {
             TaskState taskState = (TaskState) swimlanedNode;
             if (taskState.isReassignSwimlaneToInitializerValue()) {
@@ -381,6 +388,9 @@ public class JpdlSerializer extends ProcessSerializer {
     }
 
     private void writeDelegation(Element parent, String elementName, Delegable delegable) {
+        if (delegable instanceof Variable && ((Variable) delegable).isGlobal()) {
+            setAttribute(parent, GLOBAL, "true");
+        }
         Element delegationElement = parent.addElement(elementName);
         if (delegable instanceof Action) {
             setAttribute(delegationElement, ID, ((Action) delegable).getId());
@@ -462,6 +472,9 @@ public class JpdlSerializer extends ProcessSerializer {
                 parseTransition(childNode, element);
             }
         }
+        if (element instanceof Variable && node.attributes().contains(GLOBAL)) {
+            ((Variable) element).setGlobal("true".equals(node.attribute(GLOBAL)));
+        }
     }
 
     private void parseTransition(Element node, GraphElement parent) {
@@ -500,14 +513,20 @@ public class JpdlSerializer extends ProcessSerializer {
         if (!Strings.isNullOrEmpty(nodeAsyncExecutionValue)) {
             definition.setDefaultNodeAsyncExecution(NodeAsyncExecution.getByValueNotNull(nodeAsyncExecutionValue));
         }
+        String useGlobals = root.attributeValue(USE_GLOBALS);
+        if (!Strings.isNullOrEmpty(useGlobals)) {
+            definition.setUseGlobals("true".equals(useGlobals));
+        }
         List<Element> swimlanes = root.elements(SWIMLANE);
         for (Element node : swimlanes) {
-            Swimlane swimlane = create(node, definition);
-            if (!Strings.isNullOrEmpty(swimlane.getDelegationConfiguration())) {
-                String[] orgFunctionParts = swimlane.getDelegationConfiguration().split("\\(");
-                if (orgFunctionParts.length == 2) {
-                    String className = BackCompatibilityClassNames.getClassName(orgFunctionParts[0].trim());
-                    swimlane.setDelegationConfiguration(className + "(" + orgFunctionParts[1]);
+            if (!"true".equals(node.attributeValue(GLOBAL))) {
+                Swimlane swimlane = create(node, definition);
+                if (!Strings.isNullOrEmpty(swimlane.getDelegationConfiguration())) {
+                    String[] orgFunctionParts = swimlane.getDelegationConfiguration().split("\\(");
+                    if (orgFunctionParts.length == 2) {
+                        String className = BackCompatibilityClassNames.getClassName(orgFunctionParts[0].trim());
+                        swimlane.setDelegationConfiguration(className + "(" + orgFunctionParts[1]);
+                    }
                 }
             }
         }

@@ -80,4 +80,10 @@ public class Swimlane extends Variable implements Delegable {
         return copy;
     }
 
+    @Override
+    protected void fillCopyCustomFields(GraphElement copy) {
+        ((NamedGraphElement) copy).setName(getName());
+        super.fillCopyCustomFields(copy);
+    }
+
 }
