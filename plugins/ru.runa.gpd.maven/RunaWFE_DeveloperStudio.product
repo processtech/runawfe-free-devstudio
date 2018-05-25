@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="runa-gpd" uid="RunaWFE_DeveloperStudio" id="ru.runa.gpd.app.product" application="ru.runa.gpd.application" version="4.3.0" useFeatures="false" includeLaunchers="true">
+<product name="runa-gpd" uid="RunaWFE_DeveloperStudio" id="ru.runa.gpd.app.product" application="ru.runa.gpd.application" version="4.3.1.qualifier" useFeatures="false" includeLaunchers="true">
 
    <aboutInfo>
       <image path="/ru.runa.gpd.app/icons/logo/about.gif"/>
