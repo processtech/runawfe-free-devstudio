@@ -134,7 +134,9 @@ public class VariablesXmlContentProvider extends AuxContentProvider {
             }
         }
         for (Variable variable : definition.getVariables(false, true)) {
-            writeVariable(root, variable);
+            if (!(variable instanceof Swimlane) || !((Swimlane) variable).isGlobal()) {
+                writeVariable(root, variable);
+            }
         }
         return document;
     }

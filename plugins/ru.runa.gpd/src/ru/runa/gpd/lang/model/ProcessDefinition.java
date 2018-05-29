@@ -1,12 +1,16 @@
 package ru.runa.gpd.lang.model;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.draw2d.geometry.Dimension;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.views.properties.ComboBoxPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
@@ -14,6 +18,7 @@ import org.eclipse.ui.views.properties.PropertyDescriptor;
 
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
+import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.extension.VariableFormatRegistry;
 import ru.runa.gpd.lang.Language;
@@ -47,6 +52,8 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
     private ProcessDefinitionAccessType accessType = ProcessDefinitionAccessType.Process;
     private final List<VariableUserType> types = Lists.newArrayList();
     private final IFile file;
+    private boolean useGlobals;
+    private List<Swimlane> globalSwimlanes;
 
     private final ArrayList<VersionInfo> versionInfoList;
 
@@ -177,6 +184,19 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
         }
     }
 
+    public boolean isUseGlobals() {
+        return useGlobals;
+    }
+
+    public void setUseGlobals(boolean useGlobals) {
+        boolean stateChanged = this.useGlobals != useGlobals;
+        if (stateChanged) {
+            this.useGlobals = useGlobals;
+            firePropertyChange(PROPERTY_USE_GLOBALS, !this.useGlobals, this.useGlobals);
+            setDirty();
+        }
+    }
+
     public Language getLanguage() {
         return language;
     }
@@ -273,6 +293,9 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
                 }
             }
         }
+        if (includeSwimlanes && useGlobals) {
+            variables.addAll(getGlobalSwimlanes(true));
+        }
         List<Variable> result = Lists.newArrayList();
         for (Variable variable : variables) {
             if (VariableFormatRegistry.isApplicable(variable, typeClassNameFilters)) {
@@ -283,7 +306,16 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
     }
 
     public List<Swimlane> getSwimlanes() {
-        return getChildren(Swimlane.class);
+        List<Swimlane> swimlanes = getChildren(Swimlane.class);
+        for (Iterator<Swimlane> i = swimlanes.iterator(); i.hasNext();) {
+            if (i.next().isGlobal()) {
+                i.remove();
+            }
+        }
+        if (useGlobals) {
+            swimlanes.addAll(getGlobalSwimlanes(true));
+        }
+        return swimlanes;
     }
 
     public Swimlane getSwimlaneByName(String name) {
@@ -292,6 +324,18 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
         }
         List<Swimlane> swimlanes = getSwimlanes();
         for (Swimlane swimlane : swimlanes) {
+            if (name.equals(swimlane.getName())) {
+                return swimlane;
+            }
+        }
+        return null;
+    }
+
+    public Swimlane getGlobalSwimlaneByName(String name) {
+        if (name == null) {
+            return null;
+        }
+        for (Swimlane swimlane : getGlobalSwimlanes(true)) {
             if (name.equals(swimlane.getName())) {
                 return swimlane;
             }
@@ -370,6 +414,7 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
                     array));
             descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_NODE_ASYNC_EXECUTION, Localization
                     .getString("ProcessDefinition.property.nodeAsyncExecution"), NodeAsyncExecution.LABELS));
+            descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_USE_GLOBALS, Localization.getString("ProcessDefinition.property.useGlobals"), new String[] {"false", "true"}));
         }
     }
 
@@ -390,6 +435,9 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
         if (PROPERTY_NODE_ASYNC_EXECUTION.equals(id)) {
             return defaultNodeAsyncExecution.ordinal();
         }
+        if (PROPERTY_USE_GLOBALS.equals(id)) {
+            return useGlobals ? 1 : 0;
+        }
         return super.getPropertyValue(id);
     }
 
@@ -402,6 +450,8 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
             setAccessType(ProcessDefinitionAccessType.values()[i]);
         } else if (PROPERTY_NODE_ASYNC_EXECUTION.equals(id)) {
             setDefaultNodeAsyncExecution(NodeAsyncExecution.values()[(Integer) value]);
+        } else if (PROPERTY_USE_GLOBALS.equals(id)) {
+            setUseGlobals(((int) value) == 1);
         } else {
             super.setPropertyValue(id, value);
         }
@@ -494,6 +544,51 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
 
     public void setVersionInfoByIndex(int index, VersionInfo versionInfo) {
         versionInfoList.set(index, versionInfo);
+    }
+
+    public List<Swimlane> getGlobalSwimlanes(boolean force) {
+        if (globalSwimlanes == null || force) {
+            globalSwimlanes = getGlobalSwimlanes(getFile(), new ArrayList<Swimlane>());
+        }
+        return globalSwimlanes;
+    }
+
+    private List<Swimlane> getGlobalSwimlanes(IResource resource, List<Swimlane> swimlanes) {
+        IContainer parent = resource.getParent();
+        if (parent == null) {
+            return swimlanes;
+        } else {
+            try {
+                for (IResource r : parent.members()) {
+                    if (!r.getName().equals(resource.getName()) && r.getName().startsWith(".") && r.getType() == IResource.FOLDER) {
+                        IFile definitionFile = (IFile) ((IFolder) r).findMember(ParContentProvider.PROCESS_DEFINITION_FILE_NAME);
+                        if (definitionFile != null) {
+                            List<Swimlane> globalSwimlanes = ProcessCache.getProcessDefinition(definitionFile).getChildren(Swimlane.class);
+                            for (Swimlane swimlane : globalSwimlanes) {
+                                Swimlane copy = new Swimlane();
+                                copy.setName(Swimlane.GLOBAL_ROLE_REF_PREFIX + swimlane.getName());
+                                if (!swimlanes.contains(copy)) {
+                                    copy.setScriptingName(Swimlane.GLOBAL_ROLE_REF_PREFIX + swimlane.getScriptingName());
+                                    copy.setDescription(swimlane.getDescription());
+                                    copy.setDefaultValue(swimlane.getDefaultValue());
+                                    copy.setFormat(swimlane.getFormat());
+                                    copy.setDelegationClassName(swimlane.getDelegationClassName());
+                                    copy.setDelegationConfiguration(swimlane.getDelegationConfiguration());
+                                    copy.setPublicVisibility(swimlane.isPublicVisibility());
+                                    copy.setStoreType(swimlane.getStoreType());
+                                    copy.setGlobal(true);
+                                    swimlanes.add(copy);
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (CoreException e) {
+                PluginLogger.logError(e);
+                return swimlanes;
+            }
+            return getGlobalSwimlanes(parent, swimlanes);
+        }
     }
 
 }

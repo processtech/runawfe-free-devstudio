@@ -17,13 +17,13 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
+import com.google.common.base.Strings;
+
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.ui.custom.VariableNameChecker;
 import ru.runa.gpd.util.VariableUtils;
-
-import com.google.common.base.Strings;
 
 public class UpdateSwimlaneNameDialog extends Dialog {
     private String name;
@@ -69,7 +69,7 @@ public class UpdateSwimlaneNameDialog extends Dialog {
         GridData nameTextData = new GridData(GridData.FILL_HORIZONTAL);
         nameTextData.minimumWidth = 200;
         nameField.setText(name);
-        nameField.addKeyListener(new VariableNameChecker());
+        nameField.addKeyListener(new SwimlaneNameChecker());
         nameField.setLayoutData(nameTextData);
         nameField.addModifyListener(new ModifyListener() {
             @Override
@@ -112,7 +112,7 @@ public class UpdateSwimlaneNameDialog extends Dialog {
 
     private void updateButtons() {
         boolean allowCreation = !Strings.isNullOrEmpty(name) && !processDefinition.getVariableNames(true).contains(name)
-                && VariableNameChecker.isValid(name);
+                && SwimlaneNameChecker.isValid(name, processDefinition);
         getButton(IDialogConstants.OK_ID).setEnabled(allowCreation);
     }
 
@@ -145,4 +145,18 @@ public class UpdateSwimlaneNameDialog extends Dialog {
         proceedRefactoring = renameInVarButton != null ? renameInVarButton.getSelection() : false;
         super.okPressed();
     }
+
+}
+
+class SwimlaneNameChecker extends VariableNameChecker {
+
+    public static boolean isValid(String string, ProcessDefinition processDefinition) {
+        if (VariableNameChecker.isValid(string)) {
+            if (processDefinition.getName().startsWith(".") || !string.toLowerCase().startsWith(Swimlane.GLOBAL_ROLE_REF_PREFIX.toLowerCase())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

@@ -15,6 +15,8 @@ import ru.runa.wfe.extension.assign.DefaultAssignmentHandler;
 import ru.runa.wfe.var.format.ExecutorFormat;
 
 public class Swimlane extends Variable implements Delegable {
+
+    public static final String GLOBAL_ROLE_REF_PREFIX = "Global_";
     public static final String DEFAULT_DELEGATION_CLASS_NAME = DefaultAssignmentHandler.class.getName();
     private String editorPath;
 
@@ -76,6 +78,12 @@ public class Swimlane extends Variable implements Delegable {
         copy.setDelegationClassName(getDelegationClassName());
         copy.setDelegationConfiguration(getDelegationConfiguration());
         return copy;
+    }
+
+    @Override
+    protected void fillCopyCustomFields(GraphElement copy) {
+        ((NamedGraphElement) copy).setName(getName());
+        super.fillCopyCustomFields(copy);
     }
 
 }
