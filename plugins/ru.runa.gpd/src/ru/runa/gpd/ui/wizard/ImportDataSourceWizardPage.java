@@ -31,6 +31,9 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.TreeItem;
 
+import com.google.common.base.Throwables;
+import com.google.common.collect.Lists;
+
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.settings.WFEConnectionPreferencePage;
@@ -40,9 +43,6 @@ import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.wfe.ConnectorCallback;
 import ru.runa.gpd.wfe.WFEServerDataSourceImporter;
 import ru.runa.wfe.datasource.DataSourceStuff;
-
-import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
 
 public class ImportDataSourceWizardPage extends WizardPage {
     
@@ -221,8 +221,6 @@ public class ImportDataSourceWizardPage extends WizardPage {
                 }
             } else {
                 for (TreeItem treeItem : serverDataSourceViewer.getTree().getSelection()) {
-                    // DefinitionTreeNode treeNode = (DefinitionTreeNode) treeItem.getData();
-                    // importInfos.addAll(treeNode.toRecursiveImportInfo(""));
                     importInfos.add(new DataSourceImportInfo(treeItem.getText(), "", 
                             new ByteArrayInputStream(WFEServerDataSourceImporter.getInstance().getDataSourceFile(treeItem.getText()))));
                 }

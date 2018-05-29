@@ -39,6 +39,10 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.ui.internal.wizards.datatransfer.IFileExporter;
 import org.eclipse.ui.internal.wizards.datatransfer.WizardArchiveFileResourceExportPage1;
 
+import com.google.common.base.Charsets;
+import com.google.common.base.Throwables;
+import com.google.common.collect.Lists;
+
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.settings.WFEConnectionPreferencePage;
@@ -47,10 +51,6 @@ import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.wfe.WFEServerDataSourceImporter;
 import ru.runa.gpd.wfe.WFEServerProcessDefinitionImporter;
 import ru.runa.wfe.datasource.DataSourceStuff;
-
-import com.google.common.base.Charsets;
-import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
 
 @SuppressWarnings("restriction")
 public class ExportDataSourceWizardPage extends WizardArchiveFileResourceExportPage1 {
@@ -204,77 +204,6 @@ public class ExportDataSourceWizardPage extends WizardArchiveFileResourceExportP
             setErrorMessage(Throwables.getRootCause(th).getMessage());
             return false;
         }
-        /*
-        boolean exportToFile = exportToFileButton.getSelection();
-        // Save dirty editors if possible but do not stop if not all are saved
-        saveDirtyEditors();
-        // about to invoke the operation so save our state
-        saveWidgetValues();
-        List<String> selectedDefinitionNames = ((IStructuredSelection) dataSourceListViewer.getSelection()).toList();
-        if (selectedDefinitionNames.size() == 0) {
-            setErrorMessage(Localization.getString("ExportParWizardPage.error.selectProcess"));
-            return false;
-        }
-        if (exportToFile && Strings.isNullOrEmpty(getDestinationValue())) {
-            setErrorMessage(Localization.getString("ExportParWizardPage.error.selectDestinationPath"));
-            return false;
-        }
-        if (!exportToFile && !WFEServerProcessDefinitionImporter.getInstance().isConfigured()) {
-            SyncUIHelper.openConnectionSettingsDialog(WFEConnectionPreferencePage.class);
-            if (!WFEServerProcessDefinitionImporter.getInstance().isConfigured()) {
-                return false;
-            }
-        }
-        for (String selectedDefinitionName : selectedDefinitionNames) {
-            try {
-                IFile definitionFile = dataSourceNameFileMap.get(selectedDefinitionName);
-                IFolder processFolder = (IFolder) definitionFile.getParent();
-                processFolder.refreshLocal(IResource.DEPTH_ONE, null);
-                ProcessDefinition definition = ProcessCache.getProcessDefinition(definitionFile);
-                int validationResult = ProcessDefinitionValidator.validateDefinition(definition);
-                if (!exportToFile && validationResult != 0) {
-                    Activator.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(ValidationErrorsView.ID);
-                    if (validationResult == 2) {
-                        setErrorMessage(Localization.getString("ExportParWizardPage.page.errorsExist"));
-                        return false;
-                    }
-                }
-                for (SubprocessDefinition subprocessDefinition : definition.getEmbeddedSubprocesses().values()) {
-                    validationResult = ProcessDefinitionValidator.validateDefinition(subprocessDefinition);
-                    if (!exportToFile && validationResult != 0) {
-                        if (validationResult == 2) {
-                            setErrorMessage(Localization.getString("ExportParWizardPage.page.errorsExistInEmbeddedSubprocess"));
-                            return false;
-                        }
-                    }
-                }
-                definition.getLanguage().getSerializer().validateProcessDefinitionXML(definitionFile);
-                List<IFile> resourcesToExport = new ArrayList<IFile>();
-                IResource[] members = processFolder.members();
-                for (IResource resource : members) {
-                    if (resource instanceof IFile) {
-                        resourcesToExport.add((IFile) resource);
-                    }
-                }
-                // TODO getContainer().run
-                if (exportToFile) {
-                    if (definition.isInvalid()
-                            && !Dialogs.confirm(Localization.getString("ExportParWizardPage.confirm.export.invalid.process", definition.getName()))) {
-                        continue;
-                    }
-                    String outputFileName = getDestinationValue() + definition.getName() + ".par";
-                    new ParExportOperation(resourcesToExport, new FileOutputStream(outputFileName)).run(null);
-                } else {
-                    new ParDeployOperation(resourcesToExport, definition.getName()).run(null);
-                }
-            } catch (Throwable th) {
-                PluginLogger.logErrorWithoutDialog(Localization.getString("ExportParWizardPage.error.export"), th);
-                setErrorMessage(Throwables.getRootCause(th).toString());
-                return false;
-            }
-        }
-        return true;
-        */
     }
 
     protected void exportToZipFile(IResource exportResource) throws Exception {
