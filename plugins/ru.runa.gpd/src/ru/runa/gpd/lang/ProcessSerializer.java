@@ -26,6 +26,8 @@ public abstract class ProcessSerializer {
     public static final String TRANSACTIONAL = "transactional";
     public static final String NODE_ASYNC_EXECUTION = "asyncExecution";
     public static final String BEHAVIOR = "behavior";
+    protected static final String USE_GLOBALS = "useGlobals";
+    protected static final String GLOBAL = "global";
 
     public abstract boolean isSupported(Document document);
 

@@ -13,16 +13,21 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.emf.common.command.CommandStack;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
@@ -39,6 +44,8 @@ import org.eclipse.graphiti.services.Graphiti;
 import org.eclipse.graphiti.ui.editor.DiagramEditorInput;
 import org.eclipse.graphiti.ui.internal.services.GraphitiUiInternal;
 import org.eclipse.graphiti.ui.services.GraphitiUi;
+
+import ru.runa.gpd.PluginLogger;
 
 public class DiagramCreator {
     private final static String TEMPFILE_EXTENSION = "bpmn2d";
@@ -77,7 +84,7 @@ public class DiagramCreator {
                     in.close();
                     out.close();
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    PluginLogger.logError(e);
                 }
             }
             createEmfFileForDiagram(uri, diagram);
@@ -158,7 +165,7 @@ public class DiagramCreator {
             try {
                 tempFile.delete(true, null);
             } catch (CoreException e) {
-                e.printStackTrace();
+                PluginLogger.logError(e);
             }
         }
         return tempFile;
@@ -307,4 +314,32 @@ public class DiagramCreator {
         printWriter.close();
         return result;
     }
+
+    public void disposeDiagram() {
+        if (diagramFile.exists()) {
+            WorkspaceJob deleteJob = new WorkspaceJob("Diagram disposing") {
+
+                @Override
+                public IStatus runInWorkspace(IProgressMonitor monitor) {
+                    try {
+                        IContainer parent = diagramFile.getParent();
+                        if (parent.members().length == 1) {
+                            parent.delete(true, null);
+                            parent.refreshLocal(IResource.DEPTH_ONE, null);
+                        } else {
+                            diagramFile.delete(true, null);
+                            parent.refreshLocal(IResource.DEPTH_INFINITE, null);
+                        }
+                    } catch (CoreException e) {
+                        PluginLogger.logError(e);
+                    }
+                    return Status.OK_STATUS;
+                }
+
+            };
+            deleteJob.setUser(true);
+            deleteJob.schedule();
+        }
+    }
+
 }
