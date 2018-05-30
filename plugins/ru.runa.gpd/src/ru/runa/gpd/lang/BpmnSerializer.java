@@ -1,19 +1,28 @@
 package ru.runa.gpd.lang;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.QName;
 import org.eclipse.core.resources.IFile;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import ru.runa.gpd.Activator;
 import ru.runa.gpd.Application;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
@@ -118,6 +127,8 @@ public class BpmnSerializer extends ProcessSerializer {
     public static final String END_TEXT_DECORATION = "endTextDecoration";
     private static final String ACTION_HANDLER = "actionHandler";
     private static final String EVENT_TYPE = "eventType";
+
+    private static Map<String, TransitionColor> nameColorMap;
 
     @Override
     public boolean isSupported(Document document) {
@@ -862,6 +873,9 @@ public class BpmnSerializer extends ProcessSerializer {
             if (properties.containsKey(PropertyNames.PROPERTY_COLOR)) {
                 transition.setColor(TransitionColor.findByValue(properties.get(PropertyNames.PROPERTY_COLOR)));
             }
+            else {
+                transition.setColor(colorByName(transition.getName()));
+            }
             source.addLeavingTransition(transition);
         }
         for (Map.Entry<Swimlane, List<String>> entry : swimlaneElementIds.entrySet()) {
@@ -900,4 +914,29 @@ public class BpmnSerializer extends ProcessSerializer {
             return eventNode;
         }
     }
+
+    private static TransitionColor colorByName(String transitionName) {
+        if (nameColorMap == null) {
+            nameColorMap = Maps.newHashMap();
+            File colorsFile = new File(Activator.getPreferencesFolder() + File.separator + "transition.color-by-name.properties");
+            if (colorsFile.exists()) {
+                try (InputStream is = new FileInputStream(colorsFile); Reader reader = new InputStreamReader(is, Charsets.UTF_8);) {
+                    Properties colors = new Properties();
+                    colors.load(reader);
+                    for (Object key : colors.keySet()) {
+                        String colorKey = (String) key;
+                        TransitionColor color = TransitionColor.findByValue(colorKey);
+                        for (String name : colors.getProperty(colorKey).split(";")) {
+                            nameColorMap.put(name.trim(), color);
+                        }
+                    }
+                } catch (IOException e) {
+                    PluginLogger.logError(e);
+                }
+            }
+        }
+        TransitionColor color = nameColorMap.get(transitionName.trim());
+        return color == null ? TransitionColor.DEFAULT : color;
+    }
+
 }
