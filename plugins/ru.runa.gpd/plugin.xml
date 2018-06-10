@@ -2593,6 +2593,7 @@
                label="%label.menu.properties"
                path="view">
             <separator name="additions"/>
+            <separator name="updates"/>
          </menu>
          <action
                class="ru.runa.gpd.ui.action.ShowActionsAction"
@@ -2626,6 +2627,26 @@
                label="%label.menu.view.properties"
                menubarPath="window/additions"
                style="push"/>
+         <action
+               id="installSoftware"
+               label="%Install.command"
+               menubarPath="properties/updates"
+               icon="icons/obj/iu_obj.png"
+               style="push">
+             <class class="org.eclipse.ui.tests.api.GenericCommandActionDelegate">
+                 <parameter name="commandId" value="org.eclipse.equinox.p2.ui.sdk.install"/>
+             </class>
+         </action>
+         <action
+               id="updateSoftware"
+               label="%Update.command"
+               menubarPath="properties/updates"
+               icon="icons/obj/iu_update_obj.png"
+               style="push">
+             <class class="org.eclipse.ui.tests.api.GenericCommandActionDelegate">
+                 <parameter name="commandId" value="org.eclipse.equinox.p2.ui.sdk.update"/>
+             </class>
+         </action>
          <action
                class="ru.runa.gpd.ui.action.OpenPreferencesAction"
                id="preferences"
@@ -2830,6 +2851,16 @@
           defaultHandler="ru.runa.gpd.lang.action.PrintDiagramHandler"
           id="ru.runa.gpd.lang.action.PrintDiagram"
           name="Print Diagram">
+    </command>
+    <command
+          name="%Update.command"
+          id="org.eclipse.equinox.p2.ui.sdk.update">
+          defaultHandler="org.eclipse.equinox.internal.p2.ui.sdk.UpdateHandler">
+    </command>
+    <command
+          name="%Install.command"
+          id="org.eclipse.equinox.p2.ui.sdk.install">
+          defaultHandler="org.eclipse.equinox.internal.p2.ui.sdk.InstallNewSoftwareHandler">
     </command>
    </extension>
    <extension
