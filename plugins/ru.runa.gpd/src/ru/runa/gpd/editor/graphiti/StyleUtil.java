@@ -74,8 +74,7 @@ public class StyleUtil implements PrefConstants {
     }
 
     public static boolean isTransitionDecoratorVisible(Transition transition) {
-        return transition.getSource() instanceof FormNode
-                && (transition.getColor() != TransitionColor.DEFAULT || transition.getSource().getLeavingTransitions().size() > 1);
+        return transition.getSource() instanceof FormNode && transition.getSource().getLeavingTransitions().size() > 1;
     }
 
     public static Style getTransitionColorMarkerStyle(Diagram diagram, Transition transition, TransitionColor color) {
