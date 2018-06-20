@@ -35,18 +35,16 @@
       </win>
    </launcher>
 
-
    <vm>
    </vm>
-
 
    <plugins>
    </plugins>
 
    <features>
-      <feature id="ru.runa.eclipse.feature" version="1.0.0.qualifier"/>
-      <feature id="ru.runa.gpd.feature" version="1.0.0.qualifier"/>
-      <feature id="ru.runa.babel.nls_p2_ru.feature" version="1.0.0.qualifier"/>
+      <feature id="ru.runa.gpd.eclipse.feature" version="4.3.1.qualifier"/>
+      <feature id="ru.runa.gpd.babel.nls_p2_ru.feature" version="4.3.1.qualifier"/>
+      <feature id="ru.runa.gpd.feature" version="4.3.1.qualifier"/>
    </features>
 
    <configurations>

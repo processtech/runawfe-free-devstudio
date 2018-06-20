@@ -1,25 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/ru.runa.eclipse.feature_1.0.0.qualifier.jar" id="ru.runa.eclipse.feature" version="1.0.0.qualifier">
+   <feature url="features/ru.runa.gpd.eclipse.feature_4.3.1.qualifier.jar" id="ru.runa.gpd.eclipse.feature" version="4.3.1.qualifier">
       <category name="category.eclipse.framework"/>
    </feature>
-   <feature url="features/ru.runa.gpd.feature_1.0.0.qualifier.jar" id="ru.runa.gpd.feature" version="1.0.0.qualifier">
+   <feature url="features/ru.runa.gpd.feature_4.3.1.qualifier.jar" id="ru.runa.gpd.feature" version="4.3.1.qualifier">
       <category name="category.runawfe.developer.studio"/>
    </feature>
-   <feature url="features/ru.runa.babel.nls_p2_ru.feature_1.0.0.qualifier.jar" id="ru.runa.babel.nls_p2_ru.feature" version="1.0.0.qualifier">
+   <feature url="features/ru.runa.gpd.babel.nls_p2_ru.feature_4.3.1.qualifier.jar" id="ru.runa.gpd.babel.nls_p2_ru.feature" version="4.3.1.qualifier">
       <category name="category.babel.nls_p2_ru"/>
-   </feature>
-   <feature url="features/ru.runa.gpd.feature.patch.issue123_1.0.0.jar" id="ru.runa.gpd.feature.patch.issue123" version="1.0.0" patch="true">
-      <category name="category.runawfe.developer.studio"/>
-   </feature>
-   <feature url="features/ru.altlinux.someproject.feature_1.0.0.qualifier.jar" id="ru.altlinux.someproject.feature" version="1.0.0.qualifier">
-      <category name="category.someproject"/>
-   </feature>
-   <feature url="features/ru.altlinux.someproject.feature.patch.issue123_1.0.0.jar" id="ru.altlinux.someproject.feature.patch.issue123" version="1.0.0" patch="true">
-      <category name="category.someproject"/>
    </feature>
    <category-def name="category.eclipse.framework" label="Eclipse Framework"/>
    <category-def name="category.runawfe.developer.studio" label="RunaWFE Developer Studio"/>
    <category-def name="category.babel.nls_p2_ru" label="Babel Language Pack for Equinox.p2 in Russian"/>
-   <category-def name="category.someproject" label="Some Project"/>
 </site>

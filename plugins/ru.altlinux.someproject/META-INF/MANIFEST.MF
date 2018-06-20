@@ -1,12 +1,13 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Some Project
-Bundle-SymbolicName: ru.altlinux.someproject
+Bundle-Name: Some Project Plugin
+Bundle-SymbolicName: ru.altlinux.someproject;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: ru.altlinux.someproject.Activator
 Bundle-Vendor: Some Company Ltd.
 Require-Bundle: org.eclipse.ui,
-  org.eclipse.core.runtime
+ org.eclipse.core.runtime,
+ ru.runa.gpd
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Automatic-Module-Name: ru.altlinux.someproject
 Bundle-ActivationPolicy: lazy

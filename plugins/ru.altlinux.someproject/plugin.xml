@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="ru.runa.gpd.handlers">
+      <handler
+            actionHandler="true"
+            assignmentHandler="true"
+            botTaskHandler="true"
+            className="ru.altlinux.someproject.SomeUselessHandler"
+            decisionHandler="true"
+            enabled="true"
+            label="Some Useless Handler">
+      </handler>
+   </extension>
+
+</plugin>
