@@ -100,8 +100,6 @@ public class GEFImageHelper {
                     } else {
                         r.x = 0;
                     }
-                } else if (r.x < 0) {
-                    r.x = 0;
                 }
                 if (yVisual != null) {
                     if (isConnectionLabel(yVisual)) {
@@ -111,8 +109,6 @@ public class GEFImageHelper {
                     } else {
                         r.y = 0;
                     }
-                } else if (r.y < 0) {
-                    r.y = 0;
                 }
             }
             definition.setConstraint(r);
