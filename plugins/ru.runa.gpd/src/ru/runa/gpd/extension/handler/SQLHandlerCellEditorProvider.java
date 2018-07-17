@@ -28,7 +28,7 @@ import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
 import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.custom.SWTUtils;
-import ru.runa.gpd.util.IOUtils;
+import ru.runa.gpd.util.DataSourceUtils;
 import ru.runa.wfe.datasource.DataSourceStuff;
 import ru.runa.wfe.datasource.DataSourceType;
 import ru.runa.wfe.user.Executor;
@@ -200,7 +200,7 @@ public class SQLHandlerCellEditorProvider extends XmlBasedConstructorProvider<SQ
 
         private Combo createDataSourceSelector(Composite owner) {
             final Combo cb = new Combo(owner, SWT.NONE);
-            for (IFile dsFile : IOUtils.getDataSourcesByType(DataSourceType.JDBC, DataSourceType.JNDI)) {
+            for (IFile dsFile : DataSourceUtils.getDataSourcesByType(DataSourceType.JDBC, DataSourceType.JNDI)) {
                 String dsName = dsFile.getName();
                 cb.add(dsName.substring(0, dsName.length() - DataSourceStuff.DATA_SOURCE_FILE_SUFFIX.length()));
             }

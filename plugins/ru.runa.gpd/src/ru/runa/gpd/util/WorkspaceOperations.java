@@ -11,7 +11,6 @@ import java.util.Set;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
-import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -35,6 +34,11 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
+
+import com.google.common.base.Charsets;
+import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 
 import ru.runa.gpd.BotCache;
 import ru.runa.gpd.Localization;
@@ -81,13 +85,7 @@ import ru.runa.gpd.ui.wizard.NewProcessDefinitionWizard;
 import ru.runa.gpd.ui.wizard.NewProcessProjectWizard;
 import ru.runa.wfe.InternalApplicationException;
 import ru.runa.wfe.datasource.DataSourceStuff;
-import ru.runa.wfe.datasource.DataSourceType;
 import ru.runa.wfe.definition.ProcessDefinitionAccessType;
-
-import com.google.common.base.Charsets;
-import com.google.common.base.Objects;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 
 public class WorkspaceOperations {
 
@@ -672,7 +670,7 @@ public class WorkspaceOperations {
         DataSourceDialog dialog = new DataSourceDialog(selected);
         if (dialog.open() == IDialogConstants.OK_ID) {
             try (InputStream is = new ByteArrayInputStream(dialog.getXml().getBytes(Charsets.UTF_8));) {
-                IFile dsFile = IOUtils.getDataSourcesProject().getFile(dialog.getName() + DataSourceStuff.DATA_SOURCE_FILE_SUFFIX);
+                IFile dsFile = DataSourceUtils.getDataSourcesProject().getFile(dialog.getName() + DataSourceStuff.DATA_SOURCE_FILE_SUFFIX);
                 IOUtils.createOrUpdateFile(dsFile, is);
                 if (selected != null && !selected.getName().equals(dsFile.getName())) {
                     selected.delete(true, null);
@@ -734,7 +732,7 @@ public class WorkspaceOperations {
 
     public static void importDataSource() {
         ImportDataSourceWizard wizard = new ImportDataSourceWizard();
-        wizard.init(PlatformUI.getWorkbench(), new StructuredSelection(IOUtils.getDataSourcesProject()));
+        wizard.init(PlatformUI.getWorkbench(), new StructuredSelection(DataSourceUtils.getDataSourcesProject()));
         CompactWizardDialog dialog = new CompactWizardDialog(wizard);
         dialog.open();
     }

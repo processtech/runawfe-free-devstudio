@@ -29,6 +29,8 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -46,8 +48,9 @@ import com.google.common.collect.Lists;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.settings.WFEConnectionPreferencePage;
+import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.ui.custom.SyncUIHelper;
-import ru.runa.gpd.util.IOUtils;
+import ru.runa.gpd.util.DataSourceUtils;
 import ru.runa.gpd.wfe.WFEServerDataSourceImporter;
 import ru.runa.gpd.wfe.WFEServerProcessDefinitionImporter;
 import ru.runa.wfe.datasource.DataSourceStuff;
@@ -60,13 +63,14 @@ public class ExportDataSourceWizardPage extends WizardArchiveFileResourceExportP
     protected final IResource exportResource;
     private Button exportToFileButton;
     private Button exportToServerButton;
+    private List<String> serverDataSourceNames;
 
     protected ExportDataSourceWizardPage(IStructuredSelection selection) {
         super(selection);
         setTitle(Localization.getString("ExportDataSourceWizard.wizard.title"));
         setDescription(Localization.getString("ExportDataSourceWizardPage.page.description"));
         dataSourceNameFileMap = new TreeMap<String, IFile>();
-        for (IFile file : IOUtils.getAllDataSources()) {
+        for (IFile file : DataSourceUtils.getAllDataSources()) {
             String name = file.getName();
             dataSourceNameFileMap.put(name.substring(0, name.lastIndexOf('.')), file);
         }
@@ -106,6 +110,12 @@ public class ExportDataSourceWizardPage extends WizardArchiveFileResourceExportP
         createDestinationGroup(exportGroup);
         exportToServerButton = new Button(exportGroup, SWT.RADIO);
         exportToServerButton.setText(Localization.getString("ExportParWizardPage.page.exportToServerButton"));
+        exportToServerButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                serverDataSourceNames = WFEServerDataSourceImporter.getInstance().getDataSourceNames();
+            }
+        });
         SyncUIHelper.createHeader(exportGroup, WFEServerProcessDefinitionImporter.getInstance(), WFEConnectionPreferencePage.class, null);
         restoreWidgetValues();
         giveFocusToDestination();
@@ -196,7 +206,14 @@ public class ExportDataSourceWizardPage extends WizardArchiveFileResourceExportP
             if (exportToFile) {
                 exportToZipFile(exportResource);
             } else {
-                deployToServer(exportResource);
+                String name = exportResource.getName();
+                name = name.substring(0, name.lastIndexOf('.'));
+                if (!serverDataSourceNames.contains(name)
+                        || Dialogs.confirm(Localization.getString("ExportDataSourceWizardPage.error.dataSourceWithSameNameExists", name))) {
+                    deployToServer(exportResource);
+                } else {
+                    return false;
+                }
             }
             return true;
         } catch (Throwable th) {

@@ -34,7 +34,8 @@ import ru.runa.gpd.DataSourcesNature;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.ui.custom.LoggingDoubleClickAdapter;
-import ru.runa.gpd.util.IOUtils;
+import ru.runa.gpd.util.DataSourceUtils;
+import ru.runa.gpd.util.UiUtil;
 import ru.runa.gpd.util.WorkspaceOperations;
 import ru.runa.wfe.InternalApplicationException;
 
@@ -47,7 +48,7 @@ public class DataSourceExplorerTreeView extends ViewPart implements ISelectionLi
         getSite().getWorkbenchWindow().getSelectionService().addSelectionListener(this);
         
         try {
-            IProject dsProject = IOUtils.getDataSourcesProject();
+            IProject dsProject = DataSourceUtils.getDataSourcesProject();
             if (!dsProject.exists()) {
                 IProjectDescription description = ResourcesPlugin.getWorkspace().newProjectDescription(dsProject.getName());
                 description.setNatureIds(new String[] { DataSourcesNature.NATURE_ID });
@@ -68,6 +69,7 @@ public class DataSourceExplorerTreeView extends ViewPart implements ISelectionLi
 
     @Override
     public void createPartControl(Composite parent) {
+        UiUtil.hideToolBar(getViewSite());
         viewer = new TreeViewer(parent, SWT.NONE);
         viewer.setContentProvider(new DataSourceTreeContentProvider());
         viewer.setLabelProvider(new DataSourceResourcesLabelProvider());

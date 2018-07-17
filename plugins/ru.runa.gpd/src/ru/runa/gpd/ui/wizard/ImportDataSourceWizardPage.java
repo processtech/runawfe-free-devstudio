@@ -39,6 +39,7 @@ import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.settings.WFEConnectionPreferencePage;
 import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.ui.custom.SyncUIHelper;
+import ru.runa.gpd.util.DataSourceUtils;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.wfe.ConnectorCallback;
 import ru.runa.gpd.wfe.WFEServerDataSourceImporter;
@@ -156,7 +157,7 @@ public class ImportDataSourceWizardPage extends WizardPage {
             }
         });
         projectViewer.setContentProvider(new ArrayContentProvider());
-        projectViewer.setInput(Lists.newArrayList(IOUtils.getDataSourcesProject()));
+        projectViewer.setInput(Lists.newArrayList(DataSourceUtils.getDataSourcesProject()));
         if (initialSelection != null) {
             projectViewer.setSelection(new StructuredSelection(initialSelection));
         }
@@ -229,11 +230,11 @@ public class ImportDataSourceWizardPage extends WizardPage {
                 throw new Exception(Localization.getString("ImportDataSourceWizardPage.error.selectValidDataSource"));
             }
             for (DataSourceImportInfo importInfo : importInfos) {
-                IFile dsFile = IOUtils.getDataSourcesProject().getFile(importInfo.name + ".xml");
+                IFile dsFile = DataSourceUtils.getDataSourcesProject().getFile(importInfo.name + ".xml");
                 if (dsFile.exists()) {
                     throw new Exception(Localization.getString("ImportDataSourceWizardPage.error.dataSourceWithSameNameExists", importInfo.name));
                 }
-                IOUtils.extractArchiveToProject(importInfo.inputStream, IOUtils.getDataSourcesProject());
+                IOUtils.extractArchiveToProject(importInfo.inputStream, DataSourceUtils.getDataSourcesProject());
             }
         } catch (Exception exception) {
             PluginLogger.logErrorWithoutDialog("import ds", exception);

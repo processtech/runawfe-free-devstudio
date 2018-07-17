@@ -27,16 +27,16 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
+import com.google.common.base.Strings;
+
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.SharedImages;
-import ru.runa.gpd.util.IOUtils;
+import ru.runa.gpd.util.DataSourceUtils;
 import ru.runa.gpd.util.XmlUtil;
 import ru.runa.wfe.InternalApplicationException;
 import ru.runa.wfe.datasource.DataSourceStuff;
 import ru.runa.wfe.datasource.DataSourceType;
 import ru.runa.wfe.datasource.JdbcDataSourceType;
-
-import com.google.common.base.Strings;
 
 public class DataSourceDialog extends Dialog implements DataSourceStuff {
     
@@ -151,6 +151,7 @@ public class DataSourceDialog extends Dialog implements DataSourceStuff {
                 txtDbUrl.setText(JdbcDataSourceType.valueOf(cbDbType.getText()).urlSample());
                 String jndiName = txtJndiName.getText();
                 txtJndiName.setText(Strings.isNullOrEmpty(jndiName) ? JNDI_NAME_SAMPLE : jndiName);
+                updateButtons();
             }
         });
         label = new Label(pane, SWT.NONE);
@@ -263,8 +264,10 @@ public class DataSourceDialog extends Dialog implements DataSourceStuff {
         if (btnOk != null) {
             String name = txtName.getText().trim();
             boolean canBeSaved = name.length() > 0
-                    && (ds != null && ds.getName().equals(name + DATA_SOURCE_FILE_SUFFIX) || !IOUtils.getDataSourcesProject().getFile(name + DATA_SOURCE_FILE_SUFFIX).exists())
-                    && cbType.getText().length() > 0;
+                    && (ds != null && ds.getName().equals(name + DATA_SOURCE_FILE_SUFFIX)
+                            || !DataSourceUtils.getDataSourcesProject().getFile(name + DATA_SOURCE_FILE_SUFFIX).exists())
+                    && cbType.getText().length() > 0
+                    && (!DataSourceType.valueOf(cbType.getText()).equals(DataSourceType.JDBC) || cbDbType.getText().length() > 0);
             btnOk.setEnabled(canBeSaved);
         }
     }

@@ -10,14 +10,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import org.dom4j.Document;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -48,14 +46,10 @@ import ru.runa.gpd.BotCache;
 import ru.runa.gpd.BotStationNature;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessProjectNature;
-import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.form.FormType;
 import ru.runa.gpd.form.FormTypeProvider;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.par.ParContentProvider;
-import ru.runa.wfe.InternalApplicationException;
-import ru.runa.wfe.datasource.DataSourceStuff;
-import ru.runa.wfe.datasource.DataSourceType;
 
 public class IOUtils {
     private static final ByteArrayInputStream EMPTY_STREAM = new ByteArrayInputStream(new byte[0]);
@@ -588,39 +582,6 @@ public class IOUtils {
             return ((IProject) container).getFolder(name).exists();
         }
         return false;
-    }
-
-    public static IProject getDataSourcesProject() {
-        return ResourcesPlugin.getWorkspace().getRoot().getProject("DataSources");
-    }
-
-    public static List<IFile> getAllDataSources() {
-        List<IFile> fileList = new ArrayList<>();
-        try {
-            for (IResource resource : getDataSourcesProject().members()) {
-                if (resource instanceof IFile && ((IFile) resource).getName().endsWith(DataSourceStuff.DATA_SOURCE_FILE_SUFFIX)) {
-                    fileList.add((IFile) resource);
-                }
-            }
-        } catch (CoreException e) {
-            throw new InternalApplicationException(e);
-        }
-        return fileList;
-    }
-
-    public static List<IFile> getDataSourcesByType(DataSourceType ...types) {
-        List<IFile> fileList = new ArrayList<>();
-        List<DataSourceType> typeList = Arrays.asList(types);
-        for (IFile dsFile : getAllDataSources()) {
-            try (InputStream is = dsFile.getContents()) {
-                if (typeList.contains(DataSourceType.valueOf(XmlUtil.parseWithoutValidation(is).getRootElement().attribute("type").getValue()))) {
-                    fileList.add(dsFile);
-                }
-            } catch (IOException | CoreException e) {
-                Throwables.propagate(e);
-            }
-        }
-        return fileList;
     }
 
     public static void extractArchiveToProject(InputStream archiveStream, IProject project) throws IOException, CoreException {

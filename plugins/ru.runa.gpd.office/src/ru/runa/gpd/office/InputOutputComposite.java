@@ -17,20 +17,18 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
+import com.google.common.base.Strings;
+
 import ru.runa.gpd.lang.model.BotTask;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
+import ru.runa.gpd.util.DataSourceUtils;
 import ru.runa.gpd.util.EmbeddedFileUtils;
-import ru.runa.gpd.util.IOUtils;
 import ru.runa.wfe.InternalApplicationException;
 import ru.runa.wfe.datasource.DataSourceStuff;
-import ru.runa.wfe.datasource.DataSourceType;
 import ru.runa.wfe.var.file.FileVariable;
-
-import com.google.common.base.Objects;
-import com.google.common.base.Strings;
 
 public class InputOutputComposite extends Composite {
     public final InputOutputModel model;
@@ -224,7 +222,7 @@ public class InputOutputComposite extends Composite {
             }
             final Combo combo = new Combo(composite, SWT.NONE);
             combo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            for (IFile dsFile : IOUtils.getAllDataSources()) {
+            for (IFile dsFile : DataSourceUtils.getAllDataSources()) {
                 String dsName = dsFile.getName();
                 combo.add(dsName.substring(0, dsName.length() - DataSourceStuff.DATA_SOURCE_FILE_SUFFIX.length()));
             }
