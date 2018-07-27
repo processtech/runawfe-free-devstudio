@@ -45,6 +45,12 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.texteditor.ITextEditor;
 
+import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+
 import ru.runa.gpd.EditorsPlugin;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
@@ -75,12 +81,6 @@ import ru.runa.gpd.util.VariableUtils;
 import ru.runa.gpd.validation.ValidationUtil;
 import ru.runa.wfe.InternalApplicationException;
 
-import com.google.common.base.Objects;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-
 /**
  * The WYSIWYG HTML editor using <a href="http://www.fckeditor.net/">FCKeditor</a>.
  * <p>
@@ -97,8 +97,8 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
     private final ISelectionProvider selectionProvider = new SelectionProvider();
 
     private boolean ftlFormat = true;
-    private FormNode formNode;
-    private IFile formFile;
+    protected FormNode formNode;
+    protected IFile formFile;
     private final Map<Integer, Component> components = Maps.newConcurrentMap();
 
     private boolean dirty = false;

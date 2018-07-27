@@ -14,6 +14,7 @@
 		<module>ru.runa.gpd.connector.wfe.ws</module>
 		<module>ru.runa.gpd.form.ftl</module>
 		<module>ru.runa.gpd.form.quick</module>
+		<module>ru.runa.gpd.form.jointeditor</module>
 		<module>ru.runa.gpd.office</module>
 		<module>ru.runa.gpd.xpdl</module>
 		<module>ru.runa.gpd.platform</module>

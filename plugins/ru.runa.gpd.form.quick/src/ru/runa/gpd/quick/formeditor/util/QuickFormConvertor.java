@@ -18,6 +18,7 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.osgi.framework.Bundle;
 
 import ru.runa.gpd.PluginLogger;
+import ru.runa.gpd.formeditor.FtlFormType;
 import ru.runa.gpd.formeditor.ftl.TemplateProcessor;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.ProcessDefinition;
@@ -26,6 +27,7 @@ import ru.runa.gpd.quick.extension.QuickTemplateRegister;
 import ru.runa.gpd.quick.formeditor.QuickForm;
 import ru.runa.gpd.quick.formeditor.QuickFormEditorUtil;
 import ru.runa.gpd.quick.formeditor.QuickFormGpdProperty;
+import ru.runa.gpd.quick.formeditor.QuickFormType;
 import ru.runa.gpd.quick.tag.FormHashModelGpdWrap;
 import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.util.IOUtils;
@@ -94,7 +96,7 @@ public final class QuickFormConvertor {
     private static IFile updateFormToSimple(ConverterSource converterSource) throws Exception {
         File file = converterSource.getQuickFormFile().getRawLocation().makeAbsolute().toFile();
         renameFileExtension(file.getAbsolutePath(), "ftl");
-        String newFileName = converterSource.getFormNode().getFormFileName().replaceAll("quick", "ftl");
+        String newFileName = converterSource.getFormNode().getFormFileName().replaceAll(QuickFormType.TYPE, FtlFormType.TYPE);
         IFolder processFolder = (IFolder) converterSource.getQuickFormFile().getParent();
         converterSource.getFormNode().setFormFileName(newFileName);
         converterSource.getFormNode().setFormType("ftl");

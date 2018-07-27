@@ -1,0 +1,20 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: RunaWFE Developer Studio joint form editor
+Bundle-SymbolicName: ru.runa.gpd.form.jointeditor;singleton:=true
+Bundle-Version: 4.3.1.qualifier
+Bundle-Activator: ru.runa.gpd.form.jointeditor.Activator
+Bundle-Localization: plugin
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.core.resources,
+ org.eclipse.gef,
+ org.eclipse.ui,
+ org.eclipse.ui.ide,
+ org.eclipse.ui.editors,
+ ru.runa.gpd,
+ ru.runa.gpd.form.ftl,
+ ru.runa.gpd.form.quick
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Automatic-Module-Name: ru.runa.gpd.form.jointeditor
+Bundle-ActivationPolicy: lazy
+Bundle-Vendor: Runa

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.popupMenus">
+    <objectContribution
+          adaptable="false"
+          id="data.noformexists"
+          objectClass="ru.runa.gpd.lang.model.FormNode">
+       <filter
+             name="formExists"
+             value="false">
+       </filter>
+       <action
+             class="ru.runa.gpd.form.jointeditor.CreateFormDelegate"
+             id="createForm"
+             label="%label.action.createForm"
+             menubarPath="formdata/sp1"/>
+    </objectContribution>
+    <objectContribution
+          adaptable="false"
+          id="data.formexists"
+          objectClass="ru.runa.gpd.lang.model.FormNode">
+       <filter
+             name="formExists"
+             value="true">
+       </filter>
+       <action
+             class="ru.runa.gpd.form.jointeditor.OpenJointFormEditorDelegate"
+             id="visualEditForm"
+             label="%label.action.editForm"
+             menubarPath="formdata/sp1"/>
+    </objectContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="ru.runa.gpd.form.jointeditor.JointFormEditor"
+            default="false"
+            id="ru.runa.gpd.form.jointeditor"
+            name="%editor.name">
+      </editor>
+      <editor
+            class="ru.runa.gpd.form.jointeditor.QuickJointFormEditor"
+            default="false"
+            id="ru.runa.gpd.form.quickjointeditor"
+            name="%editor.name">
+      </editor>
+   </extension>
+
+</plugin>

@@ -22,6 +22,8 @@ import ru.runa.gpd.validation.FormNodeValidation;
 
 public class FtlFormType extends BaseHtmlFormType {
 
+    public static final String TYPE = "ftl";
+
     @Override
     public IEditorPart openForm(IFile formFile, FormNode formNode) throws CoreException {
         PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(FormComponentsView.ID, null, IWorkbenchPage.VIEW_VISIBLE);

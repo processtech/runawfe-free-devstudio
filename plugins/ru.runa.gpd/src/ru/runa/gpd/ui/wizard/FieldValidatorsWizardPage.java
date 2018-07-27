@@ -6,6 +6,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Consumer;
 
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -38,6 +40,8 @@ import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 
+import com.google.common.collect.Maps;
+
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.lang.model.FormNode;
@@ -61,8 +65,6 @@ import ru.runa.gpd.validation.ValidatorDefinition;
 import ru.runa.gpd.validation.ValidatorDefinition.Param;
 import ru.runa.gpd.validation.ValidatorDefinitionRegistry;
 
-import com.google.common.collect.Maps;
-
 public class FieldValidatorsWizardPage extends WizardPage {
     private final FormNode formNode;
     private final ProcessDefinition processDefinition;
@@ -74,6 +76,8 @@ public class FieldValidatorsWizardPage extends WizardPage {
     private ValidatorInfoControl infoGroup;
     private String warningMessage = "";
     private Map<String, Map<String, ValidatorConfig>> fieldConfigs;
+    private boolean dirty;
+    private Consumer<Boolean> dirtyCallback;
 
     protected FieldValidatorsWizardPage(FormNode formNode) {
         super("Field validators");
@@ -143,6 +147,7 @@ public class FieldValidatorsWizardPage extends WizardPage {
                 }
                 variablesTableViewer.refresh(true);
                 updateVariableSelection();
+                setDirty(true);
             }
         });
 
@@ -196,6 +201,7 @@ public class FieldValidatorsWizardPage extends WizardPage {
                 }
                 swimlanesTableViewer.refresh(true);
                 updateVariableSelection();
+                setDirty(true);
             }
         });
 
@@ -262,6 +268,7 @@ public class FieldValidatorsWizardPage extends WizardPage {
                 }
                 validatorsTableViewer.refresh(true);
                 updateValidatorSelection();
+                setDirty(true);
             }
         });
 
@@ -355,6 +362,7 @@ public class FieldValidatorsWizardPage extends WizardPage {
 
     public void performFinish() {
         infoGroup.saveConfig();
+        setDirty(false);
     }
 
     private void updateVariableSelection() {
@@ -731,6 +739,21 @@ public class FieldValidatorsWizardPage extends WizardPage {
             this.style = style;
             this.sort = sort;
         }
+    }
+
+    public void setMarkEditorDirtyCallback(Consumer<Boolean> callback) {
+        dirtyCallback = callback;
+    }
+
+    private void setDirty(boolean dirty) {
+        if (this.dirty != dirty) {
+            this.dirty = dirty;
+            Optional.ofNullable(dirtyCallback).orElse(p -> {}).accept(dirty);
+        }
+    }
+
+    public boolean isDirty() {
+        return dirty;
     }
 
 }
