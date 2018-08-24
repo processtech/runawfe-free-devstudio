@@ -120,6 +120,7 @@ public class Timer extends Node implements IBoundaryEvent, IBoundaryEventContain
         if (getDelay() != null) {
             copy.setDelay(new Duration(getDelay()));
         }
+        copy.setParentContainer(parent);
         return copy;
     }
 
