@@ -236,20 +236,24 @@ public class FieldValidatorsWizardPage extends WizardPage {
         TabItem tabItem2 = new TabItem(tabFolder, SWT.NONE);
         tabItem2.setText(Localization.getString("FieldValidatorsWizardPage.Swimlanes"));
         tabItem2.setControl(swimlanesTableViewer.getControl());
-        Composite right = new Composite(mainComposite, SWT.NONE);
+        SashForm right = new SashForm(mainComposite, SWT.VERTICAL);
         right.setLayoutData(data);
-        right.setLayout(new GridLayout(1, true));
 
-        Label validatorsLabel = new Label(right, SWT.NONE);
+        Composite topPane = new Composite(right, SWT.NONE);
+        topPane.setLayout(new GridLayout(1, false));
+
+        Label validatorsLabel = new Label(topPane, SWT.NONE);
         validatorsLabel.setText(Localization.getString("FieldValidatorsWizardPage.Validators"));
-        validatorsTableViewer = createTableViewer(right, SWT.BORDER | SWT.V_SCROLL | SWT.FULL_SELECTION);
-        validatorsTableViewer.setLabelProvider(new ValidatorDefinitionTableLabelProvider());
-        validatorsTableViewer.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        GridData groupData = new GridData(GridData.FILL_BOTH);
-        groupData.minimumHeight = 200;
-        infoGroup = new DefaultValidatorInfoControl(right);
-        infoGroup.setLayoutData(groupData);
+        validatorsTableViewer = createTableViewer(topPane, SWT.BORDER | SWT.V_SCROLL | SWT.FULL_SELECTION);
+        validatorsTableViewer.setLabelProvider(new ValidatorDefinitionTableLabelProvider());
+
+        Composite bottomPane = new Composite(right, SWT.NONE);
+        bottomPane.setLayout(new GridLayout(1, false));
+        bottomPane.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+
+        infoGroup = new DefaultValidatorInfoControl(bottomPane);
+        infoGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         infoGroup.setVisible(false);
         validatorsTableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
             @Override
@@ -304,10 +308,7 @@ public class FieldValidatorsWizardPage extends WizardPage {
         List<Variable> taskVariables = formNode.getVariables(true, false);
         variablesTableViewer.setInput(taskVariables);
         swimlanesTableViewer.setInput(processDefinition.getSwimlanes());
-        warningLabel = new Label(right, SWT.NONE);
-        data = new GridData(GridData.FILL_HORIZONTAL);
-        data.horizontalSpan = 2;
-        warningLabel.setLayoutData(data);
+        warningLabel = new Label(bottomPane, SWT.NONE);
         warningLabel.setForeground(ColorConstants.red);
         warningLabel.setText(warningMessage);
         mainComposite.pack(true);
