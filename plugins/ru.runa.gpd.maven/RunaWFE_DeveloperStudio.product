@@ -235,7 +235,6 @@
       <plugin id="ru.runa.gpd.app"/>
       <plugin id="ru.runa.gpd.connector.wfe.ws"/>
       <plugin id="ru.runa.gpd.form.ftl"/>
-      <plugin id="ru.runa.gpd.form.jointeditor"/>
       <plugin id="ru.runa.gpd.form.quick"/>
       <plugin id="ru.runa.gpd.office"/>
    </plugins>

@@ -1,4 +1,4 @@
-package ru.runa.gpd.form.jointeditor.resources;
+package ru.runa.gpd.jointformeditor.resources;
 
 import java.text.MessageFormat;
 import java.util.MissingResourceException;
@@ -6,7 +6,7 @@ import java.util.ResourceBundle;
 
 public class Messages {
 
-    private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle("ru.runa.gpd.form.jointeditor.resources.messages");
+    private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle("ru.runa.gpd.jointformeditor.resources.messages");
 
     public static String getString(String key) {
         try {

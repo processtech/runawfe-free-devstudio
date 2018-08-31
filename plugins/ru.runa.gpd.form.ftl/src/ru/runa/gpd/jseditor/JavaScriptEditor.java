@@ -1,8 +1,11 @@
 package ru.runa.gpd.jseditor;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Stack;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -39,12 +42,16 @@ import org.eclipse.ui.texteditor.ContentAssistAction;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
+import com.google.common.base.Charsets;
+import com.google.common.io.CharStreams;
+
 import ru.runa.gpd.EditorsPlugin;
 import ru.runa.gpd.htmleditor.ColorProvider;
 import ru.runa.gpd.htmleditor.HTMLPlugin;
 import ru.runa.gpd.htmleditor.HTMLProjectParams;
 import ru.runa.gpd.htmleditor.editors.FoldingInfo;
 import ru.runa.gpd.htmleditor.editors.SoftTabVerifyListener;
+import ru.runa.gpd.util.TemplateUtils;
 
 public class JavaScriptEditor extends TextEditor {
 
@@ -181,28 +188,35 @@ public class JavaScriptEditor extends TextEditor {
 		}
 	}
 	
-	public void dispose() {
-		if(getEditorInput() instanceof IFileEditorInput){
-			try {
-				ResourcesPlugin.getWorkspace().run(new IWorkspaceRunnable() {
-					public void run(IProgressMonitor monitor) throws CoreException {
-						try {
-							IFileEditorInput input = (IFileEditorInput)getEditorInput();
-							HTMLProjectParams params = new HTMLProjectParams(input.getFile().getProject());
-							if(params.getRemoveMarkers()){
-								input.getFile().deleteMarkers(IMarker.PROBLEM,false,0);
-							}
-						} catch(Exception ex){
-						}
-					}
-				}, null);
-			} catch(Exception ex){
-			}
-		}
-		
-		pairMatcher.dispose();
-		super.dispose();
-	}
+    public void dispose() {
+        if (getEditorInput() instanceof IFileEditorInput) {
+            try {
+                ResourcesPlugin.getWorkspace().run(new IWorkspaceRunnable() {
+                    public void run(IProgressMonitor monitor) throws CoreException {
+                        try {
+                            IFileEditorInput input = (IFileEditorInput) getEditorInput();
+                            HTMLProjectParams params = new HTMLProjectParams(input.getFile().getProject());
+                            if (params.getRemoveMarkers()) {
+                                input.getFile().deleteMarkers(IMarker.PROBLEM, false, 0);
+                            }
+                            IFile file = input.getFile();
+                            try (InputStream is = file.getContents();) {
+                                if (TemplateUtils.getFormTemplateAsString().equals(CharStreams.toString(new InputStreamReader(is, Charsets.UTF_8)))) {
+                                    is.close();
+                                    file.delete(true, monitor);
+                                }
+                            }
+                        } catch (Exception ex) {
+                        }
+                    }
+                }, null);
+            } catch (Exception ex) {
+            }
+        }
+
+        pairMatcher.dispose();
+        super.dispose();
+    }
 	
 	public void doSaveAs() {
 		super.doSaveAs();

@@ -55,6 +55,12 @@
             id="ru.runa.gpd.wysiwyg.RegulationsViewer"
             name="regulations viewer">
       </editor>
+      <editor
+            class="ru.runa.gpd.jointformeditor.JointFormEditor"
+            default="false"
+            id="ru.runa.gpd.jointformeditor"
+            name="%joint.editor.name">
+      </editor>
    </extension>
 
    <extension
@@ -172,7 +178,7 @@
    <extension
          point="ru.runa.gpd.formtype">
       <element
-            contributor="ru.runa.gpd.formeditor.FtlFormType"
+            contributor="ru.runa.gpd.formeditor.FtlJointFormType"
             name="%FormType.ftl"
             type="ftl"/>
       <element
