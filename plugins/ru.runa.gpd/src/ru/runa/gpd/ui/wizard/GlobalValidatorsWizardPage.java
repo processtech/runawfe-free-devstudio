@@ -1,5 +1,7 @@
 package ru.runa.gpd.ui.wizard;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -39,6 +41,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import ru.runa.gpd.Localization;
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.extension.decision.GroovyTypeSupport;
 import ru.runa.gpd.extension.decision.GroovyValidationModel;
 import ru.runa.gpd.extension.decision.GroovyValidationModel.Expr;
@@ -66,15 +69,15 @@ import ru.runa.gpd.validation.ValidatorDefinition;
 import ru.runa.gpd.validation.ValidatorDefinitionRegistry;
 import ru.runa.wfe.execution.dto.WfProcess;
 
-public class GlobalValidatorsWizardPage extends WizardPage {
+public class GlobalValidatorsWizardPage extends WizardPage implements PropertyChangeListener {
     private final FormNode formNode;
     private TableViewer validatorsTableViewer;
     private Button deleteButton;
     private ValidatorInfoControl infoGroup;
     private List<ValidatorConfig> validatorConfigs;
-    private final List<Variable> variables;
-    private final List<String> variableNames;
-    private final List<String> contextVariableNames;
+    private List<Variable> variables;
+    private List<String> variableNames;
+    private List<String> contextVariableNames;
     private final ValidatorDefinition globalDefinition = ValidatorDefinitionRegistry.getGlobalDefinition();
     private boolean dirty;
     private Consumer<Boolean> dirtyCallback;
@@ -82,10 +85,7 @@ public class GlobalValidatorsWizardPage extends WizardPage {
     protected GlobalValidatorsWizardPage(FormNode formNode) {
         super("Global validators");
         this.formNode = formNode;
-        this.variables = formNode.getProcessDefinition().getVariables(true, true);
-        this.variableNames = VariableUtils.getVariableNamesForScripting(variables);
-        this.contextVariableNames = Lists.newArrayList(variableNames);
-        this.contextVariableNames.add(WfProcess.SELECTED_TRANSITION_KEY);
+        updateVariableNames();
         setTitle(Localization.getString("ValidatorWizardPage.globalpage.title"));
         setDescription(Localization.getString("ValidatorWizardPage.globalpage.description"));
     }
@@ -181,6 +181,8 @@ public class GlobalValidatorsWizardPage extends WizardPage {
 
         mainComposite.pack(true);
         setControl(mainComposite);
+
+        formNode.getProcessDefinition().addPropertyChangeListener(this);
     }
 
     protected Button addButton(Composite parent, String buttonKey, SelectionAdapter selectionListener) {
@@ -518,6 +520,26 @@ public class GlobalValidatorsWizardPage extends WizardPage {
 
     public boolean isDirty() {
         return dirty;
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (PropertyNames.PROPERTY_CHILDREN_CHANGED.equals(evt.getPropertyName())) {
+            updateVariableNames();
+        }
+    }
+
+    private void updateVariableNames() {
+        variables = formNode.getProcessDefinition().getVariables(true, true);
+        variableNames = VariableUtils.getVariableNamesForScripting(variables);
+        contextVariableNames = Lists.newArrayList(variableNames);
+        contextVariableNames.add(WfProcess.SELECTED_TRANSITION_KEY);
+    }
+
+    @Override
+    public void dispose() {
+        formNode.getProcessDefinition().removePropertyChangeListener(this);
+        super.dispose();
     }
 
 }

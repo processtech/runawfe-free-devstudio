@@ -1,5 +1,7 @@
 package ru.runa.gpd.ui.wizard;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
@@ -43,6 +45,7 @@ import org.eclipse.swt.widgets.TableColumn;
 import com.google.common.collect.Maps;
 
 import ru.runa.gpd.Localization;
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.NamedGraphElement;
@@ -65,7 +68,7 @@ import ru.runa.gpd.validation.ValidatorDefinition;
 import ru.runa.gpd.validation.ValidatorDefinition.Param;
 import ru.runa.gpd.validation.ValidatorDefinitionRegistry;
 
-public class FieldValidatorsWizardPage extends WizardPage {
+public class FieldValidatorsWizardPage extends WizardPage implements PropertyChangeListener {
     private final FormNode formNode;
     private final ProcessDefinition processDefinition;
     private TabFolder tabFolder;
@@ -305,14 +308,15 @@ public class FieldValidatorsWizardPage extends WizardPage {
             }
         }), new TableColumnDescription("#", 20, SWT.LEFT), new TableColumnDescription("property.name", 200, SWT.LEFT));
 
-        List<Variable> taskVariables = formNode.getVariables(true, false);
-        variablesTableViewer.setInput(taskVariables);
-        swimlanesTableViewer.setInput(processDefinition.getSwimlanes());
+        updateViewers();
+
         warningLabel = new Label(bottomPane, SWT.NONE);
         warningLabel.setForeground(ColorConstants.red);
         warningLabel.setText(warningMessage);
         mainComposite.pack(true);
         setControl(pageControl);
+
+        processDefinition.addPropertyChangeListener(this);
     }
 
     private <S> void createTable(TableViewer viewer, DataViewerComparator<S> comparator, TableColumnDescription... column) {
@@ -755,6 +759,48 @@ public class FieldValidatorsWizardPage extends WizardPage {
 
     public boolean isDirty() {
         return dirty;
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        String type = evt.getPropertyName();
+        if (PropertyNames.PROPERTY_CHILDREN_CHANGED.equals(type)) {
+            updateViewers();
+        } else if (evt.getSource() instanceof Variable) {
+            if (PropertyNames.PROPERTY_NAME.equals(type) || PropertyNames.PROPERTY_FORMAT.equals(type)
+                    || PropertyNames.PROPERTY_DEFAULT_VALUE.equals(type) || PropertyNames.PROPERTY_STORE_TYPE.equals(type)) {
+                if (evt.getSource() instanceof Swimlane) {
+                    swimlanesTableViewer.refresh(evt.getSource());
+                } else {
+                    variablesTableViewer.refresh(evt.getSource());
+                }
+            }
+        }
+    }
+
+    private void updateViewers() {
+        List<Variable> variables = formNode.getVariables(true, false);
+        variablesTableViewer.setInput(variables);
+        for (Variable variable : variables) {
+            variable.addPropertyChangeListener(this);
+        }
+        List<Swimlane> swimlanes = processDefinition.getSwimlanes();
+        swimlanesTableViewer.setInput(swimlanes);
+        for (Swimlane swimlane : swimlanes) {
+            swimlane.addPropertyChangeListener(this);
+        }
+    }
+
+    @Override
+    public void dispose() {
+        for (Variable variable : formNode.getVariables(true, false)) {
+            variable.removePropertyChangeListener(this);
+        }
+        for (Swimlane swimlane : processDefinition.getSwimlanes()) {
+            swimlane.removePropertyChangeListener(this);
+        }
+        processDefinition.removePropertyChangeListener(this);
+        super.dispose();
     }
 
 }

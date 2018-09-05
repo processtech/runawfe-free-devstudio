@@ -126,4 +126,11 @@ public class QuickJointFormEditor extends MultiPageEditorPart {
         }
     }
 
+    @Override
+    public void dispose() {
+        fieldValidatorsPage.dispose();
+        globalValidatorsPage.dispose();
+        super.dispose();
+    }
+
 }

@@ -90,4 +90,11 @@ public class JointFormEditor extends FormEditor {
         }
     }
 
+    @Override
+    public void dispose() {
+        fieldValidatorsPage.dispose();
+        globalValidatorsPage.dispose();
+        super.dispose();
+    }
+
 }
