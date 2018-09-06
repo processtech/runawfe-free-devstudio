@@ -151,7 +151,6 @@ public class ValidatorWizard extends Wizard {
                 // save input data to config
                 config.setMessage(errorMessageText.getText());
                 parametersComposite.updateConfigParams(definition, config);
-                config = null;
             }
         }
 

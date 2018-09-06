@@ -208,6 +208,12 @@ public class GlobalValidatorsWizardPage extends WizardPage implements PropertyCh
 
         public DefaultValidatorInfoControl(Composite parent) {
             super(parent, false);
+            errorMessageText.addModifyListener(new ModifyListener() {
+                @Override
+                public void modifyText(ModifyEvent e) {
+                    setDirty(true);
+                }
+            });
             if (formNode.getLeavingTransitions().size() > 1) {
                 Group transitionsGroup = new Group(this, SWT.BORDER);
                 transitionsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -281,7 +287,6 @@ public class GlobalValidatorsWizardPage extends WizardPage implements PropertyCh
                 protected void onSelection(SelectionEvent event) throws Exception {
                     if (tabFolder.getSelectionIndex() == 1) {
                         toCode();
-                        setDirty(true);
                     }
                 }
             });
@@ -422,6 +427,12 @@ public class GlobalValidatorsWizardPage extends WizardPage implements PropertyCh
                     FeaturedStyledText.Feature.LINE_NUMBER, FeaturedStyledText.Feature.UNDO_REDO));
             codeText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 5, 1));
             codeText.addLineStyleListener(new JavaHighlightTextStyling(contextVariableNames));
+            codeText.addModifyListener(new ModifyListener() {
+                @Override
+                public void modifyText(ModifyEvent e) {
+                    setDirty(true);
+                }
+            });
         }
 
         private GridData getComboGridData() {

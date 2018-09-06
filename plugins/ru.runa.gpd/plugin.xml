@@ -241,12 +241,6 @@
              style="toggle"
              />
        <action
-             class="ru.runa.gpd.lang.action.OpenFormValidationDelegate"
-             id="formValidation"
-             label="%label.action.validationOfForm"
-             menubarPath="formdata/sp2"
-             />
-       <action
              class="ru.runa.gpd.lang.action.DeleteFormFilesAction"
              id="deleteFormFiles"
              label="%label.action.deleteFormFiles"
@@ -294,12 +288,6 @@
              label="%label.action.editForm"
              menubarPath="formdata/sp1"
              />
-       <action
-             class="ru.runa.gpd.lang.action.OpenFormScriptDelegate"
-             id="editFormScript"
-             label="%label.action.editFormScript"
-             menubarPath="formdata/additions">
-       </action>
     </objectContribution>
     <objectContribution
           adaptable="false"
