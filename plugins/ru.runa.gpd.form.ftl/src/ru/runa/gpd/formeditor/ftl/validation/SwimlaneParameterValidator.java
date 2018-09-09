@@ -2,6 +2,8 @@ package ru.runa.gpd.formeditor.ftl.validation;
 
 import java.util.List;
 
+import com.google.common.base.Strings;
+
 import ru.runa.gpd.formeditor.ftl.Component;
 import ru.runa.gpd.formeditor.ftl.ComponentParameter;
 import ru.runa.gpd.formeditor.resources.Messages;
@@ -15,7 +17,7 @@ public class SwimlaneParameterValidator extends DefaultParameterTypeValidator {
         List<ValidationError> list = super.validate(formNode, component, parameter);
         if (list.isEmpty()) {
             String value = (String) component.getParameterValue(parameter);
-            if (formNode.getProcessDefinition().getSwimlaneByName(value) == null) {
+            if (parameter.isRequired() && !Strings.isNullOrEmpty(value) && formNode.getProcessDefinition().getSwimlaneByName(value) == null) {
                 list.add(ValidationError.createError(formNode,
                         Messages.getString("validation.componentParameterSwimlane.unknown", value, component.getType().getLabel())));
             }
