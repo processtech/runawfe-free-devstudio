@@ -15,7 +15,7 @@ public class SwimlaneParameterValidator extends DefaultParameterTypeValidator {
         List<ValidationError> list = super.validate(formNode, component, parameter);
         if (list.isEmpty()) {
             String value = (String) component.getParameterValue(parameter);
-            if (formNode.getProcessDefinition().getSwimlaneByName(value) == null) {
+            if (parameter.isRequired() && formNode.getProcessDefinition().getSwimlaneByName(value) == null) {
                 list.add(ValidationError.createError(formNode,
                         Messages.getString("validation.componentParameterSwimlane.unknown", value, component.getType().getLabel())));
             }
