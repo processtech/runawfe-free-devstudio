@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/ru.altlinux.someproject.feature_1.0.0.qualifier.jar" id="ru.altlinux.someproject.feature" version="1.0.0.qualifier">
+      <category name="category.someproject"/>
+   </feature>
+   <category-def name="category.someproject" label="Some Project"/>
+</site>
