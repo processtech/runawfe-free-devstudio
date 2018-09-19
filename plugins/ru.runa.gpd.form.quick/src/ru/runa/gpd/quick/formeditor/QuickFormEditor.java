@@ -1,5 +1,8 @@
 package ru.runa.gpd.quick.formeditor;
 
+import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.ByteArrayInputStream;
@@ -7,7 +10,6 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -50,11 +52,6 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.part.FileEditorInput;
 import org.osgi.framework.Bundle;
-
-import com.google.common.base.Objects;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
-
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.PropertyNames;
@@ -154,8 +151,18 @@ public class QuickFormEditor extends EditorPart implements ISelectionListener, I
         addPropertyListener(new IPropertyListener() {
             @Override
             public void propertyChanged(Object source, int propId) {
-                if (propId == QuickFormEditor.CLOSED && formFile.exists()) {
-                    ValidationUtil.createOrUpdateValidation(formNode, formFile);
+                if (propId == QuickFormEditor.CLOSED) {
+                    if (formFile.exists()) {
+                        if (isEmpty()) {
+                            try {
+                                formFile.delete(true, null);
+                            } catch (CoreException e) {
+                                PluginLogger.logError(e);
+                            }
+                        } else {
+                            ValidationUtil.createOrUpdateValidation(formNode, formFile);
+                        }
+                    }
                 }
             }
         });
@@ -172,8 +179,10 @@ public class QuickFormEditor extends EditorPart implements ISelectionListener, I
             formFile.setContents(content, true, true, null);
             // }
             if (formNode != null) {
-                formNode.setDirty();
-                ValidationUtil.createOrUpdateValidation(formNode, formFile);
+                if (formFile.exists() && !isEmpty()) {
+                    formNode.setDirty();
+                    ValidationUtil.createOrUpdateValidation(formNode, formFile);
+                }
             }
             setDirty(false);
             updateButtons();
@@ -735,6 +744,10 @@ public class QuickFormEditor extends EditorPart implements ISelectionListener, I
         firePropertyChange(CLOSED);
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
         super.dispose();
+    }
+
+    public boolean isEmpty() {
+        return quickForm == null || quickForm.getVariables().isEmpty();
     }
 
 }

@@ -3,8 +3,11 @@ package ru.runa.gpd.ui.wizard;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IWorkspaceRunnable;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -14,7 +17,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.SharedImages;
@@ -79,6 +81,23 @@ public class ValidatorWizard extends Wizard {
         }
         ValidatorParser.writeValidation(validationFile, formNode, validation);
         return true;
+    }
+
+    @Override
+    public void dispose() {
+        if (validation.getVariableNames().isEmpty()) {
+            try {
+                ResourcesPlugin.getWorkspace().run(new IWorkspaceRunnable() {
+                    @Override
+                    public void run(IProgressMonitor monitor) throws CoreException {
+                        validationFile.delete(true, null);
+                    }
+                }, null);
+            } catch (CoreException e) {
+                PluginLogger.logError(e);
+            }
+        }
+        super.dispose();
     }
 
     @Override

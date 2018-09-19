@@ -1,5 +1,6 @@
 package ru.runa.gpd.ui.wizard;
 
+import com.google.common.collect.Maps;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -10,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
-
+import org.eclipse.core.resources.IFile;
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.DoubleClickEvent;
@@ -43,12 +44,13 @@ import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
-
-import com.google.common.collect.Maps;
-
 import ru.runa.gpd.Localization;
+import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.SharedImages;
+import ru.runa.gpd.form.FormType;
+import ru.runa.gpd.form.FormTypeProvider;
+import ru.runa.gpd.form.FormVariableAccess;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.ProcessDefinition;
@@ -62,6 +64,7 @@ import ru.runa.gpd.ui.dialog.TimeInputDialog;
 import ru.runa.gpd.ui.dialog.UserInputDialog;
 import ru.runa.gpd.ui.wizard.ValidatorWizard.ParametersComposite;
 import ru.runa.gpd.ui.wizard.ValidatorWizard.ValidatorInfoControl;
+import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.VariableUtils;
 import ru.runa.gpd.validation.FormNodeValidation;
 import ru.runa.gpd.validation.ValidationUtil;
@@ -816,6 +819,24 @@ public class FieldValidatorsWizardPage extends WizardPage implements PropertyCha
         }
         processDefinition.removePropertyChangeListener(this);
         super.dispose();
+    }
+
+    public void updateConfigs(IFile formFile) {
+        try {
+            FormType formType = FormTypeProvider.getFormType(formNode.getFormType());
+            byte[] formData = IOUtils.readStreamAsBytes(formFile.getContents(true));
+            Map<String, FormVariableAccess> formVariables = formType.getFormVariableNames(formNode, formData);
+            fieldConfigs.clear();
+            formVariables.entrySet().stream().forEach(e -> {
+                if (e.getValue() != FormVariableAccess.READ) {
+                    addField(e.getKey());
+                }
+            });
+            variablesTableViewer.refresh(true);
+            updateVariableSelection();
+        } catch (Exception e) {
+            PluginLogger.logError(e);
+        }
     }
 
 }

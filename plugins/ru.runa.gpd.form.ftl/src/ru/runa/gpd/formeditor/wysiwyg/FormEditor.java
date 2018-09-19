@@ -1,5 +1,10 @@
 package ru.runa.gpd.formeditor.wysiwyg;
 
+import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
@@ -10,12 +15,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
@@ -44,13 +49,6 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.texteditor.ITextEditor;
-
-import com.google.common.base.Objects;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-
 import ru.runa.gpd.EditorsPlugin;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
@@ -151,7 +149,15 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
             public void propertyChanged(Object source, int propId) {
                 if (propId == FormEditor.CLOSED) {
                     if (formFile.exists()) {
-                        ValidationUtil.createOrUpdateValidation(formNode, formFile);
+                        if (IOUtils.isEmpty(formFile)) {
+                            try {
+                                formFile.delete(true, null);
+                            } catch (CoreException e) {
+                                PluginLogger.logError(e);
+                            }
+                        } else {
+                            ValidationUtil.createOrUpdateValidation(formNode, formFile);
+                        }
                     }
                     boolean formEditorsAvailable = false;
                     IWorkbenchPage workbenchPage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
@@ -380,8 +386,10 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
         }
         sourceEditor.doSave(monitor);
         if (formNode != null) {
-            formNode.setDirty();
-            ValidationUtil.createOrUpdateValidation(formNode, formFile);
+            if (formFile.exists() && !IOUtils.isEmpty(formFile)) {
+                formNode.setDirty();
+                ValidationUtil.createOrUpdateValidation(formNode, formFile);
+            }
         }
         if (isBrowserLoaded()) {
             browser.execute("setHTMLSaved()");
