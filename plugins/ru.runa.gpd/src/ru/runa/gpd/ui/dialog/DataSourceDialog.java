@@ -1,10 +1,10 @@
 package ru.runa.gpd.ui.dialog;
 
+import com.google.common.base.Strings;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
@@ -26,9 +26,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-
-import com.google.common.base.Strings;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.util.DataSourceUtils;
@@ -69,13 +66,14 @@ public class DataSourceDialog extends Dialog implements DataSourceStuff {
         Composite area = (Composite) super.createDialogArea(parent);
         area.setLayout(new GridLayout(1, false));
         Composite composite = new Composite(area, SWT.FILL);
+        composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         composite.setLayout(new GridLayout(2, false));
         
         Label label = new Label(composite, SWT.NONE);
         label.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
         label.setText(Localization.getString("datasource.property.name") + ":");
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.minimumWidth = 350;
+        gd.widthHint = 500;
         txtName = new Text(composite, SWT.BORDER);
         txtName.setLayoutData(gd);
         txtName.addModifyListener(new ModifyListener() {
@@ -284,6 +282,11 @@ public class DataSourceDialog extends Dialog implements DataSourceStuff {
         name = txtName.getText();
         xml = asXmlString();
         super.okPressed();
+    }
+
+    @Override
+    protected boolean isResizable() {
+        return true;
     }
 
 }
