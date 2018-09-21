@@ -47,6 +47,8 @@ import ru.runa.gpd.lang.model.Timer;
 import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableUserType;
+import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
+import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 import ru.runa.gpd.ui.dialog.InfoWithDetailsDialog;
 import ru.runa.gpd.ui.dialog.MultipleSelectionDialog;
 import ru.runa.gpd.util.IOUtils;
@@ -152,21 +154,38 @@ public class CopyGraphCommand extends Command {
             // add transitions
             for (NamedGraphElement node : sourceNodeList) {
                 List<Transition> transitions = node.getChildren(Transition.class);
+                Transition timerTransition = null;
                 Timer timer = null;
                 if (node instanceof ITimed) {
                     timer = ((ITimed) node).getTimer();
                     if (timer != null) {
                         Transition transition = timer.getFirstChild(Transition.class);
                         if (transition != null) {
-                            transitions.add(transition);
+                            timerTransition = transition;
                             timer = ((ITimed) targetNodeMap.get(node.getId())).getTimer();
+                            transitions.add(transition);
+                        }
+                    }
+                }
+                CatchEventNode catchEvent = null;
+                if (node instanceof IBoundaryEventContainer) {
+                    catchEvent = node.getFirstChild(CatchEventNode.class);
+                    if (catchEvent != null) {
+                        Transition transition = catchEvent.getFirstChild(Transition.class);
+                        if (transition != null) {
+                            catchEvent = targetNodeMap.get(node.getId()).getFirstChild(CatchEventNode.class);
+                            transitions.add(transition);
                         }
                     }
                 }
                 for (Transition transition : transitions) {
                     NamedGraphElement source = targetNodeMap.get(transition.getSource().getId());
                     if (source == null) {
-                        source = timer;
+                        if (transition.equals(timerTransition)) {
+                            source = timer;
+                        } else {
+                            source = catchEvent;
+                        }
                     }
                     NamedGraphElement target = targetNodeMap.get(transition.getTarget().getId());
                     if (source != null && target != null) {
