@@ -1,19 +1,16 @@
 package ru.runa.gpd.lang.model;
 
+import com.google.common.base.Objects;
+import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.ui.views.properties.ComboBoxPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
 import org.eclipse.ui.views.properties.TextPropertyDescriptor;
-
-import com.google.common.base.Objects;
-import com.google.common.collect.Lists;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.editor.GEFConstants;
@@ -253,6 +250,7 @@ public class Transition extends NamedGraphElement implements ActionContainer {
             copy.setLabelLocation(labelLocation.getCopy());
         }
         ((Node) parent).onLeavingTransitionAdded(copy);
+        copy.setColor(getColor());
         return copy;
     }
 

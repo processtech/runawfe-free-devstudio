@@ -1,14 +1,14 @@
 package ru.runa.gpd.lang.model;
 
+import com.google.common.base.Objects;
+import com.google.common.collect.Lists;
 import java.util.List;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.views.properties.ComboBoxPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
-
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.ProcessCache;
@@ -21,9 +21,6 @@ import ru.runa.gpd.settings.PrefConstants;
 import ru.runa.gpd.util.VariableMapping;
 import ru.runa.gpd.util.VariableUtils;
 import ru.runa.wfe.lang.AsyncCompletionMode;
-
-import com.google.common.base.Objects;
-import com.google.common.collect.Lists;
 
 public class Subprocess extends Node implements Synchronizable, IBoundaryEventContainer {
     protected String subProcessName = "";
@@ -237,7 +234,9 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
 
     @Override
     public void setPropertyValue(Object id, Object value) {
-        if (PROPERTY_TRANSACTIONAL.equals(id)) {
+        if (PROPERTY_SUBPROCESS.equals(id)) {
+            setSubProcessName((String) value);
+        } else if (PROPERTY_TRANSACTIONAL.equals(id)) {
             setTransactional(YesNoComboBoxTransformer.setPropertyValue(value));
         } else {
             super.setPropertyValue(id, value);
