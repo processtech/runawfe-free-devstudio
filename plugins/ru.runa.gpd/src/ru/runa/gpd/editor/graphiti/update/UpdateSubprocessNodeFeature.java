@@ -1,18 +1,16 @@
 package ru.runa.gpd.editor.graphiti.update;
 
+import com.google.common.base.Objects;
 import org.eclipse.graphiti.features.IReason;
 import org.eclipse.graphiti.features.context.IUpdateContext;
 import org.eclipse.graphiti.features.impl.Reason;
 import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
-
 import ru.runa.gpd.editor.graphiti.GaProperty;
 import ru.runa.gpd.editor.graphiti.PropertyUtil;
 import ru.runa.gpd.editor.graphiti.layout.LayoutSubprocessNodeFeature;
 import ru.runa.gpd.lang.model.Subprocess;
-
-import com.google.common.base.Objects;
 
 public class UpdateSubprocessNodeFeature extends UpdateStateNodeFeature {
 
@@ -24,7 +22,7 @@ public class UpdateSubprocessNodeFeature extends UpdateStateNodeFeature {
         if (transactional != null && !Objects.equal(transactional, String.valueOf(bo.isTransactional()))) {
             return Reason.createTrueReason();
         }
-        return Reason.createFalseReason();
+        return super.updateNeeded(context);
     }
 
     @Override

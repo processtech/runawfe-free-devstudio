@@ -1553,14 +1553,6 @@
             assignmentHandler="false"
             botTaskHandler="false"
             decisionHandler="false"
-            className="ru.runa.wfe.extension.handler.RhinoJSActionHandler"
-            label="%ru.runa.wfe.extension.handler.RhinoJSActionHandler"
-            enabled="true" />
-      <handler
-            actionHandler="true"
-            assignmentHandler="false"
-            botTaskHandler="false"
-            decisionHandler="false"
             cellEditorProvider="ru.runa.gpd.extension.handler.SendEmailActionHandlerProvider"
             className="ru.runa.wfe.extension.handler.SendEmailActionHandler"
             enabled="true"
