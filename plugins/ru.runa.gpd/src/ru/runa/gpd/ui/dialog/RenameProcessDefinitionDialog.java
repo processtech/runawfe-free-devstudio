@@ -17,9 +17,9 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.model.ProcessDefinition;
+import ru.runa.gpd.ui.custom.TooManySpacesChecker;
 import ru.runa.gpd.util.IOUtils;
 
 public class RenameProcessDefinitionDialog extends Dialog {
@@ -67,6 +67,7 @@ public class RenameProcessDefinitionDialog extends Dialog {
         nameField.setText(name);
         nameField.setLayoutData(nameTextData);
         nameField.addModifyListener(new ModifyListener() {
+            @Override
             public void modifyText(ModifyEvent e) {
                 name = nameField.getText();
                 updateButtons();
@@ -90,6 +91,7 @@ public class RenameProcessDefinitionDialog extends Dialog {
         } else if (definition != null) {
             allowCreation &= definition.getEmbeddedSubprocessByName(name) == null;
         }
+        allowCreation &= TooManySpacesChecker.isValid(name);
         getButton(IDialogConstants.OK_ID).setEnabled(allowCreation);
     }
 
