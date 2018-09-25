@@ -13,6 +13,7 @@ import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.formeditor.wysiwyg.FormEditor;
 import ru.runa.gpd.jointformeditor.resources.Messages;
 import ru.runa.gpd.jseditor.JavaScriptEditor;
+import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.ui.wizard.FieldValidatorsWizardPage;
 import ru.runa.gpd.ui.wizard.GlobalValidatorsWizardPage;
 import ru.runa.gpd.ui.wizard.ValidatorWizard;
@@ -103,6 +104,8 @@ public class JointFormEditor extends FormEditor {
 
     @Override
     public void dispose() {
+        ProcessDefinition processDefinition = (ProcessDefinition) formNode.getParent();
+        boolean safeDirty = processDefinition.isDirty();
         fieldValidatorsPage.dispose();
         globalValidatorsPage.dispose();
         super.dispose();
@@ -123,6 +126,7 @@ public class JointFormEditor extends FormEditor {
         if (rewriteFormsXml) {
             IOUtils.saveFormsXml(formNode, formFile);
         }
+        processDefinition.setDirty(safeDirty);
     }
 
 }

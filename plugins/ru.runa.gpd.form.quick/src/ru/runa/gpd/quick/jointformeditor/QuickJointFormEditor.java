@@ -139,6 +139,8 @@ public class QuickJointFormEditor extends MultiPageEditorPart {
 
     @Override
     public void dispose() {
+        ProcessDefinition processDefinition = (ProcessDefinition) formNode.getParent();
+        boolean safeDirty = processDefinition.isDirty();
         fieldValidatorsPage.dispose();
         globalValidatorsPage.dispose();
         quickEditor.dispose();
@@ -161,6 +163,7 @@ public class QuickJointFormEditor extends MultiPageEditorPart {
         if (rewriteFormsXml) {
             IOUtils.saveFormsXml(formNode, formFile);
         }
+        processDefinition.setDirty(safeDirty);
     }
 
 }

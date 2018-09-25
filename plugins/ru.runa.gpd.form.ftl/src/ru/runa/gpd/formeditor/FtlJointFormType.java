@@ -7,11 +7,11 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
-
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.formeditor.ftl.ui.FormComponentsView;
 import ru.runa.gpd.jointformeditor.JointFormEditor;
 import ru.runa.gpd.lang.model.FormNode;
+import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.TemplateUtils;
 import ru.runa.gpd.validation.ValidationUtil;
@@ -40,6 +40,7 @@ public class FtlJointFormType extends FtlFormType {
             PluginLogger.logError(e);
             throw new RuntimeException(e);
         }
+        ((ProcessDefinition) formNode.getParent()).setDirty(false);
         PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(FormComponentsView.ID, null, IWorkbenchPage.VIEW_VISIBLE);
         return IDE.openEditor(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(), formFile, JointFormEditor.ID, true);
     }
