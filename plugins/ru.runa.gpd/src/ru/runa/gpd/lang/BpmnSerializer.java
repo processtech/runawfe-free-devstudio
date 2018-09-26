@@ -444,6 +444,9 @@ public class BpmnSerializer extends ProcessSerializer {
             }
             transitionElement.addAttribute(SOURCE_REF, sourceNodeId);
             transitionElement.addAttribute(TARGET_REF, targetNodeId);
+            if (!Strings.isNullOrEmpty(transition.getDescription())) {
+                transitionElement.addElement(DOCUMENTATION).addCDATA(transition.getDescription());
+            }
             writeActionHandlers(transitionElement, transition);
             if (transition.getColor() != TransitionColor.DEFAULT) {
                 Map<String, String> properties = Maps.newLinkedHashMap();
@@ -856,6 +859,10 @@ public class BpmnSerializer extends ProcessSerializer {
             Transition transition = NodeRegistry.getNodeTypeDefinition(Transition.class).createElement(source, false);
             transition.setId(transitionElement.attributeValue(ID));
             transition.setName(transitionElement.attributeValue(NAME));
+            Element description = transitionElement.element(DOCUMENTATION);
+            if (description != null) {
+                transition.setDescription(description.getTextTrim());
+            }
             transition.setTarget(target);
             parseActionHandlers(transitionElement, transition);
             Map<String, String> properties = parseExtensionProperties(transitionElement);
