@@ -1,7 +1,6 @@
 package ru.runa.gpd.editor.graphiti;
 
 import java.util.List;
-
 import org.eclipse.graphiti.dt.IDiagramTypeProvider;
 import org.eclipse.graphiti.features.ICreateConnectionFeature;
 import org.eclipse.graphiti.features.ICreateFeature;
@@ -20,7 +19,6 @@ import org.eclipse.graphiti.mm.pictograms.Shape;
 import org.eclipse.graphiti.tb.ContextButtonEntry;
 import org.eclipse.graphiti.tb.DefaultToolBehaviorProvider;
 import org.eclipse.graphiti.tb.IContextButtonPadData;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.editor.graphiti.create.CreateElementFeature;
 import ru.runa.gpd.editor.graphiti.create.CreateStartNodeFeature;
@@ -53,6 +51,10 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
         GraphElement element = (GraphElement) getFeatureProvider().getBusinessObjectForPictogramElement(pe);
         if (element instanceof Subprocess) {
             return new OpenSubProcessFeature(getFeatureProvider());
+        }
+        NodeTypeDefinition definition = element.getTypeDefinition();
+        if (definition != null && definition.getGraphitiEntry() != null) {
+            return definition.getGraphitiEntry().createDoubleClickFeature(getFeatureProvider());
         }
         return super.getDoubleClickFeature(context);
     }

@@ -5,13 +5,14 @@ import org.eclipse.graphiti.features.IAddFeature;
 import org.eclipse.graphiti.features.IFeature;
 import org.eclipse.graphiti.features.ILayoutFeature;
 import org.eclipse.graphiti.features.IUpdateFeature;
-
+import org.eclipse.graphiti.features.custom.ICustomFeature;
 import ru.runa.gpd.editor.Entry;
 import ru.runa.gpd.editor.graphiti.add.AddElementFeature;
 import ru.runa.gpd.editor.graphiti.add.AddTransitionFeature;
 import ru.runa.gpd.editor.graphiti.create.CreateElementFeature;
 import ru.runa.gpd.editor.graphiti.create.CreateTransitionFeature;
 import ru.runa.gpd.editor.graphiti.layout.LayoutElementFeature;
+import ru.runa.gpd.editor.graphiti.update.DoubleClickElementFeature;
 import ru.runa.gpd.editor.graphiti.update.UpdateFeature;
 import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.NodeTypeDefinition;
@@ -22,6 +23,7 @@ public class GraphitiEntry extends Entry {
         super(nodeTypeDefinition, element);
     }
 
+    @Override
     protected Language getLanguage() {
         return Language.BPMN;
     }
@@ -63,6 +65,14 @@ public class GraphitiEntry extends Entry {
         ILayoutFeature feature = createExecutableExtension("layout");
         if (feature instanceof LayoutElementFeature) {
             ((LayoutElementFeature) feature).setFeatureProvider(provider);
+        }
+        return feature;
+    }
+
+    public ICustomFeature createDoubleClickFeature(DiagramFeatureProvider provider) {
+        ICustomFeature feature = createExecutableExtension("doubleClick");
+        if (feature instanceof DoubleClickElementFeature) {
+            ((DoubleClickElementFeature) feature).setFeatureProvider(provider);
         }
         return feature;
     }

@@ -898,6 +898,7 @@
                add="ru.runa.gpd.editor.graphiti.add.AddStartNodeFeature"
                create="ru.runa.gpd.editor.graphiti.create.CreateStartNodeFeature"
                update="ru.runa.gpd.editor.graphiti.update.UpdateStartNodeFeature"
+               doubleClick="ru.runa.gpd.editor.graphiti.update.DoubleClickFormNodeFeature"
                fixedSize="true"
                height="4"
                width="4">
@@ -922,6 +923,7 @@
                height="10"
                layout="ru.runa.gpd.editor.graphiti.layout.LayoutStateNodeFeature"
                update="ru.runa.gpd.editor.graphiti.update.UpdateStateNodeFeature"
+               doubleClick="ru.runa.gpd.editor.graphiti.update.DoubleClickFormNodeFeature"
                width="15">
          </graphiti>
       </element>
@@ -939,6 +941,7 @@
                height="10"
                layout="ru.runa.gpd.editor.graphiti.layout.LayoutStateNodeFeature"
                update="ru.runa.gpd.editor.graphiti.update.UpdateStateNodeFeature"
+               doubleClick="ru.runa.gpd.editor.graphiti.update.DoubleClickDelegableFeature"
                width="15">
          </graphiti>
       </element>
@@ -962,6 +965,7 @@
                height="4"
                layout="ru.runa.gpd.editor.graphiti.layout.LayoutTimerFeature"
                update="ru.runa.gpd.editor.graphiti.update.UpdateTimerFeature"
+               doubleClick="ru.runa.gpd.editor.graphiti.update.DoubleClickTimerFeature"
                width="4">
          </graphiti>
       </element>
@@ -984,6 +988,7 @@
                height="10"
                layout="ru.runa.gpd.editor.graphiti.layout.LayoutStateNodeFeature"
                update="ru.runa.gpd.editor.graphiti.update.UpdateStateNodeFeature"
+               doubleClick="ru.runa.gpd.editor.graphiti.update.DoubleClickFormNodeFeature"
                width="15">
          </graphiti>
       </element>
@@ -1064,6 +1069,7 @@
          <graphiti
                add="ru.runa.gpd.editor.graphiti.add.AddNodeWithImageFeature"
                create="ru.runa.gpd.editor.graphiti.create.CreateElementFeature"
+               doubleClick="ru.runa.gpd.editor.graphiti.update.DoubleClickDelegableFeature"
                fixedSize="true"
                height="4"
                width="4">
@@ -1086,6 +1092,7 @@
                create="ru.runa.gpd.editor.graphiti.create.CreateActionFeature"
                add="ru.runa.gpd.editor.graphiti.add.AddActionFeature"
                layout="ru.runa.gpd.editor.graphiti.layout.LayoutActionFeature"
+               doubleClick="ru.runa.gpd.editor.graphiti.update.DoubleClickDelegableFeature"
                fixedSize="true"
                height="16"
                width="16">
@@ -1189,6 +1196,7 @@
                add="ru.runa.gpd.editor.graphiti.add.AddEventNodeFeature"
                create="ru.runa.gpd.editor.graphiti.create.CreateElementFeature"
                update="ru.runa.gpd.editor.graphiti.update.UpdateEventNodeFeature"
+               doubleClick="ru.runa.gpd.editor.graphiti.update.DoubleClickEventNodeFeature"
                height="4"
                fixedSize="true"
                width="4">
@@ -1227,6 +1235,7 @@
                height="4"
                layout="ru.runa.gpd.editor.graphiti.layout.LayoutCatchEventNodeFeature"
                update="ru.runa.gpd.editor.graphiti.update.UpdateCatchEventNodeFeature"
+               doubleClick="ru.runa.gpd.editor.graphiti.update.DoubleClickEventNodeFeature"
                width="4">
          </graphiti>
       </element>
