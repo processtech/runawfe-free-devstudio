@@ -23,7 +23,7 @@ public class VariableNameChecker extends KeyAdapter {
                 return false;
             }
         }
-        if (string.startsWith(" ") || string.endsWith(" ")) {
+        if (string.startsWith(" ") || string.endsWith(" ") || string.contains("  ")) {
             return false;
         }
         return true;

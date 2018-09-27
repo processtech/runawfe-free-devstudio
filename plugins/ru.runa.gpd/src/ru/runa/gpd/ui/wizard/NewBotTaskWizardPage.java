@@ -1,7 +1,6 @@
 package ru.runa.gpd.ui.wizard;
 
 import java.util.Set;
-
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -21,9 +20,9 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-
 import ru.runa.gpd.BotCache;
 import ru.runa.gpd.Localization;
+import ru.runa.gpd.ui.custom.TooManySpacesChecker;
 import ru.runa.gpd.util.IOUtils;
 
 public class NewBotTaskWizardPage extends WizardPage {
@@ -92,7 +91,7 @@ public class NewBotTaskWizardPage extends WizardPage {
             Object selectedElement = selection.getFirstElement();
             if (selectedElement instanceof IAdaptable) {
                 IAdaptable adaptable = (IAdaptable) selectedElement;
-                IFolder botFolder = (IFolder) adaptable.getAdapter(IFolder.class);
+                IFolder botFolder = adaptable.getAdapter(IFolder.class);
                 if (botFolder != null) {
                     return IOUtils.getBotStationProjectForBotFolder(botFolder);
                 }
@@ -124,7 +123,7 @@ public class NewBotTaskWizardPage extends WizardPage {
             Object selectedElement = selection.getFirstElement();
             if (selectedElement instanceof IAdaptable) {
                 IAdaptable adaptable = (IAdaptable) selectedElement;
-                IFolder folder = (IFolder) adaptable.getAdapter(IFolder.class);
+                IFolder folder = adaptable.getAdapter(IFolder.class);
                 return folder;
             }
         }
@@ -204,6 +203,7 @@ public class NewBotTaskWizardPage extends WizardPage {
     }
 
     private boolean isBotTaskNameValid() {
-        return ResourcesPlugin.getWorkspace().validateName(nameText.getText(), IResource.FILE).isOK();
+        return ResourcesPlugin.getWorkspace().validateName(nameText.getText(), IResource.FILE).isOK()
+                && TooManySpacesChecker.isValid(nameText.getText());
     }
 }
