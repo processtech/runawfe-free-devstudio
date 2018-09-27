@@ -100,7 +100,9 @@ public class CopyGraphCommand extends Command {
             // add nodes
             final List<NamedGraphElement> newElements = new ArrayList<>();
             for (NamedGraphElement node : sourceNodeList) {
-                if (node instanceof StartState && targetDefinition.getChildren(StartState.class).size() != 0) {
+                if (!(node.getParent() instanceof ProcessDefinition)) {
+                    continue;
+                } else if (node instanceof StartState && targetDefinition.getChildren(StartState.class).size() != 0) {
                     continue;
                 } else if (node instanceof EndState && targetDefinition instanceof SubprocessDefinition) {
                     continue;
