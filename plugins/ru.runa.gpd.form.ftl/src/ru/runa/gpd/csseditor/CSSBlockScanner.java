@@ -14,9 +14,9 @@ import ru.runa.gpd.htmleditor.HTMLPlugin;
  */
 public class CSSBlockScanner extends RuleBasedScanner {
 	
-	public CSSBlockScanner(ColorProvider colorProvider){
-		List rules = createRules(colorProvider);
-		setRules((IRule[])rules.toArray(new IRule[rules.size()]));
+	public CSSBlockScanner(ColorProvider colorProvider) {
+		List<IRule> rules = createRules(colorProvider);
+		setRules(rules.toArray(new IRule[rules.size()]));
 	}
 	
 	/**
@@ -26,8 +26,8 @@ public class CSSBlockScanner extends RuleBasedScanner {
 	 * @param colorProvider ColorProvider
 	 * @return the list of <code>IRule</code>
 	 */
-	protected List createRules(ColorProvider colorProvider){
-		List rules = new ArrayList();
+	protected List<IRule> createRules(ColorProvider colorProvider) {
+		List<IRule> rules = new ArrayList<>();
 		rules.add(new CSSRule(
 				colorProvider.getToken(HTMLPlugin.PREF_COLOR_CSSPROP), 
 				colorProvider.getToken(HTMLPlugin.PREF_COLOR_CSSVALUE)));

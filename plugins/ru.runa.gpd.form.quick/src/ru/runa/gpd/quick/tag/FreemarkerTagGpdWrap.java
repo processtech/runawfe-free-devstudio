@@ -8,7 +8,7 @@ import org.apache.commons.logging.LogFactory;
 import ru.runa.wfe.commons.TypeConversionUtil;
 import ru.runa.wfe.commons.web.WebHelper;
 import ru.runa.wfe.user.User;
-import ru.runa.wfe.var.IVariableProvider;
+import ru.runa.wfe.var.VariableProvider;
 import freemarker.ext.beans.BeansWrapper;
 import freemarker.template.TemplateMethodModelEx;
 import freemarker.template.TemplateModel;
@@ -18,11 +18,11 @@ import freemarker.template.TemplateModelException;
 public abstract class FreemarkerTagGpdWrap implements TemplateMethodModelEx, Serializable {
     private static final long serialVersionUID = 1L;
     protected User user;
-    protected IVariableProvider variableProvider;
+    protected VariableProvider variableProvider;
     protected WebHelper webHelper;
     private List<TemplateModel> arguments;
 
-    public void init(User user, WebHelper webHelper, IVariableProvider variableProvider) {
+    public void init(User user, WebHelper webHelper, VariableProvider variableProvider) {
         this.user = user;
         this.webHelper = webHelper;
         this.variableProvider = variableProvider;

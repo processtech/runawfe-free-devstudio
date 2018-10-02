@@ -38,8 +38,8 @@ import ru.runa.gpd.htmleditor.TableViewerSupport;
 public class HTMLTaskTagPreferencePage extends PreferencePage implements IWorkbenchPreferencePage {
 	
 	private TableViewer viewer;
-	private List model = new ArrayList();
-	private List oldModel = new ArrayList();
+	private List<TaskTag> model = new ArrayList<>();
+	private List<TaskTag> oldModel = new ArrayList<>();
 	
 	public HTMLTaskTagPreferencePage(){
 		setPreferenceStore(EditorsPlugin.getDefault().getPreferenceStore());
@@ -135,10 +135,10 @@ public class HTMLTaskTagPreferencePage extends PreferencePage implements IWorkbe
 	private void syncModels(){
 		try {
 			oldModel.clear();
-			for(int i=0;i<model.size();i++){
-				oldModel.add(((TaskTag)model.get(i)).clone());
+			for (TaskTag tag : model) {
+				oldModel.add(tag.clone());
 			}
-		} catch(Exception ex){
+		} catch(Exception ex) {
 			HTMLPlugin.logException(ex);
 		}
 	}

@@ -354,12 +354,10 @@ public class HTMLUtil {
 	 * 
 	 * @param prop the list of ICompletionProposal
 	 */
-	public static void sortCompilationProposal(List prop){
-		Collections.sort(prop,new Comparator(){
-			public int compare(Object o1,Object o2){
-				ICompletionProposal c1 = (ICompletionProposal)o1;
-				ICompletionProposal c2 = (ICompletionProposal)o2;
-				return c1.getDisplayString().compareTo(c2.getDisplayString());
+	public static void sortCompilationProposal(List<ICompletionProposal> prop){
+		Collections.sort(prop,new Comparator<ICompletionProposal>() {
+			public int compare(ICompletionProposal o1, ICompletionProposal o2){
+				return o1.getDisplayString().compareTo(o2.getDisplayString());
 			}
 		});
 	}

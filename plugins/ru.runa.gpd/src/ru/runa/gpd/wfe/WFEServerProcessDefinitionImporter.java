@@ -72,7 +72,7 @@ public class WFEServerProcessDefinitionImporter extends DataImporter {
                 }
             }
             if (updateLatestVersion && oldVersion != null) {
-                getConnector().updateProcessDefinitionArchive(oldVersion.getId(), par);
+                getConnector().updateProcessDefinitionArchive(oldVersion.getVersionId(), par);
             } else {
                 WfDefinition lastDefinition;
                 List<WfDefinition> lastHistory;
@@ -81,7 +81,7 @@ public class WFEServerProcessDefinitionImporter extends DataImporter {
                     if (types == null) {
                         types = new String[] { "GPD" };
                     }
-                    lastDefinition = getConnector().redeployProcessDefinitionArchive(oldVersion.getId(), par, Lists.newArrayList(types));
+                    lastDefinition = getConnector().redeployProcessDefinitionArchive(oldVersion.getVersionId(), par, Lists.newArrayList(types));
                     List<WfDefinition> oldHistory = definitions.remove(oldVersion);
                     lastHistory = Lists.newArrayList(oldVersion);
                     lastHistory.addAll(oldHistory);

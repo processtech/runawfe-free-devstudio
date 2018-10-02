@@ -63,14 +63,13 @@ public class JavaScriptLaunchConfigurationDelegate extends AbstractJavaLaunchCon
 				JavaScriptLaunchConstants.JAVASCRIPT_EXECUTOR,
 				JavaScriptLaunchUtil.getClassPathAsStringArray());
 		
-		List args = new ArrayList();
+		List<String> args = new ArrayList<>();
 		
 		String script = configuration.getAttribute(
 				JavaScriptLaunchConstants.ATTR_JAVASCRIPT_FILE, "");
 		args.add(fixArgument(script));
 		
-		List includes = configuration.getAttribute(
-				JavaScriptLaunchConstants.ATTR_JAVASCRIPT_INCLUDES, Collections.EMPTY_LIST);
+		List<String> includes = configuration.getAttribute(JavaScriptLaunchConstants.ATTR_JAVASCRIPT_INCLUDES, Collections.emptyList());
 		IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace().getRoot();
 		
 		for(int i=0;i<includes.size();i++){
@@ -90,7 +89,7 @@ public class JavaScriptLaunchConfigurationDelegate extends AbstractJavaLaunchCon
 		runConfig.setWorkingDirectory(workingDirName);
 		runConfig.setEnvironment(envp);
 		
-		Map vmAttributesMap = getVMSpecificAttributesMap(configuration);
+		Map<String, Object> vmAttributesMap = getVMSpecificAttributesMap(configuration);
 		runConfig.setVMSpecificAttributesMap(vmAttributesMap);
 		
 		String[] bootpath = getBootpath(configuration);

@@ -42,7 +42,7 @@ import ru.runa.gpd.htmleditor.editors.IHTMLOutlinePage;
  */
 public class XMLEditor extends HTMLSourceEditor {
 	
-	private ArrayList resolvers = new ArrayList();
+	private ArrayList<IDTDResolver> resolvers = new ArrayList<>();
 	
 	public static final String GROUP_XML = "_xml";
 	public static final String ACTION_GEN_DTD = "_generate_dtd";

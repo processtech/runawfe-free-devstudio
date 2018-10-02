@@ -8,7 +8,7 @@ import java.util.List;
  */
 public class TagDefinition {
 
-	private static ArrayList tagList = new ArrayList();
+	private static ArrayList<TagInfo> tagList = new ArrayList<TagInfo>();
 	
 	/**
 	 * Returns TagInfo as an array.
@@ -24,7 +24,7 @@ public class TagDefinition {
 	 * 
 	 * @return List of TagInfo
 	 */
-	public static List getTagInfoAsList(){
+	public static List<TagInfo> getTagInfoAsList(){
 		return tagList;
 	}
 	
@@ -1438,6 +1438,5 @@ public class TagDefinition {
 		wbr.addAttributeInfo(new AttributeInfo("style",true));
 		wbr.addAttributeInfo(new AttributeInfo("title",true));
 		addTagInfo(wbr);
-	}	
-	
+	}
 }

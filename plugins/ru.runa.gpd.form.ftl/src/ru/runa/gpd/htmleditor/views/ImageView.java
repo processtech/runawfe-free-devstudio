@@ -39,8 +39,8 @@ import ru.runa.gpd.util.UiUtil;
  */
 public class ImageView extends ViewPart implements ISelectionListener {
 
-    private ArrayList imageList = new ArrayList();
-    private ArrayList iconList = new ArrayList();
+    private ArrayList<Image> imageList = new ArrayList<>();
+    private ArrayList<Image> iconList = new ArrayList<>();
     private SashForm sash;
     private Table table;
     private ScaleableImageCanvas canvas;
@@ -71,8 +71,8 @@ public class ImageView extends ViewPart implements ISelectionListener {
         table.removeAll();
         canvas.setImage(null);
         for (int i = 0; i < imageList.size(); i++) {
-            ((Image) imageList.get(i)).dispose();
-            ((Image) iconList.get(i)).dispose();
+            (imageList.get(i)).dispose();
+            (iconList.get(i)).dispose();
         }
         imageList.clear();
         iconList.clear();
@@ -141,7 +141,7 @@ public class ImageView extends ViewPart implements ISelectionListener {
             public void widgetSelected(SelectionEvent evt) {
                 int index = table.getSelectionIndex();
                 if (index >= 0) {
-                    canvas.setImage((Image) imageList.get(index));
+                    canvas.setImage(imageList.get(index));
                 }
             }
         });

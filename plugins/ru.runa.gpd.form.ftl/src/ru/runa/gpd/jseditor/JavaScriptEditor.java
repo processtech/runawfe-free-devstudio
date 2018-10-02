@@ -260,8 +260,8 @@ public class JavaScriptEditor extends TextEditor {
 			IDocument doc = getDocumentProvider().getDocument(getEditorInput());
 			String source = doc.get();
 			
-			ArrayList list = new ArrayList();
-			Stack stack = new Stack();
+			ArrayList<FoldingInfo> list = new ArrayList<>();
+			Stack<FoldingInfo> stack = new Stack<>();
 			FoldingInfo prev = null;
 			char quote = 0;
 			boolean escape = false;

@@ -55,8 +55,8 @@ public class HTMLTemplateAssistProcessor extends TemplateCompletionProcessor {
 
 		Template[] templates= getTemplates(context.getContextType().getId());
 
-		List matches= new ArrayList();
-		for (int i= 0; i < templates.length; i++) {
+		List<ICompletionProposal> matches = new ArrayList<>();
+		for (int i = 0; i < templates.length; i++) {
 			Template template= templates[i];
 			try {
 				context.getContextType().validate(template.getPattern());
