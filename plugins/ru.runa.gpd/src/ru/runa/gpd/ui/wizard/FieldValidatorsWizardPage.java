@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -826,12 +827,20 @@ public class FieldValidatorsWizardPage extends WizardPage implements PropertyCha
             FormType formType = FormTypeProvider.getFormType(formNode.getFormType());
             byte[] formData = IOUtils.readStreamAsBytes(formFile.getContents(true));
             Map<String, FormVariableAccess> formVariables = formType.getFormVariableNames(formNode, formData);
-            fieldConfigs.clear();
             formVariables.entrySet().stream().forEach(e -> {
-                if (e.getValue() != FormVariableAccess.READ) {
-                    addField(e.getKey());
+                if (!fieldConfigs.containsKey(e.getKey())) {
+                    if (e.getValue() != FormVariableAccess.READ) {
+                        fieldConfigs.put(e.getKey(), new HashMap<>());
+                    }
+                } else if (e.getValue() == FormVariableAccess.READ) {
+                    fieldConfigs.remove(e.getKey());
                 }
             });
+            for (Iterator<String> i = fieldConfigs.keySet().iterator(); i.hasNext();) {
+                if (!formVariables.containsKey(i.next())) {
+                    i.remove();
+                }
+            }
             variablesTableViewer.refresh(true);
             updateVariableSelection();
         } catch (Exception e) {

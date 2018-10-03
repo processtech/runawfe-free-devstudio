@@ -1,17 +1,14 @@
 package ru.runa.gpd.lang.model;
 
+import com.google.common.base.Objects;
+import com.google.common.base.Strings;
+import com.google.common.collect.Maps;
 import java.util.List;
 import java.util.Map;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
-
-import com.google.common.base.Objects;
-import com.google.common.base.Strings;
-import com.google.common.collect.Maps;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.form.FormType;
@@ -269,4 +266,21 @@ public abstract class FormNode extends SwimlanedNode {
         }
         return result;
     }
+
+    public void setFormFileNameSoftly(String formFile) {
+        this.formFileName = formFile.trim();
+    }
+
+    public void setTemplateFileNameSoftly(String templateFileName) {
+        this.templateFileName = templateFileName;
+    }
+
+    public void setScriptFileNameSoftly(String scriptFile) {
+        this.scriptFileName = scriptFile;
+    }
+
+    public void setValidationFileNameSoftly(String validationFile) {
+        this.validationFileName = validationFile.trim();
+    }
+
 }

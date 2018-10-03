@@ -153,7 +153,7 @@ public class QuickFormEditor extends EditorPart implements ISelectionListener, I
             public void propertyChanged(Object source, int propId) {
                 if (propId == QuickFormEditor.CLOSED) {
                     if (formFile.exists()) {
-                        if (isEmpty()) {
+                        if (isEmpty() && !getSite().getWorkbenchWindow().getWorkbench().isClosing()) {
                             try {
                                 formFile.delete(true, null);
                             } catch (CoreException e) {

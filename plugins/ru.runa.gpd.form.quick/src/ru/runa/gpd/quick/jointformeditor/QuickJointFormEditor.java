@@ -1,7 +1,9 @@
 package ru.runa.gpd.quick.jointformeditor;
 
+import com.google.common.base.Preconditions;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IPageChangedListener;
 import org.eclipse.jface.dialogs.PageChangedEvent;
@@ -18,11 +20,14 @@ import ru.runa.gpd.jointformeditor.resources.Messages;
 import ru.runa.gpd.jseditor.JavaScriptEditor;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.ProcessDefinition;
+import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.quick.formeditor.QuickFormEditor;
 import ru.runa.gpd.ui.wizard.FieldValidatorsWizardPage;
 import ru.runa.gpd.ui.wizard.GlobalValidatorsWizardPage;
 import ru.runa.gpd.ui.wizard.ValidatorWizard;
 import ru.runa.gpd.util.IOUtils;
+import ru.runa.gpd.util.TemplateUtils;
+import ru.runa.gpd.validation.ValidationUtil;
 
 public class QuickJointFormEditor extends MultiPageEditorPart {
 
@@ -47,12 +52,36 @@ public class QuickJointFormEditor extends MultiPageEditorPart {
         definitionFolder = (IFolder) formFile.getParent();
         IFile definitionFile = IOUtils.getProcessDefinitionFile(definitionFolder);
         ProcessDefinition processDefinition = ProcessCache.getProcessDefinition(definitionFile);
+        if (formFile.getName().startsWith(ParContentProvider.SUBPROCESS_DEFINITION_PREFIX)) {
+            String subprocessId = formFile.getName().substring(0, formFile.getName().indexOf("."));
+            processDefinition = processDefinition.getEmbeddedSubprocessById(subprocessId);
+            Preconditions.checkNotNull(processDefinition, "embedded subpocess");
+        }
         for (FormNode formNode : processDefinition.getChildren(FormNode.class)) {
             if (input.getName().equals(formNode.getFormFileName())) {
                 this.formNode = formNode;
                 setPartName(formNode.getName());
                 break;
             }
+        }
+        if (!formNode.hasFormScript()) {
+            formNode.setScriptFileNameSoftly(formNode.getId() + "." + FormNode.SCRIPT_SUFFIX);
+        }
+        IFile processDefinitionFile = IOUtils.getProcessDefinitionFile((IFolder) formFile.getParent());
+        IFile jsFile = IOUtils.getAdjacentFile(processDefinitionFile, formNode.getScriptFileName());
+        if (!jsFile.exists()) {
+            try {
+                IOUtils.createFile(jsFile, TemplateUtils.getFormTemplateAsStream());
+            } catch (CoreException e) {
+                throw new PartInitException(e.getMessage(), e);
+            }
+        }
+        if (!formNode.hasFormValidation()) {
+            formNode.setValidationFileNameSoftly(formNode.getId() + "." + FormNode.VALIDATION_SUFFIX);
+        }
+        IFile validationFile = IOUtils.getAdjacentFile(processDefinitionFile, formNode.getValidationFileName());
+        if (!validationFile.exists()) {
+            ValidationUtil.createEmptyValidation(processDefinitionFile, formNode);
         }
     }
 
@@ -72,7 +101,6 @@ public class QuickJointFormEditor extends MultiPageEditorPart {
             setPageText(getPageCount() - 1, Messages.getString("editor.tab_name.script"));
 
             validationFile = IOUtils.getAdjacentFile(definitionFile, formNode.getValidationFileName());
-
             wizard = new ValidatorWizard(validationFile, formNode);
             wizard.addPages();
 
@@ -139,8 +167,6 @@ public class QuickJointFormEditor extends MultiPageEditorPart {
 
     @Override
     public void dispose() {
-        ProcessDefinition processDefinition = (ProcessDefinition) formNode.getParent();
-        boolean safeDirty = processDefinition.isDirty();
         fieldValidatorsPage.dispose();
         globalValidatorsPage.dispose();
         quickEditor.dispose();
@@ -148,22 +174,21 @@ public class QuickJointFormEditor extends MultiPageEditorPart {
         super.dispose();
         boolean rewriteFormsXml = false;
         if (!formFile.exists()) {
-            formNode.setFormFileName("");
-            formNode.setTemplateFileName("");
+            formNode.setFormFileNameSoftly("");
+            formNode.setTemplateFileNameSoftly("");
             rewriteFormsXml = true;
         }
         if (!validationFile.exists()) {
-            formNode.setValidationFileName("");
+            formNode.setValidationFileNameSoftly("");
             rewriteFormsXml = true;
         }
         if (!((IFileEditorInput) jsEditor.getEditorInput()).exists()) {
-            formNode.setScriptFileName(null);
+            formNode.setScriptFileNameSoftly(null);
             rewriteFormsXml = true;
         }
         if (rewriteFormsXml) {
             IOUtils.saveFormsXml(formNode, formFile);
         }
-        processDefinition.setDirty(safeDirty);
     }
 
 }

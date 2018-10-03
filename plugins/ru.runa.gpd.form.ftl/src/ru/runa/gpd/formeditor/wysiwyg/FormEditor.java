@@ -149,7 +149,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
             public void propertyChanged(Object source, int propId) {
                 if (propId == FormEditor.CLOSED) {
                     if (formFile.exists()) {
-                        if (IOUtils.isEmpty(formFile)) {
+                        if (IOUtils.isEmpty(formFile) && !getSite().getWorkbenchWindow().getWorkbench().isClosing()) {
                             try {
                                 formFile.delete(true, null);
                             } catch (CoreException e) {
@@ -239,7 +239,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
         return cachedVariables.get(typeClassNameFilter);
     }
 
-    @SuppressWarnings("rawtypes")
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public Object getAdapter(Class adapter) {
         if (adapter == ITextEditor.class) {

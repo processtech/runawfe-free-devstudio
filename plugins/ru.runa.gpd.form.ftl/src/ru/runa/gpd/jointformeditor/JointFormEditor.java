@@ -2,10 +2,13 @@ package ru.runa.gpd.jointformeditor;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IPageChangedListener;
 import org.eclipse.jface.dialogs.PageChangedEvent;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.FileEditorInput;
@@ -13,11 +16,13 @@ import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.formeditor.wysiwyg.FormEditor;
 import ru.runa.gpd.jointformeditor.resources.Messages;
 import ru.runa.gpd.jseditor.JavaScriptEditor;
-import ru.runa.gpd.lang.model.ProcessDefinition;
+import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.ui.wizard.FieldValidatorsWizardPage;
 import ru.runa.gpd.ui.wizard.GlobalValidatorsWizardPage;
 import ru.runa.gpd.ui.wizard.ValidatorWizard;
 import ru.runa.gpd.util.IOUtils;
+import ru.runa.gpd.util.TemplateUtils;
+import ru.runa.gpd.validation.ValidationUtil;
 
 public class JointFormEditor extends FormEditor {
 
@@ -29,6 +34,32 @@ public class JointFormEditor extends FormEditor {
     private ValidatorWizard wizard;
     private FieldValidatorsWizardPage fieldValidatorsPage;
     private GlobalValidatorsWizardPage globalValidatorsPage;
+
+    @Override
+    public void init(IEditorSite site, IEditorInput editorInput) throws PartInitException {
+        super.init(site, editorInput);
+        if (formNode != null) {
+            if (!formNode.hasFormScript()) {
+                formNode.setScriptFileNameSoftly(formNode.getId() + "." + FormNode.SCRIPT_SUFFIX);
+            }
+            IFile processDefinitionFile = IOUtils.getProcessDefinitionFile((IFolder) formFile.getParent());
+            IFile jsFile = IOUtils.getAdjacentFile(processDefinitionFile, formNode.getScriptFileName());
+            if (!jsFile.exists()) {
+                try {
+                    IOUtils.createFile(jsFile, TemplateUtils.getFormTemplateAsStream());
+                } catch (CoreException e) {
+                    throw new PartInitException(e.getMessage(), e);
+                }
+            }
+            if (!formNode.hasFormValidation()) {
+                formNode.setValidationFileNameSoftly(formNode.getId() + "." + FormNode.VALIDATION_SUFFIX);
+            }
+            IFile validationFile = IOUtils.getAdjacentFile(processDefinitionFile, formNode.getValidationFileName());
+            if (!validationFile.exists()) {
+                ValidationUtil.createEmptyValidation(processDefinitionFile, formNode);
+            }
+        }
+    }
 
     @Override
     protected void createPages() {
@@ -104,29 +135,26 @@ public class JointFormEditor extends FormEditor {
 
     @Override
     public void dispose() {
-        ProcessDefinition processDefinition = (ProcessDefinition) formNode.getParent();
-        boolean safeDirty = processDefinition.isDirty();
         fieldValidatorsPage.dispose();
         globalValidatorsPage.dispose();
         super.dispose();
         wizard.dispose();
         boolean rewriteFormsXml = false;
         if (!formFile.exists()) {
-            formNode.setFormFileName("");
+            formNode.setFormFileNameSoftly("");
             rewriteFormsXml = true;
         }
         if (!validationFile.exists()) {
-            formNode.setValidationFileName("");
+            formNode.setValidationFileNameSoftly("");
             rewriteFormsXml = true;
         }
         if (!((IFileEditorInput) jsEditor.getEditorInput()).exists()) {
-            formNode.setScriptFileName(null);
+            formNode.setScriptFileNameSoftly(null);
             rewriteFormsXml = true;
         }
         if (rewriteFormsXml) {
             IOUtils.saveFormsXml(formNode, formFile);
         }
-        processDefinition.setDirty(safeDirty);
     }
 
 }
