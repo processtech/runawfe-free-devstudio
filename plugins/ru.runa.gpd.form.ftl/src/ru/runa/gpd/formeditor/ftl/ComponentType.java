@@ -1,20 +1,16 @@
 package ru.runa.gpd.formeditor.ftl;
 
+import com.google.common.collect.Lists;
 import java.util.List;
-
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.osgi.framework.Bundle;
-
 import ru.runa.gpd.formeditor.ftl.image.ComponentImageProvider;
 import ru.runa.gpd.formeditor.ftl.image.DefaultComponentImageProvider;
 import ru.runa.gpd.formeditor.ftl.validation.DefaultComponentValidator;
 import ru.runa.gpd.formeditor.ftl.validation.IComponentValidator;
 
-import com.google.common.collect.Lists;
-
 public class ComponentType {
-    private static int orderCounter = 0;
     private final Bundle bundle;
     private final boolean enabled;
     private final int order;
@@ -32,7 +28,7 @@ public class ComponentType {
         try {
             o = Integer.valueOf(element.getAttribute("order"));
         } catch (Exception e) {
-            o = orderCounter++;
+            o = 0;
         }
         this.order = o;
         this.id = element.getAttribute("id");

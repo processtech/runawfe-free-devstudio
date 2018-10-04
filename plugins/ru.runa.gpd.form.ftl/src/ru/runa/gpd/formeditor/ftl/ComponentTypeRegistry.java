@@ -1,26 +1,6 @@
 package ru.runa.gpd.formeditor.ftl;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.IExtension;
-import org.eclipse.core.runtime.Platform;
-import org.osgi.framework.Bundle;
-
-import ru.runa.gpd.EditorsPlugin;
-import ru.runa.gpd.PluginLogger;
-import ru.runa.gpd.formeditor.ftl.filter.IComponentFilter;
-import ru.runa.gpd.formeditor.ftl.parameter.ParameterType;
-import ru.runa.gpd.formeditor.ftl.validation.IParameterTypeValidator;
-import ru.runa.wfe.InternalApplicationException;
-
 import com.google.common.base.CharMatcher;
-import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
@@ -29,6 +9,21 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExtension;
+import org.eclipse.core.runtime.Platform;
+import org.osgi.framework.Bundle;
+import ru.runa.gpd.EditorsPlugin;
+import ru.runa.gpd.PluginLogger;
+import ru.runa.gpd.formeditor.ftl.filter.IComponentFilter;
+import ru.runa.gpd.formeditor.ftl.parameter.ParameterType;
+import ru.runa.gpd.formeditor.ftl.validation.IParameterTypeValidator;
+import ru.runa.wfe.InternalApplicationException;
 
 public class ComponentTypeRegistry {
     private static final Map<String, ParameterType> parameters = Maps.newHashMap();
@@ -139,14 +134,11 @@ public class ComponentTypeRegistry {
     }
 
     public static List<ComponentType> getEnabled() {
-        List<ComponentType> tags = new ArrayList<ComponentType>();
-        for (ComponentType tag : getAll().values()) {
-            if (tag.isEnabled()) {
-                tags.add(tag);
-            }
-        }
-        Collections.sort(tags, new ComponentTypeComparator());
-        return tags;
+        return getAll().values().stream().filter(e -> e.isEnabled()).sorted(new ComponentTypeComparator()).collect(Collectors.toList());
+    }
+
+    public static List<ComponentType> getEnabled(boolean ordered) {
+        return getEnabled().stream().filter(e -> (e.getOrder() != 0) == ordered).collect(Collectors.toList());
     }
 
     private static final void validateComponentTypeParameterDepends(ComponentType type, ComponentParameter componentParameter)
@@ -178,7 +170,11 @@ public class ComponentTypeRegistry {
     private static class ComponentTypeComparator implements Comparator<ComponentType> {
         @Override
         public int compare(ComponentType t1, ComponentType t2) {
-            return t1.getOrder() - t2.getOrder();
+            int diff = t1.getOrder() - t2.getOrder();
+            if (diff == 0) {
+                return t1.getLabel().compareToIgnoreCase(t2.getLabel());
+            }
+            return diff;
         }
     }
 
