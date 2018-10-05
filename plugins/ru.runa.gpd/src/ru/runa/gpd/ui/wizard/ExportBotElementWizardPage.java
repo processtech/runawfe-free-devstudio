@@ -31,6 +31,7 @@ import ru.runa.gpd.wfe.WFEServerBotElementImporter;
 
 import com.google.common.base.Throwables;
 
+@SuppressWarnings("restriction")
 public abstract class ExportBotElementWizardPage extends WizardArchiveFileResourceExportPage1 {
     protected Map<String, IResource> exportObjectNameFileMap;
     protected final IResource exportResource;

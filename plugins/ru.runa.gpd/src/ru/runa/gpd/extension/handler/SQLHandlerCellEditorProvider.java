@@ -1,7 +1,9 @@
 package ru.runa.gpd.extension.handler;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -23,7 +25,12 @@ import ru.runa.gpd.extension.handler.SQLTasksModel.SQLQueryParameterModel;
 import ru.runa.gpd.extension.handler.SQLTasksModel.SQLTaskModel;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
+import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
+import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.custom.SWTUtils;
+import ru.runa.gpd.util.DataSourceUtils;
+import ru.runa.wfe.datasource.DataSourceStuff;
+import ru.runa.wfe.datasource.DataSourceType;
 import ru.runa.wfe.user.Executor;
 
 public class SQLHandlerCellEditorProvider extends XmlBasedConstructorProvider<SQLTasksModel> {
@@ -76,20 +83,84 @@ public class SQLHandlerCellEditorProvider extends XmlBasedConstructorProvider<SQ
             }
         }
 
+        private Combo cbDsTypes;
+
         private void addTaskSection(SQLTaskModel taskModel) {
-            Label label = new Label(this, SWT.NONE);
-            label.setText(Localization.getString("label.DataSourceName"));
-            final Text text = new Text(this, SWT.BORDER);
-            text.setText(taskModel.dsName);
-            text.addModifyListener(new ModifyListener() {
+            cbDsTypes = new Combo(this, SWT.READ_ONLY);
+            cbDsTypes.add(Localization.getString("label.DataSourceJndiName"));
+            cbDsTypes.add(Localization.getString("label.DataSourceJndiNameVariable"));
+            cbDsTypes.add(Localization.getString("label.DataSourceName"));
+            cbDsTypes.add(Localization.getString("label.DataSourceNameVariable"));
+            cbDsTypes.select(0);
+
+            final Composite values = new Composite(this, SWT.FILL);
+            GridData gdValues = new GridData(GridData.FILL_HORIZONTAL);
+            values.setLayoutData(gdValues);
+            final StackLayout stackLayout = new StackLayout();
+            values.setLayout(stackLayout);
+
+            final Text txtJndiName = new Text(values, SWT.BORDER);
+            txtJndiName.setLayoutData(new GridData(200, SWT.DEFAULT));
+            txtJndiName.addModifyListener(new ModifyListener() {
                 @Override
                 public void modifyText(ModifyEvent event) {
-                    model.getFirstTask().dsName = text.getText();
+                    model.getFirstTask().dsName = DataSourceStuff.PATH_PREFIX_JNDI_NAME + txtJndiName.getText();
                 }
             });
-            GridData data = new GridData();
-            data.widthHint = 200;
-            text.setLayoutData(data);
+            final Combo cbVariables = createVariableSelector(values);
+            final Combo cbDataSources = createDataSourceSelector(values);
+
+            int colonIndex = taskModel.dsName.indexOf(':');
+            if (colonIndex > 0) {
+                String dsName = taskModel.dsName.substring(colonIndex + 1);
+                if (taskModel.dsName.startsWith(DataSourceStuff.PATH_PREFIX_JNDI_NAME)) {
+                    cbDsTypes.select(0);
+                    txtJndiName.setText(dsName);
+                    stackLayout.topControl = txtJndiName;
+                }
+                else if (taskModel.dsName.startsWith(DataSourceStuff.PATH_PREFIX_JNDI_NAME_VARIABLE)) {
+                    cbDsTypes.select(1);
+                    cbVariables.setText(dsName);
+                    stackLayout.topControl = cbVariables;
+                }
+                else if (taskModel.dsName.startsWith(DataSourceStuff.PATH_PREFIX_DATA_SOURCE)) {
+                    cbDsTypes.select(2);
+                    cbDataSources.setText(dsName);
+                    stackLayout.topControl = cbDataSources;
+                }
+                else if (taskModel.dsName.startsWith(DataSourceStuff.PATH_PREFIX_DATA_SOURCE_VARIABLE)) {
+                    cbDsTypes.select(3);
+                    cbVariables.setText(dsName);
+                    stackLayout.topControl = cbVariables;
+                }
+            } else {
+                cbDsTypes.select(0);
+                txtJndiName.setText(taskModel.dsName);
+                stackLayout.topControl = txtJndiName;
+            }
+            values.layout();
+
+            cbDsTypes.addSelectionListener(new SelectionAdapter() {
+
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    switch (((Combo) e.widget).getSelectionIndex()) {
+                    case 0:
+                        stackLayout.topControl = txtJndiName;
+                        break;
+                    case 1:
+                    case 3:
+                        stackLayout.topControl = cbVariables;
+                        break;
+                    case 2:
+                        stackLayout.topControl = cbDataSources;
+                        break;
+                    }
+                    values.layout();
+                }
+
+            });
+
             SWTUtils.createLink(this, Localization.getString("button.add") + " " + Localization.getString("label.SQLQuery"),
                     new LoggingHyperlinkAdapter() {
 
@@ -101,6 +172,53 @@ public class SQLHandlerCellEditorProvider extends XmlBasedConstructorProvider<SQ
             for (SQLQueryModel queryModel : taskModel.queries) {
                 addQuerySection(queryModel, taskModel.queries.indexOf(queryModel));
             }
+        }
+
+        private Combo createVariableSelector(Composite owner) {
+            final Combo cb = new Combo(owner, SWT.READ_ONLY);
+            for (String variableName : delegable.getVariableNames(false, String.class.getName())) {
+                cb.add(variableName);
+            }
+            cb.addSelectionListener(new LoggingSelectionAdapter() {
+
+                @Override
+                protected void onSelection(SelectionEvent e) throws Exception {
+                    model.getFirstTask().dsName = (cbDsTypes.getSelectionIndex() == 1 ?
+                            DataSourceStuff.PATH_PREFIX_JNDI_NAME_VARIABLE : DataSourceStuff.PATH_PREFIX_DATA_SOURCE_VARIABLE) + cb.getText();
+                }
+            });
+            cb.addModifyListener(new LoggingModifyTextAdapter() {
+
+                @Override
+                protected void onTextChanged(ModifyEvent e) throws Exception {
+                    model.getFirstTask().dsName = (cbDsTypes.getSelectionIndex() == 1 ?
+                            DataSourceStuff.PATH_PREFIX_JNDI_NAME_VARIABLE : DataSourceStuff.PATH_PREFIX_DATA_SOURCE_VARIABLE) + cb.getText();
+                }
+            });
+            return cb;
+        }
+
+        private Combo createDataSourceSelector(Composite owner) {
+            final Combo cb = new Combo(owner, SWT.NONE);
+            for (IFile dsFile : DataSourceUtils.getDataSourcesByType(DataSourceType.JDBC, DataSourceType.JNDI)) {
+                String dsName = dsFile.getName();
+                cb.add(dsName.substring(0, dsName.length() - DataSourceStuff.DATA_SOURCE_FILE_SUFFIX.length()));
+            }
+            cb.addSelectionListener(new LoggingSelectionAdapter() {
+
+                @Override
+                protected void onSelection(SelectionEvent e) throws Exception {
+                    model.getFirstTask().dsName = DataSourceStuff.PATH_PREFIX_DATA_SOURCE + cb.getText();
+                }
+            });
+            cb.addModifyListener(new LoggingModifyTextAdapter() {
+
+                @Override
+                protected void onTextChanged(ModifyEvent e) throws Exception {
+                    model.getFirstTask().dsName = DataSourceStuff.PATH_PREFIX_DATA_SOURCE + cb.getText();
+                }
+            });
+            return cb;
         }
 
         private void addQuerySection(SQLQueryModel queryModel, final int queryIndex) {

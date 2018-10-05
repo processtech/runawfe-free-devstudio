@@ -1351,6 +1351,11 @@
                ratio="0.2"
                relationship="stack"
                relative="ru.runa.gpd.explorerView" />
+         <view
+               id="ru.runa.gpd.dataSourceExplorerView"
+               ratio="0.2"
+               relationship="stack"
+               relative="ru.runa.gpd.botExplorerView"/>
          <viewShortcut id="ru.runa.gpd.explorerView"/>
          <newWizardShortcut id="wizard.new.process.definition"/>
          <newWizardShortcut id="wizard.new.project"/>
@@ -1404,6 +1409,13 @@
             icon="icons/bot_station.gif"
             id="ru.runa.gpd.botExplorerView"
             name="%label.view.botDesignerExplorer">
+      </view>
+      <view
+            category="ru.runa.gpd.view.category"
+            class="ru.runa.gpd.ui.view.DataSourceExplorerTreeView"
+            icon="icons/data_sources.png"
+            id="ru.runa.gpd.dataSourceExplorerView"
+            name="%label.view.dataSourceDesignerExplorer">
       </view>
    </extension>
    <extension
@@ -2655,6 +2667,13 @@
                menubarPath="window/additions"
                style="push"/>
          <action
+               class="ru.runa.gpd.ui.action.OpenDataSourceExplorer"
+               icon="icons/data_sources.png"
+               id="ru.runa.gpd.ui.action.openDataSourcesExplorer"
+               label="%label.view.dataSourceDesignerExplorer"
+               menubarPath="window/additions"
+               style="push"/>
+         <action
                class="ru.runa.gpd.ui.action.OpenValidationErrorsView"
                icon="icons/validation_error.gif"
                id="openValidationErrorsView"
@@ -2957,12 +2976,17 @@
             javaClassName="java.lang.Long"
             label="%ru.runa.wfe.var.format.ProcessIdFormat">
       </format>
-   </extension>
-  <extension id="botStationNature" name="specific nature for bot station project" point="org.eclipse.core.resources.natures">
-        <runtime>
-           <run class="ru.runa.gpd.BotStationNature"></run>
-        </runtime>
-  </extension>
+    </extension>
+	<extension id="botStationNature" name="specific nature for bot station project" point="org.eclipse.core.resources.natures">
+	      <runtime>
+	         <run class="ru.runa.gpd.BotStationNature"></run>
+	      </runtime>
+	</extension>
+	<extension id="dataSourcesNature" name="specific nature for data source project" point="org.eclipse.core.resources.natures">
+	      <runtime>
+	         <run class="ru.runa.gpd.DataSourcesNature"></run>
+	      </runtime>
+	</extension>
  <extension
        id="processNature"
        name="specific nature for process project (used since 4.1.0)"
