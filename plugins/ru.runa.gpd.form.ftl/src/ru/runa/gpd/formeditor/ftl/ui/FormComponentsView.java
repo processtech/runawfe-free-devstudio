@@ -26,6 +26,9 @@ import ru.runa.gpd.util.UiUtil;
 public class FormComponentsView extends ViewPart implements IPartListener2 {
     public static final String ID = "ru.runa.gpd.formeditor.ftl.formComponentsView";
 
+    public static final String FORM_COMPONENT_CATEGORY_BASIC_KEY = "form.component.category.basic";
+    public static final String FORM_COMPONENT_CATEGORY_ADDITIONAL_KEY = "form.component.category.additional";
+
     private SashForm sashForm;
     private TableViewer leftViewer;
     private TableViewer rightViewer;
@@ -58,7 +61,7 @@ public class FormComponentsView extends ViewPart implements IPartListener2 {
         leftViewer.setLabelProvider(new TableLabelProvider());
         leftViewer.getTable().setHeaderVisible(true);
         TableColumn column = new TableColumn(leftViewer.getTable(), SWT.LEFT);
-        column.setText(Messages.getString("form.components.header.basic"));
+        column.setText(Messages.getString(FORM_COMPONENT_CATEGORY_BASIC_KEY));
         column.setWidth(600);
 
         rightViewer = new TableViewer(sashForm, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
@@ -68,7 +71,7 @@ public class FormComponentsView extends ViewPart implements IPartListener2 {
         rightViewer.setLabelProvider(new TableLabelProvider());
         rightViewer.getTable().setHeaderVisible(true);
         column = new TableColumn(rightViewer.getTable(), SWT.LEFT);
-        column.setText(Messages.getString("form.components.header.additional"));
+        column.setText(Messages.getString(FORM_COMPONENT_CATEGORY_ADDITIONAL_KEY));
         column.setWidth(600);
     }
 

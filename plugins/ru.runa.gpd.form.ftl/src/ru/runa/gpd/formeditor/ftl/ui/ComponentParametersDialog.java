@@ -1,10 +1,13 @@
 package ru.runa.gpd.formeditor.ftl.ui;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.Maps;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.text.MessageFormat;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
@@ -16,7 +19,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-
 import ru.runa.gpd.formeditor.ftl.Component;
 import ru.runa.gpd.formeditor.ftl.ComponentParameter;
 import ru.runa.gpd.formeditor.ftl.ComponentType;
@@ -25,9 +27,10 @@ import ru.runa.gpd.formeditor.resources.Messages;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.custom.SWTUtils;
 
-import com.google.common.collect.Maps;
-
 public class ComponentParametersDialog extends Dialog {
+
+    private static final String downPointingTriangle = "\u25bc";
+
     private Component component;
     private final Map<ComponentParameter, Object> parameterEditors = Maps.newHashMap();
 
@@ -62,15 +65,34 @@ public class ComponentParametersDialog extends Dialog {
         final Combo componentsCombo = new Combo(parametersComposite, SWT.READ_ONLY);
         componentsCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        for (ComponentType tag : ComponentTypeRegistry.getEnabled()) {
+        final String categoryTitle = downPointingTriangle + " {0} " + Strings.repeat("\u2501", 20);
+        List<ComponentType> basicComponents = ComponentTypeRegistry.getEnabled(true);
+        List<ComponentType> additionalComponents = ComponentTypeRegistry.getEnabled(false);
+        boolean bothCategoriesExist = basicComponents.size() > 0 && additionalComponents.size() > 0;
+        if (bothCategoriesExist) {
+            componentsCombo.add(MessageFormat.format(categoryTitle, Messages.getString(FormComponentsView.FORM_COMPONENT_CATEGORY_BASIC_KEY)));
+        }
+        for (ComponentType tag : basicComponents) {
             componentsCombo.add(tag.getLabel());
         }
+        if (bothCategoriesExist) {
+            componentsCombo.add(MessageFormat.format(categoryTitle, Messages.getString(FormComponentsView.FORM_COMPONENT_CATEGORY_ADDITIONAL_KEY)));
+        }
+        for (ComponentType tag : additionalComponents) {
+            componentsCombo.add(tag.getLabel());
+        }
+
         componentsCombo.setText(component.getType().getLabel());
         componentsCombo.addSelectionListener(new LoggingSelectionAdapter() {
 
             @Override
             protected void onSelection(SelectionEvent e) throws Exception {
                 String type = componentsCombo.getText();
+                if (type.startsWith(downPointingTriangle)) {
+                    componentsCombo.setText(component.getType().getLabel());
+                    e.doit = false;
+                    return;
+                }
                 if (!component.getType().getLabel().equals(type)) {
                     for (ComponentType componentType : ComponentTypeRegistry.getEnabled()) {
                         if (componentType.getLabel().equals(type)) {
