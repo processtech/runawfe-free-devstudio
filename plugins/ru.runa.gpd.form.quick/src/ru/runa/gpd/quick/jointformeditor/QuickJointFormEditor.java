@@ -5,8 +5,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.dialogs.IPageChangedListener;
-import org.eclipse.jface.dialogs.PageChangedEvent;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
@@ -116,12 +114,9 @@ public class QuickJointFormEditor extends MultiPageEditorPart {
             setPageText(getPageCount() - 1, Messages.getString("editor.tab_name.global_validators"));
             globalValidatorsPage.setMarkEditorDirtyCallback(p -> setDirty(p));
 
-            addPageChangedListener(new IPageChangedListener() {
-                @Override
-                public void pageChanged(PageChangedEvent event) {
-                    if (event.getSelectedPage() == fieldValidatorsPage.getControl() && !quickEditor.isEmpty()) {
-                        fieldValidatorsPage.updateConfigs(formFile);
-                    }
+            addPropertyListener((source, propId) -> {
+                if (propId == IEditorPart.PROP_DIRTY && !IOUtils.isEmpty(formFile)) {
+                    fieldValidatorsPage.updateConfigs(formFile);
                 }
             });
 
