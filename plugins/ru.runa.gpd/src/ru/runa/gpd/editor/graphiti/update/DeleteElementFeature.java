@@ -1,25 +1,34 @@
 package ru.runa.gpd.editor.graphiti.update;
 
+import com.google.common.base.Strings;
+import java.text.MessageFormat;
 import java.util.List;
-
 import org.eclipse.graphiti.features.ICustomUndoableFeature;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.IContext;
 import org.eclipse.graphiti.features.context.IDeleteContext;
+import org.eclipse.graphiti.features.context.IMultiDeleteInfo;
 import org.eclipse.graphiti.features.context.impl.DeleteContext;
 import org.eclipse.graphiti.mm.pictograms.ConnectionDecorator;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.mm.pictograms.Shape;
 import org.eclipse.graphiti.ui.features.DefaultDeleteFeature;
-
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.ui.PlatformUI;
+import ru.runa.gpd.Activator;
+import ru.runa.gpd.Localization;
 import ru.runa.gpd.editor.graphiti.HasTextDecorator;
 import ru.runa.gpd.lang.model.Action;
 import ru.runa.gpd.lang.model.GraphElement;
+import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
+import ru.runa.gpd.settings.PrefConstants;
 
 public class DeleteElementFeature extends DefaultDeleteFeature implements ICustomUndoableFeature {
+
+    private static final String NAME = Localization.getString("DeleteElementFeature_1");
 
     private GraphElement element;
     private List<Transition> leavingTransitions;
@@ -30,19 +39,49 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements ICusto
     }
 
     @Override
-    protected boolean getUserDecision(IDeleteContext context) {
-        return true;
+    public String getName() {
+        return NAME;
     }
 
     @Override
-    protected boolean getUserDecision() {
-        return true;
+    // based on default implementation: DefaultDeleteFeature#getUserDecision(IDeleteContext)
+    protected boolean getUserDecision(IDeleteContext context) {
+        if (!Activator.getPrefBoolean(PrefConstants.P_CONFIRM_DELETION)) {
+            return true;
+        }
+        String msg;
+        IMultiDeleteInfo multiDeleteInfo = context.getMultiDeleteInfo();
+        if (multiDeleteInfo != null) {
+            msg = MessageFormat.format(Localization.getString("DeleteElementFeature_2"), multiDeleteInfo.getNumber());
+        } else {
+            String deleteName = getDeleteName(context);
+            if (deleteName != null && deleteName.length() > 0) {
+                msg = MessageFormat.format(Localization.getString("DeleteElementFeature_3"), deleteName);
+            } else {
+                msg = Localization.getString("DeleteElementFeature_4");
+            }
+        }
+        return MessageDialog.openQuestion(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
+                Localization.getString("DeleteElementFeature_5"), msg);
+    }
+
+    @Override
+    protected String getDeleteName(IDeleteContext context) {
+        GraphElement ge = ((GraphElement) getBusinessObjectForPictogramElement(context.getPictogramElement()));
+        if (ge instanceof NamedGraphElement) {
+            String name = ((NamedGraphElement) ge).getName();
+            if (!Strings.isNullOrEmpty(name)) {
+                return name;
+            }
+        }
+        return ge.getId();
     }
 
     @Override
     protected void deleteBusinessObject(Object bo) {
-        if (bo == null)
+        if (bo == null) {
             return;
+        }
         element = (GraphElement) bo;
         if (element instanceof TextDecorationNode) {
             TextDecorationNode textDecoration = (TextDecorationNode) element;
@@ -83,8 +122,9 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements ICusto
         } else {
             element.getParent().addChild(element);
         }
-        if (element instanceof Node)
+        if (element instanceof Node) {
             restoreTransitions();
+        }
     }
 
     @Override
