@@ -16,8 +16,8 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-
 import ru.runa.gpd.Localization;
+import ru.runa.gpd.ui.custom.TooManySpacesChecker;
 
 public class RenameBotStationDialog extends Dialog {
     private String name;
@@ -81,7 +81,7 @@ public class RenameBotStationDialog extends Dialog {
 
     private void updateButtons() {
         IWorkspace workspace = ResourcesPlugin.getWorkspace();
-        boolean allowCreation = workspace.validateName(name, IResource.FOLDER).isOK();
+        boolean allowCreation = workspace.validateName(name, IResource.FOLDER).isOK() && TooManySpacesChecker.isValid(name);
         getButton(IDialogConstants.OK_ID).setEnabled(allowCreation);
     }
 

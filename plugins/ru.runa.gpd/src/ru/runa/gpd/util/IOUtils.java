@@ -419,7 +419,7 @@ public class IOUtils {
         List<IProject> result = new ArrayList<IProject>();
         try {
             for (IProject project : getWorkspaceProjects()) {
-                if (project.isOpen() && project.getNature(BotStationNature.NATURE_ID) == null) {
+                if (project.isOpen() && project.getNature(ProcessProjectNature.NATURE_ID) != null) {
                     result.add(project);
                 }
             }
@@ -583,4 +583,37 @@ public class IOUtils {
         }
         return false;
     }
+
+    public static void extractArchiveToProject(InputStream archiveStream, IProject project) throws IOException, CoreException {
+        ZipInputStream zis = new ZipInputStream(archiveStream);
+        byte[] buf = new byte[1024];
+        ZipEntry entry = zis.getNextEntry();
+        while (entry != null) {
+            if (!entry.getName().contains("META-INF")) {
+                IFile file = getFile(project, entry.getName());
+                ByteArrayOutputStream baos = new ByteArrayOutputStream(buf.length);
+                int n;
+                while ((n = zis.read(buf, 0, 1024)) > -1) {
+                    baos.write(buf, 0, n);
+                }
+                createFile(file, new ByteArrayInputStream(baos.toByteArray()));
+            }
+            zis.closeEntry();
+            entry = zis.getNextEntry();
+        }
+        zis.close();
+    }
+
+    public static IFile getFile(IProject project, String fileName) {
+        IFile file = project.getFile(fileName);
+        if (!file.isSynchronized(IResource.DEPTH_ONE)) {
+            try {
+                file.refreshLocal(IResource.DEPTH_ONE, null);
+            } catch (CoreException e) {
+                Throwables.propagate(e);
+            }
+        }
+        return file;
+    }
+
 }

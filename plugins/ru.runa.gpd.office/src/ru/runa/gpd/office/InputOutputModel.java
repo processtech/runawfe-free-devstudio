@@ -18,6 +18,7 @@ public class InputOutputModel {
     public String outputDir;
     public String outputVariable;
     public String outputFilename;
+    public boolean canWorkWithDataSource;
 
     public void serialize(Document document, Element parent, FilesSupplierMode mode) {
         if (mode.isInSupported()) {

@@ -12,7 +12,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.extension.VariableFormatRegistry;
 import ru.runa.gpd.lang.model.ProcessDefinition;
@@ -77,7 +76,8 @@ public class VariableUserTypeDialog extends Dialog {
 
     private void updateButtons() {
     	VariableUserType type = processDefinition.getVariableUserType(name);
-        boolean allowCreation = type == null && VariableFormatRegistry.getInstance().getArtifactByLabel(name) == null;
+        boolean allowCreation = type == null && VariableFormatRegistry.getInstance().getArtifactByLabel(name) == null
+                && VariableNameChecker.isValid(name);
         getButton(IDialogConstants.OK_ID).setEnabled(allowCreation);
     }
 
