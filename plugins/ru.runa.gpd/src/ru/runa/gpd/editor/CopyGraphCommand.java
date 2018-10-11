@@ -1,5 +1,8 @@
 package ru.runa.gpd.editor;
 
+import com.google.common.base.Objects;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -8,7 +11,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.CoreException;
@@ -23,7 +25,6 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.editor.CopyBuffer.ExtraCopyAction;
@@ -34,6 +35,7 @@ import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.EndState;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.GraphElement;
+import ru.runa.gpd.lang.model.ITimed;
 import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
@@ -41,18 +43,17 @@ import ru.runa.gpd.lang.model.StartState;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.SwimlanedNode;
+import ru.runa.gpd.lang.model.Timer;
 import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableUserType;
+import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
+import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 import ru.runa.gpd.ui.dialog.InfoWithDetailsDialog;
 import ru.runa.gpd.ui.dialog.MultipleSelectionDialog;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.SwimlaneDisplayMode;
 import ru.runa.gpd.util.VariableUtils;
-
-import com.google.common.base.Objects;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 public class CopyGraphCommand extends Command {
     private final ProcessEditorBase targetEditor;
@@ -99,7 +100,9 @@ public class CopyGraphCommand extends Command {
             // add nodes
             final List<NamedGraphElement> newElements = new ArrayList<>();
             for (NamedGraphElement node : sourceNodeList) {
-                if (node instanceof StartState && targetDefinition.getChildren(StartState.class).size() != 0) {
+                if (!(node.getParent() instanceof ProcessDefinition)) {
+                    continue;
+                } else if (node instanceof StartState && targetDefinition.getChildren(StartState.class).size() != 0) {
                     continue;
                 } else if (node instanceof EndState && targetDefinition instanceof SubprocessDefinition) {
                     continue;
@@ -153,8 +156,39 @@ public class CopyGraphCommand extends Command {
             // add transitions
             for (NamedGraphElement node : sourceNodeList) {
                 List<Transition> transitions = node.getChildren(Transition.class);
+                Transition timerTransition = null;
+                Timer timer = null;
+                if (node instanceof ITimed) {
+                    timer = ((ITimed) node).getTimer();
+                    if (timer != null) {
+                        Transition transition = timer.getFirstChild(Transition.class);
+                        if (transition != null) {
+                            timerTransition = transition;
+                            timer = ((ITimed) targetNodeMap.get(node.getId())).getTimer();
+                            transitions.add(transition);
+                        }
+                    }
+                }
+                CatchEventNode catchEvent = null;
+                if (node instanceof IBoundaryEventContainer) {
+                    catchEvent = node.getFirstChild(CatchEventNode.class);
+                    if (catchEvent != null) {
+                        Transition transition = catchEvent.getFirstChild(Transition.class);
+                        if (transition != null) {
+                            catchEvent = targetNodeMap.get(node.getId()).getFirstChild(CatchEventNode.class);
+                            transitions.add(transition);
+                        }
+                    }
+                }
                 for (Transition transition : transitions) {
                     NamedGraphElement source = targetNodeMap.get(transition.getSource().getId());
+                    if (source == null) {
+                        if (transition.equals(timerTransition)) {
+                            source = timer;
+                        } else {
+                            source = catchEvent;
+                        }
+                    }
                     NamedGraphElement target = targetNodeMap.get(transition.getTarget().getId());
                     if (source != null && target != null) {
                         Transition copy = transition.makeCopy(source);
