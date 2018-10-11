@@ -54,6 +54,9 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements ICusto
         if (multiDeleteInfo != null) {
             msg = MessageFormat.format(Localization.getString("DeleteElementFeature_2"), multiDeleteInfo.getNumber());
         } else {
+            if (((GraphElement) getBusinessObjectForPictogramElement(context.getPictogramElement())) instanceof TextDecorationNode) {
+                return true;
+            }
             String deleteName = getDeleteName(context);
             if (deleteName != null && deleteName.length() > 0) {
                 msg = MessageFormat.format(Localization.getString("DeleteElementFeature_3"), deleteName);
