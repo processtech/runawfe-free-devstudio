@@ -1,9 +1,10 @@
 package ru.runa.gpd.ui.dialog;
 
+import com.google.common.base.Objects;
+import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.DoubleClickEvent;
@@ -26,8 +27,8 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.PlatformUI;
-
 import ru.runa.gpd.Localization;
+import ru.runa.gpd.lang.model.MessageNode;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.ui.custom.DragAndDropAdapter;
 import ru.runa.gpd.ui.custom.DropDownButton;
@@ -39,13 +40,14 @@ import ru.runa.gpd.ui.custom.TableViewerLocalDragAndDropSupport;
 import ru.runa.gpd.util.VariableMapping;
 import ru.runa.gpd.util.VariableUtils;
 
-import com.google.common.base.Objects;
-import com.google.common.collect.Lists;
+import static org.eclipse.swt.events.SelectionListener.widgetSelectedAdapter;
 
 public class MessageNodeDialog extends Dialog {
+
     private final ProcessDefinition definition;
     private final List<VariableMapping> variableMappings;
     private final boolean sendMode;
+    private final String title;
     private TableViewer selectorTableViewer;
     private TableViewer dataTableViewer;
     private Button selectorChangeButton;
@@ -55,15 +57,17 @@ public class MessageNodeDialog extends Dialog {
     private Button dataChangeButton;
     private Button dataDeleteButton;
 
-    public MessageNodeDialog(ProcessDefinition definition, List<VariableMapping> variableMappings, boolean sendMode) {
+    public MessageNodeDialog(ProcessDefinition definition, List<VariableMapping> variableMappings, boolean sendMode, String title) {
         super(PlatformUI.getWorkbench().getDisplay().getActiveShell());
         this.variableMappings = Lists.newArrayList(variableMappings);
         this.definition = definition;
         this.sendMode = sendMode;
+        this.title = title;
     }
 
     @Override
     protected Control createDialogArea(Composite parent) {
+        getShell().setText(title);
         Composite composite = (Composite) super.createDialogArea(parent);
         composite.setLayout(new GridLayout());
         Group routeGroup = new Group(composite, SWT.NONE);
@@ -377,6 +381,26 @@ public class MessageNodeDialog extends Dialog {
             selectorTableViewer.refresh();
             dataTableViewer.refresh();
         }
+    }
+
+    @Override
+    protected void createButtonsForButtonBar(Composite parent) {
+        List<MessageNode> messageNodes = definition.getChildrenRecursive(MessageNode.class);
+        if (messageNodes.size() > 1) {
+            Button btnImport = createButton(parent, IDialogConstants.CLIENT_ID, Localization.getString("MessageNodeDialog.Import"), false);
+            btnImport.setToolTipText(Localization.getString("MessageNodeDialog.ImportConfiguration"));
+            btnImport.addSelectionListener(widgetSelectedAdapter(event -> {
+                MessageNode messageNode = new ChooseMessageNodeDialog(messageNodes).openDialog();
+                if (messageNode != null) {
+                    variableMappings.clear();
+                    messageNode.getVariableMappings().stream().forEach(vm -> {
+                        addVariableMapping(new VariableMapping(vm.getName(), vm.getMappedName(), vm.getUsage()), true);
+                    });
+                }
+            }));
+        }
+        createButton(parent, IDialogConstants.CLIENT_ID, "", false).setVisible(false); // spacer
+        super.createButtonsForButtonBar(parent);
     }
 
     private class MoveVariableSelectionListener extends LoggingSelectionAdapter {
