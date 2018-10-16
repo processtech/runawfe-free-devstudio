@@ -1,8 +1,8 @@
 package ru.runa.gpd.ui.view;
 
+import com.google.common.base.Objects;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.jface.viewers.CellEditor;
@@ -24,6 +24,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.TreeItem;
@@ -36,9 +37,6 @@ import org.eclipse.ui.internal.views.properties.PropertiesMessages;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
-
-import com.google.common.base.Objects;
-
 import ru.runa.gpd.editor.graphiti.GraphitiProcessEditor;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.util.UiUtil;
@@ -156,6 +154,19 @@ public class PropertiesView extends ViewPart implements ISelectionListener, Prop
         if (Objects.equal(source, newSource)) {
             return;
         }
+        if (newSource != null) {
+            changeSource(newSource);
+        } else {
+            final IPropertySource newSrc = newSource;
+            Display.getDefault().asyncExec(() -> {
+                if (getSite().getWorkbenchWindow().getActivePage().getEditorReferences().length == 0) {
+                    changeSource(newSrc);
+                }
+            });
+        }
+    }
+
+    private void changeSource(IPropertySource newSource) {
         if (source instanceof GraphElement) {
             ((GraphElement) source).removePropertyChangeListener(this);
         }
