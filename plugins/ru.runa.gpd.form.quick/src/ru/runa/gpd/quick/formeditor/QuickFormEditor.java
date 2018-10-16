@@ -7,6 +7,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -171,8 +172,7 @@ public class QuickFormEditor extends EditorPart implements ISelectionListener, I
     @Override
     public void doSave(IProgressMonitor monitor) {
         try {
-            byte[] contentBytes = QuickFormXMLUtil.convertQuickFormToXML(definitionFolder, quickForm, formNode.getTemplateFileName());
-            InputStream content = new ByteArrayInputStream(contentBytes);
+            InputStream content = new ByteArrayInputStream(getFormData());
             // if (!quickFormFile.exists()) {
             // quickFormFile.create(content, true, null);
             // } else {
@@ -189,6 +189,10 @@ public class QuickFormEditor extends EditorPart implements ISelectionListener, I
         } catch (Exception e) {
             PluginLogger.logError("Error on saving template form: '" + quickForm.getName() + "'", e);
         }
+    }
+
+    public byte[] getFormData() throws UnsupportedEncodingException, CoreException {
+        return QuickFormXMLUtil.convertQuickFormToXML(definitionFolder, quickForm, formNode.getTemplateFileName());
     }
 
     @Override

@@ -552,6 +552,10 @@ public class IOUtils {
         return getFile(folder, ParContentProvider.PROCESS_DEFINITION_FILE_NAME);
     }
 
+    public static IFile getSubprocessDefinitionFile(IFolder folder, SubprocessDefinition definition) {
+        return getFile(folder, definition.getId() + "." + ParContentProvider.PROCESS_DEFINITION_FILE_NAME);
+    }
+
     public static IResource getProcessSelectionResource(IStructuredSelection selection) {
         if (selection != null && !selection.isEmpty()) {
             Object selectedElement = selection.getFirstElement();

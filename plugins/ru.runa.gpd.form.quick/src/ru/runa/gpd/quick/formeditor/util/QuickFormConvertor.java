@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.CoreException;
@@ -16,12 +15,12 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
 import org.osgi.framework.Bundle;
-
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.formeditor.FtlFormType;
 import ru.runa.gpd.formeditor.ftl.TemplateProcessor;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.ProcessDefinition;
+import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.quick.Messages;
 import ru.runa.gpd.quick.extension.QuickTemplateRegister;
 import ru.runa.gpd.quick.formeditor.QuickForm;
@@ -101,8 +100,14 @@ public final class QuickFormConvertor {
         converterSource.getFormNode().setFormFileName(newFileName);
         converterSource.getFormNode().setFormType("ftl");
         converterSource.getFormNode().setTemplateFileName(null);
-        IFile definitionFile = IOUtils.getProcessDefinitionFile(processFolder);
-        WorkspaceOperations.saveProcessDefinition(definitionFile, converterSource.getProcessDefinition());
+        ProcessDefinition definition = converterSource.getProcessDefinition();
+        IFile definitionFile;
+        if (definition instanceof SubprocessDefinition) {
+            definitionFile = IOUtils.getSubprocessDefinitionFile(processFolder, (SubprocessDefinition) definition);
+        } else {
+            definitionFile = IOUtils.getProcessDefinitionFile(processFolder);
+        }
+        WorkspaceOperations.saveProcessDefinition(definitionFile, definition);
         return IOUtils.getFile(newFileName);
     }
 

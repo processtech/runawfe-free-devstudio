@@ -1,5 +1,6 @@
 package ru.runa.gpd.jointformeditor;
 
+import com.google.common.base.Charsets;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.CoreException;
@@ -90,6 +91,12 @@ public class JointFormEditor extends FormEditor {
             addPropertyListener((source, propId) -> {
                 if (propId == IEditorPart.PROP_DIRTY && !IOUtils.isEmpty(formFile)) {
                     fieldValidatorsPage.updateConfigs(formFile);
+                }
+            });
+
+            addPageChangedListener(event -> {
+                if (event.getSelectedPage() == fieldValidatorsPage.getControl() && isDirty()) {
+                    fieldValidatorsPage.updateConfigs(getSourceDocumentHTML().getBytes(Charsets.UTF_8));
                 }
             });
 

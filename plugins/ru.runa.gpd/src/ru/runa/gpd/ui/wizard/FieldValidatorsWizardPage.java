@@ -824,8 +824,15 @@ public class FieldValidatorsWizardPage extends WizardPage implements PropertyCha
 
     public void updateConfigs(IFile formFile) {
         try {
+            updateConfigs(IOUtils.readStreamAsBytes(formFile.getContents(true)));
+        } catch (Exception e) {
+            PluginLogger.logError(e);
+        }
+    }
+
+    public void updateConfigs(byte[] formData) {
+        try {
             FormType formType = FormTypeProvider.getFormType(formNode.getFormType());
-            byte[] formData = IOUtils.readStreamAsBytes(formFile.getContents(true));
             Map<String, FormVariableAccess> formVariables = formType.getFormVariableNames(formNode, formData);
             formVariables.entrySet().stream().forEach(e -> {
                 if (!fieldConfigs.containsKey(e.getKey())) {
@@ -841,7 +848,9 @@ public class FieldValidatorsWizardPage extends WizardPage implements PropertyCha
                     i.remove();
                 }
             }
-            variablesTableViewer.refresh(true);
+            if (!variablesTableViewer.getControl().isDisposed()) {
+                variablesTableViewer.refresh(true);
+            }
             updateVariableSelection();
         } catch (Exception e) {
             PluginLogger.logError(e);

@@ -1,6 +1,7 @@
 package ru.runa.gpd.quick.jointformeditor;
 
 import com.google.common.base.Preconditions;
+import java.io.UnsupportedEncodingException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.CoreException;
@@ -115,8 +116,18 @@ public class QuickJointFormEditor extends MultiPageEditorPart {
             globalValidatorsPage.setMarkEditorDirtyCallback(p -> setDirty(p));
 
             addPropertyListener((source, propId) -> {
-                if (propId == IEditorPart.PROP_DIRTY && !IOUtils.isEmpty(formFile)) {
+                if (propId == IEditorPart.PROP_DIRTY && !quickEditor.isEmpty()) {
                     fieldValidatorsPage.updateConfigs(formFile);
+                }
+            });
+
+            addPageChangedListener(event -> {
+                if (event.getSelectedPage() == fieldValidatorsPage.getControl() && !quickEditor.isEmpty()) {
+                    try {
+                        fieldValidatorsPage.updateConfigs(quickEditor.getFormData());
+                    } catch (UnsupportedEncodingException | CoreException e) {
+                        PluginLogger.logError(e);
+                    }
                 }
             });
 
