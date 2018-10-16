@@ -4,6 +4,7 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -26,9 +27,9 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import ru.runa.gpd.Localization;
-import ru.runa.gpd.lang.model.MessageNode;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.ui.custom.DragAndDropAdapter;
 import ru.runa.gpd.ui.custom.DropDownButton;
@@ -43,6 +44,8 @@ import ru.runa.gpd.util.VariableUtils;
 import static org.eclipse.swt.events.SelectionListener.widgetSelectedAdapter;
 
 public class MessageNodeDialog extends Dialog {
+
+    private final static List<VariableMapping> clipboard = new ArrayList<>();
 
     private final ProcessDefinition definition;
     private final List<VariableMapping> variableMappings;
@@ -383,22 +386,39 @@ public class MessageNodeDialog extends Dialog {
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
-        List<MessageNode> messageNodes = definition.getChildrenRecursive(MessageNode.class);
-        if (messageNodes.size() > 1) {
-            Button btnImport = createButton(parent, IDialogConstants.CLIENT_ID, Localization.getString("MessageNodeDialog.Import"), false);
-            btnImport.setToolTipText(Localization.getString("MessageNodeDialog.ImportConfiguration"));
-            btnImport.addSelectionListener(widgetSelectedAdapter(event -> {
-                MessageNode messageNode = new ChooseMessageNodeDialog(messageNodes).openDialog();
-                if (messageNode != null) {
-                    variableMappings.clear();
-                    messageNode.getVariableMappings().stream().forEach(vm -> {
-                        addVariableMapping(new VariableMapping(vm.getName(), vm.getMappedName(), vm.getUsage()), true);
-                    });
+        Button btnCopy = createButton(parent, IDialogConstants.CLIENT_ID, "", false);
+        btnCopy.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_COPY));
+        btnCopy.setToolTipText(Localization.getString("button.copy"));
+        btnCopy.setLayoutData(null);
+        btnCopy.addSelectionListener(widgetSelectedAdapter(event -> {
+            clipboard.clear();
+            selectorTableViewer.getStructuredSelection().toList().stream().forEach(e -> {
+                clipboard.add(((VariableMapping) e).getCopy());
+            });
+            dataTableViewer.getStructuredSelection().toList().stream().forEach(e -> {
+                clipboard.add(((VariableMapping) e).getCopy());
+            });
+        }));
+        Button btnPaste = createButton(parent, IDialogConstants.CLIENT_ID, "", false);
+        btnPaste.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_PASTE));
+        btnPaste.setToolTipText(Localization.getString("button.paste"));
+        btnPaste.setLayoutData(null);
+        btnPaste.addSelectionListener(widgetSelectedAdapter(event -> {
+            clipboard.stream().forEach(e -> {
+                for (Iterator<VariableMapping> i = variableMappings.iterator(); i.hasNext();) {
+                    if (i.next().getName().equals(e.getName())) {
+                        i.remove();
+                        break;
+                    }
                 }
-            }));
-        }
+                variableMappings.add(e.getCopy());
+            });
+            selectorTableViewer.refresh();
+            dataTableViewer.refresh();
+        }));
         createButton(parent, IDialogConstants.CLIENT_ID, "", false).setVisible(false); // spacer
         super.createButtonsForButtonBar(parent);
     }
