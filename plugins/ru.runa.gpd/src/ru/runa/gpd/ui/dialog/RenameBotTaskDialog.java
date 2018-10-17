@@ -15,8 +15,8 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-
 import ru.runa.gpd.Localization;
+import ru.runa.gpd.ui.custom.TooManySpacesChecker;
 
 public class RenameBotTaskDialog extends Dialog {
     private String name;
@@ -67,7 +67,7 @@ public class RenameBotTaskDialog extends Dialog {
     }
 
     private void updateButtons() {
-        boolean allowCreation = !((IFolder) botTask.getParent()).getFile(name).exists();
+        boolean allowCreation = !((IFolder) botTask.getParent()).getFile(name).exists() && TooManySpacesChecker.isValid(name);
         getButton(IDialogConstants.OK_ID).setEnabled(allowCreation);
     }
 

@@ -1,27 +1,25 @@
 package ru.runa.gpd.lang.model;
 
+import com.google.common.base.Objects;
+import com.google.common.collect.Sets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.ui.views.properties.ComboBoxPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.extension.regulations.NodeRegulationsProperties;
 import ru.runa.gpd.extension.regulations.NodeRegulationsPropertyDescriptor;
 import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.lang.ValidationError;
+import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEvent;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 import ru.runa.gpd.settings.CommonPreferencePage;
 import ru.runa.gpd.util.Duration;
-
-import com.google.common.base.Objects;
-import com.google.common.collect.Sets;
 
 public abstract class Node extends NamedGraphElement implements Describable {
     private boolean minimizedView = false;
@@ -327,6 +325,12 @@ public abstract class Node extends NamedGraphElement implements Describable {
             Timer timer = ((ITimed) this).getTimer();
             if (timer != null) {
                 timer.makeCopy(copy);
+            }
+        }
+        if (this instanceof IBoundaryEventContainer) {
+            CatchEventNode catchEvent = getFirstChild(CatchEventNode.class);
+            if (catchEvent != null) {
+                catchEvent.makeCopy(copy);
             }
         }
         if (this instanceof Synchronizable) {
