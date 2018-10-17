@@ -11,6 +11,7 @@ import ru.runa.gpd.formeditor.ftl.validation.DefaultComponentValidator;
 import ru.runa.gpd.formeditor.ftl.validation.IComponentValidator;
 
 public class ComponentType {
+    private static int orderCounter = 0;
     private final Bundle bundle;
     private final boolean enabled;
     private final int order;
@@ -28,7 +29,7 @@ public class ComponentType {
         try {
             o = Integer.valueOf(element.getAttribute("order"));
         } catch (Exception e) {
-            o = 0;
+            o = orderCounter++;
         }
         this.order = o;
         this.id = element.getAttribute("id");

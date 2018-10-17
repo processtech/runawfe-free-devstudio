@@ -10,11 +10,11 @@ import ru.runa.gpd.formeditor.ftl.ComponentTypeRegistry;
 public enum ComponentTypeContentProvider {
     INSTANCE;
 
-    public List<ComponentType> getModel(boolean ordered) {
+    public List<ComponentType> getModel() {
         if (PlatformUI.getWorkbench().getActiveWorkbenchWindow() != null) {
             IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
             if (activePage != null && activePage.getActiveEditor() instanceof IComponentDropTarget) {
-                return ComponentTypeRegistry.getEnabled(ordered);
+                return ComponentTypeRegistry.getEnabled();
             }
         }
         return Lists.newArrayList();

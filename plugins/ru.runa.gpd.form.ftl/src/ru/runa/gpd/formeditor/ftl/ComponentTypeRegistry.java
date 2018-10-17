@@ -137,10 +137,6 @@ public class ComponentTypeRegistry {
         return getAll().values().stream().filter(e -> e.isEnabled()).sorted(new ComponentTypeComparator()).collect(Collectors.toList());
     }
 
-    public static List<ComponentType> getEnabled(boolean ordered) {
-        return getEnabled().stream().filter(e -> (e.getOrder() != 0) == ordered).collect(Collectors.toList());
-    }
-
     private static final void validateComponentTypeParameterDepends(ComponentType type, ComponentParameter componentParameter)
             throws InternalApplicationException {
         final String dependsArg = componentParameter.getType().getDepends();
@@ -170,11 +166,7 @@ public class ComponentTypeRegistry {
     private static class ComponentTypeComparator implements Comparator<ComponentType> {
         @Override
         public int compare(ComponentType t1, ComponentType t2) {
-            int diff = t1.getOrder() - t2.getOrder();
-            if (diff == 0) {
-                return t1.getLabel().compareToIgnoreCase(t2.getLabel());
-            }
-            return diff;
+            return t1.getOrder() - t2.getOrder();
         }
     }
 

@@ -1,9 +1,10 @@
 package ru.runa.gpd.ui.dialog;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -27,11 +28,8 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-
+import ru.runa.gpd.Localization;
 import ru.runa.gpd.ui.custom.LoggingDoubleClickAdapter;
-
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 
 public class ChooseItemDialog<T extends Comparable<? super T>> extends Dialog {
     private final String dialogText;
@@ -79,6 +77,7 @@ public class ChooseItemDialog<T extends Comparable<? super T>> extends Dialog {
         }
         if (useFilter) {
             filterText = new Text(area, SWT.BORDER);
+            filterText.setMessage(Localization.getString("filter"));
             filterText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             filterText.addModifyListener(new ModifyListener() {
                 @Override
