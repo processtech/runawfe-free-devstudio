@@ -4,7 +4,6 @@ import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.FontData;
-
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.editor.graphiti.StyleUtil;
@@ -36,6 +35,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer impleme
         store.setDefault(P_DATE_FORMAT_PATTERN, "dd.MM.yyyy");
         store.setDefault(P_ENABLE_REGULATIONS_MENU_ITEMS, Localization.getString("disable"));
         store.setDefault(P_ENABLE_EXPORT_WITH_SCALING, Localization.getString("disable"));
+        store.setDefault(P_CONFIRM_DELETION, true);
         // PreferenceConverter.FONTDATA_DEFAULT_DEFAULT
         // backward compatibility
         store.setDefault(LanguageElementPreferenceNode.getBpmnDefaultPropertyName(P_BPMN_FONT), new FontData("Arial", 8, SWT.NORMAL).toString());

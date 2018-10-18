@@ -1,13 +1,12 @@
 package ru.runa.gpd.settings;
 
 import java.text.SimpleDateFormat;
-
+import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.RadioGroupFieldEditor;
 import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
-
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.Language;
@@ -47,6 +46,7 @@ public class CommonPreferencePage extends FieldEditorPreferencePage implements I
                 new String[][] { { Localization.getString("disable"), Localization.getString("disable") },
                         { Localization.getString("enable"), Localization.getString("enable") } },
                 getFieldEditorParent()));
+        addField(new BooleanFieldEditor(P_CONFIRM_DELETION, Localization.getString("pref.commons.confirmDeletion"), getFieldEditorParent()));
     }
 
     public static boolean isRegulationsMenuItemsEnabled() {
