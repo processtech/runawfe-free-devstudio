@@ -77,7 +77,6 @@ import ru.runa.gpd.ui.view.SelectionProvider;
 import ru.runa.gpd.util.EditorUtils;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.VariableUtils;
-import ru.runa.gpd.validation.ValidationUtil;
 import ru.runa.wfe.InternalApplicationException;
 
 /**
@@ -169,8 +168,6 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
                             } catch (CoreException e) {
                                 PluginLogger.logError(e);
                             }
-                        } else {
-                            ValidationUtil.createOrUpdateValidation(formNode, formFile);
                         }
                     }
                     boolean formEditorsAvailable = false;
@@ -399,12 +396,6 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
             }
         }
         sourceEditor.doSave(monitor);
-        if (formNode != null) {
-            if (formFile.exists() && !IOUtils.isEmpty(formFile)) {
-                formNode.setDirty();
-                ValidationUtil.createOrUpdateValidation(formNode, formFile);
-            }
-        }
         if (isBrowserLoaded()) {
             browser.execute("setHTMLSaved()");
         }
