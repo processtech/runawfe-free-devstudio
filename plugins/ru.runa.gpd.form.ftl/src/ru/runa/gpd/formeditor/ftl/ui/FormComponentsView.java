@@ -84,7 +84,6 @@ public class FormComponentsView extends ViewPart implements IPartListener2 {
         if (viewer != null) {
             adjustComponents();
         }
-        filterText.setFocus();
     }
 
     @Override
