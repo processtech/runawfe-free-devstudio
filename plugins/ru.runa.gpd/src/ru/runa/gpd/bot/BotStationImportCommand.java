@@ -1,5 +1,7 @@
 package ru.runa.gpd.bot;
 
+import com.google.common.base.Preconditions;
+import com.google.common.io.ByteStreams;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -8,7 +10,6 @@ import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -17,7 +18,6 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-
 import ru.runa.gpd.BotCache;
 import ru.runa.gpd.BotStationNature;
 import ru.runa.gpd.Localization;
@@ -25,13 +25,9 @@ import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.util.BotTaskUtils;
 import ru.runa.gpd.util.IOUtils;
 
-import com.google.common.io.ByteStreams;
-
 public class BotStationImportCommand extends BotSyncCommand {
 
     private final InputStream inputStream;
-
-    private String botStationName;
 
     public BotStationImportCommand(InputStream inputStream) {
         this.inputStream = inputStream;
@@ -45,27 +41,25 @@ public class BotStationImportCommand extends BotSyncCommand {
             StringBuilder messages = new StringBuilder();
 
             BotImportCommand botImportCommand = new BotImportCommand();
-
+            String botStationName = null;
             while ((entry = zin.getNextEntry()) != null) {
                 if (entry.getName().equals("botstation")) {
-                    importBotStation(zin);
+                    botStationName = importBotStation(zin);
                     continue;
                 }
-
                 // deploy bot
                 String botFileName = entry.getName();
-
                 try {
+                    Preconditions.checkNotNull(botStationName, "botStationName");
                     botImportCommand.init(new ByteArrayInputStream(ByteStreams.toByteArray(zin)), botFileName, botStationName);
                     botImportCommand.importBot(progressMonitor);
                 } catch (Exception e) {
-                    if (messages.length() > 0) {
-                        messages.append(System.lineSeparator());
-                    }
+                    messages.append(Localization.getString("ImportBotWizardPage.page.title") + ": " + botFileName);
+                    messages.append(System.lineSeparator());
                     messages.append(e.getMessage());
+                    messages.append(System.lineSeparator());
                 }
             }
-
             if (messages.length() > 0) {
                 Dialogs.warning(Localization.getString("ImportBotStationWizardPage.warning.botstationImportError"), messages.toString());
             }
@@ -76,9 +70,9 @@ public class BotStationImportCommand extends BotSyncCommand {
         }
     }
 
-    private void importBotStation(ZipInputStream zin) throws IOException, CoreException {
+    private String importBotStation(ZipInputStream zin) throws IOException, CoreException {
         BufferedReader r = new BufferedReader(new InputStreamReader(zin));
-        botStationName = r.readLine();
+        String botStationName = r.readLine();
         String rmiAddress = r.readLine();
         if (BotCache.getAllBotStationNames().contains(botStationName)) {
             throw new UniqueBotStationException(Localization.getString("ImportBotStationWizardPage.error.botstationWithSameNameExists"));
@@ -93,5 +87,6 @@ public class BotStationImportCommand extends BotSyncCommand {
         IOUtils.createFolder(folder);
         IFile file = folder.getFile("botstation");
         IOUtils.createOrUpdateFile(file, BotTaskUtils.createBotStationInfo(botStationName, rmiAddress));
+        return botStationName;
     }
 }
