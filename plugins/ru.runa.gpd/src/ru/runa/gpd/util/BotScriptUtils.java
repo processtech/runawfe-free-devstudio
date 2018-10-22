@@ -76,7 +76,7 @@ public class BotScriptUtils {
         for (Element taskElement : taskElements) {
             List<Element> botList = taskElement.elements(BOT_CONFIGURATION_ELEMENT_NAME);
             for (Element botElement : botList) {
-                String name = botElement.attributeValue(NAME_ATTRIBUTE_NAME);
+                String name = botElement.attributeValue(NAME_ATTRIBUTE_NAME, "").trim();
                 if (Strings.isNullOrEmpty(name)) {
                     continue;
                 }
