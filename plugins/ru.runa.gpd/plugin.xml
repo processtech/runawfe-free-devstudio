@@ -1472,6 +1472,14 @@
                name="OrgFunction.SQLQueryParameter"
                type="java.lang.String"/>
       </orgfunction>
+      <orgfunction
+      		canBeUsedForEscalation="false"
+      		className="ru.runa.wfe.extension.orgfunction.ExecutorsFromListFunction"
+      		label="%ru.runa.wfe.extension.orgfunction.ExecutorsFromListFunction">
+      		 <parameter
+               name="OrgFunction.ExecutorsList"
+               type="java.lang.Object"/>
+      </orgfunction>
    </extension>
    <extension
          point="ru.runa.gpd.handlers">
@@ -1588,6 +1596,16 @@
             className="ru.runa.wfe.extension.handler.EscalationActionHandler"
             enabled="true"
             label="%ru.runa.wfe.extension.handler.EscalationActionHandler">
+      </handler>
+      <handler
+            actionHandler="true"
+            assignmentHandler="false"
+            botTaskHandler="false"
+            decisionHandler="false"
+            cellEditorProvider="ru.runa.gpd.extension.handler.ConfigBasedProvider"
+            className="ru.runa.wfe.extension.handler.ExecutorsListFromGroupHandler"
+            enabled="true"
+            label="%ru.runa.wfe.extension.handler.ExecutorsListFromGroupHandler">
       </handler>
       <handler
             actionHandler="true"

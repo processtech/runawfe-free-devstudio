@@ -1,0 +1,8 @@
+<config>
+  <input>
+    <param name="group" formatFilter="ru.runa.wfe.user.Group" label.key="Param.Group" />
+  </input>
+  <output>
+    <param name="executors" label.key="Param.Result" />
+  </output>
+</config>
