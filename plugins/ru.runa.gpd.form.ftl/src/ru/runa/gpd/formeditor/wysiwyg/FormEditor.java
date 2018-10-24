@@ -1,5 +1,10 @@
 package ru.runa.gpd.formeditor.wysiwyg;
 
+import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
@@ -10,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -44,7 +48,6 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.texteditor.ITextEditor;
-
 import ru.runa.gpd.EditorsPlugin;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
@@ -74,12 +77,6 @@ import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.VariableUtils;
 import ru.runa.gpd.validation.ValidationUtil;
 import ru.runa.wfe.InternalApplicationException;
-
-import com.google.common.base.Objects;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 /**
  * The WYSIWYG HTML editor using <a href="http://www.fckeditor.net/">FCKeditor</a>.
@@ -168,7 +165,9 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
                     if (!formEditorsAvailable) {
                         IViewReference reference = workbenchPage.findViewReference(FormComponentsView.ID);
                         if (reference != null) {
-                            workbenchPage.hideView(reference);
+                            Display.getDefault().asyncExec(() -> {
+                                workbenchPage.hideView(reference);
+                            });
                         }
                     }
                 }
