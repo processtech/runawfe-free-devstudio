@@ -1,16 +1,22 @@
 package ru.runa.gpd.extension.regulations;
 
+import com.google.common.base.Objects;
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import freemarker.template.Configuration;
+import freemarker.template.Template;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.regulations.ui.RegulationsNotesView;
@@ -20,20 +26,12 @@ import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.StartState;
 import ru.runa.gpd.lang.model.Subprocess;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
+import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.util.EditorUtils;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.validation.ValidatorDefinition;
 import ru.runa.gpd.validation.ValidatorDefinitionRegistry;
-
-import com.google.common.base.Objects;
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-
-import freemarker.template.Configuration;
-import freemarker.template.Template;
 
 public class RegulationsUtil {
     private static final Configuration configuration = new Configuration(Configuration.VERSION_2_3_23);
@@ -64,7 +62,45 @@ public class RegulationsUtil {
         template.process(map, writer);
         return writer.toString();
     }
-
+    
+    public static String generateAutomated(ProcessDefinition processDefinition) throws Exception {
+        Template template = new Template("regulations", RegulationsRegistry.getTemplate(), configuration);
+        Node firstNode = processDefinition.getFirstChild(StartState.class);
+        Map<String, Node> sequencedMapOfNodes = Maps.newLinkedHashMap();
+        sequencedMapOfNodes.put(firstNode.getId(), firstNode);
+        fillMapWithSequencedNodes(firstNode, sequencedMapOfNodes);
+        List<Node> listOfNodes = new ArrayList<Node>(sequencedMapOfNodes.values());
+        List<NodeModel> nodeModels = Lists.newArrayList();
+        for (Node node : listOfNodes) {
+            nodeModels.add(new NodeModel(node));
+        }
+        Map<String, Object> map = Maps.newHashMap();
+        map.put("nodeModels", nodeModels);
+        Map<String, ValidatorDefinition> validatorDefinitions = ValidatorDefinitionRegistry.getValidatorDefinitions();
+        map.put("validatorDefinitions", validatorDefinitions);
+        IFile htmlDescriptionFile = IOUtils.getAdjacentFile(processDefinition.getFile(), ParContentProvider.PROCESS_DEFINITION_DESCRIPTION_FILE_NAME);
+        if (htmlDescriptionFile.exists()) {
+            map.put("processHtmlDescription", IOUtils.readStream(htmlDescriptionFile.getContents()));
+        }
+        Writer writer = new StringWriter();
+        template.process(map, writer);
+        return writer.toString();
+    }
+    
+    private static void fillMapWithSequencedNodes(Node node, Map<String,Node> map) {
+        List<Transition> leavingTransitions = node.getLeavingTransitions();
+        Node targetNode;
+        String targetId;
+        for(Transition transition : leavingTransitions) {
+            targetNode = transition.getTarget();
+            targetId = targetNode.getId();
+            if (!map.containsKey(targetId)) {
+                map.put(targetId, targetNode);
+                fillMapWithSequencedNodes(targetNode, map);
+            }
+        }
+    }
+    
     public static List<Node> getSequencedNodes(ProcessDefinition processDefinition) {
         List<Node> result = Lists.newArrayList();
         Node currentNode = processDefinition.getFirstChild(StartState.class);
@@ -93,9 +129,6 @@ public class RegulationsUtil {
         List<ValidationError> errors = Lists.newArrayList();
         IFile definitionFile = processDefinition.getFile();
         for (Node node : processDefinition.getNodes()) {
-            if (!node.getRegulationsProperties().isValid()) {
-                errors.add(ValidationError.createLocalizedWarning(node, "regulations.invalidProperties", node));
-            }
             if (node.getRegulationsProperties().isEnabled()) {
                 Node nextNode = node.getRegulationsProperties().getNextNode();
                 if (nextNode != null && !nextNode.getRegulationsProperties().isEnabled()) {

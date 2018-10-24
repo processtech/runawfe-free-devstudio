@@ -12,6 +12,9 @@
 			<#if model.swimlane ?? >
 				<div class="swimlane">Роль: <span class="name">${model.swimlane.name}</span></div>
 			</#if>
+			<#list model.leavingTransitions as transition>
+				<div class="transition">Следующий узел: <span class="name"><a href="#${transition.target.id}">${transition.target.name}</a></span></div>
+			</#list>
 			<#if model.node.class.simpleName == "SendMessageNode" && model.node.getTtlDuration() ??>
 				<div class="ttl">Время жизни сообщения: ${model.node.getTtlDuration().toString()}</div>
 			</#if>
