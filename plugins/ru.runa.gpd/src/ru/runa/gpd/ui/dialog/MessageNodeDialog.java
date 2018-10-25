@@ -27,7 +27,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.model.ProcessDefinition;
@@ -59,6 +58,8 @@ public class MessageNodeDialog extends Dialog {
     private Button dataMoveDownButton;
     private Button dataChangeButton;
     private Button dataDeleteButton;
+    private Button copyButton;
+    private Button pasteButton;
 
     public MessageNodeDialog(ProcessDefinition definition, List<VariableMapping> variableMappings, boolean sendMode, String title) {
         super(PlatformUI.getWorkbench().getDisplay().getActiveShell());
@@ -90,7 +91,7 @@ public class MessageNodeDialog extends Dialog {
 
     private void createSelectorTableViewer(Composite parent) {
         selectorTableViewer = new TableViewer(parent, SWT.MULTI | SWT.V_SCROLL | SWT.FULL_SELECTION);
-        GridData data = new GridData(GridData.FILL_VERTICAL);
+        GridData data = new GridData(GridData.FILL_BOTH);
         data.minimumHeight = 100;
         selectorTableViewer.getControl().setLayoutData(data);
         final Table table = selectorTableViewer.getTable();
@@ -234,7 +235,7 @@ public class MessageNodeDialog extends Dialog {
 
     private void createDataTableViewer(Composite parent) {
         dataTableViewer = new TableViewer(parent, SWT.MULTI | SWT.V_SCROLL | SWT.FULL_SELECTION);
-        GridData data = new GridData(GridData.FILL_VERTICAL);
+        GridData data = new GridData(GridData.FILL_BOTH);
         data.minimumHeight = 200;
         dataTableViewer.getControl().setLayoutData(data);
         final Table table = dataTableViewer.getTable();
@@ -340,6 +341,7 @@ public class MessageNodeDialog extends Dialog {
         List<?> selected = ((IStructuredSelection) selectorTableViewer.getSelection()).toList();
         selectorChangeButton.setEnabled(selected.size() == 1);
         selectorDeleteButton.setEnabled(selected.size() > 0);
+        updateCopyPasteButtons();
     }
 
     private void updateDataButtons() {
@@ -348,6 +350,19 @@ public class MessageNodeDialog extends Dialog {
         dataMoveUpButton.setEnabled(selected.size() == 1 && variableMappings.indexOf(selected.get(0)) > 0);
         dataMoveDownButton.setEnabled(selected.size() == 1 && variableMappings.indexOf(selected.get(0)) < variableMappings.size() - 1);
         dataDeleteButton.setEnabled(selected.size() > 0);
+        updateCopyPasteButtons();
+    }
+
+    private void updateCopyPasteButtons() {
+        if (pasteButton != null) {
+            copyButton.setEnabled(!(selectorTableViewer.getSelection().isEmpty() && dataTableViewer.getSelection().isEmpty()));
+            pasteButton.setEnabled(clipboard.size() > 0);
+        }
+    }
+
+    @Override
+    protected boolean isResizable() {
+        return true;
     }
 
     private void editVariableMapping(VariableMapping mapping, String usage) {
@@ -389,11 +404,9 @@ public class MessageNodeDialog extends Dialog {
     @SuppressWarnings("unchecked")
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
-        Button btnCopy = createButton(parent, IDialogConstants.CLIENT_ID, "", false);
-        btnCopy.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_COPY));
-        btnCopy.setToolTipText(Localization.getString("button.copy"));
-        btnCopy.setLayoutData(null);
-        btnCopy.addSelectionListener(widgetSelectedAdapter(event -> {
+        copyButton = createButton(parent, IDialogConstants.CLIENT_ID, Localization.getString("button.copy"), false);
+        copyButton.setEnabled(false);
+        copyButton.addSelectionListener(widgetSelectedAdapter(event -> {
             clipboard.clear();
             selectorTableViewer.getStructuredSelection().toList().stream().forEach(e -> {
                 clipboard.add(((VariableMapping) e).getCopy());
@@ -401,12 +414,11 @@ public class MessageNodeDialog extends Dialog {
             dataTableViewer.getStructuredSelection().toList().stream().forEach(e -> {
                 clipboard.add(((VariableMapping) e).getCopy());
             });
+            updateCopyPasteButtons();
         }));
-        Button btnPaste = createButton(parent, IDialogConstants.CLIENT_ID, "", false);
-        btnPaste.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_PASTE));
-        btnPaste.setToolTipText(Localization.getString("button.paste"));
-        btnPaste.setLayoutData(null);
-        btnPaste.addSelectionListener(widgetSelectedAdapter(event -> {
+        pasteButton = createButton(parent, IDialogConstants.CLIENT_ID, Localization.getString("button.paste"), false);
+        pasteButton.setEnabled(false);
+        pasteButton.addSelectionListener(widgetSelectedAdapter(event -> {
             clipboard.stream().forEach(e -> {
                 for (Iterator<VariableMapping> i = variableMappings.iterator(); i.hasNext();) {
                     if (i.next().getName().equals(e.getName())) {
@@ -419,8 +431,19 @@ public class MessageNodeDialog extends Dialog {
             selectorTableViewer.refresh();
             dataTableViewer.refresh();
         }));
-        createButton(parent, IDialogConstants.CLIENT_ID, "", false).setVisible(false); // spacer
+        Button spacer = createButton(parent, IDialogConstants.CLIENT_ID, "", false); // spacer
+        spacer.setVisible(false);
+        ((GridData) spacer.getLayoutData()).grabExcessHorizontalSpace = true;
         super.createButtonsForButtonBar(parent);
+        updateCopyPasteButtons();
+    }
+
+    @Override
+    protected Control createButtonBar(Composite parent) {
+        Composite composite = (Composite) super.createButtonBar(parent);
+        ((GridLayout) composite.getLayout()).makeColumnsEqualWidth = false;
+        composite.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_CENTER | GridData.FILL_HORIZONTAL));
+        return composite;
     }
 
     private class MoveVariableSelectionListener extends LoggingSelectionAdapter {
