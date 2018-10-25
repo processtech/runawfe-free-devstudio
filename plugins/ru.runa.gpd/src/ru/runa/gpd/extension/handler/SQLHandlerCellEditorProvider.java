@@ -78,7 +78,7 @@ public class SQLHandlerCellEditorProvider extends XmlBasedConstructorProvider<SQ
                 ((ScrolledComposite) getParent()).setMinSize(computeSize(getSize().x, SWT.DEFAULT));
                 this.layout(true, true);
             } catch (Throwable e) {
-                PluginLogger.logErrorWithoutDialog("Cannot build model", e);
+                PluginLogger.logError("Cannot build model", e);
             }
         }
 
