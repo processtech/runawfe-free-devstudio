@@ -2,7 +2,7 @@
 	<#list nodeModels as model>
 		<div id="${model.node.id}" class="node ${model.node.typeDefinition.bpmnElementName}">
 			<div class="header">
-				<span class="step">Шаг ${model?counter}.</span>
+				<span class="step">Шаг:</span>
 				<span class="type">${model.node.typeDefinition.label}</span>
 				<span class="name">${model.node.name}</span>
 			</div>

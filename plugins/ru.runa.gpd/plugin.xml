@@ -616,6 +616,11 @@
              id="ru.runa.gpd.createRegulations"
              label="%label.menu.createRegulations">
        </action>
+       <action
+             class="ru.runa.gpd.extension.regulations.ui.GenerateRegulationDataAction"
+             id="ru.runa.gpd.generateRegulationData"
+             label="%label.menu.generateRegulationData">
+       </action>
     </objectContribution>
   </extension>
  <extension

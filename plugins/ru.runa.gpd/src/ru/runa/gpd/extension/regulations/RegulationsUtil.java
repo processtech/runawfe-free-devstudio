@@ -63,44 +63,6 @@ public class RegulationsUtil {
         return writer.toString();
     }
     
-    public static String generateAutomated(ProcessDefinition processDefinition) throws Exception {
-        Template template = new Template("regulations", RegulationsRegistry.getTemplate(), configuration);
-        Node firstNode = processDefinition.getFirstChild(StartState.class);
-        Map<String, Node> sequencedMapOfNodes = Maps.newLinkedHashMap();
-        sequencedMapOfNodes.put(firstNode.getId(), firstNode);
-        fillMapWithSequencedNodes(firstNode, sequencedMapOfNodes);
-        List<Node> listOfNodes = new ArrayList<Node>(sequencedMapOfNodes.values());
-        List<NodeModel> nodeModels = Lists.newArrayList();
-        for (Node node : listOfNodes) {
-            nodeModels.add(new NodeModel(node));
-        }
-        Map<String, Object> map = Maps.newHashMap();
-        map.put("nodeModels", nodeModels);
-        Map<String, ValidatorDefinition> validatorDefinitions = ValidatorDefinitionRegistry.getValidatorDefinitions();
-        map.put("validatorDefinitions", validatorDefinitions);
-        IFile htmlDescriptionFile = IOUtils.getAdjacentFile(processDefinition.getFile(), ParContentProvider.PROCESS_DEFINITION_DESCRIPTION_FILE_NAME);
-        if (htmlDescriptionFile.exists()) {
-            map.put("processHtmlDescription", IOUtils.readStream(htmlDescriptionFile.getContents()));
-        }
-        Writer writer = new StringWriter();
-        template.process(map, writer);
-        return writer.toString();
-    }
-    
-    private static void fillMapWithSequencedNodes(Node node, Map<String,Node> map) {
-        List<Transition> leavingTransitions = node.getLeavingTransitions();
-        Node targetNode;
-        String targetId;
-        for(Transition transition : leavingTransitions) {
-            targetNode = transition.getTarget();
-            targetId = targetNode.getId();
-            if (!map.containsKey(targetId)) {
-                map.put(targetId, targetNode);
-                fillMapWithSequencedNodes(targetNode, map);
-            }
-        }
-    }
-    
     public static List<Node> getSequencedNodes(ProcessDefinition processDefinition) {
         List<Node> result = Lists.newArrayList();
         Node currentNode = processDefinition.getFirstChild(StartState.class);
@@ -123,6 +85,24 @@ public class RegulationsUtil {
             } while (currentNode != null);
         }
         return result;
+    }
+    
+    public static void fillRegulationPropertiesWithSequence(Node previousNode, Node currentNode, List<String> nodesInSequence) {
+        List<Transition> leavingTransitions = currentNode.getLeavingTransitions();
+        NodeRegulationsProperties currentNodeRegulationProperties = currentNode.getRegulationsProperties();
+        for (Transition transition : leavingTransitions) {
+            Node nextNode = transition.getTarget();
+            if (!nodesInSequence.contains(currentNode.getId())) {
+                currentNodeRegulationProperties.setPreviousNode(previousNode);
+                currentNodeRegulationProperties.setNextNode(nextNode);
+                nodesInSequence.add(currentNode.getId());
+            }
+            fillRegulationPropertiesWithSequence(currentNode, nextNode, nodesInSequence);
+        }
+        if (leavingTransitions.isEmpty()) {
+            currentNodeRegulationProperties.setPreviousNode(previousNode);
+            currentNodeRegulationProperties.setNextNode(null);
+        }
     }
 
     public static boolean validate(ProcessDefinition processDefinition) {

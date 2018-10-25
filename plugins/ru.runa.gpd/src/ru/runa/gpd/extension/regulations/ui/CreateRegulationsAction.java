@@ -20,8 +20,7 @@ public class CreateRegulationsAction extends BaseModelActionDelegate {
             ProcessDefinition processDefinition = getActiveDesignerEditor().getDefinition();
             boolean success = RegulationsUtil.validate(processDefinition);
             if (success) {
-                String html = RegulationsUtil.generateAutomated(processDefinition);
-                //String html = generateRegulation(processDefinition);
+                String html = RegulationsUtil.generate(processDefinition);
                 IFile file = IOUtils.getAdjacentFile(getDefinitionFile(), ParContentProvider.REGULATIONS_HTML_FILE_NAME);
                 IOUtils.createOrUpdateFile(file, new ByteArrayInputStream(html.getBytes()));
                 IDE.openEditor(getWorkbenchPage(), file);
