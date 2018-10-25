@@ -408,7 +408,16 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             boolean result = type.equals(userType);
             if (!result && userType != null) {
                 for (Variable var : userType.getAttributes()) {
-                    result = result || isUserTypeUsed(type, var.getUserType());
+                    if (var.getUserType() == null) {
+                        for (String formatComponent : var.getFormatComponentClassNames()) {
+                            if (Objects.equal(type.getName(), formatComponent)) {
+                                result = true;
+                                break;
+                            }
+                        }
+                    } else {
+                        result = result || isUserTypeUsed(type, var.getUserType());
+                    }
                     if (result) {
                         break;
                     }
