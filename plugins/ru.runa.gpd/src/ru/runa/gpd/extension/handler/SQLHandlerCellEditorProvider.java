@@ -17,7 +17,6 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.handler.SQLTasksModel.SQLQueryModel;
@@ -79,7 +78,7 @@ public class SQLHandlerCellEditorProvider extends XmlBasedConstructorProvider<SQ
                 ((ScrolledComposite) getParent()).setMinSize(computeSize(getSize().x, SWT.DEFAULT));
                 this.layout(true, true);
             } catch (Throwable e) {
-                PluginLogger.logErrorWithoutDialog("Cannot build model", e);
+                PluginLogger.logError("Cannot build model", e);
             }
         }
 
@@ -113,12 +112,7 @@ public class SQLHandlerCellEditorProvider extends XmlBasedConstructorProvider<SQ
             int colonIndex = taskModel.dsName.indexOf(':');
             if (colonIndex > 0) {
                 String dsName = taskModel.dsName.substring(colonIndex + 1);
-                if (taskModel.dsName.startsWith(DataSourceStuff.PATH_PREFIX_JNDI_NAME)) {
-                    cbDsTypes.select(0);
-                    txtJndiName.setText(dsName);
-                    stackLayout.topControl = txtJndiName;
-                }
-                else if (taskModel.dsName.startsWith(DataSourceStuff.PATH_PREFIX_JNDI_NAME_VARIABLE)) {
+                if (taskModel.dsName.startsWith(DataSourceStuff.PATH_PREFIX_JNDI_NAME_VARIABLE)) {
                     cbDsTypes.select(1);
                     cbVariables.setText(dsName);
                     stackLayout.topControl = cbVariables;
@@ -132,6 +126,11 @@ public class SQLHandlerCellEditorProvider extends XmlBasedConstructorProvider<SQ
                     cbDsTypes.select(3);
                     cbVariables.setText(dsName);
                     stackLayout.topControl = cbVariables;
+                }
+                else {
+                    cbDsTypes.select(0);
+                    txtJndiName.setText(dsName);
+                    stackLayout.topControl = txtJndiName;
                 }
             } else {
                 cbDsTypes.select(0);
