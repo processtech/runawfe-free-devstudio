@@ -9,7 +9,6 @@ import freemarker.template.Configuration;
 import freemarker.template.Template;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -21,6 +20,8 @@ import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.regulations.ui.RegulationsNotesView;
 import ru.runa.gpd.lang.ValidationError;
+import ru.runa.gpd.lang.model.EndState;
+import ru.runa.gpd.lang.model.EndTokenState;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.StartState;
@@ -45,7 +46,7 @@ public class RegulationsUtil {
 
     public static String generate(ProcessDefinition processDefinition) throws Exception {
         Template template = new Template("regulations", RegulationsRegistry.getTemplate(), configuration);
-        List<Node> listOfNodes = getSequencedNodes(processDefinition);
+        List<Node> listOfNodes = processDefinition.getChildren(Node.class);
         List<NodeModel> nodeModels = Lists.newArrayList();
         for (Node node : listOfNodes) {
             nodeModels.add(new NodeModel(node));
@@ -54,6 +55,10 @@ public class RegulationsUtil {
         map.put("nodeModels", nodeModels);
         Map<String, ValidatorDefinition> validatorDefinitions = ValidatorDefinitionRegistry.getValidatorDefinitions();
         map.put("validatorDefinitions", validatorDefinitions);
+        map.put("swimlanes", processDefinition.getSwimlanes());
+        map.put("variables", processDefinition.getVariables(false, false, null));
+        map.put("endToken", processDefinition.getChildrenRecursive(EndTokenState.class));
+        map.put("end", processDefinition.getChildrenRecursive(EndState.class));
         IFile htmlDescriptionFile = IOUtils.getAdjacentFile(processDefinition.getFile(), ParContentProvider.PROCESS_DEFINITION_DESCRIPTION_FILE_NAME);
         if (htmlDescriptionFile.exists()) {
             map.put("processHtmlDescription", IOUtils.readStream(htmlDescriptionFile.getContents()));

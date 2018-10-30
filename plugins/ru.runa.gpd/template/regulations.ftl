@@ -1,20 +1,42 @@
+<div class="swimlanes">
+	<strong>Список ролей бизнес-процесса: </strong>
+	<#list swimlanes as swimlane>
+		<div class="swimlanesNames">${swimlane.getName()}</div>
+	</#list>
+</div>
+<div class="variables">
+	<strong>Список переменных бизнес-процесса: </strong>
+	<#list variables as variable>
+		<div class="variablesNames">${variable.getName()}</div>
+	</#list>
+	
+</div>
 <div class="nodes">
+	<strong>Описание действий бизнес-процесса: </strong>
 	<#list nodeModels as model>
+		<#if model.node.class.simpleName != "EndState" && model.node.class.simpleName != "EndTokenState">
 		<div id="${model.node.id}" class="node ${model.node.typeDefinition.bpmnElementName}">
 			<div class="header">
 				<span class="step">Шаг:</span>
-				<span class="type">${model.node.typeDefinition.label}</span>
 				<span class="name">${model.node.name}</span>
 			</div>
 			<#if model.inEmbeddedSubprocess>
 				<div class="embedded-subprocess">Действие в рамках композиции <span class="name">${model.node.processDefinition.name}</span></div>
 			</#if>
+				<div class="type">Тип шага: <span class="name">${model.node.typeDefinition.label}</span></div>
 			<#if model.swimlane ?? >
 				<div class="swimlane">Роль: <span class="name">${model.swimlane.name}</span></div>
 			</#if>
-			<#list model.leavingTransitions as transition>
-				<div class="transition">Следующий узел: <span class="name"><a href="#${transition.target.id}">${transition.target.name}</a></span></div>
-			</#list>
+			<#if model.leavingTransitions?size == 1>
+				<#list model.leavingTransitions as transition>
+					<div class="transition">Далее управление переходит к шагу <span class="name"><a href="#${transition.target.id}">${transition.target.name}</a></span></div>
+				</#list>
+			<#else>
+				<div class="transition">Далее управление переходит к шагу </div>
+				<#list model.leavingTransitions as transition>
+					<div class="transition">в случае <span class="name">${transition.name}</span><span class="name"><a href="#${transition.target.id}"> ${transition.target.name}</a></span></div>
+				</#list>
+			</#if>
 			<#if model.node.class.simpleName == "SendMessageNode" && model.node.getTtlDuration() ??>
 				<div class="ttl">Время жизни сообщения: ${model.node.getTtlDuration().toString()}</div>
 			</#if>
@@ -84,5 +106,14 @@
 				</div>
 			</#if>
 		</div>
+		</#if>
+	</#list>
+</div>
+<div class="endings">
+	<#list endToken as end>
+		<div class="endTokenState">Завершение потока  выполнения бизнес-процесса: ${end.getName()}</div>
+	</#list>
+	<#list end as end>
+		<div class="endState">Завершение процесса выполнения бизнес-процесса: ${end.getName()}</div>
 	</#list>
 </div>
