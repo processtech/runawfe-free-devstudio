@@ -87,7 +87,7 @@ public class Component extends EventSupport implements IPropertySource {
                 setParameterValue(parameter, value);
             }
         }
-        if (parameterValues.size() != args.size()) {
+        if (parameterValues.size() != args.size() && !parameterValues.get(0).equals("")) {
             MessageDialog.openInformation(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Localization.getString("ExcessiveParameters_1"), 
                     MessageFormat.format(Localization.getString("ExcessiveParameters_2"), type));
         }

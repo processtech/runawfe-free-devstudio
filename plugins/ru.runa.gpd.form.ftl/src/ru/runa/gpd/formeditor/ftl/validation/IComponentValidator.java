@@ -8,6 +8,6 @@ import ru.runa.gpd.lang.model.FormNode;
 
 public interface IComponentValidator {
 
-    List<ValidationError> validate(FormNode formNode, Component component);
+    List<ValidationError> validate(FormNode formNode, Component component, byte[] formData);
 
 }
