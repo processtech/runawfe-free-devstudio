@@ -4,7 +4,6 @@
 <product name="runa-gpd" uid="RunaWFE_DeveloperStudio" id="ru.runa.gpd.app.product" application="ru.runa.gpd.application" version="4.4.0.qualifier" useFeatures="false" includeLaunchers="true">
 
    <aboutInfo>
-      <image path="/ru.runa.gpd.app/icons/logo/about.gif"/>
       <text>
          Runa Developer Studio
       </text>
@@ -23,8 +22,8 @@
    <splash
       location="ru.runa.gpd.app" />
    <launcher name="runa-gpd">
-      <linux icon="/ru.runa.gpd.app/icons/logo/16.xpm"/>
-      <macosx icon="/ru.runa.gpd.app/icons/logo/16.icns"/>
+      <linux icon="/icons/logo/16.xpm"/>
+      <macosx icon="/icons/logo/icon.icns"/>
       <win useIco="false">
          <bmp
             winSmallHigh="/ru.runa.gpd.app/icons/logo/16_32.bmp"
@@ -36,8 +35,10 @@
       </win>
    </launcher>
 
+
    <vm>
    </vm>
+
 
    <plugins>
       <plugin id="com.ibm.icu"/>
