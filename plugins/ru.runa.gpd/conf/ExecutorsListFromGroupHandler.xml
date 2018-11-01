@@ -1,8 +1,8 @@
 <config>
   <input>
-    <param name="group" formatFilter="ru.runa.wfe.user.Group" label.key="Param.Group" />
+    <param name="group" label.key="Param.Group" />
   </input>
   <output>
-    <param name="executors" label.key="Param.Result" />
+    <param name="executors" formatFilter="java.util.List" label.key="Param.Result" />
   </output>
 </config>
