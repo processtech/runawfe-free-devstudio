@@ -16,6 +16,12 @@ public class ValidatorConfig {
     public ValidatorConfig(String validatorType) {
         this.type = validatorType;
     }
+    
+    public ValidatorConfig(String validatorType, String message, Map<String, String> params) {
+        this.type = validatorType;
+        this.message = message;
+        this.params.putAll(params);
+    }
 
     public void setMessage(String message) {
         this.message = message;

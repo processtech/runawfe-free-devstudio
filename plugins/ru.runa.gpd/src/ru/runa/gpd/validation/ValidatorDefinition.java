@@ -55,6 +55,10 @@ public class ValidatorDefinition {
         return false;
     }
 
+    public boolean isApplicableEmpty() {
+        return applicable.isEmpty();
+    }
+    
     public String getDescription() {
         return description;
     }

@@ -1,16 +1,19 @@
 package ru.runa.gpd.ui.wizard;
 
+import java.util.Map;
 import org.eclipse.jface.wizard.Wizard;
 
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableContainer;
+import ru.runa.gpd.validation.ValidatorConfig;
 
 public class VariableWizard extends Wizard {
     private VariableNamePage namePage;
     private final VariableFormatPage formatPage;
     private final VariableDefaultValuePage defaultValuePage;
+    private VariableRestrictionsPage restrictionsPage;
     private VariableAccessPage accessPage;
     private final VariableStoreTypePage storeTypePage;
     private Variable variable;
@@ -26,6 +29,7 @@ public class VariableWizard extends Wizard {
         }
         formatPage = new VariableFormatPage(processDefinition, variableContainer, variable, editFormat);
         defaultValuePage = new VariableDefaultValuePage(variable);
+        restrictionsPage = new VariableRestrictionsPage(processDefinition, variable, formatPage);
         if (showAccessPage) {
             accessPage = new VariableAccessPage(variable);
         }
@@ -40,6 +44,7 @@ public class VariableWizard extends Wizard {
         }
         addPage(formatPage);
         addPage(defaultValuePage);
+        addPage(restrictionsPage);
         if (accessPage != null) {
             addPage(accessPage);
         }
@@ -74,10 +79,15 @@ public class VariableWizard extends Wizard {
         }
         String defaultValue = defaultValuePage.getDefaultValue();
         boolean publicVisibility = accessPage != null ? accessPage.isPublicVisibility() : false;
+        Map<String, ValidatorConfig> validators = restrictionsPage.getValidators();
+        if (restrictionsPage.getInfoGroup() != null) {
+            restrictionsPage.getInfoGroup().saveConfig();
+        }
         variable = new Variable(name, scriptingName, format, formatPage.getUserType());
         variable.setPublicVisibility(publicVisibility);
         variable.setDefaultValue(defaultValue);
         variable.setDescription(description);
+        variable.setValidators(validators);
         variable.setStoreType(storeTypePage.getStoreType());
         return true;
     }

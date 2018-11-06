@@ -23,6 +23,7 @@ public interface PropertyNames {
     public static final String PROPERTY_FORMAT = "format";
     public static final String PROPERTY_PUBLIC_VISIBILITY = "publicVisibility";
     public static final String PROPERTY_DEFAULT_VALUE = "defaultValue";
+    public static final String PROPERTY_VALIDATORS = "validators";
     public static final String PROPERTY_STORE_TYPE = "storeType";
     public static final String PROPERTY_EVENT_TYPE = "eventType";
     public static final String PROPERTY_ESCALATION = "escalation";

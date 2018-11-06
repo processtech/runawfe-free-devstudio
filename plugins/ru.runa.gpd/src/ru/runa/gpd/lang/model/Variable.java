@@ -1,6 +1,7 @@
 package ru.runa.gpd.lang.model;
 
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
@@ -10,6 +11,7 @@ import ru.runa.gpd.Localization;
 import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.extension.LocalizationRegistry;
 import ru.runa.gpd.extension.VariableFormatRegistry;
+import ru.runa.gpd.validation.ValidatorConfig;
 import ru.runa.wfe.var.UserTypeMap;
 
 import com.google.common.base.Objects;
@@ -24,6 +26,7 @@ public class Variable extends NamedGraphElement implements Describable {
     private boolean publicVisibility;
     private String defaultValue;
     private VariableUserType userType;
+    private Map<String, ValidatorConfig> validators;
     private VariableStoreType storeType = VariableStoreType.DEFAULT;
     private boolean global;
 
@@ -175,6 +178,17 @@ public class Variable extends NamedGraphElement implements Describable {
         this.storeType = storeType != null ? storeType : VariableStoreType.DEFAULT;
         firePropertyChange(PROPERTY_STORE_TYPE, old, this.storeType);
     }
+    
+    public Map<String, ValidatorConfig> getValidators() {
+        return validators;
+    }
+
+    public void setValidators(Map<String, ValidatorConfig> validators) {
+        Map<String, ValidatorConfig> old = this.validators;
+        this.validators = validators;
+        firePropertyChange(PROPERTY_VALIDATORS, old, this.format);
+    }
+
 
     @Override
     public void populateCustomPropertyDescriptors(List<IPropertyDescriptor> descriptors) {
@@ -182,6 +196,7 @@ public class Variable extends NamedGraphElement implements Describable {
         descriptors.add(new PropertyDescriptor(PROPERTY_SCRIPTING_NAME, Localization.getString("Variable.property.scriptingName")));
         descriptors.add(new PropertyDescriptor(PROPERTY_FORMAT, Localization.getString("Variable.property.format")));
         descriptors.add(new PropertyDescriptor(PROPERTY_PUBLIC_VISIBILITY, Localization.getString("Variable.property.publicVisibility")));
+        descriptors.add(new PropertyDescriptor(PROPERTY_VALIDATORS, Localization.getString("Variable.property.validators")));
         descriptors.add(new PropertyDescriptor(PROPERTY_DEFAULT_VALUE, Localization.getString("Variable.property.defaultValue")));
         descriptors.add(new PropertyDescriptor(PROPERTY_STORE_TYPE, Localization.getString("Variable.property.storeType")));
     }
@@ -196,6 +211,9 @@ public class Variable extends NamedGraphElement implements Describable {
         }
         if (PROPERTY_PUBLIC_VISIBILITY.equals(id)) {
             return publicVisibility ? Localization.getString("yes") : Localization.getString("false");
+        }
+        if (PROPERTY_VALIDATORS.equals(id)) {
+            return validators == null ? "" : validators.keySet().toArray();
         }
         if (PROPERTY_DEFAULT_VALUE.equals(id)) {
             return defaultValue == null ? "" : defaultValue;

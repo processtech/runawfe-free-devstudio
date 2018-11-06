@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
 
@@ -33,6 +34,12 @@ public class ValidationUtil {
             }
         }
         return result;
+    }
+    
+    public static List<ValidatorDefinition> getTypeDefinedFieldValidatorDefinitions (Variable variable) {
+        return getFieldValidatorDefinitions(variable).stream()
+                                                .filter(definition -> !definition.isApplicableEmpty())
+                                                .collect(Collectors.toList());
     }
 
     public static FormNodeValidation getInitialFormValidation(IFile adjacentFile, FormNode formNode) throws Exception {

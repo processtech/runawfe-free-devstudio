@@ -334,6 +334,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
                 variable.setUserType(wizard.getVariable().getUserType());
                 variable.setPublicVisibility(wizard.getVariable().isPublicVisibility());
                 variable.setDefaultValue(wizard.getVariable().getDefaultValue());
+                variable.setValidators(wizard.getVariable().getValidators());
                 variable.setStoreType(wizard.getVariable().getStoreType());
                 tableViewer.setSelection(selection);
             }

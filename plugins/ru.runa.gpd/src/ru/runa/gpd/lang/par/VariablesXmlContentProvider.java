@@ -1,6 +1,8 @@
 package ru.runa.gpd.lang.par;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -13,10 +15,12 @@ import ru.runa.gpd.lang.model.VariableStoreType;
 import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.gpd.util.VariableUtils;
 import ru.runa.gpd.util.XmlUtil;
+import ru.runa.gpd.validation.ValidatorConfig;
 import ru.runa.wfe.commons.BackCompatibilityClassNames;
 import ru.runa.wfe.var.format.UserTypeFormat;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Maps;
 
 public class VariablesXmlContentProvider extends AuxContentProvider {
     private static final String XML_FILE_NAME = "variables.xml";
@@ -31,6 +35,10 @@ public class VariablesXmlContentProvider extends AuxContentProvider {
     private static final String STORE_TYPE = "storeType";
     private static final String USER_TYPE = "usertype";
     private static final String EDITOR = "editor";
+    private static final String VALIDATOR = "validator";
+    private static final String TYPE = "type";
+    private static final String MESSAGE = "message";
+    private static final String PARAM = "param";
 
     @Override
     public boolean isSupportedForEmbeddedSubprocess() {
@@ -92,6 +100,7 @@ public class VariablesXmlContentProvider extends AuxContentProvider {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private Variable parse(Element element, ProcessDefinition processDefinition) {
         String variableName = element.attributeValue(NAME);
         String format;
@@ -108,6 +117,19 @@ public class VariablesXmlContentProvider extends AuxContentProvider {
         String defaultValue = element.attributeValue(DEFAULT_VALUE);
         String scriptingName = element.attributeValue(SCRIPTING_NAME, variableName);
         String description = element.attributeValue(DESCRIPTION);
+        List<Element> validatorElements = element.elements(VALIDATOR);
+        Map<String, ValidatorConfig> validators = Maps.newHashMap();
+        if (validatorElements != null) {
+            for (Element validatorElement : validatorElements) {
+                String validatorType = validatorElement.attributeValue(TYPE);
+                String validatorMessage = validatorElement.element(MESSAGE).getText();
+                Map<String, String> validatorParams = Maps.newHashMap();
+                for (Element validatorParamElement : (List<Element>)validatorElement.elements(PARAM)) {
+                    validatorParams.put(validatorParamElement.attributeValue(NAME), validatorParamElement.getText());
+                }
+                validators.put(validatorType, new ValidatorConfig(validatorType, validatorMessage, validatorParams));
+            }
+        }
         VariableStoreType storeType = element.attributeValue(STORE_TYPE, null) != null ? VariableStoreType.valueOf(element.attributeValue(STORE_TYPE)
                 .toUpperCase()) : VariableStoreType.DEFAULT;
         if ("false".equals(description)) {
@@ -118,6 +140,7 @@ public class VariablesXmlContentProvider extends AuxContentProvider {
         variable.setPublicVisibility(publicVisibility);
         variable.setDefaultValue(defaultValue);
         variable.setDescription(description);
+        variable.setValidators(validators);
         variable.setStoreType(storeType);
         return variable;
     }
@@ -167,6 +190,26 @@ public class VariablesXmlContentProvider extends AuxContentProvider {
             element.addAttribute(SWIMLANE, Boolean.TRUE.toString());
             if (!Strings.isNullOrEmpty(swimlane.getEditorPath())) {
                 element.addAttribute(EDITOR, swimlane.getEditorPath());
+            }
+        }
+        Map<String, ValidatorConfig> validators = variable.getValidators();
+        if (validators != null) {
+            for (Entry<String, ValidatorConfig> validator : validators.entrySet()) {
+                writeValidator(element, variable, validator.getKey(), validator.getValue());
+            }
+        }
+        return element;
+    }
+    
+    private Element writeValidator(Element root, Variable variable, String validatorName, ValidatorConfig config) {
+        Element element = root.addElement(VALIDATOR);
+        element.addAttribute(TYPE, config.getType());
+        if (config.getMessage() != null) {
+            element.addElement(MESSAGE).setText(config.getMessage());
+        }
+        if (config.getParams() != null) {
+            for (Entry<String, String> entry : config.getParams().entrySet()) {
+                element.addElement(PARAM).addAttribute(NAME, entry.getKey()).setText(entry.getValue());
             }
         }
         return element;
