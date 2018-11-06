@@ -45,6 +45,9 @@ public class FtlFormType extends BaseHtmlFormType {
             List<ValidationError> list = validator.validate(formNode, component, formData);
             errors.addAll(list);
         }
+        for (String undefinedComponent : model.getUndefinedComponentNames()) {
+            errors.add(ValidationError.createLocalizedWarning(formNode, "formNode.formComponentTagUnknown", undefinedComponent));
+        }
     }
 
 }

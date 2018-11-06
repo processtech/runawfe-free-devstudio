@@ -24,6 +24,7 @@ public class ValidationHashModel extends SimpleHash {
     private final List<Component> components = Lists.newArrayList();
     private final ProcessDefinition definition;
     private boolean stageRenderingParams = false;
+    private final List<String> undefinedComponentNames = Lists.newArrayList();
 
     public ValidationHashModel(ProcessDefinition definition) {
         this.definition = definition;
@@ -31,6 +32,10 @@ public class ValidationHashModel extends SimpleHash {
 
     public List<Component> getComponents() {
         return components;
+    }
+    
+    public List<String> getUndefinedComponentNames() {
+        return undefinedComponentNames;
     }
 
     private TemplateModel wrapParameter(Variable variable) throws TemplateModelException {
@@ -61,6 +66,7 @@ public class ValidationHashModel extends SimpleHash {
             }
             return new SimpleScalar("${" + variable.getName() + "}");
         }
+        undefinedComponentNames.add(key);
         return new UndefinedModel();
     }
 
