@@ -115,6 +115,12 @@ public class VariableFormatRegistry extends ArtifactRegistry<VariableFormatArtif
             }
             return Objects.equal(variable.getUserType().getName(), classNameFilter);
         }
+        if (Objects.equal(variable.getJavaClassName(), "java.util.List") && classNameFilter.contains("<")) {
+            String format = variable.getFormat();
+            String innerClassName = VariableFormatRegistry.getInstance().getArtifactNotNull(format.substring(format.indexOf('(') + 1, format.indexOf(')'))).getJavaClassName();
+            String className = "java.util.List<" + innerClassName + ">";
+            return Objects.equal(classNameFilter, className);
+        }
         return isAssignableFrom(classNameFilter, variable.getJavaClassName());
     }
 
