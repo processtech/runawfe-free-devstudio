@@ -87,6 +87,7 @@ public class FieldValidatorsWizardPage extends WizardPage implements PropertyCha
     private Map<String, Map<String, ValidatorConfig>> fieldConfigs;
     private boolean dirty;
     private Consumer<Boolean> dirtyCallback;
+    private boolean configsChanged;
 
     protected FieldValidatorsWizardPage(FormNode formNode) {
         super("Field validators");
@@ -834,24 +835,31 @@ public class FieldValidatorsWizardPage extends WizardPage implements PropertyCha
         try {
             FormType formType = FormTypeProvider.getFormType(formNode.getFormType());
             Map<String, FormVariableAccess> formVariables = formType.getFormVariableNames(formNode, formData);
+            configsChanged = false;
             formVariables.entrySet().stream().forEach(e -> {
                 if (!fieldConfigs.containsKey(e.getKey())) {
                     if (e.getValue() != FormVariableAccess.READ) {
                         fieldConfigs.put(e.getKey(), new HashMap<>());
+                        configsChanged = true;
                     }
                 } else if (e.getValue() == FormVariableAccess.READ) {
                     fieldConfigs.remove(e.getKey());
+                    configsChanged = true;
                 }
             });
             for (Iterator<String> i = fieldConfigs.keySet().iterator(); i.hasNext();) {
                 if (!formVariables.containsKey(i.next())) {
                     i.remove();
+                    configsChanged = true;
                 }
             }
             if (!variablesTableViewer.getControl().isDisposed()) {
                 variablesTableViewer.refresh(true);
             }
-            updateVariableSelection();
+            if (configsChanged) {
+                updateVariableSelection();
+                setDirty(true);
+            }
         } catch (Exception e) {
             PluginLogger.logError(e);
         }

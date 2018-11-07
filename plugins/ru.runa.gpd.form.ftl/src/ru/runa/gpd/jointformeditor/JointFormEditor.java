@@ -1,6 +1,7 @@
 package ru.runa.gpd.jointformeditor;
 
 import com.google.common.base.Charsets;
+import com.google.common.base.Strings;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.CoreException;
@@ -27,7 +28,6 @@ public class JointFormEditor extends FormEditor {
 
     public static final String ID = "ru.runa.gpd.jointformeditor";
 
-    private boolean dirty = false;
     private JavaScriptEditor jsEditor;
     private IFile validationFile;
     private ValidatorWizard wizard;
@@ -89,8 +89,8 @@ public class JointFormEditor extends FormEditor {
             globalValidatorsPage.setMarkEditorDirtyCallback(p -> setDirty(p));
 
             addPropertyListener((source, propId) -> {
-                if (propId == IEditorPart.PROP_DIRTY && !IOUtils.isEmpty(formFile)) {
-                    fieldValidatorsPage.updateConfigs(formFile);
+                if (propId == IEditorPart.PROP_DIRTY && !Strings.isNullOrEmpty(getSourceDocumentHTML())) {
+                    fieldValidatorsPage.updateConfigs(getSourceDocumentHTML().getBytes(Charsets.UTF_8));
                 }
             });
 
@@ -107,6 +107,9 @@ public class JointFormEditor extends FormEditor {
 
     @Override
     public void doSave(IProgressMonitor monitor) {
+        if (isDirty()) {
+            formNode.setDirty();
+        }
         if (jsEditor != null && fieldValidatorsPage != null && globalValidatorsPage != null) {
             jsEditor.doSave(monitor);
             wizard.performFinish();
@@ -128,11 +131,8 @@ public class JointFormEditor extends FormEditor {
         }
     }
 
-    public void setDirty(boolean dirty) {
-        if (this.dirty != dirty) {
-            this.dirty = dirty;
-            firePropertyChange(IEditorPart.PROP_DIRTY);
-        }
+    private void setDirty(boolean dirty) {
+        firePropertyChange(IEditorPart.PROP_DIRTY);
     }
 
     @Override
