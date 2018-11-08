@@ -1,5 +1,8 @@
 package ru.runa.gpd.ui.wizard;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -9,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
-
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -19,10 +21,13 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.custom.VerifyKeyListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.VerifyEvent;
+import org.eclipse.swt.events.VerifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -35,11 +40,6 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
-
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.extension.decision.GroovyTypeSupport;
@@ -208,10 +208,12 @@ public class GlobalValidatorsWizardPage extends WizardPage implements PropertyCh
 
         public DefaultValidatorInfoControl(Composite parent) {
             super(parent, false);
-            errorMessageText.addModifyListener(new ModifyListener() {
+            errorMessageText.addVerifyListener(new VerifyListener() {
                 @Override
-                public void modifyText(ModifyEvent e) {
-                    setDirty(true);
+                public void verifyText(VerifyEvent e) {
+                    if (e.keyCode != 0) {
+                        setDirty(true);
+                    }
                 }
             });
             if (formNode.getLeavingTransitions().size() > 1) {
@@ -427,10 +429,12 @@ public class GlobalValidatorsWizardPage extends WizardPage implements PropertyCh
                     FeaturedStyledText.Feature.LINE_NUMBER, FeaturedStyledText.Feature.UNDO_REDO));
             codeText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 5, 1));
             codeText.addLineStyleListener(new JavaHighlightTextStyling(contextVariableNames));
-            codeText.addModifyListener(new ModifyListener() {
+            codeText.addVerifyKeyListener(new VerifyKeyListener() {
                 @Override
-                public void modifyText(ModifyEvent e) {
-                    setDirty(true);
+                public void verifyKey(VerifyEvent e) {
+                    if (e.keyCode != 0) {
+                        setDirty(true);
+                    }
                 }
             });
         }

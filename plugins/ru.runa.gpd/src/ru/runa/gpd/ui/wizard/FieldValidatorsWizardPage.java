@@ -27,11 +27,11 @@ import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.events.VerifyEvent;
+import org.eclipse.swt.events.VerifyListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -400,10 +400,12 @@ public class FieldValidatorsWizardPage extends WizardPage implements PropertyCha
 
         public DefaultValidatorInfoControl(Composite parent) {
             super(parent, true);
-            errorMessageText.addModifyListener(new ModifyListener() {
+            errorMessageText.addVerifyListener(new VerifyListener() {
                 @Override
-                public void modifyText(ModifyEvent e) {
-                    setDirty(true);
+                public void verifyText(VerifyEvent e) {
+                    if (e.keyCode != 0) {
+                        setDirty(true);
+                    }
                 }
             });
             if (formNode.getLeavingTransitions().size() > 1) {

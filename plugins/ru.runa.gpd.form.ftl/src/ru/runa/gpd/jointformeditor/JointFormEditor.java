@@ -110,11 +110,11 @@ public class JointFormEditor extends FormEditor {
         if (isDirty()) {
             formNode.setDirty();
         }
+        super.doSave(monitor);
         if (jsEditor != null && fieldValidatorsPage != null && globalValidatorsPage != null) {
             jsEditor.doSave(monitor);
             wizard.performFinish();
         }
-        super.doSave(monitor);
     }
 
     @Override
