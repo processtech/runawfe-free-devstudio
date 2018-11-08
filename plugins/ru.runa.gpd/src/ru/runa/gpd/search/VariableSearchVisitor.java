@@ -154,6 +154,9 @@ public class VariableSearchVisitor {
             if (graphElement instanceof MessageNode) {
                 processMessagingNode(definitionFile, (MessageNode) graphElement);
             }
+            if (graphElement instanceof TaskState) {
+                processTaskNode(definitionFile, (TaskState) graphElement);
+            }
             if (graphElement instanceof MultiTaskState) {
                 processMultiTaskNode(definitionFile, (MultiTaskState) graphElement);
             }
@@ -239,6 +242,21 @@ public class VariableSearchVisitor {
         int matchesCount = findInVariableMappings(messageNode.getVariableMappings());
         if (matchesCount > 0) {
             ElementMatch elementMatch = new ElementMatch(messageNode, definitionFile);
+            elementMatch.setMatchesCount(matchesCount);
+            query.getSearchResult().addMatch(new Match(elementMatch, 0, 0));
+        }
+    }
+
+    private void processTaskNode(IFile definitionFile, TaskState state) throws Exception {
+        int matchesCount = 0;
+        if (state.getTimeOutDelay() != null && Objects.equal(query.getSearchText(), state.getTimeOutDelay().getVariableName())) {
+            matchesCount++;
+        }
+        if (state.getEscalationDelay() != null && Objects.equal(query.getSearchText(), state.getEscalationDelay().getVariableName())) {
+            matchesCount++;
+        }
+        if (matchesCount > 0) {
+            ElementMatch elementMatch = new ElementMatch(state, definitionFile);
             elementMatch.setMatchesCount(matchesCount);
             query.getSearchResult().addMatch(new Match(elementMatch, 0, 0));
         }
