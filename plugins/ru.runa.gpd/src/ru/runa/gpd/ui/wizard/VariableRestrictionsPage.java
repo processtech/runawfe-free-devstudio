@@ -168,12 +168,8 @@ public class VariableRestrictionsPage extends DynaContentWizardPage {
             } else {
                 config = validators.get(vd.getName());
             }
-            infoGroup.setConfig(getCurrentVariableName(), vd, config);
+            infoGroup.setConfig(variable != null ? variable.getName() : null, vd, config);
         }
-    }
-
-    private String getCurrentVariableName() {
-        return variable != null ? variable.getName() : null;
     }
 
     private ValidatorDefinition getCurrentDefinition() {
@@ -192,16 +188,12 @@ public class VariableRestrictionsPage extends DynaContentWizardPage {
             ValidatorDefinition variable = (ValidatorDefinition) element;
 
             switch (index) {
-            case 0: {
-                result = "";
-            }
-                break;
-            case 1: {
-                result = variable.getLabel();
-            }
-                break;
-            default:
-                result = "unknown " + index;
+            case 0: result = "";
+                    break;
+            case 1: result = variable.getLabel();
+                    break;
+            default: result = "unknown " + index;
+                    break;
             }
 
             return result;
@@ -214,29 +206,20 @@ public class VariableRestrictionsPage extends DynaContentWizardPage {
             String imagePath;
             if (validators != null) {
                 switch (columnIndex) {
-                case 0: {
-                    imagePath = validators.containsKey(definition.getName()) ? CHECKED_IMG : UNCHECKED_IMG;
-                    result = SharedImages.getImage(imagePath);
-                }
-                    break;
-                case 1: {
-                    result = null;
-                }
-                    break;
+                case 0: imagePath = validators.containsKey(definition.getName()) ? CHECKED_IMG : UNCHECKED_IMG;
+                        result = SharedImages.getImage(imagePath);
+                        break;
+                case 1: result = null;
+                        break;
                 }
             } else {
                 switch (columnIndex) {
-                case 0: {
-                    imagePath = UNCHECKED_IMG;
-                    result = SharedImages.getImage(imagePath);
+                case 0: imagePath = UNCHECKED_IMG;
+                        result = SharedImages.getImage(imagePath);
+                        break;
+                case 1: result = null;
+                        break;
                 }
-                    break;
-                case 1: {
-                    result = null;
-                }
-                    break;
-                }
-
             }
             return result;
         }
@@ -310,21 +293,6 @@ public class VariableRestrictionsPage extends DynaContentWizardPage {
                 }
             }
         }
-    }
-
-
-    abstract static class ValueComparator<V> implements Comparator<V> {
-
-        private int column;
-
-        public int getColumn() {
-            return column;
-        }
-
-        public void setColumn(int column) {
-            this.column = column;
-        }
-
     }
 
     final static class TableColumnDescription {
