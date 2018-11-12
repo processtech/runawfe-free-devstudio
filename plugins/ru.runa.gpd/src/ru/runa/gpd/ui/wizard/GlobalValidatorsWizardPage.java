@@ -81,6 +81,7 @@ public class GlobalValidatorsWizardPage extends WizardPage implements PropertyCh
     private final ValidatorDefinition globalDefinition = ValidatorDefinitionRegistry.getGlobalDefinition();
     private boolean dirty;
     private Consumer<Boolean> dirtyCallback;
+    private boolean validatorChanging;
 
     protected GlobalValidatorsWizardPage(FormNode formNode) {
         super("Global validators");
@@ -126,9 +127,14 @@ public class GlobalValidatorsWizardPage extends WizardPage implements PropertyCh
         validatorsTableViewer.addSelectionChangedListener(new LoggingSelectionChangedAdapter() {
             @Override
             protected void onSelectionChanged(SelectionChangedEvent event) throws Exception {
-                ValidatorConfig config = (ValidatorConfig) ((IStructuredSelection) validatorsTableViewer.getSelection()).getFirstElement();
-                deleteButton.setEnabled(config != null);
-                infoGroup.setConfig(ValidatorConfig.GLOBAL_FIELD_ID, globalDefinition, config);
+                try {
+                    validatorChanging = true;
+                    ValidatorConfig config = (ValidatorConfig) ((IStructuredSelection) validatorsTableViewer.getSelection()).getFirstElement();
+                    deleteButton.setEnabled(config != null);
+                    infoGroup.setConfig(ValidatorConfig.GLOBAL_FIELD_ID, globalDefinition, config);
+                } finally {
+                    validatorChanging = false;
+                }
             }
         });
 
@@ -326,7 +332,9 @@ public class GlobalValidatorsWizardPage extends WizardPage implements PropertyCh
             comboBoxOp.addModifyListener(new ModifyListener() {
                 @Override
                 public void modifyText(ModifyEvent e) {
-                    setDirty(true);
+                    if (!validatorChanging) {
+                        setDirty(true);
+                    }
                 }
             });
 
