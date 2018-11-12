@@ -3,7 +3,6 @@ package ru.runa.gpd.ui.wizard;
 import java.net.URI;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -30,7 +29,7 @@ import org.eclipse.ui.internal.ide.IIDEHelpContextIds;
 import org.eclipse.ui.internal.ide.dialogs.ProjectContentsLocationArea;
 import org.eclipse.ui.internal.ide.dialogs.ProjectContentsLocationArea.IErrorMessageReporter;
 import ru.runa.gpd.Localization;
-import ru.runa.gpd.ui.custom.TooManySpacesChecker;
+import ru.runa.gpd.ui.custom.FileNameChecker;
 
 public class NewBotStationWizardPage extends WizardPage {
     // initial value stores
@@ -310,12 +309,7 @@ public class NewBotStationWizardPage extends WizardPage {
             setMessage(IDEWorkbenchMessages.WizardNewProjectCreationPage_projectNameEmpty);
             return false;
         }
-        IStatus nameStatus = workspace.validateName(projectFieldContents, IResource.PROJECT);
-        if (!nameStatus.isOK()) {
-            setErrorMessage(nameStatus.getMessage());
-            return false;
-        }
-        if (!TooManySpacesChecker.isValid(projectNameField.getText())) {
+        if (!FileNameChecker.isValid(projectNameField.getText())) {
             setErrorMessage(Localization.getString("error.bot_station_name_not_valid"));
             return false;
         }

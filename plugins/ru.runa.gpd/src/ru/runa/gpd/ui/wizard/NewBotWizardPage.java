@@ -25,7 +25,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import ru.runa.gpd.BotCache;
 import ru.runa.gpd.Localization;
-import ru.runa.gpd.ui.custom.TooManySpacesChecker;
+import ru.runa.gpd.ui.custom.FileNameChecker;
 import ru.runa.gpd.util.IOUtils;
 
 public class NewBotWizardPage extends WizardPage {
@@ -140,8 +140,7 @@ public class NewBotWizardPage extends WizardPage {
     }
 
     private boolean isBotNameValid() {
-        return ResourcesPlugin.getWorkspace().validateName(nameText.getText(), IResource.FOLDER).isOK()
-                && TooManySpacesChecker.isValid(nameText.getText());
+        return FileNameChecker.isValid(nameText.getText());
     }
 
     private IPath getBotFolderPath() {
