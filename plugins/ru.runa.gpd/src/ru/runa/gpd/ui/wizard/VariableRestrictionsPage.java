@@ -76,9 +76,7 @@ public class VariableRestrictionsPage extends DynaContentWizardPage {
     
     @Override
     protected void createDynaContent() {
-        if (variable.getFormat() == null) {
-            variable.setFormat(formatPage.getType().getName());
-        }
+        variable.setFormat(formatPage.getType().getName());
         Label validatorsLabel = new Label(dynaComposite, SWT.NONE);
         validatorsLabel.setText(Localization.getString("FieldValidatorsWizardPage.Validators"));
         validatorsTableViewer = createTableViewer(dynaComposite, SWT.BORDER | SWT.V_SCROLL | SWT.FULL_SELECTION);
