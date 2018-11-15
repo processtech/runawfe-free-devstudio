@@ -69,6 +69,7 @@ public abstract class ProcessEditorBase extends MultiPageEditorPart implements I
     protected VariableEditorPage variablePage;
     protected VariableTypeEditorPage variableTypeEditorPage;
     protected TextEditor sourcePage;
+    protected VersionCommentPage versionCommentPage;
     private OutlineViewer outlineViewer;
 
     @Override
@@ -165,6 +166,7 @@ public abstract class ProcessEditorBase extends MultiPageEditorPart implements I
                 swimlanePage = addNewPage(new SwimlaneEditorPage(this), "DesignerEditor.title.swimlanes");
                 variablePage = addNewPage(new VariableEditorPage(this), "DesignerEditor.title.variables");
                 variableTypeEditorPage = addNewPage(new VariableTypeEditorPage(this), "VariableUserType.collection");
+                versionCommentPage = addNewPage(new VersionCommentPage(definition), "DesignerEditor.title.versionComment");
             }
             sourcePage = addNewPage(new TextEditor(), "DesignerEditor.title.source");
             ProcessDefinitionValidator.validateDefinition(definition);
