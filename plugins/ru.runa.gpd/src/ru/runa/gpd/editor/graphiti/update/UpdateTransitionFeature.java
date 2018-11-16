@@ -1,5 +1,7 @@
 package ru.runa.gpd.editor.graphiti.update;
 
+import com.google.common.base.Objects;
+import com.google.common.base.Strings;
 import org.eclipse.graphiti.features.IReason;
 import org.eclipse.graphiti.features.context.IUpdateContext;
 import org.eclipse.graphiti.features.impl.Reason;
@@ -7,10 +9,6 @@ import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
 import org.eclipse.graphiti.mm.algorithms.Text;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.ui.services.GraphitiUi;
-
-import com.google.common.base.Objects;
-import com.google.common.base.Strings;
-
 import ru.runa.gpd.editor.graphiti.GaProperty;
 import ru.runa.gpd.editor.graphiti.PropertyUtil;
 import ru.runa.gpd.editor.graphiti.StyleUtil;
@@ -84,7 +82,7 @@ public class UpdateTransitionFeature extends UpdateFeature {
         GraphicsAlgorithm colorMarkerGa = PropertyUtil.findGaRecursiveByName(pe, GaProperty.TRANSITION_COLOR_MARKER);
         if (colorMarkerGa != null) {
             colorMarkerGa.setStyle(StyleUtil.getTransitionColorMarkerStyle(getDiagram(), transition, transition.getColor()));
-            colorMarkerGa.setWidth((int) (colorMarkerGa.getStyle().getFont().getSize() * 2));
+            colorMarkerGa.setWidth(colorMarkerGa.getStyle().getFont().getSize() * 2);
             colorMarkerGa.setHeight((int) (colorMarkerGa.getStyle().getFont().getSize() * 1.75));
             colorMarkerGa.setY(nameTextGa.getY());
             colorMarkerGa.setX(nameTextGa.getX() - colorMarkerGa.getWidth() - 1);

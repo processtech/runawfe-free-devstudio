@@ -4,6 +4,7 @@ import org.eclipse.graphiti.features.context.ICustomContext;
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.lang.model.Delegable;
+import ru.runa.gpd.lang.model.bpmn.ExclusiveGateway;
 import ru.runa.gpd.ui.dialog.ChooseHandlerClassDialog;
 
 public class DoubleClickDelegableFeature extends DoubleClickElementFeature {
@@ -28,6 +29,9 @@ public class DoubleClickDelegableFeature extends DoubleClickElementFeature {
             String newConfig = provider.showConfigurationDialog(delegable);
             if (newConfig != null) {
                 delegable.setDelegationConfiguration(newConfig);
+                if (delegable instanceof ExclusiveGateway) {
+                    getDiagramBehavior().refreshContent();
+                }
             }
         }
     }

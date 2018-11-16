@@ -1,23 +1,21 @@
 package ru.runa.gpd.lang;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import org.dom4j.Document;
-import org.dom4j.Element;
-import org.dom4j.QName;
-import org.eclipse.core.resources.IFile;
-
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import org.dom4j.Document;
+import org.dom4j.Element;
+import org.dom4j.QName;
+import org.eclipse.core.resources.IFile;
 import ru.runa.gpd.Application;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.PropertyNames;
+import ru.runa.gpd.editor.graphiti.TransitionUtil;
 import ru.runa.gpd.lang.model.ActionImpl;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.Describable;
@@ -871,6 +869,7 @@ public class BpmnSerializer extends ProcessSerializer {
             }
             source.addLeavingTransition(transition);
         }
+        definition.getChildren(ExclusiveGateway.class).stream().forEach(eg -> TransitionUtil.setDefaultFlow(eg, eg.getDelegationConfiguration()));
         for (Map.Entry<Swimlane, List<String>> entry : swimlaneElementIds.entrySet()) {
             for (String nodeId : entry.getValue()) {
                 definition.getGraphElementByIdNotNull(nodeId).setParentContainer(entry.getKey());
