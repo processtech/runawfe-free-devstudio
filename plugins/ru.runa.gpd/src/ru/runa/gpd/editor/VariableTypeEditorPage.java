@@ -1,9 +1,14 @@
 package ru.runa.gpd.editor;
 
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.base.Objects;
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import java.beans.PropertyChangeEvent;
 import java.util.List;
 import java.util.Map;
-
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -26,7 +31,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.ide.IDE;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.clipboard.VariableTransfer;
@@ -52,13 +56,6 @@ import ru.runa.gpd.ui.wizard.CompactWizardDialog;
 import ru.runa.gpd.ui.wizard.VariableWizard;
 import ru.runa.gpd.util.VariableUtils;
 import ru.runa.gpd.util.WorkspaceOperations;
-
-import com.google.common.base.Function;
-import com.google.common.base.Joiner;
-import com.google.common.base.Objects;
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
 
@@ -628,7 +625,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
                 for (Variable variable : getDefinition().getVariables(false, false, getSelection().getName())) {
                     String name = variable.getName() + VariableUserType.DELIM + suffix;
                     variableFormNodesMapping.put(name,
-                            ParContentProvider.getFormsWhereVariableUsed(editor.getDefinitionFile(), getDefinition(), name));
+                            ParContentProvider.getFormsWhereVariableMentioned(editor.getDefinitionFile(), getDefinition(), name));
                 }
                 StringBuilder formNames = new StringBuilder(Localization.getString("Variable.ExistInForms")).append("\n");
                 if (variableFormNodesMapping.size() > 0) {

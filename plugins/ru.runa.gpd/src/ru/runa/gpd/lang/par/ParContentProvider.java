@@ -4,12 +4,11 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.stream.Collectors;
 import org.dom4j.Document;
 import org.dom4j.io.OutputFormat;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
-
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.ProcessDefinition;
@@ -108,6 +107,16 @@ public class ParContentProvider {
             }
         }
         return result;
+    }
+
+    public static List<FormNode> getFormsWhereVariableMentioned(IFile definitionFile, ProcessDefinition definition, String variableName) {
+        return definition.getChildren(FormNode.class).stream().filter(formNode -> {
+            if (formNode.hasFormValidation()) {
+                return formNode.getValidation(definitionFile).getVariableNames().stream().filter(varName -> varName.startsWith(variableName))
+                        .collect(Collectors.toList()).size() > 0;
+            }
+            return false;
+        }).collect(Collectors.toList());
     }
 
     public static void rewriteFormValidationsRemoveVariable(IFile definitionFile, List<FormNode> formNodes, String variableName) {
