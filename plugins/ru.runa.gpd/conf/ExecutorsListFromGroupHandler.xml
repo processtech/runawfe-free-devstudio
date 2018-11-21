@@ -3,6 +3,6 @@
     <param name="group" formatFilter="ru.runa.wfe.user.Group;java.lang.String" label.key="Param.Group" />
   </input>
   <output>
-    <param name="executors" formatFilter="java.util.List&#60;ru.runa.wfe.user.Executor&#62;" label.key="Param.Result" />
+    <param name="executors" formatFilter="java.util.List(ru.runa.wfe.user.Executor)" label.key="Param.Result" />
   </output>
 </config>
