@@ -1,22 +1,39 @@
+<div class="title"><strong>Регламент выполнения бизнес-процесса ${processName}</strong></div>
+
+<#if processDescription ?? || processHtmlDescription ??>
+	<div><strong>Общее описание бизнес-процесса</strong></div>
+</#if>
+
+<#if processDescription ?? >
+    <div><strong>Краткое описание бизнес-процесса:</strong>
+    ${processDescription} </div>
+</#if>
+
+<#if processHtmlDescription ?? >
+    <div><strong>Подробное описание бизнес-процесса:</strong> 
+    ${processHtmlDescription}</div>
+</#if>
+
 <div class="swimlanes">
-	<strong>Список ролей бизнес-процесса: </strong>
+	<strong>Список ролей бизнес-процесса:</strong>
 	<#list swimlanes as swimlane>
 		<div class="swimlanesNames">${swimlane.getName()}</div>
 	</#list>
 </div>
 <div class="variables">
-	<strong>Список переменных бизнес-процесса: </strong>
+	<strong>Список переменных бизнес-процесса:</strong>
 	<#list variables as variable>
 		<div class="variablesNames">${variable.getName()}</div>
 	</#list>
 	
 </div>
 <div class="nodes">
-	<strong>Описание действий бизнес-процесса: </strong>
+	<strong>Описание действий бизнес-процесса:</strong>
 	<#list nodeModels as model>
 		<#if model.node.class.simpleName != "EndState" && model.node.class.simpleName != "EndTokenState">
-		<div id="${model.node.id}" class="node ${model.node.typeDefinition.bpmnElementName}">
+		<div class="node ${model.node.typeDefinition.bpmnElementName}">
 			<div class="header">
+				<a name="${model.node.id}"></a>
 				<span class="step">Шаг:</span>
 				<span class="name">${model.node.name}</span>
 			</div>
