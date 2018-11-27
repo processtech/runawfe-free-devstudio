@@ -1,5 +1,13 @@
 package ru.runa.gpd.formeditor.ftl.validation;
 
+import com.google.common.collect.Lists;
+
+import freemarker.template.SimpleHash;
+import freemarker.template.SimpleScalar;
+import freemarker.template.TemplateMethodModel;
+import freemarker.template.TemplateModel;
+import freemarker.template.TemplateModelException;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,14 +18,6 @@ import ru.runa.gpd.formeditor.ftl.ComponentTypeRegistry;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.util.VariableUtils;
-
-import com.google.common.collect.Lists;
-
-import freemarker.template.SimpleHash;
-import freemarker.template.SimpleScalar;
-import freemarker.template.TemplateMethodModel;
-import freemarker.template.TemplateModel;
-import freemarker.template.TemplateModelException;
 
 public class ValidationHashModel extends SimpleHash {
     private static final long serialVersionUID = 1L;

@@ -3,16 +3,15 @@ package ru.runa.gpd.formeditor.ftl;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
-import java.text.MessageFormat;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import org.apache.commons.lang.StringEscapeUtils;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
-import ru.runa.gpd.Localization;
+
 import ru.runa.gpd.util.EventSupport;
 
 public class Component extends EventSupport implements IPropertySource {
@@ -86,10 +85,6 @@ public class Component extends EventSupport implements IPropertySource {
             } else {
                 setParameterValue(parameter, value);
             }
-        }
-        if (parameterValues.size() != args.size() && !parameterValues.get(0).equals("")) {
-            MessageDialog.openInformation(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Localization.getString("ExcessiveParameters_1"), 
-                    MessageFormat.format(Localization.getString("ExcessiveParameters_2"), type));
         }
     }
 
