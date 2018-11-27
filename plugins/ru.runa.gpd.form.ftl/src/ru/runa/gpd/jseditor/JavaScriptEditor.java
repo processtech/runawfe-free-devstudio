@@ -50,6 +50,7 @@ import ru.runa.gpd.htmleditor.HTMLProjectParams;
 import ru.runa.gpd.htmleditor.editors.FoldingInfo;
 import ru.runa.gpd.htmleditor.editors.SoftTabVerifyListener;
 import ru.runa.gpd.util.TemplateUtils;
+import ru.runa.gpd.util.WorkspaceOperations;
 
 public class JavaScriptEditor extends TextEditor {
 
@@ -190,27 +191,23 @@ public class JavaScriptEditor extends TextEditor {
     public void dispose() {
         if (getEditorInput() instanceof IFileEditorInput) {
             try {
-                ResourcesPlugin.getWorkspace().run(new IWorkspaceRunnable() {
-                    @Override
-                    public void run(IProgressMonitor monitor) throws CoreException {
-                        try {
-                            IFileEditorInput input = (IFileEditorInput) getEditorInput();
-                            HTMLProjectParams params = new HTMLProjectParams(input.getFile().getProject());
-                            if (params.getRemoveMarkers()) {
-                                input.getFile().deleteMarkers(IMarker.PROBLEM, false, 0);
-                            }
-                            IFile file = input.getFile();
-                            try (InputStream is = file.getContents();) {
-                                if (TemplateUtils.getFormTemplateAsString().equals(CharStreams.toString(new InputStreamReader(is, Charsets.UTF_8)))) {
-                                    is.close();
-                                    file.delete(true, monitor);
+                IFile script = ((IFileEditorInput) getEditorInput()).getFile();
+                try (InputStream is = script.getContents()) {
+                    if (TemplateUtils.getFormTemplateAsString().equals(CharStreams.toString(new InputStreamReader(is, Charsets.UTF_8)))) {
+                        is.close();
+                        script.setSessionProperty(WorkspaceOperations.PROPERTY_FILE_WILL_BE_DELETED_SHORTLY, Boolean.TRUE);
+                        WorkspaceOperations.job("Java script editor disposing", (p) -> {
+                            try {
+                                if (new HTMLProjectParams(script.getProject()).getRemoveMarkers()) {
+                                    script.deleteMarkers(IMarker.PROBLEM, false, 0);
                                 }
+                                script.delete(true, null);
+                            } catch (Exception e) {
+                                PluginLogger.logError(e);
                             }
-                        } catch (Exception e) {
-                            PluginLogger.logError(e);
-                        }
+                        });
                     }
-                }, null);
+                }
             } catch (Exception e) {
                 PluginLogger.logError(e);
             }

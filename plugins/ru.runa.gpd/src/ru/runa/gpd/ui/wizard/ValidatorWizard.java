@@ -4,10 +4,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IWorkspaceRunnable;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -21,6 +18,7 @@ import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.lang.model.FormNode;
+import ru.runa.gpd.util.WorkspaceOperations;
 import ru.runa.gpd.validation.FormNodeValidation;
 import ru.runa.gpd.validation.ValidationUtil;
 import ru.runa.gpd.validation.ValidatorConfig;
@@ -87,15 +85,17 @@ public class ValidatorWizard extends Wizard {
     public void dispose() {
         if (validation.getVariableNames().isEmpty()) {
             try {
-                ResourcesPlugin.getWorkspace().run(new IWorkspaceRunnable() {
-                    @Override
-                    public void run(IProgressMonitor monitor) throws CoreException {
-                        validationFile.delete(true, null);
-                    }
-                }, null);
+                validationFile.setSessionProperty(WorkspaceOperations.PROPERTY_FILE_WILL_BE_DELETED_SHORTLY, Boolean.TRUE);
             } catch (CoreException e) {
                 PluginLogger.logError(e);
             }
+            WorkspaceOperations.job("Validation editor disposing", (p) -> {
+                try {
+                    validationFile.delete(true, null);
+                } catch (CoreException e) {
+                    PluginLogger.logError(e);
+                }
+            });
         }
         super.dispose();
     }

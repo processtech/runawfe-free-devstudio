@@ -189,7 +189,7 @@ public class QuickJointFormEditor extends MultiPageEditorPart {
             rewriteFormsXml = true;
         }
         if (!((IFileEditorInput) jsEditor.getEditorInput()).exists()) {
-            formNode.setScriptFileNameSoftly(null);
+            formNode.setScriptFileNameSoftly("");
             rewriteFormsXml = true;
         }
         if (rewriteFormsXml) {

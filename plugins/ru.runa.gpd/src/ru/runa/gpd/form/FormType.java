@@ -4,13 +4,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
-
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.search.VariableSearchVisitor;
@@ -93,15 +91,18 @@ public abstract class FormType {
     }
 
     public MultiTextEdit searchVariableReplacementsInScript(IFile file, String variableName, String replacement) throws Exception {
-        String text = IOUtils.readStream(file.getContents());
-        Pattern pattern = Pattern.compile(String.format(VariableSearchVisitor.REGEX_SCRIPT_VARIABLE, Pattern.quote(variableName)));
-        Matcher matcher = pattern.matcher(text);
         MultiTextEdit multiEdit = new MultiTextEdit();
-        int len = variableName.length();
-        while (matcher.find()) {
-            ReplaceEdit replaceEdit = new ReplaceEdit(matcher.start(), len, replacement);
-            replaceEdit = new ReplaceEdit(replaceEdit.getOffset() + text.substring(replaceEdit.getOffset()).indexOf(variableName), len, replacement);
-            multiEdit.addChild(replaceEdit);
+        if (file.exists()) {
+            String text = IOUtils.readStream(file.getContents());
+            Pattern pattern = Pattern.compile(String.format(VariableSearchVisitor.REGEX_SCRIPT_VARIABLE, Pattern.quote(variableName)));
+            Matcher matcher = pattern.matcher(text);
+            int len = variableName.length();
+            while (matcher.find()) {
+                ReplaceEdit replaceEdit = new ReplaceEdit(matcher.start(), len, replacement);
+                replaceEdit = new ReplaceEdit(replaceEdit.getOffset() + text.substring(replaceEdit.getOffset()).indexOf(variableName), len,
+                        replacement);
+                multiEdit.addChild(replaceEdit);
+            }
         }
         return multiEdit;
     }

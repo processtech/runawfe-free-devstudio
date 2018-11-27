@@ -22,6 +22,7 @@ import ru.runa.gpd.ui.wizard.GlobalValidatorsWizardPage;
 import ru.runa.gpd.ui.wizard.ValidatorWizard;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.TemplateUtils;
+import ru.runa.gpd.util.WorkspaceOperations;
 import ru.runa.gpd.validation.ValidationUtil;
 
 public class JointFormEditor extends FormEditor {
@@ -146,16 +147,21 @@ public class JointFormEditor extends FormEditor {
             formNode.setFormFileNameSoftly("");
             rewriteFormsXml = true;
         }
-        if (!validationFile.exists()) {
-            formNode.setValidationFileNameSoftly("");
-            rewriteFormsXml = true;
-        }
-        if (!((IFileEditorInput) jsEditor.getEditorInput()).exists()) {
-            formNode.setScriptFileNameSoftly(null);
-            rewriteFormsXml = true;
+        try {
+            if (!validationFile.exists() || validationFile.getSessionProperty(WorkspaceOperations.PROPERTY_FILE_WILL_BE_DELETED_SHORTLY) != null) {
+                formNode.setValidationFileNameSoftly("");
+                rewriteFormsXml = true;
+            }
+            IFile script = ((IFileEditorInput) jsEditor.getEditorInput()).getFile();
+            if (!script.exists() || script.getSessionProperty(WorkspaceOperations.PROPERTY_FILE_WILL_BE_DELETED_SHORTLY) != null) {
+                formNode.setScriptFileNameSoftly("");
+                rewriteFormsXml = true;
+            }
+        } catch (CoreException e) {
+            PluginLogger.logError(e);
         }
         if (rewriteFormsXml) {
-            IOUtils.saveFormsXml(formNode, formFile);
+            WorkspaceOperations.job("Form rewriting", (p) -> IOUtils.saveFormsXml(formNode, formFile));
         }
     }
 

@@ -276,7 +276,7 @@ public abstract class FormNode extends SwimlanedNode {
     }
 
     public void setScriptFileNameSoftly(String scriptFile) {
-        this.scriptFileName = scriptFile;
+        this.scriptFileName = scriptFile.trim();
     }
 
     public void setValidationFileNameSoftly(String validationFile) {
