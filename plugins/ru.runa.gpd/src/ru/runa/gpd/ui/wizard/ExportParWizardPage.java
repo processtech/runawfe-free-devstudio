@@ -310,7 +310,7 @@ public class ExportParWizardPage extends WizardArchiveFileResourceExportPage1 {
             exporter.write(fileResource, destinationName);
         }
 
-        protected void exportResources(IProgressMonitor progressMonitor) throws InvocationTargetException {
+        protected void exportResources(IProgressMonitor progressMonitor) {
             try {
                 ParFileExporter exporter = new ParFileExporter(outputStream);
                 for (IFile resource : resourcesToExport) {
@@ -319,7 +319,7 @@ public class ExportParWizardPage extends WizardArchiveFileResourceExportPage1 {
                 exporter.finished();
                 outputStream.flush();
             } catch (Exception e) {
-                throw new InvocationTargetException(e);
+                throw Throwables.propagate(e);
             }
         }
 
@@ -340,19 +340,10 @@ public class ExportParWizardPage extends WizardArchiveFileResourceExportPage1 {
         }
 
         @Override
-        public void run(final IProgressMonitor progressMonitor) throws InvocationTargetException, InterruptedException {
+        public void run(final IProgressMonitor progressMonitor) {
             exportResources(progressMonitor);
             final ByteArrayOutputStream baos = (ByteArrayOutputStream) outputStream;
-            try {
-                Display.getDefault().syncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        WFEServerProcessDefinitionImporter.getInstance().uploadPar(definitionName, updateLatestVersion, baos.toByteArray(), true);
-                    }
-                });
-            } catch (Exception e) {
-                throw new InvocationTargetException(e);
-            }
+            WFEServerProcessDefinitionImporter.getInstance().uploadPar(definitionName, updateLatestVersion, baos.toByteArray(), true);
         }
     }
 
