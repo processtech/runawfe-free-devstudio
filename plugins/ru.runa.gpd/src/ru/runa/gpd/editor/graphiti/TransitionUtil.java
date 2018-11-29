@@ -12,6 +12,7 @@ import ru.runa.gpd.settings.PrefConstants;
 public abstract class TransitionUtil {
 
     private final static String exclusiveGateway = "exclusiveGateway";
+    private final static String asterisk = "*";
 
     public static boolean markDefaultTransition() {
         return Activator
@@ -37,8 +38,8 @@ public abstract class TransitionUtil {
                             name = name.trim();
                             if (!Strings.isNullOrEmpty(name)) {
                                 int nameLength = name.length();
-                                if (name.startsWith("*")) {
-                                    if (name.endsWith("*")) {
+                                if (name.startsWith(asterisk)) {
+                                    if (name.endsWith(asterisk)) {
                                         if (nameLength > 2) {
                                             defaultTransition = transitionName.contains(name.substring(1, nameLength - 1));
                                         }
@@ -47,7 +48,7 @@ public abstract class TransitionUtil {
                                             defaultTransition = transitionName.endsWith(name.substring(1));
                                         }
                                     }
-                                } else if (name.endsWith("*")) {
+                                } else if (name.endsWith(asterisk)) {
                                     if (nameLength > 2) {
                                         defaultTransition = transitionName.startsWith(name.substring(0, nameLength - 1));
                                     }
