@@ -622,13 +622,13 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
                 Map<String, List<FormNode>> variableFormNodesMapping = Maps.newHashMap();
                 String suffix = attribute.getName();
                 // TODO recursion will not work
-                for (Variable variable : getDefinition().getVariables(false, false, getSelection().getName())) {
-                    String name = variable.getName() + VariableUserType.DELIM + suffix;
-                    variableFormNodesMapping.put(name,
-                            ParContentProvider.getFormsWhereVariableMentioned(editor.getDefinitionFile(), getDefinition(), name));
+                for (Variable variable : VariableUtils.findVariablesOfTypeWithAttributeExpanded(getDefinition(), getSelection(), attribute)) {
+                    variableFormNodesMapping.put(variable.getName(),
+                            ParContentProvider.getFormsWhereUserTypeAttributeUsed(editor.getDefinitionFile(), getDefinition(), getSelection(),
+                                    attribute));
                 }
-                StringBuilder formNames = new StringBuilder(Localization.getString("Variable.ExistInForms")).append("\n");
                 if (variableFormNodesMapping.size() > 0) {
+                    StringBuilder formNames = new StringBuilder(Localization.getString("Variable.ExistInForms")).append("\n");
                     for (Map.Entry<String, List<FormNode>> entry : variableFormNodesMapping.entrySet()) {
                         if (entry.getValue().size() > 0) {
                             formNames.append(" ").append(entry.getKey()).append("\n");
