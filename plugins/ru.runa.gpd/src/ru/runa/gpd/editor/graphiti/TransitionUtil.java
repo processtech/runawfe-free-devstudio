@@ -26,7 +26,7 @@ public abstract class TransitionUtil {
             String defaultTransitionNames = Activator.getPrefString(
                     LanguageElementPreferenceNode.getBpmnPropertyName(exclusiveGateway, PrefConstants.P_BPMN_DEFAULT_TRANSITION_NAMES));
             if (!Strings.isNullOrEmpty(defaultTransitionNames)) {
-                String[] names = defaultTransitionNames.trim().split(";");
+                String[] names = defaultTransitionNames.split(";");
                 nextTransition:
                 for (Transition transition : leavingTransitions) {
                     if (defaultTransition) {
@@ -35,7 +35,6 @@ public abstract class TransitionUtil {
                     } else {
                         String transitionName = transition.getName();
                         for (String name : names) {
-                            name = name.trim();
                             if (!Strings.isNullOrEmpty(name)) {
                                 int nameLength = name.length();
                                 if (name.startsWith(asterisk)) {

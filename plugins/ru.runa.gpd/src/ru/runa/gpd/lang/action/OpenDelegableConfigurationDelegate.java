@@ -1,6 +1,8 @@
 package ru.runa.gpd.lang.action;
 
 import org.eclipse.jface.action.IAction;
+import org.eclipse.ui.PlatformUI;
+import ru.runa.gpd.editor.graphiti.GraphitiProcessEditor;
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.lang.model.Delegable;
@@ -17,6 +19,8 @@ public class OpenDelegableConfigurationDelegate extends BaseModelActionDelegate 
             delegable.setDelegationConfiguration(newConfig);
             if (delegable instanceof ExclusiveGateway) {
                 getActiveDesignerEditor().getDiagramEditorPage().getDiagramBehavior().refreshContent();
+                ((GraphitiProcessEditor) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor())
+                        .getDiagramEditorPage().refreshConnections();
             }
         }
     }
