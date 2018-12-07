@@ -248,6 +248,7 @@ public class BpmnSerializer extends ProcessSerializer {
         List<CatchEventNode> catchEventNodes = definition.getChildren(CatchEventNode.class);
         for (CatchEventNode catchEventNode : catchEventNodes) {
             writeEventNode(processElement, catchEventNode);
+            writeBoundaryEvents(processElement, catchEventNode);
             writeBoundaryTimer(processElement, catchEventNode);
         }
         List<EndTokenState> endTokenStates = definition.getChildren(EndTokenState.class);
