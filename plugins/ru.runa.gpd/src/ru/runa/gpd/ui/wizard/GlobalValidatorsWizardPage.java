@@ -288,7 +288,6 @@ public class GlobalValidatorsWizardPage extends WizardPage implements PropertyCh
             super(parent, style);
 
             tabFolder = new TabFolder(this, SWT.NULL);
-            tabFolder.setLayout(new GridLayout(2, true));
             tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
             tabFolder.addSelectionListener(new LoggingSelectionAdapter() {
                 @Override

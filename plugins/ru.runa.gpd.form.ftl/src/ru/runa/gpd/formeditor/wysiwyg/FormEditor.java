@@ -395,6 +395,9 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
                 throw new InternalApplicationException(Messages.getString("wysiwyg.design.save_error"));
             }
         }
+        if (getActivePage() == 1) {
+            syncEditor2Browser();
+        }
         sourceEditor.doSave(monitor);
         if (isBrowserLoaded()) {
             browser.execute("setHTMLSaved()");

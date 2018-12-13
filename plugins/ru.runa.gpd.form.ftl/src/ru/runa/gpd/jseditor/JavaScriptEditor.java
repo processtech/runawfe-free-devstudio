@@ -192,20 +192,22 @@ public class JavaScriptEditor extends TextEditor {
         if (getEditorInput() instanceof IFileEditorInput) {
             try {
                 IFile script = ((IFileEditorInput) getEditorInput()).getFile();
-                try (InputStream is = script.getContents()) {
-                    if (TemplateUtils.getFormTemplateAsString().equals(CharStreams.toString(new InputStreamReader(is, Charsets.UTF_8)))) {
-                        is.close();
-                        script.setSessionProperty(WorkspaceOperations.PROPERTY_FILE_WILL_BE_DELETED_SHORTLY, Boolean.TRUE);
-                        WorkspaceOperations.job("Java script editor disposing", (p) -> {
-                            try {
-                                if (new HTMLProjectParams(script.getProject()).getRemoveMarkers()) {
-                                    script.deleteMarkers(IMarker.PROBLEM, false, 0);
+                if (script.exists()) {
+                    try (InputStream is = script.getContents()) {
+                        if (TemplateUtils.getFormTemplateAsString().equals(CharStreams.toString(new InputStreamReader(is, Charsets.UTF_8)))) {
+                            is.close();
+                            script.setSessionProperty(WorkspaceOperations.PROPERTY_FILE_WILL_BE_DELETED_SHORTLY, Boolean.TRUE);
+                            WorkspaceOperations.job("Java script editor disposing", (p) -> {
+                                try {
+                                    if (new HTMLProjectParams(script.getProject()).getRemoveMarkers()) {
+                                        script.deleteMarkers(IMarker.PROBLEM, false, 0);
+                                    }
+                                    script.delete(true, null);
+                                } catch (Exception e) {
+                                    PluginLogger.logError(e);
                                 }
-                                script.delete(true, null);
-                            } catch (Exception e) {
-                                PluginLogger.logError(e);
-                            }
-                        });
+                            });
+                        }
                     }
                 }
             } catch (Exception e) {
@@ -380,6 +382,11 @@ public class JavaScriptEditor extends TextEditor {
                 HTMLPlugin.logException(e);
             }
         }
+    }
+
+    @Override
+    protected void performSaveAs(IProgressMonitor progressMonitor) {
+        // Do nothing
     }
 
 }
