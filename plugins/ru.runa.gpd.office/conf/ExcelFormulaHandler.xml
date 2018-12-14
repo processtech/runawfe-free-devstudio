@@ -1,0 +1,8 @@
+<config>
+  <input>
+    <param name="source" formatFilter="ru.runa.wfe.var.FileVariable" label.key="Param.InputFile" />
+  </input>
+  <output>
+    <param name="outputFile" formatFilter="ru.runa.wfe.var.FileVariable" label.key="Param.OutputFile" />
+  </output>
+</config>
