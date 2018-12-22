@@ -235,9 +235,11 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
             List<IFile> affectedFiles = Lists.newArrayList();
             Change[] changes = refactoring.createChange(null).getChildren();
             for (Change change : changes) {
-                for (Object o : change.getAffectedObjects()) {
-                    if (o instanceof IFile) {
-                        affectedFiles.add((IFile) o);
+                if (change.getAffectedObjects() != null) {
+                    for (Object o : change.getAffectedObjects()) {
+                        if (o instanceof IFile) {
+                            affectedFiles.add((IFile) o);
+                        }
                     }
                 }
             }
