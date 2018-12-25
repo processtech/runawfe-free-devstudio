@@ -13,6 +13,6 @@ public class CreateTimerFeature extends CreateElementFeature {
             return true;
         }
         GraphElement parentObject = (GraphElement) getBusinessObjectForPictogramElement(context.getTargetContainer());
-        return parentObject instanceof ITimed && parentObject.getChildren(Timer.class).isEmpty();
+        return parentObject instanceof ITimed && parentObject.getChildrenRecursive(Timer.class).isEmpty() && parentObject.getParent().getId() == null;
     }
 }
