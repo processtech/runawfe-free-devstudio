@@ -2,13 +2,11 @@ package ru.runa.gpd.formeditor;
 
 import java.util.List;
 import java.util.Map;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
-
 import ru.runa.gpd.form.FormVariableAccess;
 import ru.runa.gpd.formeditor.ftl.Component;
 import ru.runa.gpd.formeditor.ftl.TemplateProcessor;
@@ -42,11 +40,14 @@ public class FtlFormType extends BaseHtmlFormType {
         TemplateProcessor.process(formNode.getProcessDefinition().getName() + formNode.getId(), formData, model);
         for (Component component : model.getComponents()) {
             IComponentValidator validator = component.getType().getValidator();
-            List<ValidationError> list = validator.validate(formNode, component, formData);
+            List<ValidationError> list = validator.validate(formNode, component);
             errors.addAll(list);
         }
-        for (String undefinedComponent : model.getUndefinedComponentNames()) {
-            errors.add(ValidationError.createLocalizedWarning(formNode, "formNode.formComponentTagUnknown", undefinedComponent));
+        for (String undefinedComponentName : model.getUndefinedComponentNames()) {
+            errors.add(ValidationError.createLocalizedWarning(formNode, "formNode.formComponentUnknown", undefinedComponentName));
+        }
+        for (String undefinedVariableName : model.getUndefinedVariableNames()) {
+            errors.add(ValidationError.createLocalizedWarning(formNode, "formNode.formVariableDoesNotExist", undefinedVariableName));
         }
     }
 

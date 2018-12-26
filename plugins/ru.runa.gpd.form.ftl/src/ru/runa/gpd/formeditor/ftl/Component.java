@@ -3,15 +3,12 @@ package ru.runa.gpd.formeditor.ftl;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import org.apache.commons.lang.StringEscapeUtils;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
-
 import ru.runa.gpd.util.EventSupport;
 
 public class Component extends EventSupport implements IPropertySource {
@@ -19,6 +16,7 @@ public class Component extends EventSupport implements IPropertySource {
     private final int id;
     private final ComponentType type;
     private final List<Object> parameterValues = Lists.newArrayList();
+    private boolean excessiveParametersFound = false;
 
     public Component(ComponentType type, int id) {
         this.type = type;
@@ -40,6 +38,10 @@ public class Component extends EventSupport implements IPropertySource {
 
     public int getId() {
         return id;
+    }
+
+    public boolean isExcessiveParametersFound() {
+        return excessiveParametersFound;
     }
 
     public Object getParameterValue(ComponentParameter parameter) {
@@ -78,6 +80,7 @@ public class Component extends EventSupport implements IPropertySource {
             String value = args.get(i).toString();
             ComponentParameter parameter = type.getParameterOrLastMultiple(i);
             if (parameter == null) {
+                excessiveParametersFound = true;
                 continue;
             }
             if (parameter.getType().isMultiple()) {
