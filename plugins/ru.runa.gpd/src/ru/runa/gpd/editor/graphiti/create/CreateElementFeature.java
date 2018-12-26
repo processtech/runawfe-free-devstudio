@@ -20,6 +20,7 @@ import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.SwimlanedNode;
+import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 
 public class CreateElementFeature extends AbstractCreateFeature implements GEFConstants {
     public static final String CONNECTION_PROPERTY = "connectionContext";
@@ -86,18 +87,21 @@ public class CreateElementFeature extends AbstractCreateFeature implements GEFCo
         if (graphElement instanceof SwimlanedNode) {
             ((SwimlanedNode) graphElement).setSwimlane(swimlane);
         }
-        parent.addChild(graphElement);
-        CreateConnectionContext connectionContext = (CreateConnectionContext) context.getProperty(CONNECTION_PROPERTY);
-        setLocationAndSize(graphElement, (CreateContext) context, connectionContext);
-        PictogramElement element = addGraphicalRepresentation(context, graphElement);
-        if (connectionContext != null && graphElement instanceof Node) {
-            connectionContext.setTargetPictogramElement(element);
-            connectionContext.setTargetAnchor(Graphiti.getPeService().getChopboxAnchor((AnchorContainer) element));
-            CreateTransitionFeature createTransitionFeature = new CreateTransitionFeature();
-            createTransitionFeature.setFeatureProvider(featureProvider);
-            createTransitionFeature.create(connectionContext);
+        if (!(parent instanceof IBoundaryEventContainer) || parent.getChildren(graphElement.getClass()).size() < 1) {
+            parent.addChild(graphElement);
+            CreateConnectionContext connectionContext = (CreateConnectionContext) context.getProperty(CONNECTION_PROPERTY);
+            setLocationAndSize(graphElement, (CreateContext) context, connectionContext);
+            PictogramElement element = addGraphicalRepresentation(context, graphElement);
+            if (connectionContext != null && graphElement instanceof Node) {
+                connectionContext.setTargetPictogramElement(element);
+                connectionContext.setTargetAnchor(Graphiti.getPeService().getChopboxAnchor((AnchorContainer) element));
+                CreateTransitionFeature createTransitionFeature = new CreateTransitionFeature();
+                createTransitionFeature.setFeatureProvider(featureProvider);
+                createTransitionFeature.create(connectionContext);
+            }
+            return new Object[] { graphElement };
         }
-        return new Object[] { graphElement };
+        return null;
     }
 
     private void setLocationAndSize(GraphElement element, CreateContext context, CreateConnectionContext connectionContext) {
@@ -120,6 +124,5 @@ public class CreateElementFeature extends AbstractCreateFeature implements GEFCo
             context.setWidth(defaultSize.width);
         }
         element.setConstraint(new Rectangle(context.getX(), context.getY(), context.getWidth(), context.getHeight()));
-
     }
 }
