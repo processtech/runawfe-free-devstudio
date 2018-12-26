@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.SWTGraphics;
@@ -24,7 +23,6 @@ import org.eclipse.swt.graphics.ImageLoader;
 import org.eclipse.swt.graphics.PaletteData;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
-
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 
@@ -100,6 +98,8 @@ public class GEFImageHelper {
                     } else {
                         r.x = 0;
                     }
+                } else if (r.x >= -BPMN_CANVAS_SHIFT && r.x < 0) {
+                    r.x = 0;
                 }
                 if (yVisual != null) {
                     if (isConnectionLabel(yVisual)) {
@@ -109,6 +109,8 @@ public class GEFImageHelper {
                     } else {
                         r.y = 0;
                     }
+                } else if (r.y >= -BPMN_CANVAS_SHIFT && r.y < 0) {
+                    r.y = 0;
                 }
             }
             definition.setConstraint(r);
