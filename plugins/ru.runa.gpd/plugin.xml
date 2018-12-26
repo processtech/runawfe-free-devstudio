@@ -1113,7 +1113,7 @@
             bpmn="process"
             hasPreferencePage="false"
             jpdl="process-definition"
-            label="process definition"
+            label="%label.processDefinition"
             model="ru.runa.gpd.lang.model.ProcessDefinition"
             type="definition">
          <gef 
