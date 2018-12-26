@@ -5,6 +5,8 @@ import java.util.List;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.GraphicalViewer;
+import org.eclipse.gef.Request;
+import org.eclipse.gef.RequestConstants;
 import org.eclipse.gef.internal.GEFMessages;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -62,7 +64,7 @@ public class SelectAllAction extends Action {
 
     private void addEditPartChildren(EditPart parent, List<EditPart> selection) {
         for (EditPart childPart : (List<EditPart>) parent.getChildren()) {
-            if (childPart.isSelectable()) {
+            if (childPart.isSelectable() && childPart.getTargetEditPart(new Request(RequestConstants.REQ_SELECTION)) == childPart ) {
                 selection.add(childPart);
             }
             if (childPart instanceof GraphicalEditPart) {
