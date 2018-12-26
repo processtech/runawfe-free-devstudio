@@ -1,6 +1,8 @@
 package ru.runa.gpd.editor.graphiti.update;
 
 import org.eclipse.graphiti.features.context.ICustomContext;
+import org.eclipse.ui.PlatformUI;
+import ru.runa.gpd.editor.graphiti.GraphitiProcessEditor;
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.lang.model.Delegable;
@@ -31,6 +33,8 @@ public class DoubleClickDelegableFeature extends DoubleClickElementFeature {
                 delegable.setDelegationConfiguration(newConfig);
                 if (delegable instanceof ExclusiveGateway) {
                     getDiagramBehavior().refreshContent();
+                    ((GraphitiProcessEditor) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor())
+                            .getDiagramEditorPage().refreshConnections();
                 }
             }
         }

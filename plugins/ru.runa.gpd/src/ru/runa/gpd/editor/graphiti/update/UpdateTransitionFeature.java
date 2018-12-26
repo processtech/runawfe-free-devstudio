@@ -12,6 +12,7 @@ import org.eclipse.graphiti.ui.services.GraphitiUi;
 import ru.runa.gpd.editor.graphiti.GaProperty;
 import ru.runa.gpd.editor.graphiti.PropertyUtil;
 import ru.runa.gpd.editor.graphiti.StyleUtil;
+import ru.runa.gpd.editor.graphiti.TransitionUtil;
 import ru.runa.gpd.lang.model.Transition;
 
 public class UpdateTransitionFeature extends UpdateFeature {
@@ -22,7 +23,8 @@ public class UpdateTransitionFeature extends UpdateFeature {
         // retrieve name from business model
         Transition transition = (Transition) getBusinessObjectForPictogramElement(pe);
         GraphicsAlgorithm defaultFlowGa = PropertyUtil.findGaRecursiveByName(pe, GaProperty.DEFAULT_FLOW);
-        if (defaultFlowGa != null && defaultFlowGa.getPictogramElement().isVisible() != transition.isDefaultFlow()) {
+        if (defaultFlowGa != null
+                && defaultFlowGa.getPictogramElement().isVisible() != (TransitionUtil.markDefaultTransition() && transition.isDefaultFlow())) {
             return Reason.createTrueReason();
         }
         GraphicsAlgorithm exclusiveFlowGa = PropertyUtil.findGaRecursiveByName(pe, GaProperty.EXCLUSIVE_FLOW);
@@ -67,7 +69,7 @@ public class UpdateTransitionFeature extends UpdateFeature {
         PropertyUtil.setTextValueProperty(pe, GaProperty.NAME, transition.getLabel());
         GraphicsAlgorithm defaultFlowGa = PropertyUtil.findGaRecursiveByName(pe, GaProperty.DEFAULT_FLOW);
         if (defaultFlowGa != null) {
-            defaultFlowGa.getPictogramElement().setVisible(transition.isDefaultFlow());
+            defaultFlowGa.getPictogramElement().setVisible(TransitionUtil.markDefaultTransition() && transition.isDefaultFlow());
         }
         GraphicsAlgorithm exclusiveFlowGa = PropertyUtil.findGaRecursiveByName(pe, GaProperty.EXCLUSIVE_FLOW);
         if (exclusiveFlowGa != null) {

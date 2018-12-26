@@ -1,7 +1,6 @@
 package ru.runa.gpd.editor.graphiti;
 
 import java.beans.PropertyChangeEvent;
-
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.ui.parts.GraphicalEditor;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
@@ -12,7 +11,6 @@ import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.views.properties.IPropertySource;
-
 import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.ProcessEditorBase;
 import ru.runa.gpd.lang.model.GraphElement;
@@ -26,6 +24,7 @@ public class GraphitiProcessEditor extends ProcessEditorBase {
             IEditorPart editor = ref.getEditor(true);
             if (editor instanceof GraphitiProcessEditor) {
                 ((GraphitiProcessEditor) editor).getDiagramEditorPage().applyStyles();
+                ((GraphitiProcessEditor) editor).getDiagramEditorPage().refreshConnections();
             }
         }
     }

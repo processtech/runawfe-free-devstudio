@@ -24,6 +24,7 @@ import org.eclipse.graphiti.ui.services.GraphitiUi;
 import ru.runa.gpd.editor.graphiti.DiagramFeatureProvider;
 import ru.runa.gpd.editor.graphiti.GaProperty;
 import ru.runa.gpd.editor.graphiti.StyleUtil;
+import ru.runa.gpd.editor.graphiti.TransitionUtil;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.TransitionColor;
@@ -159,9 +160,9 @@ public class AddTransitionFeature extends AbstractAddFeature {
         ConnectionDecorator connectionDecorator = Graphiti.getPeCreateService().createConnectionDecorator(connection, false, 0.0, true);
         int xy[] = new int[] { -3, 7, -10, -7 };
         Polyline polyline = Graphiti.getGaCreateService().createPolyline(connectionDecorator, xy);
-        polyline.setStyle(StyleUtil.getTransitionDiamondPolylineStyle(getDiagram()));
+        polyline.setStyle(StyleUtil.getTransitionPolylineStyle(getDiagram()));
         connectionDecorator.getProperties().add(new GaProperty(GaProperty.ID, GaProperty.DEFAULT_FLOW));
-        connectionDecorator.setVisible(defaultFlow);
+        connectionDecorator.setVisible(TransitionUtil.markDefaultTransition() && defaultFlow);
     }
 
 }

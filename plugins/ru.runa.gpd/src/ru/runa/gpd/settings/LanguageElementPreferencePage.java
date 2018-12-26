@@ -1,7 +1,7 @@
 package ru.runa.gpd.settings;
 
+import com.google.common.collect.Maps;
 import java.util.Map;
-
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.ColorFieldEditor;
@@ -14,7 +14,6 @@ import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.FontData;
-
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
@@ -29,8 +28,6 @@ import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.Subprocess;
 import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Transition;
-
-import com.google.common.collect.Maps;
 
 public class LanguageElementPreferencePage extends FieldEditorPreferencePage implements PrefConstants {
     private static final String OVERRIDE_LOCALIZATION_SUFFIX = "override";
@@ -103,6 +100,12 @@ public class LanguageElementPreferencePage extends FieldEditorPreferencePage imp
                 addOverrideFieldEditor(P_BPMN_FOREGROUND_COLOR);
                 addOverrideFieldEditor(P_BPMN_LINE_WIDTH);
                 break;
+            case "exclusiveGateway":
+                addField(new BooleanFieldEditor(getKey(P_BPMN_MARK_DEFAULT_TRANSITION),
+                        Localization.getString("ExclusiveGateway.markDefaultTransition"), getFieldEditorParent()));
+                addField(new StringFieldEditor(getKey(P_BPMN_DEFAULT_TRANSITION_NAMES),
+                        Localization.getString("ExclusiveGateway.defaultTransitionNames"), getFieldEditorParent()));
+                break;
             case StyleUtil.TEXT_ANNOTATION_BPMN_NAME:
             case StyleUtil.TRANSITION_BPMN_NAME:
                 addOverrideFieldEditor(P_BPMN_FONT);
@@ -146,6 +149,10 @@ public class LanguageElementPreferencePage extends FieldEditorPreferencePage imp
         }
         if (language == Language.BPMN) {
             switch (definition.getBpmnElementName()) {
+            case "exclusiveGateway":
+                store.setDefault(getKey(P_BPMN_MARK_DEFAULT_TRANSITION), false);
+                store.setDefault(getKey(P_BPMN_DEFAULT_TRANSITION_NAMES), "");
+                break;
             case StyleUtil.TEXT_ANNOTATION_BPMN_NAME:
                 store.setDefault(getKey(P_BPMN_FOREGROUND_COLOR) + OVERRIDE_PROPERTY_SUFFIX, true);
                 break;
