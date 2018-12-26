@@ -42,8 +42,11 @@ public class FtlFormType extends BaseHtmlFormType {
         TemplateProcessor.process(formNode.getProcessDefinition().getName() + formNode.getId(), formData, model);
         for (Component component : model.getComponents()) {
             IComponentValidator validator = component.getType().getValidator();
-            List<ValidationError> list = validator.validate(formNode, component);
+            List<ValidationError> list = validator.validate(formNode, component, formData);
             errors.addAll(list);
+        }
+        for (String undefinedComponent : model.getUndefinedComponentNames()) {
+            errors.add(ValidationError.createLocalizedWarning(formNode, "formNode.formComponentTagUnknown", undefinedComponent));
         }
     }
 

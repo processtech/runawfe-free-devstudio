@@ -1,5 +1,9 @@
 package ru.runa.gpd.formeditor.ftl;
 
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,10 +13,6 @@ import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
 
 import ru.runa.gpd.util.EventSupport;
-
-import com.google.common.base.Function;
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 
 public class Component extends EventSupport implements IPropertySource {
     private static final String PARAMETERS_DELIM = ", ";
