@@ -3,8 +3,6 @@ package ru.runa.gpd.ui.wizard;
 import java.util.Set;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -22,7 +20,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import ru.runa.gpd.BotCache;
 import ru.runa.gpd.Localization;
-import ru.runa.gpd.ui.custom.TooManySpacesChecker;
+import ru.runa.gpd.ui.custom.FileNameChecker;
 import ru.runa.gpd.util.IOUtils;
 
 public class NewBotTaskWizardPage extends WizardPage {
@@ -203,7 +201,6 @@ public class NewBotTaskWizardPage extends WizardPage {
     }
 
     private boolean isBotTaskNameValid() {
-        return ResourcesPlugin.getWorkspace().validateName(nameText.getText(), IResource.FILE).isOK()
-                && TooManySpacesChecker.isValid(nameText.getText());
+        return FileNameChecker.isValid(nameText.getText());
     }
 }

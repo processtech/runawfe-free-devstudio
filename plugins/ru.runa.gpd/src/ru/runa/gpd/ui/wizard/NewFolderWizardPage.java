@@ -1,11 +1,8 @@
 package ru.runa.gpd.ui.wizard;
 
 import java.util.List;
-
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.WizardPage;
@@ -20,8 +17,8 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-
 import ru.runa.gpd.Localization;
+import ru.runa.gpd.ui.custom.FileNameChecker;
 import ru.runa.gpd.util.IOUtils;
 
 public class NewFolderWizardPage extends WizardPage {
@@ -60,7 +57,7 @@ public class NewFolderWizardPage extends WizardPage {
         label.setText(Localization.getString("label.project"));
         projectCombo = new Combo(parent, SWT.SINGLE | SWT.READ_ONLY | SWT.BORDER);
         for (IContainer container : processContainers) {
-            projectCombo.add(IOUtils.getProcessContainerName((IContainer) container));
+            projectCombo.add(IOUtils.getProcessContainerName(container));
         }
         projectCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         if (initialSelection != null) {
@@ -95,7 +92,7 @@ public class NewFolderWizardPage extends WizardPage {
         } else if (folderText.getText().length() == 0) {
             setErrorMessage(Localization.getString("error.no_folder_name"));
             setPageComplete(false);
-        } else if (!ResourcesPlugin.getWorkspace().validateName(folderText.getText(), IResource.FOLDER).isOK()) {
+        } else if (!FileNameChecker.isValid(folderText.getText())) {
             setErrorMessage(Localization.getString("error.folder_name_not_valid"));
             setPageComplete(false);
         } else if (getFolder().exists()) {

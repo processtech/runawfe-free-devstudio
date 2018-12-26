@@ -13,7 +13,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import ru.runa.gpd.BotCache;
 import ru.runa.gpd.Localization;
-import ru.runa.gpd.ui.custom.TooManySpacesChecker;
+import ru.runa.gpd.ui.custom.FileNameChecker;
 
 public class RenameBotDialog extends InputDialog {
 
@@ -50,7 +50,7 @@ public class RenameBotDialog extends InputDialog {
     private void updateButtons() {
         getButton(IDialogConstants.OK_ID).setEnabled(
                 !(Strings.isNullOrEmpty(getText().getText()) || BotCache.getAllBotNames().contains(getText().getText()))
-                        && TooManySpacesChecker.isValid(getText().getText()));
+                        && FileNameChecker.isValid(getText().getText()));
     }
 
     @Override

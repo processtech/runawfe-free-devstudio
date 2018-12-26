@@ -1,7 +1,6 @@
 package ru.runa.gpd.ui.wizard;
 
 import java.lang.reflect.InvocationTargetException;
-
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
@@ -16,7 +15,6 @@ import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
 import org.eclipse.ui.dialogs.WizardNewProjectCreationPage;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessProjectNature;
@@ -32,7 +30,7 @@ public class NewProcessProjectWizard extends Wizard implements INewWizard {
     @Override
     public void addPages() {
         super.addPages();
-        mainPage = new WizardNewProjectCreationPage("basicNewProjectPage");
+        mainPage = new NewProcessProjectWizardPage("basicNewProjectPage");
         mainPage.setTitle(Localization.getString("NewProcessProjectWizard.page.title"));
         mainPage.setDescription(Localization.getString("NewProcessProjectWizard.page.description"));
         this.addPage(mainPage);
