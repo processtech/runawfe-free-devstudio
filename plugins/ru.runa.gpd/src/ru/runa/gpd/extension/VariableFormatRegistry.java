@@ -1,26 +1,23 @@
 package ru.runa.gpd.extension;
 
+import com.google.common.base.Joiner;
+import com.google.common.base.Objects;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.Platform;
-
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.wfe.InternalApplicationException;
 import ru.runa.wfe.var.UserTypeMap;
-
-import com.google.common.base.Joiner;
-import com.google.common.base.Objects;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 public class VariableFormatRegistry extends ArtifactRegistry<VariableFormatArtifact> {
     private static final String XML_FILE_NAME = "variableFormats.xml";
@@ -114,6 +111,24 @@ public class VariableFormatRegistry extends ArtifactRegistry<VariableFormatArtif
                 return true;
             }
             return Objects.equal(variable.getUserType().getName(), classNameFilter);
+        }
+        if (List.class.getName().equals(variable.getJavaClassName())
+                && classNameFilter.contains(Variable.FORMAT_COMPONENT_TYPE_START)
+                && classNameFilter.contains(Variable.FORMAT_COMPONENT_TYPE_END)) {
+            String[] formatComponentClassNames = variable.getFormatComponentClassNames();
+            if (formatComponentClassNames.length == 1) {
+                VariableFormatArtifact variableFormatArtifact = getInstance().getArtifact(formatComponentClassNames[0]);
+                if (variableFormatArtifact != null) {
+                    String componentClassNameFilter = classNameFilter.substring(classNameFilter.indexOf(Variable.FORMAT_COMPONENT_TYPE_START) + 1,
+                            classNameFilter.indexOf(Variable.FORMAT_COMPONENT_TYPE_END));
+                    String componentClassName = variableFormatArtifact.getJavaClassName();
+                    return isAssignableFrom(componentClassNameFilter, componentClassName);
+                } else {
+                    String userTypeClassName = variable.getJavaClassName() + Variable.FORMAT_COMPONENT_TYPE_START + formatComponentClassNames[0]
+                            + Variable.FORMAT_COMPONENT_TYPE_END;
+                    return Objects.equal(classNameFilter, userTypeClassName);
+                }
+            }
         }
         return isAssignableFrom(classNameFilter, variable.getJavaClassName());
     }
