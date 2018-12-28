@@ -9,10 +9,10 @@ import freemarker.template.Configuration;
 import freemarker.template.Template;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
@@ -28,9 +28,6 @@ import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.StartState;
 import ru.runa.gpd.lang.model.Subprocess;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
-import ru.runa.gpd.lang.model.Transition;
-import ru.runa.gpd.lang.model.bpmn.ExclusiveGateway;
-import ru.runa.gpd.lang.model.bpmn.ParallelGateway;
 import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.util.EditorUtils;
 import ru.runa.gpd.util.IOUtils;
@@ -61,7 +58,7 @@ public class RegulationsUtil {
         Map<String, ValidatorDefinition> validatorDefinitions = ValidatorDefinitionRegistry.getValidatorDefinitions();
         map.put("validatorDefinitions", validatorDefinitions);
         map.put("swimlanes", processDefinition.getSwimlanes());
-        map.put("variables", processDefinition.getVariables(false, false, null));
+        map.put("variables", processDefinition.getVariables(false, false));
         map.put("endToken", processDefinition.getChildrenRecursive(EndTokenState.class));
         map.put("end", processDefinition.getChildrenRecursive(EndState.class));
         IFile htmlDescriptionFile = IOUtils.getAdjacentFile(processDefinition.getFile(), ParContentProvider.PROCESS_DEFINITION_DESCRIPTION_FILE_NAME);
@@ -72,7 +69,7 @@ public class RegulationsUtil {
         template.process(map, writer);
         return writer.toString();
     }
-    
+
     public static List<Node> getSequencedNodes(ProcessDefinition processDefinition) {
         List<Node> result = Lists.newArrayList();
         Node currentNode = processDefinition.getFirstChild(StartState.class);
@@ -96,114 +93,49 @@ public class RegulationsUtil {
         }
         return result;
     }
-    
-    public static void fillRegulationPropertiesWithSequence(ProcessDefinition processDefinition) {
-        List<Node> listOfNodes = processDefinition.getChildren(Node.class);
-        List<Transition> usedTransitions = Lists.newArrayList();
-        for (Node node : listOfNodes) {
-            NodeRegulationsProperties regulationProperties = node.getRegulationsProperties();
+
+    public static void autoFillRegulationProperties(ProcessDefinition processDefinition) {
+        LinkedList<Node> sequencedNodes = new LinkedList<>();
+        List<Node> endTokenNodes = new LinkedList<>();
+        List<Node> endNodes = new LinkedList<>();
+        for (Node node : processDefinition.getChildrenRecursive(Node.class)) {
             if (node instanceof StartState) {
-                Node targetNode = node.getLeavingTransitions().get(0).getTarget();
-                regulationProperties.setNextNode(targetNode);
-                targetNode.getRegulationsProperties().setPreviousNode(node);
+                sequencedNodes.addFirst(node);
                 continue;
             }
-            if (node instanceof EndState || node instanceof EndTokenState) {
+            if (node instanceof EndTokenState) {
+                endTokenNodes.add(node);
                 continue;
             }
-            regulationProperties.setEnabled(true);
-            addSequenceToNode(node, regulationProperties, usedTransitions);
-        }
-    }
-    
-    /**
-     * Sets nextNode parameter for current node and previousNode for next node. Method gets target node of current node first leaving transition. If
-     * target node has one arriving transition method sets nextNode parameter. If target node has multiple arriving transitions method adds current
-     * transition to list of used transitions and then gets all unused transitions. If it doesn't have any unused ones, or target node neither
-     * parallel nor exclusive gateway as well as not end - sets target node as next, else - finds first node of parallel branch and sets it as next.
-     * 
-     * @param node
-     *            current node
-     * @param regulationProperties
-     *            current node regulation properties
-     * @param usedTransitions
-     *            list of transitions that already been used. Helps define which branch of current node haven't been covered yet.
-     */
-
-    private static void addSequenceToNode(Node node, NodeRegulationsProperties regulationProperties, List<Transition> usedTransitions) {
-        Transition currentLeavingTransition = node.getLeavingTransitions().get(0);
-        if (node.getArrivingTransitions().stream().map(Transition::getSource)
-                .anyMatch(transition -> Objects.equal(transition, node.getLeavingTransitions().get(0).getTarget()))) {
-            currentLeavingTransition = node.getLeavingTransitions().get(1);
-        }
-        Node targetNode = currentLeavingTransition.getTarget();
-        List<Transition> targetArrivingTransitions = targetNode.getArrivingTransitions();
-        if (targetArrivingTransitions.size() == 1) {
-            fillRegulationProperties(node, regulationProperties, targetNode, targetNode.getRegulationsProperties());
-        } else {
-            usedTransitions.add(currentLeavingTransition);
-            if (targetArrivingTransitions.stream().noneMatch(transition -> !usedTransitions.contains(transition))
-                    || !(targetNode instanceof ParallelGateway) && !(targetNode instanceof ExclusiveGateway) && !(targetNode instanceof EndTokenState)
-                            && !(targetNode instanceof EndState)) {
-                fillRegulationProperties(node, regulationProperties, targetNode, targetNode.getRegulationsProperties());
-            } else {
-                Node parallelBranchFirstNode = findPreviousParallelGateway(node, currentLeavingTransition, usedTransitions, targetNode);
-                fillRegulationProperties(node, regulationProperties, parallelBranchFirstNode, parallelBranchFirstNode.getRegulationsProperties());
+            if (node instanceof EndState) {
+                endNodes.add(node);
+                continue;
             }
+            sequencedNodes.addLast(node);
         }
-    }
-
-    private static void fillRegulationProperties(Node node, NodeRegulationsProperties regulationProperties, Node targetNode,
-            NodeRegulationsProperties targetNodeRegulationsProperties) {
-        if (!targetNodeRegulationsProperties.isEnabled()) {
-            targetNodeRegulationsProperties.setEnabled(true);
+        sequencedNodes.addAll(endTokenNodes);
+        sequencedNodes.addAll(endNodes);
+        // now sequencedNodes has order similar to legacy impl; just fill node regulation properties
+        Node previousNode = null;
+        for (Node nextNode : sequencedNodes) {
+            nextNode.getRegulationsProperties().setEnabled(true);
+            nextNode.getRegulationsProperties().setPreviousNode(previousNode);
+            // TODO use description here or template code by node type?
+            // nextNode.getRegulationsProperties().setDescription("fill here text similar to legacy impl");
+            if (previousNode != null) {
+                previousNode.getRegulationsProperties().setNextNode(nextNode);
+            }
+            previousNode = nextNode;
         }
-        if (targetNodeRegulationsProperties.getPreviousNode() == null) {
-            targetNodeRegulationsProperties.setPreviousNode(node);
-        }
-        if (regulationProperties.getNextNode() == null) {
-            regulationProperties.setNextNode(targetNode);
-        }
-    }
-    
-    /**
-     * Finds next node. Gets previous transition of a node and gets its source until finds node with multiple leaving transitions,
-     * then adds current branch transition to usedTransitions and checks, whether found node has any other transitions. In case of having one,
-     * returns target node of first remaining transition. In case of not having one returns firstBranchNextNode.
-     * 
-     * @param node
-     *            current node
-     * @param nextNodeTransition
-     *            transition that leads to next Node
-     * @param usedTransitions
-     *            list of transitions that already been used. Helps define which branch of current node haven't been covered yet.
-     * @param firstBranchNextNode
-     *            stores node that has multiple arriving transitions. Used for returning this node in case of every branch covered.
-     * @return first Node from other parallel branch.
-     */
-    private static Node findPreviousParallelGateway(Node node, Transition nextNodeTransition, List<Transition> usedTransitions,
-            Node firstBranchNextNode) {
-        if (node instanceof StartState) {
-            return firstBranchNextNode;
-        }
-        List<Transition> transitions = node.getLeavingTransitions();
-        // in case of returning to the very beginning of process
-        if (transitions.size() == 1) {
-            Transition firstArrivingTransition = node.getArrivingTransitions().get(0);
-            return findPreviousParallelGateway(firstArrivingTransition.getSource(), firstArrivingTransition, usedTransitions, firstBranchNextNode);
-        } else if (transitions.size() > 1) {
-            usedTransitions.add(nextNodeTransition);
-            return transitions.stream()
-                    .filter(transition -> !usedTransitions.contains(transition))
-                    .findFirst().get().getTarget();
-        }
-        return null;
     }
 
     public static boolean validate(ProcessDefinition processDefinition) {
         List<ValidationError> errors = Lists.newArrayList();
         IFile definitionFile = processDefinition.getFile();
         for (Node node : processDefinition.getNodes()) {
+            if (!node.getRegulationsProperties().isValid()) {
+                errors.add(ValidationError.createLocalizedWarning(node, "regulations.invalidProperties", node));
+            }
             if (node.getRegulationsProperties().isEnabled()) {
                 Node nextNode = node.getRegulationsProperties().getNextNode();
                 if (nextNode != null && !nextNode.getRegulationsProperties().isEnabled()) {

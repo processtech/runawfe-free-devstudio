@@ -126,11 +126,3 @@
 		</#if>
 	</#list>
 </div>
-<div class="endings">
-	<#list endToken as end>
-		<div class="endTokenState">Завершение потока  выполнения бизнес-процесса: ${end.getName()}</div>
-	</#list>
-	<#list end as end>
-		<div class="endState">Завершение процесса выполнения бизнес-процесса: ${end.getName()}</div>
-	</#list>
-</div>

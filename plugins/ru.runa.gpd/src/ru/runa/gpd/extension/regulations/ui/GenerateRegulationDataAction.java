@@ -10,7 +10,7 @@ public class GenerateRegulationDataAction extends BaseModelActionDelegate {
     @Override
     public void run(IAction action) {
         try {
-            RegulationsUtil.fillRegulationPropertiesWithSequence(getActiveDesignerEditor().getDefinition());
+            RegulationsUtil.autoFillRegulationProperties(getActiveDesignerEditor().getDefinition());
         } catch (Exception e) {
             PluginLogger.logError(e);
         }
