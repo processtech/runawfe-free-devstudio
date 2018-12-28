@@ -1,12 +1,10 @@
 package ru.runa.gpd.extension.regulations.ui;
 
 import java.io.ByteArrayInputStream;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.ide.IDE;
-
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.regulations.RegulationsUtil;
 import ru.runa.gpd.lang.action.BaseModelActionDelegate;
@@ -31,7 +29,7 @@ public class CreateRegulationsAction extends BaseModelActionDelegate {
             PluginLogger.logError(e);
         }
     }
-
+    
     @Override
     public void selectionChanged(IAction action, ISelection selection) {
         super.selectionChanged(action, selection);
