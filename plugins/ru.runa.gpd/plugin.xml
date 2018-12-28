@@ -2172,6 +2172,11 @@
                 name="max"
                 type="java.lang.Number">
           </param>
+          <param
+                label="%validator.dateRelativeToCurrent.param.ignoreTime"
+                name="ignoreTime"
+                type="java.lang.Boolean">
+          </param>
        </validator>
        <validator
              applicable="java.lang.String"
