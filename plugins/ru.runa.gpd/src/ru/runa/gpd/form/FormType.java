@@ -4,13 +4,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
-
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.search.VariableSearchVisitor;
@@ -51,7 +49,7 @@ public abstract class FormType {
         for (Map.Entry<String, FormVariableAccess> formEntry : formVariables.entrySet()) {
             switch (formEntry.getValue()) {
             case DOUBTFUL:
-                errors.add(ValidationError.createLocalizedWarning(formNode, "formNode.formVariableTagUnknown", formEntry.getKey()));
+                errors.add(ValidationError.createLocalizedWarning(formNode, "formNode.formVariableUnknown", formEntry.getKey()));
                 continue;
             case WRITE:
                 if (!validation.getVariableNames().contains(formEntry.getKey())) {

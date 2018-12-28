@@ -87,9 +87,11 @@ public class ComponentType {
         if (parameters.size() > index) {
             return parameters.get(index);
         }
-        ComponentParameter parameter = parameters.get(parameters.size() - 1);
-        if (parameter.getType().isMultiple()) {
-            return parameter;
+        if (!parameters.isEmpty()) {
+            ComponentParameter parameter = parameters.get(parameters.size() - 1);
+            if (parameter.getType().isMultiple()) {
+                return parameter;
+            }
         }
         return null;
     }
