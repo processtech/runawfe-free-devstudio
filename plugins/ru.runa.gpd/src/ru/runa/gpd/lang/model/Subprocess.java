@@ -243,4 +243,8 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
         }
     }
 
+    public String getQualifiedId() {
+        return getProcessDefinition().getFile().getParent().getFullPath() + "." + getId();
+    }
+
 }

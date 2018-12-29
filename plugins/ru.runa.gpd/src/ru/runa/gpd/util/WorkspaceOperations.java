@@ -1,5 +1,9 @@
 package ru.runa.gpd.util;
 
+import com.google.common.base.Charsets;
+import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -8,7 +12,6 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.io.SAXReader;
@@ -34,13 +37,8 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
-
-import com.google.common.base.Charsets;
-import com.google.common.base.Objects;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
-
 import ru.runa.gpd.BotCache;
+import ru.runa.gpd.GpdStore;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
@@ -128,7 +126,9 @@ public class WorkspaceOperations {
                             subprocessDefinition.getParent().getEmbeddedSubprocesses().remove(subprocessDefinition.getId());
                             for (Subprocess sp : subprocessDefinition.getParent().getChildren(Subprocess.class))
                             {
-                                if (!sp.getSubProcessName().equals(subprocessDefinition.getName())) continue;
+                                if (!sp.getSubProcessName().equals(subprocessDefinition.getName())) {
+                                    continue;
+                                }
                                 sp.setSubProcessName("");
                                 break;
                             }
@@ -371,7 +371,15 @@ public class WorkspaceOperations {
                 openProcessDefinition(definitionFile);
             }
         } else {
-            IFile definitionFile = ProcessCache.getFirstProcessDefinitionFile(subprocess.getSubProcessName());
+            IFile definitionFile = null;
+            String value = GpdStore.get(subprocess.getQualifiedId());
+            if (value != null) {
+                definitionFile = (IFile) ResourcesPlugin.getWorkspace().getRoot()
+                        .findMember(value + "/" + ParContentProvider.PROCESS_DEFINITION_FILE_NAME);
+            }
+            if (definitionFile == null) {
+                definitionFile = ProcessCache.getFirstProcessDefinitionFile(subprocess.getSubProcessName());
+            }
             if (definitionFile != null) {
                 openProcessDefinition(definitionFile);
             }
