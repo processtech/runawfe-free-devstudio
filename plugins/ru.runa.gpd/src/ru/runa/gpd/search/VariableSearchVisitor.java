@@ -1,5 +1,7 @@
 package ru.runa.gpd.search;
 
+import com.google.common.base.Objects;
+import com.google.common.collect.Maps;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -7,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.CoreException;
@@ -21,7 +22,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.search.internal.ui.SearchMessages;
 import org.eclipse.search.ui.NewSearchUI;
 import org.eclipse.search.ui.text.Match;
-
 import ru.runa.gpd.BotCache;
 import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.extension.handler.ParamDefConfig;
@@ -41,15 +41,13 @@ import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.model.SwimlanedNode;
 import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Timer;
+import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.VariableMapping;
 import ru.runa.gpd.util.VariableUtils;
 import ru.runa.gpd.validation.FormNodeValidation;
 import ru.runa.gpd.validation.ValidatorConfig;
 import ru.runa.gpd.validation.ValidatorDefinition;
-
-import com.google.common.base.Objects;
-import com.google.common.collect.Maps;
 
 public class VariableSearchVisitor {
 
@@ -113,6 +111,7 @@ public class VariableSearchVisitor {
             monitorUpdateJob.schedule();
             try {
                 for (Map.Entry<ProcessDefinition, IFile> entry : map.entrySet()) {
+                    processNode(entry.getValue(), entry.getKey());
                     List<GraphElement> children = entry.getKey().getChildrenRecursive(GraphElement.class);
                     for (GraphElement child : children) {
                         processNode(entry.getValue(), child);
@@ -155,13 +154,38 @@ public class VariableSearchVisitor {
             if (graphElement instanceof MessageNode) {
                 processMessagingNode(definitionFile, (MessageNode) graphElement);
             }
+            if (graphElement instanceof TaskState) {
+                processTaskNode(definitionFile, (TaskState) graphElement);
+            }
             if (graphElement instanceof MultiTaskState) {
                 processMultiTaskNode(definitionFile, (MultiTaskState) graphElement);
+            }
+            if (graphElement instanceof ProcessDefinition) {
+                processProcessDefinitionNode(definitionFile, (ProcessDefinition) graphElement);
             }
         } catch (Exception e) {
             status.add(new Status(IStatus.ERROR, NewSearchUI.PLUGIN_ID, IStatus.ERROR, e.getMessage(), e));
         } finally {
             numberOfScannedElements++;
+        }
+    }
+
+    private void processProcessDefinitionNode(IFile definitionFile, ProcessDefinition processDefinition) throws Exception {
+        if (processDefinition instanceof SubprocessDefinition) {
+            return;
+        }
+        IFile file = IOUtils.getAdjacentFile(definitionFile, ParContentProvider.FORM_JS_FILE_NAME);
+        if (file.exists()) {
+            ElementMatch elementMatch = new ElementMatch(processDefinition, file, ElementMatch.CONTEXT_FORM_SCRIPT);
+            List<Match> matches = findInFile(elementMatch, file, matcherScriptingName);
+            elementMatch.setMatchesCount(matches.size());
+            if (!query.getVariable().getName().equals(query.getVariable().getScriptingName())) {
+                matches.addAll(findInFile(elementMatch, file, matcher));
+            }
+            elementMatch.setPotentialMatchesCount(matches.size() - elementMatch.getMatchesCount());
+            for (Match match : matches) {
+                query.getSearchResult().addMatch(match);
+            }
         }
     }
 
@@ -218,6 +242,21 @@ public class VariableSearchVisitor {
         int matchesCount = findInVariableMappings(messageNode.getVariableMappings());
         if (matchesCount > 0) {
             ElementMatch elementMatch = new ElementMatch(messageNode, definitionFile);
+            elementMatch.setMatchesCount(matchesCount);
+            query.getSearchResult().addMatch(new Match(elementMatch, 0, 0));
+        }
+    }
+
+    private void processTaskNode(IFile definitionFile, TaskState state) throws Exception {
+        int matchesCount = 0;
+        if (state.getTimeOutDelay() != null && Objects.equal(query.getSearchText(), state.getTimeOutDelay().getVariableName())) {
+            matchesCount++;
+        }
+        if (state.getEscalationDelay() != null && Objects.equal(query.getSearchText(), state.getEscalationDelay().getVariableName())) {
+            matchesCount++;
+        }
+        if (matchesCount > 0) {
+            ElementMatch elementMatch = new ElementMatch(state, definitionFile);
             elementMatch.setMatchesCount(matchesCount);
             query.getSearchResult().addMatch(new Match(elementMatch, 0, 0));
         }
@@ -285,19 +324,14 @@ public class VariableSearchVisitor {
             }
             if (formNode.hasFormScript()) {
                 IFile file = IOUtils.getAdjacentFile(definitionFile, formNode.getScriptFileName());
-                Map<String, FormVariableAccess> formVariables = formNode.getFormVariables((IFolder) definitionFile.getParent());
                 ElementMatch elementMatch = new ElementMatch(formNode, file, ElementMatch.CONTEXT_FORM_SCRIPT);
                 elementMatch.setParent(nodeElementMatch);
-                int matchesCount = 0;
-                if (formVariables.keySet().contains(query.getSearchText())) {
-                    matchesCount++;
-                }
-                elementMatch.setMatchesCount(matchesCount);
                 List<Match> matches = findInFile(elementMatch, file, matcherScriptingName);
+                elementMatch.setMatchesCount(matches.size());
                 if (!query.getVariable().getName().equals(query.getVariable().getScriptingName())) {
                     matches.addAll(findInFile(elementMatch, file, matcher));
                 }
-                elementMatch.setPotentialMatchesCount(matches.size() - matchesCount);
+                elementMatch.setPotentialMatchesCount(matches.size() - elementMatch.getMatchesCount());
                 for (Match match : matches) {
                     query.getSearchResult().addMatch(match);
                 }

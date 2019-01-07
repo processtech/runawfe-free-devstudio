@@ -1,16 +1,13 @@
 package ru.runa.gpd.lang.model.bpmn;
 
+import com.google.common.collect.Lists;
 import java.util.List;
-
 import org.eclipse.ui.views.properties.ComboBoxPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.MessageNode;
 import ru.runa.gpd.lang.model.ProcessDefinition;
-
-import com.google.common.collect.Lists;
 
 public class AbstractEventNode extends MessageNode {
     private static String[] EVENT_NODE_TYPE_NAMES;
@@ -77,6 +74,7 @@ public class AbstractEventNode extends MessageNode {
     public AbstractEventNode makeCopy(GraphElement parent) {
         AbstractEventNode copy = (AbstractEventNode) super.makeCopy(parent);
         copy.setEventNodeType(getEventNodeType());
+        copy.setParentContainer(parent);
         return copy;
     }
 }

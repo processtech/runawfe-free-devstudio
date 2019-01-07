@@ -1,5 +1,6 @@
 package ru.runa.gpd.editor.graphiti.add;
 
+import com.google.common.base.Strings;
 import org.eclipse.graphiti.datatypes.IDimension;
 import org.eclipse.graphiti.features.context.IAddConnectionContext;
 import org.eclipse.graphiti.features.context.IAddContext;
@@ -20,12 +21,10 @@ import org.eclipse.graphiti.services.Graphiti;
 import org.eclipse.graphiti.services.IGaService;
 import org.eclipse.graphiti.services.IPeCreateService;
 import org.eclipse.graphiti.ui.services.GraphitiUi;
-
-import com.google.common.base.Strings;
-
 import ru.runa.gpd.editor.graphiti.DiagramFeatureProvider;
 import ru.runa.gpd.editor.graphiti.GaProperty;
 import ru.runa.gpd.editor.graphiti.StyleUtil;
+import ru.runa.gpd.editor.graphiti.TransitionUtil;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.TransitionColor;
@@ -85,7 +84,7 @@ public class AddTransitionFeature extends AbstractAddFeature {
         createArrow(connection);
         boolean exclusive = transition.getSource().isExclusive() && transition.getSource().getLeavingTransitions().size() > 1;
         createExclusiveDiamond(connection, exclusive);
-        // createDefaultFlow(connection);
+        createDefaultFlow(connection, transition.isDefaultFlow());
         return connection;
     }
 
@@ -117,7 +116,7 @@ public class AddTransitionFeature extends AbstractAddFeature {
             ConnectionDecorator colorMarkerDecorator = Graphiti.getPeCreateService().createConnectionDecorator(connection, true, 0.5, true);
             Ellipse ellipse = Graphiti.getGaService().createEllipse(colorMarkerDecorator);
             ellipse.setStyle(StyleUtil.getTransitionColorMarkerStyle(getDiagram(), transition, transitionColor));
-            ellipse.setWidth((int) (ellipse.getStyle().getFont().getSize() * 2));
+            ellipse.setWidth(ellipse.getStyle().getFont().getSize() * 2);
             ellipse.setHeight((int) (ellipse.getStyle().getFont().getSize() * 1.75));
             ellipse.setTransparency(.75);
             Graphiti.getGaService().setLocation(ellipse, (location == null ? 10 : location.x) - ellipse.getWidth() - 1,
@@ -156,4 +155,14 @@ public class AddTransitionFeature extends AbstractAddFeature {
         connectionDecorator.getProperties().add(new GaProperty(GaProperty.ID, GaProperty.EXCLUSIVE_FLOW));
         connectionDecorator.setVisible(visible);
     }
+
+    private void createDefaultFlow(Connection connection, boolean defaultFlow) {
+        ConnectionDecorator connectionDecorator = Graphiti.getPeCreateService().createConnectionDecorator(connection, false, 0.0, true);
+        int xy[] = new int[] { -3, 7, -10, -7 };
+        Polyline polyline = Graphiti.getGaCreateService().createPolyline(connectionDecorator, xy);
+        polyline.setStyle(StyleUtil.getTransitionPolylineStyle(getDiagram()));
+        connectionDecorator.getProperties().add(new GaProperty(GaProperty.ID, GaProperty.DEFAULT_FLOW));
+        connectionDecorator.setVisible(TransitionUtil.markDefaultTransition() && defaultFlow);
+    }
+
 }

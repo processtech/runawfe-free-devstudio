@@ -1,5 +1,7 @@
 package ru.runa.gpd.formeditor.ftl.ui;
 
+import com.google.common.base.Strings;
+import java.util.stream.Collectors;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.BaseLabelProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
@@ -9,18 +11,22 @@ import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
-
 import ru.runa.gpd.formeditor.ftl.ComponentType;
+import ru.runa.gpd.formeditor.resources.Messages;
 import ru.runa.gpd.util.UiUtil;
 
 public class FormComponentsView extends ViewPart implements IPartListener2 {
     public static final String ID = "ru.runa.gpd.formeditor.ftl.formComponentsView";
+    private Text filterText;
     private TableViewer viewer;
 
     @Override
@@ -38,14 +44,35 @@ public class FormComponentsView extends ViewPart implements IPartListener2 {
     @Override
     public void createPartControl(Composite parent) {
         UiUtil.hideToolBar(getViewSite());
-        viewer = new TableViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
+
+        Composite composite = new Composite(parent, SWT.NONE);
+
+        composite.setLayout(new GridLayout());
+
+        filterText = new Text(composite, SWT.BORDER | SWT.SEARCH);
+        filterText.setMessage(Messages.getString("filter"));
+        filterText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        filterText.addModifyListener(e -> {
+            adjustComponents();
+        });
+
+        viewer = new TableViewer(composite, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
+        viewer.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
+
         int operations = DND.DROP_COPY | DND.DROP_MOVE;
         Transfer[] transferTypes = new Transfer[] { TextTransfer.getInstance() };
         viewer.addDragSupport(operations, transferTypes, new ComponentDragListener(viewer));
         viewer.addDoubleClickListener(new ComponentDoubleClickListener(viewer));
         viewer.setContentProvider(ArrayContentProvider.getInstance());
         viewer.setLabelProvider(new TableLabelProvider());
-        viewer.setInput(ComponentTypeContentProvider.INSTANCE.getModel());
+        adjustComponents();
+    }
+
+    private void adjustComponents() {
+        String filter = filterText.getText().toLowerCase();
+        viewer.setInput(ComponentTypeContentProvider.INSTANCE.getModel().stream()
+                .filter(type -> Strings.isNullOrEmpty(filter) || type.getLabel().toLowerCase().indexOf(filter) >= 0)
+                .collect(Collectors.toList()));
     }
 
     @Override
@@ -55,7 +82,7 @@ public class FormComponentsView extends ViewPart implements IPartListener2 {
     @Override
     public void partActivated(IWorkbenchPartReference arg0) {
         if (viewer != null) {
-            viewer.setInput(ComponentTypeContentProvider.INSTANCE.getModel());
+            adjustComponents();
         }
     }
 
@@ -81,6 +108,7 @@ public class FormComponentsView extends ViewPart implements IPartListener2 {
 
     @Override
     public void partOpened(IWorkbenchPartReference arg0) {
+        filterText.setFocus();
     }
 
     @Override

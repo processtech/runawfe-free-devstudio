@@ -80,7 +80,6 @@ public class Transition extends NamedGraphElement implements ActionContainer {
     public void setDefaultFlow(boolean defaultFlow) {
         if (this.defaultFlow != defaultFlow) {
             this.defaultFlow = defaultFlow;
-            firePropertyChange(TRANSITION_FLOW, !defaultFlow, defaultFlow);
         }
     }
 

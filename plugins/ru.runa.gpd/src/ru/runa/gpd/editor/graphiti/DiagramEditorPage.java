@@ -1,9 +1,9 @@
 package ru.runa.gpd.editor.graphiti;
 
+import com.google.common.base.Objects;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.emf.common.util.EList;
@@ -16,10 +16,12 @@ import org.eclipse.gef.editparts.LayerManager;
 import org.eclipse.gef.editparts.ScalableFreeformRootEditPart;
 import org.eclipse.graphiti.features.IAddFeature;
 import org.eclipse.graphiti.features.IFeatureProvider;
+import org.eclipse.graphiti.features.IUpdateFeature;
 import org.eclipse.graphiti.features.context.impl.AddConnectionContext;
 import org.eclipse.graphiti.features.context.impl.AddContext;
 import org.eclipse.graphiti.features.context.impl.AreaContext;
 import org.eclipse.graphiti.features.context.impl.LayoutContext;
+import org.eclipse.graphiti.features.context.impl.UpdateContext;
 import org.eclipse.graphiti.mm.pictograms.Anchor;
 import org.eclipse.graphiti.mm.pictograms.AnchorContainer;
 import org.eclipse.graphiti.mm.pictograms.ChopboxAnchor;
@@ -36,9 +38,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
-
-import com.google.common.base.Objects;
-
 import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.ProcessEditorBase;
 import ru.runa.gpd.editor.gef.GEFActionBarContributor;
@@ -51,6 +50,7 @@ import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.SwimlanedNode;
 import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Transition;
+import ru.runa.gpd.lang.model.bpmn.ExclusiveGateway;
 
 public class DiagramEditorPage extends DiagramEditor implements PropertyChangeListener {
 
@@ -217,6 +217,31 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
             }
         }
         getDiagramBehavior().refresh();
+    }
+
+    public void refreshConnections() {
+        Diagram diagram = getDiagramTypeProvider().getDiagram();
+        for (Connection connection : diagram.getConnections()) {
+            Transition transition = (Transition) getDiagramTypeProvider().getFeatureProvider().getBusinessObjectForPictogramElement(connection);
+            if (transition != null && transition.getSource() instanceof ExclusiveGateway) {
+                ExclusiveGateway eg = (ExclusiveGateway) transition.getSource();
+                TransitionUtil.setDefaultFlow(eg, eg.getDelegationConfiguration());
+            }
+        }
+        TransactionalEditingDomain domain = TransactionUtil.getEditingDomain(diagram);
+        domain.getCommandStack().execute(new RecordingCommand(domain) {
+            @Override
+            protected void doExecute() {
+                for (Connection connection : diagram.getConnections()) {
+                    if (PropertyUtil.findGaRecursiveByName(connection, GaProperty.DEFAULT_FLOW) != null) {
+                        UpdateContext updateContext = new UpdateContext(connection);
+                        IUpdateFeature updateFeature = getDiagramTypeProvider().getFeatureProvider().getUpdateFeature(updateContext);
+                        updateFeature.update(updateContext);
+                    }
+                }
+            }
+        });
+        getDiagramBehavior().refreshContent();
     }
 
     private void refreshActions(ContainerShape containerShape) {

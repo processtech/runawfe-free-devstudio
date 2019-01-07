@@ -93,4 +93,20 @@ public class WFEServerConnectorStub extends WFEServerConnector {
     public List<BotStation> getBotStations() {
         return Lists.newArrayList();
     }
+
+    @Override
+    public void deployDataSourceArchive(byte[] archive) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public byte[] getDataSourceArchive(String dsName) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<String> getDataSourceNames() {
+        throw new UnsupportedOperationException();
+    }
+
 }

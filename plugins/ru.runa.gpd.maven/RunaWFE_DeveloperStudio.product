@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="RunaWFE Developer Studio" uid="RunaWFE_DeveloperStudio" id="ru.runa.gpd.app.product" application="ru.runa.gpd.application" version="4.3.1.qualifier" useFeatures="true" includeLaunchers="true">
+<product name="RunaWFE Developer Studio" uid="RunaWFE_DeveloperStudio" id="ru.runa.gpd.app.product" application="ru.runa.gpd.application" version="4.4.0.qualifier" useFeatures="true" includeLaunchers="true">
 
    <aboutInfo>
       <text>
@@ -22,8 +22,8 @@
    <splash
       location="ru.runa.gpd.app" />
    <launcher name="runa-gpd">
-      <linux icon="/ru.runa.gpd.app/icons/logo/16.xpm"/>
-      <macosx icon="/ru.runa.gpd.app/icons/logo/16.icns"/>
+      <linux icon="/icons/logo/16.xpm"/>
+      <macosx icon="/icons/logo/icon.icns"/>
       <win useIco="false">
          <bmp
             winSmallHigh="/ru.runa.gpd.app/icons/logo/16_32.bmp"
@@ -35,16 +35,18 @@
       </win>
    </launcher>
 
+
    <vm>
    </vm>
+
 
    <plugins>
    </plugins>
 
    <features>
-      <feature id="ru.runa.gpd.eclipse.feature" version="4.3.1.qualifier"/>
-      <feature id="ru.runa.gpd.babel.nls_p2_ru.feature" version="4.3.1.qualifier"/>
-      <feature id="ru.runa.gpd.feature" version="4.3.1.qualifier"/>
+      <feature id="ru.runa.gpd.eclipse.feature" version="4.4.0.qualifier"/>
+      <feature id="ru.runa.gpd.babel.nls_p2_ru.feature" version="4.4.0.qualifier"/>
+      <feature id="ru.runa.gpd.feature" version="4.4.0.qualifier"/>
    </features>
 
    <configurations>

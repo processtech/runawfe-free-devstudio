@@ -3,6 +3,7 @@ package ru.runa.gpd.office;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.SelectionEvent;
@@ -16,16 +17,18 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
+import com.google.common.base.Strings;
+
 import ru.runa.gpd.lang.model.BotTask;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
+import ru.runa.gpd.util.DataSourceUtils;
 import ru.runa.gpd.util.EmbeddedFileUtils;
 import ru.runa.wfe.InternalApplicationException;
+import ru.runa.wfe.datasource.DataSourceStuff;
 import ru.runa.wfe.var.file.FileVariable;
-
-import com.google.common.base.Strings;
 
 public class InputOutputComposite extends Composite {
     public final InputOutputModel model;
@@ -110,6 +113,10 @@ public class InputOutputComposite extends Composite {
             if (mode == FilesSupplierMode.IN) {
                 combo.add(Messages.getString("label.processDefinitionFile"));
             }
+            if (model.canWorkWithDataSource) {
+                combo.add(Messages.getString("label.dataSourceName"));
+                combo.add(Messages.getString("label.dataSourceNameVariable"));
+            }
             if (!Strings.isNullOrEmpty(variableName)) {
                 combo.select(1);
                 showVariable(variableName);
@@ -120,16 +127,35 @@ public class InputOutputComposite extends Composite {
             } else {
                 combo.select(0);
                 showFileName(fileName);
+                if (!Strings.isNullOrEmpty(fileName)) {
+                    if (fileName.startsWith(DataSourceStuff.PATH_PREFIX_DATA_SOURCE)) {
+                        combo.select(3);
+                        showDataSource(fileName);
+                    } else if (fileName.startsWith(DataSourceStuff.PATH_PREFIX_DATA_SOURCE_VARIABLE)) {
+                        combo.select(4);
+                        showDataSourceVariable(fileName);
+                    }
+                }
             }
             combo.addSelectionListener(new LoggingSelectionAdapter() {
 
                 @Override
                 protected void onSelection(SelectionEvent e) throws Exception {
-                    if (combo.getSelectionIndex() == 0) {
+                    switch (combo.getSelectionIndex()) {
+                    case 0:
                         showFileName(null);
-                    } else if (combo.getSelectionIndex() == 2) {
+                        break;
+                    case 2:
                         showEmbeddedFile(null);
-                    } else {
+                        break;
+                    case 3:
+                        showDataSource(null);
+                        break;
+                    case 4:
+                        showDataSourceVariable(null);
+                        break;
+                    case 1:
+                    default:
                         showVariable(null);
                     }
                 }
@@ -162,11 +188,7 @@ public class InputOutputComposite extends Composite {
 
         private void showVariable(String variable) {
             if (control != null) {
-                if (!Combo.class.isInstance(control)) {
-                    control.dispose();
-                } else {
-                    return;
-                }
+                control.dispose();
             }
             final Combo combo = new Combo(composite, SWT.READ_ONLY);
             combo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -188,6 +210,67 @@ public class InputOutputComposite extends Composite {
                 @Override
                 protected void onTextChanged(ModifyEvent e) throws Exception {
                     setVariable(combo.getText());
+                }
+            });
+            control = combo;
+            composite.layout(true, true);
+        }
+
+        private void showDataSource(String dataSource) {
+            if (control != null) {
+                control.dispose();
+            }
+            final Combo combo = new Combo(composite, SWT.NONE);
+            combo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            for (IFile dsFile : DataSourceUtils.getAllDataSources()) {
+                String dsName = dsFile.getName();
+                combo.add(dsName.substring(0, dsName.length() - DataSourceStuff.DATA_SOURCE_FILE_SUFFIX.length()));
+            }
+            if (dataSource != null) {
+                combo.setText(dataSource.substring(dataSource.indexOf(':') + 1));
+            }
+            combo.addSelectionListener(new LoggingSelectionAdapter() {
+
+                @Override
+                protected void onSelection(SelectionEvent e) throws Exception {
+                    setFileName(DataSourceStuff.PATH_PREFIX_DATA_SOURCE + combo.getText());
+                }
+            });
+            combo.addModifyListener(new LoggingModifyTextAdapter() {
+
+                @Override
+                protected void onTextChanged(ModifyEvent e) throws Exception {
+                    setFileName(DataSourceStuff.PATH_PREFIX_DATA_SOURCE + combo.getText());
+                }
+            });
+            control = combo;
+            composite.layout(true, true);
+        }
+
+        private void showDataSourceVariable(String variable) {
+            if (control != null) {
+                control.dispose();
+            }
+            final Combo combo = new Combo(composite, SWT.READ_ONLY);
+            combo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            for (String variableName : delegable.getVariableNames(false, String.class.getName())) {
+                combo.add(variableName);
+            }
+            if (variable != null) {
+                combo.setText(variable.substring(variable.indexOf(':') + 1));
+            }
+            combo.addSelectionListener(new LoggingSelectionAdapter() {
+
+                @Override
+                protected void onSelection(SelectionEvent e) throws Exception {
+                    setFileName(DataSourceStuff.PATH_PREFIX_DATA_SOURCE_VARIABLE + combo.getText());
+                }
+            });
+            combo.addModifyListener(new LoggingModifyTextAdapter() {
+
+                @Override
+                protected void onTextChanged(ModifyEvent e) throws Exception {
+                    setFileName(DataSourceStuff.PATH_PREFIX_DATA_SOURCE_VARIABLE + combo.getText());
                 }
             });
             control = combo;

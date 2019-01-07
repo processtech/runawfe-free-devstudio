@@ -29,6 +29,8 @@ import ru.runa.wfe.webservice.AuthenticationAPI;
 import ru.runa.wfe.webservice.AuthenticationWebService;
 import ru.runa.wfe.webservice.BotAPI;
 import ru.runa.wfe.webservice.BotWebService;
+import ru.runa.wfe.webservice.DataSourceAPI;
+import ru.runa.wfe.webservice.DataSourceWebService;
 import ru.runa.wfe.webservice.DefinitionAPI;
 import ru.runa.wfe.webservice.DefinitionWebService;
 import ru.runa.wfe.webservice.Executor;
@@ -262,4 +264,24 @@ public abstract class AbstractWebServicesConnector extends WFEServerConnector {
     public List<BotStation> getBotStations() {
         return BotStationAdapter.toDTOs(getBotService().getBotStations());
     }
+
+    private DataSourceAPI getDataSourceService() {
+        return new DataSourceWebService(getUrl("DataSource")).getDataSourceAPIPort();
+    }
+
+    @Override
+    public void deployDataSourceArchive(byte[] archive) {
+        getDataSourceService().importDataSource(getUser(), archive);
+    }
+
+    @Override
+    public byte[] getDataSourceArchive(String dsName) {
+        return getDataSourceService().exportDataSource(getUser(), dsName);
+    }
+
+    @Override
+    public List<String> getDataSourceNames() {
+        return getDataSourceService().getNames();
+    }
+
 }

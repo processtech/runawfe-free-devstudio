@@ -1,7 +1,6 @@
 package ru.runa.gpd.ui.dialog;
 
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.dialogs.Dialog;
@@ -17,9 +16,9 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.model.ProcessDefinition;
+import ru.runa.gpd.ui.custom.FileNameChecker;
 import ru.runa.gpd.util.IOUtils;
 
 public class RenameProcessDefinitionDialog extends Dialog {
@@ -67,6 +66,7 @@ public class RenameProcessDefinitionDialog extends Dialog {
         nameField.setText(name);
         nameField.setLayoutData(nameTextData);
         nameField.addModifyListener(new ModifyListener() {
+            @Override
             public void modifyText(ModifyEvent e) {
                 name = nameField.getText();
                 updateButtons();
@@ -84,7 +84,7 @@ public class RenameProcessDefinitionDialog extends Dialog {
 
     private void updateButtons() {
     	IWorkspace workspace = ResourcesPlugin.getWorkspace();
-        boolean allowCreation = workspace.validateName(name, IResource.FOLDER).isOK();
+        boolean allowCreation = FileNameChecker.isValid(name);
         if (definitionFolder != null) {
             allowCreation &= !IOUtils.isChildFolderExists(definitionFolder.getParent(), name);
         } else if (definition != null) {

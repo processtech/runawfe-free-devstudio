@@ -1,17 +1,14 @@
 package ru.runa.gpd.formeditor.ftl;
 
+import com.google.common.collect.Lists;
 import java.util.List;
-
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.osgi.framework.Bundle;
-
 import ru.runa.gpd.formeditor.ftl.image.ComponentImageProvider;
 import ru.runa.gpd.formeditor.ftl.image.DefaultComponentImageProvider;
 import ru.runa.gpd.formeditor.ftl.validation.DefaultComponentValidator;
 import ru.runa.gpd.formeditor.ftl.validation.IComponentValidator;
-
-import com.google.common.collect.Lists;
 
 public class ComponentType {
     private static int orderCounter = 0;
@@ -90,9 +87,11 @@ public class ComponentType {
         if (parameters.size() > index) {
             return parameters.get(index);
         }
-        ComponentParameter parameter = parameters.get(parameters.size() - 1);
-        if (parameter.getType().isMultiple()) {
-            return parameter;
+        if (!parameters.isEmpty()) {
+            ComponentParameter parameter = parameters.get(parameters.size() - 1);
+            if (parameter.getType().isMultiple()) {
+                return parameter;
+            }
         }
         return null;
     }

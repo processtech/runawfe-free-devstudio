@@ -1,8 +1,10 @@
 package ru.runa.gpd.editor.graphiti.create;
 
 import org.eclipse.graphiti.features.context.ICreateContext;
-
+import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.ITimed;
+import ru.runa.gpd.lang.model.Timer;
+import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 
 public class CreateTimerFeature extends CreateElementFeature {
     @Override
@@ -10,7 +12,8 @@ public class CreateTimerFeature extends CreateElementFeature {
         if (super.canCreate(context)) {
             return true;
         }
-        Object parentObject = getBusinessObjectForPictogramElement(context.getTargetContainer());
-        return parentObject instanceof ITimed;
+        GraphElement parentObject = (GraphElement) getBusinessObjectForPictogramElement(context.getTargetContainer());
+        return parentObject instanceof ITimed && parentObject.getChildrenRecursive(Timer.class).isEmpty()
+                && !(parentObject.getParentContainer() instanceof IBoundaryEventContainer);
     }
 }

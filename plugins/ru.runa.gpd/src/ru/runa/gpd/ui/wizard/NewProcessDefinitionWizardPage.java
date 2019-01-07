@@ -1,11 +1,8 @@
 package ru.runa.gpd.ui.wizard;
 
 import java.util.List;
-
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.WizardPage;
@@ -20,7 +17,6 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.form.FormCSSTemplate;
@@ -28,6 +24,7 @@ import ru.runa.gpd.form.FormCSSTemplateRegistry;
 import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.settings.PrefConstants;
+import ru.runa.gpd.ui.custom.FileNameChecker;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.SwimlaneDisplayMode;
 
@@ -171,7 +168,7 @@ public class NewProcessDefinitionWizardPage extends WizardPage {
         } else if (processText.getText().length() == 0) {
             setErrorMessage(Localization.getString("error.no_process_name"));
             setPageComplete(false);
-        } else if (!ResourcesPlugin.getWorkspace().validateName(processText.getText(), IResource.FOLDER).isOK()) {
+        } else if (!FileNameChecker.isValid(processText.getText())) {
             setErrorMessage(Localization.getString("error.process_name_not_valid"));
             setPageComplete(false);
         } else if (isProcessExists()) {

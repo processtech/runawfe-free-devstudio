@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.io.SAXReader;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -21,6 +23,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.ui.IEditorPart;
@@ -31,6 +34,11 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
+
+import com.google.common.base.Charsets;
+import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 
 import ru.runa.gpd.BotCache;
 import ru.runa.gpd.Localization;
@@ -53,6 +61,7 @@ import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.ui.custom.Dialogs;
+import ru.runa.gpd.ui.dialog.DataSourceDialog;
 import ru.runa.gpd.ui.dialog.RenameBotDialog;
 import ru.runa.gpd.ui.dialog.RenameBotStationDialog;
 import ru.runa.gpd.ui.dialog.RenameBotTaskDialog;
@@ -62,9 +71,11 @@ import ru.runa.gpd.ui.wizard.CopyBotTaskWizard;
 import ru.runa.gpd.ui.wizard.CopyProcessDefinitionWizard;
 import ru.runa.gpd.ui.wizard.ExportBotElementWizardPage;
 import ru.runa.gpd.ui.wizard.ExportBotWizard;
+import ru.runa.gpd.ui.wizard.ExportDataSourceWizard;
 import ru.runa.gpd.ui.wizard.ExportParWizard;
 import ru.runa.gpd.ui.wizard.ImportBotElementWizardPage;
 import ru.runa.gpd.ui.wizard.ImportBotWizard;
+import ru.runa.gpd.ui.wizard.ImportDataSourceWizard;
 import ru.runa.gpd.ui.wizard.ImportParWizard;
 import ru.runa.gpd.ui.wizard.NewBotStationWizard;
 import ru.runa.gpd.ui.wizard.NewBotTaskWizard;
@@ -73,12 +84,8 @@ import ru.runa.gpd.ui.wizard.NewFolderWizard;
 import ru.runa.gpd.ui.wizard.NewProcessDefinitionWizard;
 import ru.runa.gpd.ui.wizard.NewProcessProjectWizard;
 import ru.runa.wfe.InternalApplicationException;
+import ru.runa.wfe.datasource.DataSourceStuff;
 import ru.runa.wfe.definition.ProcessDefinitionAccessType;
-
-import com.google.common.base.Charsets;
-import com.google.common.base.Objects;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 
 public class WorkspaceOperations {
 
@@ -653,4 +660,81 @@ public class WorkspaceOperations {
         dialog.open();
         BotCache.reload();
     }
+
+    public static void addDataSource() {
+        editDataSource(null);
+    }
+
+    public static void editDataSource(IStructuredSelection selection) {
+        IFile selected = (selection == null ? null : (IFile) selection.getFirstElement());
+        DataSourceDialog dialog = new DataSourceDialog(selected);
+        if (dialog.open() == IDialogConstants.OK_ID) {
+            try (InputStream is = new ByteArrayInputStream(dialog.getXml().getBytes(Charsets.UTF_8));) {
+                IFile dsFile = DataSourceUtils.getDataSourcesProject().getFile(dialog.getName() + DataSourceStuff.DATA_SOURCE_FILE_SUFFIX);
+                IOUtils.createOrUpdateFile(dsFile, is);
+                if (selected != null && !selected.getName().equals(dsFile.getName())) {
+                    selected.delete(true, null);
+                }
+            } catch (CoreException | IOException e) {
+                throw new InternalApplicationException(e);
+            }
+        }
+    }
+
+    public static void copyDataSource(IStructuredSelection selection) {
+        IFile srcFile = (IFile) selection.getFirstElement();
+        String srcDSName = srcFile.getName();
+        srcDSName = srcDSName.substring(0, srcDSName.lastIndexOf('.'));
+        IProject dsProject = srcFile.getProject();
+        String dstDSName = null;
+        IFile dstFile = null;
+        for (int i = 2; i < 100; i++) {
+            dstDSName = srcDSName + i;
+            dstFile = dsProject.getFile(dstDSName + DataSourceStuff.DATA_SOURCE_FILE_SUFFIX);
+            if (!dstFile.exists()) {
+                break;
+            }
+        }
+        try (InputStream is = srcFile.getContents()) {
+            SAXReader reader = new SAXReader();
+            reader.setMergeAdjacentText(true);
+            reader.setStripWhitespaceText(true);
+            reader.setErrorHandler(SimpleErrorHandler.getInstance());
+            Document document = reader.read(new InputStreamReader(is, Charsets.UTF_8));
+            document.getRootElement().attribute(DataSourceStuff.ATTR_NAME).setValue(dstDSName);
+            IOUtils.createOrUpdateFile(dstFile, new ByteArrayInputStream(XmlUtil.toString(document).getBytes(Charsets.UTF_8)));
+        } catch (IOException | CoreException | DocumentException e) {
+            throw new InternalApplicationException(e);
+        }
+    }
+
+    public static void deleteDataSources(List<IResource> resources) {
+        for (IResource resource : resources) {
+            try {
+                resource.refreshLocal(IResource.DEPTH_ZERO, null);
+                if (Dialogs.confirm(Localization.getString("Delete.dataSource.message", resource.getName()))) {
+                    if (resource instanceof IFile) {
+                        resource.delete(true, null);
+                    }
+                }
+            } catch (CoreException e) {
+                PluginLogger.logError("Error deleting", e);
+            }
+        }
+    }
+
+    public static void exportDataSource(IStructuredSelection selection) {
+        ExportDataSourceWizard wizard = new ExportDataSourceWizard();
+        wizard.init(PlatformUI.getWorkbench(), selection);
+        CompactWizardDialog dialog = new CompactWizardDialog(wizard);
+        dialog.open();
+    }
+
+    public static void importDataSource() {
+        ImportDataSourceWizard wizard = new ImportDataSourceWizard();
+        wizard.init(PlatformUI.getWorkbench(), new StructuredSelection(DataSourceUtils.getDataSourcesProject()));
+        CompactWizardDialog dialog = new CompactWizardDialog(wizard);
+        dialog.open();
+    }
+
 }

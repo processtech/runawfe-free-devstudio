@@ -1,7 +1,9 @@
 package ru.runa.gpd.editor.graphiti;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.Sets;
 import java.util.List;
-
+import java.util.Set;
 import org.eclipse.graphiti.dt.IDiagramTypeProvider;
 import org.eclipse.graphiti.features.ICreateConnectionFeature;
 import org.eclipse.graphiti.features.ICreateFeature;
@@ -20,15 +22,20 @@ import org.eclipse.graphiti.mm.pictograms.Shape;
 import org.eclipse.graphiti.tb.ContextButtonEntry;
 import org.eclipse.graphiti.tb.DefaultToolBehaviorProvider;
 import org.eclipse.graphiti.tb.IContextButtonPadData;
-
+import org.eclipse.ui.views.properties.IPropertyDescriptor;
+import org.eclipse.ui.views.properties.IPropertySource;
 import ru.runa.gpd.Localization;
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.graphiti.create.CreateElementFeature;
 import ru.runa.gpd.editor.graphiti.create.CreateStartNodeFeature;
 import ru.runa.gpd.editor.graphiti.create.CreateSwimlaneFeature;
 import ru.runa.gpd.editor.graphiti.update.OpenSubProcessFeature;
+import ru.runa.gpd.extension.HandlerArtifact;
+import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.lang.NodeRegistry;
 import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.lang.model.Action;
+import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.Subprocess;
@@ -53,6 +60,10 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
         GraphElement element = (GraphElement) getFeatureProvider().getBusinessObjectForPictogramElement(pe);
         if (element instanceof Subprocess) {
             return new OpenSubProcessFeature(getFeatureProvider());
+        }
+        NodeTypeDefinition definition = element.getTypeDefinition();
+        if (definition != null && definition.getGraphitiEntry() != null) {
+            return definition.getGraphitiEntry().createDoubleClickFeature(getFeatureProvider());
         }
         return super.getDoubleClickFeature(context);
     }
@@ -129,6 +140,9 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
         return data;
     }
 
+    static final private Set<String> TOOL_TIP_PROPERTY_NAMES =
+            Sets.newHashSet(PropertyNames.PROPERTY_ID, PropertyNames.PROPERTY_NAME, PropertyNames.PROPERTY_DESCRIPTION, PropertyNames.PROPERTY_CLASS);
+
     @Override
     public String getToolTip(GraphicsAlgorithm ga) {
         PictogramElement pe = ga.getPictogramElement();
@@ -143,10 +157,29 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
             }
         }
         Object bo = getFeatureProvider().getBusinessObjectForPictogramElement(pe);
-        if (bo instanceof Node) {
-            Node node = (Node) bo;
-            if (node.isMinimizedView()) {
-                return node.getLabel();
+        if (bo instanceof IPropertySource) {
+            IPropertyDescriptor[] propertyDescriptors = ((IPropertySource) bo).getPropertyDescriptors();
+            String toolTip = "";
+            for (IPropertyDescriptor propertyDescriptor : propertyDescriptors) {
+                if (TOOL_TIP_PROPERTY_NAMES.contains(propertyDescriptor.getId())) {
+                    Object propertyValue = ((IPropertySource) bo).getPropertyValue(propertyDescriptor.getId());
+                    if (propertyValue != null && !Strings.isNullOrEmpty(propertyValue.toString())) {
+                        if (!Strings.isNullOrEmpty(toolTip)) {
+                            toolTip += "\n";
+                        }
+                        toolTip += " " + propertyDescriptor.getDisplayName() + ": " + propertyValue + " ";
+                    }
+                }
+            }
+            if (bo instanceof Delegable) {
+                String delegationClassName = ((Delegable) bo).getDelegationClassName();
+                HandlerArtifact delegationClassNameArtifact = HandlerRegistry.getInstance().getArtifact(delegationClassName);
+                if (delegationClassNameArtifact != null) {
+                    toolTip = toolTip.replace(delegationClassName, delegationClassNameArtifact.getLabel());
+                }
+            }
+            if (!Strings.isNullOrEmpty(toolTip)) {
+                return toolTip;
             }
         }
         if (ga instanceof Image && PropertyUtil.hasProperty(pe, GaProperty.CLASS, GaProperty.ACTIONS_ICON)) {

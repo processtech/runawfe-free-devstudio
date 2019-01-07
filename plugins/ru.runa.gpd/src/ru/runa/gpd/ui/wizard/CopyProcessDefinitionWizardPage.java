@@ -1,11 +1,8 @@
 package ru.runa.gpd.ui.wizard;
 
 import java.util.List;
-
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -19,11 +16,11 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.model.ProcessDefinition;
+import ru.runa.gpd.ui.custom.FileNameChecker;
 import ru.runa.gpd.util.IOUtils;
 
 public class CopyProcessDefinitionWizardPage extends WizardPage {
@@ -73,7 +70,7 @@ public class CopyProcessDefinitionWizardPage extends WizardPage {
         label.setText(Localization.getString("label.project"));
         projectCombo = new Combo(parent, SWT.SINGLE | SWT.READ_ONLY | SWT.BORDER);
         for (IContainer container : processContainers) {
-            projectCombo.add(IOUtils.getProcessContainerName((IContainer) container));
+            projectCombo.add(IOUtils.getProcessContainerName(container));
         }
         projectCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         projectCombo.addSelectionListener(new SelectionAdapter() {
@@ -117,7 +114,7 @@ public class CopyProcessDefinitionWizardPage extends WizardPage {
         } else if (processText.getText().length() == 0) {
             setErrorMessage(Localization.getString("error.no_process_name"));
             setPageComplete(false);
-        } else if (!ResourcesPlugin.getWorkspace().validateName(processText.getText(), IResource.FOLDER).isOK()) {
+        } else if (!FileNameChecker.isValid(processText.getText())) {
             setErrorMessage(Localization.getString("error.process_name_not_valid"));
             setPageComplete(false);
         } else if (getTargetProcessFolder().exists()) {

@@ -12,6 +12,8 @@ public interface PrefConstants {
     public static final String P_BPMN_BACKGROUND_COLOR = "backgroundColor";
     public static final String P_BPMN_FOREGROUND_COLOR = "foregroundColor";
     public static final String P_BPMN_LINE_WIDTH = "lineWidth";
+    public static final String P_BPMN_MARK_DEFAULT_TRANSITION = "markDefaultTransition";
+    public static final String P_BPMN_DEFAULT_TRANSITION_NAMES = "defaultTransitionNames";
     public static final String P_LANGUAGE_NODE_NAME_PATTERN = "nodeNamePattern";
     public static final String P_LANGUAGE_NODE_WIDTH = "nodeWidth";
     public static final String P_LANGUAGE_NODE_HEIGHT = "nodeHeight";
@@ -51,4 +53,5 @@ public interface PrefConstants {
     public static final String P_DATE_FORMAT_PATTERN = "dateFormat";
     public static final String P_ENABLE_REGULATIONS_MENU_ITEMS = "enabledRegulationsMenuItems";
     public static final String P_ENABLE_EXPORT_WITH_SCALING = "enabledExportWithScaling";
+    public static final String P_CONFIRM_DELETION = "confirmDeletion";
 }

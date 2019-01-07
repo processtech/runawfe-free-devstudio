@@ -1,15 +1,7 @@
 package ru.runa.gpd.formeditor.ftl;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
-
 import freemarker.core.Environment;
 import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
@@ -17,6 +9,12 @@ import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateExceptionHandler;
 import freemarker.template.TemplateModel;
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class TemplateProcessor {
     private static final Configuration configuration = new Configuration(Configuration.VERSION_2_3_23);

@@ -1,14 +1,11 @@
 package ru.runa.gpd.formeditor.ftl.ui;
 
+import com.google.common.collect.Lists;
 import java.util.List;
-
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
-
 import ru.runa.gpd.formeditor.ftl.ComponentType;
 import ru.runa.gpd.formeditor.ftl.ComponentTypeRegistry;
-
-import com.google.common.collect.Lists;
 
 public enum ComponentTypeContentProvider {
     INSTANCE;

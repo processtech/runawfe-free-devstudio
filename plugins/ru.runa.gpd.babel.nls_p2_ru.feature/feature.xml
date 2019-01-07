@@ -2,7 +2,7 @@
 <feature
       id="ru.runa.gpd.babel.nls_p2_ru.feature"
       label="Babel Language Pack for Equinox.p2 in Russian Feature"
-      version="4.3.1.qualifier"
+      version="4.4.0.qualifier"
       provider-name="Process Technologies Ltd.">
 
    <description url="http://www.example.com/description">

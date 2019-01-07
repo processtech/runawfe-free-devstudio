@@ -1,29 +1,27 @@
 package ru.runa.gpd.editor;
 
+import com.google.common.collect.Lists;
 import java.util.List;
-
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.GraphicalViewer;
 import org.eclipse.gef.internal.GEFMessages;
+import org.eclipse.graphiti.ui.internal.parts.ConnectionDecoratorEditPart;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.actions.ActionFactory;
 
-import com.google.common.collect.Lists;
-
 /**
- * An action which selects all edit parts in the active workbench part.
- * Code copied from org.eclipse.gef.ui.actions.SelectAllAction; transition included
+ * An action which selects all edit parts in the active workbench part. Code copied from org.eclipse.gef.ui.actions.SelectAllAction; transition
+ * included
  */
 @SuppressWarnings("restriction")
 public class SelectAllAction extends Action {
     private IWorkbenchPart part;
 
     /**
-     * Constructs a <code>SelectAllAction</code> and associates it with the
-     * given part.
+     * Constructs a <code>SelectAllAction</code> and associates it with the given part.
      * 
      * @param part
      *            The workbench part associated with this SelectAllAction
@@ -62,6 +60,9 @@ public class SelectAllAction extends Action {
 
     private void addEditPartChildren(EditPart parent, List<EditPart> selection) {
         for (EditPart childPart : (List<EditPart>) parent.getChildren()) {
+            if (childPart instanceof ConnectionDecoratorEditPart) {
+                continue;
+            }
             if (childPart.isSelectable()) {
                 selection.add(childPart);
             }
@@ -75,4 +76,5 @@ public class SelectAllAction extends Action {
             addEditPartChildren(childPart, selection);
         }
     }
+
 }
