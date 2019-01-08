@@ -9,7 +9,7 @@
          point="org.eclipse.ui.editors">
       <editor
             class="ru.runa.gpd.formeditor.wysiwyg.FormEditor"
-            extensions="ftl,html"
+            extensions="html"
             icon="icons/html.png"
             id="ru.runa.gpd.wysiwyg.WYSIWYGHTMLEditor"
             name="%editor.name">
@@ -54,6 +54,13 @@
             icon="icons/html.png"
             id="ru.runa.gpd.wysiwyg.RegulationsViewer"
             name="regulations viewer">
+      </editor>
+      <editor
+            class="ru.runa.gpd.jointformeditor.JointFormEditor"
+            extensions="ftl"
+            default="true"
+            id="ru.runa.gpd.jointformeditor"
+            name="%joint.editor.name">
       </editor>
    </extension>
 
@@ -172,7 +179,7 @@
    <extension
          point="ru.runa.gpd.formtype">
       <element
-            contributor="ru.runa.gpd.formeditor.FtlFormType"
+            contributor="ru.runa.gpd.formeditor.FtlJointFormType"
             name="%FormType.ftl"
             type="ftl"/>
       <element

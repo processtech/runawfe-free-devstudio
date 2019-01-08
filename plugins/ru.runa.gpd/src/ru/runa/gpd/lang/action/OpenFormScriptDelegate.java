@@ -8,6 +8,7 @@ import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.editor.gef.command.FormNodeSetScriptFileCommand;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.util.IOUtils;
+import ru.runa.gpd.util.TemplateUtils;
 
 public class OpenFormScriptDelegate extends BaseModelActionDelegate {
 
@@ -20,7 +21,7 @@ public class OpenFormScriptDelegate extends BaseModelActionDelegate {
             }
             IFile file = IOUtils.getAdjacentFile(getDefinitionFile(), formNode.getScriptFileName());
             if (!file.exists()) {
-                IOUtils.createFile(file, getClass().getResourceAsStream("/conf/form.template.js"));
+                IOUtils.createFile(file, TemplateUtils.getFormTemplateAsStream());
             }
             IDE.openEditor(getWorkbenchPage(), file, true);
         } catch (Exception e) {

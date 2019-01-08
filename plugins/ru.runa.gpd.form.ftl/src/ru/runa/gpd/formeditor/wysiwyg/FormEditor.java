@@ -17,9 +17,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
@@ -75,7 +77,6 @@ import ru.runa.gpd.ui.view.SelectionProvider;
 import ru.runa.gpd.util.EditorUtils;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.VariableUtils;
-import ru.runa.gpd.validation.ValidationUtil;
 import ru.runa.wfe.InternalApplicationException;
 
 /**
@@ -94,8 +95,8 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
     private final ISelectionProvider selectionProvider = new SelectionProvider();
 
     private boolean ftlFormat = true;
-    private FormNode formNode;
-    private IFile formFile;
+    protected FormNode formNode;
+    protected IFile formFile;
     private final Map<Integer, Component> components = Maps.newConcurrentMap();
 
     private boolean dirty = false;
@@ -112,6 +113,19 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
 
     protected synchronized void setBrowserLoaded(boolean browserLoaded) {
         this.browserLoaded = browserLoaded;
+    }
+
+    @Override
+    protected void setInput(IEditorInput input) {
+        try {
+            IResource inputFile = ((FileEditorInput) input).getFile();
+            if (!inputFile.isSynchronized(IResource.DEPTH_ZERO)) {
+                inputFile.refreshLocal(IResource.DEPTH_ZERO, null);
+            }
+        } catch (CoreException e) {
+            PluginLogger.logError(e);
+        }
+        super.setInput(input);
     }
 
     @Override
@@ -148,7 +162,13 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
             public void propertyChanged(Object source, int propId) {
                 if (propId == FormEditor.CLOSED) {
                     if (formFile.exists()) {
-                        ValidationUtil.createOrUpdateValidation(formNode, formFile);
+                        if (IOUtils.isEmpty(formFile) && !getSite().getWorkbenchWindow().getWorkbench().isClosing()) {
+                            try {
+                                formFile.delete(true, null);
+                            } catch (CoreException e) {
+                                PluginLogger.logError(e);
+                            }
+                        }
                     }
                     boolean formEditorsAvailable = false;
                     IWorkbenchPage workbenchPage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
@@ -232,7 +252,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
         return cachedVariables.get(typeClassNameFilter);
     }
 
-    @SuppressWarnings("rawtypes")
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public Object getAdapter(Class adapter) {
         if (adapter == ITextEditor.class) {
@@ -377,11 +397,10 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
                 throw new InternalApplicationException(Messages.getString("wysiwyg.design.save_error"));
             }
         }
-        sourceEditor.doSave(monitor);
-        if (formNode != null) {
-            formNode.setDirty();
-            ValidationUtil.createOrUpdateValidation(formNode, formFile);
+        if (getActivePage() == 1) {
+            syncEditor2Browser();
         }
+        sourceEditor.doSave(monitor);
         if (isBrowserLoaded()) {
             browser.execute("setHTMLSaved()");
         }
@@ -408,11 +427,11 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
     @Override
     protected void pageChange(int newPageIndex) {
         if (isBrowserLoaded()) {
-            if (newPageIndex == 1) {
-                syncBrowser2Editor();
-            } else if (newPageIndex == 0) {
+            if (newPageIndex == 0) {
                 ConnectorServletHelper.sync();
                 syncEditor2Browser();
+            } else {
+                syncBrowser2Editor();
             }
         } else if (EditorsPlugin.DEBUG) {
             PluginLogger.logInfo("pageChange to = " + newPageIndex + " but editor is not loaded yet");
@@ -476,7 +495,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
         }
     }
 
-    private String getSourceDocumentHTML() {
+    protected String getSourceDocumentHTML() {
         return sourceEditor.getDocumentProvider().getDocument(sourceEditor.getEditorInput()).get();
     }
 

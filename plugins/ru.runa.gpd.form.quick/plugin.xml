@@ -11,11 +11,17 @@
             id="ru.runa.gpd.quick.formeditor.QuickFormEditor"
             name="quickFormEditor">
       </editor>
+      <editor
+            class="ru.runa.gpd.quick.jointformeditor.QuickJointFormEditor"
+            default="false"
+            id="ru.runa.gpd.quickjointformeditor"
+            name="%joint.editor.name">
+      </editor>
    	</extension>
    	<extension
          point="ru.runa.gpd.formtype">
       <element
-            contributor="ru.runa.gpd.quick.formeditor.QuickFormType"
+            contributor="ru.runa.gpd.quick.formeditor.QuickJointFormType"
             name="%FormType.quick"
             order="10"
             type="quick"/>

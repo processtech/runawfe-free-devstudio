@@ -1,5 +1,9 @@
 package ru.runa.gpd.util;
 
+import com.google.common.base.Charsets;
+import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -8,7 +12,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-
+import java.util.function.Consumer;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.io.SAXReader;
@@ -17,10 +21,15 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.QualifiedName;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -34,12 +43,6 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
-
-import com.google.common.base.Charsets;
-import com.google.common.base.Objects;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
-
 import ru.runa.gpd.BotCache;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
@@ -89,6 +92,8 @@ import ru.runa.wfe.definition.ProcessDefinitionAccessType;
 
 public class WorkspaceOperations {
 
+    public static final QualifiedName PROPERTY_FILE_WILL_BE_DELETED_SHORTLY = new QualifiedName(null, "file.will.be.deleted.shortly");
+
     public static void deleteResources(List<IResource> resources) {
         List<IFile> deletedDefinitions = new ArrayList<IFile>();
         for (IResource resource : resources) {
@@ -128,7 +133,9 @@ public class WorkspaceOperations {
                             subprocessDefinition.getParent().getEmbeddedSubprocesses().remove(subprocessDefinition.getId());
                             for (Subprocess sp : subprocessDefinition.getParent().getChildren(Subprocess.class))
                             {
-                                if (!sp.getSubProcessName().equals(subprocessDefinition.getName())) continue;
+                                if (!sp.getSubProcessName().equals(subprocessDefinition.getName())) {
+                                    continue;
+                                }
                                 sp.setSubProcessName("");
                                 break;
                             }
@@ -735,6 +742,18 @@ public class WorkspaceOperations {
         wizard.init(PlatformUI.getWorkbench(), new StructuredSelection(DataSourceUtils.getDataSourcesProject()));
         CompactWizardDialog dialog = new CompactWizardDialog(wizard);
         dialog.open();
+    }
+
+    public static void job(String jobName, Consumer<?> todo) {
+        WorkspaceJob job = new WorkspaceJob(jobName) {
+            @Override
+            public IStatus runInWorkspace(IProgressMonitor monitor) {
+                todo.accept(null);
+                return Status.OK_STATUS;
+            }
+        };
+        job.setUser(true);
+        job.schedule();
     }
 
 }
