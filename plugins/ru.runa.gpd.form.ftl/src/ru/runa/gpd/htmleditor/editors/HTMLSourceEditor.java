@@ -552,8 +552,8 @@ public class HTMLSourceEditor extends TextEditor {
                 return;
             }
 
-            ArrayList list = new ArrayList();
-            Stack stack = new Stack();
+            ArrayList<FoldingInfo> list = new ArrayList<>();
+            Stack<FoldingInfo> stack = new Stack<>();
             IDocument doc = getDocumentProvider().getDocument(getEditorInput());
 
             String xml = HTMLUtil.scriptlet2space(HTMLUtil.comment2space(doc.get(), true), true);
@@ -611,7 +611,7 @@ public class HTMLSourceEditor extends TextEditor {
                 if (text.startsWith("/")) {
                     text = text.substring(1, text.length());
                     while (stack.size() != 0) {
-                        FoldingInfo info = (FoldingInfo) stack.pop();
+                        FoldingInfo info = stack.pop();
                         if (info.getType().toLowerCase().equals(text.toLowerCase())) {
                             info.setEnd(matcher.end());
                             // Don't fold if start offset and end offset are same line

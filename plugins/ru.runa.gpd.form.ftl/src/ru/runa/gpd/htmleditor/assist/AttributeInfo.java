@@ -9,7 +9,7 @@ public class AttributeInfo {
 	private int attributeType;
 	private boolean required = false;
 	private String description;
-	private ArrayList values = new ArrayList();
+	private ArrayList<String> values = new ArrayList<>();
 	
 	public static final int NONE       = 0;
 	public static final int ALIGN      = 1;

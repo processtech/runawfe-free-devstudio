@@ -1,7 +1,6 @@
 package ru.runa.gpd.htmleditor.editors;
 
 import java.io.File;
-import java.util.ArrayList;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -165,14 +164,11 @@ public class MultiPageHTMLEditor extends MultiPageEditorPart implements IResourc
 	/** IEditorSite for the source editor. */
 	private static class SourceEditorSite extends MultiPageEditorSite {
 		
-		private HTMLSourceEditor editor = null;
 		private IEditorSite site;
-		private ArrayList menuExtenders;
 		
 		public SourceEditorSite(MultiPageEditorPart multiPageEditor,IEditorPart editor,IEditorSite site) {
 			super(multiPageEditor, editor);
 			this.site = site;
-			this.editor = (HTMLSourceEditor)editor;
 		}
 		
 		public IEditorActionBarContributor getActionBarContributor() {
@@ -180,23 +176,9 @@ public class MultiPageHTMLEditor extends MultiPageEditorPart implements IResourc
 		}
 		
 		public void registerContextMenu(String menuId, MenuManager menuManager, ISelectionProvider selectionProvider) {
-			if(editor != null){
-//				if (menuExtenders == null) {
-//					menuExtenders = new ArrayList(1);
-//				}
-//				menuExtenders.add(new PopupMenuExtender(menuId, menuManager, selectionProvider, editor));
-			}
 		}
 		
-		public void dispose(){
-//			if (menuExtenders != null) {
-//				for (int i = 0; i < menuExtenders.size(); i++) {
-//					((PopupMenuExtender)menuExtenders.get(i)).dispose();
-//				}
-//				menuExtenders = null;
-//			}
-//			super.dispose();
+		public void dispose() {
 		}
 	}
-
 }

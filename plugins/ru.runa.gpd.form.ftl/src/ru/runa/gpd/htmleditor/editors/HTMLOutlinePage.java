@@ -120,7 +120,7 @@ public class HTMLOutlinePage extends ContentOutlinePage implements IHTMLOutlineP
 	}
 	
 	protected Object[] getNodeChildren(FuzzyXMLElement element){
-		ArrayList children = new ArrayList();
+		ArrayList<FuzzyXMLNode> children = new ArrayList<>();
 		FuzzyXMLNode[] nodes = element.getChildren();
 		for(int i=0;i<nodes.length;i++){
 			if(nodes[i] instanceof FuzzyXMLElement){
@@ -131,7 +131,7 @@ public class HTMLOutlinePage extends ContentOutlinePage implements IHTMLOutlineP
 				children.add(nodes[i]);
 			}
 		}
-		return (FuzzyXMLNode[])children.toArray(new FuzzyXMLNode[children.size()]);
+		return children.toArray(new FuzzyXMLNode[children.size()]);
 	}
 	
 	protected String getNodeText(FuzzyXMLNode node){
@@ -166,24 +166,24 @@ public class HTMLOutlinePage extends ContentOutlinePage implements IHTMLOutlineP
 			super();
 		}
 		
-		public Object[] getChildren(){
+		public Object[] getChildren() {
 //			IFile  file = ((FileEditorInput)editor.getEditorInput()).getFile();
 //			return new FileNode[]{
 //				new FileNode(file.getName())
 //			};
-			ArrayList children = new ArrayList();
+			ArrayList<FuzzyXMLNode> children = new ArrayList<>();
 			if(doc.getDocumentType()!=null){
 				children.add(doc.getDocumentType());
 			}
 			FuzzyXMLNode[] nodes = doc.getDocumentElement().getChildren();
-			for(int i=0;i<nodes.length;i++){
-				if(nodes[i] instanceof FuzzyXMLElement){
+			for (int i=0; i<nodes.length; i++) {
+				if (nodes[i] instanceof FuzzyXMLElement) {
 					children.add(nodes[i]);
 //				} else if(nodes[i] instanceof FuzzyXMLText && ((FuzzyXMLText)nodes[i]).getValue().startsWith("<%")){
 //					children.add(nodes[i]);
 				}
 			}
-			return (FuzzyXMLNode[])children.toArray(new FuzzyXMLNode[children.size()]);
+			return children.toArray(new FuzzyXMLNode[children.size()]);
 		}
 		
 		public boolean equals(Object obj){

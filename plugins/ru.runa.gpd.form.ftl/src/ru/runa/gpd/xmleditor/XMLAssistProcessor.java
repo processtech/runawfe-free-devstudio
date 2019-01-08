@@ -52,8 +52,8 @@ import com.wutka.dtd.DTDSequence;
  */
 public class XMLAssistProcessor extends HTMLAssistProcessor {
 
-    private final List tagList = new ArrayList();
-    private final Map nsTagListMap = new HashMap();
+    private final List<TagInfo> tagList = new ArrayList<>();
+    private final Map<String, List<TagInfo>> nsTagListMap = new HashMap<>();
 
     // private TagInfo root = null;
 
@@ -102,7 +102,7 @@ public class XMLAssistProcessor extends HTMLAssistProcessor {
                         hasBody = false;
                     }
                     TagInfo tagInfo = new TagInfo(name, hasBody);
-                    Iterator ite = element.attributes.keySet().iterator();
+                    Iterator<String> ite = element.attributes.keySet().iterator();
 
                     // set child tags
                     if (item instanceof DTDSequence) {
@@ -113,7 +113,7 @@ public class XMLAssistProcessor extends HTMLAssistProcessor {
                     }
 
                     while (ite.hasNext()) {
-                        String attrName = (String) ite.next();
+                        String attrName = ite.next();
                         DTDAttribute attr = element.getAttribute(attrName);
 
                         DTDDecl decl = attr.getDecl();
@@ -158,8 +158,8 @@ public class XMLAssistProcessor extends HTMLAssistProcessor {
 
             // clear at first
             String targetNS = grammer.getTargetNamespace();
-            nsTagListMap.put(targetNS, new ArrayList());
-            List tagList = (List) nsTagListMap.get(targetNS);
+            nsTagListMap.put(targetNS, new ArrayList<>());
+            List<TagInfo> tagList = nsTagListMap.get(targetNS);
             // root = null;
 
             XSNamedMap map = grammer.getComponents(XSConstants.ELEMENT_DECLARATION);
@@ -172,7 +172,7 @@ public class XMLAssistProcessor extends HTMLAssistProcessor {
         }
     }
 
-    private void parseXSDElement(List tagList, XSElementDeclaration element) {
+    private void parseXSDElement(List<TagInfo> tagList, XSElementDeclaration element) {
         TagInfo tagInfo = new TagInfo(element.getName(), true);
         if (tagList.contains(tagInfo)) {
             return;
@@ -203,7 +203,7 @@ public class XMLAssistProcessor extends HTMLAssistProcessor {
         }
     }
 
-    private void parseXSModelGroup(TagInfo tagInfo, List tagList, XSModelGroup term) {
+    private void parseXSModelGroup(TagInfo tagInfo, List<TagInfo> tagList, XSModelGroup term) {
         XSObjectList list = term.getParticles();
         for (int i = 0; i < list.getLength(); i++) {
             XSObject obj = list.item(i);
@@ -275,24 +275,23 @@ public class XMLAssistProcessor extends HTMLAssistProcessor {
      * @return List of TagInfo
      */
     @Override
-    protected List getTagList() {
-        ArrayList list = new ArrayList();
+    protected List<TagInfo> getTagList() {
+        ArrayList<TagInfo> list = new ArrayList<>();
         list.addAll(this.tagList);
         // get namespace
         FuzzyXMLElement element = getOffsetElement();
-        HashMap nsPrefixMap = new HashMap();
+        HashMap<String, String> nsPrefixMap = new HashMap<>();
         getNamespace(nsPrefixMap, element);
         // add prefix to tag names
-        Iterator ite = this.nsTagListMap.keySet().iterator();
+        Iterator<String> ite = this.nsTagListMap.keySet().iterator();
         while (ite.hasNext()) {
-            String uri = (String) ite.next();
-            String prefix = (String) nsPrefixMap.get(uri);
+            String uri = ite.next();
+            String prefix = nsPrefixMap.get(uri);
             if (prefix == null || prefix.equals("")) {
-                list.addAll((List) this.nsTagListMap.get(uri));
+                list.addAll(this.nsTagListMap.get(uri));
             } else {
-                List nsTagList = (List) this.nsTagListMap.get(uri);
-                for (int i = 0; i < nsTagList.size(); i++) {
-                    TagInfo tagInfo = (TagInfo) nsTagList.get(i);
+                List<TagInfo> nsTagList = this.nsTagListMap.get(uri);
+                for (TagInfo tagInfo : nsTagList) {
                     list.add(createPrefixTagInfo(tagInfo, prefix));
                 }
             }
@@ -328,7 +327,7 @@ public class XMLAssistProcessor extends HTMLAssistProcessor {
      * @param element
      *            FuzzyXMLElement at the calet position
      */
-    private void getNamespace(Map map, FuzzyXMLElement element) {
+    private void getNamespace(Map<String, String> map, FuzzyXMLElement element) {
         FuzzyXMLAttribute[] attrs = element.getAttributes();
         for (int i = 0; i < attrs.length; i++) {
             if (attrs[i].getName().startsWith("xmlns")) {
@@ -356,9 +355,7 @@ public class XMLAssistProcessor extends HTMLAssistProcessor {
      */
     @Override
     protected TagInfo getTagInfo(String name) {
-        List tagList = getTagList();
-        for (int i = 0; i < tagList.size(); i++) {
-            TagInfo info = (TagInfo) tagList.get(i);
+        for (TagInfo info : getTagList()) {
             if (info.getTagName().equals(name)) {
                 return info;
             }

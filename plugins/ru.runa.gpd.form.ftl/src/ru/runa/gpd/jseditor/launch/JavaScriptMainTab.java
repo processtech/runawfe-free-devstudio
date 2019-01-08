@@ -145,8 +145,7 @@ public class JavaScriptMainTab extends AbstractLaunchConfigurationTab {
 					JavaScriptLaunchConstants.ATTR_JAVASCRIPT_FILE, "");
 			file.setText(scriptFile);
 			
-			java.util.List includes = configuration.getAttribute(
-					JavaScriptLaunchConstants.ATTR_JAVASCRIPT_INCLUDES, Collections.EMPTY_LIST);
+			List<String> includes = configuration.getAttribute(JavaScriptLaunchConstants.ATTR_JAVASCRIPT_INCLUDES, Collections.emptyList());
 			List tableModel = tableViewer.getModel();
 			tableModel.clear();
 			IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace().getRoot();
@@ -170,13 +169,11 @@ public class JavaScriptMainTab extends AbstractLaunchConfigurationTab {
 	public void performApply(ILaunchConfigurationWorkingCopy configuration) {
 		configuration.setAttribute(JavaScriptLaunchConstants.ATTR_JAVASCRIPT_FILE, file.getText());
 		
-		List tableModel = tableViewer.getModel();
-		List includeFiles = new ArrayList();
-		for(int i=0;i<tableModel.size();i++){
-			Object obj = tableModel.get(i);
-			if(obj instanceof File){
+		List<String> includeFiles = new ArrayList<>();
+		for (Object obj : tableViewer.getModel()) {
+			if (obj instanceof File) {
 				includeFiles.add(((File)obj).getAbsolutePath());
-			} else if(obj instanceof IFile){
+			} else if (obj instanceof IFile) {
 				includeFiles.add(JavaScriptLibraryTable.PREFIX + ((IFile)obj).getFullPath().toString());
 			}
 		}

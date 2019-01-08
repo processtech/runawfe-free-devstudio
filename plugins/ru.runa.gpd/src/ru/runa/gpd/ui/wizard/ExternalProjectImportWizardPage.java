@@ -582,7 +582,6 @@ public class ExternalProjectImportWizardPage extends WizardPage implements IOver
 
                     monitor.beginTask(Localization.getString("ImportProjectWizard.page.seach.project"), 100);
                     selectedProjects = new ProjectRecord[0];
-                    Collection files = new ArrayList();
                     monitor.worked(10);
                     if (!dirSelected && ArchiveFileManipulations.isTarFile(path)) {
                         TarFile sourceTarFile = getSpecifiedTarSourceFile(path);
@@ -593,10 +592,11 @@ public class ExternalProjectImportWizardPage extends WizardPage implements IOver
                         structureProvider = new TarLeveledStructureProvider(sourceTarFile);
                         Object child = structureProvider.getRoot();
 
+                        Collection<ProjectRecord> files = new ArrayList<>();
                         if (!collectProjectFilesFromProvider(files, child, 0, monitor)) {
                             return;
                         }
-                        Iterator filesIterator = files.iterator();
+                        Iterator<ProjectRecord> filesIterator = files.iterator();
                         selectedProjects = new ProjectRecord[files.size()];
                         int index = 0;
                         monitor.worked(50);
@@ -612,10 +612,11 @@ public class ExternalProjectImportWizardPage extends WizardPage implements IOver
                         structureProvider = new ZipLeveledStructureProvider(sourceFile);
                         Object child = structureProvider.getRoot();
 
+                        Collection<ProjectRecord> files = new ArrayList<>();
                         if (!collectProjectFilesFromProvider(files, child, 0, monitor)) {
                             return;
                         }
-                        Iterator filesIterator = files.iterator();
+                        Iterator<ProjectRecord> filesIterator = files.iterator();
                         selectedProjects = new ProjectRecord[files.size()];
                         int index = 0;
                         monitor.worked(50);
@@ -623,20 +624,19 @@ public class ExternalProjectImportWizardPage extends WizardPage implements IOver
                         while (filesIterator.hasNext()) {
                             selectedProjects[index++] = (ProjectRecord) filesIterator.next();
                         }
-                    }
+                    } else if (dirSelected && directory.isDirectory()) {
 
-                    else if (dirSelected && directory.isDirectory()) {
-
+                        Collection<File> files = new ArrayList<>();
                         if (!collectProjectFilesFromDirectory(files, directory, null, monitor)) {
                             return;
                         }
-                        Iterator filesIterator = files.iterator();
+                        Iterator<File> filesIterator = files.iterator();
                         selectedProjects = new ProjectRecord[files.size()];
                         int index = 0;
                         monitor.worked(50);
                         monitor.subTask(Localization.getString("ImportProjectWizard.page.process.result"));
                         while (filesIterator.hasNext()) {
-                            File file = (File) filesIterator.next();
+                            File file = filesIterator.next();
                             selectedProjects[index] = new ProjectRecord(file);
                             index++;
                         }
@@ -746,7 +746,7 @@ public class ExternalProjectImportWizardPage extends WizardPage implements IOver
      *            The monitor to report to
      * @return boolean <code>true</code> if the operation was completed.
      */
-    private boolean collectProjectFilesFromDirectory(Collection files, File directory, Set directoriesVisited, IProgressMonitor monitor) {
+    private boolean collectProjectFilesFromDirectory(Collection<File> files, File directory, Set<String> directoriesVisited, IProgressMonitor monitor) {
 
         if (monitor.isCanceled()) {
             return false;
@@ -759,7 +759,7 @@ public class ExternalProjectImportWizardPage extends WizardPage implements IOver
 
         // Initialize recursion guard for recursive symbolic links
         if (directoriesVisited == null) {
-            directoriesVisited = new HashSet();
+            directoriesVisited = new HashSet<>();
             try {
                 directoriesVisited.add(directory.getCanonicalPath());
             } catch (IOException exception) {
@@ -807,7 +807,7 @@ public class ExternalProjectImportWizardPage extends WizardPage implements IOver
      *            The monitor to report to
      * @return boolean <code>true</code> if the operation was completed.
      */
-    private boolean collectProjectFilesFromProvider(Collection files, Object entry, int level, IProgressMonitor monitor) {
+    private boolean collectProjectFilesFromProvider(Collection<ProjectRecord> files, Object entry, int level, IProgressMonitor monitor) {
 
         if (monitor.isCanceled()) {
             return false;
@@ -903,7 +903,7 @@ public class ExternalProjectImportWizardPage extends WizardPage implements IOver
     public boolean createProjects() {
 
         final Object[] selected = projectsList.getCheckedElements();
-        createdProjects = new ArrayList();
+        createdProjects = new ArrayList<>();
         WorkspaceModifyOperation op = new WorkspaceModifyOperation() {
             @Override
             protected void execute(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
@@ -943,7 +943,7 @@ public class ExternalProjectImportWizardPage extends WizardPage implements IOver
         return true;
     }
 
-    List createdProjects;
+    List<IProject> createdProjects;
 
     /**
      * Performs clean-up if the user cancels the wizard without doing anything
@@ -983,8 +983,7 @@ public class ExternalProjectImportWizardPage extends WizardPage implements IOver
             // import from archive
             List fileSystemObjects = structureProvider.getChildren(record.parent);
             structureProvider.setStrip(record.level);
-            ImportOperation operation = new ImportOperation(project.getFullPath(), structureProvider.getRoot(), structureProvider, this,
-                    fileSystemObjects);
+            ImportOperation operation = new ImportOperation(project.getFullPath(), structureProvider.getRoot(), structureProvider, this, fileSystemObjects);
             operation.setContext(getShell());
             operation.run(monitor);
             return true;
@@ -1027,8 +1026,7 @@ public class ExternalProjectImportWizardPage extends WizardPage implements IOver
         // import operation to import project files if copy checkbox is selected
         if (importSource != null) {
             List filesToImport = FileSystemStructureProvider.INSTANCE.getChildren(importSource);
-            ImportOperation operation = new ImportOperation(project.getFullPath(), importSource, FileSystemStructureProvider.INSTANCE, this,
-                    filesToImport);
+            ImportOperation operation = new ImportOperation(project.getFullPath(), importSource, FileSystemStructureProvider.INSTANCE, this, filesToImport);
             operation.setContext(getShell());
             operation.setOverwriteResources(true); // need to overwrite
             // .project, .classpath
@@ -1126,7 +1124,7 @@ public class ExternalProjectImportWizardPage extends WizardPage implements IOver
      *         workspace
      */
     public ProjectRecord[] getProjectRecords() {
-        List projectRecords = new ArrayList();
+        List<ProjectRecord> projectRecords = new ArrayList<>();
         for (int i = 0; i < selectedProjects.length; i++) {
             if ((isProjectInWorkspacePath(selectedProjects[i].getProjectName())) || isProjectInWorkspace(selectedProjects[i].getProjectName())) {
                 selectedProjects[i].hasConflicts = true;

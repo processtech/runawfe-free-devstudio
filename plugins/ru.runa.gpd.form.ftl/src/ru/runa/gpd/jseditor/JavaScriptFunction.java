@@ -14,7 +14,7 @@ public class JavaScriptFunction implements JavaScriptElement, JavaScriptContext 
 	private String arguments;
 	private int offset;
 	private int end;
-	private List children = new ArrayList();
+	private List<JavaScriptElement> children = new ArrayList<>();
 	private JavaScriptContext parent;
 	
 	public JavaScriptFunction(String name, String arguments, int offset){
@@ -56,16 +56,16 @@ public class JavaScriptFunction implements JavaScriptElement, JavaScriptContext 
 	}
 	
 	public JavaScriptElement[] getChildren(){
-		return (JavaScriptElement[])this.children.toArray(new JavaScriptElement[this.children.size()]);
+		return this.children.toArray(new JavaScriptElement[this.children.size()]);
 	}
 	
 	public JavaScriptElement[] getVisibleElements(){
-		List list = new ArrayList();
+		List<JavaScriptElement> list = new ArrayList<>();
 		JavaScriptContext context = this;
-		while(true){
+		while (true) {
 			JavaScriptElement[] children = context.getChildren();
-			for(int i=0;i<children.length;i++){
-				list.add(children[i]);
+			for (JavaScriptElement c : children) {
+				list.add(c);
 			}
 			
 			if(context.getParent()==null){
@@ -74,7 +74,7 @@ public class JavaScriptFunction implements JavaScriptElement, JavaScriptContext 
 				context = context.getParent();
 			}
 		}
-		return (JavaScriptElement[])list.toArray(new JavaScriptElement[list.size()]);
+		return list.toArray(new JavaScriptElement[list.size()]);
 	}
 	
 	public void setParent(JavaScriptContext context){

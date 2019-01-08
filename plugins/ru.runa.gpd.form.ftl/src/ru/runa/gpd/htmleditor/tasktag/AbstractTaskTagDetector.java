@@ -20,7 +20,7 @@ public abstract class AbstractTaskTagDetector implements ITaskTagDetector {
 	protected String contents;
 	protected IFile file;
 	protected TaskTag[] tags;
-	private List extensions = new ArrayList();
+	private List<String> extensions = new ArrayList<String>();
 	
 	/**
 	 * Adds supported file extensions.
