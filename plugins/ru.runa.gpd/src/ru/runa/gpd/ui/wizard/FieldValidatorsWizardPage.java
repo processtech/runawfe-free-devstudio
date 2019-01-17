@@ -425,6 +425,7 @@ public class FieldValidatorsWizardPage extends WizardPage implements PropertyCha
                             } else {
                                 config.getTransitionNames().remove(button.getText());
                             }
+                            setDirty(true);
                         }
                     });
                     transitionButtons.put(transition.getName(), button);

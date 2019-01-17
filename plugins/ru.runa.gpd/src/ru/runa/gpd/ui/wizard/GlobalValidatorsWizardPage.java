@@ -239,6 +239,7 @@ public class GlobalValidatorsWizardPage extends WizardPage implements PropertyCh
                             } else {
                                 config.getTransitionNames().remove(button.getText());
                             }
+                            setDirty(true);
                         }
                     });
                     transitionButtons.put(transition.getName(), button);
