@@ -106,6 +106,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
 
     private int cachedForVariablesCount = -1;
     private final Map<String, Map<String, Variable>> cachedVariables = new HashMap<String, Map<String, Variable>>();
+    private int currentPageIndex = -1;
 
     protected synchronized boolean isBrowserLoaded() {
         return browserLoaded;
@@ -427,12 +428,13 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
     @Override
     protected void pageChange(int newPageIndex) {
         if (isBrowserLoaded()) {
-            if (newPageIndex == 0) {
+            if (currentPageIndex < 0 || currentPageIndex == 1) {
                 ConnectorServletHelper.sync();
                 syncEditor2Browser();
-            } else {
+            } else if (currentPageIndex == 0) {
                 syncBrowser2Editor();
             }
+            currentPageIndex = newPageIndex;
         } else if (EditorsPlugin.DEBUG) {
             PluginLogger.logInfo("pageChange to = " + newPageIndex + " but editor is not loaded yet");
         }
