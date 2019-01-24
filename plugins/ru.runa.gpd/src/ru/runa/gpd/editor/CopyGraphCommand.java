@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.CoreException;
@@ -54,6 +55,7 @@ import ru.runa.gpd.ui.dialog.MultipleSelectionDialog;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.SwimlaneDisplayMode;
 import ru.runa.gpd.util.VariableUtils;
+import ru.runa.wfe.var.UserType;
 
 public class CopyGraphCommand extends Command {
     private final ProcessEditorBase targetEditor;
@@ -117,10 +119,10 @@ public class CopyGraphCommand extends Command {
                     ExtraCopyAction copyAction;
                     if (variable instanceof Swimlane) {
                         copyAction = new CopySwimlaneAction((Swimlane) variable);
-                    } else if (variable.isUserTypeAttribute()) {
-                        copyAction = new CopyUserTypeAttributeAction(node.getProcessDefinition(), variable);
                     } else {
-                        copyAction = new CopyVariableAction(node.getProcessDefinition(), variable);
+                        String rootVariableName = variable.getName().split(Pattern.quote(UserType.DELIM))[0];
+                        copyAction = new CopyVariableAction(node.getProcessDefinition(),
+                                VariableUtils.getVariableByName(node.getProcessDefinition(), rootVariableName));
                     }
                     copyActions.add(copyAction);
                 }
@@ -200,10 +202,10 @@ public class CopyGraphCommand extends Command {
                         ExtraCopyAction copyAction;
                         if (variable instanceof Swimlane) {
                             copyAction = new CopySwimlaneAction((Swimlane) variable);
-                        } else if (variable.isUserTypeAttribute()) {
-                            copyAction = new CopyUserTypeAttributeAction(node.getProcessDefinition(), variable);
                         } else {
-                            copyAction = new CopyVariableAction(node.getProcessDefinition(), variable);
+                            String rootVariableName = variable.getName().split(Pattern.quote(UserType.DELIM))[0];
+                            copyAction = new CopyVariableAction(node.getProcessDefinition(),
+                                    VariableUtils.getVariableByName(node.getProcessDefinition(), rootVariableName));
                         }
                         copyActions.add(copyAction);
                     }
@@ -576,45 +578,4 @@ public class CopyGraphCommand extends Command {
 
     }
 
-    private class CopyUserTypeAttributeAction extends ExtraCopyAction {
-        private final Variable complexVariable;
-        private final List<VariableUserType> usedUserTypes = Lists.newArrayList();
-        private Variable addedVariable;
-        private final List<VariableUserType> addedUserTypes = Lists.newArrayList();
-
-        public CopyUserTypeAttributeAction(ProcessDefinition sourceProcessDefinition, Variable sourceVariable) {
-            super(CopyBuffer.GROUP_VARIABLES, sourceVariable.getName());
-            this.complexVariable = VariableUtils.getComplexVariableByExpandedAttribute(sourceProcessDefinition, sourceVariable.getName());
-            this.usedUserTypes.addAll(VariableUtils.getUsedUserTypes(sourceProcessDefinition, sourceVariable.getName()));
-        }
-
-        @Override
-        public void execute() {
-            Variable oldComplexVariable = VariableUtils.getVariableByName(targetDefinition, complexVariable.getName());
-            if (oldComplexVariable != null && !Objects.equal(oldComplexVariable.getUserType().getName(), complexVariable.getUserType().getName())) {
-                throw new RuntimeException(oldComplexVariable.getName() + " has incompatible formats: " + oldComplexVariable.getUserType().getName()
-                        + "/" + complexVariable.getUserType().getName());
-            }
-            if (oldComplexVariable == null) {
-                addedVariable = (Variable) complexVariable.makeCopy(targetDefinition);
-            }
-            for (VariableUserType userType : usedUserTypes) {
-                if (targetDefinition.getVariableUserType(userType.getName()) == null) {
-                    VariableUserType addedUserType = userType.getCopy();
-                    targetDefinition.addVariableUserType(addedUserType);
-                    addedUserTypes.add(addedUserType);
-                }
-            }
-        }
-
-        @Override
-        public void undo() {
-            if (addedVariable != null) {
-                targetDefinition.removeChild(addedVariable);
-            }
-            for (VariableUserType addedUserType : addedUserTypes) {
-                targetDefinition.removeVariableUserType(addedUserType);
-            }
-        }
-    }
 }
