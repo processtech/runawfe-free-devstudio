@@ -1983,6 +1983,16 @@
             enabled="true"
             label="%ru.runa.wf.logic.bot.ResumeProcessTaskHandler">
       </handler>
+      <handler
+            actionHandler="true"
+            assignmentHandler="false"
+            botTaskHandler="true"
+            decisionHandler="false"
+            cellEditorProvider="ru.runa.gpd.extension.handler.ConfigBasedProvider"
+            className="ru.runa.wfe.extension.handler.report.ReportHandler"
+            label="%ru.runa.wfe.extension.handler.report.ReportHandler"
+            enabled="true">
+      </handler>
    </extension>
    <extension
          point="ru.runa.gpd.swimlaneElements">
