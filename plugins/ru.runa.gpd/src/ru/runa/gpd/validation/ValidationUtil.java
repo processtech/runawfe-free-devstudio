@@ -2,9 +2,12 @@ package ru.runa.gpd.validation;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.CoreException;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.form.FormType;
 import ru.runa.gpd.form.FormTypeProvider;
@@ -12,6 +15,7 @@ import ru.runa.gpd.form.FormVariableAccess;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.util.IOUtils;
+import ru.runa.gpd.util.WorkspaceOperations;
 import ru.runa.wfe.var.format.DateFormat;
 import ru.runa.wfe.var.format.TimeFormat;
 
@@ -97,19 +101,30 @@ public class ValidationUtil {
         return validationFile;
     }
 
-    public static void createOrUpdateValidation(FormNode formNode, IFile formFile) {
-        String op = "create";
-        try {
-            if (!formNode.hasFormValidation()) {
-                String fileName = formNode.getId() + "." + FormNode.VALIDATION_SUFFIX;
-                formNode.setValidationFileName(fileName);
-                createNewValidationUsingForm(formFile, formNode);
-            } else {
-                op = "update";
-                updateValidation(formFile, formNode);
+    public static void removeEmptyConfigsForDeletedVariables(IFile validationFile, FormNode formNode, FormNodeValidation validation) {
+        Set<String> missedVariableNames = new HashSet<>();
+        missedVariableNames.addAll(validation.getVariableNamesWithEmptyConfigs());
+        missedVariableNames.removeAll(formNode.getVariableNames(true));
+        for (String variableName : missedVariableNames) {
+            validation.removeFieldConfigs(variableName);
+        }
+        ValidatorParser.writeValidation(validationFile, formNode, validation);
+    }
+
+    public static void removeValidationIfEmpty(IFile validationFile, FormNodeValidation validation) {
+        if (validation.getVariableNames().isEmpty()) {
+            try {
+                validationFile.setSessionProperty(WorkspaceOperations.PROPERTY_FILE_WILL_BE_DELETED_SHORTLY, Boolean.TRUE);
+            } catch (CoreException e) {
+                PluginLogger.logError(e);
             }
-        } catch (Exception e) {
-            PluginLogger.logError("Failed to " + op + " form validation", e);
+            WorkspaceOperations.job("Validation editor disposing", (p) -> {
+                try {
+                    validationFile.delete(true, null);
+                } catch (CoreException e) {
+                    PluginLogger.logError(e);
+                }
+            });
         }
     }
 }

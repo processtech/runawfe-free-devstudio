@@ -106,7 +106,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
 
     private int cachedForVariablesCount = -1;
     private final Map<String, Map<String, Variable>> cachedVariables = new HashMap<String, Map<String, Variable>>();
-    private int currentPageIndex = -1;
+    protected int currentPageIndex = 0;
 
     protected synchronized boolean isBrowserLoaded() {
         return browserLoaded;
@@ -305,7 +305,13 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
         } catch (Exception ex) {
             PluginLogger.logError(Messages.getString("wysiwyg.source.create_error"), ex);
         }
-        if (browser == null) {
+        if (currentPageIndex == 0) {
+            startWebServerIfNotStartedYet(() -> setActivePage(0));
+        }
+    }
+
+    protected void startWebServerIfNotStartedYet(BrowserLoadCallback browserLoadCallback) {
+        if (browser == null || browserLoaded) {
             return;
         }
         ConnectorServletHelper.setBaseDir(sourceEditor.getFile().getParent());
@@ -338,7 +344,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
                             @Override
                             public void run() {
                                 if (!browser.isDisposed()) {
-                                    setActivePage(0);
+                                    browserLoadCallback.onLoad();
                                 }
                             }
                         });
@@ -405,7 +411,6 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
         if (isBrowserLoaded()) {
             browser.execute("setHTMLSaved()");
         }
-        setDirty(false);
     }
 
 
@@ -428,16 +433,19 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
     @Override
     protected void pageChange(int newPageIndex) {
         if (isBrowserLoaded()) {
-            if (currentPageIndex < 0 || currentPageIndex == 1) {
+            if (currentPageIndex == 1) {
                 ConnectorServletHelper.sync();
                 syncEditor2Browser();
             } else if (currentPageIndex == 0) {
                 syncBrowser2Editor();
             }
-            currentPageIndex = newPageIndex;
-        } else if (EditorsPlugin.DEBUG) {
-            PluginLogger.logInfo("pageChange to = " + newPageIndex + " but editor is not loaded yet");
+        } else if (newPageIndex == 0) {
+            startWebServerIfNotStartedYet(() -> {
+                ConnectorServletHelper.sync();
+                syncEditor2Browser();
+            });
         }
+        currentPageIndex = newPageIndex;
         super.pageChange(newPageIndex);
     }
 
@@ -618,6 +626,12 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
             }
             return null;
         }
+    }
+
+    private interface BrowserLoadCallback {
+
+        void onLoad();
+
     }
 
     private class OnLoadCallbackFunction extends BrowserFunction {

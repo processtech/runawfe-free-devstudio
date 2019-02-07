@@ -13,6 +13,7 @@ import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
+import ru.runa.gpd.Activator;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.jointformeditor.resources.Messages;
@@ -21,14 +22,16 @@ import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.quick.formeditor.QuickFormEditor;
-import ru.runa.gpd.ui.wizard.FieldValidatorsWizardPage;
-import ru.runa.gpd.ui.wizard.GlobalValidatorsWizardPage;
-import ru.runa.gpd.ui.wizard.ValidatorWizard;
+import ru.runa.gpd.settings.PrefConstants;
+import ru.runa.gpd.ui.control.FieldValidatorsPage;
+import ru.runa.gpd.ui.control.GlobalValidatorsPage;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.TemplateUtils;
+import ru.runa.gpd.validation.FormNodeValidation;
 import ru.runa.gpd.validation.ValidationUtil;
+import ru.runa.gpd.validation.ValidatorParser;
 
-public class QuickJointFormEditor extends MultiPageEditorPart {
+public class JointQuickFormEditor extends MultiPageEditorPart {
 
     public static final String ID = "ru.runa.gpd.quickjointformeditor";
 
@@ -37,12 +40,12 @@ public class QuickJointFormEditor extends MultiPageEditorPart {
     protected IFolder definitionFolder;
 
     private boolean dirty = false;
+    private QuickFormEditor quickEditor;
     private JavaScriptEditor jsEditor;
     private IFile validationFile;
-    private QuickFormEditor quickEditor;
-    private ValidatorWizard wizard;
-    private FieldValidatorsWizardPage fieldValidatorsPage;
-    private GlobalValidatorsWizardPage globalValidatorsPage;
+    private FormNodeValidation validation;
+    private FieldValidatorsPage fieldValidatorsPage;
+    private GlobalValidatorsPage globalValidatorsPage;
 
     @Override
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
@@ -78,71 +81,74 @@ public class QuickJointFormEditor extends MultiPageEditorPart {
         if (!formNode.hasFormValidation()) {
             formNode.setValidationFileNameSoftly(formNode.getId() + "." + FormNode.VALIDATION_SUFFIX);
         }
-        IFile validationFile = IOUtils.getAdjacentFile(processDefinitionFile, formNode.getValidationFileName());
+        validationFile = IOUtils.getAdjacentFile(processDefinitionFile, formNode.getValidationFileName());
         if (!validationFile.exists()) {
-            ValidationUtil.createEmptyValidation(processDefinitionFile, formNode);
+            validationFile = ValidationUtil.createEmptyValidation(processDefinitionFile, formNode);
         }
+        validation = ValidatorParser.parseValidation(validationFile);
     }
 
     @Override
     protected void createPages() {
         IFile definitionFile = IOUtils.getProcessDefinitionFile((IFolder) formFile.getParent());
+        quickEditor = new QuickFormEditor();
+        IFile qfFile = IOUtils.getAdjacentFile(definitionFile, formNode.getFormFileName());
         try {
-
-            quickEditor = new QuickFormEditor();
-            IFile qfFile = IOUtils.getAdjacentFile(definitionFile, formNode.getFormFileName());
             addPage(quickEditor, new FileEditorInput(qfFile));
-            setPageText(getPageCount() - 1, Messages.getString("editor.tab_name.template"));
-
-            jsEditor = new JavaScriptEditor();
-            IFile jsFile = IOUtils.getAdjacentFile(definitionFile, formNode.getScriptFileName());
-            addPage(jsEditor, new FileEditorInput(jsFile));
-            setPageText(getPageCount() - 1, Messages.getString("editor.tab_name.script"));
-
-            validationFile = IOUtils.getAdjacentFile(definitionFile, formNode.getValidationFileName());
-            wizard = new ValidatorWizard(validationFile, formNode);
-            wizard.addPages();
-
-            fieldValidatorsPage = (FieldValidatorsWizardPage) wizard.getPages()[0];
-            fieldValidatorsPage.createControl(getContainer());
-            addPage(fieldValidatorsPage.getControl());
-            setPageText(getPageCount() - 1, Messages.getString("editor.tab_name.field_validators"));
-            fieldValidatorsPage.setMarkEditorDirtyCallback(p -> setDirty(p));
-
-            globalValidatorsPage = (GlobalValidatorsWizardPage) wizard.getPages()[1];
-            globalValidatorsPage.createControl(getContainer());
-            addPage(globalValidatorsPage.getControl());
-            setPageText(getPageCount() - 1, Messages.getString("editor.tab_name.global_validators"));
-            globalValidatorsPage.setMarkEditorDirtyCallback(p -> setDirty(p));
-
-            addPropertyListener((source, propId) -> {
-                if (propId == IEditorPart.PROP_DIRTY && !quickEditor.isEmpty()) {
-                    fieldValidatorsPage.updateConfigs(formFile);
-                }
-            });
-
-            addPageChangedListener(event -> {
-                if (event.getSelectedPage() == fieldValidatorsPage.getControl() && !quickEditor.isEmpty()) {
-                    try {
-                        fieldValidatorsPage.updateConfigs(quickEditor.getFormData());
-                    } catch (UnsupportedEncodingException | CoreException e) {
-                        PluginLogger.logError(e);
-                    }
-                }
-            });
-
         } catch (PartInitException e) {
-            PluginLogger.logError(e);
+            throw new RuntimeException(e);
+        }
+        setPageText(getPageCount() - 1, Messages.getString("editor.tab_name.template"));
+
+        jsEditor = new JavaScriptEditor();
+        IFile jsFile = IOUtils.getAdjacentFile(definitionFile, formNode.getScriptFileName());
+        try {
+            addPage(jsEditor, new FileEditorInput(jsFile));
+        } catch (PartInitException e) {
+            throw new RuntimeException(e);
+        }
+        setPageText(getPageCount() - 1, Messages.getString("editor.tab_name.script"));
+
+        fieldValidatorsPage = new FieldValidatorsPage(getContainer(), formNode, validation, p -> setDirty(p));
+        addPage(fieldValidatorsPage);
+        setPageText(getPageCount() - 1, Messages.getString("editor.tab_name.field_validators"));
+
+        globalValidatorsPage = new GlobalValidatorsPage(getContainer(), formNode, validation, p -> setDirty(p));
+        addPage(globalValidatorsPage);
+        setPageText(getPageCount() - 1, Messages.getString("editor.tab_name.global_validators"));
+
+        addPropertyListener((source, propId) -> {
+            if (propId == IEditorPart.PROP_DIRTY && !quickEditor.isEmpty()) {
+                fieldValidatorsPage.updateConfigs(formFile);
+            }
+        });
+
+        addPageChangedListener(event -> {
+            if (event.getSelectedPage() == fieldValidatorsPage && !quickEditor.isEmpty()) {
+                try {
+                    fieldValidatorsPage.updateConfigs(quickEditor.getFormData());
+                } catch (UnsupportedEncodingException | CoreException e) {
+                    PluginLogger.logError(e);
+                }
+            }
+        });
+        String selectedPage = Activator.getPrefString(PrefConstants.P_JOINT_FORM_EDITOR_SELECTED_PAGE);
+        if (PrefConstants.P_JOINT_FORM_EDITOR_SELECTED_PAGE_SCRIPT.equals(selectedPage)) {
+            setActivePage(1);
+        }
+        if (PrefConstants.P_JOINT_FORM_EDITOR_SELECTED_PAGE_VALIDATION.equals(selectedPage)) {
+            setActivePage(2);
         }
     }
 
     @Override
     public void doSave(IProgressMonitor monitor) {
-        if (quickEditor != null && jsEditor != null && fieldValidatorsPage != null && globalValidatorsPage != null) {
-            quickEditor.doSave(monitor);
-            jsEditor.doSave(monitor);
-            wizard.performFinish();
-        }
+        quickEditor.doSave(monitor);
+        jsEditor.doSave(monitor);
+        fieldValidatorsPage.doSave();
+        globalValidatorsPage.doSave();
+        ValidationUtil.removeEmptyConfigsForDeletedVariables(validationFile, formNode, validation);
+        setDirty(false);
     }
 
     @Override
@@ -157,11 +163,7 @@ public class QuickJointFormEditor extends MultiPageEditorPart {
 
     @Override
     public boolean isDirty() {
-        if (jsEditor != null && fieldValidatorsPage != null && globalValidatorsPage != null) {
-            return super.isDirty() || jsEditor.isDirty() || fieldValidatorsPage.isDirty() || globalValidatorsPage.isDirty();
-        } else {
-            return false;
-        }
+        return super.isDirty() || jsEditor.isDirty() || fieldValidatorsPage.isDirty() || globalValidatorsPage.isDirty();
     }
 
     public void setDirty(boolean dirty) {
@@ -176,7 +178,6 @@ public class QuickJointFormEditor extends MultiPageEditorPart {
         fieldValidatorsPage.dispose();
         globalValidatorsPage.dispose();
         quickEditor.dispose();
-        wizard.dispose();
         super.dispose();
         boolean rewriteFormsXml = false;
         if (!formFile.exists()) {
@@ -195,6 +196,7 @@ public class QuickJointFormEditor extends MultiPageEditorPart {
         if (rewriteFormsXml) {
             IOUtils.saveFormsXml(formNode, formFile);
         }
+        ValidationUtil.removeValidationIfEmpty(validationFile, validation);
     }
 
 }

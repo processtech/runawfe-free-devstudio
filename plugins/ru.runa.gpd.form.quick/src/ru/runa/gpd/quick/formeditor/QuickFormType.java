@@ -1,8 +1,8 @@
 package ru.runa.gpd.quick.formeditor;
 
+import com.google.common.collect.Maps;
 import java.util.List;
 import java.util.Map;
-
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.eclipse.core.resources.IFile;
@@ -11,14 +11,12 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
-
-import com.google.common.collect.Maps;
-
 import ru.runa.gpd.form.FormType;
 import ru.runa.gpd.form.FormVariableAccess;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.quick.formeditor.util.QuickFormXMLUtil;
+import ru.runa.gpd.quick.jointformeditor.JointQuickFormEditor;
 import ru.runa.gpd.util.XmlUtil;
 import ru.runa.gpd.validation.FormNodeValidation;
 
@@ -31,7 +29,7 @@ public class QuickFormType extends FormType {
 
     @Override
     public IEditorPart openForm(IFile formFile, FormNode formNode) throws CoreException {
-        return IDE.openEditor(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(), formFile, QuickFormEditor.ID, true);
+        return IDE.openEditor(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(), formFile, JointQuickFormEditor.ID, true);
     }
 
     @SuppressWarnings("unchecked")

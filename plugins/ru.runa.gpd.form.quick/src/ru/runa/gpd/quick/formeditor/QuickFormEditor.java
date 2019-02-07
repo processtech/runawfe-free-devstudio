@@ -90,7 +90,6 @@ import ru.runa.gpd.util.EditorUtils;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.VariableMapping;
 import ru.runa.gpd.util.VariableUtils;
-import ru.runa.gpd.validation.ValidationUtil;
 import ru.runa.wfe.InternalApplicationException;
 import ru.runa.wfe.commons.ClassLoaderUtil;
 import ru.runa.wfe.commons.TypeConversionUtil;
@@ -160,8 +159,6 @@ public class QuickFormEditor extends EditorPart implements ISelectionListener, I
                             } catch (CoreException e) {
                                 PluginLogger.logError(e);
                             }
-                        } else {
-                            ValidationUtil.createOrUpdateValidation(formNode, formFile);
                         }
                     }
                 }
@@ -173,18 +170,7 @@ public class QuickFormEditor extends EditorPart implements ISelectionListener, I
     public void doSave(IProgressMonitor monitor) {
         try {
             InputStream content = new ByteArrayInputStream(getFormData());
-            // if (!quickFormFile.exists()) {
-            // quickFormFile.create(content, true, null);
-            // } else {
             formFile.setContents(content, true, true, null);
-            // }
-            if (formNode != null) {
-                if (formFile.exists() && !isEmpty()) {
-                    formNode.setDirty();
-                    ValidationUtil.createOrUpdateValidation(formNode, formFile);
-                }
-            }
-            setDirty(false);
             updateButtons();
         } catch (Exception e) {
             PluginLogger.logError("Error on saving template form: '" + quickForm.getName() + "'", e);

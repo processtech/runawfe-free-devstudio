@@ -1,12 +1,12 @@
 package ru.runa.gpd.validation;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import java.util.stream.Collectors;
 
 public class FormNodeValidation {
     private final List<ValidatorConfig> globalConfigs = Lists.newArrayList();
@@ -46,6 +46,10 @@ public class FormNodeValidation {
 
     public Collection<String> getVariableNames() {
         return fieldConfigs.keySet();
+    }
+
+    public Collection<String> getVariableNamesWithEmptyConfigs() {
+        return fieldConfigs.entrySet().stream().filter(e -> e.getValue().isEmpty()).map(e -> e.getKey()).collect(Collectors.toList());
     }
 
 }

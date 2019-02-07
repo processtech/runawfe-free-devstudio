@@ -220,7 +220,7 @@
     </objectContribution>
     <objectContribution
           adaptable="false"
-          id="data"
+          id="formdata"
           objectClass="ru.runa.gpd.lang.model.FormNode">
        <menu
              id="formdata"
@@ -244,12 +244,12 @@
              class="ru.runa.gpd.lang.action.DeleteFormFilesAction"
              id="deleteFormFiles"
              label="%label.action.deleteFormFiles"
-             menubarPath="formdata/sp1">
+             menubarPath="formdata/sp2">
        </action>
     </objectContribution>
     <objectContribution
           adaptable="false"
-          id="data.noformexists"
+          id="formdata.noformexists"
           objectClass="ru.runa.gpd.lang.model.FormNode">
        <filter
              name="formExists"
@@ -270,7 +270,7 @@
     </objectContribution>
     <objectContribution
           adaptable="false"
-          id="data.formexists"
+          id="formdata.formexists"
           objectClass="ru.runa.gpd.lang.model.FormNode">
        <filter
              name="formExists"
@@ -283,7 +283,19 @@
              menubarPath="formdata/sp1"
              />
        <action
-             class="ru.runa.gpd.lang.action.OpenVisualFormEditorDelegate"
+             class="ru.runa.gpd.lang.action.OpenFormValidationDelegate"
+             id="formValidation"
+             label="%label.action.validationOfForm"
+             menubarPath="formdata/sp1"
+             />
+       <action
+             class="ru.runa.gpd.lang.action.OpenFormScriptDelegate"
+             id="editFormScript"
+             label="%label.action.editFormScript"
+             menubarPath="formdata/sp1">
+       </action>
+       <action
+             class="ru.runa.gpd.lang.action.OpenJointFormEditorDelegate"
              id="visualEditForm"
              label="%label.action.editForm"
              menubarPath="formdata/sp1"
