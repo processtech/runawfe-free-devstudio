@@ -133,6 +133,9 @@ public class JointQuickFormEditor extends MultiPageEditorPart {
             }
         });
         String selectedPage = Activator.getPrefString(PrefConstants.P_JOINT_FORM_EDITOR_SELECTED_PAGE);
+        if (PrefConstants.P_JOINT_FORM_EDITOR_SELECTED_PAGE_FORM.equals(selectedPage)) {
+            setActivePage(0);
+        }
         if (PrefConstants.P_JOINT_FORM_EDITOR_SELECTED_PAGE_SCRIPT.equals(selectedPage)) {
             setActivePage(1);
         }
@@ -177,7 +180,6 @@ public class JointQuickFormEditor extends MultiPageEditorPart {
     public void dispose() {
         fieldValidatorsPage.dispose();
         globalValidatorsPage.dispose();
-        quickEditor.dispose();
         super.dispose();
         boolean rewriteFormsXml = false;
         if (!formFile.exists()) {
@@ -185,6 +187,7 @@ public class JointQuickFormEditor extends MultiPageEditorPart {
             formNode.setTemplateFileNameSoftly("");
             rewriteFormsXml = true;
         }
+        ValidationUtil.removeValidationIfEmpty(validationFile, validation);
         if (!validationFile.exists()) {
             formNode.setValidationFileNameSoftly("");
             rewriteFormsXml = true;
@@ -196,7 +199,6 @@ public class JointQuickFormEditor extends MultiPageEditorPart {
         if (rewriteFormsXml) {
             IOUtils.saveFormsXml(formNode, formFile);
         }
-        ValidationUtil.removeValidationIfEmpty(validationFile, validation);
     }
 
 }

@@ -67,6 +67,9 @@ public class JointFormEditor extends FormEditor {
     @Override
     protected void createPages() {
         String selectedPage = Activator.getPrefString(PrefConstants.P_JOINT_FORM_EDITOR_SELECTED_PAGE);
+        if (PrefConstants.P_JOINT_FORM_EDITOR_SELECTED_PAGE_FORM.equals(selectedPage)) {
+            currentPageIndex = 0;
+        }
         if (PrefConstants.P_JOINT_FORM_EDITOR_SELECTED_PAGE_SCRIPT.equals(selectedPage)) {
             currentPageIndex = 2;
         }
@@ -143,6 +146,7 @@ public class JointFormEditor extends FormEditor {
             formNode.setFormFileNameSoftly("");
             rewriteFormsXml = true;
         }
+        ValidationUtil.removeValidationIfEmpty(validationFile, validation);
         try {
             if (!validationFile.exists() || validationFile.getSessionProperty(WorkspaceOperations.PROPERTY_FILE_WILL_BE_DELETED_SHORTLY) != null) {
                 formNode.setValidationFileNameSoftly("");
@@ -159,7 +163,6 @@ public class JointFormEditor extends FormEditor {
         if (rewriteFormsXml) {
             WorkspaceOperations.job("Form rewriting", (p) -> IOUtils.saveFormsXml(formNode, formFile));
         }
-        ValidationUtil.removeValidationIfEmpty(validationFile, validation);
     }
 
 }

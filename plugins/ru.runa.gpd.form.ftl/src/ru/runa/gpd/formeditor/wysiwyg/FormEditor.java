@@ -305,9 +305,6 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
         } catch (Exception ex) {
             PluginLogger.logError(Messages.getString("wysiwyg.source.create_error"), ex);
         }
-        if (currentPageIndex == 0) {
-            startWebServerIfNotStartedYet(() -> setActivePage(0));
-        }
     }
 
     protected void startWebServerIfNotStartedYet(BrowserLoadCallback browserLoadCallback) {
@@ -433,10 +430,10 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
     @Override
     protected void pageChange(int newPageIndex) {
         if (isBrowserLoaded()) {
-            if (currentPageIndex == 1) {
+            if (currentPageIndex == 1 && newPageIndex == 0) {
                 ConnectorServletHelper.sync();
                 syncEditor2Browser();
-            } else if (currentPageIndex == 0) {
+            } else if (currentPageIndex == 0 && newPageIndex == 1) {
                 syncBrowser2Editor();
             }
         } else if (newPageIndex == 0) {
