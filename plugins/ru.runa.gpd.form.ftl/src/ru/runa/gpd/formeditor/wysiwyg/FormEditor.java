@@ -381,10 +381,10 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
         throw new RuntimeException("No editor instance initialized");
     }
 
-    private void setDirty(boolean dirty) {
+    private void setDirty(boolean dirty, boolean fireEvent) {
         boolean changedDirtyState = this.dirty != dirty;
         this.dirty = dirty;
-        if (changedDirtyState) {
+        if (changedDirtyState && fireEvent) {
             firePropertyChange(IEditorPart.PROP_DIRTY);
         }
     }
@@ -408,6 +408,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
         if (isBrowserLoaded()) {
             browser.execute("setHTMLSaved()");
         }
+        setDirty(false, false);
     }
 
 
@@ -514,7 +515,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
             public void propertyChange(PropertyChangeEvent evt) {
                 FormEditor editor = FormEditor.this;
                 if (editor != null && !editor.isDirty()) {
-                    editor.setDirty(true);
+                    editor.setDirty(true, true);
                 }
                 refreshView();
             }
@@ -654,7 +655,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
 
         @Override
         public Object function(Object[] arguments) {
-            setDirty(true);
+            setDirty(true, true);
             return null;
         }
     }

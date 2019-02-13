@@ -202,7 +202,7 @@ public class FieldValidatorsPage extends Composite implements PropertyChangeList
             }
         });
         variablesTableViewer.addCheckStateListener(e -> {
-            String variableName = getCurrentVariableName();
+            String variableName = ((Variable) e.getElement()).getName();
             if (fieldConfigs.containsKey(variableName)) {
                 removeField(variableName);
             } else {
@@ -253,7 +253,7 @@ public class FieldValidatorsPage extends Composite implements PropertyChangeList
             }
         });
         swimlanesTableViewer.addCheckStateListener(e -> {
-            String variableName = getCurrentVariableName();
+            String variableName = ((Variable) e.getElement()).getName();
             if (fieldConfigs.containsKey(variableName)) {
                 removeField(variableName);
             } else {
@@ -321,11 +321,12 @@ public class FieldValidatorsPage extends Composite implements PropertyChangeList
             }
         });
         validatorsTableViewer.addCheckStateListener(e -> {
+            ValidatorDefinition validatorDefinition = (ValidatorDefinition) e.getElement();
             Map<String, ValidatorConfig> configs = fieldConfigs.get(getCurrentVariableName());
-            if (configs.containsKey(getCurrentDefinition().getName())) {
-                removeFieldValidator(getCurrentDefinition());
+            if (configs.containsKey(validatorDefinition.getName())) {
+                removeFieldValidator(validatorDefinition);
             } else {
-                addFieldValidator(getCurrentDefinition());
+                addFieldValidator(validatorDefinition);
             }
             validatorsTableViewer.refresh(true);
             updateValidatorSelection();
