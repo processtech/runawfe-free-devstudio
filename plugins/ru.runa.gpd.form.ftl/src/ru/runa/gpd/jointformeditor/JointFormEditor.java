@@ -2,7 +2,6 @@ package ru.runa.gpd.jointformeditor;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.CoreException;
@@ -94,13 +93,6 @@ public class JointFormEditor extends FormEditor {
         globalValidatorsPage = new GlobalValidatorsPage(getContainer(), formNode, validation, p -> setDirty(p));
         addPage(globalValidatorsPage);
         setPageText(getPageCount() - 1, Messages.getString("editor.tab_name.global_validators"));
-
-        addPropertyListener((source, propId) -> {
-            if (propId == IEditorPart.PROP_DIRTY && !Strings.isNullOrEmpty(getSourceDocumentHTML())) {
-                fieldValidatorsPage.updateConfigs(getSourceDocumentHTML().getBytes(Charsets.UTF_8));
-            }
-        });
-
         addPageChangedListener(event -> {
             if (event.getSelectedPage() == fieldValidatorsPage && isDirty()) {
                 fieldValidatorsPage.updateConfigs(getSourceDocumentHTML().getBytes(Charsets.UTF_8));

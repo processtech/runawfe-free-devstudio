@@ -117,12 +117,6 @@ public class JointQuickFormEditor extends MultiPageEditorPart {
         addPage(globalValidatorsPage);
         setPageText(getPageCount() - 1, Messages.getString("editor.tab_name.global_validators"));
 
-        addPropertyListener((source, propId) -> {
-            if (propId == IEditorPart.PROP_DIRTY && !quickEditor.isEmpty()) {
-                fieldValidatorsPage.updateConfigs(formFile);
-            }
-        });
-
         addPageChangedListener(event -> {
             if (event.getSelectedPage() == fieldValidatorsPage && !quickEditor.isEmpty()) {
                 try {

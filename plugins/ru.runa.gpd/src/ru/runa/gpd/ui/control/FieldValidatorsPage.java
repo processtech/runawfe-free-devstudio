@@ -157,12 +157,11 @@ public class FieldValidatorsPage extends Composite implements PropertyChangeList
             configsChanged = false;
             FormType formType = FormTypeProvider.getFormType(formNode.getFormType());
             Map<String, FormVariableAccess> formVariables = formType.getFormVariableNames(formNode, formData);
+            List<String> existingVariableNames = formNode.getVariableNames(true);
             formVariables.entrySet().stream().forEach(e -> {
-                if (!fieldConfigs.containsKey(e.getKey())) {
-                    if (e.getValue() != FormVariableAccess.READ) {
-                        fieldConfigs.put(e.getKey(), new HashMap<>());
-                        configsChanged = true;
-                    }
+                if (e.getValue() == FormVariableAccess.WRITE && !fieldConfigs.containsKey(e.getKey()) && existingVariableNames.contains(e.getKey())) {
+                    fieldConfigs.put(e.getKey(), new HashMap<>());
+                    configsChanged = true;
                 }
             });
             for (Iterator<Entry<String, Map<String, ValidatorConfig>>> i = fieldConfigs.entrySet().iterator(); i.hasNext();) {
@@ -174,6 +173,8 @@ public class FieldValidatorsPage extends Composite implements PropertyChangeList
                 }
             }
             if (configsChanged) {
+                updateVariablesTableViewerSelection();
+                updateSwimlanesTableViewerSelection();
                 updateVariableSelection();
                 setDirty(true);
             }
@@ -208,7 +209,7 @@ public class FieldValidatorsPage extends Composite implements PropertyChangeList
             } else {
                 addField(variableName);
             }
-            variablesTableViewer.refresh(true);
+            updateVariablesTableViewerSelection();
             updateVariableSelection();
             setDirty(true);
         });
@@ -259,7 +260,7 @@ public class FieldValidatorsPage extends Composite implements PropertyChangeList
             } else {
                 addField(variableName);
             }
-            swimlanesTableViewer.refresh(true);
+            updateSwimlanesTableViewerSelection();
             updateVariableSelection();
             setDirty(true);
         });
@@ -432,29 +433,32 @@ public class FieldValidatorsPage extends Composite implements PropertyChangeList
     private void updateViewers() {
         List<Variable> variables = formNode.getVariables(true, false);
         variablesTableViewer.setInput(variables);
-        List<Variable> checkedVariables = new ArrayList<>();
-        for (Variable variable : variables) {
-            if (fieldConfigs.containsKey(variable.getName())) {
-                checkedVariables.add(variable);
-            }
-        }
-        variablesTableViewer.setCheckedElements(checkedVariables.toArray(new Variable[checkedVariables.size()]));
+        updateVariablesTableViewerSelection();
         List<Swimlane> swimlanes = processDefinition.getSwimlanes();
         swimlanesTableViewer.setInput(swimlanes);
-        List<Variable> checkedSwimlanes = new ArrayList<>();
-        for (Swimlane swimlane : swimlanes) {
-            if (fieldConfigs.containsKey(swimlane.getName())) {
-                checkedSwimlanes.add(swimlane);
-            }
-        }
-        swimlanesTableViewer.setCheckedElements(checkedSwimlanes.toArray(new Variable[checkedSwimlanes.size()]));
+        updateSwimlanesTableViewerSelection();
+    }
+
+    private List<Variable> getCheckedVariables() {
+        List<Variable> checkedVariables = fieldConfigs.keySet().stream()//
+                .map(s -> VariableUtils.getVariableByName(formNode, s))//
+                .filter(v -> v != null).collect(Collectors.toList());
+        return checkedVariables;
+    }
+
+    private void updateVariablesTableViewerSelection() {
+        List<Variable> checkedVariables = getCheckedVariables();
+        variablesTableViewer.setCheckedElements(checkedVariables.toArray(new Variable[checkedVariables.size()]));
+        variablesTableViewer.refresh();
+    }
+
+    private void updateSwimlanesTableViewerSelection() {
+        List<Variable> checkedVariables = getCheckedVariables();
+        swimlanesTableViewer.setCheckedElements(checkedVariables.toArray(new Variable[checkedVariables.size()]));
+        swimlanesTableViewer.refresh();
     }
 
     private void updateVariableSelection() {
-        List<Variable> checkedVariables = fieldConfigs.keySet().stream().map(s -> VariableUtils.getVariableByName(formNode, s))
-                .collect(Collectors.toList());
-        variablesTableViewer.setCheckedElements(checkedVariables.toArray(new Variable[checkedVariables.size()]));
-        variablesTableViewer.refresh();
         Map<String, ValidatorConfig> validators = getCurrentVariableName() != null ? fieldConfigs.get(getCurrentVariableName()) : null;
         validatorsTableViewer.getTable().setEnabled(validators != null);
         infoGroup.setVisible(false);
