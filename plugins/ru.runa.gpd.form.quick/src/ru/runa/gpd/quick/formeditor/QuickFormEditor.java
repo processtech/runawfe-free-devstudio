@@ -172,6 +172,7 @@ public class QuickFormEditor extends EditorPart implements ISelectionListener, I
             InputStream content = new ByteArrayInputStream(getFormData());
             formFile.setContents(content, true, true, null);
             updateButtons();
+            this.setDirty(false);
         } catch (Exception e) {
             PluginLogger.logError("Error on saving template form: '" + quickForm.getName() + "'", e);
         }
