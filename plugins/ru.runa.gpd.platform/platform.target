@@ -2,8 +2,10 @@
 <?pde version="3.8"?><target includeMode="feature" name="platform" sequenceNumber="43">
 <locations>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.babel.nls_eclipse_ru.feature.group" version="4.7.0.v20171231020002"/>
-<repository location="http://download.eclipse.org/technology/babel/update-site/R0.15.1/oxygen"/>
+<unit id="org.eclipse.babel.nls_eclipse_ru.feature.group" version="4.7.0.v20180815042455"/>
+<unit id="org.eclipse.babel.nls_modeling.graphiti_ru.feature.group" version="4.7.0.v20180815042455"/>
+<unit id="org.eclipse.babel.nls_tools.gef_ru.feature.group" version="4.7.0.v20180815042455"/>
+<repository location="http://download.eclipse.org/technology/babel/update-site/R0.16.0/oxygen/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.draw2d.feature.group" version="3.10.100.201606061308"/>

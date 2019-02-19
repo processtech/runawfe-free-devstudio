@@ -1,9 +1,7 @@
 package ru.runa.gpd.lang.model;
 
 import java.util.List;
-
 import org.eclipse.core.resources.IFile;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.NodeRegistry;
@@ -120,7 +118,7 @@ public class SubprocessDefinition extends ProcessDefinition {
     @Override
     public void addChild(GraphElement child, int index) {
         if (child instanceof Variable || child instanceof Swimlane) {
-            getParent().addChild(child, index);
+            getParent().addChild(child);
             return;
         }
         super.addChild(child, index);

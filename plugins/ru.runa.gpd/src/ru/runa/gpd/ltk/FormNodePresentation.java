@@ -1,5 +1,6 @@
 package ru.runa.gpd.ltk;
 
+import com.google.common.base.Objects;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -7,7 +8,6 @@ import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.ltk.core.refactoring.Change;
@@ -17,7 +17,6 @@ import org.eclipse.ltk.ui.refactoring.TextEditChangeNode;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.text.edits.TextEdit;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.form.FormType;
 import ru.runa.gpd.form.FormTypeProvider;
@@ -28,8 +27,6 @@ import ru.runa.gpd.validation.FormNodeValidation;
 import ru.runa.gpd.validation.ValidatorConfig;
 import ru.runa.gpd.validation.ValidatorDefinition;
 import ru.runa.gpd.validation.ValidatorParser;
-
-import com.google.common.base.Objects;
 
 public class FormNodePresentation extends VariableRenameProvider<FormNode> {
     private final IFolder folder;

@@ -9,6 +9,7 @@ import com.google.common.collect.Maps;
 import java.beans.PropertyChangeEvent;
 import java.util.List;
 import java.util.Map;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -18,6 +19,7 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.window.Window;
+import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizardOpenOperation;
 import org.eclipse.search.ui.NewSearchUI;
 import org.eclipse.swt.SWT;
@@ -30,7 +32,11 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
+import org.eclipse.ui.part.FileEditorInput;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.clipboard.VariableTransfer;
@@ -546,6 +552,17 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             RenameUserTypeAttributeRefactoring refactoring = new RenameUserTypeAttributeRefactoring(editor.getDefinitionFile(),
                     editor.getDefinition(), type, attribute, newAttributeName, newAttributeScriptingName);
             boolean useLtk = refactoring.isUserInteractionNeeded();
+            List<IFile> affectedFiles = Lists.newArrayList();
+            Change[] changes = refactoring.createChange(null).getChildren();
+            for (Change change : changes) {
+                if (change.getAffectedObjects() != null) {
+                    for (Object o : change.getAffectedObjects()) {
+                        if (o instanceof IFile) {
+                            affectedFiles.add((IFile) o);
+                        }
+                    }
+                }
+            }
             if (useLtk) {
                 RenameRefactoringWizard wizard = new RenameRefactoringWizard(refactoring);
                 wizard.setDefaultPageTitle(Localization.getString("Refactoring.variable.name"));
@@ -563,6 +580,16 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             getDefinition().setDirty();
             updateAttributeViewer(attribute);
 
+            IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+            for (IFile file : affectedFiles) {
+                IEditorPart editor = page.findEditor(new FileEditorInput(file));
+                if (editor != null) {
+                    IEditorPart activeEditor = page.getActiveEditor();
+                    page.closeEditor(editor, false);
+                    IDE.openEditor(page, file);
+                    page.activate(activeEditor);
+                }
+            }
             if (useLtk && editor.getDefinition().getEmbeddedSubprocesses().size() > 0) {
                 IDE.saveAllEditors(new IResource[] { projectRoot }, false);
                 for (SubprocessDefinition subprocessDefinition : editor.getDefinition().getEmbeddedSubprocesses().values()) {

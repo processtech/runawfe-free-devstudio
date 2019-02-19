@@ -1,19 +1,16 @@
 package ru.runa.gpd.lang.model;
 
+import com.google.common.base.Objects;
+import com.google.common.base.Objects.ToStringHelper;
 import java.util.List;
-
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.extension.LocalizationRegistry;
 import ru.runa.gpd.extension.VariableFormatRegistry;
 import ru.runa.wfe.var.UserTypeMap;
-
-import com.google.common.base.Objects;
-import com.google.common.base.Objects.ToStringHelper;
 
 public class Variable extends NamedGraphElement implements Describable {
     public static final String FORMAT_COMPONENT_TYPE_START = "(";
@@ -60,10 +57,6 @@ public class Variable extends NamedGraphElement implements Describable {
         if (userType != null) {
             setFormat(VariableUserType.PREFIX + userType.getName());
         }
-    }
-
-    public boolean isUserTypeAttribute() {
-        return getName().contains(VariableUserType.DELIM);
     }
 
     @Override

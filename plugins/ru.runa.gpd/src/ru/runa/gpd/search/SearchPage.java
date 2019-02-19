@@ -16,15 +16,14 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.ITextEditor;
-
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.editor.BotTaskEditor;
 import ru.runa.gpd.editor.ProcessEditorBase;
 import ru.runa.gpd.form.FormTypeProvider;
-import ru.runa.gpd.lang.action.OpenFormValidationDelegate;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.util.BotTaskUtils;
+import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.WorkspaceOperations;
 
 public class SearchPage extends AbstractTextSearchViewPage {
@@ -76,11 +75,21 @@ public class SearchPage extends AbstractTextSearchViewPage {
                 PluginLogger.logError(e);
             }
         } else if (ElementMatch.CONTEXT_FORM_VALIDATION.equals(elementMatch.getContext())) {
-            FormNode formNode = (FormNode) elementMatch.getGraphElement();
-            OpenFormValidationDelegate delegate = new OpenFormValidationDelegate();
-            delegate.openValidationFile(formNode, elementMatch.getFile());
+            try {
+                FormNode formNode = (FormNode) elementMatch.getGraphElement();
+                editor = FormTypeProvider.getFormType(formNode.getFormType())
+                        .openForm(IOUtils.getAdjacentFile(elementMatch.getFile(), formNode.getFormFileName()), formNode);
+            } catch (CoreException e) {
+                PluginLogger.logError(e);
+            }
         } else if (ElementMatch.CONTEXT_FORM_SCRIPT.equals(elementMatch.getContext())) {
-            editor = IDE.openEditor(getSite().getPage(), elementMatch.getFile());
+            try {
+                FormNode formNode = (FormNode) elementMatch.getGraphElement();
+                editor = FormTypeProvider.getFormType(formNode.getFormType())
+                        .openForm(IOUtils.getAdjacentFile(elementMatch.getFile(), formNode.getFormFileName()), formNode);
+            } catch (CoreException e) {
+                PluginLogger.logError(e);
+            }
         } else if (ElementMatch.CONTEXT_BOT_TASK_LINK.equals(elementMatch.getContext())) {
             BotTaskUtils.editBotTaskLinkConfiguration((TaskState) elementMatch.getGraphElement());
         } else if (ElementMatch.CONTEXT_BOT_TASK.equals(elementMatch.getContext())) {
@@ -113,7 +122,7 @@ public class SearchPage extends AbstractTextSearchViewPage {
                 textEditor = (ITextEditor) editor;
             }
             if (textEditor == null && editor.getAdapter(ITextEditor.class) != null) {
-                textEditor = (ITextEditor) editor.getAdapter(ITextEditor.class);
+                textEditor = editor.getAdapter(ITextEditor.class);
             }
             if (textEditor != null) {
                 textEditor.selectAndReveal(offset, length);

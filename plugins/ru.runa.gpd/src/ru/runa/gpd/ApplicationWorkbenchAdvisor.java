@@ -1,5 +1,6 @@
 package ru.runa.gpd;
 
+import com.google.common.base.Strings;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.preference.IPreferenceNode;
@@ -9,13 +10,11 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchAdvisor;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
-
-import com.google.common.base.Strings;
-
 import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.NodeRegistry;
 import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.settings.LanguageElementPreferenceNode;
+import ru.runa.gpd.ui.view.PropertiesView;
 
 public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
     private static final String PERSPECTIVE_ID = "ru.runa.gpd.perspective";
@@ -61,16 +60,18 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
             }
             preferenceManager.remove(preferenceNode.getId());
         }
+        PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(PropertiesView.ID);
     }
 
     @Override
-    public boolean preShutdown() {
+    public void postShutdown() {
         try {
             // save the workspace before quit
             ResourcesPlugin.getWorkspace().save(true, null);
         } catch (CoreException e) {
             PluginLogger.logErrorWithoutDialog("Unable to save workspace", e);
         }
-        return super.preShutdown();
+        super.postShutdown();
     }
+
 }
