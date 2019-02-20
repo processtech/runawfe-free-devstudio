@@ -12,6 +12,10 @@ public class FormNodeValidation {
     private final List<ValidatorConfig> globalConfigs = Lists.newArrayList();
     private final Map<String, Map<String, ValidatorConfig>> fieldConfigs = Maps.newTreeMap();
 
+    public boolean isEmpty() {
+        return globalConfigs.isEmpty() && fieldConfigs.isEmpty();
+    }
+
     public List<ValidatorConfig> getGlobalConfigs() {
         return globalConfigs;
     }

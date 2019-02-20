@@ -2,7 +2,6 @@ package ru.runa.gpd.lang.action;
 
 import org.eclipse.jface.action.IAction;
 import ru.runa.gpd.editor.gef.command.FormNodeSetFileCommand;
-import ru.runa.gpd.editor.gef.command.FormNodeSetValidationFileCommand;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.ui.dialog.ChooseFormTypeDialog;
 
@@ -26,11 +25,4 @@ public abstract class FormDelegate extends BaseModelActionDelegate {
         openFormEditorDelegate.run(action);
     }
     
-    protected void setNewValidationFormFile(FormNode formNode, String fileName) {
-        FormNodeSetValidationFileCommand command = new FormNodeSetValidationFileCommand();
-        command.setFormNode(formNode);
-        command.setValidationFileName(fileName);
-        executeCommand(command);
-    }
-
 }

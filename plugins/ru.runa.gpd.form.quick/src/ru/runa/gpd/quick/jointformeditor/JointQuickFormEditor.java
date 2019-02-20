@@ -9,7 +9,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
@@ -26,10 +25,8 @@ import ru.runa.gpd.settings.PrefConstants;
 import ru.runa.gpd.ui.control.FieldValidatorsPage;
 import ru.runa.gpd.ui.control.GlobalValidatorsPage;
 import ru.runa.gpd.util.IOUtils;
-import ru.runa.gpd.util.TemplateUtils;
 import ru.runa.gpd.validation.FormNodeValidation;
 import ru.runa.gpd.validation.ValidationUtil;
-import ru.runa.gpd.validation.ValidatorParser;
 
 public class JointQuickFormEditor extends MultiPageEditorPart {
 
@@ -42,7 +39,6 @@ public class JointQuickFormEditor extends MultiPageEditorPart {
     private boolean dirty = false;
     private QuickFormEditor quickEditor;
     private JavaScriptEditor jsEditor;
-    private IFile validationFile;
     private FormNodeValidation validation;
     private FieldValidatorsPage fieldValidatorsPage;
     private GlobalValidatorsPage globalValidatorsPage;
@@ -66,26 +62,7 @@ public class JointQuickFormEditor extends MultiPageEditorPart {
                 break;
             }
         }
-        if (!formNode.hasFormScript()) {
-            formNode.setScriptFileNameSoftly(formNode.getId() + "." + FormNode.SCRIPT_SUFFIX);
-        }
-        IFile processDefinitionFile = IOUtils.getProcessDefinitionFile((IFolder) formFile.getParent());
-        IFile jsFile = IOUtils.getAdjacentFile(processDefinitionFile, formNode.getScriptFileName());
-        if (!jsFile.exists()) {
-            try {
-                IOUtils.createFile(jsFile, TemplateUtils.getFormTemplateAsStream());
-            } catch (CoreException e) {
-                throw new PartInitException(e.getMessage(), e);
-            }
-        }
-        if (!formNode.hasFormValidation()) {
-            formNode.setValidationFileNameSoftly(formNode.getId() + "." + FormNode.VALIDATION_SUFFIX);
-        }
-        validationFile = IOUtils.getAdjacentFile(processDefinitionFile, formNode.getValidationFileName());
-        if (!validationFile.exists()) {
-            validationFile = ValidationUtil.createEmptyValidation(processDefinitionFile, formNode);
-        }
-        validation = ValidatorParser.parseValidation(validationFile);
+        validation = formNode.getValidation(formFile);
     }
 
     @Override
@@ -100,8 +77,8 @@ public class JointQuickFormEditor extends MultiPageEditorPart {
         }
         setPageText(getPageCount() - 1, Messages.getString("editor.tab_name.template"));
 
-        jsEditor = new JavaScriptEditor();
         IFile jsFile = IOUtils.getAdjacentFile(definitionFile, formNode.getScriptFileName());
+        jsEditor = new JavaScriptEditor(jsFile);
         try {
             addPage(jsEditor, new FileEditorInput(jsFile));
         } catch (PartInitException e) {
@@ -148,9 +125,10 @@ public class JointQuickFormEditor extends MultiPageEditorPart {
     public void doSave(IProgressMonitor monitor) {
         quickEditor.doSave(monitor);
         jsEditor.doSave(monitor);
+        fieldValidatorsPage.updateConfigs(formFile);
         fieldValidatorsPage.doSave();
         globalValidatorsPage.doSave();
-        ValidationUtil.removeEmptyConfigsForDeletedVariables(validationFile, formNode, validation);
+        ValidationUtil.rewriteValidation(formFile, formNode, validation);
         setDirty(false);
     }
 
@@ -181,24 +159,6 @@ public class JointQuickFormEditor extends MultiPageEditorPart {
         fieldValidatorsPage.dispose();
         globalValidatorsPage.dispose();
         super.dispose();
-        boolean rewriteFormsXml = false;
-        if (!formFile.exists()) {
-            formNode.setFormFileNameSoftly("");
-            formNode.setTemplateFileNameSoftly("");
-            rewriteFormsXml = true;
-        }
-        ValidationUtil.removeValidationIfEmpty(validationFile, validation);
-        if (!validationFile.exists()) {
-            formNode.setValidationFileNameSoftly("");
-            rewriteFormsXml = true;
-        }
-        if (!((IFileEditorInput) jsEditor.getEditorInput()).exists()) {
-            formNode.setScriptFileNameSoftly("");
-            rewriteFormsXml = true;
-        }
-        if (rewriteFormsXml) {
-            IOUtils.saveFormsXml(formNode, formFile);
-        }
     }
 
 }

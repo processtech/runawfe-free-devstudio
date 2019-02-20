@@ -1,6 +1,5 @@
 package ru.runa.gpd.formeditor.wysiwyg;
 
-import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
@@ -68,6 +67,7 @@ import ru.runa.gpd.formeditor.resources.Messages;
 import ru.runa.gpd.formeditor.vartag.VarTagUtil;
 import ru.runa.gpd.htmleditor.editors.HTMLConfiguration;
 import ru.runa.gpd.htmleditor.editors.HTMLSourceEditor;
+import ru.runa.gpd.jointformeditor.JointFormEditor;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Variable;
@@ -162,23 +162,14 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
             @Override
             public void propertyChanged(Object source, int propId) {
                 if (propId == FormEditor.CLOSED) {
-                    if (formFile.exists()) {
-                        if (IOUtils.isEmpty(formFile) && !getSite().getWorkbenchWindow().getWorkbench().isClosing()) {
-                            try {
-                                formFile.delete(true, null);
-                            } catch (CoreException e) {
-                                PluginLogger.logError(e);
-                            }
-                        }
-                    }
-                    boolean formEditorsAvailable = false;
                     IWorkbenchPage workbenchPage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
                     if (workbenchPage == null) {
                         return;
                     }
+                    boolean formEditorsAvailable = false;
                     for (IEditorReference editorReference : workbenchPage.getEditorReferences()) {
                         IEditorPart editor = editorReference.getEditor(true);
-                        if (editor instanceof FormEditor && !Objects.equal(FormEditor.this, editor)) {
+                        if (editor instanceof JointFormEditor) {
                             formEditorsAvailable = true;
                             break;
                         }

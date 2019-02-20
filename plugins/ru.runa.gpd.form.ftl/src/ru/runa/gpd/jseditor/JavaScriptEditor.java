@@ -49,6 +49,7 @@ import ru.runa.gpd.htmleditor.HTMLPlugin;
 import ru.runa.gpd.htmleditor.HTMLProjectParams;
 import ru.runa.gpd.htmleditor.editors.FoldingInfo;
 import ru.runa.gpd.htmleditor.editors.SoftTabVerifyListener;
+import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.TemplateUtils;
 import ru.runa.gpd.util.WorkspaceOperations;
 
@@ -63,7 +64,7 @@ public class JavaScriptEditor extends TextEditor {
     public static final String GROUP_JAVASCRIPT = "_javascript";
     public static final String ACTION_COMMENT = "_comment";
 
-    public JavaScriptEditor() {
+    public JavaScriptEditor(IFile jsFile) {
         super();
         colorProvider = EditorsPlugin.getDefault().getColorProvider();
         setSourceViewerConfiguration(new JavaScriptConfiguration(colorProvider));
@@ -78,6 +79,14 @@ public class JavaScriptEditor extends TextEditor {
         softTabListener.setSoftTabWidth(store.getInt(HTMLPlugin.PREF_SOFTTAB_WIDTH));
 
         setAction(ACTION_COMMENT, new CommentAction());
+
+        if (!jsFile.exists()) {
+            try {
+                IOUtils.createFile(jsFile, TemplateUtils.getFormTemplateAsStream());
+            } catch (CoreException e) {
+                throw new RuntimeException(e.getMessage(), e);
+            }
+        }
     }
 
     @Override
@@ -196,7 +205,6 @@ public class JavaScriptEditor extends TextEditor {
                     try (InputStream is = script.getContents()) {
                         if (TemplateUtils.getFormTemplateAsString().equals(CharStreams.toString(new InputStreamReader(is, Charsets.UTF_8)))) {
                             is.close();
-                            script.setSessionProperty(WorkspaceOperations.PROPERTY_FILE_WILL_BE_DELETED_SHORTLY, Boolean.TRUE);
                             WorkspaceOperations.job("Java script editor disposing", (p) -> {
                                 try {
                                     if (new HTMLProjectParams(script.getProject()).getRemoveMarkers()) {
