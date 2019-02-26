@@ -553,7 +553,7 @@ public class GlobalValidatorsWizardPage extends WizardPage implements PropertyCh
     }
 
     private void updateVariableNames() {
-        variables = formNode.getProcessDefinition().getVariables(true, true);
+        variables = formNode.getVariables(true, true);
         variableNames = VariableUtils.getVariableNamesForScripting(variables);
         contextVariableNames = Lists.newArrayList(variableNames);
         contextVariableNames.add(WfProcess.SELECTED_TRANSITION_KEY);
