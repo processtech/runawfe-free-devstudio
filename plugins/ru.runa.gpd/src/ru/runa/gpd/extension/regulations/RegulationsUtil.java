@@ -17,20 +17,30 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.regulations.ui.RegulationsNotesView;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.EndState;
 import ru.runa.gpd.lang.model.EndTokenState;
+import ru.runa.gpd.lang.model.FormNode;
+import ru.runa.gpd.lang.model.ITimed;
+import ru.runa.gpd.lang.model.MessageNode;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.StartState;
 import ru.runa.gpd.lang.model.Subprocess;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
+import ru.runa.gpd.lang.model.SwimlanedNode;
+import ru.runa.gpd.lang.model.Timer;
+import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.par.ParContentProvider;
+import ru.runa.gpd.util.Duration;
 import ru.runa.gpd.util.EditorUtils;
 import ru.runa.gpd.util.IOUtils;
+import ru.runa.gpd.validation.FormNodeValidation;
+import ru.runa.gpd.validation.ValidatorConfig;
 import ru.runa.gpd.validation.ValidatorDefinition;
 import ru.runa.gpd.validation.ValidatorDefinitionRegistry;
 
@@ -121,12 +131,253 @@ public class RegulationsUtil {
             nextNode.getRegulationsProperties().setEnabled(true);
             nextNode.getRegulationsProperties().setPreviousNode(previousNode);
             // TODO use description here or template code by node type?
-            // nextNode.getRegulationsProperties().setDescription("fill here text similar to legacy impl");
+            nextNode.getRegulationsProperties().setDescription(getRegulationPropertiesDescription(nextNode));
             if (previousNode != null) {
                 previousNode.getRegulationsProperties().setNextNode(nextNode);
             }
             previousNode = nextNode;
         }
+    }
+
+    private static String getRegulationPropertiesDescription(Node node) {
+        ProcessDefinition processDefinition = node.getProcessDefinition();
+        StringBuilder sb = new StringBuilder();
+
+        // node header
+        sb.append(getNodeName(node));
+
+        // embedded subprocess
+        if (processDefinition instanceof SubprocessDefinition) {
+            sb.append("<div class=\"embedded-subprocess\">Действие в рамках композиции <span class=\"name\">" + processDefinition.getName()
+                    + "</span></div>");
+        }
+
+        // node type info
+        sb.append(getNodeTypeInfo(node));
+
+        // swimlane info
+        if (node instanceof SwimlanedNode) {
+            sb.append("<div class=\"swimlane\">Роль: <span class=\"name\">" + ((SwimlanedNode) node).getSwimlane().getName() + "</span></div>");
+        }
+
+        // leaving transitions info
+        sb.append(getTransitionsInfo(node));
+
+        // timer option info
+        if (node instanceof ITimed) {
+            sb.append(getTimerOptionInfo(node));
+        }
+
+        // message live time
+        if (node.getClass().getSimpleName().equals("SendMessageNode") && ((MessageNode) node).getTtlDuration().hasDuration()) {
+            sb.append("<div class=\"ttl\">Время жизни сообщения: " + ((MessageNode) node).getTtlDuration().toString() + "</div>");
+        }
+
+        // subprocess name
+        if ((node.getClass().getSimpleName().equals("Subprocess") || node.getClass().getSimpleName().equals("MultiSubprocess"))
+                && !((Subprocess) node).isEmbedded()) {
+            sb.append("<div class=\"subprocess\">Имя подпроцесса: <span class=\"name\">" + ((Subprocess) node).getSubProcessName());
+        }
+
+        // validation info
+        if (node instanceof FormNode && ((FormNode) node).hasFormValidation()) {
+            FormNodeValidation formNodeValidation = ((FormNode) node).getValidation(node.getProcessDefinition().getFile());
+            Map<String, Map<String, ValidatorConfig>> formNodeValidationFieldConfigs = formNodeValidation.getFieldConfigs();
+            sb.append("<div class=\"variables\">\n" + "   <table class=\"data\">\n" + "       <tr>\n" + "           <th>Переменная</th>\n"
+                    + "           <th>Проверка ввода</th>\n" + "       </tr>");
+            for (Map.Entry<String, Map<String, ValidatorConfig>> entry : formNodeValidationFieldConfigs.entrySet()) {
+                sb.append("<tr>\n" + "   <td class=\"variableName\">" + entry.getKey() + "</td>\n" + "   <td>\n" + "       <ul>");
+                for (Map.Entry<String, ValidatorConfig> validatiorConfigEntry : entry.getValue().entrySet()) {
+                    sb.append("<li>");
+                    ValidatorConfig fieldValidatorConfig = validatiorConfigEntry.getValue();
+                    ValidatorDefinition validatorDefinition = ValidatorDefinitionRegistry.getValidatorDefinitions()
+                            .get(fieldValidatorConfig.getType());
+
+                    if (!fieldValidatorConfig.getMessage().isEmpty()) {
+                        sb.append(fieldValidatorConfig.getMessage());
+                    } else {
+                        sb.append(validatorDefinition.getDescription());
+                    }
+
+                    if (!fieldValidatorConfig.getTransitionNames().isEmpty()) {
+                        sb.append("(только в случае ");
+                        sb.append(String.join(",", fieldValidatorConfig.getTransitionNames()) + ")");
+                    }
+
+                    if (!fieldValidatorConfig.getParams().isEmpty()) {
+                        sb.append("<ul>");
+                        for (Map.Entry<String, String> paramsEntry : fieldValidatorConfig.getParams().entrySet()) {
+                            sb.append("<li>");
+                            sb.append(validatorDefinition.getParams().get(paramsEntry.getKey()).getLabel());
+                            sb.append(Localization.getString(fieldValidatorConfig.getParams().get(paramsEntry.getKey())));
+                            sb.append("</li>");
+                        }
+                        sb.append("</ul>");
+                    }
+                    sb.append("</li>");
+                }
+                sb.append("     </ul>\n" + "   </td>\n" + "</tr>");
+            }
+
+            if (!formNodeValidation.getGlobalConfigs().isEmpty()) {
+                sb.append("<tr>\n" + "   <td><span class=\"name\">Комплексные проверки данных</span></td>\n" + "   <td>\n" + "       <ul>");
+                for (ValidatorConfig validatorConfig : formNodeValidation.getGlobalConfigs()) {
+                    sb.append("<li>");
+                    sb.append(validatorConfig.getMessage().isEmpty() ? "Без сообщения" : validatorConfig.getMessage());
+                    sb.append("</li>");
+                }
+                sb.append("     </ul>  \n" + "   </td>\n" + "</tr>");
+            }
+
+            sb.append(" </table>\n" + "</div>");
+
+        }
+
+        sb.append("</div>");
+        return sb.toString();
+    }
+
+    private static String getNodeName(Node node) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<div class=\"header\">\n" + "<a name=\"" + node.getId() + "\"></a>\n");
+        String nodeClassSimpleName = node.getClass().getSimpleName();
+        switch (nodeClassSimpleName) {
+        case "StartState":
+            sb.append("<span class=\"step\">Начало выполнения бизнес-процесса:</span>\n");
+            break;
+        case "ParallelGateway":
+        case "Fork":
+            sb.append("<span class=\"step\">Шаг: Параллельный шлюз </span>\n");
+            break;
+        case "Join":
+            sb.append("<span class=\"step\">Шаг: Соединение </span>\n");
+            break;
+        case "EndTokenState":
+            sb.append("<span class=\"step\">Завершение потока  выполнения бизнес-процесса:</span>\n");
+            break;
+        case "EndState":
+            sb.append("<span class=\"step\">Завершение процесса  выполнения бизнес-процесса:</span>\n");
+            break;
+        default:
+            sb.append("<span class=\"step\">Шаг:</span>\n");
+            break;
+        }
+        sb.append("<span class=\"name\">" + node.getName() + "</span>\n" + "</div>");
+
+        return sb.toString();
+    }
+
+    private static String getNodeTypeInfo(Node node) {
+        StringBuilder sb = new StringBuilder();
+        String nodeClassSimpleName = node.getClass().getSimpleName();
+        if (!nodeClassSimpleName.equals("StartState") && !nodeClassSimpleName.equals("EndTokenState") && !nodeClassSimpleName.equals("EndState")) {
+            sb.append("<div class=\"type\">Тип шага: <span class=\"name\">");
+            switch (nodeClassSimpleName) {
+            case "ParallelGateway":
+            case "Fork":
+                sb.append(node.getLeavingTransitions().size() > node.getArrivingTransitions().size() ? "Разделение" : "Слияние");
+                break;
+            case "Join":
+                sb.append("Соединение");
+                break;
+            case "ReceiveMessageNode":
+                sb.append("Прием сообщения");
+                break;
+            case "SendMessageNode":
+                sb.append("Отправка сообщения");
+                break;
+            case "Subprocess":
+                sb.append("Запуск подпроцесса");
+                break;
+            case "Multisubprocess":
+                sb.append("Запуск мультиподпроцесса");
+                break;
+            case "MultiTaskState":
+                sb.append("Запуск мультидействия");
+                break;
+            case "ScriptTask":
+                sb.append("Выполнение сценария");
+                break;
+            default:
+                sb.append(node.getTypeDefinition().getLabel());
+                break;
+            }
+            sb.append("</span></div>");
+        }
+        return sb.toString();
+    }
+
+    private static String getTransitionsInfo(Node node) {
+        StringBuilder sb = new StringBuilder();
+        String nodeClassSimpleName = node.getClass().getSimpleName();
+        if (!nodeClassSimpleName.equals("EndTokenState") && !nodeClassSimpleName.equals("EndState")) {
+            List<Transition> leavingTransitions = node.getLeavingTransitions();
+            Node targetNode = leavingTransitions.get(0).getTarget();
+            sb.append("<div class=\"transition\">");
+            switch (nodeClassSimpleName) {
+            case "Join":
+                sb.append("Далее cоединяются " + node.getArrivingTransitions().size()
+                        + " точек управления, и управление переходит к шагу<span class=\"name\"><a href=\"#" + targetNode.getId() + "\">"
+                        + leavingTransitions.get(0).getTarget().getName() + "</a></span>");
+                break;
+            case "Timer":
+                Duration timerDelay = (Duration) node.getPropertyValue("timerDelay");
+                sb.append(timerDelay.hasDuration() ? "После истечения " + timerDelay.toString() + " управление переходит к шагу "
+                        : timerDelay.toString() + " времени управление переходит к шагу ");
+                sb.append(getNextNodeInfo(targetNode));
+                break;
+            case "ReceiveMessageNode":
+                sb.append("После приема сообщения управление переходит к шагу " + getNextNodeInfo(targetNode));
+                break;
+            case "SendMessageNode":
+                sb.append("После отправки сообщения управление переходит к шагу " + getNextNodeInfo(targetNode));
+                break;
+            case "Subprocess":
+            case "MultiSubprocess":
+                break;
+            default:
+                if (leavingTransitions.size() == 1) {
+                    sb.append("Далее управление переходит к шагу " + getNextNodeInfo(targetNode));
+                } else if (leavingTransitions.size() > 1) {
+                    sb.append("Далее управление переходит к шагу ");
+                    for (Transition leavingTransition : leavingTransitions) {
+                        sb.append("<div class=\"transition\">в случае <span class=\"name\">" + leavingTransition.getName() + " </span>"
+                                + getNextNodeInfo(leavingTransition.getTarget()));
+                    }
+                }
+                break;
+            }
+            sb.append("</div>");
+        }
+        return sb.toString();
+    }
+
+    private static String getNextNodeInfo(Node node) {
+        return "<span class=\"name\"><a href=\"#" + node.getId() + "\">" + node.getName() + "</a></span>";
+    }
+
+    private static String getTimerOptionInfo(Node node) {
+        StringBuilder sb = new StringBuilder();
+        String nodeClassSimpleName = node.getClass().getSimpleName();
+        Timer timer = ((ITimed) node).getTimer();
+        if (timer != null) {
+            String timerDelay = ((Duration) node.getPropertyValue("timerDelay")).toString();
+            switch (nodeClassSimpleName) {
+            case "TaskState":
+            case "Decision":
+            case "Conjunction":
+                sb.append(timer.getDelay().hasDuration() ? "После истечения " + timerDelay + " управление переходит к шагу "
+                        : timerDelay + " времени управление переходит к шагу ");
+                sb.append(getNextNodeInfo(timer.getLeavingTransitions().get(0).getTarget()));
+                break;
+            case "ReceiveMessageNode":
+                sb.append("В случае задержки задания на " + timerDelay + " управление переходит к шагу "
+                        + getNextNodeInfo(timer.getLeavingTransitions().get(0).getTarget()));
+            default:
+                break;
+            }
+        }
+        return sb.toString();
     }
 
     public static boolean validate(ProcessDefinition processDefinition) {
