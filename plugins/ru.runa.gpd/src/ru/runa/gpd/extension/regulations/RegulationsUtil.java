@@ -22,19 +22,30 @@ import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.regulations.ui.RegulationsNotesView;
 import ru.runa.gpd.lang.ValidationError;
+import ru.runa.gpd.lang.model.Decision;
 import ru.runa.gpd.lang.model.EndState;
 import ru.runa.gpd.lang.model.EndTokenState;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.ITimed;
 import ru.runa.gpd.lang.model.MessageNode;
+import ru.runa.gpd.lang.model.MultiSubprocess;
+import ru.runa.gpd.lang.model.MultiTaskState;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.StartState;
 import ru.runa.gpd.lang.model.Subprocess;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.model.SwimlanedNode;
+import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Timer;
 import ru.runa.gpd.lang.model.Transition;
+import ru.runa.gpd.lang.model.bpmn.Conjunction;
+import ru.runa.gpd.lang.model.bpmn.ParallelGateway;
+import ru.runa.gpd.lang.model.bpmn.ScriptTask;
+import ru.runa.gpd.lang.model.jpdl.Fork;
+import ru.runa.gpd.lang.model.jpdl.Join;
+import ru.runa.gpd.lang.model.jpdl.ReceiveMessageNode;
+import ru.runa.gpd.lang.model.jpdl.SendMessageNode;
 import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.util.Duration;
 import ru.runa.gpd.util.EditorUtils;
@@ -91,7 +102,7 @@ public class RegulationsUtil {
                 }
                 currentNode = currentNode.getRegulationsProperties().getNextNode();
                 append = true;
-                if (currentNode != null && currentNode.getClass().equals(Subprocess.class)) {
+                if (currentNode != null && currentNode.getClass() == Subprocess.class) {
                     result.add(currentNode);
                     append = false;
                     SubprocessDefinition subprocessDefinition = ((Subprocess) currentNode).getEmbeddedSubprocess();
@@ -169,12 +180,12 @@ public class RegulationsUtil {
         }
 
         // message live time
-        if (node.getClass().getSimpleName().equals("SendMessageNode") && ((MessageNode) node).getTtlDuration().hasDuration()) {
+        if (node.getClass() == SendMessageNode.class && ((MessageNode) node).getTtlDuration().hasDuration()) {
             sb.append("<div class=\"ttl\">Время жизни сообщения: " + ((MessageNode) node).getTtlDuration().toString() + "</div>");
         }
 
         // subprocess name
-        if ((node.getClass().getSimpleName().equals("Subprocess") || node.getClass().getSimpleName().equals("MultiSubprocess"))
+        if ((node.getClass() == Subprocess.class || node.getClass() == MultiSubprocess.class)
                 && !((Subprocess) node).isEmbedded()) {
             sb.append("<div class=\"subprocess\">Имя подпроцесса: <span class=\"name\">" + ((Subprocess) node).getSubProcessName());
         }
@@ -232,120 +243,95 @@ public class RegulationsUtil {
             sb.append(" </table>\n" + "</div>");
 
         }
-
-        sb.append("</div>");
         return sb.toString();
     }
 
+    @SuppressWarnings("rawtypes")
     private static String getNodeName(Node node) {
         StringBuilder sb = new StringBuilder();
         sb.append("<div class=\"header\">\n" + "<a name=\"" + node.getId() + "\"></a>\n");
-        String nodeClassSimpleName = node.getClass().getSimpleName();
-        switch (nodeClassSimpleName) {
-        case "StartState":
+        Class nodeClass = node.getClass();
+        if (nodeClass == StartState.class) {
             sb.append("<span class=\"step\">Начало выполнения бизнес-процесса:</span>\n");
-            break;
-        case "ParallelGateway":
-        case "Fork":
+        } else if (nodeClass == ParallelGateway.class || nodeClass == Fork.class) {
             sb.append("<span class=\"step\">Шаг: Параллельный шлюз </span>\n");
-            break;
-        case "Join":
+        } else if (nodeClass == Join.class) {
             sb.append("<span class=\"step\">Шаг: Соединение </span>\n");
-            break;
-        case "EndTokenState":
+        } else if (nodeClass == EndTokenState.class) {
             sb.append("<span class=\"step\">Завершение потока  выполнения бизнес-процесса:</span>\n");
-            break;
-        case "EndState":
+        } else if (nodeClass == EndState.class) {
             sb.append("<span class=\"step\">Завершение процесса  выполнения бизнес-процесса:</span>\n");
-            break;
-        default:
+        } else {
             sb.append("<span class=\"step\">Шаг:</span>\n");
-            break;
         }
         sb.append("<span class=\"name\">" + node.getName() + "</span>\n" + "</div>");
 
         return sb.toString();
     }
 
+    @SuppressWarnings("rawtypes")
     private static String getNodeTypeInfo(Node node) {
         StringBuilder sb = new StringBuilder();
-        String nodeClassSimpleName = node.getClass().getSimpleName();
-        if (!nodeClassSimpleName.equals("StartState") && !nodeClassSimpleName.equals("EndTokenState") && !nodeClassSimpleName.equals("EndState")) {
+        Class nodeClass = node.getClass();
+        if (nodeClass != StartState.class && nodeClass != EndTokenState.class && nodeClass != EndState.class) {
             sb.append("<div class=\"type\">Тип шага: <span class=\"name\">");
-            switch (nodeClassSimpleName) {
-            case "ParallelGateway":
-            case "Fork":
+            if (nodeClass == ParallelGateway.class || nodeClass == Fork.class) {
                 sb.append(node.getLeavingTransitions().size() > node.getArrivingTransitions().size() ? "Разделение" : "Слияние");
-                break;
-            case "Join":
+            } else if (nodeClass == Join.class) {
                 sb.append("Соединение");
-                break;
-            case "ReceiveMessageNode":
+            } else if (nodeClass == ReceiveMessageNode.class) {
                 sb.append("Прием сообщения");
-                break;
-            case "SendMessageNode":
+            } else if (nodeClass == SendMessageNode.class) {
                 sb.append("Отправка сообщения");
-                break;
-            case "Subprocess":
+            } else if (nodeClass == Subprocess.class) {
                 sb.append("Запуск подпроцесса");
-                break;
-            case "Multisubprocess":
+            } else if (nodeClass == MultiSubprocess.class) {
                 sb.append("Запуск мультиподпроцесса");
-                break;
-            case "MultiTaskState":
+            } else if (nodeClass == MultiTaskState.class) {
                 sb.append("Запуск мультидействия");
-                break;
-            case "ScriptTask":
+            } else if (nodeClass == ScriptTask.class) {
                 sb.append("Выполнение сценария");
-                break;
-            default:
+            } else {
                 sb.append(node.getTypeDefinition().getLabel());
-                break;
             }
             sb.append("</span></div>");
         }
         return sb.toString();
     }
 
+    @SuppressWarnings("rawtypes")
     private static String getTransitionsInfo(Node node) {
         StringBuilder sb = new StringBuilder();
-        String nodeClassSimpleName = node.getClass().getSimpleName();
-        if (!nodeClassSimpleName.equals("EndTokenState") && !nodeClassSimpleName.equals("EndState")) {
+        Class nodeClass = node.getClass();
+        if (nodeClass != EndTokenState.class && nodeClass != EndState.class) {
             List<Transition> leavingTransitions = node.getLeavingTransitions();
             Node targetNode = leavingTransitions.get(0).getTarget();
             sb.append("<div class=\"transition\">");
-            switch (nodeClassSimpleName) {
-            case "Join":
+            if (nodeClass == Join.class) {
                 sb.append("Далее cоединяются " + node.getArrivingTransitions().size()
                         + " точек управления, и управление переходит к шагу<span class=\"name\"><a href=\"#" + targetNode.getId() + "\">"
                         + leavingTransitions.get(0).getTarget().getName() + "</a></span>");
-                break;
-            case "Timer":
+            } else if (nodeClass == Timer.class) {
                 Duration timerDelay = (Duration) node.getPropertyValue("timerDelay");
                 sb.append(timerDelay.hasDuration() ? "После истечения " + timerDelay.toString() + " управление переходит к шагу "
                         : timerDelay.toString() + " времени управление переходит к шагу ");
                 sb.append(getNextNodeInfo(targetNode));
-                break;
-            case "ReceiveMessageNode":
+                
+            } else if (nodeClass == ReceiveMessageNode.class) {
                 sb.append("После приема сообщения управление переходит к шагу " + getNextNodeInfo(targetNode));
-                break;
-            case "SendMessageNode":
+            } else if (nodeClass == SendMessageNode.class) {
                 sb.append("После отправки сообщения управление переходит к шагу " + getNextNodeInfo(targetNode));
-                break;
-            case "Subprocess":
-            case "MultiSubprocess":
-                break;
-            default:
+            } else if (nodeClass == Subprocess.class || nodeClass == MultiSubprocess.class) {
+            } else {
                 if (leavingTransitions.size() == 1) {
                     sb.append("Далее управление переходит к шагу " + getNextNodeInfo(targetNode));
                 } else if (leavingTransitions.size() > 1) {
                     sb.append("Далее управление переходит к шагу ");
                     for (Transition leavingTransition : leavingTransitions) {
                         sb.append("<div class=\"transition\">в случае <span class=\"name\">" + leavingTransition.getName() + " </span>"
-                                + getNextNodeInfo(leavingTransition.getTarget()));
+                                + getNextNodeInfo(leavingTransition.getTarget()) + "</div>");
                     }
                 }
-                break;
             }
             sb.append("</div>");
         }
@@ -356,25 +342,20 @@ public class RegulationsUtil {
         return "<span class=\"name\"><a href=\"#" + node.getId() + "\">" + node.getName() + "</a></span>";
     }
 
+    @SuppressWarnings("rawtypes")
     private static String getTimerOptionInfo(Node node) {
         StringBuilder sb = new StringBuilder();
-        String nodeClassSimpleName = node.getClass().getSimpleName();
+        Class nodeClass = node.getClass();
         Timer timer = ((ITimed) node).getTimer();
         if (timer != null) {
             String timerDelay = ((Duration) node.getPropertyValue("timerDelay")).toString();
-            switch (nodeClassSimpleName) {
-            case "TaskState":
-            case "Decision":
-            case "Conjunction":
+            if (nodeClass == TaskState.class || nodeClass == Decision.class || nodeClass == Conjunction.class) {
                 sb.append(timer.getDelay().hasDuration() ? "После истечения " + timerDelay + " управление переходит к шагу "
                         : timerDelay + " времени управление переходит к шагу ");
                 sb.append(getNextNodeInfo(timer.getLeavingTransitions().get(0).getTarget()));
-                break;
-            case "ReceiveMessageNode":
+            } else if (nodeClass == ReceiveMessageNode.class) {
                 sb.append("В случае задержки задания на " + timerDelay + " управление переходит к шагу "
                         + getNextNodeInfo(timer.getLeavingTransitions().get(0).getTarget()));
-            default:
-                break;
             }
         }
         return sb.toString();
