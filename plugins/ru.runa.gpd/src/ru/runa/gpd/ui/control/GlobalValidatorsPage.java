@@ -532,7 +532,8 @@ public class GlobalValidatorsPage extends Composite implements PropertyChangeLis
                         txtVarName1.setText(variable.getScriptingName());
                         refreshCombos();
                         comboBoxOp.setText(expr.getOperation().getVisibleName());
-                        txtVarName2.setText(expr.getVariable2().getScriptingName());
+                        varName2 = expr.getVariable2().getScriptingName();
+                        txtVarName2.setText(varName2);
                         textData = expr.generateCode();
                     }
                 } else if (!Strings.isNullOrEmpty(textData)) {

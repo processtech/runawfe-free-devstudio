@@ -103,11 +103,6 @@ public abstract class FormNode extends SwimlanedNode {
         firePropertyChange(PROPERTY_FORM_TEMPLATE_FILE, old, this.templateFileName);
     }
 
-    public void clearFormFileNameSilently() {
-        this.formFileName = EMPTY;
-        this.templateFileName = EMPTY;
-    }
-
     public boolean hasFormTemplate() {
         return templateFileName != null && templateFileName.length() > 0;
     }

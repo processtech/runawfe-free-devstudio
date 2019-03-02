@@ -15,6 +15,7 @@ import ru.runa.gpd.Activator;
 import ru.runa.gpd.formeditor.wysiwyg.FormEditor;
 import ru.runa.gpd.jointformeditor.resources.Messages;
 import ru.runa.gpd.jseditor.JavaScriptEditor;
+import ru.runa.gpd.lang.par.ProcessDefinitionValidator;
 import ru.runa.gpd.settings.PrefConstants;
 import ru.runa.gpd.ui.control.FieldValidatorsPage;
 import ru.runa.gpd.ui.control.GlobalValidatorsPage;
@@ -94,6 +95,7 @@ public class JointFormEditor extends FormEditor {
         globalValidatorsPage.doSave();
         ValidationUtil.rewriteValidation(formFile, formNode, validation);
         setDirty(false);
+        ProcessDefinitionValidator.validateDefinition(formNode.getProcessDefinition());
     }
 
     @Override

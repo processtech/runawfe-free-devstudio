@@ -20,6 +20,7 @@ import ru.runa.gpd.jseditor.JavaScriptEditor;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.par.ParContentProvider;
+import ru.runa.gpd.lang.par.ProcessDefinitionValidator;
 import ru.runa.gpd.quick.formeditor.QuickFormEditor;
 import ru.runa.gpd.settings.PrefConstants;
 import ru.runa.gpd.ui.control.FieldValidatorsPage;
@@ -130,6 +131,7 @@ public class JointQuickFormEditor extends MultiPageEditorPart {
         globalValidatorsPage.doSave();
         ValidationUtil.rewriteValidation(formFile, formNode, validation);
         setDirty(false);
+        ProcessDefinitionValidator.validateDefinition(formNode.getProcessDefinition());
     }
 
     @Override

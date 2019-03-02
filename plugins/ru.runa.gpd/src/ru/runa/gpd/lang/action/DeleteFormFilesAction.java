@@ -47,8 +47,9 @@ public class DeleteFormFilesAction extends BaseModelActionDelegate {
         if (dialog.open() == IDialogConstants.OK_ID) {
             try {
                 if (deleteFormFile != null && deleteFormFile.isEnabled()) {
-                    IOUtils.getAdjacentFile(formNode.getProcessDefinition().getFile(), formNode.getFormFileName()).delete(true, null);
-                    formNode.clearFormFileNameSilently();
+                    formNode.setFormType(FormNode.EMPTY);
+                    formNode.setFormFileName(FormNode.EMPTY);
+                    formNode.setTemplateFileName(FormNode.EMPTY);
                 }
                 if (deleteValidationFile != null && deleteValidationFile.isEnabled()) {
                     IOUtils.getAdjacentFile(formNode.getProcessDefinition().getFile(), formNode.getValidationFileName()).delete(true, null);
