@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
    <feature url="features/ru.runa.gpd.feature_4.4.0.201902031743.jar" id="ru.runa.gpd.feature" version="4.4.0.201902031743"/>
+   <feature url="features/ru.runa.gpd.form.quick.feature_4.4.0.201902031743.jar" id="ru.runa.gpd.form.quick.feature" version="4.4.0.201902031743"/>
 </site>

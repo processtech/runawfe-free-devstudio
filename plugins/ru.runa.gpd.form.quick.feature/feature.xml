@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="ru.runa.gpd.feature"
-      label="RunaWFE Developer Studio Feature"
+      id="ru.runa.gpd.form.quick.feature"
+      label="RunaWFE Developer Studio Quick Form Editor Feature"
       version="4.4.0.qualifier"
       provider-name="Process Technologies Ltd.">
 
@@ -42,38 +42,11 @@
       <import plugin="org.eclipse.e4.core.contexts" version="1.6.0" match="greaterOrEqual"/>
       <import plugin="org.eclipse.debug.core"/>
       <import plugin="org.eclipse.debug.ui"/>
+      <import plugin="ru.runa.gpd"/>
    </requires>
 
    <plugin
-         id="ru.runa.gpd"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="ru.runa.gpd.app"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="ru.runa.gpd.connector.wfe.ws"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="ru.runa.gpd.form.ftl"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="ru.runa.gpd.office"
+         id="ru.runa.gpd.form.quick"
          download-size="0"
          install-size="0"
          version="0.0.0"
