@@ -387,19 +387,21 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
 
     @Override
     public void doSave(IProgressMonitor monitor) {
-        if (getActivePage() == 0 && isBrowserLoaded()) {
-            if (!syncBrowser2Editor()) {
-                throw new InternalApplicationException(Messages.getString("wysiwyg.design.save_error"));
+        if (isDirty()) {
+            if (getActivePage() != 1 && isBrowserLoaded()) {
+                if (!syncBrowser2Editor()) {
+                    throw new InternalApplicationException(Messages.getString("wysiwyg.design.save_error"));
+                }
             }
+            if (getActivePage() == 1) {
+                syncEditor2Browser();
+            }
+            sourceEditor.doSave(monitor);
+            if (isBrowserLoaded()) {
+                browser.execute("setHTMLSaved()");
+            }
+            setDirty(false, false);
         }
-        if (getActivePage() == 1) {
-            syncEditor2Browser();
-        }
-        sourceEditor.doSave(monitor);
-        if (isBrowserLoaded()) {
-            browser.execute("setHTMLSaved()");
-        }
-        setDirty(false, false);
     }
 
 
