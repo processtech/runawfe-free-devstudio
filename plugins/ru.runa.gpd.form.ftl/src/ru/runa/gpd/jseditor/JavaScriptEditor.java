@@ -64,7 +64,7 @@ public class JavaScriptEditor extends TextEditor {
     public static final String GROUP_JAVASCRIPT = "_javascript";
     public static final String ACTION_COMMENT = "_comment";
 
-    public JavaScriptEditor(IFile jsFile) {
+    public JavaScriptEditor() {
         super();
         colorProvider = EditorsPlugin.getDefault().getColorProvider();
         setSourceViewerConfiguration(new JavaScriptConfiguration(colorProvider));
@@ -79,7 +79,10 @@ public class JavaScriptEditor extends TextEditor {
         softTabListener.setSoftTabWidth(store.getInt(HTMLPlugin.PREF_SOFTTAB_WIDTH));
 
         setAction(ACTION_COMMENT, new CommentAction());
+    }
 
+    public JavaScriptEditor(IFile jsFile) {
+        this();
         if (!jsFile.exists()) {
             try {
                 IOUtils.createFile(jsFile, TemplateUtils.getFormTemplateAsStream());
