@@ -1,10 +1,11 @@
 package ru.runa.gpd.lang.model;
 
+import com.google.common.base.Objects;
+import com.google.common.collect.Lists;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.draw2d.geometry.Rectangle;
@@ -14,7 +15,6 @@ import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
 import org.eclipse.ui.views.properties.TextPropertyDescriptor;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.PropertyNames;
@@ -25,17 +25,16 @@ import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.NodeRegistry;
 import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.lang.ValidationError;
+import ru.runa.gpd.lang.model.bpmn.TextAnnotation;
 import ru.runa.gpd.lang.model.jpdl.ActionContainer;
 import ru.runa.gpd.property.DelegableClassPropertyDescriptor;
 import ru.runa.gpd.property.DelegableConfPropertyDescriptor;
+import ru.runa.gpd.property.DescribablePropertyDescriptor;
 import ru.runa.gpd.property.DurationPropertyDescriptor;
 import ru.runa.gpd.property.TimerActionPropertyDescriptor;
 import ru.runa.gpd.settings.CommonPreferencePage;
 import ru.runa.gpd.util.EventSupport;
 import ru.runa.gpd.util.VariableUtils;
-
-import com.google.common.base.Objects;
-import com.google.common.collect.Lists;
 
 @SuppressWarnings("unchecked")
 public abstract class GraphElement extends EventSupport implements IPropertySource, PropertyNames, IActionFilter, VariableContainer {
@@ -362,14 +361,17 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
     public final IPropertyDescriptor[] getPropertyDescriptors() {
         List<IPropertyDescriptor> descriptors = new ArrayList<IPropertyDescriptor>();
         descriptors.add(new PropertyDescriptor(PROPERTY_ID, Localization.getString("Node.property.id")));
-        if (this instanceof NamedGraphElement) {
+        if (this instanceof NamedGraphElement && !(this instanceof TextAnnotation)) {
             if (((NamedGraphElement) this).canNameBeSetFromProperties()) {
                 descriptors.add(new TextPropertyDescriptor(PROPERTY_NAME, Localization.getString("property.name")));
             } else {
                 descriptors.add(new PropertyDescriptor(PROPERTY_NAME, Localization.getString("property.name")));
             }
         }
-        descriptors.add(new TextPropertyDescriptor(PROPERTY_DESCRIPTION, Localization.getString("property.description")));
+        if (this instanceof Describable) {
+            descriptors
+                    .add(new DescribablePropertyDescriptor(PROPERTY_DESCRIPTION, Localization.getString("property.description"), (Describable) this));
+        }
         if (isDelegable()) {
             Delegable delegable = (Delegable) this;
             descriptors.add(new DelegableClassPropertyDescriptor(PROPERTY_CLASS, Localization.getString("property.delegation.class"), delegable));

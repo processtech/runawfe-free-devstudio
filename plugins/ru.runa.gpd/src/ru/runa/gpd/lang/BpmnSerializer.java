@@ -844,7 +844,7 @@ public class BpmnSerializer extends ProcessSerializer {
         List<Element> textAnnotationElements = processElement.elements(TEXT_ANNOTATION);
         for (Element textAnnotationElement : textAnnotationElements) {
             TextAnnotation textAnnotation = create(textAnnotationElement, definition);
-            textAnnotation.setDescription(textAnnotationElement.elementTextTrim(TEXT));
+            textAnnotation.setDescription(textAnnotationElement.elementText(TEXT));
         }
         List<Element> transitions = processElement.elements(SEQUENCE_FLOW);
         for (Element transitionElement : transitions) {
