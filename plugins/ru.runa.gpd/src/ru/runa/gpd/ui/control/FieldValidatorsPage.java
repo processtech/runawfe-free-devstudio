@@ -1,4 +1,4 @@
-package ru.runa.gpd.ui.wizard;
+package ru.runa.gpd.ui.control;
 
 import com.google.common.collect.Maps;
 import java.beans.PropertyChangeEvent;
@@ -10,12 +10,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Map.Entry;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.jface.viewers.ArrayContentProvider;
-import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -24,7 +25,6 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
-import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -48,7 +48,6 @@ import org.eclipse.swt.widgets.TableColumn;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.PropertyNames;
-import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.form.FormType;
 import ru.runa.gpd.form.FormTypeProvider;
 import ru.runa.gpd.form.FormVariableAccess;
@@ -58,13 +57,11 @@ import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.Variable;
-import ru.runa.gpd.ui.custom.LoggingDoubleClickAdapter;
+import ru.runa.gpd.ui.control.ValidatorInfoControl.ParametersComposite;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.custom.TypedUserInputCombo;
 import ru.runa.gpd.ui.dialog.TimeInputDialog;
 import ru.runa.gpd.ui.dialog.UserInputDialog;
-import ru.runa.gpd.ui.wizard.ValidatorWizard.ParametersComposite;
-import ru.runa.gpd.ui.wizard.ValidatorWizard.ValidatorInfoControl;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.VariableUtils;
 import ru.runa.gpd.validation.FormNodeValidation;
@@ -74,38 +71,26 @@ import ru.runa.gpd.validation.ValidatorDefinition;
 import ru.runa.gpd.validation.ValidatorDefinition.Param;
 import ru.runa.gpd.validation.ValidatorDefinitionRegistry;
 
-public class FieldValidatorsWizardPage extends WizardPage implements PropertyChangeListener {
+public class FieldValidatorsPage extends Composite implements PropertyChangeListener {
     private final FormNode formNode;
     private final ProcessDefinition processDefinition;
     private TabFolder tabFolder;
-    private TableViewer variablesTableViewer;
-    private TableViewer swimlanesTableViewer;
+    private CheckboxTableViewer variablesTableViewer;
+    private CheckboxTableViewer swimlanesTableViewer;
     private Label warningLabel;
-    private TableViewer validatorsTableViewer;
+    private CheckboxTableViewer validatorsTableViewer;
     private ValidatorInfoControl infoGroup;
     private String warningMessage = "";
     private Map<String, Map<String, ValidatorConfig>> fieldConfigs;
     private boolean dirty;
     private Consumer<Boolean> dirtyCallback;
-    private boolean configsChanged;
 
-    protected FieldValidatorsWizardPage(FormNode formNode) {
-        super("Field validators");
+    public FieldValidatorsPage(Composite parent, FormNode formNode, FormNodeValidation validation, Consumer<Boolean> dirtyCallback) {
+        super(parent, SWT.NONE);
         this.formNode = formNode;
         this.processDefinition = formNode.getProcessDefinition();
-        setTitle(Localization.getString("ValidatorWizardPage.fieldpage.title"));
-        setDescription(Localization.getString("ValidatorWizardPage.fieldpage.description"));
-    }
-
-    public void init(FormNodeValidation validation) {
         this.fieldConfigs = validation.getFieldConfigs();
-        if (variablesTableViewer != null) {
-            variablesTableViewer.refresh(true);
-            swimlanesTableViewer.refresh(true);
-            updateVariableSelection();
-            validatorsTableViewer.refresh(true);
-            updateValidatorSelection();
-        }
+        this.dirtyCallback = dirtyCallback;
         List<String> undefinedValidators = new ArrayList<String>();
         for (String fieldName : fieldConfigs.keySet()) {
             if (!ValidatorConfig.GLOBAL_FIELD_ID.equals(fieldName)) {
@@ -120,17 +105,88 @@ public class FieldValidatorsWizardPage extends WizardPage implements PropertyCha
         if (undefinedValidators.size() > 0) {
             warningMessage = undefinedValidators.toString();
         }
+        initUi();
+    }
+
+    public boolean isDirty() {
+        return dirty;
     }
 
     @Override
-    public void createControl(Composite parent) {
-        // Composite mainComposite = new Composite(parent, SWT.NONE);
-        // mainComposite.setLayout(new GridLayout(2, false));
-        // mainComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
-        Composite pageControl = new Composite(parent, SWT.NONE);
-        pageControl.setLayout(new GridLayout(1, false));
-        pageControl.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-        SashForm mainComposite = new SashForm(pageControl, SWT.HORIZONTAL);
+    public void propertyChange(PropertyChangeEvent evt) {
+        String type = evt.getPropertyName();
+        if (PropertyNames.PROPERTY_CHILDREN_CHANGED.equals(type)) {
+            updateViewers();
+        } else if (evt.getSource() instanceof Variable) {
+            if (PropertyNames.PROPERTY_NAME.equals(type) || PropertyNames.PROPERTY_FORMAT.equals(type)) {
+                if (evt.getSource() instanceof Swimlane) {
+                    swimlanesTableViewer.refresh(evt.getSource());
+                } else {
+                    variablesTableViewer.refresh(evt.getSource());
+                }
+            }
+        }
+    }
+
+    @Override
+    public void dispose() {
+        for (Variable variable : formNode.getVariables(false, true)) {
+            variable.removePropertyChangeListener(this);
+        }
+        processDefinition.removePropertyChangeListener(this);
+        super.dispose();
+    }
+
+    public void doSave() {
+        infoGroup.saveConfig();
+        setDirty(false);
+    }
+
+    public void updateConfigs(IFile formFile) {
+        try {
+            updateConfigs(IOUtils.readStreamAsBytes(formFile.getContents(true)));
+        } catch (Exception e) {
+            PluginLogger.logError(e);
+        }
+    }
+
+    boolean configsChanged = false;
+
+    public void updateConfigs(byte[] formData) {
+        try {
+            configsChanged = false;
+            FormType formType = FormTypeProvider.getFormType(formNode.getFormType());
+            Map<String, FormVariableAccess> formVariables = formType.getFormVariableNames(formNode, formData);
+            List<String> existingVariableNames = formNode.getVariableNames(true);
+            formVariables.entrySet().stream().forEach(e -> {
+                if (e.getValue() == FormVariableAccess.WRITE && !fieldConfigs.containsKey(e.getKey()) && existingVariableNames.contains(e.getKey())) {
+                    fieldConfigs.put(e.getKey(), new HashMap<>());
+                    configsChanged = true;
+                }
+            });
+            for (Iterator<Entry<String, Map<String, ValidatorConfig>>> i = fieldConfigs.entrySet().iterator(); i.hasNext();) {
+                Entry<String, Map<String, ValidatorConfig>> e = i.next();
+                FormVariableAccess access = formVariables.get(e.getKey());
+                if ((access == null || access == FormVariableAccess.READ) && e.getValue().isEmpty()) {
+                    i.remove();
+                    configsChanged = true;
+                }
+            }
+            if (configsChanged) {
+                updateVariablesTableViewerSelection();
+                updateSwimlanesTableViewerSelection();
+                updateVariableSelection();
+                setDirty(true);
+            }
+        } catch (Exception e) {
+            PluginLogger.logError(e);
+        }
+    }
+
+    private void initUi() {
+        setLayout(new GridLayout(1, false));
+        setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        SashForm mainComposite = new SashForm(this, SWT.HORIZONTAL);
         mainComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         tabFolder = new TabFolder(mainComposite, SWT.NONE);
@@ -146,19 +202,16 @@ public class FieldValidatorsWizardPage extends WizardPage implements PropertyCha
                 updateVariableSelection();
             }
         });
-        variablesTableViewer.addDoubleClickListener(new LoggingDoubleClickAdapter() {
-            @Override
-            protected void onDoubleClick(DoubleClickEvent event) {
-                String variableName = getCurrentVariableName();
-                if (fieldConfigs.containsKey(variableName)) {
-                    removeField(variableName);
-                } else {
-                    addField(variableName);
-                }
-                variablesTableViewer.refresh(true);
-                updateVariableSelection();
-                setDirty(true);
+        variablesTableViewer.addCheckStateListener(e -> {
+            String variableName = ((Variable) e.getElement()).getName();
+            if (fieldConfigs.containsKey(variableName)) {
+                removeField(variableName);
+            } else {
+                addField(variableName);
             }
+            updateVariablesTableViewerSelection();
+            updateVariableSelection();
+            setDirty(true);
         });
 
         createTable(variablesTableViewer, new DataViewerComparator<>(new ValueComparator<Variable>() {
@@ -200,19 +253,16 @@ public class FieldValidatorsWizardPage extends WizardPage implements PropertyCha
                 updateVariableSelection();
             }
         });
-        swimlanesTableViewer.addDoubleClickListener(new LoggingDoubleClickAdapter() {
-            @Override
-            protected void onDoubleClick(DoubleClickEvent event) {
-                String variableName = getCurrentVariableName();
-                if (fieldConfigs.containsKey(variableName)) {
-                    removeField(variableName);
-                } else {
-                    addField(variableName);
-                }
-                swimlanesTableViewer.refresh(true);
-                updateVariableSelection();
-                setDirty(true);
+        swimlanesTableViewer.addCheckStateListener(e -> {
+            String variableName = ((Variable) e.getElement()).getName();
+            if (fieldConfigs.containsKey(variableName)) {
+                removeField(variableName);
+            } else {
+                addField(variableName);
             }
+            updateSwimlanesTableViewerSelection();
+            updateVariableSelection();
+            setDirty(true);
         });
 
         createTable(swimlanesTableViewer, new DataViewerComparator<>(new ValueComparator<Swimlane>() {
@@ -271,19 +321,17 @@ public class FieldValidatorsWizardPage extends WizardPage implements PropertyCha
                 updateValidatorSelection();
             }
         });
-        validatorsTableViewer.addDoubleClickListener(new LoggingDoubleClickAdapter() {
-            @Override
-            protected void onDoubleClick(DoubleClickEvent event) {
-                Map<String, ValidatorConfig> configs = fieldConfigs.get(getCurrentVariableName());
-                if (configs.containsKey(getCurrentDefinition().getName())) {
-                    removeFieldValidator(getCurrentDefinition());
-                } else {
-                    addFieldValidator(getCurrentDefinition());
-                }
-                validatorsTableViewer.refresh(true);
-                updateValidatorSelection();
-                setDirty(true);
+        validatorsTableViewer.addCheckStateListener(e -> {
+            ValidatorDefinition validatorDefinition = (ValidatorDefinition) e.getElement();
+            Map<String, ValidatorConfig> configs = fieldConfigs.get(getCurrentVariableName());
+            if (configs.containsKey(validatorDefinition.getName())) {
+                removeFieldValidator(validatorDefinition);
+            } else {
+                addFieldValidator(validatorDefinition);
             }
+            validatorsTableViewer.refresh(true);
+            updateValidatorSelection();
+            setDirty(true);
         });
 
         createTable(validatorsTableViewer, new DataViewerComparator<>(new ValueComparator<ValidatorDefinition>() {
@@ -321,9 +369,17 @@ public class FieldValidatorsWizardPage extends WizardPage implements PropertyCha
         warningLabel.setForeground(ColorConstants.red);
         warningLabel.setText(warningMessage);
         mainComposite.pack(true);
-        setControl(pageControl);
 
+        for (Variable variable : formNode.getVariables(false, true)) {
+            variable.addPropertyChangeListener(this);
+        }
         processDefinition.addPropertyChangeListener(this);
+
+        variablesTableViewer.refresh(true);
+        swimlanesTableViewer.refresh(true);
+        updateVariableSelection();
+        validatorsTableViewer.refresh(true);
+        updateValidatorSelection();
     }
 
     private <S> void createTable(TableViewer viewer, DataViewerComparator<S> comparator, TableColumnDescription... column) {
@@ -358,23 +414,48 @@ public class FieldValidatorsWizardPage extends WizardPage implements PropertyCha
         return selectionAdapter;
     }
 
-    private TableViewer createTableViewer(Composite parent, int style) {
-        TableViewer result = new TableViewer(parent, style);
+    private CheckboxTableViewer createTableViewer(Composite parent, int style) {
+        CheckboxTableViewer result = CheckboxTableViewer.newCheckList(parent, style);
         result.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
         result.setContentProvider(new ArrayContentProvider());
-        result.addSelectionChangedListener(new ISelectionChangedListener() {
-            @Override
-            public void selectionChanged(SelectionChangedEvent event) {
-                updateVariableSelection();
-            }
-        });
-
         return result;
     }
 
-    public void performFinish() {
-        infoGroup.saveConfig();
-        setDirty(false);
+    private void setDirty(boolean dirty) {
+        if (this.dirty != dirty) {
+            this.dirty = dirty;
+            if (dirty) {
+                dirtyCallback.accept(dirty);
+            }
+        }
+    }
+
+    private void updateViewers() {
+        List<Variable> variables = formNode.getVariables(true, false);
+        variablesTableViewer.setInput(variables);
+        updateVariablesTableViewerSelection();
+        List<Swimlane> swimlanes = processDefinition.getSwimlanes();
+        swimlanesTableViewer.setInput(swimlanes);
+        updateSwimlanesTableViewerSelection();
+    }
+
+    private List<Variable> getCheckedVariables() {
+        List<Variable> checkedVariables = fieldConfigs.keySet().stream()//
+                .map(s -> VariableUtils.getVariableByName(formNode, s))//
+                .filter(v -> v != null).collect(Collectors.toList());
+        return checkedVariables;
+    }
+
+    private void updateVariablesTableViewerSelection() {
+        List<Variable> checkedVariables = getCheckedVariables();
+        variablesTableViewer.setCheckedElements(checkedVariables.toArray(new Variable[checkedVariables.size()]));
+        variablesTableViewer.refresh();
+    }
+
+    private void updateSwimlanesTableViewerSelection() {
+        List<Variable> checkedVariables = getCheckedVariables();
+        swimlanesTableViewer.setCheckedElements(checkedVariables.toArray(new Variable[checkedVariables.size()]));
+        swimlanesTableViewer.refresh();
     }
 
     private void updateVariableSelection() {
@@ -386,7 +467,7 @@ public class FieldValidatorsWizardPage extends WizardPage implements PropertyCha
 
     private void updateValidatorSelection() {
         ValidatorDefinition vd = getCurrentDefinition();
-        if (vd != null) {
+        if (vd != null && fieldConfigs.containsKey(getCurrentVariableName())) {
             ValidatorConfig config = getFieldValidator(getCurrentVariableName(), vd);
             if (config == null) {
                 config = vd.create();
@@ -468,6 +549,17 @@ public class FieldValidatorsWizardPage extends WizardPage implements PropertyCha
     private void updateValidatorsInput(Variable variable) {
         if (variable != null) {
             validatorsTableViewer.setInput(ValidationUtil.getFieldValidatorDefinitions(variable));
+            Map<String, ValidatorConfig> map = fieldConfigs.get(variable.getName());
+            List<ValidatorDefinition> checkedValidatorDefinitions;
+            if (map != null) {
+                checkedValidatorDefinitions = map.keySet().stream()
+                        .map(type -> ValidatorDefinitionRegistry.getDefinition(type))
+                        .collect(Collectors.toList());
+            } else {
+                checkedValidatorDefinitions = new ArrayList<>();
+            }
+            validatorsTableViewer
+                    .setCheckedElements(checkedValidatorDefinitions.toArray(new ValidatorDefinition[checkedValidatorDefinitions.size()]));
         }
     }
 
@@ -497,111 +589,44 @@ public class FieldValidatorsWizardPage extends WizardPage implements PropertyCha
         return configs.get(definition.getName());
     }
 
-    static final String UNCHECKED_IMG = "icons/unchecked.gif";
-    static final String CHECKED_IMG = "icons/checked.gif";
-
     private class VariableTableLabelProvider extends LabelProvider implements ITableLabelProvider {
+
         @Override
         public String getColumnText(Object element, int index) {
-            String result = "";
-            NamedGraphElement variable = (NamedGraphElement) element;
-
             switch (index) {
-            case 0: {
-                result = "";
-            }
-                break;
-            case 1: {
-                result = variable.getName();
-            }
-                break;
+            case 0:
+                return "";
+            case 1:
+                return ((Variable) element).getName();
             default:
-                result = "unknown " + index;
+                return "unknown " + index;
             }
-
-            return result;
-        }
-
-        @Override
-        public String getText(Object element) {
-            return getColumnText(element, 0);
         }
 
         @Override
         public Image getColumnImage(Object element, int columnIndex) {
-            Image result = null;
-            switch (columnIndex) {
-            case 0: {
-                NamedGraphElement variable = (NamedGraphElement) element;
-                String imagePath = fieldConfigs.containsKey(variable.getName()) ? CHECKED_IMG : UNCHECKED_IMG;
-                result = SharedImages.getImage(imagePath);
-            }
-                break;
-            case 1: {
-                result = null;
-            }
-                break;
-            }
-            return result;
+            return null;
         }
 
     }
 
     private class ValidatorDefinitionTableLabelProvider extends LabelProvider implements ITableLabelProvider {
+
         @Override
         public String getColumnText(Object element, int index) {
-            String result = "";
-            ValidatorDefinition variable = (ValidatorDefinition) element;
-
             switch (index) {
-            case 0: {
-                result = "";
-            }
-                break;
-            case 1: {
-                result = variable.getLabel();
-            }
-                break;
+            case 0:
+                return "";
+            case 1:
+                return ((ValidatorDefinition) element).getLabel();
             default:
-                result = "unknown " + index;
+                return "unknown " + index;
             }
-
-            return result;
         }
 
         @Override
         public Image getColumnImage(Object element, int columnIndex) {
-            Image result = null;
-            ValidatorDefinition definition = (ValidatorDefinition) element;
-            Map<String, ValidatorConfig> configs = fieldConfigs.get(getCurrentVariableName());
-            String imagePath;
-            if (configs != null) {
-                switch (columnIndex) {
-                case 0: {
-                    imagePath = configs.containsKey(definition.getName()) ? CHECKED_IMG : UNCHECKED_IMG;
-                    result = SharedImages.getImage(imagePath);
-                }
-                    break;
-                case 1: {
-                    result = null;
-                }
-                    break;
-                }
-            } else {
-                switch (columnIndex) {
-                case 0: {
-                    imagePath = UNCHECKED_IMG;
-                    result = SharedImages.getImage(imagePath);
-                }
-                    break;
-                case 1: {
-                    result = null;
-                }
-                    break;
-                }
-
-            }
-            return result;
+            return null;
         }
 
     }
@@ -631,18 +656,8 @@ public class FieldValidatorsWizardPage extends WizardPage implements PropertyCha
                 label.setText(entry.getValue().getLabel());
                 label.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
                 String initialValue = configParams.get(entry.getKey());
-                // TODO: enable feature: use variables for comparison
-                // if (initialValue != null &&
-                // VariableUtils.isVariableNameWrapped(initialValue)) {
-                // initialValue =
-                // VariableUtils.unwrapVariableName(initialValue);
-                // }
                 TypedUserInputCombo combo = new TypedUserInputCombo(this, initialValue);
-                // for (Variable variable : processDefinition.getVariables(true,
-                // true, entry.getValue().getType())) {
-                // combo.add(variable.getName());
-                // }
-                // TODO workaround for time validator
+                // workaround for time validator
                 Class<? extends UserInputDialog> userInputDialogClass = null;
                 if ("time".equals(definition.getName()) && Date.class.getName().equals(entry.getValue().getType())) {
                     userInputDialogClass = TimeInputDialog.class;
@@ -766,105 +781,6 @@ public class FieldValidatorsWizardPage extends WizardPage implements PropertyCha
             this.width = width;
             this.style = style;
             this.sort = sort;
-        }
-    }
-
-    public void setMarkEditorDirtyCallback(Consumer<Boolean> callback) {
-        dirtyCallback = callback;
-    }
-
-    private void setDirty(boolean dirty) {
-        if (this.dirty != dirty) {
-            this.dirty = dirty;
-            Optional.ofNullable(dirtyCallback).orElse(p -> {}).accept(dirty);
-        }
-    }
-
-    public boolean isDirty() {
-        return dirty;
-    }
-
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        String type = evt.getPropertyName();
-        if (PropertyNames.PROPERTY_CHILDREN_CHANGED.equals(type)) {
-            updateViewers();
-        } else if (evt.getSource() instanceof Variable) {
-            if (PropertyNames.PROPERTY_NAME.equals(type) || PropertyNames.PROPERTY_FORMAT.equals(type)
-                    || PropertyNames.PROPERTY_DEFAULT_VALUE.equals(type) || PropertyNames.PROPERTY_STORE_TYPE.equals(type)) {
-                if (evt.getSource() instanceof Swimlane) {
-                    swimlanesTableViewer.refresh(evt.getSource());
-                } else {
-                    variablesTableViewer.refresh(evt.getSource());
-                }
-            }
-        }
-    }
-
-    private void updateViewers() {
-        List<Variable> variables = formNode.getVariables(true, false);
-        variablesTableViewer.setInput(variables);
-        for (Variable variable : variables) {
-            variable.addPropertyChangeListener(this);
-        }
-        List<Swimlane> swimlanes = processDefinition.getSwimlanes();
-        swimlanesTableViewer.setInput(swimlanes);
-        for (Swimlane swimlane : swimlanes) {
-            swimlane.addPropertyChangeListener(this);
-        }
-    }
-
-    @Override
-    public void dispose() {
-        for (Variable variable : formNode.getVariables(true, false)) {
-            variable.removePropertyChangeListener(this);
-        }
-        for (Swimlane swimlane : processDefinition.getSwimlanes()) {
-            swimlane.removePropertyChangeListener(this);
-        }
-        processDefinition.removePropertyChangeListener(this);
-        super.dispose();
-    }
-
-    public void updateConfigs(IFile formFile) {
-        try {
-            updateConfigs(IOUtils.readStreamAsBytes(formFile.getContents(true)));
-        } catch (Exception e) {
-            PluginLogger.logError(e);
-        }
-    }
-
-    public void updateConfigs(byte[] formData) {
-        try {
-            FormType formType = FormTypeProvider.getFormType(formNode.getFormType());
-            Map<String, FormVariableAccess> formVariables = formType.getFormVariableNames(formNode, formData);
-            configsChanged = false;
-            formVariables.entrySet().stream().forEach(e -> {
-                if (!fieldConfigs.containsKey(e.getKey())) {
-                    if (e.getValue() != FormVariableAccess.READ) {
-                        fieldConfigs.put(e.getKey(), new HashMap<>());
-                        configsChanged = true;
-                    }
-                } else if (e.getValue() == FormVariableAccess.READ) {
-                    fieldConfigs.remove(e.getKey());
-                    configsChanged = true;
-                }
-            });
-            for (Iterator<String> i = fieldConfigs.keySet().iterator(); i.hasNext();) {
-                if (!formVariables.containsKey(i.next())) {
-                    i.remove();
-                    configsChanged = true;
-                }
-            }
-            if (!variablesTableViewer.getControl().isDisposed()) {
-                variablesTableViewer.refresh(true);
-            }
-            if (configsChanged) {
-                updateVariableSelection();
-                setDirty(true);
-            }
-        } catch (Exception e) {
-            PluginLogger.logError(e);
         }
     }
 

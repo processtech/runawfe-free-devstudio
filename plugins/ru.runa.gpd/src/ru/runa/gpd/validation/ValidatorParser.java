@@ -73,6 +73,12 @@ public class ValidatorParser {
 
     public static void writeValidation(IFile validationFile, FormNode formNode, FormNodeValidation validation) {
         try {
+            if (validation.isEmpty()) {
+                if (validationFile.exists()) {
+                    validationFile.delete(true, null);
+                }
+                return;
+            }
             Document document = XmlUtil.createDocument(VALIDATORS);
             Element rootElement = document.getRootElement();
             for (ValidatorConfig config : validation.getGlobalConfigs()) {

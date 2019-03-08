@@ -346,6 +346,9 @@ public abstract class ProcessEditorBase extends MultiPageEditorPart implements I
             if (formNode.hasForm()) {
                 usedFormFiles.add(formNode.getFormFileName());
             }
+            if (formNode.hasFormTemplate()) {
+                usedFormFiles.add(formNode.getTemplateFileName());
+            }
             if (formNode.hasFormValidation()) {
                 usedFormFiles.add(formNode.getValidationFileName());
             }

@@ -365,10 +365,10 @@ public class CopyGraphCommand extends Command {
             if (targetFormNode.hasForm() && targetFolder.getFile(targetFormNode.getFormFileName()).exists()) {
                 fileNames.add(targetFormNode.getFormFileName());
             }
-            if (targetFormNode.hasFormValidation() && targetFolder.getFile(targetFormNode.getValidationFileName()).exists()) {
+            if (targetFormNode.hasFormValidation()) {
                 fileNames.add(targetFormNode.getValidationFileName());
             }
-            if (targetFormNode.hasFormScript() && targetFolder.getFile(targetFormNode.getScriptFileName()).exists()) {
+            if (targetFormNode.hasFormScript()) {
                 fileNames.add(targetFormNode.getScriptFileName());
             }
             if (fileNames.isEmpty()) {
