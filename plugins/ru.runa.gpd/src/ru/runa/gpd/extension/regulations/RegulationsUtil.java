@@ -73,15 +73,17 @@ public class RegulationsUtil {
             nodeModels.add(new NodeModel(node));
         }
         Map<String, Object> map = Maps.newHashMap();
-        map.put("processName", processDefinition.getName());
-        map.put("processDescription", processDefinition.getDescription());
         map.put("nodeModels", nodeModels);
         Map<String, ValidatorDefinition> validatorDefinitions = ValidatorDefinitionRegistry.getValidatorDefinitions();
         map.put("validatorDefinitions", validatorDefinitions);
-        map.put("swimlanes", processDefinition.getSwimlanes());
-        map.put("variables", processDefinition.getVariables(false, false));
-        map.put("endToken", processDefinition.getChildrenRecursive(EndTokenState.class));
-        map.put("end", processDefinition.getChildrenRecursive(EndState.class));
+        if (!RegulationsRegistry.hasExtendedRegulations()) {
+            map.put("processName", processDefinition.getName());
+            map.put("processDescription", processDefinition.getDescription());
+            map.put("swimlanes", processDefinition.getSwimlanes());
+            map.put("variables", processDefinition.getVariables(false, false));
+            map.put("endToken", processDefinition.getChildrenRecursive(EndTokenState.class));
+            map.put("end", processDefinition.getChildrenRecursive(EndState.class));
+        }
         IFile htmlDescriptionFile = IOUtils.getAdjacentFile(processDefinition.getFile(), ParContentProvider.PROCESS_DEFINITION_DESCRIPTION_FILE_NAME);
         if (htmlDescriptionFile.exists()) {
             map.put("processHtmlDescription", IOUtils.readStream(htmlDescriptionFile.getContents()));
@@ -132,6 +134,9 @@ public class RegulationsUtil {
                 endNodes.add(node);
                 continue;
             }
+            if (node instanceof Subprocess) {
+                autoFillRegulationProperties(((Subprocess)node).getEmbeddedSubprocess());
+            }
             sequencedNodes.addLast(node);
         }
         sequencedNodes.addAll(endTokenNodes);
@@ -168,7 +173,9 @@ public class RegulationsUtil {
 
         // swimlane info
         if (node instanceof SwimlanedNode) {
-            sb.append("<div class=\"swimlane\">Роль: <span class=\"name\">" + ((SwimlanedNode) node).getSwimlane().getName() + "</span></div>");
+            if (((SwimlanedNode) node).getSwimlane() != null) {
+                sb.append("<div class=\"swimlane\">Роль: <span class=\"name\">" + ((SwimlanedNode) node).getSwimlane().getName() + "</span></div>");
+            } 
         }
 
         // leaving transitions info
@@ -249,7 +256,7 @@ public class RegulationsUtil {
     @SuppressWarnings("rawtypes")
     private static String getNodeName(Node node) {
         StringBuilder sb = new StringBuilder();
-        sb.append("<div class=\"header\">\n" + "<a name=\"" + node.getId() + "\"></a>\n");
+        sb.append("<div id=" + node.getId() + " class=\"header\">\n");
         Class nodeClass = node.getClass();
         if (nodeClass == StartState.class) {
             sb.append("<span class=\"step\">Начало выполнения бизнес-процесса:</span>\n");
