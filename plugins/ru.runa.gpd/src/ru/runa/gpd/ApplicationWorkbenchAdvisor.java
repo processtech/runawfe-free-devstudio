@@ -55,7 +55,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
         }
         // delete settings page which comes from eclipse
         for (IPreferenceNode preferenceNode : preferenceManager.getRootSubNodes()) {
-            if (preferenceNode.getId().contains("gpd")) {
+            if (preferenceNode.getId().contains("gpd") || preferenceNode.getId().contains("equinox.internal.p2")) {
                 continue;
             }
             preferenceManager.remove(preferenceNode.getId());

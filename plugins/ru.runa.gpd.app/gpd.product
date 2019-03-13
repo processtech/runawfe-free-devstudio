@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="RunaWFE Developer Studio" uid="product" id="ru.runa.gpd.app.product" application="ru.runa.gpd.application" version="4.3.0" useFeatures="false" includeLaunchers="true">
+<product name="RunaWFE Developer Studio" uid="product" id="ru.runa.gpd.app.product" application="ru.runa.gpd.application" version="4.4.0" useFeatures="false" includeLaunchers="true">
 
    <aboutInfo>
       <text>
@@ -154,22 +154,30 @@
       <plugin id="org.eclipse.equinox.common"/>
       <plugin id="org.eclipse.equinox.ds"/>
       <plugin id="org.eclipse.equinox.event"/>
+      <plugin id="org.eclipse.equinox.p2.artifact.repository"/>
       <plugin id="org.eclipse.equinox.p2.core"/>
       <plugin id="org.eclipse.equinox.p2.core.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.equinox.p2.director"/>
       <plugin id="org.eclipse.equinox.p2.engine"/>
       <plugin id="org.eclipse.equinox.p2.engine.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.equinox.p2.jarprocessor"/>
       <plugin id="org.eclipse.equinox.p2.metadata"/>
       <plugin id="org.eclipse.equinox.p2.metadata.nl_ru" fragment="true"/>
       <plugin id="org.eclipse.equinox.p2.metadata.repository"/>
       <plugin id="org.eclipse.equinox.p2.metadata.repository.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.equinox.p2.operations"/>
       <plugin id="org.eclipse.equinox.p2.repository"/>
       <plugin id="org.eclipse.equinox.p2.repository.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.equinox.p2.ui"/>
+      <plugin id="org.eclipse.equinox.p2.ui.sdk"/>
       <plugin id="org.eclipse.equinox.preferences"/>
       <plugin id="org.eclipse.equinox.region" fragment="true"/>
       <plugin id="org.eclipse.equinox.registry"/>
       <plugin id="org.eclipse.equinox.security"/>
       <plugin id="org.eclipse.equinox.security.linux.x86_64" fragment="true"/>
+      <plugin id="org.eclipse.equinox.security.ui"/>
       <plugin id="org.eclipse.equinox.security.win32.x86_64" fragment="true"/>
+      <plugin id="org.eclipse.equinox.simpleconfigurator"/>
       <plugin id="org.eclipse.equinox.supplement"/>
       <plugin id="org.eclipse.equinox.transforms.hook" fragment="true"/>
       <plugin id="org.eclipse.equinox.weaving.hook" fragment="true"/>
@@ -253,19 +261,19 @@
       <plugin id="org.eclipse.ui.workbench.nl_ru" fragment="true"/>
       <plugin id="org.eclipse.ui.workbench.texteditor"/>
       <plugin id="org.eclipse.ui.workbench.texteditor.nl_ru" fragment="true"/>
+      <plugin id="org.sat4j.core"/>
+      <plugin id="org.sat4j.pb"/>
       <plugin id="org.tukaani.xz"/>
       <plugin id="org.w3c.css.sac"/>
       <plugin id="org.w3c.dom.events"/>
       <plugin id="org.w3c.dom.smil"/>
       <plugin id="org.w3c.dom.svg"/>
       <plugin id="ru.runa.gpd"/>
-      <plugin id="ru.runa.gpd.alfresco"/>
       <plugin id="ru.runa.gpd.app"/>
       <plugin id="ru.runa.gpd.connector.wfe.ws"/>
       <plugin id="ru.runa.gpd.form.ftl"/>
       <plugin id="ru.runa.gpd.form.quick"/>
       <plugin id="ru.runa.gpd.office"/>
-      <plugin id="ru.runa.gpd.xpdl"/>
    </plugins>
 
 
