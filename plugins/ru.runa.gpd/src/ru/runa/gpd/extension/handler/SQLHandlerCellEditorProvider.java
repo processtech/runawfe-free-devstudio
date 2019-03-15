@@ -4,6 +4,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.custom.StackLayout;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -17,8 +18,10 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
+import org.springframework.util.StringUtils;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
+import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.extension.handler.SQLTasksModel.SQLQueryModel;
 import ru.runa.gpd.extension.handler.SQLTasksModel.SQLQueryParameterModel;
 import ru.runa.gpd.extension.handler.SQLTasksModel.SQLTaskModel;
@@ -27,6 +30,7 @@ import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
 import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.custom.SWTUtils;
+import ru.runa.gpd.ui.custom.SqlHighlightTextStyling;
 import ru.runa.gpd.util.DataSourceUtils;
 import ru.runa.wfe.datasource.DataSourceStuff;
 import ru.runa.wfe.datasource.DataSourceType;
@@ -228,22 +232,34 @@ public class SQLHandlerCellEditorProvider extends XmlBasedConstructorProvider<SQ
             data.horizontalSpan = 3;
             group.setLayoutData(data);
             group.setLayout(new GridLayout(2, false));
-            final Text text = new Text(group, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
+            final StyledText text = new StyledText(group, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
             text.setText(queryModel.query);
             GridData textData = new GridData(GridData.FILL_BOTH);
             textData.heightHint = 100;
             text.setLayoutData(textData);
-            text.addModifyListener(new ModifyListener() {
-                @Override
-                public void modifyText(ModifyEvent event) {
-                    model.getFirstTask().queries.get(queryIndex).query = text.getText();
-                }
-            });
-            SWTUtils.createLink(group, "[X]", new LoggingHyperlinkAdapter() {
+            text.addLineStyleListener(new SqlHighlightTextStyling());
+            Composite rightPane = new Composite(group, SWT.NONE);
+            rightPane.setLayout(new GridLayout());
+            rightPane.setLayoutData(new GridData(GridData.FILL_VERTICAL));
+
+            Label wrongIcon = new Label(rightPane, SWT.NULL);
+            wrongIcon.setToolTipText(Localization.getString("SQLQuery.wrong.parameters"));
+            group.setData(wrongIcon);
+
+            new Label(rightPane, SWT.NULL).setLayoutData(new GridData(SWT.NULL, SWT.NULL, false, true));
+
+            SWTUtils.createLink(rightPane, "[X]", new LoggingHyperlinkAdapter() {
 
                 @Override
                 protected void onLinkActivated(HyperlinkEvent e) throws Exception {
                     model.getFirstTask().deleteQuery(queryIndex);
+                }
+            });
+            text.addModifyListener(new ModifyListener() {
+                @Override
+                public void modifyText(ModifyEvent event) {
+                    model.getFirstTask().queries.get(queryIndex).query = text.getText();
+                    validateQuery(model.getFirstTask().queries.get(queryIndex), wrongIcon);
                 }
             });
             Composite paramsComposite = createParametersComposite(group, "label.SQLParams", queryIndex, false);
@@ -254,6 +270,13 @@ public class SQLHandlerCellEditorProvider extends XmlBasedConstructorProvider<SQ
             for (SQLQueryParameterModel parameterModel : queryModel.results) {
                 addParamSection(resultsComposite, parameterModel, queryIndex, queryModel.results.indexOf(parameterModel), false);
             }
+        }
+
+        private void validateQuery(SQLQueryModel query, Label wrongIcon) {
+            boolean queryIsValid = (StringUtils.countOccurrencesOf(query.query, "?")
+                    + (query.query.trim().toLowerCase().startsWith("select ") ? 1 : 0)) == (query.params.size() + query.results.size());
+            wrongIcon.setImage(queryIsValid ? null : SharedImages.getImage("icons/validation_error.gif"));
+            wrongIcon.getParent().layout(true);
         }
 
         private Composite createParametersComposite(Composite parent, String labelKey, final int queryIndex, final boolean result) {
@@ -315,9 +338,11 @@ public class SQLHandlerCellEditorProvider extends XmlBasedConstructorProvider<SQ
 
                 @Override
                 protected void onLinkActivated(HyperlinkEvent e) throws Exception {
+                    validateQuery(model.getFirstTask().queries.get(queryIndex), (Label) parent.getParent().getData());
                     model.getFirstTask().deleteQueryParameter(queryIndex, parameterModel.result, paramIndex);
                 }
             });
+            validateQuery(model.getFirstTask().queries.get(queryIndex), (Label) parent.getParent().getData());
         }
     }
 }
