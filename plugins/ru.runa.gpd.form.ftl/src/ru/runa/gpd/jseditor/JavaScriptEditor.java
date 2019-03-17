@@ -1,6 +1,7 @@
 package ru.runa.gpd.jseditor;
 
 import com.google.common.base.Charsets;
+import com.google.common.base.Strings;
 import com.google.common.io.CharStreams;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -206,8 +207,8 @@ public class JavaScriptEditor extends TextEditor {
                 IFile script = ((IFileEditorInput) getEditorInput()).getFile();
                 if (script.exists()) {
                     try (InputStream is = script.getContents()) {
-                        if (TemplateUtils.getFormTemplateAsString().equals(CharStreams.toString(new InputStreamReader(is, Charsets.UTF_8)))) {
-                            is.close();
+                        String js = CharStreams.toString(new InputStreamReader(is, Charsets.UTF_8));
+                        if (Strings.isNullOrEmpty(js) || TemplateUtils.getFormTemplateAsString().equals(js)) {
                             WorkspaceOperations.job("Java script editor disposing", (p) -> {
                                 try {
                                     if (new HTMLProjectParams(script.getProject()).getRemoveMarkers()) {
