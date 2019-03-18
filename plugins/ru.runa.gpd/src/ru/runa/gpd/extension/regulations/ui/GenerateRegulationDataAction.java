@@ -13,7 +13,11 @@ public class GenerateRegulationDataAction extends BaseModelActionDelegate {
     @Override
     public void run(IAction action) {
         try {
-            RegulationsUtil.autoFillRegulationProperties(getActiveDesignerEditor().getDefinition());
+            ProcessDefinition processDefinition = getActiveDesignerEditor().getDefinition();
+            boolean success = RegulationsUtil.validate(processDefinition);
+            if (success) {
+                RegulationsUtil.autoFillRegulationProperties(getActiveDesignerEditor().getDefinition());
+            }
         } catch (Exception e) {
             PluginLogger.logError(e);
         }

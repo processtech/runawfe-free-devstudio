@@ -384,6 +384,15 @@ public class RegulationsUtil {
                     errors.add(ValidationError.createLocalizedWarning(node, "regulations.nextPreviousNodeMismatch", nextNode, node));
                 }
             }
+            if (!(node instanceof StartState) && !(node instanceof EndState) && !(node instanceof EndTokenState)) {
+                if (node.getLeavingTransitions().size() == 0 || node.getArrivingTransitions().size() == 0) {
+                    errors.add(ValidationError.createLocalizedWarning(node, "regulations.nodeHasNotLeavingOrArrivingTransitions", node));
+                }
+            } else {
+                if (node.getLeavingTransitions().size() == 0 && node.getArrivingTransitions().size() == 0) {
+                    errors.add(ValidationError.createLocalizedWarning(node, "regulations.nodeHasNotLeavingOrArrivingTransitions", node));
+                }
+            }
         }
         Node curNode = processDefinition.getFirstChild(StartState.class);
         Set<String> loopCheckIds = Sets.newHashSet();
