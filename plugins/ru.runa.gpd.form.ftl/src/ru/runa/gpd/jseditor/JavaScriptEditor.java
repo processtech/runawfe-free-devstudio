@@ -49,11 +49,14 @@ import ru.runa.gpd.htmleditor.HTMLPlugin;
 import ru.runa.gpd.htmleditor.HTMLProjectParams;
 import ru.runa.gpd.htmleditor.editors.FoldingInfo;
 import ru.runa.gpd.htmleditor.editors.SoftTabVerifyListener;
+import ru.runa.gpd.lang.model.FormNode;
+import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.TemplateUtils;
 import ru.runa.gpd.util.WorkspaceOperations;
 
 public class JavaScriptEditor extends TextEditor {
+    private FormNode formNode;
 
     private ColorProvider colorProvider;
     private SoftTabVerifyListener softTabListener;
@@ -81,8 +84,9 @@ public class JavaScriptEditor extends TextEditor {
         setAction(ACTION_COMMENT, new CommentAction());
     }
 
-    public JavaScriptEditor(IFile jsFile) {
+    public JavaScriptEditor(FormNode formNode, IFile jsFile) {
         this();
+        this.formNode = formNode;
         if (!jsFile.exists()) {
             try {
                 IOUtils.createFile(jsFile, TemplateUtils.getFormTemplateAsStream());
@@ -214,6 +218,10 @@ public class JavaScriptEditor extends TextEditor {
                                         script.deleteMarkers(IMarker.PROBLEM, false, 0);
                                     }
                                     script.delete(true, null);
+                                    if (formNode != null && !formNode.getProcessDefinition().isDirty()) {
+                                        // perform forms.xml synchronization now (script requires that)
+                                        ParContentProvider.saveFormsXml(formNode.getProcessDefinition());
+                                    }
                                 } catch (Exception e) {
                                     PluginLogger.logError(e);
                                 }

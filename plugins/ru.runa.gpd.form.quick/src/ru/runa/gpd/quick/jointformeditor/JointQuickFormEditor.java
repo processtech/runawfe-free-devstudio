@@ -79,7 +79,7 @@ public class JointQuickFormEditor extends MultiPageEditorPart {
         setPageText(getPageCount() - 1, Messages.getString("editor.tab_name.template"));
 
         IFile jsFile = IOUtils.getAdjacentFile(definitionFile, formNode.getScriptFileName());
-        jsEditor = new JavaScriptEditor(jsFile);
+        jsEditor = new JavaScriptEditor(formNode, jsFile);
         try {
             addPage(jsEditor, new FileEditorInput(jsFile));
         } catch (PartInitException e) {

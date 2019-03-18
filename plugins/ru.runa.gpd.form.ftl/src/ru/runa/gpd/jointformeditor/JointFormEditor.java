@@ -53,7 +53,7 @@ public class JointFormEditor extends FormEditor {
         }
         super.createPages();
         IFile jsFile = IOUtils.getAdjacentFile(formFile, formNode.getScriptFileName());
-        jsEditor = new JavaScriptEditor(jsFile);
+        jsEditor = new JavaScriptEditor(formNode, jsFile);
         try {
             addPage(jsEditor, new FileEditorInput(jsFile));
         } catch (PartInitException e) {
