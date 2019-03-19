@@ -1,16 +1,13 @@
 package ru.runa.gpd.lang.par;
 
+import com.google.common.base.Strings;
 import java.util.List;
-
 import org.dom4j.Document;
 import org.dom4j.Element;
-
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.util.XmlUtil;
-
-import com.google.common.base.Strings;
 
 public class FormsXmlContentProvider extends AuxContentProvider {
     public static final String XML_FILE_NAME = "forms.xml";
@@ -20,9 +17,9 @@ public class FormsXmlContentProvider extends AuxContentProvider {
     private static final String JS_VALIDATION_ATTRIBUTE_NAME = "jsValidation";
     private static final String SCRIPT_FILE_ATTRIBUTE_NAME = "scriptFile";
     private static final String STATE_ATTRIBUTE_NAME = "state";
-    private static final String FORM_ELEMENT_NAME = "form";
+    public static final String FORM_ELEMENT_NAME = "form";
     private static final String FORMS_ELEMENT_NAME = "forms";
-    private static final String TEMPLATE_FILE_NAME = "templateFileName";
+    public static final String TEMPLATE_FILE_NAME = "templateFileName";
 
     @Override
     public String getFileName() {
@@ -31,6 +28,7 @@ public class FormsXmlContentProvider extends AuxContentProvider {
     
     @Override
     public void read(Document document, ProcessDefinition definition) throws Exception {
+        @SuppressWarnings("unchecked")
         List<Element> formElementsList = document.getRootElement().elements(FORM_ELEMENT_NAME);
         for (Element formElement : formElementsList) {
             String stateId = formElement.attributeValue(STATE_ATTRIBUTE_NAME);
@@ -43,19 +41,9 @@ public class FormsXmlContentProvider extends AuxContentProvider {
             if (!Strings.isNullOrEmpty(fileName)) {
                 formNode.setFormFileName(fileName);
             }
-            String validationFileName = formElement.attributeValue(VALIDATION_FILE_ATTRIBUTE_NAME);
-            if (!Strings.isNullOrEmpty(validationFileName)) {
-                formNode.setValidationFileName(validationFileName);
-                boolean useJsValidation = false;
-                String useJsAttr = formElement.attributeValue(JS_VALIDATION_ATTRIBUTE_NAME);
-                if ((useJsAttr != null) && (useJsAttr.length() > 0)) {
-                    useJsValidation = Boolean.parseBoolean(useJsAttr);
-                }
-                formNode.setUseJSValidation(useJsValidation);
-            }
-            String scriptFileName = formElement.attributeValue(SCRIPT_FILE_ATTRIBUTE_NAME);
-            if (!Strings.isNullOrEmpty(scriptFileName)) {
-                formNode.setScriptFileName(scriptFileName);
+            String useJsAttr = formElement.attributeValue(JS_VALIDATION_ATTRIBUTE_NAME);
+            if ((useJsAttr != null) && (useJsAttr.length() > 0)) {
+                formNode.setUseJSValidation(Boolean.valueOf(useJsAttr));
             }
             String templateFileName = formElement.attributeValue(TEMPLATE_FILE_NAME);
             if (!Strings.isNullOrEmpty(templateFileName)) {

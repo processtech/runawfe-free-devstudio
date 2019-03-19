@@ -8,6 +8,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
@@ -76,6 +77,8 @@ public class ChooseFormTypeDialog extends Dialog {
             }
         });
 
+        autoChoose();
+
         return area;
     }
 
@@ -106,4 +109,16 @@ public class ChooseFormTypeDialog extends Dialog {
     public String getEditorType() {
         return editorType;
     }
+
+    private void autoChoose() {
+        if (typeCombo.getItems().length == 1 && editorTypeCombo.getItems().length == 1) {
+            getShell().setSize(0, 0);
+            typeCombo.select(0);
+            editorTypeCombo.select(0);
+            Display.getDefault().asyncExec(() -> {
+                okPressed();
+            });
+        }
+    }
+
 }

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/ru.runa.gpd.eclipse.feature_4.4.0.qualifier.jar" id="ru.runa.gpd.eclipse.feature" version="4.4.0.qualifier">
+      <category name="category.eclipse.framework"/>
+   </feature>
+   <feature url="features/ru.runa.gpd.babel.nls_p2_ru.feature_4.4.0.qualifier.jar" id="ru.runa.gpd.babel.nls_p2_ru.feature" version="4.4.0.qualifier">
+      <category name="category.babel.nls_p2_ru"/>
+   </feature>
+   <feature url="features/ru.runa.gpd.feature_4.4.0.qualifier.jar" id="ru.runa.gpd.feature" version="4.4.0.qualifier">
+      <category name="category.runawfe.developer.studio"/>
+   </feature>
+   <feature url="features/ru.runa.gpd.form.quick.feature_4.4.0.qualifier.jar" id="ru.runa.gpd.form.quick.feature" version="4.4.0.qualifier">
+      <category name="category.runawfe.developer.studio"/>
+   </feature>
+   <category-def name="category.eclipse.framework" label="Eclipse Framework"/>
+   <category-def name="category.runawfe.developer.studio" label="RunaWFE Developer Studio"/>
+   <category-def name="category.babel.nls_p2_ru" label="Babel Language Pack for Equinox.p2 in Russian"/>
+</site>

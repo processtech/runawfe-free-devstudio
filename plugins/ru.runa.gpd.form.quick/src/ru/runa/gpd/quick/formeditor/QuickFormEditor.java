@@ -1,13 +1,16 @@
 package ru.runa.gpd.quick.formeditor;
 
+import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -50,7 +53,6 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.part.FileEditorInput;
 import org.osgi.framework.Bundle;
-
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.PropertyNames;
@@ -88,17 +90,12 @@ import ru.runa.gpd.util.EditorUtils;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.VariableMapping;
 import ru.runa.gpd.util.VariableUtils;
-import ru.runa.gpd.validation.ValidationUtil;
 import ru.runa.wfe.InternalApplicationException;
 import ru.runa.wfe.commons.ClassLoaderUtil;
 import ru.runa.wfe.commons.TypeConversionUtil;
 import ru.runa.wfe.var.MapVariableProvider;
 import ru.runa.wfe.var.VariableDefinition;
 import ru.runa.wfe.var.dto.WfVariable;
-
-import com.google.common.base.Objects;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 
 public class QuickFormEditor extends EditorPart implements ISelectionListener, IResourceChangeListener, PropertyChangeListener {
     public static final int CLOSED = 198;
@@ -154,8 +151,16 @@ public class QuickFormEditor extends EditorPart implements ISelectionListener, I
         addPropertyListener(new IPropertyListener() {
             @Override
             public void propertyChanged(Object source, int propId) {
-                if (propId == QuickFormEditor.CLOSED && formFile.exists()) {
-                    ValidationUtil.createOrUpdateValidation(formNode, formFile);
+                if (propId == QuickFormEditor.CLOSED) {
+                    if (formFile.exists()) {
+                        if (isEmpty() && !getSite().getWorkbenchWindow().getWorkbench().isClosing()) {
+                            try {
+                                formFile.delete(true, null);
+                            } catch (CoreException e) {
+                                PluginLogger.logError(e);
+                            }
+                        }
+                    }
                 }
             }
         });
@@ -164,22 +169,17 @@ public class QuickFormEditor extends EditorPart implements ISelectionListener, I
     @Override
     public void doSave(IProgressMonitor monitor) {
         try {
-            byte[] contentBytes = QuickFormXMLUtil.convertQuickFormToXML(definitionFolder, quickForm, formNode.getTemplateFileName());
-            InputStream content = new ByteArrayInputStream(contentBytes);
-            // if (!quickFormFile.exists()) {
-            // quickFormFile.create(content, true, null);
-            // } else {
+            InputStream content = new ByteArrayInputStream(getFormData());
             formFile.setContents(content, true, true, null);
-            // }
-            if (formNode != null) {
-                formNode.setDirty();
-                ValidationUtil.createOrUpdateValidation(formNode, formFile);
-            }
-            setDirty(false);
             updateButtons();
+            this.setDirty(false);
         } catch (Exception e) {
             PluginLogger.logError("Error on saving template form: '" + quickForm.getName() + "'", e);
         }
+    }
+
+    public byte[] getFormData() throws UnsupportedEncodingException, CoreException {
+        return QuickFormXMLUtil.convertQuickFormToXML(definitionFolder, quickForm, formNode.getTemplateFileName());
     }
 
     @Override
@@ -735,6 +735,10 @@ public class QuickFormEditor extends EditorPart implements ISelectionListener, I
         firePropertyChange(CLOSED);
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
         super.dispose();
+    }
+
+    public boolean isEmpty() {
+        return quickForm == null || quickForm.getVariables().isEmpty();
     }
 
 }

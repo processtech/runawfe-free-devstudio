@@ -1,17 +1,14 @@
 package ru.runa.gpd.lang.model;
 
+import com.google.common.base.Objects;
+import com.google.common.base.Strings;
+import com.google.common.collect.Maps;
 import java.util.List;
 import java.util.Map;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
-
-import com.google.common.base.Objects;
-import com.google.common.base.Strings;
-import com.google.common.collect.Maps;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.form.FormType;
@@ -34,9 +31,7 @@ public abstract class FormNode extends SwimlanedNode {
     public static final String SCRIPT_SUFFIX = "js";
     private String formFileName;
     private String formType;
-    private String validationFileName;
     private boolean useJSValidation;
-    private String scriptFileName;
     private String templateFileName;
 
     @Override
@@ -63,11 +58,11 @@ public abstract class FormNode extends SwimlanedNode {
     }
 
     public boolean hasFormValidation() {
-        return validationFileName != null && validationFileName.length() > 0;
+        return IOUtils.getAdjacentFile(getProcessDefinition().getFile(), getValidationFileName()).exists();
     }
 
     public boolean hasFormScript() {
-        return scriptFileName != null && scriptFileName.length() > 0;
+        return IOUtils.getAdjacentFile(getProcessDefinition().getFile(), getScriptFileName()).exists();
     }
 
     public String getFormFileName() {
@@ -81,13 +76,7 @@ public abstract class FormNode extends SwimlanedNode {
     }
 
     public String getValidationFileName() {
-        return validationFileName;
-    }
-
-    public void setValidationFileName(String validationFile) {
-        String old = this.validationFileName;
-        this.validationFileName = validationFile.trim();
-        firePropertyChange(PROPERTY_FORM_VALIDATION_FILE, old, this.validationFileName);
+        return getId() + "." + VALIDATION_SUFFIX;
     }
 
     public boolean isUseJSValidation() {
@@ -101,13 +90,7 @@ public abstract class FormNode extends SwimlanedNode {
     }
 
     public String getScriptFileName() {
-        return scriptFileName;
-    }
-
-    public void setScriptFileName(String scriptFile) {
-        String old = this.scriptFileName;
-        this.scriptFileName = scriptFile;
-        firePropertyChange(PROPERTY_FORM_SCRIPT_FILE, old, this.scriptFileName);
+        return getId() + "." + SCRIPT_SUFFIX;
     }
 
     public String getTemplateFileName() {
@@ -144,9 +127,9 @@ public abstract class FormNode extends SwimlanedNode {
         try {
             FormNodeValidation validation = getValidation(definitionFile);
             if (hasFormValidation()) {
-                IFile validationFile = IOUtils.getAdjacentFile(definitionFile, this.validationFileName);
+                IFile validationFile = IOUtils.getAdjacentFile(definitionFile, getValidationFileName());
                 if (!validationFile.exists()) {
-                    errors.add(ValidationError.createLocalizedError(this, "formNode.validationFileNotFound", this.validationFileName));
+                    errors.add(ValidationError.createLocalizedError(this, "formNode.validationFileNotFound", getValidationFileName()));
                     return;
                 }
                 // check required parameters (#787)
@@ -196,13 +179,6 @@ public abstract class FormNode extends SwimlanedNode {
                 byte[] formData = IOUtils.readStreamAsBytes(formFile.getContents(true));
                 formType.validate(this, formData, validation, errors);
             }
-            if (hasFormScript()) {
-                IFile scriptFile = IOUtils.getAdjacentFile(definitionFile, this.scriptFileName);
-                if (!scriptFile.exists()) {
-                    errors.add(ValidationError.createLocalizedError(this, "formNode.scriptFileNotFound", this.scriptFileName));
-                    return;
-                }
-            }
         } catch (Exception e) {
             PluginLogger.logErrorWithoutDialog("Error validating form node: '" + getName() + "'", e);
             errors.add(ValidationError.createLocalizedWarning(this, "formNode.validationUnknownError", e));
@@ -214,7 +190,7 @@ public abstract class FormNode extends SwimlanedNode {
             return new FormNodeValidation();
         }
         IFolder processFolder = (IFolder) ((resource instanceof IFolder) ? resource : resource.getParent());
-        IFile validationFile = IOUtils.getFile(processFolder, this.validationFileName);
+        IFile validationFile = IOUtils.getFile(processFolder, getValidationFileName());
         return ValidatorParser.parseValidation(validationFile);
     }
 
@@ -240,12 +216,6 @@ public abstract class FormNode extends SwimlanedNode {
         if (hasForm()) {
             copy.setFormFileName(copy.getId() + "." + getFormType());
         }
-        if (hasFormValidation()) {
-            copy.setValidationFileName(copy.getId() + "." + FormNode.VALIDATION_SUFFIX);
-        }
-        if (hasFormScript()) {
-            copy.setScriptFileName(copy.getId() + "." + FormNode.SCRIPT_SUFFIX);
-        }
         if (hasFormTemplate()) {
             copy.setTemplateFileName(getTemplateFileName());
         }
@@ -269,4 +239,5 @@ public abstract class FormNode extends SwimlanedNode {
         }
         return result;
     }
+
 }

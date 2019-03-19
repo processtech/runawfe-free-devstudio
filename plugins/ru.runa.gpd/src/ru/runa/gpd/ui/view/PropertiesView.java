@@ -249,6 +249,9 @@ public class PropertiesView extends ViewPart implements ISelectionListener, Prop
     }
 
     private void updateChildren() {
+        if (tree.isDisposed()) {
+            return;
+        }
         for (TreeItem item : tree.getItems()) {
             TreeEditor treeEditor = (TreeEditor) item.getData(TREE_EDITOR_KEY);
             if (treeEditor != null) {

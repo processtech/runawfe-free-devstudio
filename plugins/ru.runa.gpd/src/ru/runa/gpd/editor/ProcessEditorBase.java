@@ -5,7 +5,7 @@ import java.beans.PropertyChangeListener;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
+import org.eclipse.core.internal.resources.ResourceException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
@@ -36,7 +36,6 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.views.contentoutline.ContentOutline;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
@@ -276,8 +275,12 @@ public abstract class ProcessEditorBase extends MultiPageEditorPart implements I
             for (IResource resource : children) {
                 boolean interested = IOUtils.looksLikeFormFile(resource.getName());
                 if (interested && !usedFormFiles.contains(resource.getName())) {
-                    PluginLogger.logInfo("Deleting unused " + resource);
-                    resource.delete(true, null);
+                    try {
+                        PluginLogger.logInfo("Deleting unused " + resource);
+                        resource.delete(true, monitor);
+                    } catch (ResourceException e) {
+                        PluginLogger.logErrorWithoutDialog(resource + " is being used by another process");
+                    }
                 }
                 if (ParContentProvider.PROCESS_IMAGE_OLD_FILE_NAME.equals(resource.getName())) {
                     PluginLogger.logInfo("Deleting jpg graph image: " + resource);
@@ -342,6 +345,9 @@ public abstract class ProcessEditorBase extends MultiPageEditorPart implements I
         for (FormNode formNode : formNodes) {
             if (formNode.hasForm()) {
                 usedFormFiles.add(formNode.getFormFileName());
+            }
+            if (formNode.hasFormTemplate()) {
+                usedFormFiles.add(formNode.getTemplateFileName());
             }
             if (formNode.hasFormValidation()) {
                 usedFormFiles.add(formNode.getValidationFileName());

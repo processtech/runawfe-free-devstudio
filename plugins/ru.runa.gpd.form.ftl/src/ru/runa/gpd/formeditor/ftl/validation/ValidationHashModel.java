@@ -1,9 +1,14 @@
 package ru.runa.gpd.formeditor.ftl.validation;
 
+import com.google.common.collect.Lists;
+import freemarker.template.SimpleHash;
+import freemarker.template.SimpleScalar;
+import freemarker.template.TemplateMethodModel;
+import freemarker.template.TemplateModel;
+import freemarker.template.TemplateModelException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import ru.runa.gpd.formeditor.ftl.Component;
 import ru.runa.gpd.formeditor.ftl.ComponentType;
 import ru.runa.gpd.formeditor.ftl.ComponentTypeRegistry;
@@ -11,19 +16,13 @@ import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.util.VariableUtils;
 
-import com.google.common.collect.Lists;
-
-import freemarker.template.SimpleHash;
-import freemarker.template.SimpleScalar;
-import freemarker.template.TemplateMethodModel;
-import freemarker.template.TemplateModel;
-import freemarker.template.TemplateModelException;
-
 public class ValidationHashModel extends SimpleHash {
     private static final long serialVersionUID = 1L;
     private final List<Component> components = Lists.newArrayList();
     private final ProcessDefinition definition;
     private boolean stageRenderingParams = false;
+    private final List<String> undefinedComponentNames = Lists.newArrayList();
+    private final List<String> undefinedVariableNames = Lists.newArrayList();
 
     public ValidationHashModel(ProcessDefinition definition) {
         this.definition = definition;
@@ -31,6 +30,14 @@ public class ValidationHashModel extends SimpleHash {
 
     public List<Component> getComponents() {
         return components;
+    }
+    
+    public List<String> getUndefinedComponentNames() {
+        return undefinedComponentNames;
+    }
+
+    public List<String> getUndefinedVariableNames() {
+        return undefinedVariableNames;
     }
 
     private TemplateModel wrapParameter(Variable variable) throws TemplateModelException {
@@ -61,7 +68,8 @@ public class ValidationHashModel extends SimpleHash {
             }
             return new SimpleScalar("${" + variable.getName() + "}");
         }
-        return new UndefinedModel();
+        undefinedVariableNames.add(key);
+        return new UndefinedModel(key);
     }
 
     private class ComponentModel implements TemplateMethodModel {
@@ -82,9 +90,16 @@ public class ValidationHashModel extends SimpleHash {
     }
 
     private class UndefinedModel implements TemplateMethodModel {
+        private final String key;
+
+        public UndefinedModel(String key) {
+            this.key = key;
+        }
 
         @Override
         public Object exec(List args) throws TemplateModelException {
+            undefinedComponentNames.add(key);
+            undefinedVariableNames.remove(key);
             return "noop";
         }
     }

@@ -1,5 +1,12 @@
 package ru.runa.gpd.util;
 
+import com.google.common.base.Charsets;
+import com.google.common.base.Strings;
+import com.google.common.base.Throwables;
+import com.google.common.collect.Lists;
+import com.google.common.io.ByteStreams;
+import com.google.common.io.Closeables;
+import com.google.common.io.Files;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -15,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -33,15 +39,6 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
-
-import com.google.common.base.Charsets;
-import com.google.common.base.Strings;
-import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
-import com.google.common.io.ByteStreams;
-import com.google.common.io.Closeables;
-import com.google.common.io.Files;
-
 import ru.runa.gpd.BotCache;
 import ru.runa.gpd.BotStationNature;
 import ru.runa.gpd.PluginLogger;
@@ -49,6 +46,7 @@ import ru.runa.gpd.ProcessProjectNature;
 import ru.runa.gpd.form.FormType;
 import ru.runa.gpd.form.FormTypeProvider;
 import ru.runa.gpd.lang.model.FormNode;
+import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.par.ParContentProvider;
 
 public class IOUtils {
@@ -547,6 +545,10 @@ public class IOUtils {
 
     public static IFile getProcessDefinitionFile(IFolder folder) {
         return getFile(folder, ParContentProvider.PROCESS_DEFINITION_FILE_NAME);
+    }
+
+    public static IFile getSubprocessDefinitionFile(IFolder folder, SubprocessDefinition definition) {
+        return getFile(folder, definition.getId() + "." + ParContentProvider.PROCESS_DEFINITION_FILE_NAME);
     }
 
     public static IResource getProcessSelectionResource(IStructuredSelection selection) {

@@ -1,22 +1,19 @@
 package ru.runa.gpd.validation;
 
+import com.google.common.base.Strings;
+import com.google.common.base.Throwables;
+import com.google.common.collect.Lists;
 import java.io.ByteArrayInputStream;
 import java.util.List;
 import java.util.Map;
-
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.eclipse.core.resources.IFile;
-
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.XmlUtil;
 import ru.runa.gpd.validation.ValidatorDefinition.Param;
-
-import com.google.common.base.Strings;
-import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
 
 public class ValidatorParser {
     private static final String VALIDATORS = "validators";
@@ -76,6 +73,12 @@ public class ValidatorParser {
 
     public static void writeValidation(IFile validationFile, FormNode formNode, FormNodeValidation validation) {
         try {
+            if (validation.isEmpty()) {
+                if (validationFile.exists()) {
+                    validationFile.delete(true, null);
+                }
+                return;
+            }
             Document document = XmlUtil.createDocument(VALIDATORS);
             Element rootElement = document.getRootElement();
             for (ValidatorConfig config : validation.getGlobalConfigs()) {

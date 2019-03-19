@@ -65,7 +65,7 @@ public class ParContentProvider {
             if (!file.exists()) {
                 continue;
             }
-            Document document = XmlUtil.parseWithoutValidation(file.getContents());
+            Document document = XmlUtil.parseWithoutValidation(file.getContents(true));
             contentProvider.read(document, definition);
         }
     }

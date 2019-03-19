@@ -1,11 +1,9 @@
 package ru.runa.gpd;
 
 import java.io.File;
-
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
-
 import ru.runa.gpd.extension.HandlerRegistry;
 
 public class Activator extends AbstractUIPlugin implements PluginConstants {
