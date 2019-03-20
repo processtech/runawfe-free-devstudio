@@ -270,6 +270,7 @@ public class SQLHandlerCellEditorProvider extends XmlBasedConstructorProvider<SQ
             for (SQLQueryParameterModel parameterModel : queryModel.results) {
                 addParamSection(resultsComposite, parameterModel, queryIndex, queryModel.results.indexOf(parameterModel), false);
             }
+            validateQuery(model.getFirstTask().queries.get(queryIndex), wrongIcon);
         }
 
         private void validateQuery(SQLQueryModel query, Label wrongIcon) {
