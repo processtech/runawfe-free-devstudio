@@ -18,7 +18,7 @@ public class CreateRegulationsAction extends BaseModelActionDelegate {
     public void run(IAction action) {
         try {
             ProcessDefinition processDefinition = getActiveDesignerEditor().getDefinition();
-            boolean success = RegulationsUtil.validate(processDefinition);
+            boolean success = RegulationsUtil.validate(processDefinition, false);
             if (success) {
                 String html = RegulationsUtil.generate(processDefinition);
                 IFile file = IOUtils.getAdjacentFile(getDefinitionFile(), ParContentProvider.REGULATIONS_HTML_FILE_NAME);

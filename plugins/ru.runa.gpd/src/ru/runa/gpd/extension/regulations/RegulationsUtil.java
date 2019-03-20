@@ -368,11 +368,11 @@ public class RegulationsUtil {
         return sb.toString();
     }
 
-    public static boolean validate(ProcessDefinition processDefinition) {
+    public static boolean validate(ProcessDefinition processDefinition, boolean validationFromAutoFill) {
         List<ValidationError> errors = Lists.newArrayList();
         IFile definitionFile = processDefinition.getFile();
         for (Node node : processDefinition.getNodes()) {
-            if (!node.getRegulationsProperties().isValid()) {
+            if (!node.getRegulationsProperties().isValid() && !validationFromAutoFill) {
                 errors.add(ValidationError.createLocalizedWarning(node, "regulations.invalidProperties", node));
             }
             if (node.getRegulationsProperties().isEnabled()) {
@@ -412,7 +412,7 @@ public class RegulationsUtil {
                     errors.add(ValidationError.createLocalizedWarning(subprocessDefinition, "regulations.subprocessContainsErrors",
                             subprocessDefinition.getName()));
                 } else {
-                    result &= validate(subprocessDefinition);
+                    result &= validate(subprocessDefinition, validationFromAutoFill);
                 }
             }
         }

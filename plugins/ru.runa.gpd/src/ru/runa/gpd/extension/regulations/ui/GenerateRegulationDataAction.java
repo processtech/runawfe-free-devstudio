@@ -14,7 +14,7 @@ public class GenerateRegulationDataAction extends BaseModelActionDelegate {
     public void run(IAction action) {
         try {
             ProcessDefinition processDefinition = getActiveDesignerEditor().getDefinition();
-            boolean success = RegulationsUtil.validate(processDefinition);
+            boolean success = RegulationsUtil.validate(processDefinition, true);
             if (success) {
                 RegulationsUtil.autoFillRegulationProperties(getActiveDesignerEditor().getDefinition());
             }

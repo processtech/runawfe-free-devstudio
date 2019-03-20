@@ -29,7 +29,7 @@ public class ShowRegulationsSequenceAction extends BaseActionDelegate {
             for (SubprocessDefinition subprocessDefinition : processDefinition.getEmbeddedSubprocesses().values()) {
                 subprocessDefinition.getFile().deleteMarkers(RegulationsSequenceView.ID, true, IResource.DEPTH_ONE);
             }
-            RegulationsUtil.validate(processDefinition);
+            RegulationsUtil.validate(processDefinition, false);
             List<Node> listOfNodes = RegulationsUtil.getSequencedNodes(processDefinition);
             for (int i = 0; i < listOfNodes.size(); i++) {
                 addRegulationsSequenceNote(listOfNodes.get(i).getProcessDefinition(), i + 1, listOfNodes.get(i));
