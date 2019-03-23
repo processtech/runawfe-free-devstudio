@@ -44,6 +44,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
 import ru.runa.gpd.BotCache;
+import ru.runa.gpd.GpdStore;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
@@ -378,7 +379,15 @@ public class WorkspaceOperations {
                 openProcessDefinition(definitionFile);
             }
         } else {
-            IFile definitionFile = ProcessCache.getFirstProcessDefinitionFile(subprocess.getSubProcessName());
+            IFile definitionFile = null;
+            String value = GpdStore.get(subprocess.getQualifiedId());
+            if (value != null) {
+                definitionFile = (IFile) ResourcesPlugin.getWorkspace().getRoot()
+                        .findMember(value + "/" + ParContentProvider.PROCESS_DEFINITION_FILE_NAME);
+            }
+            if (definitionFile == null) {
+                definitionFile = ProcessCache.getFirstProcessDefinitionFile(subprocess.getSubProcessName());
+            }
             if (definitionFile != null) {
                 openProcessDefinition(definitionFile);
             }

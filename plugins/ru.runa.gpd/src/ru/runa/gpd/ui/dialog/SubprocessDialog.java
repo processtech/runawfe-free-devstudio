@@ -1,9 +1,14 @@
 package ru.runa.gpd.ui.dialog;
 
+import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
-
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -28,7 +33,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.PlatformUI;
-
+import ru.runa.gpd.GpdStore;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.lang.model.MultiSubprocess;
@@ -36,6 +41,7 @@ import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Subprocess;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.model.Variable;
+import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.ui.custom.DragAndDropAdapter;
 import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
@@ -46,8 +52,6 @@ import ru.runa.gpd.ui.custom.TableViewerLocalDragAndDropSupport;
 import ru.runa.gpd.util.MultiinstanceParameters;
 import ru.runa.gpd.util.VariableMapping;
 import ru.runa.gpd.util.VariableUtils;
-
-import com.google.common.collect.Lists;
 
 public class SubprocessDialog extends Dialog {
     private Combo subprocessDefinitionCombo;
@@ -89,12 +93,26 @@ public class SubprocessDialog extends Dialog {
         subprocessNameGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         subprocessNameGroup.setText(Localization.getString("Subprocess.Name"));
 
-        subprocessDefinitionCombo = new Combo(subprocessNameGroup, SWT.BORDER);
+        subprocessDefinitionCombo = new Combo(subprocessNameGroup, SWT.BORDER | SWT.READ_ONLY);
         subprocessDefinitionCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         subprocessDefinitionCombo.setItems(getProcessDefinitionNames());
         subprocessDefinitionCombo.setVisibleItemCount(10);
         if (subprocessName != null) {
-            subprocessDefinitionCombo.setText(subprocessName);
+            String value = GpdStore.get(subprocess.getQualifiedId());
+            if (value != null) {
+                IPath subprocessPath = new Path(value);
+                if (ResourcesPlugin.getWorkspace().getRoot().exists(subprocessPath)) {
+                    String itemText = subprocessPath.lastSegment() + labelDelimiter + subprocessPath.removeLastSegments(1);
+                    subprocessDefinitionCombo.setText(itemText);
+                }
+            } else {
+                IFile subprocessFile = ProcessCache.getFirstProcessDefinitionFile(subprocessName);
+                if (subprocessFile != null) {
+                    IPath subprocessPath = subprocessFile.getFullPath().removeLastSegments(1);
+                    String itemText = subprocessPath.lastSegment() + labelDelimiter + subprocessPath.removeLastSegments(1);
+                    subprocessDefinitionCombo.setText(itemText);
+                }
+            }
         }
         subprocessDefinitionCombo.addSelectionListener(new LoggingSelectionAdapter() {
 
@@ -138,7 +156,28 @@ public class SubprocessDialog extends Dialog {
     }
 
     protected void onSubprocessChanged() {
-        subprocessName = subprocessDefinitionCombo.getText();
+        String text = subprocessDefinitionCombo.getText();
+        int index = text.indexOf(labelDelimiter);
+        if (index > 0) {
+            subprocessName = text.substring(0, index);
+            String subprocessFolderName = text.substring(index + labelDelimiter.length()) + "/" + subprocessName;
+            GpdStore.set(subprocess.getQualifiedId(), subprocessFolderName);
+            validateVariableMappings(subprocessFolderName);
+        }
+    }
+
+    private void validateVariableMappings(String subprocessFolderName) {
+        ProcessDefinition subprocess = ProcessCache.getProcessDefinition((IFile) ResourcesPlugin.getWorkspace().getRoot()
+                .findMember(subprocessFolderName + "/" + ParContentProvider.PROCESS_DEFINITION_FILE_NAME));
+        if (subprocess != null) {
+            List<String> variableNames = subprocess.getVariableNames(true, true);
+            for (Iterator<VariableMapping> i = variableMappings.iterator(); i.hasNext();) {
+                if (!variableNames.contains(i.next().getMappedName())) {
+                    i.remove();
+                }
+            }
+            variablesComposite.refresh();
+        }
     }
 
     private class VariablesComposite extends Composite {
@@ -295,6 +334,10 @@ public class SubprocessDialog extends Dialog {
             }
         }
 
+        protected void refresh() {
+            tableViewer.refresh();
+        }
+
     }
 
     public List<VariableMapping> getVariableMappings(boolean includeMetadata) {
@@ -332,14 +375,16 @@ public class SubprocessDialog extends Dialog {
         }
     }
 
+    private static final String labelDelimiter = "  \u2810  ";
+
     private String[] getProcessDefinitionNames() {
         List<String> names = Lists.newArrayList();
-        for (ProcessDefinition testProcessDefinition : ProcessCache.getAllProcessDefinitions()) {
+        for (ProcessDefinition testProcessDefinition : ProcessCache.getAllProcessDefinitionsMap().values()) {
             if (testProcessDefinition instanceof SubprocessDefinition) {
                 continue;
             }
             if (!names.contains(testProcessDefinition.getName())) {
-                names.add(testProcessDefinition.getName());
+                names.add(testProcessDefinition.getName() + labelDelimiter + testProcessDefinition.getFile().getParent().getParent().getFullPath());
             }
         }
         Collections.sort(names);
