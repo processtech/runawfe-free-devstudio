@@ -11,6 +11,7 @@ import org.dom4j.Element;
 import org.eclipse.core.resources.IFile;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.FormNode;
+import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.XmlUtil;
 import ru.runa.gpd.validation.ValidatorDefinition.Param;
@@ -73,6 +74,16 @@ public class ValidatorParser {
 
     public static void writeValidation(IFile validationFile, FormNode formNode, FormNodeValidation validation) {
         try {
+            if (validation.isEmpty()) {
+                if (validationFile.exists()) {
+                    validationFile.delete(true, null);
+                    if (!formNode.getProcessDefinition().isDirty()) {
+                        // perform forms.xml synchronization now
+                        ParContentProvider.saveFormsXml(formNode.getProcessDefinition());
+                    }
+                }
+                return;
+            }
             Document document = XmlUtil.createDocument(VALIDATORS);
             Element rootElement = document.getRootElement();
             for (ValidatorConfig config : validation.getGlobalConfigs()) {

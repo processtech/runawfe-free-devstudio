@@ -4,7 +4,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.window.Window;
-
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.ui.dialog.CopyFormDialog;
@@ -25,7 +24,6 @@ public class CopyFormDelegate extends FormDelegate {
                 IFile file = IOUtils.getAdjacentFile(getDefinitionFile(), fileName);
                 IFile sourceFile = IOUtils.getAdjacentFile(getDefinitionFile(), sourceFormNode.getValidationFileName());
                 IOUtils.copyFile(sourceFile.getContents(), file);
-                setNewValidationFormFile(formNode, file.getName());
             }
             if (!formNode.hasForm() && sourceFormNode.hasForm()) {
                 formNode.setFormType(sourceFormNode.getFormType());

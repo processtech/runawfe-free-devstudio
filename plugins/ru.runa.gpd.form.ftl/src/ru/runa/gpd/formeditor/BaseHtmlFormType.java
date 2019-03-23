@@ -1,10 +1,11 @@
 package ru.runa.gpd.formeditor;
 
+import com.google.common.base.Charsets;
+import com.google.common.collect.Maps;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
-
 import org.cyberneko.html.parsers.DOMParser;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
@@ -17,14 +18,11 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-
 import ru.runa.gpd.form.FormType;
 import ru.runa.gpd.form.FormVariableAccess;
 import ru.runa.gpd.formeditor.wysiwyg.FormEditor;
+import ru.runa.gpd.jointformeditor.JointFormEditor;
 import ru.runa.gpd.lang.model.FormNode;
-
-import com.google.common.base.Charsets;
-import com.google.common.collect.Maps;
 
 public abstract class BaseHtmlFormType extends FormType {
     private static final String READONLY_ATTR = "readonly";
@@ -35,7 +33,7 @@ public abstract class BaseHtmlFormType extends FormType {
 
     @Override
     public IEditorPart openForm(final IFile formFile, final FormNode formNode) throws CoreException {
-        return IDE.openEditor(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(), formFile, FormEditor.ID, true);
+        return IDE.openEditor(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(), formFile, JointFormEditor.ID, true);
     }
 
     protected Map<String, FormVariableAccess> getTypeSpecificVariableNames(FormNode formNode, byte[] formBytes) throws Exception {

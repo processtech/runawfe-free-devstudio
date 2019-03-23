@@ -4,7 +4,6 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Closeables;
 import com.google.common.io.Files;
@@ -21,11 +20,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import org.dom4j.Document;
-import org.dom4j.Element;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -51,7 +47,6 @@ import ru.runa.gpd.form.FormType;
 import ru.runa.gpd.form.FormTypeProvider;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
-import ru.runa.gpd.lang.par.FormsXmlContentProvider;
 import ru.runa.gpd.lang.par.ParContentProvider;
 
 public class IOUtils {
@@ -589,53 +584,6 @@ public class IOUtils {
             return ((IProject) container).getFolder(name).exists();
         }
         return false;
-    }
-
-    public static boolean isEmpty(IFile file) {
-        try (InputStream is = file.getContents(true)) {
-            return is.available() <= 0;
-        } catch (Exception e) {
-            PluginLogger.logError(e);
-            return true;
-        }
-    }
-
-    public static void saveFormsXml(FormNode formNode, IFile formFile) {
-        try {
-            FormsXmlContentProvider contentProvider = new FormsXmlContentProvider();
-            String fileName = contentProvider.getFileName();
-            if (formNode.getProcessDefinition() instanceof SubprocessDefinition) {
-                fileName = formNode.getProcessDefinition().getId() + "." + fileName;
-            }
-            IFile file = ((IFolder) IOUtils.getProcessDefinitionFile((IFolder) formFile.getParent()).getParent()).getFile(fileName);
-            Document document = contentProvider.save(formNode.getProcessDefinition());
-            if (document != null) {
-                IOUtils.createOrUpdateFile(file, new ByteArrayInputStream(XmlUtil.writeXml(document)));
-                Set<String> templateNames = Sets.newHashSet();
-                @SuppressWarnings("unchecked")
-                List<Element> forms = document.getRootElement().elements(FormsXmlContentProvider.FORM_ELEMENT_NAME);
-                forms.stream().forEach(form -> {
-                    String attributeValue = form.attributeValue(FormsXmlContentProvider.TEMPLATE_FILE_NAME);
-                    if (!Strings.isNullOrEmpty(attributeValue)) {
-                        templateNames.add(attributeValue);
-                    }
-                });
-                IResource[] bpFiles = ((IFolder) formFile.getParent()).members();
-                for (IResource bpFile : bpFiles) {
-                    if (bpFile.getFileExtension().equals("template")) {
-                        if (!templateNames.contains(bpFile.getName())) {
-                            bpFile.delete(true, null);
-                        }
-                    }
-                }
-            } else {
-                if (file.exists()) {
-                    file.delete(true, null);
-                }
-            }
-        } catch (Exception e) {
-            PluginLogger.logError(e);
-        }
     }
 
     public static void extractArchiveToProject(InputStream archiveStream, IProject project) throws IOException, CoreException {
