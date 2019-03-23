@@ -146,7 +146,6 @@ public class RegulationsUtil {
         for (Node nextNode : sequencedNodes) {
             nextNode.getRegulationsProperties().setEnabled(true);
             nextNode.getRegulationsProperties().setPreviousNode(previousNode);
-            // TODO use description here or template code by node type?
             nextNode.getRegulationsProperties().setDescription(getRegulationPropertiesDescription(nextNode));
             if (previousNode != null) {
                 previousNode.getRegulationsProperties().setNextNode(nextNode);
