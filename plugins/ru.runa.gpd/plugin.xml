@@ -601,7 +601,7 @@
     </objectContribution>
     <objectContribution
           adaptable="false"
-          id="processdefinition.regulations"
+          id="processdefinition.regulationscreation"
           objectClass="ru.runa.gpd.lang.model.ProcessDefinition">
        <filter
              name="regulationsEnabled"
@@ -617,6 +617,28 @@
              label="%label.menu.createRegulations">
        </action>
     </objectContribution>
+    <objectContribution
+          adaptable="false"
+          id="processdefinition.regulationsgeneration"
+          objectClass="ru.runa.gpd.lang.model.ProcessDefinition">
+       <filter
+             name="regulationsEnabled"
+             value="true">
+       </filter>
+       <filter
+             name="composition"
+             value="false">
+       </filter>
+       <filter
+             name="hasExtendedRegulations"
+             value="false">
+       </filter>
+       <action
+             class="ru.runa.gpd.extension.regulations.ui.GenerateRegulationDataAction"
+             id="ru.runa.gpd.generateRegulationData"
+             label="%label.menu.generateRegulationData">
+       </action>
+     </objectContribution>
   </extension>
  <extension
        point="org.eclipse.ui.menus">
