@@ -1,6 +1,7 @@
 package ru.runa.gpd.jseditor;
 
 import com.google.common.base.Charsets;
+import com.google.common.base.Strings;
 import com.google.common.io.CharStreams;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -49,11 +50,14 @@ import ru.runa.gpd.htmleditor.HTMLPlugin;
 import ru.runa.gpd.htmleditor.HTMLProjectParams;
 import ru.runa.gpd.htmleditor.editors.FoldingInfo;
 import ru.runa.gpd.htmleditor.editors.SoftTabVerifyListener;
+import ru.runa.gpd.lang.model.FormNode;
+import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.TemplateUtils;
 import ru.runa.gpd.util.WorkspaceOperations;
 
 public class JavaScriptEditor extends TextEditor {
+    private FormNode formNode;
 
     private ColorProvider colorProvider;
     private SoftTabVerifyListener softTabListener;
@@ -81,8 +85,9 @@ public class JavaScriptEditor extends TextEditor {
         setAction(ACTION_COMMENT, new CommentAction());
     }
 
-    public JavaScriptEditor(IFile jsFile) {
+    public JavaScriptEditor(FormNode formNode, IFile jsFile) {
         this();
+        this.formNode = formNode;
         if (!jsFile.exists()) {
             try {
                 IOUtils.createFile(jsFile, TemplateUtils.getFormTemplateAsStream());
@@ -206,14 +211,18 @@ public class JavaScriptEditor extends TextEditor {
                 IFile script = ((IFileEditorInput) getEditorInput()).getFile();
                 if (script.exists()) {
                     try (InputStream is = script.getContents()) {
-                        if (TemplateUtils.getFormTemplateAsString().equals(CharStreams.toString(new InputStreamReader(is, Charsets.UTF_8)))) {
-                            is.close();
+                        String js = CharStreams.toString(new InputStreamReader(is, Charsets.UTF_8));
+                        if (Strings.isNullOrEmpty(js) || TemplateUtils.getFormTemplateAsString().equals(js)) {
                             WorkspaceOperations.job("Java script editor disposing", (p) -> {
                                 try {
                                     if (new HTMLProjectParams(script.getProject()).getRemoveMarkers()) {
                                         script.deleteMarkers(IMarker.PROBLEM, false, 0);
                                     }
                                     script.delete(true, null);
+                                    if (formNode != null && !formNode.getProcessDefinition().isDirty()) {
+                                        // perform forms.xml synchronization now (script requires that)
+                                        ParContentProvider.saveFormsXml(formNode.getProcessDefinition());
+                                    }
                                 } catch (Exception e) {
                                     PluginLogger.logError(e);
                                 }
