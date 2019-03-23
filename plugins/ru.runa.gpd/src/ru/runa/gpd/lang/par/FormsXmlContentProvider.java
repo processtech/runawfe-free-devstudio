@@ -41,19 +41,9 @@ public class FormsXmlContentProvider extends AuxContentProvider {
             if (!Strings.isNullOrEmpty(fileName)) {
                 formNode.setFormFileName(fileName);
             }
-            String validationFileName = formElement.attributeValue(VALIDATION_FILE_ATTRIBUTE_NAME);
-            if (!Strings.isNullOrEmpty(validationFileName)) {
-                formNode.setValidationFileName(validationFileName);
-                boolean useJsValidation = false;
-                String useJsAttr = formElement.attributeValue(JS_VALIDATION_ATTRIBUTE_NAME);
-                if ((useJsAttr != null) && (useJsAttr.length() > 0)) {
-                    useJsValidation = Boolean.parseBoolean(useJsAttr);
-                }
-                formNode.setUseJSValidation(useJsValidation);
-            }
-            String scriptFileName = formElement.attributeValue(SCRIPT_FILE_ATTRIBUTE_NAME);
-            if (!Strings.isNullOrEmpty(scriptFileName)) {
-                formNode.setScriptFileName(scriptFileName);
+            String useJsAttr = formElement.attributeValue(JS_VALIDATION_ATTRIBUTE_NAME);
+            if ((useJsAttr != null) && (useJsAttr.length() > 0)) {
+                formNode.setUseJSValidation(Boolean.valueOf(useJsAttr));
             }
             String templateFileName = formElement.attributeValue(TEMPLATE_FILE_NAME);
             if (!Strings.isNullOrEmpty(templateFileName)) {
