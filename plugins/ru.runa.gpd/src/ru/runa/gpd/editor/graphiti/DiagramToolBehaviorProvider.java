@@ -26,6 +26,7 @@ import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PropertyNames;
+import ru.runa.gpd.editor.graphiti.create.CreateDragAndDropElementFeature;
 import ru.runa.gpd.editor.graphiti.create.CreateElementFeature;
 import ru.runa.gpd.editor.graphiti.create.CreateStartNodeFeature;
 import ru.runa.gpd.editor.graphiti.create.CreateSwimlaneFeature;
@@ -82,24 +83,25 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
         createConnectionContext.setSourcePictogramElement(pe);
         boolean allowTargetNodeCreation = (element instanceof Node) && ((Node) element).canAddLeavingTransition();
         //
-        CreateContext createContext = new CreateContext();
         ContainerShape targetContainer;
         if (element.getParentContainer() instanceof Swimlane) {
             targetContainer = (ContainerShape) getFeatureProvider().getPictogramElementForBusinessObject(element.getParentContainer());
         } else {
             targetContainer = getFeatureProvider().getDiagramTypeProvider().getDiagram();
         }
+        CreateContext createContext = new CreateContext();
         createContext.setTargetContainer(targetContainer);
         createContext.putProperty(CreateElementFeature.CONNECTION_PROPERTY, createConnectionContext);
         if (allowTargetNodeCreation) {
             //
             NodeTypeDefinition taskStateDefinition = NodeRegistry.getNodeTypeDefinition(TaskState.class);
-            CreateElementFeature createTaskStateFeature = new CreateElementFeature();
+            CreateDragAndDropElementFeature createTaskStateFeature = new CreateDragAndDropElementFeature(createContext);
             createTaskStateFeature.setNodeDefinition(taskStateDefinition);
             createTaskStateFeature.setFeatureProvider(getFeatureProvider());
-            ContextButtonEntry createTaskStateButton = new ContextButtonEntry(createTaskStateFeature, createContext);
+            ContextButtonEntry createTaskStateButton = new ContextButtonEntry(createTaskStateFeature, createConnectionContext);
             createTaskStateButton.setText(taskStateDefinition.getLabel());
             createTaskStateButton.setIconId(taskStateDefinition.getPaletteIcon());
+            createTaskStateButton.addDragAndDropFeature(createTaskStateFeature);
             data.getDomainSpecificContextButtons().add(createTaskStateButton);
         }
         //
@@ -119,8 +121,8 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
         //
         if (allowTargetNodeCreation) {
             ContextButtonEntry createElementButton = new ContextButtonEntry(null, null);
-            createElementButton.setText("new element");
-            createElementButton.setDescription("Create a new element");
+            createElementButton.setText(Localization.getString("new.element.label"));
+            createElementButton.setDescription(Localization.getString("new.element.description"));
             createElementButton.setIconId("elements.png");
             data.getDomainSpecificContextButtons().add(createElementButton);
             for (ICreateFeature feature : getFeatureProvider().getCreateFeatures()) {
@@ -129,10 +131,14 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
                 }
                 if (feature instanceof CreateElementFeature && feature.canCreate(createContext)) {
                     CreateElementFeature createElementFeature = (CreateElementFeature) feature;
-                    ContextButtonEntry createButton = new ContextButtonEntry(feature, createContext);
                     NodeTypeDefinition typeDefinition = createElementFeature.getNodeDefinition();
+                    CreateDragAndDropElementFeature createDrugAndDropFeature = new CreateDragAndDropElementFeature(createContext);
+                    createDrugAndDropFeature.setNodeDefinition(typeDefinition);
+                    createDrugAndDropFeature.setFeatureProvider(getFeatureProvider());
+                    ContextButtonEntry createButton = new ContextButtonEntry(createDrugAndDropFeature, createConnectionContext);
                     createButton.setText(typeDefinition.getLabel());
                     createButton.setIconId(typeDefinition.getPaletteIcon());
+                    createElementButton.addDragAndDropFeature(createDrugAndDropFeature);
                     createElementButton.getContextButtonMenuEntries().add(createButton);
                 }
             }
