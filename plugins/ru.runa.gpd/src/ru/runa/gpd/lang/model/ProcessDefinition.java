@@ -22,6 +22,7 @@ import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.extension.VariableFormatRegistry;
+import ru.runa.gpd.extension.regulations.RegulationsRegistry;
 import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.par.ParContentProvider;
@@ -71,6 +72,9 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
     public boolean testAttribute(Object target, String name, String value) {
         if ("composition".equals(name)) {
             return Objects.equal(value, String.valueOf(this instanceof SubprocessDefinition));
+        }
+        if ("hasExtendedRegulations".equals(name)) {
+            return !RegulationsRegistry.hasExtendedRegulations();
         }
         if ("hasFormCSS".equals(name)) {
             try {

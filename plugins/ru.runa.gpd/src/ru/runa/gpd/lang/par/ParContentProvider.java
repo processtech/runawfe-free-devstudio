@@ -38,22 +38,23 @@ public class ParContentProvider {
     public static final String PROCESS_INSTANCE_START_IMAGE_FILE_NAME = "start.png";
     public static final String REGULATIONS_XML_FILE_NAME = "regulations.xml";
     public static final String REGULATIONS_HTML_FILE_NAME = "regulations.html";
-    private static final List<AuxContentProvider> contentProviders = new ArrayList<AuxContentProvider>();
+    private static final FormsXmlContentProvider FORMS_XML_CONTENT_PROVIDER = new FormsXmlContentProvider();
+    private static final List<AuxContentProvider> CONTENT_PROVIDERS = new ArrayList<AuxContentProvider>();
     static {
-        contentProviders.add(new VariablesXmlContentProvider());
-        contentProviders.add(new FormsXmlContentProvider());
-        contentProviders.add(new GpdXmlContentProvider());
-        contentProviders.add(new SwimlaneGUIContentProvider());
-        contentProviders.add(new ActionDescriptionContentProvider());
-        contentProviders.add(new SubstitutionExceptionsXmlContentProvider());
-        contentProviders.add(new BotsXmlContentProvider());
-        contentProviders.add(new VersionCommentXmlContentProvider());
-        contentProviders.add(new RegulationsXmlContentProvider());
+        CONTENT_PROVIDERS.add(new VariablesXmlContentProvider());
+        CONTENT_PROVIDERS.add(FORMS_XML_CONTENT_PROVIDER);
+        CONTENT_PROVIDERS.add(new GpdXmlContentProvider());
+        CONTENT_PROVIDERS.add(new SwimlaneGUIContentProvider());
+        CONTENT_PROVIDERS.add(new ActionDescriptionContentProvider());
+        CONTENT_PROVIDERS.add(new SubstitutionExceptionsXmlContentProvider());
+        CONTENT_PROVIDERS.add(new BotsXmlContentProvider());
+        CONTENT_PROVIDERS.add(new VersionCommentXmlContentProvider());
+        CONTENT_PROVIDERS.add(new RegulationsXmlContentProvider());
     }
 
     public static void readAuxInfo(IFile definitionFile, ProcessDefinition definition) throws Exception {
         IFolder folder = (IFolder) definitionFile.getParent();
-        for (AuxContentProvider contentProvider : contentProviders) {
+        for (AuxContentProvider contentProvider : CONTENT_PROVIDERS) {
             String fileName = contentProvider.getFileName();
             if (definition instanceof SubprocessDefinition) {
                 if (!contentProvider.isSupportedForEmbeddedSubprocess()) {
@@ -73,32 +74,18 @@ public class ParContentProvider {
     public static void saveAuxInfo(IFile definitionFile, ProcessDefinition definition) {
         try {
             IFolder folder = (IFolder) definitionFile.getParent();
-            for (AuxContentProvider contentProvider : contentProviders) {
-                String fileName = contentProvider.getFileName();
-                if (definition instanceof SubprocessDefinition) {
-                    if (!contentProvider.isSupportedForEmbeddedSubprocess()) {
-                        continue;
-                    }
-                    fileName = definition.getId() + "." + fileName;
-                }
-                IFile file = folder.getFile(fileName);
-                Document document = contentProvider.save(definition);
-                if (document != null) {
-                    byte[] contentBytes;
-                    if (contentProvider instanceof BotsXmlContentProvider) {
-                        // TODO why this is really need?
-                        contentBytes = XmlUtil.writeXml(document, OutputFormat.createPrettyPrint());
-                    } else {
-                        contentBytes = XmlUtil.writeXml(document);
-                    }
-                    InputStream content = new ByteArrayInputStream(contentBytes);
-                    IOUtils.createOrUpdateFile(file, content);
-                } else {
-                    if (file.exists()) {
-                        file.delete(true, null);
-                    }
-                }
+            for (AuxContentProvider contentProvider : CONTENT_PROVIDERS) {
+                saveAuxInfo(contentProvider, folder, definition);
             }
+        } catch (Exception e) {
+            PluginLogger.logError(e);
+        }
+    }
+
+    public static void saveFormsXml(ProcessDefinition definition) {
+        try {
+            IFolder folder = (IFolder) definition.getFile().getParent();
+            saveAuxInfo(FORMS_XML_CONTENT_PROVIDER, folder, definition);
         } catch (Exception e) {
             PluginLogger.logError(e);
         }
@@ -134,7 +121,8 @@ public class ParContentProvider {
         } catch (CoreException e) {
             PluginLogger.logError(e);
         }
-        return definition.getChildren(FormNode.class).stream().filter(formNode -> affectedFormNames.contains(formNode.getName())).collect(Collectors.toList());
+        return definition.getChildren(FormNode.class).stream().filter(formNode -> affectedFormNames.contains(formNode.getName()))
+                .collect(Collectors.toList());
     }
 
     public static void rewriteFormValidationsRemoveVariable(IFile definitionFile, List<FormNode> formNodes, String variableName) {
@@ -147,4 +135,32 @@ public class ParContentProvider {
             }
         }
     }
+
+    private static void saveAuxInfo(AuxContentProvider contentProvider, IFolder definitionFolder, ProcessDefinition definition) throws Exception {
+        String fileName = contentProvider.getFileName();
+        if (definition instanceof SubprocessDefinition) {
+            if (!contentProvider.isSupportedForEmbeddedSubprocess()) {
+                return;
+            }
+            fileName = definition.getId() + "." + fileName;
+        }
+        IFile file = definitionFolder.getFile(fileName);
+        Document document = contentProvider.save(definition);
+        if (document != null) {
+            byte[] contentBytes;
+            if (contentProvider instanceof BotsXmlContentProvider) {
+                // TODO why this is really need?
+                contentBytes = XmlUtil.writeXml(document, OutputFormat.createPrettyPrint());
+            } else {
+                contentBytes = XmlUtil.writeXml(document);
+            }
+            InputStream content = new ByteArrayInputStream(contentBytes);
+            IOUtils.createOrUpdateFile(file, content);
+        } else {
+            if (file.exists()) {
+                file.delete(true, null);
+            }
+        }
+    }
+
 }
