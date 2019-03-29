@@ -44,7 +44,7 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
                 errors.add(ValidationError.createLocalizedError(this, "subprocess.embedded.required1leavingtransition"));
             }
         }
-        ProcessDefinition subprocessDefinition = ProcessCache.getFirstProcessDefinition(subProcessName);
+        ProcessDefinition subprocessDefinition = ProcessCache.getFirstProcessDefinition(subProcessName, null);
         if (subprocessDefinition == null) {
             errors.add(ValidationError.createLocalizedWarning(this, "subprocess.notFound"));
             return;

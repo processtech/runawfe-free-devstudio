@@ -6,23 +6,23 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
 
-public class GpdStore {
+public class SubprocessMap {
 
-    private static final File storeFile = new File(Activator.getPreferencesFolder() + File.separator + "gpd-store.properties");
+    private static final File mapFile = new File(Activator.getPreferencesFolder() + File.separator + "subprocess-map.properties");
     private static final Properties data = new Properties();
 
     static {
         try {
-            if (!storeFile.exists()) {
-                storeFile.createNewFile();
+            if (!mapFile.exists()) {
+                mapFile.createNewFile();
             }
-            data.load(new FileInputStream(storeFile));
+            data.load(new FileInputStream(mapFile));
         } catch (IOException e) {
             PluginLogger.logErrorWithoutDialog(e.getMessage());
         }
     }
 
-    private GpdStore() {
+    private SubprocessMap() {
     }
 
     public static void set(String key, String value) {
@@ -32,7 +32,7 @@ public class GpdStore {
             data.put(key, value);
         }
         try {
-            data.store(new FileOutputStream(storeFile), null);
+            data.store(new FileOutputStream(mapFile), null);
         } catch (IOException e) {
             PluginLogger.logErrorWithoutDialog(e.getMessage());
         }
