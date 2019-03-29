@@ -1,13 +1,17 @@
 package ru.runa.gpd.office.store;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import java.util.List;
-
+import java.util.Set;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -18,7 +22,6 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
-
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.handler.XmlBasedConstructorProvider;
 import ru.runa.gpd.lang.ValidationError;
@@ -33,9 +36,10 @@ import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.custom.SWTUtils;
 import ru.runa.gpd.util.EmbeddedFileUtils;
 
-import com.google.common.base.Strings;
-
 public abstract class BaseCommonStorageHandlerCellEditorProvider extends XmlBasedConstructorProvider<DataModel> {
+
+    private static List<String> operators = Lists.newArrayList("==", "!=", ">=", "<=", ">", "<", "like", "and", "or");
+
     protected abstract FilesSupplierMode getMode();
 
     @Override
@@ -72,10 +76,41 @@ public abstract class BaseCommonStorageHandlerCellEditorProvider extends XmlBase
 
     private class ConstructorView extends ConstructorComposite {
 
+        private Text queryText;
+        private Label warning;
+        private Color darkRed = new Color(null, 128, 0, 0);
+
         public ConstructorView(Composite parent, Delegable delegable, DataModel model) {
             super(parent, delegable, model);
             setLayout(new GridLayout(3, false));
             buildFromModel();
+        }
+
+        @Override
+        public void dispose() {
+            if (!darkRed.isDisposed()) {
+                darkRed.dispose();
+            }
+            super.dispose();
+        }
+
+        private void validateCondition() {
+            warning.setText("");
+            if (queryText != null && !queryText.isDisposed()) {
+                Set<Integer> indexes = Sets.newHashSet();
+                String queryString = queryText.getText().toLowerCase();
+                for (String operator : operators) {
+                    int index = -1;
+                    while ((index = queryString.indexOf(operator, index + 1)) > 0) {
+                        if (!indexes.contains(index) && (queryString.charAt(index - 1) != ' '
+                                || index < queryString.length() - operator.length() && queryString.charAt(index + operator.length()) != ' ')) {
+                            warning.setText(Messages.getString("query.operators.warning"));
+                            return;
+                        }
+                        indexes.add(index);
+                    }
+                }
+            }
         }
 
         @Override
@@ -91,7 +126,7 @@ public abstract class BaseCommonStorageHandlerCellEditorProvider extends XmlBase
                 if (queryType != null && !queryType.equals(QueryType.INSERT)) {
                     l = new Label(this, SWT.NONE);
                     l.setText(Messages.getString("label.Query"));
-                    final Text queryText = new Text(this, SWT.BORDER);
+                    queryText = new Text(this, SWT.BORDER);
                     if (model != null && model.constraints != null && model.constraints.size() > 0) {
                         queryString = model.constraints.get(0).getQueryString();
                     }
@@ -105,6 +140,7 @@ public abstract class BaseCommonStorageHandlerCellEditorProvider extends XmlBase
                             for (StorageConstraintsModel m : model.constraints) {
                                 m.setQueryString(queryText.getText());
                             }
+                            validateCondition();
                         }
                     });
                 } else {
@@ -119,6 +155,11 @@ public abstract class BaseCommonStorageHandlerCellEditorProvider extends XmlBase
                         buildFromModel();
                     }
                 }).setLayoutData(new GridData(GridData.GRAB_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
+                new Label(this, SWT.NONE);
+                warning = new Label(this, SWT.NONE);
+                warning.setForeground(darkRed);
+                warning.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+                validateCondition();
                 model.getInOutModel().canWorkWithDataSource = true;
                 new InputOutputComposite(this, delegable, model.getInOutModel(), getMode(), "xlsx");
                 for (StorageConstraintsModel c : model.constraints) {
@@ -296,6 +337,9 @@ public abstract class BaseCommonStorageHandlerCellEditorProvider extends XmlBase
 
             @Override
             protected String[] getTypeFilters() {
+                if (queryType.equals(QueryType.SELECT)) {
+                    return super.getTypeFilters();
+                }
                 return null;
             }
 

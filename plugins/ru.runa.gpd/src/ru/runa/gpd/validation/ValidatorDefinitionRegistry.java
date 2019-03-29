@@ -1,19 +1,16 @@
 package ru.runa.gpd.validation;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
-
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.Platform;
-
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.validation.ValidatorDefinition.Param;
-
 import com.google.common.base.Strings;
 
 public class ValidatorDefinitionRegistry {
-    private static final Map<String, ValidatorDefinition> definitions = new HashMap<String, ValidatorDefinition>();
+    private static final Map<String, ValidatorDefinition> definitions = new LinkedHashMap<String, ValidatorDefinition>();
 
     private static void init() {
         if (definitions.size() > 0) {

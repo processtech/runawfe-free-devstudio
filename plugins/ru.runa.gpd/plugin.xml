@@ -220,7 +220,7 @@
     </objectContribution>
     <objectContribution
           adaptable="false"
-          id="data"
+          id="formdata"
           objectClass="ru.runa.gpd.lang.model.FormNode">
        <menu
              id="formdata"
@@ -244,12 +244,12 @@
              class="ru.runa.gpd.lang.action.DeleteFormFilesAction"
              id="deleteFormFiles"
              label="%label.action.deleteFormFiles"
-             menubarPath="formdata/sp1">
+             menubarPath="formdata/sp2">
        </action>
     </objectContribution>
     <objectContribution
           adaptable="false"
-          id="data.noformexists"
+          id="formdata.noformexists"
           objectClass="ru.runa.gpd.lang.model.FormNode">
        <filter
              name="formExists"
@@ -270,7 +270,7 @@
     </objectContribution>
     <objectContribution
           adaptable="false"
-          id="data.formexists"
+          id="formdata.formexists"
           objectClass="ru.runa.gpd.lang.model.FormNode">
        <filter
              name="formExists"
@@ -283,7 +283,19 @@
              menubarPath="formdata/sp1"
              />
        <action
-             class="ru.runa.gpd.lang.action.OpenVisualFormEditorDelegate"
+             class="ru.runa.gpd.lang.action.OpenFormValidationDelegate"
+             id="formValidation"
+             label="%label.action.validationOfForm"
+             menubarPath="formdata/sp1"
+             />
+       <action
+             class="ru.runa.gpd.lang.action.OpenFormScriptDelegate"
+             id="editFormScript"
+             label="%label.action.editFormScript"
+             menubarPath="formdata/sp1">
+       </action>
+       <action
+             class="ru.runa.gpd.lang.action.OpenJointFormEditorDelegate"
              id="visualEditForm"
              label="%label.action.editForm"
              menubarPath="formdata/sp1"
@@ -2617,6 +2629,7 @@
                label="%label.menu.properties"
                path="view">
             <separator name="additions"/>
+            <separator name="updates"/>
          </menu>
          <action
                class="ru.runa.gpd.ui.action.ShowActionsAction"
@@ -2650,6 +2663,26 @@
                label="%label.menu.view.properties"
                menubarPath="window/additions"
                style="push"/>
+         <action
+               id="installSoftware"
+               label="%Install.command"
+               menubarPath="properties/updates"
+               icon="icons/obj/iu_obj.png"
+               style="push">
+             <class class="org.eclipse.ui.tests.api.GenericCommandActionDelegate">
+                 <parameter name="commandId" value="org.eclipse.equinox.p2.ui.sdk.install"/>
+             </class>
+         </action>
+         <action
+               id="updateSoftware"
+               label="%Update.command"
+               menubarPath="properties/updates"
+               icon="icons/obj/iu_update_obj.png"
+               style="push">
+             <class class="org.eclipse.ui.tests.api.GenericCommandActionDelegate">
+                 <parameter name="commandId" value="org.eclipse.equinox.p2.ui.sdk.update"/>
+             </class>
+         </action>
          <action
                class="ru.runa.gpd.ui.action.OpenPreferencesAction"
                id="preferences"
@@ -2861,6 +2894,16 @@
           defaultHandler="ru.runa.gpd.lang.action.PrintDiagramHandler"
           id="ru.runa.gpd.lang.action.PrintDiagram"
           name="Print Diagram">
+    </command>
+    <command
+          name="%Update.command"
+          id="org.eclipse.equinox.p2.ui.sdk.update">
+          defaultHandler="org.eclipse.equinox.internal.p2.ui.sdk.UpdateHandler">
+    </command>
+    <command
+          name="%Install.command"
+          id="org.eclipse.equinox.p2.ui.sdk.install">
+          defaultHandler="org.eclipse.equinox.internal.p2.ui.sdk.InstallNewSoftwareHandler">
     </command>
    </extension>
    <extension
