@@ -1,5 +1,7 @@
 package ru.runa.gpd.ui.wizard;
 
+import com.google.common.base.Strings;
+import com.google.common.base.Throwables;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -13,7 +15,6 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -37,11 +38,9 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.ui.internal.wizards.datatransfer.IFileExporter;
 import org.eclipse.ui.internal.wizards.datatransfer.WizardArchiveFileResourceExportPage1;
-
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
@@ -56,9 +55,6 @@ import ru.runa.gpd.ui.custom.SyncUIHelper;
 import ru.runa.gpd.ui.view.ValidationErrorsView;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.wfe.WFEServerProcessDefinitionImporter;
-
-import com.google.common.base.Strings;
-import com.google.common.base.Throwables;
 
 @SuppressWarnings("restriction")
 public class ExportParWizardPage extends WizardArchiveFileResourceExportPage1 {
@@ -290,7 +286,7 @@ public class ExportParWizardPage extends WizardArchiveFileResourceExportPage1 {
         }
     }
 
-    private static class ParExportOperation implements IRunnableWithProgress {
+    public static class ParExportOperation implements IRunnableWithProgress {
         protected final OutputStream outputStream;
         protected final List<IFile> resourcesToExport;
 

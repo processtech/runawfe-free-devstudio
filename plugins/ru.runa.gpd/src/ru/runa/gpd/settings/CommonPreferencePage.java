@@ -47,6 +47,7 @@ public class CommonPreferencePage extends FieldEditorPreferencePage implements I
                         { Localization.getString("enable"), Localization.getString("enable") } },
                 getFieldEditorParent()));
         addField(new BooleanFieldEditor(P_CONFIRM_DELETION, Localization.getString("pref.commons.confirmDeletion"), getFieldEditorParent()));
+        addField(new BooleanFieldEditor(P_PROCESS_SAVE_HISTORY, Localization.getString("pref.commons.processSaveHistory"), getFieldEditorParent()));
     }
 
     public static boolean isRegulationsMenuItemsEnabled() {

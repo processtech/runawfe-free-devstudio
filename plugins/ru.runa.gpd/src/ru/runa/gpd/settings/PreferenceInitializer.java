@@ -36,6 +36,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer impleme
         store.setDefault(P_ENABLE_REGULATIONS_MENU_ITEMS, Localization.getString("disable"));
         store.setDefault(P_ENABLE_EXPORT_WITH_SCALING, Localization.getString("disable"));
         store.setDefault(P_CONFIRM_DELETION, true);
+        store.setDefault(P_PROCESS_SAVE_HISTORY, true);
         // PreferenceConverter.FONTDATA_DEFAULT_DEFAULT
         // backward compatibility
         store.setDefault(LanguageElementPreferenceNode.getBpmnDefaultPropertyName(P_BPMN_FONT), new FontData("Arial", 8, SWT.NORMAL).toString());

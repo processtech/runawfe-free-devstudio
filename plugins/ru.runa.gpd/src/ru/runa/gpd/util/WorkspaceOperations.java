@@ -65,6 +65,7 @@ import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.ui.dialog.DataSourceDialog;
+import ru.runa.gpd.ui.dialog.ProcessSaveHistoryDialog;
 import ru.runa.gpd.ui.dialog.RenameBotDialog;
 import ru.runa.gpd.ui.dialog.RenameBotStationDialog;
 import ru.runa.gpd.ui.dialog.RenameBotTaskDialog;
@@ -333,7 +334,6 @@ public class WorkspaceOperations {
         }
     }
 
-
     public static void saveProcessDefinition(IFile definitionFile, ProcessDefinition definition) throws Exception {
         ProcessSerializer serializer = definition.getLanguage().getSerializer();
         Document document = serializer.getInitialProcessDefinitionDocument(definition.getName(), null);
@@ -397,6 +397,10 @@ public class WorkspaceOperations {
         wizard.init(PlatformUI.getWorkbench(), selection);
         CompactWizardDialog dialog = new CompactWizardDialog(wizard);
         dialog.open();
+    }
+
+    public static void showProcessSaveHistory(IStructuredSelection selection) {
+        new ProcessSaveHistoryDialog((IFolder) selection.getFirstElement()).open();
     }
 
     public static void deleteBotResources(List<IResource> resources) {

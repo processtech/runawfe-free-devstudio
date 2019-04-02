@@ -55,4 +55,5 @@ public interface PrefConstants {
     public static final String P_ENABLE_REGULATIONS_MENU_ITEMS = "enabledRegulationsMenuItems";
     public static final String P_ENABLE_EXPORT_WITH_SCALING = "enabledExportWithScaling";
     public static final String P_CONFIRM_DELETION = "confirmDeletion";
+    public static final String P_PROCESS_SAVE_HISTORY = "processSaveHistory";
 }
