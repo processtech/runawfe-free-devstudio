@@ -42,12 +42,20 @@ public class WFEConnectionPreferencePage extends FieldEditorPreferencePage imple
     public void init(IWorkbench workbench) {
     }
 
+    private static String[][] getProtocolEntriesArray() {
+        String[][] strings = new String[2][2];
+        strings[0][0] = "http";
+        strings[0][1] = "http";
+        strings[1][0] = "https";
+        strings[1][1] = "https";
+        return strings;
+    }
+
     @Override
     public void createFieldEditors() {
-        addField(new ComboFieldEditor(P_WFE_CONNECTION_TYPE, Localization.getString("pref.connection.wfe.type"),
-                WFEServerConnectorRegistry.getEntriesArray(), getFieldEditorParent()));
+    	addField(new ComboFieldEditor(P_WFE_CONNECTION_PROTOCOL, Localization.getString("pref.connection.wfe.protocol"), getProtocolEntriesArray(), getFieldEditorParent()));	
         addField(new StringFieldEditor(P_WFE_CONNECTION_HOST, Localization.getString("pref.connection.wfe.host"), getFieldEditorParent()));
-        portEditor = new StringFieldEditor(P_WFE_CONNECTION_PORT, Localization.getString("pref.connection.wfe.port"), getFieldEditorParent());
+		portEditor = new StringFieldEditor(P_WFE_CONNECTION_PORT, Localization.getString("pref.connection.wfe.port"), getFieldEditorParent());
         addField(portEditor);
         addField(new StringFieldEditor(P_WFE_CONNECTION_VERSION, Localization.getString("pref.connection.wfe.version"), getFieldEditorParent()));
         addField(new RadioGroupFieldEditor(P_WFE_CONNECTION_LOGIN_MODE, Localization.getString("pref.connection.loginMode"), 2, new String[][] {

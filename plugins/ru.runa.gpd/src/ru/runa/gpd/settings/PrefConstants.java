@@ -40,6 +40,7 @@ public interface PrefConstants {
     public static final String P_WFE_CONNECTION_LOGIN_MODE = "wfeLoginMode";
     public static final String P_WFE_CONNECTION_HOST = "wfeServerHost";
     public static final String P_WFE_CONNECTION_PORT = "wfeServerPort";
+    public static final String P_WFE_CONNECTION_PROTOCOL = "wfeServerProtocol";
     public static final String P_WFE_CONNECTION_VERSION = "wfeServerVersion";
     public static final String P_WFE_CONNECTION_INITIAL_CTX_FACTORY = "wfeInitialCtxFactory";
     public static final String P_WFE_CONNECTION_URL_PKG_PREFIXES = "wfeUrlPkg";
