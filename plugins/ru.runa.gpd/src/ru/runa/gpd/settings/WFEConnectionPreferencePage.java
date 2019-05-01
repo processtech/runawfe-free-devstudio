@@ -17,14 +17,11 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
-
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.wfe.DataImporter;
 import ru.runa.gpd.wfe.WFEServerConnector;
-import ru.runa.gpd.wfe.WFEServerConnectorRegistry;
-import ru.runa.gpd.wfe.WFEServerConnectorRegistry.Entry;
 
 public class WFEConnectionPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage, PrefConstants {
     private StringFieldEditor loginEditor;
@@ -83,11 +80,6 @@ public class WFEConnectionPreferencePage extends FieldEditorPreferencePage imple
                 boolean enabled = LOGIN_MODE_LOGIN_PASSWORD.equals(event.getNewValue());
                 loginEditor.setEnabled(enabled, getFieldEditorParent());
                 passwordEditor.setEnabled(enabled, getFieldEditorParent());
-            }
-            if (P_WFE_CONNECTION_TYPE.equals(fieldEditor.getPreferenceName())) {
-                WFEServerConnector.destroy();
-                Entry entry = WFEServerConnectorRegistry.getEntryNotNull((String) event.getNewValue());
-                setMessage(entry.description);
             }
         }
     }

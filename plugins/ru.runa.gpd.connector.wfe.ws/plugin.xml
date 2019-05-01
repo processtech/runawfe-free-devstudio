@@ -4,21 +4,7 @@
    <extension
          point="ru.runa.gpd.wfeConnectors">
       <connector
-            class="ru.runa.gpd.connector.wfe.ws.WFEJboss4WebServicesConnector"
-            defaultPort="8080"
-            description="%jboss4.ws.connector.description"
-            id="jboss4.ws"
-            name="%jboss4.ws.connector.name">
-      </connector>
-      <connector
-            class="ru.runa.gpd.connector.wfe.ws.WFEJboss7WebServicesConnector"
-            defaultPort="8080"
-            description="%jboss7.ws.connector.description"
-            id="jboss7.ws"
-            name="%jboss7.ws.connector.name">
-      </connector>
-      <connector
-            class="ru.runa.gpd.connector.wfe.ws.WFEWildFlyWebServicesConnector"
+            class="ru.runa.gpd.connector.wfe.ws.WildflyWebServicesConnector"
             defaultPort="8080"
             description="%wildfly.ws.connector.description"
             id="wildfly.ws"

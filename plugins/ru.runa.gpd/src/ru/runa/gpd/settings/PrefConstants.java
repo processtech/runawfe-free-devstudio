@@ -34,7 +34,6 @@ public interface PrefConstants {
     public static final String P_ESCALATION_DURATION = "escalationDuration";
     public static final String P_ESCALATION_CONFIG = "escalationConfig";
     public static final String P_ESCALATION_REPEAT = "escalationRepeat";
-    public static final String P_WFE_CONNECTION_TYPE = "wfeConnectorType";
     public static final String P_WFE_CONNECTION_LOGIN = "wfeLogin";
     public static final String P_WFE_CONNECTION_PASSWORD = "wfePassword";
     public static final String P_WFE_CONNECTION_LOGIN_MODE = "wfeLoginMode";
