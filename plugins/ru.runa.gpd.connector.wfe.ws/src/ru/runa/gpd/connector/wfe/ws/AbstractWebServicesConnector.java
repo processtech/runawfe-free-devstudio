@@ -47,12 +47,27 @@ public abstract class AbstractWebServicesConnector extends WFEServerConnector {
 
     protected abstract URL getUrl(String serviceName);
 
+    protected String getBaseUrl() {
+        final String PROTOCOL_SPLITTER = "://";
+        String host = Activator.getPrefString(P_WFE_CONNECTION_HOST);
+        String port = Activator.getPrefString(P_WFE_CONNECTION_PORT);
+        String protocol = Activator.getPrefString(P_WFE_CONNECTION_PROTOCOL);
+        if (protocol == null) {
+            protocol = "http";
+        }
+        if (host != null) {
+            String[] hostProtocol = host.split(PROTOCOL_SPLITTER);
+            if (hostProtocol.length == 1) {
+                host = protocol + PROTOCOL_SPLITTER + host;
+            }
+        }
+        return host + ":" + port;
+    }
+
     protected String getVersion() {
         String version = Activator.getPrefString(P_WFE_CONNECTION_VERSION);
         if ("auto".equalsIgnoreCase(version)) {
-            String host = Activator.getPrefString(P_WFE_CONNECTION_HOST);
-            String port = Activator.getPrefString(P_WFE_CONNECTION_PORT);
-            String url = "http://" + host + ":" + port + "/wfe/version";
+            String url =  getBaseUrl()  + "/wfe/version";
             try {
                 InputStreamReader reader = new InputStreamReader(new URL(url).openStream());
                 version = CharStreams.toString(reader);
