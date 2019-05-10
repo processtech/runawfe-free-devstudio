@@ -179,7 +179,7 @@
    <extension
          point="ru.runa.gpd.formtype">
       <element
-            contributor="ru.runa.gpd.formeditor.FtlJointFormType"
+            contributor="ru.runa.gpd.formeditor.FtlFormType"
             name="%FormType.ftl"
             type="ftl"/>
       <element

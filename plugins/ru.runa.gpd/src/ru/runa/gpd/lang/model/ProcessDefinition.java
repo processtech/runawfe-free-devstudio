@@ -1,10 +1,12 @@
 package ru.runa.gpd.lang.model;
 
+import com.google.common.base.Objects;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -15,12 +17,12 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.views.properties.ComboBoxPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.extension.VariableFormatRegistry;
+import ru.runa.gpd.extension.regulations.RegulationsRegistry;
 import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.par.ParContentProvider;
@@ -32,10 +34,6 @@ import ru.runa.gpd.util.SwimlaneDisplayMode;
 import ru.runa.gpd.util.VariableUtils;
 import ru.runa.wfe.InternalApplicationException;
 import ru.runa.wfe.definition.ProcessDefinitionAccessType;
-
-import com.google.common.base.Objects;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 @SuppressWarnings("unchecked")
 public class ProcessDefinition extends NamedGraphElement implements Describable {
@@ -74,6 +72,9 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
     public boolean testAttribute(Object target, String name, String value) {
         if ("composition".equals(name)) {
             return Objects.equal(value, String.valueOf(this instanceof SubprocessDefinition));
+        }
+        if ("hasExtendedRegulations".equals(name)) {
+            return !RegulationsRegistry.hasExtendedRegulations();
         }
         if ("hasFormCSS".equals(name)) {
             try {

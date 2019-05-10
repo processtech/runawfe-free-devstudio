@@ -1,6 +1,5 @@
 package ru.runa.gpd.formeditor.wysiwyg;
 
-import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
@@ -68,6 +67,7 @@ import ru.runa.gpd.formeditor.resources.Messages;
 import ru.runa.gpd.formeditor.vartag.VarTagUtil;
 import ru.runa.gpd.htmleditor.editors.HTMLConfiguration;
 import ru.runa.gpd.htmleditor.editors.HTMLSourceEditor;
+import ru.runa.gpd.jointformeditor.JointFormEditor;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Variable;
@@ -106,7 +106,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
 
     private int cachedForVariablesCount = -1;
     private final Map<String, Map<String, Variable>> cachedVariables = new HashMap<String, Map<String, Variable>>();
-    private int currentPageIndex = -1;
+    protected int currentPageIndex = 0;
 
     protected synchronized boolean isBrowserLoaded() {
         return browserLoaded;
@@ -162,23 +162,14 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
             @Override
             public void propertyChanged(Object source, int propId) {
                 if (propId == FormEditor.CLOSED) {
-                    if (formFile.exists()) {
-                        if (IOUtils.isEmpty(formFile) && !getSite().getWorkbenchWindow().getWorkbench().isClosing()) {
-                            try {
-                                formFile.delete(true, null);
-                            } catch (CoreException e) {
-                                PluginLogger.logError(e);
-                            }
-                        }
-                    }
-                    boolean formEditorsAvailable = false;
                     IWorkbenchPage workbenchPage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
                     if (workbenchPage == null) {
                         return;
                     }
+                    boolean formEditorsAvailable = false;
                     for (IEditorReference editorReference : workbenchPage.getEditorReferences()) {
                         IEditorPart editor = editorReference.getEditor(true);
-                        if (editor instanceof FormEditor && !Objects.equal(FormEditor.this, editor)) {
+                        if (editor instanceof JointFormEditor) {
                             formEditorsAvailable = true;
                             break;
                         }
@@ -305,7 +296,10 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
         } catch (Exception ex) {
             PluginLogger.logError(Messages.getString("wysiwyg.source.create_error"), ex);
         }
-        if (browser == null) {
+    }
+
+    protected void startWebServerIfNotStartedYet(BrowserLoadCallback browserLoadCallback) {
+        if (browser == null || browserLoaded) {
             return;
         }
         ConnectorServletHelper.setBaseDir(sourceEditor.getFile().getParent());
@@ -338,7 +332,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
                             @Override
                             public void run() {
                                 if (!browser.isDisposed()) {
-                                    setActivePage(0);
+                                    browserLoadCallback.onLoad();
                                 }
                             }
                         });
@@ -378,10 +372,10 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
         throw new RuntimeException("No editor instance initialized");
     }
 
-    private void setDirty(boolean dirty) {
+    private void setDirty(boolean dirty, boolean fireEvent) {
         boolean changedDirtyState = this.dirty != dirty;
         this.dirty = dirty;
-        if (changedDirtyState) {
+        if (changedDirtyState && fireEvent) {
             firePropertyChange(IEditorPart.PROP_DIRTY);
         }
     }
@@ -393,19 +387,21 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
 
     @Override
     public void doSave(IProgressMonitor monitor) {
-        if (getActivePage() == 0 && isBrowserLoaded()) {
-            if (!syncBrowser2Editor()) {
-                throw new InternalApplicationException(Messages.getString("wysiwyg.design.save_error"));
+        if (isDirty()) {
+            if (getActivePage() != 1 && isBrowserLoaded()) {
+                if (!syncBrowser2Editor()) {
+                    throw new InternalApplicationException(Messages.getString("wysiwyg.design.save_error"));
+                }
             }
+            if (getActivePage() == 1) {
+                syncEditor2Browser();
+            }
+            sourceEditor.doSave(monitor);
+            if (isBrowserLoaded()) {
+                browser.execute("setHTMLSaved()");
+            }
+            setDirty(false, false);
         }
-        if (getActivePage() == 1) {
-            syncEditor2Browser();
-        }
-        sourceEditor.doSave(monitor);
-        if (isBrowserLoaded()) {
-            browser.execute("setHTMLSaved()");
-        }
-        setDirty(false);
     }
 
 
@@ -428,16 +424,19 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
     @Override
     protected void pageChange(int newPageIndex) {
         if (isBrowserLoaded()) {
-            if (currentPageIndex < 0 || currentPageIndex == 1) {
+            if (currentPageIndex == 1 && newPageIndex == 0) {
                 ConnectorServletHelper.sync();
                 syncEditor2Browser();
-            } else if (currentPageIndex == 0) {
+            } else if (currentPageIndex == 0 && newPageIndex == 1) {
                 syncBrowser2Editor();
             }
-            currentPageIndex = newPageIndex;
-        } else if (EditorsPlugin.DEBUG) {
-            PluginLogger.logInfo("pageChange to = " + newPageIndex + " but editor is not loaded yet");
+        } else if (newPageIndex == 0) {
+            startWebServerIfNotStartedYet(() -> {
+                ConnectorServletHelper.sync();
+                syncEditor2Browser();
+            });
         }
+        currentPageIndex = newPageIndex;
         super.pageChange(newPageIndex);
     }
 
@@ -509,7 +508,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
             public void propertyChange(PropertyChangeEvent evt) {
                 FormEditor editor = FormEditor.this;
                 if (editor != null && !editor.isDirty()) {
-                    editor.setDirty(true);
+                    editor.setDirty(true, true);
                 }
                 refreshView();
             }
@@ -620,6 +619,12 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
         }
     }
 
+    private interface BrowserLoadCallback {
+
+        void onLoad();
+
+    }
+
     private class OnLoadCallbackFunction extends BrowserFunction {
         public OnLoadCallbackFunction(Browser browser) {
             super(browser, "onLoadCallback");
@@ -643,7 +648,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
 
         @Override
         public Object function(Object[] arguments) {
-            setDirty(true);
+            setDirty(true, true);
             return null;
         }
     }

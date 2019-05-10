@@ -1,0 +1,11 @@
+<config>
+  <input>
+    <param name="name" label.key="Report.Name" formatFilter="java.lang.String" optional="false"/>
+    <param name="params" label.key="Report.Params" formatFilter="ru.runa.wfe.var.UserTypeMap" optional="true"/>  
+    <param name="format" label.key="Report.Format" options="EXCEL,DOCX,PDF,RTF,HTML" optional="false" variable="false"/>
+    <param name="dataSource" label.key="Report.DataSource" formatFilter="java.lang.String" optional="true"/>
+  </input>
+  <output>
+    <param name="result" label.key="Report.Result" formatFilter="ru.runa.wfe.var.FileVariable" optional="false"/>
+  </output>
+</config>
