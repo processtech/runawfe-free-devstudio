@@ -5,15 +5,20 @@ import org.eclipse.core.runtime.IConfigurationElement;
 public class ComboOption {
     private final String value;
     private final String label;
+    private final String _default;
 
     public ComboOption(String value, String label) {
-        this.value = value;
-        this.label = label;
+        this(value, label, null);
     }
 
     public ComboOption(IConfigurationElement optionElement) {
-        this.value = optionElement.getAttribute("value");
-        this.label = optionElement.getAttribute("name");
+        this(optionElement.getAttribute("value"), optionElement.getAttribute("name"), optionElement.getAttribute("default"));
+    }
+
+    public ComboOption(String value, String label, String _default) {
+        this.value = value;
+        this.label = label;
+        this._default = _default;
     }
 
     public String getValue() {
@@ -22,6 +27,10 @@ public class ComboOption {
 
     public String getLabel() {
         return label;
+    }
+
+    public boolean isDefault() {
+        return _default != null && Boolean.parseBoolean(_default);
     }
 
     @Override
