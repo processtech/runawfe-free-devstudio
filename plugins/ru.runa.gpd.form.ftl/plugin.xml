@@ -128,6 +128,17 @@
    <extension
          point="org.eclipse.core.runtime.preferences">
       <initializer class="ru.runa.gpd.htmleditor.HTMLPreferenceInitializer"/>
+      <initializer class="ru.runa.gpd.formeditor.settings.PreferenceInitializer"/>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+         category="gpd.pref.form"
+         class="ru.runa.gpd.formeditor.settings.PreferencePage"
+         id="gpd.pref.editor"
+         name="%FormType.ftl">
+      </page>
    </extension>
 
    <extension
