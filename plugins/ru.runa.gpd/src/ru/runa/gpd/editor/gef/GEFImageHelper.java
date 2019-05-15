@@ -12,6 +12,7 @@ import org.eclipse.gef.GraphicalViewer;
 import org.eclipse.gef.LayerConstants;
 import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
 import org.eclipse.gef.editparts.LayerManager;
+import org.eclipse.graphiti.ui.internal.figures.GFEllipse;
 import org.eclipse.graphiti.ui.internal.figures.GFText;
 import org.eclipse.graphiti.ui.internal.parts.ConnectionDecoratorEditPart;
 import org.eclipse.graphiti.ui.internal.parts.IDiagramEditPart;
@@ -130,7 +131,8 @@ public class GEFImageHelper {
     }
 
     private static boolean isConnectionLabel(Map.Entry<?, ?> visual) {
-        return visual.getKey() instanceof GFText && visual.getValue() instanceof ConnectionDecoratorEditPart;
+        return (visual.getKey() instanceof GFEllipse || visual.getKey() instanceof GFText)
+                && visual.getValue() instanceof ConnectionDecoratorEditPart;
     }
 
     private static ImageData downSample(Image image) {
