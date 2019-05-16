@@ -13,6 +13,7 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.views.properties.ComboBoxPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
@@ -61,6 +62,13 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
     }
 
     public IFile getFile() {
+        if (accessType == ProcessDefinitionAccessType.Process && !file.exists()) {
+            // process definition's file was renamed
+            IFile newFile = file.getParent().getParent().getFolder(new Path(getName())).getFile(ParContentProvider.PROCESS_DEFINITION_FILE_NAME);
+            if (newFile.exists()) {
+                return newFile;
+            }
+        }
         return file;
     }
 
