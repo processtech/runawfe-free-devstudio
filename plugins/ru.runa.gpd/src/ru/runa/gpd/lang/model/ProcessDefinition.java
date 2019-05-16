@@ -62,7 +62,7 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
     }
 
     public IFile getFile() {
-        if (accessType == ProcessDefinitionAccessType.Process && !file.exists()) {
+        if (accessType != ProcessDefinitionAccessType.EmbeddedSubprocess && !file.exists()) {
             // process definition's file was renamed
             IFile newFile = file.getParent().getParent().getFolder(new Path(getName())).getFile(ParContentProvider.PROCESS_DEFINITION_FILE_NAME);
             if (newFile.exists()) {
