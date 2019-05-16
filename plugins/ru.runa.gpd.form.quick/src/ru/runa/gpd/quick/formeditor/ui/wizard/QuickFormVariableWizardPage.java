@@ -72,9 +72,9 @@ public class QuickFormVariableWizardPage extends WizardPage {
     }
 
     private void setDefaultUsage() {
-        SelectItem[] items = (SelectItem[]) tagType.getInput();
-        for (SelectItem item : items) {
-            if (item.getValue().equals(FreemarkerConfigurationGpdWrap.getInstance().getDefaultTagName())) {
+        String defaultTagName = FreemarkerConfigurationGpdWrap.getInstance().getDefaultTagName();
+        for (SelectItem item : (SelectItem[]) tagType.getInput()) {
+            if (item.getValue().equals(defaultTagName)) {
                 tagType.setSelection(new StructuredSelection(item));
                 break;
             }

@@ -14,7 +14,7 @@ import ru.runa.gpd.formeditor.ftl.ComponentType;
 import ru.runa.gpd.formeditor.ftl.ComponentTypeRegistry;
 import ru.runa.gpd.formeditor.ftl.parameter.ComboParameter;
 
-public class PreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage { // , PrefConstants {
+public class PreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 
     public static final String P_FORM_DEFAULT_DISPLAY_FORMAT = "defaultDisplayFormat";
 
@@ -29,7 +29,7 @@ public class PreferencePage extends FieldEditorPreferencePage implements IWorkbe
 
     @Override
     public void createFieldEditors() {
-        new Label(getFieldEditorParent(), SWT.NONE).setText(Localization.getString("pref.form.defaultDisplayFormat"));
+        new Label(getFieldEditorParent(), SWT.NONE).setText(Localization.getString("Pref.form.defaultDisplayFormat"));
         addField(new ComboFieldEditor(P_FORM_DEFAULT_DISPLAY_FORMAT, "", getNamesAndValues(), getFieldEditorParent()));
     }
 
