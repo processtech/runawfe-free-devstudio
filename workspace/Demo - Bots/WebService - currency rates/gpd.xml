@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-diagram name="WebService - currency rates" notation="bpmn" rendered="graphiti" width="1043" height="663" showActions="false" showGrid="false">
+  <node name="ID1" x="220" y="110" width="48" height="48">
+    <transition name="Переход1"/>
+    <textDecoration x="217" y="86"/>
+  </node>
+  <node name="ID10" x="172" y="290" width="145" height="111">
+    <transition name="Переход1"/>
+  </node>
+  <node name="ID12" x="155" y="440" width="180" height="120">
+    <transition name="Переход1"/>
+  </node>
+  <node name="ID8" x="226" y="210" width="180" height="120" minimizedView="true">
+    <transition name="Переход1"/>
+  </node>
+  <node name="ID14" x="221" y="582" width="48" height="48">
+    <textDecoration x="217" y="630"/>
+  </node>
+</process-diagram>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<forms>
+  <form state="ID1" file="ID1.ftl" type="ftl" validationFile="ID1.validation.xml" jsValidation="false" scriptFile="ID1.js"/>
+  <form state="ID12" file="ID12.ftl" type="ftl"/>
+</forms>

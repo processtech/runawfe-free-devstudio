@@ -1,52 +1,56 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:runa="http://runa.ru/wfe/xml" targetNamespace="http://runa.ru/wfe/xml">
-  <process name="WebService - who is">
+  <process name="WebService - currency rates">
     <extensionElements>
       <runa:property name="showSwimlane" value="none"/>
-      <runa:property name="documentation" value="Enter domain name and WebService bot resolve this name using whois service."/>
-      <runa:property name="version" value="4.2.0.M20150318-1835"/>
       <runa:property name="accessType" value="Process"/>
+      <runa:property name="version" value="4.4.0.qualifier"/>
+      <runa:property name="documentation" value="Укажите дату,  и робот получит на эту дату список курсов валют"/>
     </extensionElements>
     <laneSet id="laneSet1">
-      <lane id="ID6" name="requester">
+      <lane id="ID5" name="requester">
         <extensionElements>
           <runa:property name="class" value="ru.runa.wfe.extension.assign.DefaultAssignmentHandler"/>
           <runa:property name="config"><![CDATA[]]></runa:property>
         </extensionElements>
       </lane>
-      <lane id="ID7" name="WebServiceBot">
+      <lane id="ID6" name="WebServiceCurrencyRateBot">
         <extensionElements>
           <runa:property name="class" value="ru.runa.wfe.extension.assign.DefaultAssignmentHandler"/>
-          <runa:property name="config"><![CDATA[#WebServiceBot]]></runa:property>
+          <runa:property name="config"><![CDATA[#WebServiceCurrencyRateBot]]></runa:property>
         </extensionElements>
       </lane>
     </laneSet>
-    <startEvent id="ID1" name="Start">
+    <startEvent id="ID1" name="Начало">
       <extensionElements>
         <runa:property name="lane" value="requester"/>
       </extensionElements>
     </startEvent>
-    <sequenceFlow id="ID10" name="tr1" sourceRef="ID1" targetRef="ID2"/>
-    <userTask id="ID3" name="Load whois information">
+    <sequenceFlow id="ID9" name="Переход1" sourceRef="ID1" targetRef="ID8"/>
+    <userTask id="ID10" name="Load rates information">
       <extensionElements>
-        <runa:property name="lane" value="WebServiceBot"/>
+        <runa:property name="lane" value="WebServiceCurrencyRateBot"/>
+        <runa:property name="reassign" value="false"/>
+        <runa:property name="reassignSwimlaneToTaskPerformer" value="true"/>
       </extensionElements>
     </userTask>
-    <sequenceFlow id="ID12" name="tr1" sourceRef="ID3" targetRef="ID4"/>
-    <userTask id="ID4" name="Read DNS address information">
+    <sequenceFlow id="ID13" name="Переход1" sourceRef="ID10" targetRef="ID12"/>
+    <userTask id="ID12" name="Read currency rates information">
       <extensionElements>
         <runa:property name="lane" value="requester"/>
+        <runa:property name="reassign" value="false"/>
+        <runa:property name="reassignSwimlaneToTaskPerformer" value="true"/>
       </extensionElements>
     </userTask>
-    <sequenceFlow id="ID13" name="tr1" sourceRef="ID4" targetRef="ID5"/>
-    <scriptTask id="ID2" name="Задача сценария 1">
+    <sequenceFlow id="ID15" name="Переход1" sourceRef="ID12" targetRef="ID14"/>
+    <scriptTask id="ID8" name="Задача сценария 1">
       <extensionElements>
         <runa:property name="class" value="ru.runa.wfe.service.handler.BotInvokerActionHandler"/>
         <runa:property name="config"><![CDATA[]]></runa:property>
       </extensionElements>
     </scriptTask>
-    <sequenceFlow id="ID11" name="tr1" sourceRef="ID2" targetRef="ID3"/>
-    <endEvent id="ID5" name="End"/>
+    <sequenceFlow id="ID11" name="Переход1" sourceRef="ID8" targetRef="ID10"/>
+    <endEvent id="ID14" name="Окончание"/>
   </process>
 </definitions>
