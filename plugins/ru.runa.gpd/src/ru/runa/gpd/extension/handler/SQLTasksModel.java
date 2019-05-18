@@ -1,17 +1,14 @@
 package ru.runa.gpd.extension.handler;
 
+import com.google.common.base.Strings;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
-
 import org.dom4j.Document;
 import org.dom4j.Element;
-
 import ru.runa.gpd.util.XmlUtil;
-
-import com.google.common.base.Strings;
 
 public class SQLTasksModel extends Observable {
     public List<SQLTaskModel> tasks = new ArrayList<SQLTaskModel>();
@@ -157,12 +154,12 @@ public class SQLTasksModel extends Observable {
 
         public boolean hasFields() {
             for (SQLQueryParameterModel model : params) {
-                if (model.fieldName != null) {
+                if (model.fieldName != null && !model.swimlaneVar) {
                     return true;
                 }
             }
             for (SQLQueryParameterModel model : results) {
-                if (model.fieldName != null) {
+                if (model.fieldName != null && !model.swimlaneVar) {
                     return true;
                 }
             }
@@ -221,9 +218,6 @@ public class SQLTasksModel extends Observable {
             if (fieldName != null) {
                 paramElement.addAttribute("field", fieldName);
             }
-            if (swimlaneVar) {
-                paramElement.addAttribute("field", "code");
-            }
         }
 
         public static SQLQueryParameterModel deserialize(Element element) {
@@ -246,11 +240,9 @@ public class SQLTasksModel extends Observable {
                 model.swimlaneVar = false;
             }
             model.varName = element.attributeValue("var");
-            if (!model.swimlaneVar) {
-                String fieldName = element.attributeValue("field");
-                if (!Strings.isNullOrEmpty(fieldName)) {
-                    model.fieldName = fieldName;
-                }
+            String fieldName = element.attributeValue("field");
+            if (!Strings.isNullOrEmpty(fieldName)) {
+                model.fieldName = fieldName;
             }
             return model;
         }
