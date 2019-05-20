@@ -256,21 +256,16 @@ public class WorkspaceOperations {
                 // 2nd parameter save=false prevents "Save changed files?" dialog: they are saved anyway.
                 page.closeEditors(editorRefsToClose.toArray(new IEditorReference[editorRefsToClose.size()]), false);
             }
-
-            // Do it BEFORE oldResource.move().
             ProcessCache.processDefinitionWasDeleted(oldDefinitionFile);
-
-            IPath oldPath = oldDefinitionFolder.getFullPath();
             IPath newPath = oldDefinitionFolder.getParent().getFolder(new Path(newName)).getFullPath();
-            IResource oldResource = ResourcesPlugin.getWorkspace().getRoot().findMember(oldPath);
-            // I use FORCE same as JDT's RenameJavaProjectChange does. Not sure what it does, but DS does not provide any other opportunity (including F5) anyway.
-            oldResource.move(newPath, IResource.FORCE | IResource.SHALLOW, new NullProgressMonitor());
-
             IFolder newDefinitionFolder = ResourcesPlugin.getWorkspace().getRoot().getFolder(newPath);
+            oldDefinitionFolder.copy(newDefinitionFolder.getFullPath(), true, new NullProgressMonitor());
             IFile newDefinitionFile = IOUtils.getProcessDefinitionFile(newDefinitionFolder);
+            definition = ProcessCache.getProcessDefinition(newDefinitionFile);
             definition.setName(newName);
             saveProcessDefinition(newDefinitionFile, definition);
             ProcessCache.newProcessDefinitionWasCreated(newDefinitionFile);
+            oldDefinitionFolder.delete(true, new NullProgressMonitor());
             refreshResource(newDefinitionFolder);
         } catch (Exception e) {
             PluginLogger.logError(e);
