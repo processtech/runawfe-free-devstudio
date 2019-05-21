@@ -56,7 +56,10 @@ public class DataSourceDialog extends Dialog implements DataSourceStuff {
     private Text txtDbHost;
     private Text txtDbHostPort;
     private Text txtDbName;
-    private Text txtUserName;
+    private Text txtParamUserName;
+    private Text txtParamPassword;
+    private Text txtUrlUserName;
+    private Text txtUrlPassword;
     private Button rbParams;
     private Button rbUrl;
 
@@ -189,12 +192,6 @@ public class DataSourceDialog extends Dialog implements DataSourceStuff {
         createUrlJdbcSubPane(subPanes);
         createParamJdbcSubPane(subPanes);
         stackLayoutDetail.topControl = paneCacheDetail[subpaneState];
-
-        Label label = new Label(pane, SWT.NONE);
-        label.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-        label.setText(Localization.getString("datasource.property.userName") + colon);
-        txtUserName = new Text(pane, SWT.BORDER);
-        txtUserName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         paneCache.put(DataSourceType.JDBC, pane);
     }
 
@@ -220,8 +217,17 @@ public class DataSourceDialog extends Dialog implements DataSourceStuff {
             sj.add(dsType.urlSample());
         }
         label.setText(sj.toString());
+        label = new Label(pane, SWT.NONE);
+        label.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+        label.setText(Localization.getString("datasource.property.userName") + colon);
+        txtUrlUserName = new Text(pane, SWT.BORDER);
+        txtUrlUserName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        label = new Label(pane, SWT.NONE);
+        label.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+        label.setText(Localization.getString("datasource.property.password") + colon);
+        txtUrlPassword = new Text(pane, SWT.BORDER | SWT.PASSWORD);
+        txtUrlPassword.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         paneCacheDetail[SUBPANE_URL_STATE] = pane;
-
     }
 
     private void createParamJdbcSubPane(Composite parent) {
@@ -258,6 +264,16 @@ public class DataSourceDialog extends Dialog implements DataSourceStuff {
         label.setText(Localization.getString("datasource.property.dbName") + colon);
         txtDbName = new Text(pane, SWT.BORDER);
         txtDbName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        label = new Label(pane, SWT.NONE);
+        label.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+        label.setText(Localization.getString("datasource.property.userName") + colon);
+        txtParamUserName = new Text(pane, SWT.BORDER);
+        txtParamUserName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        label = new Label(pane, SWT.NONE);
+        label.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+        label.setText(Localization.getString("datasource.property.password") + colon);
+        txtParamPassword = new Text(pane, SWT.BORDER | SWT.PASSWORD);
+        txtParamPassword.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         paneCacheDetail[SUBPANE_PARAM_STATE] = pane;
     }
 
@@ -309,7 +325,13 @@ public class DataSourceDialog extends Dialog implements DataSourceStuff {
                 case JDBC:
                     String dbType = root.elementTextTrim(ELEMENT_DB_TYPE);
                     if (Strings.isNullOrEmpty(dbType)) {
+                        txtDbHost.setText("");
+                        txtDbHostPort.setText("");
+                        cbDbType.setText("");
+                        txtDbName.setText("");
                         txtDbUrl.setText(root.element(ELEMENT_DB_URL).getText());
+                        txtUrlUserName.setText(Strings.nullToEmpty(root.element(ELEMENT_USER_NAME).getText()));
+                        txtUrlPassword.setText(Strings.nullToEmpty(root.elementText(ELEMENT_PASSWORD)));
                         updateSubpane(subPanes, SUBPANE_URL_STATE);
                         updateStateButtons();
                     } else {
@@ -319,10 +341,11 @@ public class DataSourceDialog extends Dialog implements DataSourceStuff {
                         cbDbType.setText(dbType);
                         txtDbName.setText(root.element(ELEMENT_DB_NAME).getText());
                         txtDbUrl.setText("");
+                        txtParamUserName.setText(root.element(ELEMENT_USER_NAME).getText());
+                        txtParamPassword.setText(Strings.nullToEmpty(root.elementText(ELEMENT_PASSWORD)));
                         updateSubpane(subPanes, SUBPANE_PARAM_STATE);
                         updateStateButtons();
                     }
-                    txtUserName.setText(root.element(ELEMENT_USER_NAME).getText());
                     break;
                 default: // JNDI
                     String jndiName = root.element(ELEMENT_JNDI_NAME).getText();
@@ -350,13 +373,17 @@ public class DataSourceDialog extends Dialog implements DataSourceStuff {
                 dataSource.addElement(ELEMENT_DB_TYPE).addText(cbDbType.getText());
                 dataSource.addElement(ELEMENT_DB_URL).addText(getJdbcShortUrl(txtDbHost.getText(), txtDbHostPort.getText(), cbDbType.getText()));
                 dataSource.addElement(ELEMENT_DB_NAME).addText(txtDbName.getText());
-                dataSource.addElement(ELEMENT_USER_NAME).addText(txtUserName.getText());
+                dataSource.addElement(ELEMENT_USER_NAME).addText(txtParamUserName.getText());
+                if (!txtParamPassword.getText().equals("")) {
+                    dataSource.addElement(ELEMENT_PASSWORD).addText(txtParamPassword.getText());
+                }
                 break;
             case SUBPANE_URL_STATE:
-                dataSource.addElement(ELEMENT_DB_TYPE).addText("");
                 dataSource.addElement(ELEMENT_DB_URL).addText(txtDbUrl.getText());
-                dataSource.addElement(ELEMENT_DB_NAME).addText("");
-                dataSource.addElement(ELEMENT_USER_NAME).addText(txtUserName.getText());
+                dataSource.addElement(ELEMENT_USER_NAME).addText(txtUrlUserName.getText());
+                if (!txtUrlPassword.getText().equals("")) {
+                    dataSource.addElement(ELEMENT_PASSWORD).addText(txtUrlPassword.getText());
+                }
                 break;
             }
             break;
