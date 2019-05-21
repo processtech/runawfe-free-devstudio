@@ -19,6 +19,7 @@ import ru.runa.gpd.util.IOUtils;
 public class RegulationsRegistry {
     private static String template;
     private static String cssStyles;
+    private static Boolean hasExtendedRegulations = false;
 
     static {
         try {
@@ -35,6 +36,10 @@ public class RegulationsRegistry {
     public static String getCssStyles() {
         return cssStyles;
     }
+    
+    public static Boolean hasExtendedRegulations() {
+        return hasExtendedRegulations;
+    }
 
     private static void init() throws IOException {
         Bundle bundle;
@@ -47,6 +52,7 @@ public class RegulationsRegistry {
             IConfigurationElement[] configElements = extensions[0].getConfigurationElements();
             templatePath = new Path(configElements[0].getAttribute("template"));
             cssPath = new Path(configElements[0].getAttribute("css"));
+            hasExtendedRegulations = true;
         } else {
             bundle = Activator.getDefault().getBundle();
             templatePath = new Path("template/regulations.ftl");

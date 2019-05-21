@@ -4,6 +4,10 @@
 	margin: 5px;
 }
 
+.title {
+	margin: 15px 0px 15px;
+}
+
 .node {
 	margin-top: 15px;
 }
@@ -14,4 +18,28 @@
 
 .header .name, .variables .name {
 	color: orange;
+}
+
+.swimlanes {
+	margin-top: 15px;	
+}
+
+.variables {
+	margin-top: 15px;	
+}
+
+.endings {
+	margin-top: 15px;	
+}
+
+.endTokenState {
+	margin: 5px;	
+}
+
+.endState {
+	margin: 5px;	
+}
+
+.nodes {
+	margin-top: 15px;
 }

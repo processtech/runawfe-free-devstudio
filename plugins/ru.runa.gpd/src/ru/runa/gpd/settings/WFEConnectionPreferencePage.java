@@ -17,14 +17,11 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
-
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.wfe.DataImporter;
 import ru.runa.gpd.wfe.WFEServerConnector;
-import ru.runa.gpd.wfe.WFEServerConnectorRegistry;
-import ru.runa.gpd.wfe.WFEServerConnectorRegistry.Entry;
 
 public class WFEConnectionPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage, PrefConstants {
     private StringFieldEditor loginEditor;
@@ -42,12 +39,20 @@ public class WFEConnectionPreferencePage extends FieldEditorPreferencePage imple
     public void init(IWorkbench workbench) {
     }
 
+    private static String[][] getProtocolEntriesArray() {
+        String[][] strings = new String[2][2];
+        strings[0][0] = "http";
+        strings[0][1] = "http";
+        strings[1][0] = "https";
+        strings[1][1] = "https";
+        return strings;
+    }
+
     @Override
     public void createFieldEditors() {
-        addField(new ComboFieldEditor(P_WFE_CONNECTION_TYPE, Localization.getString("pref.connection.wfe.type"),
-                WFEServerConnectorRegistry.getEntriesArray(), getFieldEditorParent()));
+    	addField(new ComboFieldEditor(P_WFE_CONNECTION_PROTOCOL, Localization.getString("pref.connection.wfe.protocol"), getProtocolEntriesArray(), getFieldEditorParent()));	
         addField(new StringFieldEditor(P_WFE_CONNECTION_HOST, Localization.getString("pref.connection.wfe.host"), getFieldEditorParent()));
-        portEditor = new StringFieldEditor(P_WFE_CONNECTION_PORT, Localization.getString("pref.connection.wfe.port"), getFieldEditorParent());
+		portEditor = new StringFieldEditor(P_WFE_CONNECTION_PORT, Localization.getString("pref.connection.wfe.port"), getFieldEditorParent());
         addField(portEditor);
         addField(new StringFieldEditor(P_WFE_CONNECTION_VERSION, Localization.getString("pref.connection.wfe.version"), getFieldEditorParent()));
         addField(new RadioGroupFieldEditor(P_WFE_CONNECTION_LOGIN_MODE, Localization.getString("pref.connection.loginMode"), 2, new String[][] {
@@ -75,11 +80,6 @@ public class WFEConnectionPreferencePage extends FieldEditorPreferencePage imple
                 boolean enabled = LOGIN_MODE_LOGIN_PASSWORD.equals(event.getNewValue());
                 loginEditor.setEnabled(enabled, getFieldEditorParent());
                 passwordEditor.setEnabled(enabled, getFieldEditorParent());
-            }
-            if (P_WFE_CONNECTION_TYPE.equals(fieldEditor.getPreferenceName())) {
-                WFEServerConnector.destroy();
-                Entry entry = WFEServerConnectorRegistry.getEntryNotNull((String) event.getNewValue());
-                setMessage(entry.description);
             }
         }
     }
