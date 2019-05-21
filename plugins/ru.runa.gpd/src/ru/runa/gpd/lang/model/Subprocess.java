@@ -44,7 +44,7 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
                 errors.add(ValidationError.createLocalizedError(this, "subprocess.embedded.required1leavingtransition"));
             }
         }
-        ProcessDefinition subprocessDefinition = ProcessCache.getFirstProcessDefinition(subProcessName);
+        ProcessDefinition subprocessDefinition = ProcessCache.getFirstProcessDefinition(subProcessName, null);
         if (subprocessDefinition == null) {
             errors.add(ValidationError.createLocalizedWarning(this, "subprocess.notFound"));
             return;
@@ -241,6 +241,10 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
         } else {
             super.setPropertyValue(id, value);
         }
+    }
+
+    public String getQualifiedId() {
+        return getProcessDefinition().getFile().getParent().getFullPath() + "." + getId();
     }
 
 }
