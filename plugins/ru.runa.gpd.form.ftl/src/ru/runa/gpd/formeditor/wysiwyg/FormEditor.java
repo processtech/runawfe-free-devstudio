@@ -7,7 +7,6 @@ import com.google.common.collect.Maps;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -52,7 +51,6 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import ru.runa.gpd.EditorsPlugin;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
-import ru.runa.gpd.extension.VariableFormatRegistry;
 import ru.runa.gpd.formeditor.WebServerUtils;
 import ru.runa.gpd.formeditor.ftl.Component;
 import ru.runa.gpd.formeditor.ftl.ComponentIdGenerator;
@@ -214,7 +212,6 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
             return new HashMap<String, Variable>();
         }
         List<Variable> variables = formNode.getVariables(true, true);
-
         if (cachedForVariablesCount != variables.size()) {
             cachedForVariablesCount = variables.size();
             cachedVariables.clear();
@@ -222,24 +219,11 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
         if (!cachedVariables.containsKey(typeClassNameFilter)) {
             // get variables without strong-typing. (all hierarchy)
             if (!Strings.isNullOrEmpty(typeClassNameFilter) && !Object.class.getName().equals(typeClassNameFilter)) {
-                List<String> filterHierarchy = VariableFormatRegistry.getInstance().getSuperClassNames(typeClassNameFilter);
-                for (Variable variable : new ArrayList<Variable>(variables)) {
-                    boolean applicable = false;
-                    for (String className : filterHierarchy) {
-                        if (VariableFormatRegistry.isAssignableFrom(variable.getJavaClassName(), typeClassNameFilter)
-                                || VariableFormatRegistry.isAssignableFrom(typeClassNameFilter, variable.getJavaClassName())) {
-                            if (VariableFormatRegistry.isApplicable(variable, className)) {
-                                applicable = true;
-                                break;
-                            }
-                        }
-                    }
-                    if (!applicable) {
-                        variables.remove(variable);
-                    }
-                }
+                variables = formNode.getVariables(true, true, typeClassNameFilter);
+                cachedVariables.put(typeClassNameFilter, VariableUtils.toMap(variables));
+            } else {
+                cachedVariables.put(typeClassNameFilter, VariableUtils.toMap(variables));
             }
-            cachedVariables.put(typeClassNameFilter, VariableUtils.toMap(variables));
         }
         return cachedVariables.get(typeClassNameFilter);
     }
