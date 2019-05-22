@@ -229,6 +229,9 @@ public class BpmnSerializer extends ProcessSerializer {
             if (subprocess.isTransactional()) {
                 properties.put(TRANSACTIONAL, true);
             }
+            if (subprocess.isValidateAtStart()) {
+                properties.put(VALIDATE_AT_START, true);
+            }
             if (subprocess.isAsync()) {
                 properties.put(ASYNC, Boolean.TRUE.toString());
                 properties.put(ASYNC_COMPLETION_MODE, subprocess.getAsyncCompletionMode().name());
@@ -787,6 +790,9 @@ public class BpmnSerializer extends ProcessSerializer {
             }
             if (properties.containsKey(TRANSACTIONAL)) {
                 subprocess.setTransactional(Boolean.parseBoolean(properties.get(TRANSACTIONAL)));
+            }
+            if (properties.containsKey(VALIDATE_AT_START)) {
+                subprocess.setValidateAtStart(Boolean.parseBoolean(properties.get(VALIDATE_AT_START)));
             }
             String async = properties.get(ASYNC);
             if (async != null) {

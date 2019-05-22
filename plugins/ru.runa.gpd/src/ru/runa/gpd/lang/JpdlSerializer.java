@@ -1,14 +1,14 @@
 package ru.runa.gpd.lang;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.eclipse.core.resources.IFile;
-
 import ru.runa.gpd.Application;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginConstants;
@@ -58,9 +58,6 @@ import ru.runa.wfe.definition.ProcessDefinitionAccessType;
 import ru.runa.wfe.lang.AsyncCompletionMode;
 import ru.runa.wfe.lang.MultiTaskCreationMode;
 import ru.runa.wfe.lang.MultiTaskSynchronizationMode;
-
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 
 @SuppressWarnings("unchecked")
 public class JpdlSerializer extends ProcessSerializer {
@@ -248,6 +245,9 @@ public class JpdlSerializer extends ProcessSerializer {
             }
             if (subprocess instanceof MultiSubprocess) {
                 setAttribute(processStateElement, EXECUTION_CONDITION, ((MultiSubprocess) subprocess).getDiscriminatorCondition());
+            }
+            if (subprocess.isValidateAtStart()) {
+                setAttribute(processStateElement, VALIDATE_AT_START, Boolean.TRUE.toString());
             }
         }
         List<SendMessageNode> sendMessageNodes = definition.getChildren(SendMessageNode.class);
@@ -739,6 +739,7 @@ public class JpdlSerializer extends ProcessSerializer {
                 if (SUB_PROCESS.equals(childNode.getName())) {
                     subprocess.setSubProcessName(childNode.attributeValue(NAME));
                     subprocess.setEmbedded(Boolean.parseBoolean(childNode.attributeValue(EMBEDDED, "false")));
+                    subprocess.setValidateAtStart(Boolean.parseBoolean(childNode.attributeValue(VALIDATE_AT_START, "false")));
                 }
                 if (VARIABLE.equals(childNode.getName())) {
                     VariableMapping variable = new VariableMapping();
