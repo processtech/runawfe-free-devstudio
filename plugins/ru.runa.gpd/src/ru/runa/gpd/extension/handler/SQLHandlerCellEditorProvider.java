@@ -322,12 +322,6 @@ public class SQLHandlerCellEditorProvider extends XmlBasedConstructorProvider<SQ
                 public void widgetSelected(SelectionEvent e) {
                     parameterModel.varName = combo.getText();
                     parameterModel.swimlaneVar = delegable.getVariableNames(true, Executor.class.getName()).contains(parameterModel.varName);
-                    if (parameterModel.swimlaneVar) {
-                        parameterModel.fieldName = delegable.getVariableNames(true, ru.runa.wfe.user.Group.class.getName())
-                                .contains(parameterModel.varName) ? "name" : "code";
-                    } else {
-                        parameterModel.fieldName = null;
-                    }
                 }
             });
             if (paramIndex != 0) {
