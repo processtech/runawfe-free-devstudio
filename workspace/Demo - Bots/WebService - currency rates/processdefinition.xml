@@ -5,7 +5,7 @@
     <extensionElements>
       <runa:property name="showSwimlane" value="none"/>
       <runa:property name="accessType" value="Process"/>
-      <runa:property name="version" value="4.4.0.qualifier"/>
+      <runa:property name="version" value="4.4.0.M20190526-1056"/>
       <runa:property name="documentation" value="Укажите дату,  и робот получит на эту дату список курсов валют"/>
     </extensionElements>
     <laneSet id="laneSet1">
@@ -15,10 +15,10 @@
           <runa:property name="config"><![CDATA[]]></runa:property>
         </extensionElements>
       </lane>
-      <lane id="ID6" name="WebServiceCurrencyRateBot">
+      <lane id="ID6" name="WebServiceBot">
         <extensionElements>
           <runa:property name="class" value="ru.runa.wfe.extension.assign.DefaultAssignmentHandler"/>
-          <runa:property name="config"><![CDATA[#WebServiceCurrencyRateBot]]></runa:property>
+          <runa:property name="config"><![CDATA[#WebServiceBot]]></runa:property>
         </extensionElements>
       </lane>
     </laneSet>
@@ -30,7 +30,7 @@
     <sequenceFlow id="ID9" name="Переход1" sourceRef="ID1" targetRef="ID8"/>
     <userTask id="ID10" name="Load rates information">
       <extensionElements>
-        <runa:property name="lane" value="WebServiceCurrencyRateBot"/>
+        <runa:property name="lane" value="WebServiceBot"/>
         <runa:property name="reassign" value="false"/>
         <runa:property name="reassignSwimlaneToTaskPerformer" value="true"/>
       </extensionElements>

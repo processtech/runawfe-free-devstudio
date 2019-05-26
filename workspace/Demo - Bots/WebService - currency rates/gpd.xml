@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<process-diagram name="WebService - currency rates" notation="bpmn" rendered="graphiti" width="1043" height="663" showActions="false" showGrid="false">
+<process-diagram name="WebService - currency rates" notation="bpmn" rendered="graphiti" width="687" height="647" showActions="false" showGrid="false">
   <node name="ID1" x="220" y="110" width="48" height="48">
     <transition name="Переход1"/>
     <textDecoration x="217" y="86"/>
