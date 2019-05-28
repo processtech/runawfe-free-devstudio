@@ -47,6 +47,7 @@ import ru.runa.gpd.BotCache;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
+import ru.runa.gpd.SubprocessMap;
 import ru.runa.gpd.editor.BotTaskEditor;
 import ru.runa.gpd.editor.ProcessEditorBase;
 import ru.runa.gpd.editor.gef.GEFProcessEditor;
@@ -372,7 +373,15 @@ public class WorkspaceOperations {
                 openProcessDefinition(definitionFile);
             }
         } else {
-            IFile definitionFile = ProcessCache.getFirstProcessDefinitionFile(subprocess.getSubProcessName());
+            IFile definitionFile = null;
+            String value = SubprocessMap.get(subprocess.getQualifiedId());
+            if (value != null) {
+                definitionFile = (IFile) ResourcesPlugin.getWorkspace().getRoot()
+                        .findMember(value + "/" + ParContentProvider.PROCESS_DEFINITION_FILE_NAME);
+            }
+            if (definitionFile == null) {
+                definitionFile = ProcessCache.getFirstProcessDefinitionFile(subprocess.getSubProcessName(), null);
+            }
             if (definitionFile != null) {
                 openProcessDefinition(definitionFile);
             }
