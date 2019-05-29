@@ -39,7 +39,7 @@ public class VariableTypeSupportHashModel extends SimpleHash {
         if (VariableFormatRegistry.isAssignableFrom("ru.runa.wfe.user.Group", javaClassName)) {
             addPropertyDescriptor(properties, variable, "ldapGroupName");
         }
-        if (VariableFormatRegistry.isAssignableFrom("ru.runa.wfe.var.FileVariable", javaClassName)) {
+        if (VariableFormatRegistry.isAssignableFrom("ru.runa.wfe.var.file.FileVariable", javaClassName)) {
             addPropertyDescriptor(properties, variable, "name");
             addPropertyDescriptor(properties, variable, "contentType");
             addPropertyDescriptor(properties, variable, "dataLength");

@@ -28,7 +28,7 @@ public class FormSupportServlet extends HttpServlet {
                     filterClassName = Boolean.class.getName();
                 }
                 if ("file".equals(request.getParameter("elementType"))) {
-                    filterClassName = "ru.runa.wfe.var.FileVariable";
+                    filterClassName = "ru.runa.wfe.var.file.FileVariable";
                 }
                 List<String> variableNames = FormEditor.getCurrent().getVariableNames(filterClassName);
                 Collections.sort(variableNames);

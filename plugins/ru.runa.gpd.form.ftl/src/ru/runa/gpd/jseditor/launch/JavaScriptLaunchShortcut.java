@@ -1,7 +1,6 @@
 package ru.runa.gpd.jseditor.launch;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
@@ -80,17 +79,11 @@ public class JavaScriptLaunchShortcut implements ILaunchShortcut {
 		try {
 			HTMLProjectParams params = new HTMLProjectParams(file.getProject());
 			String[] javaScripts = params.getJavaScripts();
-			List includes = new ArrayList();
-			for(int i=0;i<javaScripts.length;i++){
-				includes.add(javaScripts[i]);
-			}
-			
-			wc.setAttribute(JavaScriptLaunchConstants.ATTR_JAVASCRIPT_INCLUDES, includes);
+			wc.setAttribute(JavaScriptLaunchConstants.ATTR_JAVASCRIPT_INCLUDES, Arrays.asList(javaScripts));
 		} catch(Exception ex){
 			HTMLPlugin.logException(ex);
 		}
 		
 		return wc.doSave();
 	}
-
 }

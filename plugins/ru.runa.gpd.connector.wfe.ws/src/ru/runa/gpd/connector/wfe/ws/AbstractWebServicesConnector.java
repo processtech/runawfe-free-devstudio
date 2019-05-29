@@ -126,9 +126,9 @@ public abstract class AbstractWebServicesConnector extends WFEServerConnector {
 
     @Override
     public Map<String, Boolean> getExecutors() {
-        List executors = getExecutorService().getExecutors(getUser(), null);
+        List<WfExecutor> executors = getExecutorService().getExecutors(getUser(), null);
         Map<String, Boolean> result = Maps.newHashMapWithExpectedSize(executors.size());
-        for (Executor executor : (List<WfExecutor>) executors) {
+        for (Executor executor : executors) {
             // group sign
             result.put(executor.getName(), executor.getFullName() == null);
         }
@@ -177,13 +177,13 @@ public abstract class AbstractWebServicesConnector extends WFEServerConnector {
 
     @Override
     public byte[] getProcessDefinitionArchive(WfDefinition definition) {
-        return getDefinitionService().getProcessDefinitionFile(getUser(), definition.getId(), "par");
+        return getDefinitionService().getProcessDefinitionFile(getUser(), definition.getVersionId(), "par");
     }
 
     @Override
     public WfDefinition deployProcessDefinitionArchive(byte[] par) {
         try {
-            return WfDefinitionAdapter.toDTO(getDefinitionService().deployProcessDefinition(getUser(), par, Lists.newArrayList("GPD")));
+            return WfDefinitionAdapter.toDTO(getDefinitionService().deployProcessDefinition(getUser(), par, Lists.newArrayList("GPD"), null));
         } catch (Exception e) {
             if (e.getMessage() != null && (e.getMessage().contains("DefinitionAlreadyExistException") || e.getMessage().contains("already exists"))) {
                 throw new DefinitionAlreadyExistException("");
@@ -205,7 +205,7 @@ public abstract class AbstractWebServicesConnector extends WFEServerConnector {
                 throw new DefinitionDoesNotExistException(String.valueOf(definitionId));
             }
             if (e.getMessage() != null && e.getMessage().contains("DefinitionNameMismatchException")) {
-                throw new DefinitionNameMismatchException(e.getMessage(), "", "");
+                throw new DefinitionNameMismatchException("", "");
             }
             throw Throwables.propagate(e);
         }
@@ -214,7 +214,7 @@ public abstract class AbstractWebServicesConnector extends WFEServerConnector {
     @Override
     public WfDefinition redeployProcessDefinitionArchive(Long definitionId, byte[] par, List<String> types) {
         try {
-            return WfDefinitionAdapter.toDTO(getDefinitionService().redeployProcessDefinition(getUser(), definitionId, par, types));
+            return WfDefinitionAdapter.toDTO(getDefinitionService().redeployProcessDefinition(getUser(), definitionId, par, types, null));
         } catch (Exception e) {
             if (e.getMessage() != null && e.getMessage().contains("DefinitionDoesNotExistException")) {
                 throw new DefinitionDoesNotExistException(String.valueOf(definitionId));
@@ -224,7 +224,7 @@ public abstract class AbstractWebServicesConnector extends WFEServerConnector {
                 throw new DefinitionDoesNotExistException(String.valueOf(definitionId));
             }
             if (e.getMessage() != null && e.getMessage().contains("DefinitionNameMismatchException")) {
-                throw new DefinitionNameMismatchException(e.getMessage(), "", "");
+                throw new DefinitionNameMismatchException("", "");
             }
             throw Throwables.propagate(e);
         }

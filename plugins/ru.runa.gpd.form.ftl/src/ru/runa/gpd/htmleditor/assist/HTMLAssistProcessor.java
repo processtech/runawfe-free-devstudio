@@ -40,9 +40,9 @@ public class HTMLAssistProcessor extends HTMLTemplateAssistProcessor { /*
     private final Image attrImage;
     private final Image valueImage;
     private boolean assistCloseTag = true;
-    private List customAttrs = CustomAttribute.loadFromPreference(false);
-    private List customElems = CustomElement.loadFromPreference(false);
-    private final Set customElemNames = new HashSet();
+    private List<CustomAttribute> customAttrs = CustomAttribute.loadFromPreference(false);
+    private List<CustomElement> customElems = CustomElement.loadFromPreference(false);
+    private final Set<String> customElemNames = new HashSet<>();
     protected CSSAssistProcessor cssAssist = new CSSAssistProcessor();
 
     private int offset;
@@ -110,7 +110,7 @@ public class HTMLAssistProcessor extends HTMLTemplateAssistProcessor { /*
      * 
      * @return List of TagInfo
      */
-    protected List getTagList() {
+    protected List<TagInfo> getTagList() {
         return TagDefinition.getTagInfoAsList();
     }
 
@@ -122,9 +122,9 @@ public class HTMLAssistProcessor extends HTMLTemplateAssistProcessor { /*
      * @return TagInfo
      */
     protected TagInfo getTagInfo(String name) {
-        List tagList = TagDefinition.getTagInfoAsList();
+        List<TagInfo> tagList = TagDefinition.getTagInfoAsList();
         for (int i = 0; i < tagList.size(); i++) {
-            TagInfo info = (TagInfo) tagList.get(i);
+            TagInfo info = tagList.get(i);
             if (info.getTagName().equals(name)) {
                 return info;
             }
@@ -163,8 +163,8 @@ public class HTMLAssistProcessor extends HTMLTemplateAssistProcessor { /*
         this.offset = documentOffset;
         this.doc = new FuzzyXMLParser().parse(viewer.getDocument().get());
 
-        List list = new ArrayList();
-        List tagList = getTagList();
+        List<ICompletionProposal> list = new ArrayList<ICompletionProposal>();
+        List<TagInfo> tagList = getTagList();
 
         // attribute value
         if ((word.startsWith("\"") && (word.length() == 1 || !word.endsWith("\""))) || (word.startsWith("'") && (word.length() == 1 || !word.endsWith("\'")))) {
@@ -186,7 +186,7 @@ public class HTMLAssistProcessor extends HTMLTemplateAssistProcessor { /*
         } else if (word.startsWith("<") && !word.equals("</")) {
             if (supportTagRelation()) {
                 TagInfo parent = getTagInfo(last);
-                tagList = new ArrayList();
+                tagList = new ArrayList<>();
                 if (parent != null) {
                     String[] childNames = parent.getChildTagNames();
                     for (int i = 0; i < childNames.length; i++) {
@@ -246,7 +246,7 @@ public class HTMLAssistProcessor extends HTMLTemplateAssistProcessor { /*
             }
             // custom elements
             for (int i = 0; i < customElems.size(); i++) {
-                CustomElement element = (CustomElement) customElems.get(i);
+                CustomElement element = customElems.get(i);
                 if ((element.getAssistString().toLowerCase()).indexOf(word) == 0) {
                     int position = element.getAssistString().indexOf('"');
                     if (position == -1) {
@@ -283,7 +283,7 @@ public class HTMLAssistProcessor extends HTMLTemplateAssistProcessor { /*
             }
             // custom attributes
             for (int i = 0; i < customAttrs.size(); i++) {
-                CustomAttribute attrInfo = (CustomAttribute) customAttrs.get(i);
+                CustomAttribute attrInfo = customAttrs.get(i);
                 if (attrInfo.getTargetTag().equals("*") || attrInfo.getTargetTag().equals(tagName)) {
                     if (tagName.indexOf(":") < 0 || customElemNames.contains(tagName)) {
                         list.add(new CompletionProposal(attrInfo.getAttributeName() + "=\"\"", documentOffset - word.length(), word.length(),
@@ -340,7 +340,7 @@ public class HTMLAssistProcessor extends HTMLTemplateAssistProcessor { /*
      */
     protected String[] getLastWord(String text) {
         StringBuffer sb = new StringBuffer();
-        Stack stack = new Stack();
+        Stack<String> stack = new Stack<>();
         String word = "";
         String prevTag = "";
         String lastTag = "";
@@ -476,9 +476,7 @@ public class HTMLAssistProcessor extends HTMLTemplateAssistProcessor { /*
 
         customElemNames.clear();
         for (int i = 0; i < customElems.size(); i++) {
-            customElemNames.add(((CustomElement) customElems.get(i)).getDisplayName());
+            customElemNames.add(customElems.get(i).getDisplayName());
         }
-
     }
-
 }

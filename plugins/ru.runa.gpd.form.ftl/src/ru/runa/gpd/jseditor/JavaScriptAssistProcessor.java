@@ -37,7 +37,7 @@ import ru.runa.gpd.jseditor.launch.JavaScriptLibraryTable;
  */
 public class JavaScriptAssistProcessor extends HTMLTemplateAssistProcessor { /* implements IContentAssistProcessor {*/
 	
-	private static List staticAssistInfo = new ArrayList();
+	private static List<AssistInfo> staticAssistInfo = new ArrayList<>();
 	
 	// assist proposal types
 	private static final int VARIABLE =  0;
@@ -62,7 +62,7 @@ public class JavaScriptAssistProcessor extends HTMLTemplateAssistProcessor { /* 
 			"Function", "Math", "NativeError", "Number", "Object", "RegExp", "String"
 	};
 	
-	private static Map STATIC_MEMBERS = new HashMap();
+	private static Map<String, AssistInfo[]> STATIC_MEMBERS = new HashMap<>();
 	
 	static {
 //		// add keyword to static assist informations
@@ -127,14 +127,14 @@ public class JavaScriptAssistProcessor extends HTMLTemplateAssistProcessor { /* 
 		STATIC_MEMBERS.put("Object", object);
 	}
 	
-	private List functions = new ArrayList();
+	private List<AssistInfo> functions = new ArrayList<>();
 	
 	protected String getSource(ITextViewer viewer){
 		return viewer.getDocument().get();
 	}
 	
 	public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int offset) {
-		List proposal = new ArrayList();
+		List<ICompletionProposal> proposal = new ArrayList<ICompletionProposal>();
 		String source = getSource(viewer);
 		
 		String[] words = getLastWord(viewer, offset);
@@ -143,21 +143,20 @@ public class JavaScriptAssistProcessor extends HTMLTemplateAssistProcessor { /* 
 		
 		if(last.endsWith(".")){
 			String objName = last.substring(0, last.length()-1);
-			AssistInfo[] info = (AssistInfo[])STATIC_MEMBERS.get(objName);
-			if(info==null && !isNumeric(objName)){
-				info = (AssistInfo[])STATIC_MEMBERS.get("Object");
+			AssistInfo[] infos = STATIC_MEMBERS.get(objName);
+			if(infos==null && !isNumeric(objName)){
+				infos = STATIC_MEMBERS.get("Object");
 			}
-			if(info!=null){
-				for(int i=0;i<info.length;i++){
-					if(info[i].replaceString.startsWith(word)){
-						proposal.add(info[i].createCompletionProposal(offset, word));
+			if(infos!=null) {
+				for(AssistInfo info : infos){
+					if(info.replaceString.startsWith(word)){
+						proposal.add(info.createCompletionProposal(offset, word));
 					}
 				}
 			}
 		} else {
-			for(int i=0;i<staticAssistInfo.size();i++){
-				AssistInfo info = (AssistInfo)staticAssistInfo.get(i);
-				if(info.replaceString.startsWith(word)){
+			for (AssistInfo info : staticAssistInfo) {
+				if (info.replaceString.startsWith(word)) {
 					proposal.add(info.createCompletionProposal(offset, word));
 				}
 			}
@@ -195,9 +194,8 @@ public class JavaScriptAssistProcessor extends HTMLTemplateAssistProcessor { /* 
 			}
 		}
 		
-		for(int i=0;i<functions.size();i++){
-			AssistInfo info = (AssistInfo)functions.get(i);
-			if(info.replaceString.startsWith(word)){
+		for (AssistInfo info : functions) {
+			if (info.replaceString.startsWith(word)) {
 				proposal.add(info.createCompletionProposal(offset, word));
 			}
 		}
@@ -293,10 +291,6 @@ public class JavaScriptAssistProcessor extends HTMLTemplateAssistProcessor { /* 
 		private String displayString;
 		private String replaceString;
 		
-		public AssistInfo(int type, String string){
-			this(type, string, string);
-		}
-		
 		public AssistInfo(int type, String string, int position){
 			this(type, string, string, position);
 		}
@@ -382,8 +376,7 @@ public class JavaScriptAssistProcessor extends HTMLTemplateAssistProcessor { /* 
 						} else{
 							position = replace.length() - 1;
 						}
-						functions.add(new AssistInfo(
-								FUNCTION, elements[j].toString(), replace, position));
+						functions.add(new AssistInfo(FUNCTION, elements[j].toString(), replace, position));
 					}
 				}
 			}
@@ -391,5 +384,4 @@ public class JavaScriptAssistProcessor extends HTMLTemplateAssistProcessor { /* 
 			HTMLPlugin.logException(ex);
 		}
 	}
-	
 }

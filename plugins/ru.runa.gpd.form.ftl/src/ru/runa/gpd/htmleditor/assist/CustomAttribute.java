@@ -37,20 +37,20 @@ public class CustomAttribute {
 		this.targetTag = targetTag;
 	}
 	
-	public static List loadFromPreference(boolean defaults){
+	public static List<CustomAttribute> loadFromPreference(boolean defaults){
 		IPreferenceStore store = EditorsPlugin.getDefault().getPreferenceStore();
 		String value = null;
-		if(defaults){
+		if (defaults) {
 			value = store.getDefaultString(HTMLPlugin.PREF_CUSTOM_ATTRS);
 		} else {
 			value = store.getString(HTMLPlugin.PREF_CUSTOM_ATTRS);
 		}
-		List list = new ArrayList();
-		if(value!=null){
+		List<CustomAttribute> list = new ArrayList<>();
+		if (value != null) {
 			String[] values = value.split("\n");
-			for(int i=0;i<values.length;i++){
+			for (int i = 0; i < values.length; i++) {
 				String[] split = values[i].split("\t");
-				if(split.length==2){
+				if (split.length == 2) {
 					list.add(new CustomAttribute(split[0], split[1]));
 				}
 			}
@@ -58,11 +58,11 @@ public class CustomAttribute {
 		return list;
 	}
 	
-	public static void saveToPreference(List list){
+	public static void saveToPreference(List<CustomAttribute> list) {
 		IPreferenceStore store = EditorsPlugin.getDefault().getPreferenceStore();
 		StringBuffer sb = new StringBuffer();
-		for(int i=0;i<list.size();i++){
-			CustomAttribute attrInfo = (CustomAttribute)list.get(i);
+		for (int i=0; i<list.size(); i++) {
+			CustomAttribute attrInfo = list.get(i);
 			sb.append(attrInfo.getTargetTag());
 			sb.append("\t");
 			sb.append(attrInfo.getAttributeName());

@@ -8,8 +8,8 @@ public class TagInfo {
 	private boolean hasBody;
 	private boolean emptyTag;
 	private String description;
-	private ArrayList attributes = new ArrayList();
-	private ArrayList children   = new ArrayList();
+	private ArrayList<AttributeInfo> attributes = new ArrayList<>();
+	private ArrayList<String> children   = new ArrayList<>();
 	
 	public static final int NONE  = 0;
 	public static final int EVENT = 1;
@@ -88,11 +88,10 @@ public class TagInfo {
 	 * Returns required attribute informations.
 	 * @return an array of required attribute information
 	 */
-	public AttributeInfo[] getRequiredAttributeInfo(){
-		ArrayList list = new ArrayList();
-		for(int i=0;i<attributes.size();i++){
-			AttributeInfo info = (AttributeInfo)attributes.get(i);
-			if(info.isRequired()){
+	public AttributeInfo[] getRequiredAttributeInfo() {
+		ArrayList<AttributeInfo> list = new ArrayList<>();
+		for (AttributeInfo info : attributes) {
+			if (info.isRequired()) {
 				list.add(info);
 			}
 		}
@@ -105,8 +104,7 @@ public class TagInfo {
 	 * @return an attribute information specified by an argument.
 	 */
 	public AttributeInfo getAttributeInfo(String name){
-		for(int i=0;i<attributes.size();i++){
-			AttributeInfo info = (AttributeInfo)attributes.get(i);
+		for (AttributeInfo info : attributes) {
 			if(info.getAttributeName().equals(name)){
 				return info;
 			}
@@ -133,9 +131,9 @@ public class TagInfo {
 	}
 	
 	public boolean equals(Object obj){
-		if(obj instanceof TagInfo){
+		if (obj instanceof TagInfo) {
 			TagInfo tagInfo = (TagInfo)obj;
-			if(tagInfo.getTagName().equals(getTagName())){
+			if (tagInfo.getTagName().equals(getTagName())) {
 				return true;
 			}
 		}
@@ -148,6 +146,5 @@ public class TagInfo {
 
 	public void setDescription(String description) {
 		this.description = description;
-	}
-	
+	}	
 }
