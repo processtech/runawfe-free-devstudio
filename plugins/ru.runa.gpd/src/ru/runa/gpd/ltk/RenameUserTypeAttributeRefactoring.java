@@ -1,23 +1,20 @@
 package ru.runa.gpd.ltk;
 
+import com.google.common.base.Throwables;
+import com.google.common.collect.Lists;
 import java.util.List;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.ltk.core.refactoring.CompositeChange;
 import org.eclipse.ltk.core.refactoring.Refactoring;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.gpd.util.VariableUtils;
-
-import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
 
 public class RenameUserTypeAttributeRefactoring extends Refactoring {
     private final IFile definitionFile;
@@ -69,14 +66,14 @@ public class RenameUserTypeAttributeRefactoring extends Refactoring {
         return finalStatus;
     }
 
-    private CompositeChange cashedChange = null;
+    private CompositeChange cachedChange = null;
 
     @Override
     public CompositeChange createChange(IProgressMonitor progressMonitor) throws CoreException {
-        if (cashedChange == null) {
-            cashedChange = RefactoringUtils.createChangeUserTypeAttribute(getName(), progressMonitor, refactorings, finalStatus);
+        if (cachedChange == null) {
+            cachedChange = RefactoringUtils.createChangeUserTypeAttribute(getName(), progressMonitor, refactorings, finalStatus);
         }
-        return cashedChange;
+        return cachedChange;
     }
 
     public boolean isUserInteractionNeeded() {
