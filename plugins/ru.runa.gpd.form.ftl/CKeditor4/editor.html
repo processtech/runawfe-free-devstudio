@@ -35,7 +35,7 @@
 					markContent(editor);
 				});	
 			} catch (e) {
-				if (e.message != "ignore") {
+				if (e.message != "ignore" && (navigator.userAgent.indexOf("MSIE ") < 0 || e.name !== "TypeError" || e.number !== -2146823281)) {
 					alertError(e, "setHTML");
 				}				
 			}
