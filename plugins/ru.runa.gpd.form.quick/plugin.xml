@@ -60,4 +60,20 @@
          </parameter>
       </template>
    	</extension>
+
+    <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer class="ru.runa.gpd.quick.formeditor.settings.PreferenceInitializer"/>
+    </extension>
+
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+         category="gpd.pref.form"
+         class="ru.runa.gpd.quick.formeditor.settings.PreferencePage"
+         id="gpd.pref.quick.editor"
+         name="%FormType.quick">
+      </page>
+   </extension>
+
 </plugin>
