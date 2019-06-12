@@ -44,10 +44,10 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
 import ru.runa.gpd.BotCache;
-import ru.runa.gpd.GpdStore;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
+import ru.runa.gpd.SubprocessMap;
 import ru.runa.gpd.editor.BotTaskEditor;
 import ru.runa.gpd.editor.ProcessEditorBase;
 import ru.runa.gpd.editor.gef.GEFProcessEditor;
@@ -257,21 +257,16 @@ public class WorkspaceOperations {
                 // 2nd parameter save=false prevents "Save changed files?" dialog: they are saved anyway.
                 page.closeEditors(editorRefsToClose.toArray(new IEditorReference[editorRefsToClose.size()]), false);
             }
-
-            // Do it BEFORE oldResource.move().
             ProcessCache.processDefinitionWasDeleted(oldDefinitionFile);
-
-            IPath oldPath = oldDefinitionFolder.getFullPath();
             IPath newPath = oldDefinitionFolder.getParent().getFolder(new Path(newName)).getFullPath();
-            IResource oldResource = ResourcesPlugin.getWorkspace().getRoot().findMember(oldPath);
-            // I use FORCE same as JDT's RenameJavaProjectChange does. Not sure what it does, but DS does not provide any other opportunity (including F5) anyway.
-            oldResource.move(newPath, IResource.FORCE | IResource.SHALLOW, new NullProgressMonitor());
-
             IFolder newDefinitionFolder = ResourcesPlugin.getWorkspace().getRoot().getFolder(newPath);
+            oldDefinitionFolder.copy(newDefinitionFolder.getFullPath(), true, new NullProgressMonitor());
             IFile newDefinitionFile = IOUtils.getProcessDefinitionFile(newDefinitionFolder);
+            definition = ProcessCache.getProcessDefinition(newDefinitionFile);
             definition.setName(newName);
             saveProcessDefinition(newDefinitionFile, definition);
             ProcessCache.newProcessDefinitionWasCreated(newDefinitionFile);
+            oldDefinitionFolder.delete(true, new NullProgressMonitor());
             refreshResource(newDefinitionFolder);
         } catch (Exception e) {
             PluginLogger.logError(e);
@@ -380,13 +375,13 @@ public class WorkspaceOperations {
             }
         } else {
             IFile definitionFile = null;
-            String value = GpdStore.get(subprocess.getQualifiedId());
+            String value = SubprocessMap.get(subprocess.getQualifiedId());
             if (value != null) {
                 definitionFile = (IFile) ResourcesPlugin.getWorkspace().getRoot()
                         .findMember(value + "/" + ParContentProvider.PROCESS_DEFINITION_FILE_NAME);
             }
             if (definitionFile == null) {
-                definitionFile = ProcessCache.getFirstProcessDefinitionFile(subprocess.getSubProcessName());
+                definitionFile = ProcessCache.getFirstProcessDefinitionFile(subprocess.getSubProcessName(), null);
             }
             if (definitionFile != null) {
                 openProcessDefinition(definitionFile);

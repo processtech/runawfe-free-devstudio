@@ -33,9 +33,9 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.PlatformUI;
-import ru.runa.gpd.GpdStore;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.ProcessCache;
+import ru.runa.gpd.SubprocessMap;
 import ru.runa.gpd.lang.model.MultiSubprocess;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Subprocess;
@@ -98,7 +98,7 @@ public class SubprocessDialog extends Dialog {
         subprocessDefinitionCombo.setItems(getProcessDefinitionNames());
         subprocessDefinitionCombo.setVisibleItemCount(10);
         if (subprocessName != null) {
-            String value = GpdStore.get(subprocess.getQualifiedId());
+            String value = SubprocessMap.get(subprocess.getQualifiedId());
             if (value != null) {
                 IPath subprocessPath = new Path(value);
                 if (ResourcesPlugin.getWorkspace().getRoot().exists(subprocessPath)) {
@@ -106,7 +106,8 @@ public class SubprocessDialog extends Dialog {
                     subprocessDefinitionCombo.setText(itemText);
                 }
             } else {
-                IFile subprocessFile = ProcessCache.getFirstProcessDefinitionFile(subprocessName);
+                IFile subprocessFile = ProcessCache.getFirstProcessDefinitionFile(subprocessName,
+                        subprocess.getProcessDefinition().getFile().getProject().getName());
                 if (subprocessFile != null) {
                     IPath subprocessPath = subprocessFile.getFullPath().removeLastSegments(1);
                     String itemText = subprocessPath.lastSegment() + labelDelimiter + subprocessPath.removeLastSegments(1);
@@ -161,7 +162,7 @@ public class SubprocessDialog extends Dialog {
         if (index > 0) {
             subprocessName = text.substring(0, index);
             String subprocessFolderName = text.substring(index + labelDelimiter.length()) + "/" + subprocessName;
-            GpdStore.set(subprocess.getQualifiedId(), subprocessFolderName);
+            SubprocessMap.set(subprocess.getQualifiedId(), subprocessFolderName);
             validateVariableMappings(subprocessFolderName);
         }
     }
@@ -392,7 +393,8 @@ public class SubprocessDialog extends Dialog {
     }
 
     private List<String> getProcessVariablesNames(String name) {
-        ProcessDefinition definition = ProcessCache.getFirstProcessDefinition(name);
+        ProcessDefinition definition = ProcessCache.getFirstProcessDefinition(name,
+                subprocess.getProcessDefinition().getFile().getProject().getName());
         if (definition != null) {
             return definition.getVariableNames(true);
         }
@@ -400,7 +402,8 @@ public class SubprocessDialog extends Dialog {
     }
 
     private boolean isListVariable(String name, String variableName) {
-        ProcessDefinition definition = ProcessCache.getFirstProcessDefinition(name);
+        ProcessDefinition definition = ProcessCache.getFirstProcessDefinition(name,
+                subprocess.getProcessDefinition().getFile().getProject().getName());
         if (definition != null) {
             Variable variable = VariableUtils.getVariableByName(definition, variableName);
             if (variable != null) {
