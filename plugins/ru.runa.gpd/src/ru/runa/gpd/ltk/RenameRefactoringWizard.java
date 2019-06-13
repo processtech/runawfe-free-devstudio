@@ -53,17 +53,19 @@ public class RenameRefactoringWizard extends RefactoringWizard {
         Map<IFile, MultiTextEdit> textFileEditCache = new HashMap<>();
         try {
             for (Change change : ((CompositeChange) refactoring.createChange(null)).getChildren()) {
-                for (Change childChange : ((CompositeChange) change).getChildren()) {
-                    TextFileChange textFileChange = (TextFileChange) childChange;
-                    MultiTextEdit multiTextEdit = (MultiTextEdit) textFileChange.getEdit();
-                    IFile file = textFileChange.getFile();
-                    if (textFileEditCache.containsKey(file)) {
-                        for (TextEdit textEdit : multiTextEdit.getChildren()) {
-                            multiTextEdit.removeChild(textEdit);
-                            textFileEditCache.get(file).addChild(textEdit);
+                if (change instanceof CompositeChange) {
+                    for (Change childChange : ((CompositeChange) change).getChildren()) {
+                        TextFileChange textFileChange = (TextFileChange) childChange;
+                        MultiTextEdit multiTextEdit = (MultiTextEdit) textFileChange.getEdit();
+                        IFile file = textFileChange.getFile();
+                        if (textFileEditCache.containsKey(file)) {
+                            for (TextEdit textEdit : multiTextEdit.getChildren()) {
+                                multiTextEdit.removeChild(textEdit);
+                                textFileEditCache.get(file).addChild(textEdit);
+                            }
+                        } else {
+                            textFileEditCache.put(file, multiTextEdit);
                         }
-                    } else {
-                        textFileEditCache.put(file, multiTextEdit);
                     }
                 }
             }
