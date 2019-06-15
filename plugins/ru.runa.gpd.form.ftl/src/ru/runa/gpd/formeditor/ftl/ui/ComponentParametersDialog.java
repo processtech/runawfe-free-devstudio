@@ -3,11 +3,14 @@ package ru.runa.gpd.formeditor.ftl.ui;
 import com.google.common.collect.Maps;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.viewers.ComboViewer;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -19,11 +22,14 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import ru.runa.gpd.EditorsPlugin;
+import ru.runa.gpd.formeditor.ftl.ComboOption;
 import ru.runa.gpd.formeditor.ftl.Component;
 import ru.runa.gpd.formeditor.ftl.ComponentParameter;
 import ru.runa.gpd.formeditor.ftl.ComponentType;
 import ru.runa.gpd.formeditor.ftl.ComponentTypeRegistry;
 import ru.runa.gpd.formeditor.resources.Messages;
+import ru.runa.gpd.formeditor.settings.PreferencePage;
 import ru.runa.gpd.ui.custom.SWTUtils;
 import ru.runa.gpd.ui.dialog.ChooseComponentLabelDialog;
 
@@ -126,6 +132,22 @@ public class ComponentParametersDialog extends Dialog {
                         }
                     });
             parameterEditors.put(componentParameter, editor);
+            if (component.getType().getId().equals("DisplayVariable") && editor instanceof ComboViewer) {
+                ComboViewer comboViewer = (ComboViewer) editor;
+                if (comboViewer.getSelection().isEmpty()) {
+                    setDefaultDisplayFormat(comboViewer);
+                }
+            }
+        }
+    }
+
+    private void setDefaultDisplayFormat(ComboViewer comboViewer) {
+        String defaultValue = EditorsPlugin.getDefault().getPreferenceStore().getString(PreferencePage.P_FORM_DEFAULT_DISPLAY_FORMAT);
+        for (ComboOption option : (List<ComboOption>) comboViewer.getInput()) {
+            if (option.getValue().equals(defaultValue)) {
+                comboViewer.setSelection(new StructuredSelection(option));
+                return;
+            }
         }
     }
 

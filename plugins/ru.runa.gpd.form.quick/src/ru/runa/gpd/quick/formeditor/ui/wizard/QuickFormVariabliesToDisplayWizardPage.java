@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
@@ -27,15 +26,16 @@ import org.eclipse.ui.forms.events.ExpansionAdapter;
 import org.eclipse.ui.forms.events.ExpansionEvent;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.forms.widgets.Section;
-
 import ru.runa.gpd.formeditor.ftl.ComponentParameter;
 import ru.runa.gpd.formeditor.ftl.ComponentType;
 import ru.runa.gpd.formeditor.ftl.ComponentTypeRegistry;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.Variable;
+import ru.runa.gpd.quick.Activator;
 import ru.runa.gpd.quick.Messages;
 import ru.runa.gpd.quick.formeditor.QuickFormGpdVariable;
 import ru.runa.gpd.quick.formeditor.QuickFormType;
+import ru.runa.gpd.quick.formeditor.settings.PreferencePage;
 import ru.runa.gpd.quick.formeditor.ui.wizard.QuickFormVariableWizardPage.SelectItem;
 import ru.runa.gpd.quick.tag.FreemarkerConfigurationGpdWrap;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
@@ -134,7 +134,8 @@ public class QuickFormVariabliesToDisplayWizardPage extends WizardPage {
                 paramVariable.setScriptingName(variable.getScriptingName());
                 paramVariable.setDescription(variable.getDescription());
                 paramVariable.setFormatLabel(variable.getFormatLabel());
-                paramVariable.setParams(new String[] { "false" });
+                paramVariable.setParams(
+                        new String[] { Activator.getDefault().getPreferenceStore().getString(PreferencePage.P_FORM_DEFAULT_DISPLAY_FORMAT) });
             }
             createCheckbox(checkboxesArea, paramVariable);
         }
@@ -145,7 +146,7 @@ public class QuickFormVariabliesToDisplayWizardPage extends WizardPage {
 
     private void createCheckbox(final Composite parent, final QuickFormGpdVariable variableDef) {
 
-        Section section = new Section(parent, ExpandableComposite.COMPACT | ExpandableComposite.TWISTIE);
+        Section section = new Section(parent, ExpandableComposite.COMPACT | ExpandableComposite.TWISTIE | ExpandableComposite.EXPANDED);
         section.marginHeight = 5;
         section.marginWidth = 5;
         section.setText(variableDef.getName());
@@ -155,9 +156,6 @@ public class QuickFormVariabliesToDisplayWizardPage extends WizardPage {
         section.setLayoutData(gridData);
         Composite clientArea = new Composite(section, SWT.NONE);
         section.setClient(clientArea);
-        if (sectionState.get(variableDef.getName()) != null) {
-            section.setExpanded(sectionState.get(variableDef.getName()));
-        }
         gridData = new GridData(GridData.FILL_HORIZONTAL);
         clientArea.setLayoutData(gridData);
         GridLayout layout = new GridLayout(3, false);

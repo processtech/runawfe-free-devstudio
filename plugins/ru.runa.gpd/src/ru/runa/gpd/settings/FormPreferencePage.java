@@ -9,7 +9,6 @@ import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
-
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
 

@@ -1,0 +1,67 @@
+/** from divContainer.css template */
+.form-container { 
+	margin: 0px; 
+	padding: 10px; 
+	border: #888 1px solid; 
+	font: 100% Arial,Helvetica,sans-serif; 
+	color: #111; 
+	background-color: #f3f3f3;
+}
+p.legend { 
+	margin-bottom: 1em; 
+	margin-left: 10%; 
+	text-align: left;
+	font-size: 1.2em;
+}
+.form-container { 
+	margin: 0; 
+}
+.form-container fieldset { 
+	margin: 10px 0; 
+	padding: 10px; 
+}
+.form-container legend { 
+	color: #666; 
+}
+.form-container fieldset div { 
+	padding: 0.25em 0; 
+}
+.form-container label { 
+	margin-right: 10px; 
+	padding-right: 10px; 
+	width: 150px; 
+	display: block; 
+	float: left; 
+	text-align: right; 
+	position: relative; 
+}
+.form-container label em { 
+	position: absolute; right: 0; 
+	font-size: 120%; 
+	font-style: normal; color: #C00; 
+}
+.form-container input:focus, .form-container textarea:focus { 
+	background-color: #FFC; 
+	border-color: #FC6; 
+}
+.form-container input {
+	width: 300px;
+	padding-left: 5px;
+}
+.form-container select {
+	width: 300px;
+}
+.form-container textarea {
+	width: 300px;
+	height: 100px;
+	padding: 5px;
+	overflow: auto;
+}
+.form-container .controlset label, .form-container .controlset input { 
+	display: inline; 
+	float: none; 
+	width: auto;
+}
+.form-container .controlset { 
+	margin-left: 170px; 
+}
