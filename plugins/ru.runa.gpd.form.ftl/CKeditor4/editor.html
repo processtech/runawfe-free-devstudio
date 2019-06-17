@@ -10,6 +10,10 @@
 		<script type="text/javascript">
 		var displayedErrors = new Object();
 		var modificationFlagSent = true;
+		var ignoreErrors = false;
+		function setIgnoreErrors(ignore) {
+			ignoreErrors = ignore;
+		}
 		function alertError(e, method) {
 			if (displayedErrors[e.message] == undefined) {
 				displayedErrors[e.message] = true;
@@ -20,7 +24,10 @@
 				errorInfo += "On method: " + method + "\n";
 				errorInfo += "-------\n";
 				errorInfo += "Stack: " + e.stack + "\n";
-				alert(errorInfo);
+				logErrorCallback(errorInfo);
+				if (!ignoreErrors) {
+					alert(errorInfo);
+				}
 			}
 		}
 		function getHTML() {
@@ -35,7 +42,7 @@
 					markContent(editor);
 				});	
 			} catch (e) {
-				if (e.message != "ignore" && (navigator.userAgent.indexOf("MSIE 10") < 0 && navigator.userAgent.indexOf("Trident") < 0 || e.name != "TypeError" || e.number != -2146823281)) {
+				if (e.message != "ignore") {
 					alertError(e, "setHTML");
 				}				
 			}

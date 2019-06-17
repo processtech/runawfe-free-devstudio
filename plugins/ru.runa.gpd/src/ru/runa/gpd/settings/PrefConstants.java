@@ -27,6 +27,7 @@ public interface PrefConstants {
     public static final String P_FORM_WEB_SERVER_PORT = "editorWebPort";
     public static final String P_FORM_USE_EXTERNAL_EDITOR = "useExternalEditor";
     public static final String P_FORM_EXTERNAL_EDITOR_PATH = "externalEditorPath";
+    public static final String P_FORM_IGNORE_ERRORS_FROM_WEBPAGE = "ignoreErrorsFromWebPage";
     public static final String P_JOINT_FORM_EDITOR_SELECTED_PAGE = "jointEditorSelectedPage";
     public static final String P_JOINT_FORM_EDITOR_SELECTED_PAGE_FORM = "form";
     public static final String P_JOINT_FORM_EDITOR_SELECTED_PAGE_SCRIPT = "script";
