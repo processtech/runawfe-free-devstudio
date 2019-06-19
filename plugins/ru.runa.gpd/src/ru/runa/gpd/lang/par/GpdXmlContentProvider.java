@@ -1,14 +1,11 @@
 package ru.runa.gpd.lang.par;
 
-import static java.lang.Math.min;
-
+import com.google.common.collect.Lists;
 import java.util.List;
-
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
-
 import ru.runa.gpd.editor.graphiti.HasTextDecorator;
 import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.model.Action;
@@ -20,7 +17,7 @@ import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
 import ru.runa.gpd.util.XmlUtil;
 
-import com.google.common.collect.Lists;
+import static java.lang.Math.min;
 
 /**
  * Information saved in absolute coordinates for all elements.
@@ -123,17 +120,6 @@ public class GpdXmlContentProvider extends AuxContentProvider {
         if (definition.getLanguage() == Language.BPMN) {
             addAttribute(root, RENDERED, "graphiti");
         }
-        Rectangle definitionRectangle = definition.getConstraint();
-        if (definitionRectangle != null) {
-            if (definitionRectangle.x != 0) {
-                addAttribute(root, X, String.valueOf(definitionRectangle.x));
-            }
-            if (definitionRectangle.y != 0) {
-                addAttribute(root, Y, String.valueOf(definitionRectangle.y));
-            }
-            addAttribute(root, WIDTH, String.valueOf(definitionRectangle.width));
-            addAttribute(root, HEIGHT, String.valueOf(definitionRectangle.height));
-        }
         addAttribute(root, SHOW_ACTIONS, String.valueOf(definition.isShowActions()));
         addAttribute(root, SHOW_GRID, String.valueOf(definition.isShowGrid()));
         int xOffset = 0;
@@ -226,6 +212,17 @@ public class GpdXmlContentProvider extends AuxContentProvider {
                     addAttribute(pointDefinition, X, String.valueOf(decorationNode.getConstraint().x - xOffset));
                     addAttribute(pointDefinition, Y, String.valueOf(decorationNode.getConstraint().y - yOffset));
                 }
+            }
+            Rectangle definitionRectangle = definition.getConstraint();
+            if (definitionRectangle != null) {
+                if (definitionRectangle.x != 0) {
+                    addAttribute(root, X, String.valueOf(definitionRectangle.x - xOffset));
+                }
+                if (definitionRectangle.y != 0) {
+                    addAttribute(root, Y, String.valueOf(definitionRectangle.y - yOffset));
+                }
+                addAttribute(root, WIDTH, String.valueOf(definitionRectangle.width));
+                addAttribute(root, HEIGHT, String.valueOf(definitionRectangle.height));
             }
         }
         return document;
