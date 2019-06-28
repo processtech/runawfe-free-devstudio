@@ -36,6 +36,8 @@ public class FormPreferencePage extends FieldEditorPreferencePage implements IWo
         addField(new RadioGroupFieldEditor(P_FORM_DEFAULT_FCK_EDITOR, Localization.getString("pref.form.defaultFCKEditor"), 2, new String[][] {
                 { "FCKEditor 2", FORM_FCK_EDITOR }, { "CKEditor 4", FORM_CK_EDITOR4 } }, getFieldEditorParent()));
         addField(new StringFieldEditor(P_FORM_WEB_SERVER_PORT, Localization.getString("pref.connection.wfe.port"), getFieldEditorParent()));
+        addField(new BooleanFieldEditor(P_FORM_IGNORE_ERRORS_FROM_WEBPAGE, Localization.getString("pref.form.ignoreErrorsFromWebPage"),
+                getFieldEditorParent()));
     }
 
     @Override

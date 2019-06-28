@@ -49,6 +49,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.texteditor.ITextEditor;
+import ru.runa.gpd.Activator;
 import ru.runa.gpd.EditorsPlugin;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
@@ -73,6 +74,7 @@ import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.gpd.lang.par.ParContentProvider;
+import ru.runa.gpd.settings.PrefConstants;
 import ru.runa.gpd.ui.view.SelectionProvider;
 import ru.runa.gpd.util.EditorUtils;
 import ru.runa.gpd.util.IOUtils;
@@ -274,6 +276,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
             new OnLoadCallbackFunction(browser);
             new MarkEditorDirtyCallbackFunction(browser);
             new RefreshViewCallbackFunction(browser);
+            new LogErrorCallbackFunction(browser);
             browser.addProgressListener(new ProgressAdapter() {
                 @Override
                 public void completed(ProgressEvent event) {
@@ -636,6 +639,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
                 PluginLogger.logInfo("Invoked OnLoadCallbackFunction");
             }
             setBrowserLoaded(true);
+            browser.execute("setIgnoreErrors(" + Activator.getPrefBoolean(PrefConstants.P_FORM_IGNORE_ERRORS_FROM_WEBPAGE) + ")");
             return null;
         }
     }
@@ -662,6 +666,18 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
         @Override
         public Object function(Object[] arguments) {
             refreshView();
+            return null;
+        }
+    }
+
+    private class LogErrorCallbackFunction extends BrowserFunction {
+        public LogErrorCallbackFunction(Browser browser) {
+            super(browser, "logErrorCallback");
+        }
+
+        @Override
+        public Object function(Object[] arguments) {
+            PluginLogger.logErrorWithoutDialog((String) arguments[0]);
             return null;
         }
     }
