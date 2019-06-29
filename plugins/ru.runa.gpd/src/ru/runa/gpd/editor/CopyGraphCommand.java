@@ -112,7 +112,7 @@ public class CopyGraphCommand extends Command {
                 } else if (node instanceof Swimlane && targetDefinition.getSwimlaneByName(node.getName()) != null) {
                     continue;
                 }
-                NamedGraphElement copy = node.makeCopy(targetDefinition);
+                NamedGraphElement copy = (NamedGraphElement) node.makeCopy(targetDefinition);
                 adjustLocation(copy);
                 newElements.add(copy);
                 for (Variable variable : node.getUsedVariables(copyBuffer.getSourceFolder())) {
@@ -539,11 +539,22 @@ public class CopyGraphCommand extends Command {
 
         private void copyUserType(Variable srcVar) {
             if (srcVar.isComplex()) {
-                if (targetDefinition.getVariableUserType(srcVar.getUserType().getName()) == null) {
+                VariableUserType userType = targetDefinition.getVariableUserType(srcVar.getUserType().getName());
+                if (userType == null) {
                     targetDefinition.addVariableUserType(srcVar.getUserType().getCopy());
                     for (Variable v : srcVar.getUserType().getAttributes()) {
                         if (v.isComplex() || VariableUtils.isContainerVariable(v)) {
                             copyUserType(v);
+                        }
+                    }
+                } else {
+                    List<Variable> userTypeAttributes = userType.getAttributes();
+                    for (Variable v : srcVar.getUserType().getAttributes()) {
+                        if (!userTypeAttributes.contains(v)) {
+                            if (v.isComplex() || VariableUtils.isContainerVariable(v)) {
+                                copyUserType(v);
+                            }
+                            userType.addAttribute(v);
                         }
                     }
                 }

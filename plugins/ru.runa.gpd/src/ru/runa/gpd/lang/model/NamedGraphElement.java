@@ -65,10 +65,9 @@ public abstract class NamedGraphElement extends GraphElement implements Comparab
     }
 
     @Override
-    public NamedGraphElement makeCopy(GraphElement parent) {
-        NamedGraphElement copy = (NamedGraphElement) super.makeCopy(parent);
-        copy.setName(getName());
-        return copy;
+    protected void fillCopyCustomFields(GraphElement copy) {
+        super.fillCopyCustomFields(copy);
+        ((NamedGraphElement) copy).setName(getName());
     }
 
 }
