@@ -35,12 +35,9 @@ public class CreateElementFeature extends AbstractCreateFeature implements GEFCo
     public static final String CONNECTION_PROPERTY = "connectionContext";
     private NodeTypeDefinition nodeDefinition;
     private DiagramFeatureProvider featureProvider;
-
-    // Undo test
     private GraphElement graphElement;
     private List<Transition> leavingTransitions;
     private List<Transition> arrivingTransitions;
-    // Undo test
 
     public CreateElementFeature() {
         super(null, "", "");
@@ -85,10 +82,7 @@ public class CreateElementFeature extends AbstractCreateFeature implements GEFCo
 
     @Override
     public Object[] create(ICreateContext context) {
-        // Undo test
-        // GraphElement graphElement = getNodeDefinition().createElement(getProcessDefinition(), true);
         graphElement = getNodeDefinition().createElement(getProcessDefinition(), true);
-        // Undo test
         GraphElement parent = (GraphElement) getBusinessObjectForPictogramElement(context.getTargetContainer());
         if (graphElement instanceof Action) {
             if (context.getTargetConnection() != null) {
@@ -144,8 +138,6 @@ public class CreateElementFeature extends AbstractCreateFeature implements GEFCo
         element.setConstraint(new Rectangle(context.getX(), context.getY(), context.getWidth(), context.getHeight()));
     }
 
-    // Undo test
-
     @Override
     public boolean canUndo(IContext context) {
         return graphElement != null;
@@ -176,14 +168,8 @@ public class CreateElementFeature extends AbstractCreateFeature implements GEFCo
         } else if (graphElement instanceof Node) {
             Node node = (Node) graphElement;
             removeAndStoreTransitions(node);
-        } else if (graphElement instanceof Transition) {
-            Transition transition = (Transition) graphElement;
-            transition.getSource().removeLeavingTransition(transition);
-            return;
         }
         graphElement.getParent().removeChild(graphElement);
-        System.out.println("Undo complited");
-
     }
 
     private void removeAndStoreTransitions(Node node) {
@@ -205,17 +191,10 @@ public class CreateElementFeature extends AbstractCreateFeature implements GEFCo
     @Override
     public void preRedo(IContext context) {
         // TODO Auto-generated method stub
-
     }
 
     @Override
     public void postRedo(IContext context) {
-        if (graphElement instanceof Transition) {
-            Transition transition = (Transition) graphElement;
-            transition.getSource().addChild(transition);
-            return;
-        }
-
         if (graphElement instanceof TextDecorationNode) {
             TextDecorationNode textDecoration = (TextDecorationNode) graphElement;
             textDecoration.getTarget().getParent().addChild(textDecoration.getTarget());
@@ -226,7 +205,6 @@ public class CreateElementFeature extends AbstractCreateFeature implements GEFCo
         if (graphElement instanceof Node) {
             restoreTransitions();
         }
-        System.out.println("Redo complited");
     }
 
     private void restoreTransitions() {

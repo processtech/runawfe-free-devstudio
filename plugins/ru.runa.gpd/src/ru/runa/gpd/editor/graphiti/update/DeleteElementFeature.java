@@ -3,7 +3,7 @@ package ru.runa.gpd.editor.graphiti.update;
 import com.google.common.base.Strings;
 import java.text.MessageFormat;
 import java.util.List;
-import org.eclipse.graphiti.features.ICustomUndoableFeature;
+import org.eclipse.graphiti.features.ICustomUndoRedoFeature;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.IContext;
 import org.eclipse.graphiti.features.context.IDeleteContext;
@@ -26,7 +26,7 @@ import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
 import ru.runa.gpd.settings.PrefConstants;
 
-public class DeleteElementFeature extends DefaultDeleteFeature implements ICustomUndoableFeature {
+public class DeleteElementFeature extends DefaultDeleteFeature implements ICustomUndoRedoFeature {
 
     private static final String NAME = Localization.getString("DeleteElementFeature_1");
 
@@ -111,7 +111,7 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements ICusto
     }
 
     @Override
-    public void undo(IContext context) {
+    public void postUndo(IContext context) {
         if (element instanceof Transition) {
             Transition transition = (Transition) element;
             transition.getSource().addChild(transition);
@@ -136,7 +136,7 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements ICusto
     }
 
     @Override
-    public void redo(IContext context) {
+    public void postRedo(IContext context) {
         deleteBusinessObject(element);
     }
 
@@ -183,6 +183,18 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements ICusto
         if (element instanceof Action) {
             layoutPictogramElement((PictogramElement) context.getProperty("action-container"));
         }
+    }
+
+    @Override
+    public void preUndo(IContext context) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void preRedo(IContext context) {
+        // TODO Auto-generated method stub
+
     }
 
 }
