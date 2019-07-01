@@ -26,7 +26,9 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.ITextListener;
 import org.eclipse.jface.text.ITextSelection;
+import org.eclipse.jface.text.TextEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -101,6 +103,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
 
     private boolean dirty = false;
     private boolean browserLoaded = false;
+    private Object dirtySource = null;
     private static FormEditor lastInitializedInstance;
     private static boolean browserCreationErrorWasShownToUser;
 
@@ -260,9 +263,16 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
         }
     }
 
+    private ITextListener sourceEditorListener = new ITextListener() {
+
+        @Override
+        public void textChanged(TextEvent event) {
+            dirtySource = sourceEditor;
+        }
+    };
+
     @Override
     protected void createPages() {
-        sourceEditor = new HTMLSourceEditor(new HTMLConfiguration(EditorsPlugin.getDefault().getColorProvider()));
         int pageNumber = 0;
         try {
             browser = new Browser(getContainer(), SWT.NULL);
@@ -291,8 +301,10 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
             }
         }
         try {
+            sourceEditor = new HTMLSourceEditor(new HTMLConfiguration(EditorsPlugin.getDefault().getColorProvider()));
             addPage(sourceEditor, getEditorInput());
             setPageText(pageNumber++, Messages.getString("wysiwyg.source.tab_name"));
+            sourceEditor.getViewer().addTextListener(sourceEditorListener);
         } catch (Exception ex) {
             PluginLogger.logError(Messages.getString("wysiwyg.source.create_error"), ex);
         }
@@ -388,14 +400,16 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
     @Override
     public void doSave(IProgressMonitor monitor) {
         if (isDirty()) {
-            if (getActivePage() != 1 && isBrowserLoaded()) {
-                if (!syncBrowser2Editor()) {
-                    throw new InternalApplicationException(Messages.getString("wysiwyg.design.save_error"));
+            if (dirtySource == browser) {
+                if (isBrowserLoaded()) {
+                    if (!syncBrowser2Editor()) {
+                        throw new InternalApplicationException(Messages.getString("wysiwyg.design.save_error"));
+                    }
                 }
-            }
-            if (getActivePage() == 1) {
+            } else if (dirtySource == sourceEditor) {
                 syncEditor2Browser();
             }
+            dirtySource = null;
             sourceEditor.doSave(monitor);
             if (isBrowserLoaded()) {
                 browser.execute("setHTMLSaved()");
@@ -416,6 +430,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
 
     @Override
     public void dispose() {
+        sourceEditor.getViewer().removeTextListener(sourceEditorListener);
         firePropertyChange(CLOSED);
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
         super.dispose();
@@ -648,6 +663,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
 
         @Override
         public Object function(Object[] arguments) {
+            dirtySource = browser;
             setDirty(true, true);
             return null;
         }
