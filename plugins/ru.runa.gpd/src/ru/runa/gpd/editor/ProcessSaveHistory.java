@@ -9,6 +9,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +51,16 @@ public class ProcessSaveHistory {
             String outputFileName = historyFolder + File.separator + processDefinitionFile.getParent().getName() + '_'
                     + SAVEPOINT_SUFFIX_FORMAT.format(new Date()) + SAVEPOINT_EXTENSION;
             new ParExportOperation(resourcesToExport, new FileOutputStream(outputFileName)).run(null);
+            File[] savepoints = historyFolder.listFiles();
+            if (savepoints != null) {
+                int savepointNumber = Activator.getDefault().getPreferenceStore().getInt(PrefConstants.P_PROCESS_SAVEPOINT_NUMBER);
+                if (savepoints.length > savepointNumber) {
+                    Arrays.sort(savepoints);
+                    for (int i = 0; i < savepoints.length - savepointNumber; i++) {
+                        savepoints[i].delete();
+                    }
+                }
+            }
         }
     }
 
