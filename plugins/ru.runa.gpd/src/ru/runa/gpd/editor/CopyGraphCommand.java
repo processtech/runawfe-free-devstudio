@@ -112,7 +112,7 @@ public class CopyGraphCommand extends Command {
                 } else if (node instanceof Swimlane && targetDefinition.getSwimlaneByName(node.getName()) != null) {
                     continue;
                 }
-                NamedGraphElement copy = node.makeCopy(targetDefinition);
+                NamedGraphElement copy = (NamedGraphElement) node.makeCopy(targetDefinition);
                 adjustLocation(copy);
                 newElements.add(copy);
                 for (Variable variable : node.getUsedVariables(copyBuffer.getSourceFolder())) {
