@@ -169,7 +169,7 @@ public class MoveElementFeature extends DefaultMoveShapeFeature implements ICust
             Shape shape = workContext.getShape();
             GraphElement element = (GraphElement) getBusinessObjectForPictogramElement(shape);
             redoConstraint = element.getConstraint().getCopy();
-            element.setConstraint(undoConstraint);
+            element.setConstraintSilent(undoConstraint);
 
             // move transition bendpoints
             moveTransitionBendpointsUndoRedo(shape, element, undoBendpointsList);
@@ -259,7 +259,7 @@ public class MoveElementFeature extends DefaultMoveShapeFeature implements ICust
             IMoveShapeContext workContext = (IMoveShapeContext) context;
             Shape shape = workContext.getShape();
             GraphElement element = (GraphElement) getBusinessObjectForPictogramElement(shape);
-            element.setConstraint(redoConstraint);
+            element.setConstraintSilent(redoConstraint);
 
             // move transition bendpoints
             moveTransitionBendpointsUndoRedo(shape, element, redoBendpointsList);
