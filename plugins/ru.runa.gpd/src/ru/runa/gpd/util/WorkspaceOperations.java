@@ -49,6 +49,7 @@ import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.editor.BotTaskEditor;
 import ru.runa.gpd.editor.ProcessEditorBase;
+import ru.runa.gpd.editor.ProcessSaveHistory;
 import ru.runa.gpd.editor.gef.GEFProcessEditor;
 import ru.runa.gpd.editor.graphiti.GraphitiProcessEditor;
 import ru.runa.gpd.extension.DelegableProvider;
@@ -153,6 +154,9 @@ public class WorkspaceOperations {
                                 testResource.delete(true, null);
                             }
                         }
+                    }
+                    if (folderResource && IOUtils.isProcessDefinitionFolder((IFolder) resource)) {
+                        ProcessSaveHistory.clear((IFolder) resource);
                     }
                     resource.delete(true, null);
                     deletedDefinitions.addAll(tmpFiles);
