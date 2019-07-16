@@ -268,6 +268,7 @@ public class WorkspaceOperations {
             IPath oldPath = oldDefinitionFolder.getFullPath();
             IPath newPath = oldDefinitionFolder.getParent().getFolder(new Path(newName)).getFullPath();
             IResource oldResource = ResourcesPlugin.getWorkspace().getRoot().findMember(oldPath);
+            ProcessSaveHistory.clear(oldDefinitionFolder);
             // I use FORCE same as JDT's RenameJavaProjectChange does. Not sure what it does, but DS does not provide any other opportunity (including F5) anyway.
             oldResource.move(newPath, IResource.FORCE | IResource.SHALLOW, new NullProgressMonitor());
 
