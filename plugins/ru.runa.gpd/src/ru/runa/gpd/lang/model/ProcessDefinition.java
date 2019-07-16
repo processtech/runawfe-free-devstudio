@@ -218,6 +218,10 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
         }
     }
 
+    public void setInvalid(boolean invalid) {
+        this.invalid = invalid;
+    }
+
     public void setNextNodeIdIfApplicable(String nodeId) {
         int nextNodeId = 0;
         int dotIndex = nodeId.lastIndexOf(".");
@@ -268,12 +272,16 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
         if (startStates.size() > 1) {
             errors.add(ValidationError.createLocalizedError(this, "multipleStartStatesNotAllowed"));
         }
-        this.invalid = false;
+        boolean invalid = false;
         for (ValidationError validationError : errors) {
             if (validationError.getSeverity() == IMarker.SEVERITY_ERROR) {
-                this.invalid = true;
+                invalid = true;
                 break;
             }
+        }
+        if (this.invalid != invalid) {
+            this.invalid = invalid;
+            setDirty(true);
         }
     }
 

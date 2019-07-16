@@ -1818,7 +1818,7 @@
             botTaskHandler="true"
             decisionHandler="false"
             cellEditorProvider="ru.runa.gpd.extension.handler.SQLHandlerCellEditorProvider"
-            className="ru.runa.wf.logic.bot.DatabaseTaskHandler"
+            className="ru.runa.wf.logic.bot.SqlTaskHandler"
             enabled="true"
             label="%ru.runa.wfe.extension.handler.SQLActionHandler">
       </handler>

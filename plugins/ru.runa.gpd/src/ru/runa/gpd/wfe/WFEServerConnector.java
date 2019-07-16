@@ -1,10 +1,9 @@
 package ru.runa.gpd.wfe;
 
+import com.google.common.base.Throwables;
 import java.util.List;
 import java.util.Map;
-
 import javax.security.auth.login.Configuration;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Display;
@@ -14,7 +13,6 @@ import org.ietf.jgss.GSSException;
 import org.ietf.jgss.GSSManager;
 import org.ietf.jgss.GSSName;
 import org.ietf.jgss.Oid;
-
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
@@ -24,8 +22,6 @@ import ru.runa.wfe.bot.Bot;
 import ru.runa.wfe.bot.BotStation;
 import ru.runa.wfe.bot.BotTask;
 import ru.runa.wfe.definition.dto.WfDefinition;
-
-import com.google.common.base.Throwables;
 
 public abstract class WFEServerConnector implements IConnector, PrefConstants {
     static {
@@ -39,10 +35,6 @@ public abstract class WFEServerConnector implements IConnector, PrefConstants {
             instance = WFEServerConnectorRegistry.createConnector();
         }
         return instance;
-    }
-
-    public static synchronized void destroy() {
-        instance = null;
     }
 
     protected String getPassword() {
