@@ -2642,6 +2642,12 @@
                toolbarPath="additions">
          </action>
          <action
+               class="ru.runa.gpd.ui.action.ResetPerspectiveAction"
+               id="resetPerspective"
+               label="%label.menu.view.resetPerspective"
+               menubarPath="view/additions"
+               style="push"/>
+         <action
                class="ru.runa.gpd.ui.action.EnableAntialiasingAction"
                id="enableAntialiasing"
                label="%label.menu.properties.antialiasing"
