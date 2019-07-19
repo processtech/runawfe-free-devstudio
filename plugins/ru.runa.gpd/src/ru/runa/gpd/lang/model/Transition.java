@@ -237,6 +237,14 @@ public class Transition extends NamedGraphElement implements ActionContainer {
     @Override
     public Transition makeCopy(GraphElement parent) {
         Transition copy = (Transition) super.makeCopy(parent);
+        ((Node) parent).onLeavingTransitionAdded(copy);
+        return copy;
+    }
+
+    @Override
+    protected void fillCopyCustomFields(GraphElement aCopy) {
+        super.fillCopyCustomFields(aCopy);
+        Transition copy = (Transition) aCopy;
         for (Point bp : getBendpoints()) {
             // a little shift for making visible copy on same diagram
             // synchronized with ru.runa.gpd.lang.model.GraphElement.getCopy(GraphElement)
@@ -248,9 +256,7 @@ public class Transition extends NamedGraphElement implements ActionContainer {
         if (labelLocation != null) {
             copy.setLabelLocation(labelLocation.getCopy());
         }
-        ((Node) parent).onLeavingTransitionAdded(copy);
         copy.setColor(getColor());
-        return copy;
     }
 
     @Override

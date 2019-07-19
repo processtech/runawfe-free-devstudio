@@ -1,11 +1,10 @@
 package ru.runa.gpd.lang.model;
 
+import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.property.DurationPropertyDescriptor;
@@ -13,8 +12,6 @@ import ru.runa.gpd.ui.custom.JavaIdentifierChecker;
 import ru.runa.gpd.util.Duration;
 import ru.runa.gpd.util.VariableMapping;
 import ru.runa.gpd.util.VariableUtils;
-
-import com.google.common.collect.Lists;
 
 public abstract class MessageNode extends Node {
     protected final List<VariableMapping> variableMappings = new ArrayList<VariableMapping>();
@@ -106,13 +103,12 @@ public abstract class MessageNode extends Node {
     }
 
     @Override
-    public MessageNode makeCopy(GraphElement parent) {
-        MessageNode copy = (MessageNode) super.makeCopy(parent);
-        copy.setTtlDuration(getTtlDuration());
+    protected void fillCopyCustomFields(GraphElement copy) {
+        super.fillCopyCustomFields(copy);
+        ((MessageNode) copy).setTtlDuration(getTtlDuration());
         for (VariableMapping mapping : getVariableMappings()) {
-            copy.getVariableMappings().add(mapping.getCopy());
+            ((MessageNode) copy).getVariableMappings().add(mapping.getCopy());
         }
-        return copy;
     }
 
     protected void validateOnEmptyRules(List<ValidationError> errors) {

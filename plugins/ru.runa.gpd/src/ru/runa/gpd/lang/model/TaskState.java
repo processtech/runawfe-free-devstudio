@@ -1,15 +1,15 @@
 package ru.runa.gpd.lang.model;
 
+import com.google.common.base.Objects;
+import com.google.common.base.Strings;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
-
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.BotCache;
 import ru.runa.gpd.Localization;
@@ -34,9 +34,6 @@ import ru.runa.gpd.util.Duration;
 import ru.runa.gpd.util.VariableUtils;
 import ru.runa.wfe.extension.handler.EscalationActionHandler;
 import ru.runa.wfe.lang.AsyncCompletionMode;
-
-import com.google.common.base.Objects;
-import com.google.common.base.Strings;
 
 public class TaskState extends FormNode implements ActionContainer, ITimed, Synchronizable, IBoundaryEventContainer {
     private TimerAction escalationAction;
@@ -283,13 +280,14 @@ public class TaskState extends FormNode implements ActionContainer, ITimed, Sync
     }
 
     @Override
-    public TaskState makeCopy(GraphElement parent) {
-        TaskState copy = (TaskState) super.makeCopy(parent);
+    protected void fillCopyCustomFields(GraphElement aCopy) {
+        super.fillCopyCustomFields(aCopy);
+        TaskState copy = (TaskState) aCopy;
         if (getBotTaskLink() != null) {
             copy.setBotTaskLink(getBotTaskLink().getCopy(copy));
         }
         if (getEscalationAction() != null) {
-            copy.setEscalationAction(getEscalationAction().makeCopy(parent.getProcessDefinition()));
+            copy.setEscalationAction(getEscalationAction().makeCopy(aCopy.getParent().getProcessDefinition()));
         }
         if (getEscalationDelay() != null) {
             copy.setEscalationDelay(new Duration(getEscalationDelay()));
@@ -301,7 +299,6 @@ public class TaskState extends FormNode implements ActionContainer, ITimed, Sync
             copy.setTimeOutDelay(new Duration(getTimeOutDelay()));
         }
         copy.setUseEscalation(useEscalation);
-        return copy;
     }
 
     @Override

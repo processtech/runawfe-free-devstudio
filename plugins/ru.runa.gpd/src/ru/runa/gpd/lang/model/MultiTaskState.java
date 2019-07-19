@@ -1,12 +1,15 @@
 package ru.runa.gpd.lang.model;
 
+import com.google.common.base.Objects;
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
-
 import ru.runa.gpd.extension.VariableFormatRegistry;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.bpmn.IMultiInstancesContainer;
@@ -16,12 +19,6 @@ import ru.runa.gpd.util.VariableUtils;
 import ru.runa.wfe.lang.MultiTaskCreationMode;
 import ru.runa.wfe.lang.MultiTaskSynchronizationMode;
 import ru.runa.wfe.var.format.ExecutorFormat;
-
-import com.google.common.base.Objects;
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 public class MultiTaskState extends TaskState implements IMultiInstancesContainer {
     public static final String USAGE_DEFAULT = VariableMapping.USAGE_MULTIINSTANCE_LINK + ", " + VariableMapping.USAGE_DISCRIMINATOR_VARIABLE;
@@ -195,8 +192,9 @@ public class MultiTaskState extends TaskState implements IMultiInstancesContaine
     }
 
     @Override
-    public MultiTaskState makeCopy(GraphElement parent) {
-        MultiTaskState copy = (MultiTaskState) super.makeCopy(parent);
+    protected void fillCopyCustomFields(GraphElement aCopy) {
+        super.fillCopyCustomFields(aCopy);
+        MultiTaskState copy = (MultiTaskState) aCopy;
         copy.setDiscriminatorUsage(discriminatorUsage);
         copy.setDiscriminatorValue(discriminatorValue);
         copy.setDiscriminatorCondition(discriminatorCondition);
@@ -205,7 +203,6 @@ public class MultiTaskState extends TaskState implements IMultiInstancesContaine
         for (VariableMapping mapping : getVariableMappings()) {
             copy.getVariableMappings().add(mapping.getCopy());
         }
-        return copy;
     }
 
     @Override
