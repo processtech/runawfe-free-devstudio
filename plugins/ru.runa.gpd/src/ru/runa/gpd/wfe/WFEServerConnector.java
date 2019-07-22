@@ -38,7 +38,8 @@ public abstract class WFEServerConnector implements IConnector, PrefConstants {
     }
 
     protected String getPassword() {
-        String password = Activator.getPrefString(P_WFE_CONNECTION_PASSWORD);
+        String actCon = Activator.getPrefString(P_WFE_LIST_CONNECTIONS);
+        String password = Activator.getPrefString(actCon + '.' + P_WFE_CONNECTION_PASSWORD);
         if (password.length() == 0) {
             if (userInputPassword == null) {
                 Display.getDefault().syncExec(new Runnable() {
@@ -61,7 +62,8 @@ public abstract class WFEServerConnector implements IConnector, PrefConstants {
     }
 
     protected boolean isLoadProcessDefinitionsHistory() {
-        return Activator.getPrefBoolean(P_WFE_LOAD_PROCESS_DEFINITIONS_HISTORY);
+        String actCon = Activator.getPrefString(P_WFE_LIST_CONNECTIONS);
+        return Activator.getPrefBoolean(actCon + '.' + P_WFE_LOAD_PROCESS_DEFINITIONS_HISTORY);
     }
 
     protected byte[] getKerberosToken() {
@@ -81,14 +83,15 @@ public abstract class WFEServerConnector implements IConnector, PrefConstants {
 
     @Override
     public boolean isConfigured() {
-        if (Activator.getPrefString(P_WFE_CONNECTION_HOST).length() == 0) {
+        String actCon = Activator.getPrefString(P_WFE_LIST_CONNECTIONS);
+        if (Activator.getPrefString(actCon + '.' + P_WFE_CONNECTION_HOST).length() == 0) {
             return false;
         }
-        if (Activator.getPrefString(P_WFE_CONNECTION_PORT).length() == 0) {
+        if (Activator.getPrefString(actCon + '.' + P_WFE_CONNECTION_PORT).length() == 0) {
             return false;
         }
-        if (LOGIN_MODE_LOGIN_PASSWORD.equals(Activator.getPrefString(P_WFE_CONNECTION_LOGIN_MODE))) {
-            if (Activator.getPrefString(P_WFE_CONNECTION_LOGIN).length() == 0) {
+        if (LOGIN_MODE_LOGIN_PASSWORD.equals(Activator.getPrefString(actCon + '.' + P_WFE_CONNECTION_LOGIN_MODE))) {
+            if (Activator.getPrefString(actCon + '.' + P_WFE_CONNECTION_LOGIN).length() == 0) {
                 return false;
             }
         }

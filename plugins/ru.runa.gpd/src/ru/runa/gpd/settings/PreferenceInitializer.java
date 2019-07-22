@@ -24,14 +24,23 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer impleme
         store.setDefault(P_FORM_EXTERNAL_EDITOR_PATH, "");
         store.setDefault(P_FORM_USE_EXTERNAL_EDITOR, false);
         store.setDefault(P_FORM_IGNORE_ERRORS_FROM_WEBPAGE, true);
-        store.setDefault(P_WFE_CONNECTION_HOST, "localhost");
-        store.setDefault(P_WFE_CONNECTION_PROTOCOL, "http");
-        store.setDefault(P_WFE_CONNECTION_PORT, "8080");
-        store.setDefault(P_WFE_CONNECTION_VERSION, "auto");
-        store.setDefault(P_WFE_CONNECTION_LOGIN_MODE, LOGIN_MODE_LOGIN_PASSWORD);
-        store.setDefault(P_WFE_CONNECTION_LOGIN, "Administrator");
-        store.setDefault(P_WFE_CONNECTION_PASSWORD, "wf");
-        store.setDefault(P_WFE_LOAD_PROCESS_DEFINITIONS_HISTORY, false);
+        store.setDefault(P_WFE_LIST_CONNECTIONS_HEAD, 1);
+        store.setDefault(P_WFE_LIST_CONNECTIONS_TAIL, 1);
+
+        int i = Activator.getDefault().getPreferenceStore().getInt(P_WFE_LIST_CONNECTIONS_HEAD);
+        do {
+            String inst = WFEConnectionPreferenceNode.genId(i);
+            store.setDefault(inst + "." + P_WFE_CONNECTION_PROTOCOL, "http");
+            store.setDefault(inst + "." + P_WFE_CONNECTION_HOST, "localhost");
+            store.setDefault(inst + "." + P_WFE_CONNECTION_PORT, "8080");
+            store.setDefault(inst + "." + P_WFE_CONNECTION_VERSION, "auto");
+            store.setDefault(inst + "." + P_WFE_CONNECTION_LOGIN_MODE, LOGIN_MODE_LOGIN_PASSWORD);
+            store.setDefault(inst + "." + P_WFE_CONNECTION_LOGIN, "Administrator");
+            store.setDefault(inst + "." + P_WFE_CONNECTION_PASSWORD, "wf");
+            store.setDefault(inst + "." + P_WFE_LOAD_PROCESS_DEFINITIONS_HISTORY, false);
+            i = Activator.getDefault().getPreferenceStore().getInt(inst + "." + P_WFE_CONNECTION_NODE_NEXT);
+        } while (i != 0);
+
         store.setDefault(P_LDAP_CONNECTION_PROVIDER_URL, "ldap://192.168.0.1/dc=domain,dc=com");
         store.setDefault(P_DATE_FORMAT_PATTERN, "dd.MM.yyyy");
         store.setDefault(P_ENABLE_REGULATIONS_MENU_ITEMS, Localization.getString("disable"));

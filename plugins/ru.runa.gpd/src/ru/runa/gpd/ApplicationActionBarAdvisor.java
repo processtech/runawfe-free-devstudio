@@ -1,7 +1,9 @@
 package ru.runa.gpd;
 
 import org.eclipse.core.runtime.IExtension;
+import org.eclipse.jface.action.ICoolBarManager;
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
@@ -9,10 +11,17 @@ import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.registry.ActionSetRegistry;
 import org.eclipse.ui.internal.registry.IActionSetDescriptor;
+import org.eclipse.ui.part.CoolItemGroupMarker;
 
 public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
     public ApplicationActionBarAdvisor(IActionBarConfigurer configurer) {
         super(configurer);
+    }
+
+    @Override
+    protected void fillCoolBar(ICoolBarManager coolBar) {
+        coolBar.add(new CoolItemGroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+        coolBar.add(new CoolItemGroupMarker("connections"));
     }
 
     @Override

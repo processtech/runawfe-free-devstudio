@@ -35,6 +35,7 @@ public interface PrefConstants {
     public static final String P_ESCALATION_DURATION = "escalationDuration";
     public static final String P_ESCALATION_CONFIG = "escalationConfig";
     public static final String P_ESCALATION_REPEAT = "escalationRepeat";
+    public static final String P_WFE_LIST_CONNECTIONS = "wfeListConnector";
     public static final String P_WFE_CONNECTION_LOGIN = "wfeLogin";
     public static final String P_WFE_CONNECTION_PASSWORD = "wfePassword";
     public static final String P_WFE_CONNECTION_LOGIN_MODE = "wfeLoginMode";
@@ -45,6 +46,10 @@ public interface PrefConstants {
     public static final String P_WFE_CONNECTION_INITIAL_CTX_FACTORY = "wfeInitialCtxFactory";
     public static final String P_WFE_CONNECTION_URL_PKG_PREFIXES = "wfeUrlPkg";
     public static final String P_WFE_LOAD_PROCESS_DEFINITIONS_HISTORY = "wfeLoadProcessDefinitionsHistory";
+    public static final String P_WFE_LIST_CONNECTIONS_HEAD = "wfeListConsHead";
+    public static final String P_WFE_LIST_CONNECTIONS_TAIL = "wfeListConsTail";
+    public static final String P_WFE_CONNECTION_NODE_PREVIOUS = "wfeConNodePrev";
+    public static final String P_WFE_CONNECTION_NODE_NEXT = "wfeConNodeNext";
     public static final String P_LDAP_CONNECTION_LOGIN = "ldapLogin";
     public static final String P_LDAP_CONNECTION_PASSWORD = "ldapPassword";
     public static final String P_LDAP_CONNECTION_LOGIN_MODE = "ldapLoginMode";

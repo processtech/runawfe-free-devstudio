@@ -49,9 +49,10 @@ public abstract class AbstractWebServicesConnector extends WFEServerConnector {
 
     protected String getBaseUrl() {
         final String PROTOCOL_SPLITTER = "://";
-        String host = Activator.getPrefString(P_WFE_CONNECTION_HOST);
-        String port = Activator.getPrefString(P_WFE_CONNECTION_PORT);
-        String protocol = Activator.getPrefString(P_WFE_CONNECTION_PROTOCOL);
+        String actCon = Activator.getPrefString(P_WFE_LIST_CONNECTIONS);
+        String host = Activator.getPrefString(actCon + '.' + P_WFE_CONNECTION_HOST);
+        String port = Activator.getPrefString(actCon + '.' + P_WFE_CONNECTION_PORT);
+        String protocol = Activator.getPrefString(actCon + '.' + P_WFE_CONNECTION_PROTOCOL);
         if (protocol == null) {
             protocol = "http";
         }
@@ -65,9 +66,10 @@ public abstract class AbstractWebServicesConnector extends WFEServerConnector {
     }
 
     protected String getVersion() {
-        String version = Activator.getPrefString(P_WFE_CONNECTION_VERSION);
+        String actCon = Activator.getPrefString(P_WFE_LIST_CONNECTIONS);
+        String version = Activator.getPrefString(actCon + '.' + P_WFE_CONNECTION_VERSION);
         if ("auto".equalsIgnoreCase(version)) {
-            String url =  getBaseUrl()  + "/wfe/version";
+            String url = getBaseUrl() + "/wfe/version";
             try {
                 InputStreamReader reader = new InputStreamReader(new URL(url).openStream());
                 version = CharStreams.toString(reader);
@@ -85,9 +87,10 @@ public abstract class AbstractWebServicesConnector extends WFEServerConnector {
 
     @Override
     public void connect() {
+        String actCon = Activator.getPrefString(P_WFE_LIST_CONNECTIONS);
         AuthenticationAPI authenticationAPI = new AuthenticationWebService(getUrl("Authentication")).getAuthenticationAPIPort();
-        if (LOGIN_MODE_LOGIN_PASSWORD.equals(Activator.getPrefString(P_WFE_CONNECTION_LOGIN_MODE))) {
-            String login = Activator.getPrefString(P_WFE_CONNECTION_LOGIN);
+        if (LOGIN_MODE_LOGIN_PASSWORD.equals(Activator.getPrefString(actCon + '.' + P_WFE_CONNECTION_LOGIN_MODE))) {
+            String login = Activator.getPrefString(actCon + '.' + P_WFE_CONNECTION_LOGIN);
             String password = getPassword();
             if (password == null) {
                 return;
