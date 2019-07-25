@@ -216,10 +216,16 @@ public class GpdXmlContentProvider extends AuxContentProvider {
             Rectangle definitionRectangle = definition.getConstraint();
             if (definitionRectangle != null) {
                 if (definitionRectangle.x < 0) {
-                    addAttribute(root, X, String.valueOf(definitionRectangle.x - (definitionRectangle.x < xOffset ? xOffset : 0)));
+                    int x = definitionRectangle.x - (definitionRectangle.x <= xOffset ? xOffset : 0);
+                    if (x < 0) {
+                        addAttribute(root, X, String.valueOf(x));
+                    }
                 }
                 if (definitionRectangle.y < 0) {
-                    addAttribute(root, Y, String.valueOf(definitionRectangle.y - (definitionRectangle.y < yOffset ? yOffset : 0)));
+                    int y = definitionRectangle.y - (definitionRectangle.y <= yOffset ? yOffset : 0);
+                    if (y < 0) {
+                        addAttribute(root, Y, String.valueOf(y));
+                    }
                 }
                 addAttribute(root, WIDTH, String.valueOf(definitionRectangle.width));
                 addAttribute(root, HEIGHT, String.valueOf(definitionRectangle.height));
