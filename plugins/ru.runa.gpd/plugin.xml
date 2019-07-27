@@ -1818,7 +1818,7 @@
             botTaskHandler="true"
             decisionHandler="false"
             cellEditorProvider="ru.runa.gpd.extension.handler.SQLHandlerCellEditorProvider"
-            className="ru.runa.wf.logic.bot.DatabaseTaskHandler"
+            className="ru.runa.wf.logic.bot.SqlTaskHandler"
             enabled="true"
             label="%ru.runa.wfe.extension.handler.SQLActionHandler">
       </handler>
@@ -2641,6 +2641,12 @@
                style="push"
                toolbarPath="additions">
          </action>
+         <action
+               class="ru.runa.gpd.ui.action.ResetPerspectiveAction"
+               id="resetPerspective"
+               label="%label.menu.view.resetPerspective"
+               menubarPath="view/additions"
+               style="push"/>
          <action
                class="ru.runa.gpd.ui.action.EnableAntialiasingAction"
                id="enableAntialiasing"

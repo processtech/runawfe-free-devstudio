@@ -1,9 +1,11 @@
 package ru.runa.gpd.formeditor.ftl.parameter;
 
+import com.google.common.base.Function;
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
-
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -15,15 +17,11 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.properties.ComboBoxPropertyDescriptor;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
-
 import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.formeditor.ftl.ComboOption;
 import ru.runa.gpd.formeditor.ftl.Component;
 import ru.runa.gpd.formeditor.ftl.ComponentParameter;
 import ru.runa.gpd.ui.custom.LoggingSelectionChangedAdapter;
-
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
 
 public class ComboParameter extends ParameterType {
 
@@ -59,8 +57,15 @@ public class ComboParameter extends ParameterType {
             }
         });
         viewer.setInput(getOptions(component, parameter));
-        if (oldValue != null) {
+        if (!Strings.isNullOrEmpty((String) oldValue)) {
             viewer.setSelection(new StructuredSelection(new ComboOption((String) oldValue, null)));
+        } else {
+            for (ComboOption option : parameter.getOptions()) {
+                if (option.isDefault()) {
+                    viewer.setSelection(new StructuredSelection(option));
+                    break;
+                }
+            }
         }
         viewer.addSelectionChangedListener(new LoggingSelectionChangedAdapter() {
             @Override

@@ -257,6 +257,7 @@ public abstract class ProcessEditorBase extends MultiPageEditorPart implements I
             WorkspaceOperations.saveProcessDefinition(definitionFile, definition);
             getCommandStack().markSaveLocation();
             definition.setDirty(false);
+            ProcessSaveHistory.addSavepoint(definitionFile);
         } catch (Exception e) {
             PluginLogger.logError(e);
         }

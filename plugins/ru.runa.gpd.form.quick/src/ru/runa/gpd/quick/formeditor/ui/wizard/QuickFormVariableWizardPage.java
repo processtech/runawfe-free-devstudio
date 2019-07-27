@@ -1,17 +1,18 @@
 package ru.runa.gpd.quick.formeditor.ui.wizard;
 
+import com.google.common.base.Strings;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
@@ -21,20 +22,21 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
-
+import ru.runa.gpd.formeditor.ftl.ComboOption;
 import ru.runa.gpd.formeditor.ftl.ComponentParameter;
 import ru.runa.gpd.formeditor.ftl.ComponentType;
 import ru.runa.gpd.formeditor.ftl.ComponentTypeRegistry;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.Variable;
+import ru.runa.gpd.quick.Activator;
 import ru.runa.gpd.quick.Messages;
 import ru.runa.gpd.quick.formeditor.QuickFormGpdVariable;
+import ru.runa.gpd.quick.formeditor.QuickFormType;
+import ru.runa.gpd.quick.formeditor.settings.PreferencePage;
 import ru.runa.gpd.quick.tag.FreemarkerConfigurationGpdWrap;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionChangedAdapter;
 import ru.runa.gpd.util.VariableUtils;
-
-import com.google.common.base.Strings;
 
 public class QuickFormVariableWizardPage extends WizardPage {
     private ComboViewer tagType;
@@ -64,6 +66,19 @@ public class QuickFormVariableWizardPage extends WizardPage {
     public void createControl(Composite parent) {
         initializeDialogUnits(parent);
         rebuildView(parent);
+        if (tagType.getSelection().isEmpty()) {
+            setDefaultUsage();
+        }
+    }
+
+    private void setDefaultUsage() {
+        String defaultTagName = FreemarkerConfigurationGpdWrap.getInstance().getDefaultTagName();
+        for (SelectItem item : (SelectItem[]) tagType.getInput()) {
+            if (item.getValue().equals(defaultTagName)) {
+                tagType.setSelection(new StructuredSelection(item));
+                break;
+            }
+        }
     }
 
     private void rebuildView(Composite parent) {
@@ -109,10 +124,15 @@ public class QuickFormVariableWizardPage extends WizardPage {
         List<SelectItem> types = new ArrayList<SelectItem>();
         FreemarkerConfigurationGpdWrap freemarkerConfiguration = FreemarkerConfigurationGpdWrap.getInstance();
 
+        SelectItem defaultItem = null;
         for (String value : freemarkerConfiguration.getTagsName()) {
             if (ComponentTypeRegistry.has(value)) {
                 ComponentType tag = ComponentTypeRegistry.getNotNull(value);
-                types.add(new SelectItem(tag.getLabel(), value));
+                SelectItem selectItem = new SelectItem(tag.getLabel(), value);
+                types.add(selectItem);
+                if (selectItem.getValue().equals(FreemarkerConfigurationGpdWrap.getInstance().getDefaultTagName())) {
+                    defaultItem = selectItem;
+                }
                 continue;
             }
         }
@@ -140,7 +160,6 @@ public class QuickFormVariableWizardPage extends WizardPage {
                 SelectItem selectItem = (SelectItem) selection.getFirstElement();
 
                 variableDef.setTagName(selectItem.getValue().toString());
-
                 rebuildView(parent.getParent());
                 verifyContentsValid();
             }
@@ -179,7 +198,8 @@ public class QuickFormVariableWizardPage extends WizardPage {
                         label.setText(componentParameter.getLabel());
                         // TODO in createEditor variables populated from
                         // FormEditor instance
-                        componentParameter.getType().createEditor(parent, null, componentParameter, paramValue, new PropertyChangeListener() {
+                        Object editor = componentParameter.getType().createEditor(parent, null, componentParameter, paramValue,
+                                new PropertyChangeListener() {
 
                             @Override
                             public void propertyChange(PropertyChangeEvent evt) {
@@ -188,9 +208,22 @@ public class QuickFormVariableWizardPage extends WizardPage {
 
                             }
                         });
+                        if (componentType.getId().equals(QuickFormType.READ_TAG) && ((ComboViewer) editor).getSelection().isEmpty()) {
+                            setDefaultDisplayFormat((ComboViewer) editor);
+                        }
                     }
                     break;
                 }
+            }
+        }
+    }
+
+    private void setDefaultDisplayFormat(ComboViewer comboViewer) {
+        String defaultValue = Activator.getDefault().getPreferenceStore().getString(PreferencePage.P_FORM_DEFAULT_DISPLAY_FORMAT);
+        for (ComboOption option : (List<ComboOption>) comboViewer.getInput()) {
+            if (option.getValue().equals(defaultValue)) {
+                comboViewer.setSelection(new StructuredSelection(option));
+                return;
             }
         }
     }
@@ -259,5 +292,11 @@ public class QuickFormVariableWizardPage extends WizardPage {
         public void setValue(Object value) {
             this.value = value;
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            return value.equals(((SelectItem) obj).value);
+        }
+
     }
 }

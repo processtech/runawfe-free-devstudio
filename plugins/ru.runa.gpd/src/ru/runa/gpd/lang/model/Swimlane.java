@@ -1,10 +1,8 @@
 package ru.runa.gpd.lang.model;
 
 import java.util.List;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.swt.graphics.Image;
-
 import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.extension.HandlerArtifact;
 import ru.runa.gpd.extension.orgfunction.OrgFunctionDefinition;
@@ -73,17 +71,11 @@ public class Swimlane extends Variable implements Delegable {
     }
 
     @Override
-    public NamedGraphElement makeCopy(GraphElement parent) {
-        Swimlane copy = (Swimlane) super.makeCopy(parent);
-        copy.setDelegationClassName(getDelegationClassName());
-        copy.setDelegationConfiguration(getDelegationConfiguration());
-        return copy;
-    }
-
-    @Override
     protected void fillCopyCustomFields(GraphElement copy) {
         ((NamedGraphElement) copy).setName(getName());
         super.fillCopyCustomFields(copy);
+        copy.setDelegationClassName(getDelegationClassName());
+        copy.setDelegationConfiguration(getDelegationConfiguration());
     }
 
 }
