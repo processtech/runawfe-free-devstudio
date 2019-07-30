@@ -525,7 +525,58 @@ public class CopyGraphCommand extends Command {
             if (!Objects.equal(oldVariable.getFormat(), sourceVariable.getFormat())) {
                 return oldVariable.getFormat() + "/" + sourceVariable.getFormat();
             }
-            return super.getChanges();
+            return getDifference(sourceVariable, oldVariable);
+        }
+
+        private String getDifference(Variable srcVariable, Variable dstVariable) {
+            if (srcVariable.isComplex()) {
+                VariableUserType dstUserType = targetDefinition.getVariableUserType(srcVariable.getUserType().getName());
+                if (dstUserType == null) {
+                    return srcVariable.getUserType().getName();
+                } else {
+                    List<Variable> dstUserTypeAttributes = dstUserType.getAttributes();
+                    for (Variable v : srcVariable.getUserType().getAttributes()) {
+                        if (dstUserTypeAttributes.contains(v)) {
+                            if (v.isComplex() || VariableUtils.isContainerVariable(v)) {
+                                String difference = getDifference(v, dstUserTypeAttributes.get(dstUserTypeAttributes.indexOf(v)));
+                                if (difference != null) {
+                                    return difference;
+                                }
+                            }
+                        } else {
+                            return v.getName();
+                        }
+                    }
+                }
+            } else if (VariableUtils.isContainerVariable(srcVariable)) {
+                String[] componentNames = srcVariable.getFormatComponentClassNames();
+                for (String componentName : componentNames) {
+                    if (VariableUtils.isValidUserTypeName(componentName)) {
+                        VariableUserType srcUserType = sourceProcessDefinition.getVariableUserType(componentName);
+                        if (srcUserType != null) {
+                            VariableUserType dstUserType = targetDefinition.getVariableUserType(srcUserType.getName());
+                            if (dstUserType == null) {
+                                return srcUserType.getName();
+                            } else {
+                                List<Variable> dstUserTypeAttributes = dstUserType.getAttributes();
+                                for (Variable v : srcUserType.getAttributes()) {
+                                    if (dstUserTypeAttributes.contains(v)) {
+                                        if (v.isComplex() || VariableUtils.isContainerVariable(v)) {
+                                            String difference = getDifference(v, dstUserTypeAttributes.get(dstUserTypeAttributes.indexOf(v)));
+                                            if (difference != null) {
+                                                return difference;
+                                            }
+                                        }
+                                    } else {
+                                        return v.getName();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return null;
         }
 
         @Override
@@ -539,11 +590,22 @@ public class CopyGraphCommand extends Command {
 
         private void copyUserType(Variable srcVar) {
             if (srcVar.isComplex()) {
-                if (targetDefinition.getVariableUserType(srcVar.getUserType().getName()) == null) {
+                VariableUserType userType = targetDefinition.getVariableUserType(srcVar.getUserType().getName());
+                if (userType == null) {
                     targetDefinition.addVariableUserType(srcVar.getUserType().getCopy());
                     for (Variable v : srcVar.getUserType().getAttributes()) {
                         if (v.isComplex() || VariableUtils.isContainerVariable(v)) {
                             copyUserType(v);
+                        }
+                    }
+                } else {
+                    List<Variable> userTypeAttributes = userType.getAttributes();
+                    for (Variable v : srcVar.getUserType().getAttributes()) {
+                        if (!userTypeAttributes.contains(v)) {
+                            if (v.isComplex() || VariableUtils.isContainerVariable(v)) {
+                                copyUserType(v);
+                            }
+                            userType.addAttribute(v);
                         }
                     }
                 }
