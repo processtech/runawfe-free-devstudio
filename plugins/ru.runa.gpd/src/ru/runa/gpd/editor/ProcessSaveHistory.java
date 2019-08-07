@@ -8,11 +8,10 @@ import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TreeMap;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -21,8 +20,10 @@ import ru.runa.gpd.Activator;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.settings.PrefConstants;
-import ru.runa.gpd.ui.wizard.ExportParWizardPage.ParExportOperation;
 import ru.runa.gpd.util.IOUtils;
+import ru.runa.gpd.util.files.FileResourcessExportOperation;
+import ru.runa.gpd.util.files.ParFileExporter;
+import ru.runa.gpd.util.files.ZipFileExporter;
 
 public class ProcessSaveHistory {
 
@@ -42,15 +43,12 @@ public class ProcessSaveHistory {
             if (!historyFolder.exists()) {
                 historyFolder.mkdirs();
             }
-            List<IFile> resourcesToExport = new ArrayList<IFile>();
-            for (IResource resource : processDefinitionFile.getParent().members()) {
-                if (resource instanceof IFile) {
-                    resourcesToExport.add((IFile) resource);
-                }
-            }
             String outputFileName = historyFolder + File.separator + processDefinitionFile.getParent().getName() + '_'
                     + SAVEPOINT_SUFFIX_FORMAT.format(new Date()) + SAVEPOINT_EXTENSION;
-            new ParExportOperation(resourcesToExport, new FileOutputStream(outputFileName)).run(null);
+            new ParFileExporter(processDefinitionFile)
+                    .export(true,
+                            (definition, resourcesToExport) -> Optional.of(
+                                    new FileResourcessExportOperation(resourcesToExport, new ZipFileExporter(new FileOutputStream(outputFileName)))));
             File[] savepoints = historyFolder.listFiles();
             if (savepoints != null) {
                 int savepointNumber = Activator.getDefault().getPreferenceStore().getInt(PrefConstants.P_PROCESS_SAVEPOINT_NUMBER);

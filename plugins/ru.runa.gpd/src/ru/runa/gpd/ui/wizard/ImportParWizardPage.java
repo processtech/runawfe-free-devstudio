@@ -1,19 +1,17 @@
 package ru.runa.gpd.ui.wizard;
 
+import com.google.common.base.Throwables;
+import com.google.common.collect.Lists;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.InputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-
 import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -33,23 +31,17 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.TreeItem;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
-import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.SharedImages;
-import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.settings.WFEConnectionPreferencePage;
 import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.ui.custom.SyncUIHelper;
-import ru.runa.gpd.util.IOUtils;
+import ru.runa.gpd.util.files.ParFileImporter;
+import ru.runa.gpd.util.files.ProcessDefinitionImportInfo;
 import ru.runa.gpd.wfe.ConnectorCallback;
 import ru.runa.gpd.wfe.WFEServerProcessDefinitionImporter;
 import ru.runa.wfe.definition.dto.WfDefinition;
-
-import com.google.common.base.Objects;
-import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
 
 public class ImportParWizardPage extends ImportWizardPage {
     private Button importFromFileButton;
@@ -197,24 +189,9 @@ public class ImportParWizardPage extends ImportWizardPage {
             if (importInfos.isEmpty()) {
                 throw new Exception(Localization.getString("ImportParWizardPage.error.selectValidDefinition"));
             }
+            final ParFileImporter importer = new ParFileImporter(container);
             for (ProcessDefinitionImportInfo importInfo : importInfos) {
-                IFolder processFolder = IOUtils.getProcessFolder(container, importInfo.getFolderPath());
-                if (processFolder.exists()) {
-                    throw new Exception(Localization.getString("ImportParWizardPage.error.processWithSameNameExists", importInfo.getFolderPath()));
-                }
-                IOUtils.createFolder(processFolder);
-                IOUtils.extractArchiveToFolder(importInfo.inputStream, processFolder);
-                IFile definitionFile = IOUtils.getProcessDefinitionFile(processFolder);
-                ProcessDefinition definition = ProcessCache.newProcessDefinitionWasCreated(definitionFile);
-                if (definition != null && !Objects.equal(definition.getName(), processFolder.getName())) {
-                    // if par name differs from definition name
-                    IPath destination = IOUtils.getProcessFolder(container, definition.getName()).getFullPath();
-                    processFolder.move(destination, true, false, null);
-                    processFolder = IOUtils.getProcessFolder(container, definition.getName());
-                    IFile movedDefinitionFile = IOUtils.getProcessDefinitionFile(processFolder);
-                    ProcessCache.newProcessDefinitionWasCreated(movedDefinitionFile);
-                    ProcessCache.invalidateProcessDefinition(definitionFile);
-                }
+                importer.importFile(importInfo);
             }
         } catch (Exception exception) {
             PluginLogger.logErrorWithoutDialog("import par", exception);
@@ -223,8 +200,8 @@ public class ImportParWizardPage extends ImportWizardPage {
         } finally {
             for (ProcessDefinitionImportInfo importInfo : importInfos) {
                 try {
-                    importInfo.inputStream.close();
-                } catch (Exception e) {
+                    importInfo.close();
+                } catch (IOException e) {
                 }
             }
         }
@@ -408,24 +385,5 @@ public class ImportParWizardPage extends ImportWizardPage {
             return historyGroup;
         }
 
-    }
-
-    class ProcessDefinitionImportInfo {
-        private final String name;
-        private final String path;
-        private final InputStream inputStream;
-
-        public ProcessDefinitionImportInfo(String name, String path, InputStream inputStream) {
-            this.name = name;
-            this.path = path;
-            this.inputStream = inputStream;
-        }
-
-        private String getFolderPath() {
-            if (path.trim().isEmpty()) {
-                return name;
-            }
-            return path + File.separator + name;
-        }
     }
 }
