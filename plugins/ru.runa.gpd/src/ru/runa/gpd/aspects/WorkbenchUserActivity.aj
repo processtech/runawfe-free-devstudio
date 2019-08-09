@@ -14,19 +14,19 @@ public aspect WorkbenchUserActivity extends UserActivity {
     }
     
     after(SaveAll action) returning : execution(public void run(..)) && this(action) {
-        log(null, UserAction.MM_SaveAll.asString());
+        logWorkbench(UserAction.MM_SaveAll.asString());
     }
     
     after(SaveAll action) throwing(Exception e) : execution(public void run(..)) && this(action) {
-        log(null, UserAction.MM_SaveAll.asString(e));
+        logWorkbench(UserAction.MM_SaveAll.asString(e));
     }
     
     after() returning(IProject project) : execution(private IProject ru.runa.gpd.ui.wizard.NewProcessProjectWizard.createNewProject()) {
-        log(null, UserAction.MM_NewProject.asString(project.getFullPath().toString()));
+        logWorkbench(UserAction.MM_NewProject.asString(project.getFullPath().toString()));
     }
     
     after() throwing(Exception e) : execution(private IProject ru.runa.gpd.ui.wizard.NewProcessProjectWizard.createNewProject()) {
-        log(null, UserAction.MM_NewProject.asString(e));
+        logWorkbench(UserAction.MM_NewProject.asString(e));
     }
     
 }

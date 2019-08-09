@@ -83,6 +83,10 @@ public abstract aspect UserActivity {
         logRepository.remove(owner);
     }
 
+    static void logWorkbench(String info) {
+        log(null, info);
+    }
+
     static void log(Object owner, String info) {
         if (started) {
             PrintWriter pw = logRepository.get(owner);

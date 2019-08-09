@@ -228,9 +228,23 @@ public enum UserAction {
     //
     // Graph Element Property Changes
     //
-    GE_ChangeProperty;
+    GE_ChangeProperty,
+    //
+    // Graph Element(s) Selection Specifics
+    //
+    GE_Select,
+    GE_AddToSelection,
+
+    DoNothing;
 
     private static Map<String, Object> map = new LinkedHashMap<>(10);
+
+    public String asString(GraphElement graphElement) {
+        map.clear();
+        map.put("element", graphElement.getClass().getSimpleName());
+        map.put("id", graphElement.getId());
+        return this + " " + map.toString();
+    }
 
     public String asString(GraphElement graphElement, String id, String propertyName, Object oldValue, Object newValue) {
         map.clear();
