@@ -1,5 +1,8 @@
 package ru.runa.gpd.lang.model;
 
+import java.util.List;
+import org.eclipse.core.resources.IFile;
+import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.settings.PrefConstants;
 
 public abstract class NamedGraphElement extends GraphElement implements Comparable<NamedGraphElement>, PrefConstants {
@@ -70,4 +73,11 @@ public abstract class NamedGraphElement extends GraphElement implements Comparab
         ((NamedGraphElement) copy).setName(getName());
     }
 
+    @Override
+    public void validate(List<ValidationError> errors, IFile definitionFile) {
+        super.validate(errors, definitionFile);
+        if (getName() == null) {
+            errors.add(ValidationError.createLocalizedError(this, "nameNotDefined"));
+        }
+    }
 }
