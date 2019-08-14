@@ -121,7 +121,7 @@ public class RegulationsUtil {
         return result;
     }
 
-    public static void autoFillRegulationProperties(ProcessDefinition processDefinition) {
+    public static void autoFillRegulationProperties(ProcessDefinition processDefinition) throws Exception {
         LinkedList<Node> sequencedNodes = new LinkedList<>();
         List<Node> endTokenNodes = new LinkedList<>();
         List<Node> endNodes = new LinkedList<>();
@@ -148,11 +148,7 @@ public class RegulationsUtil {
                     if (subProcessFolderName != null) {
                         IFile definitionFile = (IFile) ResourcesPlugin.getWorkspace().getRoot()
                                 .findMember(subProcessFolderName + "/" + ParContentProvider.PROCESS_DEFINITION_FILE_NAME);
-                        try {
-                            subProcessDefinition = NodeRegistry.parseProcessDefinition(definitionFile);
-                        } catch (Exception e) {
-                            PluginLogger.logErrorWithoutDialog(e.toString());
-                        }
+                        subProcessDefinition = NodeRegistry.parseProcessDefinition(definitionFile);
                     } else {
                         subProcessDefinition = ProcessCache.getFirstProcessDefinition(subprocess.getSubProcessName(), null);
                     }
