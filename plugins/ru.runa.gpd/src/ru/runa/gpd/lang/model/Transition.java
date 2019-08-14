@@ -17,6 +17,7 @@ import ru.runa.gpd.editor.GEFConstants;
 import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.extension.decision.IDecisionProvider;
 import ru.runa.gpd.lang.Language;
+import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.bpmn.ExclusiveGateway;
 import ru.runa.gpd.lang.model.jpdl.ActionContainer;
 import ru.runa.gpd.util.EditorUtils;
@@ -286,4 +287,11 @@ public class Transition extends NamedGraphElement implements ActionContainer {
         }
     }
 
+    @Override
+    public void validate(List<ValidationError> errors, IFile definitionFile) {
+        super.validate(errors, definitionFile);
+        if (getName() == null) {
+            errors.add(ValidationError.createLocalizedError(this, "nameNotDefined"));
+        }
+    }
 }
