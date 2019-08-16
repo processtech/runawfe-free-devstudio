@@ -253,7 +253,7 @@ public class ExportParWizardPage extends WizardArchiveFileResourceExportPage1 {
                             File file = savepoint.getValue();
                             filesToExport.add(file);
                             String fileName = file.getName();
-                            File uaLog = uaLogs.get(fileName.substring(fileName.indexOf("_") + 1, fileName.indexOf(".")));
+                            File uaLog = uaLogs.get(fileName.substring(fileName.lastIndexOf("_") + 1, fileName.lastIndexOf(".")));
                             if (uaLog != null) {
                                 filesToExport.add(uaLog);
                             }
