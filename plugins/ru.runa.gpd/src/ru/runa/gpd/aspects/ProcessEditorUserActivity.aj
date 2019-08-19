@@ -1,10 +1,10 @@
 package ru.runa.gpd.aspects;
 
-import org.eclipse.e4.ui.workbench.IWorkbench;
 import org.eclipse.gef.EditPart;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 import ru.runa.gpd.editor.CopyAction;
 import ru.runa.gpd.editor.PasteAction;
@@ -26,15 +26,21 @@ public aspect ProcessEditorUserActivity extends UserActivity {
     }
     
     after(Save action) returning : execution(public void run(..)) && this(action) {
-        ProcessEditorBase editor = (ProcessEditorBase) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor(); 
-        startEditingSession(editor);
-        log(editor.getDefinition(), UserAction.MM_Save.asString());
+        IEditorPart editorPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+        if (editorPart instanceof ProcessEditorBase) {
+            ProcessEditorBase editor = (ProcessEditorBase) editorPart;
+            startEditingSession(editor);
+            log(editor.getDefinition(), UserAction.MM_Save.asString());
+        }
     }
     
     after(Save action) throwing(Exception e) : execution(public void run(..)) && this(action) {
-        ProcessEditorBase editor = (ProcessEditorBase) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor(); 
-        startEditingSession(editor);
-        log(editor.getDefinition(), UserAction.MM_Save.asString(e));
+        IEditorPart editorPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+        if (editorPart instanceof ProcessEditorBase) {
+            ProcessEditorBase editor = (ProcessEditorBase) editorPart;
+            startEditingSession(editor);
+            log(editor.getDefinition(), UserAction.MM_Save.asString(e));
+        }
     }
     
     after(ProcessEditorBase editor) : execution(public void dispose()) && this(editor) {
