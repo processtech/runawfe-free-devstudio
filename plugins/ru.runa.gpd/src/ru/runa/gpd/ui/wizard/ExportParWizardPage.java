@@ -13,6 +13,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.TreeMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -246,20 +247,24 @@ public class ExportParWizardPage extends WizardArchiveFileResourceExportPage1 {
                     String outputFileName = getDestinationValue() + definition.getName() + ".par";
                     new ParExportOperation(resourcesToExport, new FileOutputStream(outputFileName)).run(null);
                     if (ProcessSaveHistory.isActive()) {
-                        List<File> filesToExport = new ArrayList<>();
                         Map<String, File> savepoints = ProcessSaveHistory.getSavepoints(processFolder);
-                        Map<String, File> uaLogs = UserActivity.getLogs(processFolder);
-                        for (Map.Entry<String, File> savepoint : savepoints.entrySet()) {
-                            File file = savepoint.getValue();
-                            filesToExport.add(file);
-                            String fileName = file.getName();
-                            File uaLog = uaLogs.get(fileName.substring(fileName.lastIndexOf("_") + 1, fileName.lastIndexOf(".")));
-                            if (uaLog != null) {
-                                filesToExport.add(uaLog);
+                        if (savepoints.size() > 0) {
+                            List<File> filesToExport = new ArrayList<>();
+                            for (Map.Entry<String, File> savepoint : savepoints.entrySet()) {
+                                filesToExport.add(savepoint.getValue());
                             }
+                            filesToExport.add(new File(outputFileName));
+                            String oldestSavepointName = ((NavigableMap<String, File>) savepoints).lastEntry().getValue().getName();
+                            String oldestTimestamp = oldestSavepointName.substring(oldestSavepointName.lastIndexOf("_") + 1,
+                                    oldestSavepointName.lastIndexOf("."));
+                            Map<String, File> uaLogs = UserActivity.getLogs(processFolder);
+                            for (Map.Entry<String, File> uaLog : uaLogs.entrySet()) {
+                                if (oldestTimestamp.compareTo(uaLog.getKey()) <= 0) {
+                                    filesToExport.add(uaLog.getValue());
+                                }
+                            }
+                            zip(filesToExport, new FileOutputStream(getDestinationValue() + definition.getName() + ".har"));
                         }
-                        filesToExport.add(new File(outputFileName));
-                        zip(filesToExport, new FileOutputStream(getDestinationValue() + definition.getName() + ".har"));
                     }
                 } else {
                     new ParDeployOperation(resourcesToExport, definition.getName(), updateLatestVersionButton.getSelection()).run(null);
