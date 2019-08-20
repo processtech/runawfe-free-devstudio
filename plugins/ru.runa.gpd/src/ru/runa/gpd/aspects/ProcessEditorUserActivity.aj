@@ -56,13 +56,15 @@ public aspect ProcessEditorUserActivity extends UserActivity {
                 Object lastSelected = structuredSelection.toArray()[structuredSelection.size() - 1];
                 if (lastSelected instanceof EditPart) {
                     EditPart editPart = (EditPart) lastSelected;
-                    GraphElement ge = (GraphElement) ((DiagramEditorPage) editor.getDiagramEditorPage()).getDiagramTypeProvider()
-                            .getFeatureProvider().getBusinessObjectForPictogramElement((PictogramElement) editPart.getModel());
-                    if (ge != null) {
-                        if (structuredSelection.size() == 1) {
-                            log(editor.getDefinition(), UserAction.GE_Select.asString(ge));
-                        } else {
-                            log(editor.getDefinition(), UserAction.GE_AddToSelection.asString(ge));
+                    if (editPart.getModel() instanceof PictogramElement) {
+                        GraphElement ge = (GraphElement) ((DiagramEditorPage) editor.getDiagramEditorPage()).getDiagramTypeProvider()
+                                .getFeatureProvider().getBusinessObjectForPictogramElement((PictogramElement) editPart.getModel());
+                        if (ge != null) {
+                            if (structuredSelection.size() == 1) {
+                                log(editor.getDefinition(), UserAction.GE_Select.asString(ge));
+                            } else {
+                                log(editor.getDefinition(), UserAction.GE_AddToSelection.asString(ge));
+                            }
                         }
                     }
                 }
