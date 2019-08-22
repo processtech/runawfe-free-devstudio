@@ -63,6 +63,7 @@ public class ComboParameter extends ParameterType {
             for (ComboOption option : parameter.getOptions()) {
                 if (option.isDefault()) {
                     viewer.setSelection(new StructuredSelection(option));
+                    listener.propertyChange(new PropertyChangeEvent(viewer, PropertyNames.PROPERTY_VALUE, oldValue, option.getValue()));
                     break;
                 }
             }
