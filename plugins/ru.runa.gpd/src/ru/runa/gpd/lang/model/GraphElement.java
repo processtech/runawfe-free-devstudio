@@ -434,6 +434,7 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
 
     public GraphElement makeCopy(GraphElement parent) {
         GraphElement copy = getTypeDefinition().createElement(parent, false);
+        copy.setId(parent.getProcessDefinition().getNextNodeId());
         if (this instanceof Describable) {
             copy.setDescription(getDescription());
         }
