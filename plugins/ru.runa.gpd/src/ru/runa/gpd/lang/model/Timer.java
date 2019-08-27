@@ -1,11 +1,9 @@
 package ru.runa.gpd.lang.model;
 
 import java.util.List;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.lang.NodeTypeDefinition;
@@ -117,11 +115,16 @@ public class Timer extends Node implements IBoundaryEvent, IBoundaryEventContain
         if (getAction() != null) {
             copy.setAction(getAction().makeCopy(parent.getProcessDefinition()));
         }
-        if (getDelay() != null) {
-            copy.setDelay(new Duration(getDelay()));
-        }
         copy.setParentContainer(parent);
         return copy;
+    }
+
+    @Override
+    protected void fillCopyCustomFields(GraphElement copy) {
+        super.fillCopyCustomFields(copy);
+        if (getDelay() != null) {
+            ((Timer) copy).setDelay(new Duration(getDelay()));
+        }
     }
 
     @Override

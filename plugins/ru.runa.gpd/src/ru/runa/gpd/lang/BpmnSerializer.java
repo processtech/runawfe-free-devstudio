@@ -653,6 +653,7 @@ public class BpmnSerializer extends ProcessSerializer {
     public void parseXML(Document document, ProcessDefinition definition) {
         Element definitionsElement = document.getRootElement();
         Element processElement = definitionsElement.element(PROCESS);
+        definition.setInvalid(!Boolean.parseBoolean(processElement.attributeValue(EXECUTABLE, "true")));
         Map<String, String> processProperties = parseExtensionProperties(processElement);
         init(definition, processElement, processProperties);
         String defaultTaskTimeout = processProperties.get(DEFAULT_TASK_DEADLINE);

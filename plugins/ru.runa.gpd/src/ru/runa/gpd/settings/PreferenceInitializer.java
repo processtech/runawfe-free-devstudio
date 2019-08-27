@@ -23,8 +23,9 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer impleme
         store.setDefault(P_FORM_WEB_SERVER_PORT, "48780");
         store.setDefault(P_FORM_EXTERNAL_EDITOR_PATH, "");
         store.setDefault(P_FORM_USE_EXTERNAL_EDITOR, false);
-        store.setDefault(P_WFE_CONNECTION_TYPE, "jboss7.ws");
+        store.setDefault(P_FORM_IGNORE_ERRORS_FROM_WEBPAGE, true);
         store.setDefault(P_WFE_CONNECTION_HOST, "localhost");
+        store.setDefault(P_WFE_CONNECTION_PROTOCOL, "http");
         store.setDefault(P_WFE_CONNECTION_PORT, "8080");
         store.setDefault(P_WFE_CONNECTION_VERSION, "auto");
         store.setDefault(P_WFE_CONNECTION_LOGIN_MODE, LOGIN_MODE_LOGIN_PASSWORD);
@@ -36,6 +37,8 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer impleme
         store.setDefault(P_ENABLE_REGULATIONS_MENU_ITEMS, Localization.getString("disable"));
         store.setDefault(P_ENABLE_EXPORT_WITH_SCALING, Localization.getString("disable"));
         store.setDefault(P_CONFIRM_DELETION, true);
+        store.setDefault(P_PROCESS_SAVE_HISTORY, true);
+        store.setDefault(P_PROCESS_SAVEPOINT_NUMBER, 10);
         // PreferenceConverter.FONTDATA_DEFAULT_DEFAULT
         // backward compatibility
         store.setDefault(LanguageElementPreferenceNode.getBpmnDefaultPropertyName(P_BPMN_FONT), new FontData("Arial", 8, SWT.NORMAL).toString());

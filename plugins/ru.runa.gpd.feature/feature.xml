@@ -6,7 +6,7 @@
       provider-name="Process Technologies Ltd.">
 
    <license url="">
-      
+      [Enter License Description here.]
    </license>
 
    <requires>
@@ -74,6 +74,13 @@
 
    <plugin
          id="ru.runa.gpd.office"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="ru.runa.gpd.apis_removed_from_j11"
          download-size="0"
          install-size="0"
          version="0.0.0"

@@ -7,7 +7,6 @@ import com.google.common.collect.Maps;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -26,7 +25,9 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.ITextListener;
 import org.eclipse.jface.text.ITextSelection;
+import org.eclipse.jface.text.TextEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -49,10 +50,10 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.texteditor.ITextEditor;
+import ru.runa.gpd.Activator;
 import ru.runa.gpd.EditorsPlugin;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
-import ru.runa.gpd.extension.VariableFormatRegistry;
 import ru.runa.gpd.formeditor.WebServerUtils;
 import ru.runa.gpd.formeditor.ftl.Component;
 import ru.runa.gpd.formeditor.ftl.ComponentIdGenerator;
@@ -73,6 +74,7 @@ import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.gpd.lang.par.ParContentProvider;
+import ru.runa.gpd.settings.PrefConstants;
 import ru.runa.gpd.ui.view.SelectionProvider;
 import ru.runa.gpd.util.EditorUtils;
 import ru.runa.gpd.util.IOUtils;
@@ -101,6 +103,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
 
     private boolean dirty = false;
     private boolean browserLoaded = false;
+    private Object dirtySource = null;
     private static FormEditor lastInitializedInstance;
     private static boolean browserCreationErrorWasShownToUser;
 
@@ -214,7 +217,6 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
             return new HashMap<String, Variable>();
         }
         List<Variable> variables = formNode.getVariables(true, true);
-
         if (cachedForVariablesCount != variables.size()) {
             cachedForVariablesCount = variables.size();
             cachedVariables.clear();
@@ -222,24 +224,11 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
         if (!cachedVariables.containsKey(typeClassNameFilter)) {
             // get variables without strong-typing. (all hierarchy)
             if (!Strings.isNullOrEmpty(typeClassNameFilter) && !Object.class.getName().equals(typeClassNameFilter)) {
-                List<String> filterHierarchy = VariableFormatRegistry.getInstance().getSuperClassNames(typeClassNameFilter);
-                for (Variable variable : new ArrayList<Variable>(variables)) {
-                    boolean applicable = false;
-                    for (String className : filterHierarchy) {
-                        if (VariableFormatRegistry.isAssignableFrom(variable.getJavaClassName(), typeClassNameFilter)
-                                || VariableFormatRegistry.isAssignableFrom(typeClassNameFilter, variable.getJavaClassName())) {
-                            if (VariableFormatRegistry.isApplicable(variable, className)) {
-                                applicable = true;
-                                break;
-                            }
-                        }
-                    }
-                    if (!applicable) {
-                        variables.remove(variable);
-                    }
-                }
+                variables = formNode.getVariables(true, true, typeClassNameFilter);
+                cachedVariables.put(typeClassNameFilter, VariableUtils.toMap(variables));
+            } else {
+                cachedVariables.put(typeClassNameFilter, VariableUtils.toMap(variables));
             }
-            cachedVariables.put(typeClassNameFilter, VariableUtils.toMap(variables));
         }
         return cachedVariables.get(typeClassNameFilter);
     }
@@ -260,9 +249,16 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
         }
     }
 
+    private ITextListener sourceEditorListener = new ITextListener() {
+
+        @Override
+        public void textChanged(TextEvent event) {
+            dirtySource = sourceEditor;
+        }
+    };
+
     @Override
     protected void createPages() {
-        sourceEditor = new HTMLSourceEditor(new HTMLConfiguration(EditorsPlugin.getDefault().getColorProvider()));
         int pageNumber = 0;
         try {
             browser = new Browser(getContainer(), SWT.NULL);
@@ -274,6 +270,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
             new OnLoadCallbackFunction(browser);
             new MarkEditorDirtyCallbackFunction(browser);
             new RefreshViewCallbackFunction(browser);
+            new LogErrorCallbackFunction(browser);
             browser.addProgressListener(new ProgressAdapter() {
                 @Override
                 public void completed(ProgressEvent event) {
@@ -291,8 +288,10 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
             }
         }
         try {
+            sourceEditor = new HTMLSourceEditor(new HTMLConfiguration(EditorsPlugin.getDefault().getColorProvider()));
             addPage(sourceEditor, getEditorInput());
             setPageText(pageNumber++, Messages.getString("wysiwyg.source.tab_name"));
+            sourceEditor.getViewer().addTextListener(sourceEditorListener);
         } catch (Exception ex) {
             PluginLogger.logError(Messages.getString("wysiwyg.source.create_error"), ex);
         }
@@ -388,14 +387,16 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
     @Override
     public void doSave(IProgressMonitor monitor) {
         if (isDirty()) {
-            if (getActivePage() != 1 && isBrowserLoaded()) {
-                if (!syncBrowser2Editor()) {
-                    throw new InternalApplicationException(Messages.getString("wysiwyg.design.save_error"));
+            if (dirtySource == browser) {
+                if (isBrowserLoaded()) {
+                    if (!syncBrowser2Editor()) {
+                        throw new InternalApplicationException(Messages.getString("wysiwyg.design.save_error"));
+                    }
                 }
-            }
-            if (getActivePage() == 1) {
+            } else if (dirtySource == sourceEditor) {
                 syncEditor2Browser();
             }
+            dirtySource = null;
             sourceEditor.doSave(monitor);
             if (isBrowserLoaded()) {
                 browser.execute("setHTMLSaved()");
@@ -416,6 +417,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
 
     @Override
     public void dispose() {
+        sourceEditor.getViewer().removeTextListener(sourceEditorListener);
         firePropertyChange(CLOSED);
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
         super.dispose();
@@ -636,6 +638,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
                 PluginLogger.logInfo("Invoked OnLoadCallbackFunction");
             }
             setBrowserLoaded(true);
+            browser.execute("setIgnoreErrors(" + Activator.getPrefBoolean(PrefConstants.P_FORM_IGNORE_ERRORS_FROM_WEBPAGE) + ")");
             return null;
         }
     }
@@ -648,6 +651,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
 
         @Override
         public Object function(Object[] arguments) {
+            dirtySource = browser;
             setDirty(true, true);
             return null;
         }
@@ -662,6 +666,18 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
         @Override
         public Object function(Object[] arguments) {
             refreshView();
+            return null;
+        }
+    }
+
+    private class LogErrorCallbackFunction extends BrowserFunction {
+        public LogErrorCallbackFunction(Browser browser) {
+            super(browser, "logErrorCallback");
+        }
+
+        @Override
+        public Object function(Object[] arguments) {
+            PluginLogger.logErrorWithoutDialog((String) arguments[0]);
             return null;
         }
     }

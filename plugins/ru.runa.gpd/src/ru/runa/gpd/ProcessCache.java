@@ -1,5 +1,6 @@
 package ru.runa.gpd;
 
+import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -7,19 +8,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-
 import ru.runa.gpd.lang.NodeRegistry;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.util.IOUtils;
-
-import com.google.common.collect.Lists;
 
 public class ProcessCache {
     private static Map<IFile, ProcessDefinition> CACHE_BY_FILE = new HashMap<IFile, ProcessDefinition>();
@@ -132,10 +129,10 @@ public class ProcessCache {
         return CACHE_BY_FILE.get(file);
     }
 
-    public static ProcessDefinition getFirstProcessDefinition(String name) {
+    public static ProcessDefinition getFirstProcessDefinition(String name, String desirableProjectName) {
         if (!CACHE_BY_NAME.containsKey(name)) {
             try {
-                IFile file = getFirstProcessDefinitionFile(name);
+                IFile file = getFirstProcessDefinitionFile(name, desirableProjectName);
                 if (file != null) {
                     ProcessDefinition definition = NodeRegistry.parseProcessDefinition(file);
                     cacheProcessDefinition(file, definition);
@@ -151,16 +148,28 @@ public class ProcessCache {
     /**
      * Get process definition file or <code>null</code>.
      */
-    public static IFile getFirstProcessDefinitionFile(String name) {
+    public static IFile getFirstProcessDefinitionFile(String processName, String desirableProjectName) {
         try {
+            IFile firstFile = null;
             for (IFile file : IOUtils.getAllProcessDefinitionFiles()) {
-                if (name.equals(file.getParent().getName())) {
-                    return file;
+                if (processName.equals(file.getParent().getName())) {
+                    if (desirableProjectName == null) {
+                        return file;
+                    } else if (file.getProject().getName().equals(desirableProjectName)) {
+                        return file;
+                    } else {
+                        if (firstFile == null) {
+                            firstFile = file;
+                        }
+                    }
                 }
             }
-            PluginLogger.logInfo("No process definition found by name: " + name);
+            if (firstFile != null) {
+                return firstFile;
+            }
+            PluginLogger.logInfo("No process definition found by name: " + processName);
         } catch (Exception e) {
-            PluginLogger.logError("Parsing process definition failed: " + name, e);
+            PluginLogger.logError("Parsing process definition failed: " + processName, e);
             return null;
         }
         return null;

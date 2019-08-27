@@ -210,17 +210,17 @@ public abstract class FormNode extends SwimlanedNode {
     }
 
     @Override
-    public FormNode makeCopy(GraphElement parent) {
-        FormNode copy = (FormNode) super.makeCopy(parent);
+    protected void fillCopyCustomFields(GraphElement aCopy) {
+        super.fillCopyCustomFields(aCopy);
+        FormNode copy = (FormNode) aCopy;
         copy.setFormType(getFormType());
         if (hasForm()) {
-            copy.setFormFileName(copy.getId() + "." + getFormType());
+            copy.setFormFileName(aCopy.getId() + "." + getFormType());
         }
         if (hasFormTemplate()) {
             copy.setTemplateFileName(getTemplateFileName());
         }
         copy.setUseJSValidation(isUseJSValidation());
-        return copy;
     }
 
     @Override

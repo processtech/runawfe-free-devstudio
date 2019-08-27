@@ -1,12 +1,11 @@
 package ru.runa.gpd.lang.model;
 
+import com.google.common.base.Objects;
+import com.google.common.base.Strings;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.extension.HandlerArtifact;
 import ru.runa.gpd.util.Duration;
 import ru.runa.wfe.extension.handler.EscalationActionHandler;
-
-import com.google.common.base.Objects;
-import com.google.common.base.Strings;
 
 public class TimerAction extends GraphElement implements Delegable {
     private final ProcessDefinition processDefinition;
