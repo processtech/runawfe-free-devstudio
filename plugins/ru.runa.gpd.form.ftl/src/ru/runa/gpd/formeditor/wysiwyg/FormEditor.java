@@ -401,7 +401,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
             if (isBrowserLoaded()) {
                 browser.execute("setHTMLSaved()");
             }
-            setDirty(false, false);
+            setDirty(false, !(this instanceof JointFormEditor));
         }
     }
 
