@@ -254,7 +254,7 @@ public abstract class ProcessEditorBase extends MultiPageEditorPart implements I
         GEFImageHelper.save(getGraphicalViewer(), definition, getGraphImagePath());
         try {
             ProcessDefinitionValidator.validateDefinition(definition);
-            WorkspaceOperations.saveProcessDefinition(definitionFile, definition);
+            WorkspaceOperations.saveProcessDefinition(definition);
             getCommandStack().markSaveLocation();
             definition.setDirty(false);
             ProcessSaveHistory.addSavepoint(definitionFile);

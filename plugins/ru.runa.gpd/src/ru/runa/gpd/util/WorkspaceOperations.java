@@ -269,7 +269,7 @@ public class WorkspaceOperations {
             IFile newDefinitionFile = IOUtils.getProcessDefinitionFile(newDefinitionFolder);
             definition = ProcessCache.getProcessDefinition(newDefinitionFile);
             definition.setName(newName);
-            saveProcessDefinition(newDefinitionFile, definition);
+            saveProcessDefinition(definition);
             ProcessCache.newProcessDefinitionWasCreated(newDefinitionFile);
             ProcessSaveHistory.clear(oldDefinitionFolder);
             oldDefinitionFolder.delete(true, new NullProgressMonitor());
@@ -304,7 +304,7 @@ public class WorkspaceOperations {
                         if (editor != null) {
                             page.closeEditor(editor, false);
                         }
-                        saveProcessDefinition(definitionFile, definition);
+                        saveProcessDefinition(definition);
                         ProcessCache.invalidateProcessDefinition(definitionFile);
                         break;
                     }
@@ -318,7 +318,7 @@ public class WorkspaceOperations {
                             if (editor != null) {
                                 page.closeEditor(editor, false);
                             }
-                            saveProcessDefinition(file, subdefinition);
+                            saveProcessDefinition(subdefinition);
                             ProcessCache.invalidateProcessDefinition(file);
                             break;
                         }
@@ -326,7 +326,7 @@ public class WorkspaceOperations {
                 }
                 subprocessDefinition.setName(newName);
                 
-                saveProcessDefinition(subdefinitionFile, subprocessDefinition);
+                saveProcessDefinition(subprocessDefinition);
                 ProcessCache.invalidateProcessDefinition(subdefinitionFile);
                 refreshResource(definitionFolder);
             } catch (Exception e) {
@@ -335,13 +335,13 @@ public class WorkspaceOperations {
         }
     }
 
-    public static void saveProcessDefinition(IFile definitionFile, ProcessDefinition definition) throws Exception {
+    public static void saveProcessDefinition(ProcessDefinition definition) throws Exception {
         ProcessSerializer serializer = definition.getLanguage().getSerializer();
         Document document = serializer.getInitialProcessDefinitionDocument(definition.getName(), null);
         serializer.saveToXML(definition, document);
         byte[] bytes = XmlUtil.writeXml(document);
-        ParContentProvider.saveAuxInfo(definitionFile, definition);
-        definitionFile.setContents(new ByteArrayInputStream(bytes), true, false, null);
+        ParContentProvider.saveAuxInfo(definition.getFile(), definition);
+        definition.getFile().setContents(new ByteArrayInputStream(bytes), true, false, null);
     }
 
     public static ProcessEditorBase openProcessDefinition(IFile definitionFile) {

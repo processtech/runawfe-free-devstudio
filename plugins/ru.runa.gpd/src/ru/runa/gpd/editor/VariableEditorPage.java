@@ -269,7 +269,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
             if (useLtk) {
                 IDE.saveAllEditors(new IResource[] { projectRoot }, false);
                 for (SubprocessDefinition subprocessDefinition : editor.getDefinition().getEmbeddedSubprocesses().values()) {
-                    WorkspaceOperations.saveProcessDefinition(subprocessDefinition.getFile(), subprocessDefinition);
+                    WorkspaceOperations.saveProcessDefinition(subprocessDefinition);
                 }
             }
         }
@@ -482,7 +482,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
             if (useLtk && editor.getDefinition().getEmbeddedSubprocesses().size() > 0) {
                 IDE.saveAllEditors(new IResource[] { projectRoot }, false);
                 for (SubprocessDefinition subprocessDefinition : editor.getDefinition().getEmbeddedSubprocesses().values()) {
-                    WorkspaceOperations.saveProcessDefinition(subprocessDefinition.getFile(), subprocessDefinition);
+                    WorkspaceOperations.saveProcessDefinition(subprocessDefinition);
                 }
             }
         }
