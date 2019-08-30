@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<variables>
+  <variable name="requester" scriptingName="requester" format="ru.runa.wfe.var.format.ExecutorFormat" swimlane="true"/>
+  <variable name="WebServiceBot" scriptingName="WebServiceBot" format="ru.runa.wfe.var.format.ExecutorFormat" swimlane="true" editor="SwimlaneElement.BotLabel"/>
+  <variable name="rates_date" scriptingName="rates_date" format="ru.runa.wfe.var.format.StringFormat"/>
+  <variable name="rates_information" scriptingName="rates_information" format="ru.runa.wfe.var.format.FormattedTextFormat"/>
+</variables>

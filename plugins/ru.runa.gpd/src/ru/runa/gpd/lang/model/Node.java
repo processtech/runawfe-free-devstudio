@@ -316,11 +316,11 @@ public abstract class Node extends NamedGraphElement implements Describable {
     }
 
     @Override
-    public Node makeCopy(GraphElement parent) {
-        Node copy = (Node) super.makeCopy(parent);
-        copy.setMinimizedView(isMinimizedView());
-        copy.setAsyncExecution(getAsyncExecution());
-        copy.setInterruptingBoundaryEvent(isInterruptingBoundaryEvent());
+    protected void fillCopyCustomFields(GraphElement copy) {
+        super.fillCopyCustomFields(copy);
+        ((Node) copy).setMinimizedView(isMinimizedView());
+        ((Node) copy).setAsyncExecution(getAsyncExecution());
+        ((Node) copy).setInterruptingBoundaryEvent(isInterruptingBoundaryEvent());
         if (this instanceof ITimed) {
             Timer timer = ((ITimed) this).getTimer();
             if (timer != null) {
@@ -337,7 +337,6 @@ public abstract class Node extends NamedGraphElement implements Describable {
             ((Synchronizable) copy).setAsync(((Synchronizable) this).isAsync());
             ((Synchronizable) copy).setAsyncCompletionMode(((Synchronizable) this).getAsyncCompletionMode());
         }
-        return copy;
     }
 
     @Override

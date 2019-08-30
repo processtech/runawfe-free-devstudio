@@ -50,6 +50,7 @@ import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.SubprocessMap;
 import ru.runa.gpd.editor.BotTaskEditor;
 import ru.runa.gpd.editor.ProcessEditorBase;
+import ru.runa.gpd.editor.ProcessSaveHistory;
 import ru.runa.gpd.editor.gef.GEFProcessEditor;
 import ru.runa.gpd.editor.graphiti.GraphitiProcessEditor;
 import ru.runa.gpd.extension.DelegableProvider;
@@ -66,6 +67,7 @@ import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.ui.dialog.DataSourceDialog;
+import ru.runa.gpd.ui.dialog.ProcessSaveHistoryDialog;
 import ru.runa.gpd.ui.dialog.RenameBotDialog;
 import ru.runa.gpd.ui.dialog.RenameBotStationDialog;
 import ru.runa.gpd.ui.dialog.RenameBotTaskDialog;
@@ -153,6 +155,9 @@ public class WorkspaceOperations {
                                 testResource.delete(true, null);
                             }
                         }
+                    }
+                    if (folderResource && IOUtils.isProcessDefinitionFolder((IFolder) resource)) {
+                        ProcessSaveHistory.clear((IFolder) resource);
                     }
                     resource.delete(true, null);
                     deletedDefinitions.addAll(tmpFiles);
@@ -266,6 +271,7 @@ public class WorkspaceOperations {
             definition.setName(newName);
             saveProcessDefinition(definition);
             ProcessCache.newProcessDefinitionWasCreated(newDefinitionFile);
+            ProcessSaveHistory.clear(oldDefinitionFolder);
             oldDefinitionFolder.delete(true, new NullProgressMonitor());
             refreshResource(newDefinitionFolder);
         } catch (Exception e) {
@@ -400,6 +406,10 @@ public class WorkspaceOperations {
         wizard.init(PlatformUI.getWorkbench(), selection);
         CompactWizardDialog dialog = new CompactWizardDialog(wizard);
         dialog.open();
+    }
+
+    public static void showProcessSaveHistory(IStructuredSelection selection) {
+        new ProcessSaveHistoryDialog((IFolder) selection.getFirstElement()).open();
     }
 
     public static void deleteBotResources(List<IResource> resources) {

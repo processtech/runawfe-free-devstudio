@@ -2,9 +2,12 @@ package ru.runa.gpd.settings;
 
 import java.text.SimpleDateFormat;
 import org.eclipse.jface.preference.BooleanFieldEditor;
+import org.eclipse.jface.preference.FieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
+import org.eclipse.jface.preference.IntegerFieldEditor;
 import org.eclipse.jface.preference.RadioGroupFieldEditor;
 import org.eclipse.jface.preference.StringFieldEditor;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import ru.runa.gpd.Activator;
@@ -12,6 +15,8 @@ import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.Language;
 
 public class CommonPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage, PrefConstants {
+
+    IntegerFieldEditor savepointNumberEditor;
 
     public CommonPreferencePage() {
         super(GRID);
@@ -47,6 +52,12 @@ public class CommonPreferencePage extends FieldEditorPreferencePage implements I
                         { Localization.getString("enable"), Localization.getString("enable") } },
                 getFieldEditorParent()));
         addField(new BooleanFieldEditor(P_CONFIRM_DELETION, Localization.getString("pref.commons.confirmDeletion"), getFieldEditorParent()));
+        addField(new BooleanFieldEditor(P_PROCESS_SAVE_HISTORY, Localization.getString("pref.commons.processSaveHistory"), getFieldEditorParent()));
+        savepointNumberEditor = new IntegerFieldEditor(P_PROCESS_SAVEPOINT_NUMBER,
+                Localization.getString("pref.commons.processSavepointNumber"), getFieldEditorParent(), 2);
+        savepointNumberEditor.setValidRange(1, 99);
+        savepointNumberEditor.setEnabled(Activator.getPrefBoolean(P_PROCESS_SAVE_HISTORY), getFieldEditorParent());
+        addField(savepointNumberEditor);
     }
 
     public static boolean isRegulationsMenuItemsEnabled() {
@@ -55,6 +66,17 @@ public class CommonPreferencePage extends FieldEditorPreferencePage implements I
 
     public static boolean isExportWithScalingEnabled() {
         return Activator.getDefault().getPreferenceStore().getString(P_ENABLE_EXPORT_WITH_SCALING).equals(Localization.getString("enable"));
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent event) {
+        super.propertyChange(event);
+        if (FieldEditor.VALUE.equals(event.getProperty())) {
+            FieldEditor fieldEditor = (FieldEditor) event.getSource();
+            if (P_PROCESS_SAVE_HISTORY.equals(fieldEditor.getPreferenceName())) {
+                savepointNumberEditor.setEnabled((Boolean) event.getNewValue(), getFieldEditorParent());
+            }
+        }
     }
 
 }

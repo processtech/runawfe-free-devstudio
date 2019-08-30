@@ -83,7 +83,7 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
             boolean inputDataAllowedInAsyncSubProcess = store.contains(propertyName) ? store.getBoolean(propertyName) : false;
             for (VariableMapping mapping : variableMappings) {
                 if (isAsync() && mapping.isWritable() && !inputDataAllowedInAsyncSubProcess) {
-                    errors.add(ValidationError.createLocalizedError(this, "subprocess.asyncVariablesInput"));
+                    errors.add(ValidationError.createLocalizedWarning(this, "subprocess.asyncVariablesInput"));
                     break;
                 }
             }
@@ -196,15 +196,14 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
     }
 
     @Override
-    public Subprocess makeCopy(GraphElement parent) {
-        Subprocess copy = (Subprocess) super.makeCopy(parent);
+    protected void fillCopyCustomFields(GraphElement copy) {
+        super.fillCopyCustomFields(copy);
         // we are not copy embedded subprocess
-        copy.setSubProcessName(embedded ? "" : getSubProcessName());
+        ((Subprocess) copy).setSubProcessName(embedded ? "" : getSubProcessName());
         for (VariableMapping mapping : getVariableMappings()) {
-            copy.getVariableMappings().add(mapping.getCopy());
+            ((Subprocess) copy).getVariableMappings().add(mapping.getCopy());
         }
-        copy.setEmbedded(isEmbedded());
-        return copy;
+        ((Subprocess) copy).setEmbedded(isEmbedded());
     }
 
     @Override

@@ -1,7 +1,6 @@
 package ru.runa.gpd.ui.view;
 
 import java.util.List;
-
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -33,12 +32,12 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.editor.ProcessEditorBase;
+import ru.runa.gpd.editor.ProcessSaveHistory;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.search.SubprocessSearchQuery;
@@ -272,6 +271,15 @@ public class ProcessExplorerTreeView extends ViewPart implements ISelectionListe
                     } catch (Exception ex) {
                         PluginLogger.logError(ex);
                     }
+                }
+            });
+        }
+        if (menuOnProcess && ProcessSaveHistory.isActive()) {
+            manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.showSaveHistory"),
+                    SharedImages.getImageDescriptor("icons/saveall_edit.gif")) {
+                @Override
+                public void run() {
+                    WorkspaceOperations.showProcessSaveHistory(selection);
                 }
             });
         }
