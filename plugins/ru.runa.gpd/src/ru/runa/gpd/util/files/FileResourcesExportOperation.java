@@ -16,12 +16,12 @@ import ru.runa.gpd.util.LambdaUtils;
  * @since Aug 6, 2019
  */
 @SuppressWarnings("restriction")
-public class FileResourcessExportOperation {
+public class FileResourcesExportOperation {
 
     protected final List<IFile> resourcesToExport;
     protected final IFileExporter exporter;
 
-    public FileResourcessExportOperation(List<IFile> resourcesToExport, IFileExporter exporter) {
+    public FileResourcesExportOperation(List<IFile> resourcesToExport, IFileExporter exporter) {
         this.resourcesToExport = resourcesToExport;
         this.exporter = exporter;
     }

@@ -21,7 +21,7 @@ import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.settings.PrefConstants;
 import ru.runa.gpd.util.IOUtils;
-import ru.runa.gpd.util.files.FileResourcessExportOperation;
+import ru.runa.gpd.util.files.FileResourcesExportOperation;
 import ru.runa.gpd.util.files.ParFileExporter;
 import ru.runa.gpd.util.files.ZipFileExporter;
 
@@ -48,7 +48,7 @@ public class ProcessSaveHistory {
             new ParFileExporter(processDefinitionFile)
                     .export(true,
                             (definition, resourcesToExport) -> Optional.of(
-                                    new FileResourcessExportOperation(resourcesToExport, new ZipFileExporter(new FileOutputStream(outputFileName)))));
+                                    new FileResourcesExportOperation(resourcesToExport, new ZipFileExporter(new FileOutputStream(outputFileName)))));
             File[] savepoints = historyFolder.listFiles();
             if (savepoints != null) {
                 int savepointNumber = Activator.getDefault().getPreferenceStore().getInt(PrefConstants.P_PROCESS_SAVEPOINT_NUMBER);

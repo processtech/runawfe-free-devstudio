@@ -1,18 +1,25 @@
 package ru.runa.gpd.ui.wizard;
 
-import com.google.common.base.Strings;
-import com.google.common.base.Throwables;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.Optional;
 import java.util.TreeMap;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -31,10 +38,16 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.ui.internal.wizards.datatransfer.WizardArchiveFileResourceExportPage1;
+
+import com.google.common.base.Strings;
+import com.google.common.base.Throwables;
+
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
+import ru.runa.gpd.aspects.UserActivity;
+import ru.runa.gpd.editor.ProcessSaveHistory;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.settings.WFEConnectionPreferencePage;
@@ -42,7 +55,7 @@ import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.custom.SyncUIHelper;
 import ru.runa.gpd.util.IOUtils;
-import ru.runa.gpd.util.files.FileResourcessExportOperation;
+import ru.runa.gpd.util.files.FileResourcesExportOperation;
 import ru.runa.gpd.util.files.ParFileExporter;
 import ru.runa.gpd.util.files.ZipFileExporter;
 import ru.runa.gpd.wfe.WFEServerProcessDefinitionImporter;
@@ -204,8 +217,30 @@ public class ExportParWizardPage extends WizardArchiveFileResourceExportPage1 {
                             return Optional.empty();
                         }
                         final String outputFileName = getDestinationValue() + definition.getName() + ".par";
+                        if (ProcessSaveHistory.isActive()) {
+                        	IFolder processFolder = (IFolder) definitionFile.getParent();
+                            Map<String, File> savepoints = ProcessSaveHistory.getSavepoints(processFolder);
+                            if (savepoints.size() > 0) {
+                                List<File> filesToExport = new ArrayList<>();
+                                for (Map.Entry<String, File> savepoint : savepoints.entrySet()) {
+                                    filesToExport.add(savepoint.getValue());
+                                }
+                                // TODO 5364 include this file
+                                // filesToExport.add(new File(outputFileName));
+                                String oldestSavepointName = ((NavigableMap<String, File>) savepoints).lastEntry().getValue().getName();
+                                String oldestTimestamp = oldestSavepointName.substring(oldestSavepointName.lastIndexOf("_") + 1,
+                                        oldestSavepointName.lastIndexOf("."));
+                                Map<String, File> uaLogs = UserActivity.getLogs(processFolder);
+                                for (Map.Entry<String, File> uaLog : uaLogs.entrySet()) {
+                                    if (oldestTimestamp.compareTo(uaLog.getKey()) <= 0) {
+                                        filesToExport.add(uaLog.getValue());
+                                    }
+                                }
+                                zip(filesToExport, new FileOutputStream(getDestinationValue() + definition.getName() + ".har"));
+                            }
+                        }
                         return Optional
-                                .of(new FileResourcessExportOperation(resourcesToExport, new ZipFileExporter(new FileOutputStream(outputFileName))));
+                                .of(new FileResourcesExportOperation(resourcesToExport, new ZipFileExporter(new FileOutputStream(outputFileName))));
                     } else {
                         return Optional.of(new ParDeployOperation(resourcesToExport, definition.getName(), new ByteArrayOutputStream(),
                                 updateLatestVersionButton.getSelection()));
@@ -252,7 +287,7 @@ public class ExportParWizardPage extends WizardArchiveFileResourceExportPage1 {
         }
     }
 
-    private class ParDeployOperation extends FileResourcessExportOperation {
+    private class ParDeployOperation extends FileResourcesExportOperation {
         private final ByteArrayOutputStream outputStream;
         private final String definitionName;
         private final boolean updateLatestVersion;
@@ -270,6 +305,28 @@ public class ExportParWizardPage extends WizardArchiveFileResourceExportPage1 {
             super.exportResources(progressMonitor);
             WFEServerProcessDefinitionImporter.getInstance().uploadPar(definitionName, updateLatestVersion, outputStream.toByteArray(), true);
         }
+    }
+
+    private void zip(List<File> files, OutputStream os) throws IOException, CoreException {
+        ZipOutputStream zos = new ZipOutputStream(os);
+        for (File file : files) {
+            ZipEntry newEntry = new ZipEntry(file.getName());
+            byte[] readBuffer = new byte[1024];
+            zos.putNextEntry(newEntry);
+            InputStream cos = new FileInputStream(file);
+            try {
+                int n;
+                while ((n = cos.read(readBuffer)) > 0) {
+                    zos.write(readBuffer, 0, n);
+                }
+            } finally {
+                if (cos != null) {
+                    cos.close();
+                }
+            }
+            zos.closeEntry();
+        }
+        zos.close();
     }
 
 }

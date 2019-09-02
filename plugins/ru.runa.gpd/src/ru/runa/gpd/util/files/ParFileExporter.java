@@ -64,7 +64,7 @@ public class ParFileExporter {
 
     public static interface ExportOperationSupplier {
 
-        Optional<FileResourcessExportOperation> get(ProcessDefinition definition, List<IFile> resourcesToExport) throws Exception;
+        Optional<FileResourcesExportOperation> get(ProcessDefinition definition, List<IFile> resourcesToExport) throws Exception;
 
     }
 
