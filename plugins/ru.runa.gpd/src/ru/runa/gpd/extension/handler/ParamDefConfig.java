@@ -1,5 +1,7 @@
 package ru.runa.gpd.extension.handler;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.Sets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -7,22 +9,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.dom4j.Branch;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dom4j.io.OutputFormat;
-
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.handler.ParamDef.Presentation;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.util.XmlUtil;
-
-import com.google.common.base.Strings;
-import com.google.common.collect.Sets;
 
 @SuppressWarnings("unchecked")
 public class ParamDefConfig {
@@ -265,7 +262,7 @@ public class ParamDefConfig {
                 if (param.getXmlNodeType() == ParamDef.XML_TYPE_ATTR) {
                     paramElement = DocumentHelper.createElement("param");
                     paramElement.addAttribute("name", paramName);
-                    if (param.isUseVariable() && variableNames.contains(value)) {
+                    if (param.isUseVariable()) {
                         paramElement.addAttribute("variable", value);
                     } else {
                         paramElement.addAttribute("value", value);
