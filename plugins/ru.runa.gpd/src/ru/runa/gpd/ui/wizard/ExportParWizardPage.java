@@ -1,5 +1,7 @@
 package ru.runa.gpd.ui.wizard;
 
+import com.google.common.base.Strings;
+import com.google.common.base.Throwables;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -15,7 +17,6 @@ import java.util.Optional;
 import java.util.TreeMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -38,10 +39,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.ui.internal.wizards.datatransfer.WizardArchiveFileResourceExportPage1;
-
-import com.google.common.base.Strings;
-import com.google.common.base.Throwables;
-
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
@@ -207,38 +204,17 @@ public class ExportParWizardPage extends WizardArchiveFileResourceExportPage1 {
                 return false;
             }
         }
+        boolean result = true;
         for (final String selectedDefinitionName : selectedDefinitionNames) {
             try {
                 final IFile definitionFile = definitionNameFileMap.get(selectedDefinitionName);
-                return new ParFileExporter(definitionFile).export(exportToFile, (definition, resourcesToExport) -> {
+                result &= new ParFileExporter(definitionFile).export(exportToFile, (definition, resourcesToExport) -> {
                     if (exportToFile) {
                         if (definition.isInvalid() && !Dialogs
                                 .confirm(Localization.getString("ExportParWizardPage.confirm.export.invalid.process", definition.getName()))) {
                             return Optional.empty();
                         }
                         final String outputFileName = getDestinationValue() + definition.getName() + ".par";
-                        if (ProcessSaveHistory.isActive()) {
-                        	IFolder processFolder = (IFolder) definitionFile.getParent();
-                            Map<String, File> savepoints = ProcessSaveHistory.getSavepoints(processFolder);
-                            if (savepoints.size() > 0) {
-                                List<File> filesToExport = new ArrayList<>();
-                                for (Map.Entry<String, File> savepoint : savepoints.entrySet()) {
-                                    filesToExport.add(savepoint.getValue());
-                                }
-                                // TODO 5364 include this file
-                                // filesToExport.add(new File(outputFileName));
-                                String oldestSavepointName = ((NavigableMap<String, File>) savepoints).lastEntry().getValue().getName();
-                                String oldestTimestamp = oldestSavepointName.substring(oldestSavepointName.lastIndexOf("_") + 1,
-                                        oldestSavepointName.lastIndexOf("."));
-                                Map<String, File> uaLogs = UserActivity.getLogs(processFolder);
-                                for (Map.Entry<String, File> uaLog : uaLogs.entrySet()) {
-                                    if (oldestTimestamp.compareTo(uaLog.getKey()) <= 0) {
-                                        filesToExport.add(uaLog.getValue());
-                                    }
-                                }
-                                zip(filesToExport, new FileOutputStream(getDestinationValue() + definition.getName() + ".har"));
-                            }
-                        }
                         return Optional
                                 .of(new FileResourcesExportOperation(resourcesToExport, new ZipFileExporter(new FileOutputStream(outputFileName))));
                     } else {
@@ -246,13 +222,34 @@ public class ExportParWizardPage extends WizardArchiveFileResourceExportPage1 {
                                 updateLatestVersionButton.getSelection()));
                     }
                 }, w -> Activator.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(w), e -> setErrorMessage(e));
+                if (exportToFile && result && ProcessSaveHistory.isActive()) {
+                    IFolder processFolder = (IFolder) definitionFile.getParent();
+                    Map<String, File> savepoints = ProcessSaveHistory.getSavepoints(processFolder);
+                    if (savepoints.size() > 0) {
+                        List<File> filesToExport = new ArrayList<>();
+                        for (Map.Entry<String, File> savepoint : savepoints.entrySet()) {
+                            filesToExport.add(savepoint.getValue());
+                        }
+                        filesToExport.add(new File(getDestinationValue() + processFolder.getName() + ".par"));
+                        String oldestSavepointName = ((NavigableMap<String, File>) savepoints).lastEntry().getValue().getName();
+                        String oldestTimestamp = oldestSavepointName.substring(oldestSavepointName.lastIndexOf("_") + 1,
+                                oldestSavepointName.lastIndexOf("."));
+                        Map<String, File> uaLogs = UserActivity.getLogs(processFolder);
+                        for (Map.Entry<String, File> uaLog : uaLogs.entrySet()) {
+                            if (oldestTimestamp.compareTo(uaLog.getKey()) <= 0) {
+                                filesToExport.add(uaLog.getValue());
+                            }
+                        }
+                        zip(filesToExport, new FileOutputStream(getDestinationValue() + processFolder.getName() + ".har"));
+                    }
+                }
             } catch (Throwable th) {
                 PluginLogger.logErrorWithoutDialog(Localization.getString("ExportParWizardPage.error.export"), th);
                 setErrorMessage(Throwables.getRootCause(th).getMessage());
                 return false;
             }
         }
-        return true;
+        return result;
     }
 
     private final static String STORE_DESTINATION_NAMES_ID = "WizardParExportPage1.STORE_DESTINATION_NAMES_ID";
