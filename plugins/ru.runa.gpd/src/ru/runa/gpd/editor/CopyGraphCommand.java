@@ -211,6 +211,26 @@ public class CopyGraphCommand extends Command {
                     }
                 }
             }
+            List<ExtraCopyAction> sortedCopyActions = Lists.newArrayList(copyActions);
+            Collections.sort(sortedCopyActions);
+            List<ExtraCopyAction> userConfirmedActions = new ArrayList<ExtraCopyAction>();
+            for (ExtraCopyAction copyAction : sortedCopyActions) {
+                if (copyAction.isUserConfirmationRequired()) {
+                    copyAction.setEnabled(false);
+                    userConfirmedActions.add(copyAction);
+                }
+            }
+            if (userConfirmedActions.size() > 0) {
+                // display dialog with collisions
+                MultipleSelectionDialog dialog = new MultipleSelectionDialog(Localization.getString("CopyGraphRewriteDialog.title"),
+                        userConfirmedActions);
+                if (dialog.open() != IDialogConstants.OK_ID) {
+                    for (ExtraCopyAction copyAction : userConfirmedActions) {
+                        copyAction.setEnabled(false);
+                    }
+                }
+            }
+            // select new elements
             if (newElements.size() > 0) {
                 if (copyBuffer.getLanguage() == Language.JPDL) {
                     List<EditPart> editParts = new ArrayList<>();
@@ -241,25 +261,6 @@ public class CopyGraphCommand extends Command {
                             }
                         }
                     });
-                }
-            }
-            List<ExtraCopyAction> sortedCopyActions = Lists.newArrayList(copyActions);
-            Collections.sort(sortedCopyActions);
-            List<ExtraCopyAction> userConfirmedActions = new ArrayList<ExtraCopyAction>();
-            for (ExtraCopyAction copyAction : sortedCopyActions) {
-                if (copyAction.isUserConfirmationRequired()) {
-                    copyAction.setEnabled(false);
-                    userConfirmedActions.add(copyAction);
-                }
-            }
-            if (userConfirmedActions.size() > 0) {
-                // display dialog with collisions
-                MultipleSelectionDialog dialog = new MultipleSelectionDialog(Localization.getString("CopyGraphRewriteDialog.title"),
-                        userConfirmedActions);
-                if (dialog.open() != IDialogConstants.OK_ID) {
-                    for (ExtraCopyAction copyAction : userConfirmedActions) {
-                        copyAction.setEnabled(false);
-                    }
                 }
             }
             // run copy actions
@@ -523,7 +524,7 @@ public class CopyGraphCommand extends Command {
                 return null;
             }
             if (!Objects.equal(oldVariable.getFormat(), sourceVariable.getFormat())) {
-                return oldVariable.getFormat() + "/" + sourceVariable.getFormat();
+                return CHANGES_PREFIX_FORMAT + oldVariable.getFormat() + "/" + sourceVariable.getFormat();
             }
             return getDifference(sourceVariable, oldVariable);
         }
@@ -532,7 +533,7 @@ public class CopyGraphCommand extends Command {
             if (srcVariable.isComplex()) {
                 VariableUserType dstUserType = targetDefinition.getVariableUserType(srcVariable.getUserType().getName());
                 if (dstUserType == null) {
-                    return srcVariable.getUserType().getName();
+                    return CHANGES_PREFIX_USER_TYPE + srcVariable.getUserType().getName();
                 } else {
                     List<Variable> dstUserTypeAttributes = dstUserType.getAttributes();
                     for (Variable v : srcVariable.getUserType().getAttributes()) {
@@ -544,7 +545,7 @@ public class CopyGraphCommand extends Command {
                                 }
                             }
                         } else {
-                            return v.getName();
+                            return CHANGES_PREFIX_ATTRIBUTE + v.getName();
                         }
                     }
                 }
@@ -556,7 +557,7 @@ public class CopyGraphCommand extends Command {
                         if (srcUserType != null) {
                             VariableUserType dstUserType = targetDefinition.getVariableUserType(srcUserType.getName());
                             if (dstUserType == null) {
-                                return srcUserType.getName();
+                                return CHANGES_PREFIX_USER_TYPE + srcUserType.getName();
                             } else {
                                 List<Variable> dstUserTypeAttributes = dstUserType.getAttributes();
                                 for (Variable v : srcUserType.getAttributes()) {
@@ -568,7 +569,7 @@ public class CopyGraphCommand extends Command {
                                             }
                                         }
                                     } else {
-                                        return v.getName();
+                                        return CHANGES_PREFIX_ATTRIBUTE + v.getName();
                                     }
                                 }
                             }
@@ -590,8 +591,8 @@ public class CopyGraphCommand extends Command {
 
         private void copyUserType(Variable srcVar) {
             if (srcVar.isComplex()) {
-                VariableUserType userType = targetDefinition.getVariableUserType(srcVar.getUserType().getName());
-                if (userType == null) {
+                VariableUserType dstUserType = targetDefinition.getVariableUserType(srcVar.getUserType().getName());
+                if (dstUserType == null) {
                     targetDefinition.addVariableUserType(srcVar.getUserType().getCopy());
                     for (Variable v : srcVar.getUserType().getAttributes()) {
                         if (v.isComplex() || VariableUtils.isContainerVariable(v)) {
@@ -599,13 +600,13 @@ public class CopyGraphCommand extends Command {
                         }
                     }
                 } else {
-                    List<Variable> userTypeAttributes = userType.getAttributes();
+                    List<Variable> dstUserTypeAttributes = dstUserType.getAttributes();
                     for (Variable v : srcVar.getUserType().getAttributes()) {
-                        if (!userTypeAttributes.contains(v)) {
+                        if (!dstUserTypeAttributes.contains(v)) {
                             if (v.isComplex() || VariableUtils.isContainerVariable(v)) {
                                 copyUserType(v);
                             }
-                            userType.addAttribute(v);
+                            dstUserType.addAttribute(v);
                         }
                     }
                 }
@@ -613,10 +614,10 @@ public class CopyGraphCommand extends Command {
                 String[] componentNames = srcVar.getFormatComponentClassNames();
                 for (String componentName : componentNames) {
                     if (VariableUtils.isValidUserTypeName(componentName)) {
-                        VariableUserType vut = sourceProcessDefinition.getVariableUserType(componentName);
-                        if (vut != null && targetDefinition.getVariableUserType(vut.getName()) == null) {
-                            targetDefinition.addVariableUserType(vut.getCopy());
-                            for (Variable v : vut.getAttributes()) {
+                        VariableUserType srcUserType = sourceProcessDefinition.getVariableUserType(componentName);
+                        if (srcUserType != null && targetDefinition.getVariableUserType(srcUserType.getName()) == null) {
+                            targetDefinition.addVariableUserType(srcUserType.getCopy());
+                            for (Variable v : srcUserType.getAttributes()) {
                                 if (v.isComplex() || VariableUtils.isContainerVariable(v)) {
                                     copyUserType(v);
                                 }

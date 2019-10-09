@@ -1,17 +1,14 @@
 package ru.runa.gpd.editor;
 
+import com.google.common.base.Objects;
 import java.util.List;
-
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.gef.ui.actions.Clipboard;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.util.SelectionItem;
-
-import com.google.common.base.Objects;
 
 public class CopyBuffer {
     public static final String GROUP_ACTION_HANDLERS = Localization.getString("CopyBuffer.ActionHandler");
@@ -77,6 +74,11 @@ public class CopyBuffer {
     }
 
     public static abstract class ExtraCopyAction extends SelectionItem implements Comparable<ExtraCopyAction> {
+
+        protected static final String CHANGES_PREFIX_FORMAT = "Format:";
+        protected static final String CHANGES_PREFIX_USER_TYPE = "UserType:";
+        protected static final String CHANGES_PREFIX_ATTRIBUTE = "Attribute:";
+
         private final String groupName;
         private final String name;
         private String changes;
@@ -102,7 +104,7 @@ public class CopyBuffer {
 
         public final boolean isUserConfirmationRequired() {
             changes = getChanges();
-            return changes != null;
+            return changes != null && !changes.startsWith(CHANGES_PREFIX_ATTRIBUTE);
         }
 
         protected String getChanges() {
