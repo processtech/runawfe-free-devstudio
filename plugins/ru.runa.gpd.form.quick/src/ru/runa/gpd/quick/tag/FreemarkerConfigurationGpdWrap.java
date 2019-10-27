@@ -1,22 +1,18 @@
 package ru.runa.gpd.quick.tag;
 
+import com.google.common.base.Joiner;
+import com.google.common.collect.Maps;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.eclipse.core.runtime.Platform;
 import org.osgi.framework.Bundle;
-
 import ru.runa.wfe.commons.xml.XmlUtils;
-
-import com.google.common.base.Joiner;
-import com.google.common.collect.Maps;
 
 @SuppressWarnings("unchecked")
 public class FreemarkerConfigurationGpdWrap {
@@ -24,7 +20,9 @@ public class FreemarkerConfigurationGpdWrap {
     private static final String TAG_ELEMENT = "ftltag";
     private static final String NAME_ATTR = "name";
     private static final String CLASS_ATTR = "class";
+    private static final String DEFAULT_ATTR = "default";
     private final Map<String, Class<? extends FreemarkerTagGpdWrap>> tags = Maps.newHashMap();
+    private String defaultTagName;
 
     private static FreemarkerConfigurationGpdWrap instance;
 
@@ -67,6 +65,9 @@ public class FreemarkerConfigurationGpdWrap {
                     String className = tagElement.attributeValue(CLASS_ATTR);
                     Class<? extends FreemarkerTagGpdWrap> tagClass = (Class<? extends FreemarkerTagGpdWrap>) bundle.loadClass(className);
                     addTag(name, tagClass);
+                    if (Boolean.parseBoolean(tagElement.attributeValue(DEFAULT_ATTR))) {
+                        defaultTagName = name;
+                    }
                 } catch (Throwable e) {
                     LogFactory.getLog(getClass()).warn("Unable to create freemarker tag " + name, e);
                 }
@@ -99,4 +100,9 @@ public class FreemarkerConfigurationGpdWrap {
     public Set<String> getTagsName() {
     	return tags.keySet();
     }
+
+    public String getDefaultTagName() {
+        return defaultTagName;
+    }
+
 }

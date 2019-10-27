@@ -47,8 +47,10 @@ import ru.runa.gpd.BotCache;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
+import ru.runa.gpd.SubprocessMap;
 import ru.runa.gpd.editor.BotTaskEditor;
 import ru.runa.gpd.editor.ProcessEditorBase;
+import ru.runa.gpd.editor.ProcessSaveHistory;
 import ru.runa.gpd.editor.gef.GEFProcessEditor;
 import ru.runa.gpd.editor.graphiti.GraphitiProcessEditor;
 import ru.runa.gpd.extension.DelegableProvider;
@@ -65,6 +67,7 @@ import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.ui.dialog.DataSourceDialog;
+import ru.runa.gpd.ui.dialog.ProcessSaveHistoryDialog;
 import ru.runa.gpd.ui.dialog.RenameBotDialog;
 import ru.runa.gpd.ui.dialog.RenameBotStationDialog;
 import ru.runa.gpd.ui.dialog.RenameBotTaskDialog;
@@ -152,6 +155,9 @@ public class WorkspaceOperations {
                                 testResource.delete(true, null);
                             }
                         }
+                    }
+                    if (folderResource && IOUtils.isProcessDefinitionFolder((IFolder) resource)) {
+                        ProcessSaveHistory.clear((IFolder) resource);
                     }
                     resource.delete(true, null);
                     deletedDefinitions.addAll(tmpFiles);
@@ -256,21 +262,17 @@ public class WorkspaceOperations {
                 // 2nd parameter save=false prevents "Save changed files?" dialog: they are saved anyway.
                 page.closeEditors(editorRefsToClose.toArray(new IEditorReference[editorRefsToClose.size()]), false);
             }
-
-            // Do it BEFORE oldResource.move().
             ProcessCache.processDefinitionWasDeleted(oldDefinitionFile);
-
-            IPath oldPath = oldDefinitionFolder.getFullPath();
             IPath newPath = oldDefinitionFolder.getParent().getFolder(new Path(newName)).getFullPath();
-            IResource oldResource = ResourcesPlugin.getWorkspace().getRoot().findMember(oldPath);
-            // I use FORCE same as JDT's RenameJavaProjectChange does. Not sure what it does, but DS does not provide any other opportunity (including F5) anyway.
-            oldResource.move(newPath, IResource.FORCE | IResource.SHALLOW, new NullProgressMonitor());
-
             IFolder newDefinitionFolder = ResourcesPlugin.getWorkspace().getRoot().getFolder(newPath);
+            oldDefinitionFolder.copy(newDefinitionFolder.getFullPath(), true, new NullProgressMonitor());
             IFile newDefinitionFile = IOUtils.getProcessDefinitionFile(newDefinitionFolder);
+            definition = ProcessCache.getProcessDefinition(newDefinitionFile);
             definition.setName(newName);
-            saveProcessDefinition(newDefinitionFile, definition);
+            saveProcessDefinition(definition);
             ProcessCache.newProcessDefinitionWasCreated(newDefinitionFile);
+            ProcessSaveHistory.clear(oldDefinitionFolder);
+            oldDefinitionFolder.delete(true, new NullProgressMonitor());
             refreshResource(newDefinitionFolder);
         } catch (Exception e) {
             PluginLogger.logError(e);
@@ -302,7 +304,7 @@ public class WorkspaceOperations {
                         if (editor != null) {
                             page.closeEditor(editor, false);
                         }
-                        saveProcessDefinition(definitionFile, definition);
+                        saveProcessDefinition(definition);
                         ProcessCache.invalidateProcessDefinition(definitionFile);
                         break;
                     }
@@ -316,7 +318,7 @@ public class WorkspaceOperations {
                             if (editor != null) {
                                 page.closeEditor(editor, false);
                             }
-                            saveProcessDefinition(file, subdefinition);
+                            saveProcessDefinition(subdefinition);
                             ProcessCache.invalidateProcessDefinition(file);
                             break;
                         }
@@ -324,7 +326,7 @@ public class WorkspaceOperations {
                 }
                 subprocessDefinition.setName(newName);
                 
-                saveProcessDefinition(subdefinitionFile, subprocessDefinition);
+                saveProcessDefinition(subprocessDefinition);
                 ProcessCache.invalidateProcessDefinition(subdefinitionFile);
                 refreshResource(definitionFolder);
             } catch (Exception e) {
@@ -333,14 +335,13 @@ public class WorkspaceOperations {
         }
     }
 
-
-    public static void saveProcessDefinition(IFile definitionFile, ProcessDefinition definition) throws Exception {
+    public static void saveProcessDefinition(ProcessDefinition definition) throws Exception {
         ProcessSerializer serializer = definition.getLanguage().getSerializer();
         Document document = serializer.getInitialProcessDefinitionDocument(definition.getName(), null);
         serializer.saveToXML(definition, document);
         byte[] bytes = XmlUtil.writeXml(document);
-        ParContentProvider.saveAuxInfo(definitionFile, definition);
-        definitionFile.setContents(new ByteArrayInputStream(bytes), true, false, null);
+        ParContentProvider.saveAuxInfo(definition.getFile(), definition);
+        definition.getFile().setContents(new ByteArrayInputStream(bytes), true, false, null);
     }
 
     public static ProcessEditorBase openProcessDefinition(IFile definitionFile) {
@@ -378,7 +379,15 @@ public class WorkspaceOperations {
                 openProcessDefinition(definitionFile);
             }
         } else {
-            IFile definitionFile = ProcessCache.getFirstProcessDefinitionFile(subprocess.getSubProcessName());
+            IFile definitionFile = null;
+            String value = SubprocessMap.get(subprocess.getQualifiedId());
+            if (value != null) {
+                definitionFile = (IFile) ResourcesPlugin.getWorkspace().getRoot()
+                        .findMember(value + "/" + ParContentProvider.PROCESS_DEFINITION_FILE_NAME);
+            }
+            if (definitionFile == null) {
+                definitionFile = ProcessCache.getFirstProcessDefinitionFile(subprocess.getSubProcessName(), null);
+            }
             if (definitionFile != null) {
                 openProcessDefinition(definitionFile);
             }
@@ -397,6 +406,10 @@ public class WorkspaceOperations {
         wizard.init(PlatformUI.getWorkbench(), selection);
         CompactWizardDialog dialog = new CompactWizardDialog(wizard);
         dialog.open();
+    }
+
+    public static void showProcessSaveHistory(IStructuredSelection selection) {
+        new ProcessSaveHistoryDialog((IFolder) selection.getFirstElement()).open();
     }
 
     public static void deleteBotResources(List<IResource> resources) {

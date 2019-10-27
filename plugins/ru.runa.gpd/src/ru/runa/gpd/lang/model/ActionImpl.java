@@ -2,10 +2,8 @@ package ru.runa.gpd.lang.model;
 
 import java.util.Arrays;
 import java.util.List;
-
 import org.eclipse.ui.views.properties.ComboBoxPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
-
 import ru.runa.gpd.Localization;
 
 public class ActionImpl extends Action {
@@ -102,10 +100,9 @@ public class ActionImpl extends Action {
     }
 
     @Override
-    public ActionImpl makeCopy(GraphElement parent) {
-        ActionImpl copy = (ActionImpl) super.makeCopy(parent);
-        copy.setEventType(getEventType());
-        return copy;
+    protected void fillCopyCustomFields(GraphElement copy) {
+        super.fillCopyCustomFields(copy);
+        ((ActionImpl) copy).setEventType(getEventType());
     }
 
 }

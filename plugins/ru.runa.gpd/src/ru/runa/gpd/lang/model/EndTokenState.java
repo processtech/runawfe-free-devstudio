@@ -1,10 +1,8 @@
 package ru.runa.gpd.lang.model;
 
 import java.util.List;
-
 import org.eclipse.ui.views.properties.ComboBoxPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.model.bpmn.AbstractEndTextDecorated;
 
@@ -49,9 +47,9 @@ public class EndTokenState extends AbstractEndTextDecorated {
     }
 
     @Override
-    public Node makeCopy(GraphElement parent) {
-        EndTokenState copy = (EndTokenState) super.makeCopy(parent);
-        copy.setSubprocessDefinitionBehavior(getSubprocessDefinitionBehavior());
-        return copy;
+    protected void fillCopyCustomFields(GraphElement copy) {
+        super.fillCopyCustomFields(copy);
+        ((EndTokenState) copy).setSubprocessDefinitionBehavior(getSubprocessDefinitionBehavior());
     }
+
 }

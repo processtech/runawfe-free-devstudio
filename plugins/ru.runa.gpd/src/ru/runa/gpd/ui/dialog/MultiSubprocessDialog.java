@@ -2,7 +2,6 @@ package ru.runa.gpd.ui.dialog;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.layout.GridData;
@@ -12,7 +11,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.lang.model.MultiSubprocess;
@@ -73,7 +71,8 @@ public class MultiSubprocessDialog extends SubprocessDialog {
 
     private void updateIteratorComboVariables() {
         List<String> variableNames;
-        ProcessDefinition definition = ProcessCache.getFirstProcessDefinition(getSubprocessName());
+        ProcessDefinition definition = ProcessCache.getFirstProcessDefinition(getSubprocessName(),
+                subprocess.getProcessDefinition().getFile().getProject().getName());
         if (definition != null) {
             variableNames = definition.getVariableNames(true);
         } else {

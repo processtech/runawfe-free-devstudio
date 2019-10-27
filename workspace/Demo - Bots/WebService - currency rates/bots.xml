@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<bottasks>
+  <task id="ID10" class="ru.runa.wf.logic.bot.WebServiceTaskHandler" botTaskName="Load currency rates">
+    <config> 
+      <input> 
+        <param name="rates_date" variable="rates_date"/> 
+      </input>  
+      <output> 
+        <param name="rates_information" variable="rates_information"/> 
+      </output> 
+    </config>
+  </task>
+</bottasks>

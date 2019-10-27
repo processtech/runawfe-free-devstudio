@@ -26,14 +26,6 @@
          version="0.0.0"/>
 
    <includes
-         id="org.eclipse.emf.common"
-         version="0.0.0"/>
-
-   <includes
-         id="org.eclipse.emf.ecore"
-         version="0.0.0"/>
-
-   <includes
          id="org.eclipse.platform"
          version="0.0.0"/>
 
@@ -54,15 +46,7 @@
          version="0.0.0"/>
 
    <includes
-         id="org.eclipse.ecf.core.feature"
-         version="0.0.0"/>
-
-   <includes
          id="org.eclipse.ecf.filetransfer.feature"
-         version="0.0.0"/>
-
-   <includes
-         id="org.eclipse.jdt"
          version="0.0.0"/>
 
    <includes
@@ -99,6 +83,30 @@
 
    <includes
          id="org.eclipse.ecf.filetransfer.httpclient4.ssl.feature"
+         version="0.0.0"/>
+
+   <includes
+         id="org.eclipse.emf"
+         version="0.0.0"/>
+
+   <includes
+         id="org.eclipse.emf.transaction"
+         version="0.0.0"/>
+
+   <includes
+         id="org.eclipse.emf.validation"
+         version="0.0.0"/>
+
+   <includes
+         id="org.eclipse.emf.workspace"
+         version="0.0.0"/>
+
+   <includes
+         id="org.eclipse.jdt"
+         version="0.0.0"/>
+
+   <includes
+         id="org.aspectj"
          version="0.0.0"/>
 
 </feature>
