@@ -42,7 +42,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.equinox.p2.metadata.repository;bundle-version="1.2.401",
  org.eclipse.equinox.p2.operations;bundle-version="2.4.300",
  org.eclipse.core.databinding;bundle-version="1.6.100",
- org.eclipse.jface.databinding;bundle-version="1.8.100"
+ org.eclipse.jface.databinding;bundle-version="1.8.100",
+ org.aspectj.runtime
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: lib/antlr-2.7.6.jar,
  lib/asm-4.0.jar,

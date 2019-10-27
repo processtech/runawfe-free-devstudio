@@ -2,6 +2,7 @@ package ru.runa.gpd.lang.par;
 
 import com.google.common.collect.Lists;
 import java.util.List;
+import java.util.Objects;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.eclipse.draw2d.geometry.Point;
@@ -71,7 +72,7 @@ public class GpdXmlContentProvider extends AuxContentProvider {
                     Element transitionElement = transitionInfoList.get(i);
                     String transitionName = transitionElement.attributeValue(NAME);
                     for (Transition transition : leavingTransitions) {
-                        if (transition.getName().equals(transitionName)) {
+                        if (Objects.equals(transition.getName(), transitionName)) {
                             List<Point> bendpoints = Lists.newArrayList();
                             Element labelElement = transitionElement.element(LABEL);
                             if (labelElement != null) {

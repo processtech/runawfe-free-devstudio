@@ -10,4 +10,45 @@
   <groupId>ru.runa.gpd</groupId>
   <artifactId>ru.runa.gpd</artifactId>
   <packaging>eclipse-plugin</packaging>
+	<properties>
+		<aspectj.runtime.version>1.9.2</aspectj.runtime.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjrt</artifactId>
+			<version>${aspectj.runtime.version}</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>aspectj-maven-plugin</artifactId>
+				<version>1.11</version>
+				<configuration>
+					<complianceLevel>1.8</complianceLevel>
+					<source>1.8</source>
+					<target>1.8</target>
+					<forceAjcCompile>true</forceAjcCompile>
+					<aspectDirectory>src/ru/runa/gpd/aspects</aspectDirectory>
+					<XaddSerialVersionUID>true</XaddSerialVersionUID>
+					<showWeaveInfo>true</showWeaveInfo>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>process-sources</phase>
+						<goals>
+							<goal>compile</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+		</plugins>
+	</build>
+
 </project>
