@@ -1,9 +1,9 @@
 package ru.runa.gpd.editor;
 
+import com.google.common.base.Charsets;
 import java.beans.PropertyChangeEvent;
 import java.io.ByteArrayInputStream;
 import java.util.List;
-
 import org.eclipse.core.internal.resources.Folder;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -27,7 +27,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.PropertyNames;
@@ -54,8 +53,6 @@ import ru.runa.gpd.ui.dialog.UpdateSwimlaneNameDialog;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.SwimlaneDisplayMode;
 import ru.runa.gpd.util.WorkspaceOperations;
-
-import com.google.common.base.Charsets;
 
 public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
 
@@ -297,7 +294,7 @@ public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
             if (useLtk && editor.getDefinition().getEmbeddedSubprocesses().size() > 0) {
                 IDE.saveAllEditors(new IResource[] { projectRoot }, false);
                 for (SubprocessDefinition subprocessDefinition : editor.getDefinition().getEmbeddedSubprocesses().values()) {
-                    WorkspaceOperations.saveProcessDefinition(subprocessDefinition.getFile(), subprocessDefinition);
+                    WorkspaceOperations.saveProcessDefinition(subprocessDefinition);
                 }
             }
             if (editor.getPartName().startsWith(".")) { // globals

@@ -122,7 +122,8 @@ public class VariableFormatRegistry extends ArtifactRegistry<VariableFormatArtif
                     String componentClassNameFilter = classNameFilter.substring(classNameFilter.indexOf(Variable.FORMAT_COMPONENT_TYPE_START) + 1,
                             classNameFilter.indexOf(Variable.FORMAT_COMPONENT_TYPE_END));
                     String componentClassName = variableFormatArtifact.getJavaClassName();
-                    return isAssignableFrom(componentClassNameFilter, componentClassName);
+                    return isAssignableFrom(componentClassNameFilter, componentClassName)
+                            || isAssignableFrom(componentClassName, componentClassNameFilter);
                 } else {
                     String userTypeClassName = variable.getJavaClassName() + Variable.FORMAT_COMPONENT_TYPE_START + formatComponentClassNames[0]
                             + Variable.FORMAT_COMPONENT_TYPE_END;
@@ -130,7 +131,7 @@ public class VariableFormatRegistry extends ArtifactRegistry<VariableFormatArtif
                 }
             }
         }
-        return isAssignableFrom(classNameFilter, variable.getJavaClassName());
+        return isAssignableFrom(classNameFilter, variable.getJavaClassName()) || isAssignableFrom(variable.getJavaClassName(), classNameFilter);
     }
 
     public VariableFormatArtifact getArtifactByJavaClassName(String javaClassName) {
@@ -148,16 +149,6 @@ public class VariableFormatRegistry extends ArtifactRegistry<VariableFormatArtif
             throw new RuntimeException("Artifact javaClassName='" + javaClassName + "' does not exist");
         }
         return artifact;
-    }
-
-    public List<String> getSuperClassNames(String className) {
-        List<String> result = Lists.newArrayList();
-        for (VariableFormatArtifact artifact : getAll()) {
-            if (isAssignableFrom(artifact.getJavaClassName(), className)) {
-                result.add(artifact.getJavaClassName());
-            }
-        }
-        return result;
     }
 
     public List<VariableFormatArtifact> getFilterArtifacts() {

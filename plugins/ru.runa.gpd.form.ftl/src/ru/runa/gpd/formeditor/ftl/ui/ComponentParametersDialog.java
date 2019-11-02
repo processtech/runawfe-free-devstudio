@@ -96,7 +96,7 @@ public class ComponentParametersDialog extends Dialog {
                                     ComponentParameter parameter = component.getType().getParameters().get(i);
                                     if (Objects.equals(previousParameter.getLabel(), parameter.getLabel())) {
                                         component.setParameterValue(parameter, previousComponent.getParameterValue(previousParameter));
-                                        }
+                                    }
                                 }
                                 break;
                             }

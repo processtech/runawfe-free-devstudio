@@ -9,7 +9,7 @@
          point="org.eclipse.ui.editors">
       <editor
             class="ru.runa.gpd.formeditor.wysiwyg.FormEditor"
-            extensions="html"
+            filenames="index.html"
             icon="icons/html.png"
             id="ru.runa.gpd.wysiwyg.WYSIWYGHTMLEditor"
             name="%editor.name">
