@@ -120,7 +120,7 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
         }
         //
         if (allowTargetNodeCreation) {
-            ContextButtonEntry createElementButton = new ContextButtonEntry(null, null);
+            ContextButtonEntry createElementButton = new ContextButtonEntry(null, createConnectionContext);
             createElementButton.setText(Localization.getString("new.element.label"));
             createElementButton.setDescription(Localization.getString("new.element.description"));
             createElementButton.setIconId("elements.png");
