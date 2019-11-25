@@ -118,13 +118,9 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
         if (createTransitionButton.getDragAndDropFeatures().size() > 0) {
             data.getDomainSpecificContextButtons().add(createTransitionButton);
         }
+        
         //
         if (allowTargetNodeCreation) {
-            ContextButtonEntry createElementButton = new ContextButtonEntry(null, createConnectionContext);
-            createElementButton.setText(Localization.getString("new.element.label"));
-            createElementButton.setDescription(Localization.getString("new.element.description"));
-            createElementButton.setIconId("elements.png");
-            data.getDomainSpecificContextButtons().add(createElementButton);
             for (ICreateFeature feature : getFeatureProvider().getCreateFeatures()) {
                 if (feature instanceof CreateSwimlaneFeature || feature instanceof CreateStartNodeFeature) {
                     continue;
@@ -138,8 +134,8 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
                     ContextButtonEntry createButton = new ContextButtonEntry(createDrugAndDropFeature, createConnectionContext);
                     createButton.setText(typeDefinition.getLabel());
                     createButton.setIconId(typeDefinition.getPaletteIcon());
-                    createElementButton.addDragAndDropFeature(createDrugAndDropFeature);
-                    createElementButton.getContextButtonMenuEntries().add(createButton);
+                    createButton.addDragAndDropFeature(createDrugAndDropFeature);
+                    data.getDomainSpecificContextButtons().add(createButton);
                 }
             }
         }
