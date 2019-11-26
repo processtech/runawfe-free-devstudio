@@ -41,7 +41,6 @@ import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.Subprocess;
 import ru.runa.gpd.lang.model.Swimlane;
-import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
 
@@ -92,18 +91,6 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
         CreateContext createContext = new CreateContext();
         createContext.setTargetContainer(targetContainer);
         createContext.putProperty(CreateElementFeature.CONNECTION_PROPERTY, createConnectionContext);
-        if (allowTargetNodeCreation) {
-            //
-            NodeTypeDefinition taskStateDefinition = NodeRegistry.getNodeTypeDefinition(TaskState.class);
-            CreateDragAndDropElementFeature createTaskStateFeature = new CreateDragAndDropElementFeature(createContext);
-            createTaskStateFeature.setNodeDefinition(taskStateDefinition);
-            createTaskStateFeature.setFeatureProvider(getFeatureProvider());
-            ContextButtonEntry createTaskStateButton = new ContextButtonEntry(createTaskStateFeature, createConnectionContext);
-            createTaskStateButton.setText(taskStateDefinition.getLabel());
-            createTaskStateButton.setIconId(taskStateDefinition.getPaletteIcon());
-            createTaskStateButton.addDragAndDropFeature(createTaskStateFeature);
-            data.getDomainSpecificContextButtons().add(createTaskStateButton);
-        }
         //
         ContextButtonEntry createTransitionButton = new ContextButtonEntry(null, context);
         NodeTypeDefinition transitionDefinition = NodeRegistry.getNodeTypeDefinition(Transition.class);
