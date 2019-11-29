@@ -174,11 +174,8 @@ public class CustomContextButtonPadDeclaration implements IContextButtonPadDecla
 
         if (domainButtonsRight.size() != 0) {
             right = new Rectangle();
-            right.height = padReferenceRectangle.height + 5;
-            double columns = Math.ceil(((domainButtonsRight.size() * (getButtonSize() + 2 * getButtonPadding())) + getPadPaddingOutside() * 2
-                    + getPadPaddingInside() * 2) / (double) padReferenceRectangle.height);
-
-            right.width = (int) (columns * getButtonSize() + getPadPaddingInside() * 2);
+            right.height = (int) Math.ceil((domainButtonsRight.size() / (double) 4)) * getButtonSize() + getPadPaddingInside() * 2 + 10;
+            right.width = 4 * getButtonSize() + getPadPaddingInside() * 2;
             right.x = innerTop.x;
             right.y = innerTop.y - getPadVerticalOverlap();
         }
@@ -197,14 +194,14 @@ public class CustomContextButtonPadDeclaration implements IContextButtonPadDecla
             Rectangle position = new Rectangle(x, y, getButtonSize(), getButtonSize());
             positionedButtons.add(createButton(collapseAndGenericButtons().get(i), position));
         }
-        for (int i = 0, buttonY = 0, buttonX = 0; i < domainButtonsRight.size(); i++, buttonY++) {
-            int y = right.y + getPadPaddingOutside() + (buttonY * (getButtonSize() + getButtonPadding()));
-            if (y > right.y + right.height - getButtonSize()) {
-                ++buttonX;
-                buttonY = 0;
-                y = right.y + getPadPaddingOutside() + (buttonY * (getButtonSize() + getButtonPadding()));
+        for (int i = 0, buttonY = 0, buttonX = 0; i < domainButtonsRight.size(); i++, buttonX++) {
+            if (buttonX > 3) {
+                buttonX = 0;
+                buttonY++;
             }
+            int y = right.y + getPadPaddingOutside() + (buttonY * (getButtonSize() + getButtonPadding()));
             int x = right.x + getPadPaddingInside() + (getButtonSize() * buttonX);
+
             Rectangle position = new Rectangle(x, y, getButtonSize(), getButtonSize());
             positionedButtons.add(createButton(domainButtonsRight.get(i), position));
         }

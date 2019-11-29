@@ -102,9 +102,7 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
                 createTransitionButton.addDragAndDropFeature(feature);
             }
         }
-        if (createTransitionButton.getDragAndDropFeatures().size() > 0) {
-            data.getDomainSpecificContextButtons().add(createTransitionButton);
-        }
+
         
         //
         if (allowTargetNodeCreation) {
@@ -125,6 +123,9 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
                     data.getDomainSpecificContextButtons().add(createButton);
                 }
             }
+        }
+        if (createTransitionButton.getDragAndDropFeatures().size() > 0) {
+            data.getDomainSpecificContextButtons().add(createTransitionButton);
         }
         return data;
     }
