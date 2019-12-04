@@ -172,6 +172,11 @@
              label="%label.action.feature.compactView"
              menubarPath="features/sp1">
        </action>
+       <action
+             class="ru.runa.gpd.lang.action.UseExternalStorageFeatureDelegate"
+             id="delegable.3useExternalStorage"
+             label="%label.action.useExternalStorage">
+       </action>
     </objectContribution>
     <objectContribution
           adaptable="false"
@@ -963,7 +968,7 @@
                height="10"
                layout="ru.runa.gpd.editor.graphiti.layout.LayoutStateNodeFeature"
                update="ru.runa.gpd.editor.graphiti.update.UpdateStateNodeFeature"
-               doubleClick="ru.runa.gpd.editor.graphiti.update.DoubleClickDelegableFeature"
+               doubleClick="ru.runa.gpd.editor.graphiti.update.ScriptTaskDoubleClickDelegableFeature"
                width="15">
          </graphiti>
       </element>
