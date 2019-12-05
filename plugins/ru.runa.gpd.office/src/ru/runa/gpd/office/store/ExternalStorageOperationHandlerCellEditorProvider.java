@@ -63,6 +63,7 @@ public class ExternalStorageOperationHandlerCellEditorProvider extends BaseCommo
 
             if (constraintsModel.getVariableName() != null && !constraintsModel.getVariableName().isEmpty()) {
                 variableTypeName = getVariableTypeNameByVariableName((VariableContainer) delegable, constraintsModel.getVariableName());
+                constraintsModel.setSheetName(variableTypeName);
             }
             new Label(this, SWT.NONE).setText(Messages.getString("label.ExecutionAction"));
             addActionCombo();
@@ -131,6 +132,7 @@ public class ExternalStorageOperationHandlerCellEditorProvider extends BaseCommo
                         return;
                     }
                     variableTypeName = text;
+                    constraintsModel.setSheetName(variableTypeName);
                     if (constraintsCompositeBuilder != null) {
                         constraintsCompositeBuilder.onChangeVariableTypeName(variableTypeName);
                     }
