@@ -24,6 +24,7 @@ import org.eclipse.graphiti.tb.DefaultToolBehaviorProvider;
 import org.eclipse.graphiti.tb.IContextButtonPadData;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
+import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.graphiti.create.CreateDragAndDropElementFeature;
@@ -43,6 +44,7 @@ import ru.runa.gpd.lang.model.Subprocess;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
+import ru.runa.gpd.settings.PrefConstants;
 
 public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
     public DiagramToolBehaviorProvider(IDiagramTypeProvider provider) {
@@ -105,7 +107,17 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
 
         
         //
+        boolean collapse = Activator.getDefault().getPreferenceStore().getBoolean(PrefConstants.P_ELEMENT_EXPANDS_PAD);
         if (allowTargetNodeCreation) {
+            ContextButtonEntry createElementButton = null;
+            if (collapse) {
+                createElementButton = new ContextButtonEntry(null, null);
+                createElementButton.setText(Localization.getString("new.element.label"));
+                createElementButton.setDescription(Localization.getString("new.element.description"));
+                createElementButton.setIconId("elements.png");
+                data.getDomainSpecificContextButtons().add(createElementButton);
+            }
+
             for (ICreateFeature feature : getFeatureProvider().getCreateFeatures()) {
                 if (feature instanceof CreateSwimlaneFeature || feature instanceof CreateStartNodeFeature) {
                     continue;
@@ -119,13 +131,22 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
                     ContextButtonEntry createButton = new ContextButtonEntry(createDrugAndDropFeature, createConnectionContext);
                     createButton.setText(typeDefinition.getLabel());
                     createButton.setIconId(typeDefinition.getPaletteIcon());
-                    createButton.addDragAndDropFeature(createDrugAndDropFeature);
-                    data.getDomainSpecificContextButtons().add(createButton);
+                    if (collapse) {
+                        createElementButton.addDragAndDropFeature(createDrugAndDropFeature);
+                        createElementButton.getContextButtonMenuEntries().add(createButton);
+                    } else {
+                        createButton.addDragAndDropFeature(createDrugAndDropFeature);
+                        data.getDomainSpecificContextButtons().add(createButton);
+                    }
                 }
             }
         }
         if (createTransitionButton.getDragAndDropFeatures().size() > 0) {
-            data.getDomainSpecificContextButtons().add(createTransitionButton);
+            if (collapse) {
+                data.getDomainSpecificContextButtons().add(createTransitionButton.getDragAndDropFeatures().size() - 1, createTransitionButton);
+            } else {
+                data.getDomainSpecificContextButtons().add(createTransitionButton);
+            }
         }
         return data;
     }

@@ -2,6 +2,7 @@ package ru.runa.gpd.editor.graphiti;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.MouseEvent;
 import org.eclipse.draw2d.MouseMotionListener;
@@ -17,6 +18,7 @@ import org.eclipse.gef.tools.AbstractConnectionCreationTool;
 import org.eclipse.gef.tools.CreationTool;
 import org.eclipse.graphiti.internal.contextbuttons.IContextButtonPadDeclaration;
 import org.eclipse.graphiti.internal.contextbuttons.SpecialContextButtonPadDeclaration;
+import org.eclipse.graphiti.internal.contextbuttons.StandardContextButtonPadDeclaration;
 import org.eclipse.graphiti.internal.features.context.impl.base.PictogramElementContext;
 import org.eclipse.graphiti.internal.pref.GFPreferences;
 import org.eclipse.graphiti.internal.services.GraphitiInternal;
@@ -30,6 +32,9 @@ import org.eclipse.graphiti.ui.internal.contextbuttons.ContextButtonManagerForPa
 import org.eclipse.graphiti.ui.internal.contextbuttons.ContextButtonPad;
 import org.eclipse.graphiti.ui.internal.parts.IPictogramElementEditPart;
 import org.eclipse.swt.SWT;
+
+import ru.runa.gpd.Activator;
+import ru.runa.gpd.settings.PrefConstants;
 
 public class CustomContextButtonManagerForPad extends ContextButtonManagerForPad {
 
@@ -218,8 +223,10 @@ public class CustomContextButtonManagerForPad extends ContextButtonManagerForPad
             IContextButtonPadDeclaration declaration;
             if (declarationType == 1) {
                 declaration = new SpecialContextButtonPadDeclaration(contextButtonPadData);
-            } else {
+            } else if (!Activator.getDefault().getPreferenceStore().getBoolean(PrefConstants.P_ELEMENT_EXPANDS_PAD)) {
                 declaration = new CustomContextButtonPadDeclaration(contextButtonPadData);
+            } else {
+                declaration = new StandardContextButtonPadDeclaration(contextButtonPadData);
             }
 
             EditPart activeEditPart = getFigure2EditPart().get(figure);

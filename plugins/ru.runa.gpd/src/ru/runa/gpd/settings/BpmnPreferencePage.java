@@ -1,5 +1,6 @@
 package ru.runa.gpd.settings;
 
+import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.ColorFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.FontFieldEditor;
@@ -13,7 +14,7 @@ import ru.runa.gpd.Localization;
 import ru.runa.gpd.editor.graphiti.GraphitiProcessEditor;
 
 public class BpmnPreferencePage extends FieldEditorPreferencePage implements PrefConstants, IWorkbenchPreferencePage {
-    public static final String LOCALIZATION_PREFIX = "pref.language.bpmn.";
+    public static final String LOCALIZATION_PREFIX = "pref.languageR.bpmn.";
 
     public BpmnPreferencePage() {
         super(GRID);
@@ -36,6 +37,7 @@ public class BpmnPreferencePage extends FieldEditorPreferencePage implements Pre
                 Localization.getString(LOCALIZATION_PREFIX + P_BPMN_FOREGROUND_COLOR), getFieldEditorParent()));
         addField(new IntegerFieldEditor(LanguageElementPreferenceNode.getBpmnDefaultPropertyName(P_BPMN_LINE_WIDTH),
                 Localization.getString(LOCALIZATION_PREFIX + P_BPMN_LINE_WIDTH), getFieldEditorParent()));
+        addField(new BooleanFieldEditor(P_ELEMENT_EXPANDS_PAD, Localization.getString("pref.language.bpmn.expandPads"), getFieldEditorParent()));
     }
 
     @Override
