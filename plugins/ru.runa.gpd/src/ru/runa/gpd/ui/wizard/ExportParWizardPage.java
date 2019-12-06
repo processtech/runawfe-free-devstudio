@@ -188,6 +188,7 @@ public class ExportParWizardPage extends WizardArchiveFileResourceExportPage1 {
     @Override
     public boolean finish() {
         boolean exportToFile = exportToFileButton.getSelection();
+        Activator.getDefault().getPreferenceStore().setValue("exportToServer", !exportToFile);
         // Save dirty editors if possible but do not stop if not all are saved
         saveDirtyEditors();
         // about to invoke the operation so save our state
@@ -349,7 +350,7 @@ public class ExportParWizardPage extends WizardArchiveFileResourceExportPage1 {
         }
     }
 
-    private class ParDeployOperation extends ParExportOperation {
+    public static class ParDeployOperation extends ParExportOperation {
         private final String definitionName;
         private final boolean updateLatestVersion;
 
