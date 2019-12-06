@@ -42,6 +42,7 @@ import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.Subprocess;
 import ru.runa.gpd.lang.model.Swimlane;
+import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
 import ru.runa.gpd.settings.PrefConstants;
@@ -93,6 +94,21 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
         CreateContext createContext = new CreateContext();
         createContext.setTargetContainer(targetContainer);
         createContext.putProperty(CreateElementFeature.CONNECTION_PROPERTY, createConnectionContext);
+
+        boolean collapse = Activator.getDefault().getPreferenceStore().getBoolean(PrefConstants.P_ELEMENT_EXPANDS_PAD);
+        if (allowTargetNodeCreation && collapse) {
+            //
+            NodeTypeDefinition taskStateDefinition = NodeRegistry.getNodeTypeDefinition(TaskState.class);
+            CreateDragAndDropElementFeature createTaskStateFeature = new CreateDragAndDropElementFeature(createContext);
+            createTaskStateFeature.setNodeDefinition(taskStateDefinition);
+            createTaskStateFeature.setFeatureProvider(getFeatureProvider());
+            ContextButtonEntry createTaskStateButton = new ContextButtonEntry(createTaskStateFeature, createConnectionContext);
+            createTaskStateButton.setText(taskStateDefinition.getLabel());
+            createTaskStateButton.setIconId(taskStateDefinition.getPaletteIcon());
+            createTaskStateButton.addDragAndDropFeature(createTaskStateFeature);
+            data.getDomainSpecificContextButtons().add(createTaskStateButton);
+        }
+
         //
         ContextButtonEntry createTransitionButton = new ContextButtonEntry(null, context);
         NodeTypeDefinition transitionDefinition = NodeRegistry.getNodeTypeDefinition(Transition.class);
@@ -104,10 +120,8 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
                 createTransitionButton.addDragAndDropFeature(feature);
             }
         }
-
-        
         //
-        boolean collapse = Activator.getDefault().getPreferenceStore().getBoolean(PrefConstants.P_ELEMENT_EXPANDS_PAD);
+        
         if (allowTargetNodeCreation) {
             ContextButtonEntry createElementButton = null;
             if (collapse) {
@@ -143,7 +157,7 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
         }
         if (createTransitionButton.getDragAndDropFeatures().size() > 0) {
             if (collapse) {
-                data.getDomainSpecificContextButtons().add(createTransitionButton.getDragAndDropFeatures().size() - 1, createTransitionButton);
+                data.getDomainSpecificContextButtons().add(createTransitionButton.getDragAndDropFeatures().size(), createTransitionButton);
             } else {
                 data.getDomainSpecificContextButtons().add(createTransitionButton);
             }
