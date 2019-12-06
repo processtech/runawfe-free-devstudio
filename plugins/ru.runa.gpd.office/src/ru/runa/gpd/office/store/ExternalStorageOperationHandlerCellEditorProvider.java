@@ -17,10 +17,12 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 
 import ru.runa.gpd.lang.model.Delegable;
-import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableContainer;
 import ru.runa.gpd.office.FilesSupplierMode;
 import ru.runa.gpd.office.Messages;
+import ru.runa.gpd.office.store.externalstorage.ConstraintsCompositeBuilder;
+import ru.runa.gpd.office.store.externalstorage.ConstraintsCompositeStub;
+import ru.runa.gpd.office.store.externalstorage.InsertConstraintsComposite;
 import ru.runa.wfe.var.UserTypeMap;
 
 public class ExternalStorageOperationHandlerCellEditorProvider extends BaseCommonStorageHandlerCellEditorProvider {
@@ -112,7 +114,8 @@ public class ExternalStorageOperationHandlerCellEditorProvider extends BaseCommo
                 case DELETE:
                 case SELECT:
                 case UPDATE:
-                    constraintsCompositeBuilder = new ConstraintsCompositeStub(this, SWT.NONE, constraintsModel);
+                    constraintsCompositeBuilder = new ConstraintsCompositeStub(this, SWT.NONE, constraintsModel, (VariableContainer) delegable,
+                            variableTypeName);
                     break;
                 }
             }
@@ -166,104 +169,5 @@ public class ExternalStorageOperationHandlerCellEditorProvider extends BaseCommo
 
             combo.setText(constraintsModel.getQueryType() != null ? constraintsModel.getQueryType().toString() : QueryType.SELECT.toString());
         }
-    }
-
-    private static interface ConstraintsCompositeBuilder {
-        void build();
-
-        void onChangeVariableTypeName(String variableTypeName);
-
-        void clearConstraints();
-    }
-
-    private static class InsertConstraintsComposite extends Composite implements ConstraintsCompositeBuilder {
-        private final StorageConstraintsModel constraintsModel;
-        private final VariableContainer variableContainer;
-        private String variableTypeName;
-        private Combo combo;
-
-        public InsertConstraintsComposite(Composite parent, int style, StorageConstraintsModel constraintsModel, VariableContainer variableContainer,
-                String variableTypeName) {
-            super(parent, style);
-            setLayout(new GridLayout(2, false));
-            this.constraintsModel = constraintsModel;
-            this.variableContainer = variableContainer;
-            this.variableTypeName = variableTypeName;
-        }
-
-        @Override
-        public void onChangeVariableTypeName(String variableTypeName) {
-            this.variableTypeName = variableTypeName;
-            combo.removeAll();
-            combo.setText("");
-            constraintsModel.setVariableName("");
-            getVariableNamesByVariableTypeName(variableTypeName).forEach(combo::add);
-        }
-
-        @Override
-        public void build() {
-            new Label(this, SWT.NONE).setText(Messages.getString("label.InsertVariable"));
-            addInsertVariableCombo();
-        }
-
-        @Override
-        public void clearConstraints() {
-            constraintsModel.setVariableName("");
-            constraintsModel.setQueryString("");
-        }
-
-        private void addInsertVariableCombo() {
-            combo = new Combo(this, SWT.READ_ONLY); // TODO #1506 Реализовать адаптивный чекбокс
-            getVariableNamesByVariableTypeName(variableTypeName).forEach(combo::add);
-
-            combo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    final String text = combo.getText();
-                    if (Strings.isNullOrEmpty(text)) {
-                        return;
-                    }
-                    constraintsModel.setVariableName(text);
-                }
-            });
-            if (constraintsModel.getVariableName() != null) {
-                combo.setText(constraintsModel.getVariableName());
-            }
-        }
-
-        private Iterable<String> getVariableNamesByVariableTypeName(String variableTypeName) {
-            return variableContainer.getVariables(false, false, UserTypeMap.class.getName()).stream()
-                    .filter(variable -> variable.getUserType().getName().equals(variableTypeName)).map(Variable::getName).collect(Collectors.toSet());
-        }
-
-    }
-
-    private static class ConstraintsCompositeStub extends Composite implements ConstraintsCompositeBuilder {
-
-        private final StorageConstraintsModel constraintsModel;
-
-        public ConstraintsCompositeStub(Composite parent, int style, StorageConstraintsModel constraintsModel) {
-            super(parent, style);
-            this.constraintsModel = constraintsModel;
-        }
-
-        @Override
-        public void onChangeVariableTypeName(String variableTypeName) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void build() {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void clearConstraints() {
-            constraintsModel.setVariableName("");
-            constraintsModel.setQueryString("");
-        }
-
     }
 }
