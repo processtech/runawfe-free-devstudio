@@ -2,7 +2,6 @@ package ru.runa.gpd.editor.graphiti;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.MouseEvent;
 import org.eclipse.draw2d.MouseMotionListener;
@@ -32,7 +31,6 @@ import org.eclipse.graphiti.ui.internal.contextbuttons.ContextButtonManagerForPa
 import org.eclipse.graphiti.ui.internal.contextbuttons.ContextButtonPad;
 import org.eclipse.graphiti.ui.internal.parts.IPictogramElementEditPart;
 import org.eclipse.swt.SWT;
-
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.settings.PrefConstants;
 

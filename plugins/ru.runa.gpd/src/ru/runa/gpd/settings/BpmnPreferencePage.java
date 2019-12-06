@@ -14,7 +14,7 @@ import ru.runa.gpd.Localization;
 import ru.runa.gpd.editor.graphiti.GraphitiProcessEditor;
 
 public class BpmnPreferencePage extends FieldEditorPreferencePage implements PrefConstants, IWorkbenchPreferencePage {
-    public static final String LOCALIZATION_PREFIX = "pref.languageR.bpmn.";
+    public static final String LOCALIZATION_PREFIX = "pref.language.bpmn.";
 
     public BpmnPreferencePage() {
         super(GRID);
