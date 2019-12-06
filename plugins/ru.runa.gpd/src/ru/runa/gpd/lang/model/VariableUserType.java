@@ -105,10 +105,20 @@ public class VariableUserType extends EventSupport implements VariableContainer,
     }
 
     public VariableUserType getCopy() {
-        VariableUserType type = new VariableUserType();
-        type.name = name;
-        type.attributes.addAll(getAttributes());
-        return type;
+        return clone(this);
+    }
+
+    public static VariableUserType clone(VariableUserType source) {
+        VariableUserType clone = new VariableUserType(source.getName());
+        for (Variable attribute : source.getAttributes()) {
+            if (attribute.isComplex()) {
+                clone.addAttribute(
+                        new Variable(attribute.getName(), attribute.getScriptingName(), attribute.getFormat(), clone(attribute.getUserType())));
+            } else {
+                clone.addAttribute(new Variable(attribute));
+            }
+        }
+        return clone;
     }
 
     @Override
