@@ -1,6 +1,7 @@
 package ru.runa.gpd.office.store.externalstorage;
 
 import java.util.Optional;
+import java.util.function.Predicate;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -10,7 +11,6 @@ import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableContainer;
 import ru.runa.gpd.office.Messages;
 import ru.runa.gpd.office.store.StorageConstraintsModel;
-import ru.runa.wfe.var.UserTypeMap;
 
 public class DeleteConstraintsComposite extends AbstractConstraintsCompositeBuilder {
     private final Label label = new Label(this, SWT.NONE);
@@ -24,13 +24,12 @@ public class DeleteConstraintsComposite extends AbstractConstraintsCompositeBuil
     @Override
     public void onChangeVariableTypeName(String variableTypeName) {
         super.onChangeVariableTypeName(variableTypeName);
-        constraintsModel.setVariableName("");
         build();
     }
 
     @Override
     public void build() {
-        final Optional<String> name = getVariableNameByVariableTypeName(variableTypeName);
+        final Optional<String> name = getVariableNamesByVariableTypeName(variableTypeName).findAny();
         if (name.isPresent()) {
             constraintsModel.setVariableName(name.get());
             label.setVisible(false);
@@ -39,9 +38,9 @@ public class DeleteConstraintsComposite extends AbstractConstraintsCompositeBuil
         }
     }
 
-    private Optional<String> getVariableNameByVariableTypeName(String variableTypeName) {
-        return variableContainer.getVariables(false, false, UserTypeMap.class.getName()).stream()
-                .filter(variable -> variable.getUserType().getName().equals(variableTypeName)).map(Variable::getName).findAny();
+    @Override
+    protected Predicate<? super Variable> getFilterPredicate() {
+        return variable -> variable.getUserType().getName().equals(variableTypeName);
     }
 
 }
