@@ -1,5 +1,7 @@
 package ru.runa.gpd.office.store.externalstorage;
 
+import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.eclipse.swt.SWT;
@@ -15,14 +17,21 @@ import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableContainer;
 import ru.runa.gpd.office.Messages;
 import ru.runa.gpd.office.store.StorageConstraintsModel;
-import ru.runa.wfe.var.UserTypeMap;
 
-public class InsertConstraintsComposite extends AbstractConstraintsCompositeBuilder {
+public class SelectConstraintsComposite extends AbstractConstraintsCompositeBuilder {
+    private final Consumer<String> resultVariableNameConsumer;
     private Combo combo;
 
-    public InsertConstraintsComposite(Composite parent, int style, StorageConstraintsModel constraintsModel, VariableContainer variableContainer,
-            String variableTypeName) {
+    public SelectConstraintsComposite(Composite parent, int style, StorageConstraintsModel constraintsModel, VariableContainer variableContainer,
+            String variableTypeName, Consumer<String> resultVariableNameConsumer) {
         super(parent, style, constraintsModel, variableContainer, variableTypeName);
+        this.resultVariableNameConsumer = resultVariableNameConsumer;
+    }
+
+    @Override
+    public void build() {
+        new Label(this, SWT.NONE).setText(Messages.getString("label.SelectResultVariable"));
+        addSelectResultVariableCombo();
     }
 
     @Override
@@ -31,16 +40,11 @@ public class InsertConstraintsComposite extends AbstractConstraintsCompositeBuil
         combo.removeAll();
         combo.setText("");
         constraintsModel.setVariableName("");
+        produceResultVariableName(null);
         getVariableNamesByVariableTypeName(variableTypeName).forEach(combo::add);
     }
 
-    @Override
-    public void build() {
-        new Label(this, SWT.NONE).setText(Messages.getString("label.InsertVariable"));
-        addInsertVariableCombo();
-    }
-
-    private void addInsertVariableCombo() {
+    private void addSelectResultVariableCombo() {
         combo = new Combo(this, SWT.READ_ONLY); // TODO #1506 Реализовать адаптивный чекбокс
         getVariableNamesByVariableTypeName(variableTypeName).forEach(combo::add);
 
@@ -52,16 +56,25 @@ public class InsertConstraintsComposite extends AbstractConstraintsCompositeBuil
                     return;
                 }
                 constraintsModel.setVariableName(text);
+                produceResultVariableName(text);
             }
         });
+
         if (constraintsModel.getVariableName() != null) {
             combo.setText(constraintsModel.getVariableName());
         }
     }
 
+    private void produceResultVariableName(String variableName) {
+        if (resultVariableNameConsumer != null) {
+            resultVariableNameConsumer.accept(variableName);
+        }
+    }
+
     private Iterable<String> getVariableNamesByVariableTypeName(String variableTypeName) {
-        return variableContainer.getVariables(false, false, UserTypeMap.class.getName()).stream()
-                .filter(variable -> variable.getUserType().getName().equals(variableTypeName)).map(Variable::getName).collect(Collectors.toSet());
+        return variableContainer.getVariables(false, false, List.class.getName()).stream()
+                .filter(variable -> variable.getFormatComponentClassNames()[0].equals(variableTypeName)).map(Variable::getName)
+                .collect(Collectors.toSet());
     }
 
 }

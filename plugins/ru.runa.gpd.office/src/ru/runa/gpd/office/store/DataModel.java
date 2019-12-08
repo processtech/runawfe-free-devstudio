@@ -17,7 +17,7 @@ import ru.runa.gpd.util.XmlUtil;
 import com.google.common.base.Strings;
 
 public class DataModel extends Observable {
-    private final FilesSupplierMode mode;
+    protected FilesSupplierMode mode;
     private final InputOutputModel inOutModel;
     public final List<StorageConstraintsModel> constraints = new ArrayList<StorageConstraintsModel>();
 

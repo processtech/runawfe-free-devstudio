@@ -1,6 +1,9 @@
 package ru.runa.gpd.office.store;
 
+import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
@@ -16,20 +19,33 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 
+import ru.runa.gpd.PluginLogger;
+import ru.runa.gpd.extension.handler.XmlBasedConstructorProvider;
+import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.Delegable;
+import ru.runa.gpd.lang.model.GraphElement;
+import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableContainer;
 import ru.runa.gpd.office.FilesSupplierMode;
 import ru.runa.gpd.office.Messages;
 import ru.runa.gpd.office.store.externalstorage.ConstraintsCompositeBuilder;
 import ru.runa.gpd.office.store.externalstorage.ConstraintsCompositeStub;
+import ru.runa.gpd.office.store.externalstorage.ExternalStorageDataModel;
 import ru.runa.gpd.office.store.externalstorage.InsertConstraintsComposite;
+import ru.runa.gpd.office.store.externalstorage.SelectConstraintsComposite;
+import ru.runa.gpd.util.EmbeddedFileUtils;
 import ru.runa.wfe.var.UserTypeMap;
+import ru.runa.wfe.var.format.ListFormat;
 
-public class ExternalStorageOperationHandlerCellEditorProvider extends BaseCommonStorageHandlerCellEditorProvider {
-
+public class ExternalStorageOperationHandlerCellEditorProvider extends XmlBasedConstructorProvider<ExternalStorageDataModel> {
     @Override
-    protected FilesSupplierMode getMode() {
-        return FilesSupplierMode.IN;
+    public void onDelete(Delegable delegable) {
+        try {
+            final ExternalStorageDataModel model = fromXml(delegable.getDelegationConfiguration());
+            EmbeddedFileUtils.deleteProcessFile(model.getInOutModel().inputPath);
+        } catch (Exception e) {
+            PluginLogger.logErrorWithoutDialog("Template file deletion", e);
+        }
     }
 
     @Override
@@ -38,18 +54,36 @@ public class ExternalStorageOperationHandlerCellEditorProvider extends BaseCommo
     }
 
     @Override
-    protected Composite createConstructorComposite(Composite parent, Delegable delegable, DataModel model) {
+    protected Composite createConstructorComposite(Composite parent, Delegable delegable, ExternalStorageDataModel model) {
         return new ConstructorView(parent, delegable, model);
+    }
+
+    @Override
+    protected ExternalStorageDataModel createDefault() {
+        return new ExternalStorageDataModel(FilesSupplierMode.BOTH);
+    }
+
+    @Override
+    protected ExternalStorageDataModel fromXml(String xml) throws Exception {
+        return ExternalStorageDataModel.fromXml(xml);
+    }
+
+    @Override
+    protected boolean validateModel(Delegable delegable, ExternalStorageDataModel model, List<ValidationError> errors) {
+        GraphElement graphElement = ((GraphElement) delegable);
+        model.validate(graphElement, errors);
+        return super.validateModel(delegable, model, errors);
     }
 
     private class ConstructorView extends ConstructorComposite {
         private static final String INTERNAL_STORAGE_DATASOURCE_PATH = "datasource:InternalStorage";
+
         private StorageConstraintsModel constraintsModel;
         private String variableTypeName;
 
         private ConstraintsCompositeBuilder constraintsCompositeBuilder;
 
-        public ConstructorView(Composite parent, Delegable delegable, DataModel model) {
+        public ConstructorView(Composite parent, Delegable delegable, ExternalStorageDataModel model) {
             super(parent, delegable, model);
             model.getInOutModel().inputPath = INTERNAL_STORAGE_DATASOURCE_PATH;
             setLayout(new GridLayout(2, false));
@@ -84,8 +118,7 @@ public class ExternalStorageOperationHandlerCellEditorProvider extends BaseCommo
         }
 
         private String getVariableTypeNameByVariableName(VariableContainer variableContainer, String variableName) {
-            return variableContainer.getVariables(false, false, UserTypeMap.class.getName()).stream()
-                    .filter(variable -> variable.getName().equals(variableName)).map(variable -> variable.getUserType().getName()).findAny()
+            return complexDataTypeNames(variable -> variable.getName().equals(variableName)).findAny()
                     .orElseThrow(() -> new IllegalArgumentException("Не найден тип для переменной " + variableName));
         }
 
@@ -111,8 +144,11 @@ public class ExternalStorageOperationHandlerCellEditorProvider extends BaseCommo
                     constraintsCompositeBuilder = new InsertConstraintsComposite(this, SWT.NONE, constraintsModel, (VariableContainer) delegable,
                             variableTypeName);
                     break;
-                case DELETE:
                 case SELECT:
+                    constraintsCompositeBuilder = new SelectConstraintsComposite(this, SWT.NONE, constraintsModel, (VariableContainer) delegable,
+                            variableTypeName, (resultVariableName) -> model.getInOutModel().outputVariable = resultVariableName);
+                    break;
+                case DELETE:
                 case UPDATE:
                     constraintsCompositeBuilder = new ConstraintsCompositeStub(this, SWT.NONE, constraintsModel, (VariableContainer) delegable,
                             variableTypeName);
@@ -123,10 +159,7 @@ public class ExternalStorageOperationHandlerCellEditorProvider extends BaseCommo
 
         private void addDataTypeCombo() {
             final Combo combo = new Combo(this, SWT.READ_ONLY);
-            ((VariableContainer) delegable).getVariables(false, false, UserTypeMap.class.getName()).stream()
-                    .map(variable -> variable.getUserType().getName()).collect(Collectors.toSet()).forEach(variableTypeName -> {
-                        combo.add(variableTypeName);
-                    });
+            complexDataTypeNames().collect(Collectors.toSet()).forEach(combo::add);
             combo.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -160,6 +193,8 @@ public class ExternalStorageOperationHandlerCellEditorProvider extends BaseCommo
                         return;
                     }
                     constraintsModel.setQueryType(QueryType.valueOf(combo.getText()));
+                    model.setMode(constraintsModel.getQueryType().equals(QueryType.SELECT) ? FilesSupplierMode.BOTH : FilesSupplierMode.IN);
+                    model.getInOutModel().outputVariable = null;
                     buildFromModel();
                     if (constraintsCompositeBuilder != null) {
                         constraintsCompositeBuilder.clearConstraints();
@@ -168,6 +203,25 @@ public class ExternalStorageOperationHandlerCellEditorProvider extends BaseCommo
             });
 
             combo.setText(constraintsModel.getQueryType() != null ? constraintsModel.getQueryType().toString() : QueryType.SELECT.toString());
+        }
+
+        private Stream<String> complexDataTypeNames() {
+            return complexDataTypeNames(null);
+        }
+
+        private Stream<String> complexDataTypeNames(Predicate<? super Variable> predicate) {
+            Stream<Variable> stream = ((VariableContainer) delegable).getVariables(false, false, UserTypeMap.class.getName(), List.class.getName())
+                    .stream();
+            if (predicate != null) {
+                stream = stream.filter(predicate);
+            }
+            return stream.map(variable -> {
+                if (variable.getFormatClassName().equals(ListFormat.class.getName())) {
+                    return variable.getFormatComponentClassNames()[0];
+                } else {
+                    return variable.getUserType().getName();
+                }
+            });
         }
     }
 }
