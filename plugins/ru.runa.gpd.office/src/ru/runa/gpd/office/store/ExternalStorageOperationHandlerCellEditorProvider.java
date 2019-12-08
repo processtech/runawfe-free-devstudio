@@ -29,10 +29,11 @@ import ru.runa.gpd.lang.model.VariableContainer;
 import ru.runa.gpd.office.FilesSupplierMode;
 import ru.runa.gpd.office.Messages;
 import ru.runa.gpd.office.store.externalstorage.ConstraintsCompositeBuilder;
-import ru.runa.gpd.office.store.externalstorage.ConstraintsCompositeStub;
+import ru.runa.gpd.office.store.externalstorage.DeleteConstraintsComposite;
 import ru.runa.gpd.office.store.externalstorage.ExternalStorageDataModel;
 import ru.runa.gpd.office.store.externalstorage.InsertConstraintsComposite;
 import ru.runa.gpd.office.store.externalstorage.SelectConstraintsComposite;
+import ru.runa.gpd.office.store.externalstorage.UpdateConstraintsComposite;
 import ru.runa.gpd.util.EmbeddedFileUtils;
 import ru.runa.wfe.var.UserTypeMap;
 import ru.runa.wfe.var.format.ListFormat;
@@ -148,9 +149,12 @@ public class ExternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
                     constraintsCompositeBuilder = new SelectConstraintsComposite(this, SWT.NONE, constraintsModel, (VariableContainer) delegable,
                             variableTypeName, (resultVariableName) -> model.getInOutModel().outputVariable = resultVariableName);
                     break;
-                case DELETE:
                 case UPDATE:
-                    constraintsCompositeBuilder = new ConstraintsCompositeStub(this, SWT.NONE, constraintsModel, (VariableContainer) delegable,
+                    constraintsCompositeBuilder = new UpdateConstraintsComposite(this, SWT.NONE, constraintsModel, (VariableContainer) delegable,
+                            variableTypeName);
+                    break;
+                case DELETE:
+                    constraintsCompositeBuilder = new DeleteConstraintsComposite(this, SWT.NONE, constraintsModel, (VariableContainer) delegable,
                             variableTypeName);
                     break;
                 }
@@ -175,8 +179,9 @@ public class ExternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
                 }
             });
 
-            if (variableTypeName != null) {
-                combo.setText(variableTypeName);
+            if (constraintsModel.getSheetName() != null) {
+                combo.setText(constraintsModel.getSheetName());
+                variableTypeName = constraintsModel.getSheetName();
             }
         }
 

@@ -18,7 +18,7 @@ import com.google.common.base.Strings;
 
 public class DataModel extends Observable {
     protected FilesSupplierMode mode;
-    private final InputOutputModel inOutModel;
+    protected final InputOutputModel inOutModel;
     public final List<StorageConstraintsModel> constraints = new ArrayList<StorageConstraintsModel>();
 
     public DataModel(FilesSupplierMode mode) {
