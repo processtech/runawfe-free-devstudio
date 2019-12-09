@@ -8,6 +8,8 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.handlers.IHandlerService;
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
@@ -16,6 +18,7 @@ import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.par.ProcessDefinitionValidator;
 import ru.runa.gpd.settings.PrefConstants;
+import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.ui.view.ValidationErrorsView;
 import ru.runa.gpd.ui.wizard.ExportParWizardPage.ParDeployOperation;
 import ru.runa.gpd.util.IOUtils;
@@ -24,13 +27,19 @@ public class ExportProcessToServerHanlder extends AbstractHandler implements Pre
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        export();
+        save();
+        IFile currentFile = IOUtils.getCurrentFile();
+        ProcessDefinition processDefinition = ProcessCache.getProcessDefinition(currentFile);
+        if (!processDefinition.isInvalid()) {
+            export(currentFile);
+        } else {
+            Dialogs.error(Localization.getString("ExportParToServer.error"));
+        }
         return null;
     }
 
-    private void export() {
+    private void export(IFile definitionFile) {
         try {
-            IFile definitionFile = IOUtils.getCurrentFile();
             IFolder processFolder = (IFolder) definitionFile.getParent();
             processFolder.refreshLocal(IResource.DEPTH_ONE, null);
             ProcessDefinition definition = ProcessCache.getProcessDefinition(definitionFile);
@@ -63,6 +72,15 @@ public class ExportProcessToServerHanlder extends AbstractHandler implements Pre
             new ParDeployOperation(resourcesToExport, definition.getName(), true).run(null);
         } catch (Throwable th) {
             PluginLogger.logErrorWithoutDialog(Localization.getString("ExportParWizardPage.error.export"), th);
+        }
+    }
+
+    private void save() {
+        IHandlerService handlerService = PlatformUI.getWorkbench().getService(IHandlerService.class);
+        try {
+            handlerService.executeCommand("ru.runa.gpd.commands.save", null);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
