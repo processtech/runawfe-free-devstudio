@@ -29,10 +29,11 @@ public class ExportProcessToServerHanlder extends AbstractHandler implements Pre
     public Object execute(ExecutionEvent event) throws ExecutionException {
         IFile currentFile = IOUtils.getCurrentFile();
         ProcessDefinition processDefinition = ProcessCache.getProcessDefinition(currentFile);
+
         try {
             save(processDefinition, currentFile);
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
 
         if (!processDefinition.isInvalid()) {
@@ -58,11 +59,9 @@ public class ExportProcessToServerHanlder extends AbstractHandler implements Pre
             }
             for (SubprocessDefinition subprocessDefinition : definition.getEmbeddedSubprocesses().values()) {
                 validationResult = ProcessDefinitionValidator.validateDefinition(subprocessDefinition);
-                if (validationResult != 0) {
-                    if (validationResult == 2) {
-                        PluginLogger.logErrorWithoutDialog((Localization.getString("ExportParWizardPage.page.errorsExistInEmbeddedSubprocess")));
-                        return;
-                    }
+                if (validationResult != 0 && validationResult == 2) {
+                    PluginLogger.logErrorWithoutDialog((Localization.getString("ExportParWizardPage.page.errorsExistInEmbeddedSubprocess")));
+                    return;
                 }
             }
             definition.getLanguage().getSerializer().validateProcessDefinitionXML(definitionFile);
