@@ -8,12 +8,11 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.handlers.IHandlerService;
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
+import ru.runa.gpd.editor.ProcessSaveHistory;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.par.ProcessDefinitionValidator;
@@ -22,14 +21,20 @@ import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.ui.view.ValidationErrorsView;
 import ru.runa.gpd.ui.wizard.ExportParWizardPage.ParDeployOperation;
 import ru.runa.gpd.util.IOUtils;
+import ru.runa.gpd.util.WorkspaceOperations;
 
 public class ExportProcessToServerHanlder extends AbstractHandler implements PrefConstants {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        save();
         IFile currentFile = IOUtils.getCurrentFile();
         ProcessDefinition processDefinition = ProcessCache.getProcessDefinition(currentFile);
+        try {
+            save(processDefinition, currentFile);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         if (!processDefinition.isInvalid()) {
             export(currentFile);
         } else {
@@ -75,12 +80,10 @@ public class ExportProcessToServerHanlder extends AbstractHandler implements Pre
         }
     }
 
-    private void save() {
-        IHandlerService handlerService = PlatformUI.getWorkbench().getService(IHandlerService.class);
-        try {
-            handlerService.executeCommand("ru.runa.gpd.commands.save", null);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    private void save(ProcessDefinition definition, IFile definitionFile) throws Exception {
+        ProcessDefinitionValidator.validateDefinition(definition);
+        WorkspaceOperations.saveProcessDefinition(definition);
+        definition.setDirty(false);
+        ProcessSaveHistory.addSavepoint(definitionFile);
     }
 }
