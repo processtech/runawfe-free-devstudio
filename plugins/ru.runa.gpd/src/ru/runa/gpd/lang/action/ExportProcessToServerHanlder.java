@@ -44,8 +44,7 @@ public class ExportProcessToServerHanlder extends AbstractHandler implements Pre
             processFolder.refreshLocal(IResource.DEPTH_ONE, null);
             ProcessDefinition definition = ProcessCache.getProcessDefinition(definitionFile);
             int validationResult = ProcessDefinitionValidator.validateDefinition(definition);
-            boolean exportToServer = Activator.getDefault().getPreferenceStore().getBoolean(P_EXPORT_TO_SERVER);
-            if (exportToServer && validationResult != 0) {
+            if (validationResult != 0) {
                 Activator.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(ValidationErrorsView.ID);
                 if (validationResult == 2) {
                     PluginLogger.logErrorWithoutDialog((Localization.getString("ExportParWizardPage.page.errorsExist")));
@@ -54,7 +53,7 @@ public class ExportProcessToServerHanlder extends AbstractHandler implements Pre
             }
             for (SubprocessDefinition subprocessDefinition : definition.getEmbeddedSubprocesses().values()) {
                 validationResult = ProcessDefinitionValidator.validateDefinition(subprocessDefinition);
-                if (exportToServer && validationResult != 0) {
+                if (validationResult != 0) {
                     if (validationResult == 2) {
                         PluginLogger.logErrorWithoutDialog((Localization.getString("ExportParWizardPage.page.errorsExistInEmbeddedSubprocess")));
                         return;
@@ -69,7 +68,8 @@ public class ExportProcessToServerHanlder extends AbstractHandler implements Pre
                     resourcesToExport.add((IFile) resource);
                 }
             }
-            new ParDeployOperation(resourcesToExport, definition.getName(), true).run(null);
+            boolean allowUpdate = Activator.getDefault().getPreferenceStore().getBoolean(P_ALLOW_UPDATE_LAST_VERSION_BY_KEYBINDING);
+            new ParDeployOperation(resourcesToExport, definition.getName(), allowUpdate).run(null);
         } catch (Throwable th) {
             PluginLogger.logErrorWithoutDialog(Localization.getString("ExportParWizardPage.error.export"), th);
         }

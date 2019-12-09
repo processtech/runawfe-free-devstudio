@@ -188,7 +188,6 @@ public class ExportParWizardPage extends WizardArchiveFileResourceExportPage1 {
     @Override
     public boolean finish() {
         boolean exportToFile = exportToFileButton.getSelection();
-        Activator.getDefault().getPreferenceStore().setValue("exportToServer", !exportToFile);
         // Save dirty editors if possible but do not stop if not all are saved
         saveDirtyEditors();
         // about to invoke the operation so save our state

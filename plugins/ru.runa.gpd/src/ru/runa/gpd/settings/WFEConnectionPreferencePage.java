@@ -69,6 +69,8 @@ public class WFEConnectionPreferencePage extends FieldEditorPreferencePage imple
         addField(passwordEditor);
         addField(new BooleanFieldEditor(P_WFE_LOAD_PROCESS_DEFINITIONS_HISTORY,
                 Localization.getString("pref.connection.wfe.load.process.definitions.history"), getFieldEditorParent()));
+        addField(new BooleanFieldEditor(P_ALLOW_UPDATE_LAST_VERSION_BY_KEYBINDING, Localization.getString("pref.connection.allow.update.keybinding"),
+                getFieldEditorParent()));
     }
 
     @Override
