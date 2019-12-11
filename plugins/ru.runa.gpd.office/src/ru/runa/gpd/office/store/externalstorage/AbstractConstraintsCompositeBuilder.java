@@ -8,6 +8,7 @@ import org.eclipse.swt.widgets.Composite;
 
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableContainer;
+import ru.runa.gpd.office.store.QueryType;
 import ru.runa.gpd.office.store.StorageConstraintsModel;
 import ru.runa.wfe.var.UserTypeMap;
 
@@ -35,7 +36,9 @@ abstract class AbstractConstraintsCompositeBuilder extends Composite implements 
     @Override
     public void clearConstraints() {
         constraintsModel.setVariableName("");
-        constraintsModel.setQueryString("");
+        if (QueryType.INSERT.equals(constraintsModel.getQueryType())) {
+            constraintsModel.setQueryString("");
+        }
     }
 
     protected Stream<String> getVariableNamesByVariableTypeName(String variableTypeName) {

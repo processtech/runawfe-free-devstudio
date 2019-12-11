@@ -32,6 +32,7 @@ import ru.runa.gpd.office.store.externalstorage.ConstraintsCompositeBuilder;
 import ru.runa.gpd.office.store.externalstorage.DeleteConstraintsComposite;
 import ru.runa.gpd.office.store.externalstorage.ExternalStorageDataModel;
 import ru.runa.gpd.office.store.externalstorage.InsertConstraintsComposite;
+import ru.runa.gpd.office.store.externalstorage.PredicateCompositeDelegateBuilder;
 import ru.runa.gpd.office.store.externalstorage.SelectConstraintsComposite;
 import ru.runa.gpd.office.store.externalstorage.UpdateConstraintsComposite;
 import ru.runa.gpd.util.EmbeddedFileUtils;
@@ -147,16 +148,20 @@ public class ExternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
                             variableTypeName);
                     break;
                 case SELECT:
-                    constraintsCompositeBuilder = new SelectConstraintsComposite(this, SWT.NONE, constraintsModel, (VariableContainer) delegable,
-                            variableTypeName, (resultVariableName) -> model.getInOutModel().outputVariable = resultVariableName);
+                    constraintsCompositeBuilder = new PredicateCompositeDelegateBuilder(this, SWT.NONE, constraintsModel,
+                            (VariableContainer) delegable, variableTypeName,
+                            new SelectConstraintsComposite(this, SWT.NONE, constraintsModel, (VariableContainer) delegable, variableTypeName,
+                                    (resultVariableName) -> model.getInOutModel().outputVariable = resultVariableName));
                     break;
                 case UPDATE:
-                    constraintsCompositeBuilder = new UpdateConstraintsComposite(this, SWT.NONE, constraintsModel, (VariableContainer) delegable,
-                            variableTypeName);
+                    constraintsCompositeBuilder = new PredicateCompositeDelegateBuilder(this, SWT.NONE, constraintsModel,
+                            (VariableContainer) delegable, variableTypeName,
+                            new UpdateConstraintsComposite(this, SWT.NONE, constraintsModel, (VariableContainer) delegable, variableTypeName));
                     break;
                 case DELETE:
-                    constraintsCompositeBuilder = new DeleteConstraintsComposite(this, SWT.NONE, constraintsModel, (VariableContainer) delegable,
-                            variableTypeName);
+                    constraintsCompositeBuilder = new PredicateCompositeDelegateBuilder(this, SWT.NONE, constraintsModel,
+                            (VariableContainer) delegable, variableTypeName,
+                            new DeleteConstraintsComposite(this, SWT.NONE, constraintsModel, (VariableContainer) delegable, variableTypeName));
                     break;
                 }
             }
