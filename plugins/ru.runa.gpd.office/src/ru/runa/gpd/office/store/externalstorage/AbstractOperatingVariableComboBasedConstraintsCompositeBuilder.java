@@ -21,14 +21,6 @@ abstract class AbstractOperatingVariableComboBasedConstraintsCompositeBuilder ex
     }
 
     @Override
-    public void onChangeVariableTypeName(String variableTypeName) {
-        super.onChangeVariableTypeName(variableTypeName);
-        combo.removeAll();
-        combo.setText("");
-        getVariableNamesByVariableTypeName(variableTypeName).forEach(combo::add);
-    }
-
-    @Override
     public void build() {
         new Label(getParent(), SWT.NONE).setText(getComboTitle());
         addCombo();
