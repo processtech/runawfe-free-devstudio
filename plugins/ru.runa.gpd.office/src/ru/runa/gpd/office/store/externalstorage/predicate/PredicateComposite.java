@@ -1,9 +1,7 @@
 package ru.runa.gpd.office.store.externalstorage.predicate;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
@@ -18,28 +16,28 @@ import org.eclipse.ui.forms.events.HyperlinkEvent;
 
 import com.google.common.base.Strings;
 
-import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.gpd.office.store.StorageConstraintsModel;
+import ru.runa.gpd.office.store.externalstorage.VariableProvider;
 import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
 import ru.runa.gpd.ui.custom.SWTUtils;
 
 public class PredicateComposite extends Composite {
     private final StorageConstraintsModel constraintsModel;
     private final String variableTypeName;
-    private final ProcessDefinition processDefinition;
+    private final VariableProvider variableProvider;
 
     private final Group group;
 
     private ConstraintsPredicate<?, ?> constraintsPredicate;
 
     public PredicateComposite(Composite parent, int style, StorageConstraintsModel constraintsModel, String variableTypeName,
-            ProcessDefinition processDefinition) {
+            VariableProvider variableProvider) {
         super(parent, style);
         this.constraintsModel = constraintsModel;
         this.variableTypeName = variableTypeName;
-        this.processDefinition = processDefinition;
+        this.variableProvider = variableProvider;
 
         setLayout(new GridLayout(5, false));
         final GridData data = new GridData(GridData.FILL_HORIZONTAL);
@@ -53,7 +51,8 @@ public class PredicateComposite extends Composite {
     public void build() {
         final String queryString = constraintsModel.getQueryString();
         if (!Strings.isNullOrEmpty(queryString)) {
-            final PredicateParser predicateParser = new PredicateParser(queryString, getVariableUserTypeByName(variableTypeName), processDefinition);
+            final PredicateParser predicateParser = new PredicateParser(queryString, variableProvider.getUserType(variableTypeName),
+                    variableProvider);
             constraintsPredicate = predicateParser.parse();
             if (constraintsPredicate != null) {
                 constructPredicateViewRecursive(constraintsPredicate);
@@ -121,7 +120,7 @@ public class PredicateComposite extends Composite {
             predicateOperationTypeCombo.setText(predicate.getType().code);
         }
 
-        final VariableUserType variableUserType = getVariableUserTypeByName(variableTypeName);
+        final VariableUserType variableUserType = variableProvider.getUserType(variableTypeName);
         variableUserType.getAttributes().stream().map(Variable::getName).forEach(subjectCombo::add);
         subjectCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter((e) -> {
             final String text = subjectCombo.getText();
@@ -132,12 +131,12 @@ public class PredicateComposite extends Composite {
             variable.ifPresent(var -> {
                 predicate.setLeft(var);
                 compareWithCombo.removeAll();
-                getVariablesAccordingToType(var.getFormatClassName()).forEach(compareWithCombo::add);
+                variableProvider.variableNamesAccordingToType(var.getFormatClassName()).forEach(compareWithCombo::add);
             });
         }));
         if (predicate.getLeft() != null) {
             subjectCombo.setText(predicate.getLeft().getName());
-            getVariablesAccordingToType(predicate.getLeft().getFormatClassName()).forEach(compareWithCombo::add);
+            variableProvider.variableNamesAccordingToType(predicate.getLeft().getFormatClassName()).forEach(compareWithCombo::add);
         }
 
         compareWithCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter((e) -> {
@@ -145,7 +144,7 @@ public class PredicateComposite extends Composite {
             if (Strings.isNullOrEmpty(text)) {
                 return;
             }
-            final Optional<Variable> variable = getVariableByName(text);
+            final Optional<Variable> variable = variableProvider.variableByName(text);
             variable.ifPresent(var -> {
                 predicate.setRight(var);
             });
@@ -160,19 +159,6 @@ public class PredicateComposite extends Composite {
                 onDeletePredicate((VariablePredicate) predicate.getDelegate());
             }
         });
-    }
-
-    private VariableUserType getVariableUserTypeByName(String variableTypeName) {
-        return processDefinition.getVariableUserType(variableTypeName);
-    }
-
-    private Stream<String> getVariablesAccordingToType(String format) {
-        List<Variable> variables = processDefinition.getVariables(true, false);
-        return variables.stream().filter(variable -> variable.getFormatClassName().equals(format)).map(Variable::getName);
-    }
-
-    private Optional<Variable> getVariableByName(String name) {
-        return processDefinition.getVariables(true, false).stream().filter(variable -> variable.getName().equals(name)).findAny();
     }
 
     private void onPredicateConstructed(String predicate) {

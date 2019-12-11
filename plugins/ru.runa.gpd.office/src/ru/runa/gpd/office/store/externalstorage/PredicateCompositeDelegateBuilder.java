@@ -6,8 +6,6 @@ import org.eclipse.ui.forms.events.HyperlinkEvent;
 
 import com.google.common.base.Strings;
 
-import ru.runa.gpd.lang.model.ProcessDefinition;
-import ru.runa.gpd.lang.model.VariableContainer;
 import ru.runa.gpd.office.Messages;
 import ru.runa.gpd.office.store.StorageConstraintsModel;
 import ru.runa.gpd.office.store.externalstorage.predicate.PredicateComposite;
@@ -18,18 +16,18 @@ public class PredicateCompositeDelegateBuilder implements ConstraintsCompositeBu
     private final Composite parent;
     private final int style;
     private final StorageConstraintsModel constraintsModel;
-    private final VariableContainer variableContainer;
+    private final VariableProvider variableProvider;
     private final ConstraintsCompositeBuilder delegate;
 
     private PredicateComposite predicateComposite;
     private String variableTypeName;
 
-    public PredicateCompositeDelegateBuilder(Composite parent, int style, StorageConstraintsModel constraintsModel,
-            VariableContainer variableContainer, String variableTypeName, ConstraintsCompositeBuilder delegate) {
+    public PredicateCompositeDelegateBuilder(Composite parent, int style, StorageConstraintsModel constraintsModel, VariableProvider variableProvider,
+            String variableTypeName, ConstraintsCompositeBuilder delegate) {
         this.parent = parent;
         this.style = style;
         this.constraintsModel = constraintsModel;
-        this.variableContainer = variableContainer;
+        this.variableProvider = variableProvider;
         this.variableTypeName = variableTypeName;
         this.delegate = delegate;
     }
@@ -50,10 +48,7 @@ public class PredicateCompositeDelegateBuilder implements ConstraintsCompositeBu
                 }
             }).setLayoutData(new GridData(GridData.GRAB_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
 
-            final ProcessDefinition processDefinition = variableContainer.getVariables(false, true).stream()
-                    .map(variable -> variable.getProcessDefinition()).findAny()
-                    .orElseThrow(() -> new IllegalStateException("process definition unavailable"));
-            predicateComposite = new PredicateComposite(parent, style, constraintsModel, variableTypeName, processDefinition);
+            predicateComposite = new PredicateComposite(parent, style, constraintsModel, variableTypeName, variableProvider);
             predicateComposite.build();
         }
 

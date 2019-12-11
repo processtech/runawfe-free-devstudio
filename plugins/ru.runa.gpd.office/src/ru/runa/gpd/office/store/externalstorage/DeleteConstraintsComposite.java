@@ -8,16 +8,15 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 
 import ru.runa.gpd.lang.model.Variable;
-import ru.runa.gpd.lang.model.VariableContainer;
 import ru.runa.gpd.office.Messages;
 import ru.runa.gpd.office.store.StorageConstraintsModel;
 
 public class DeleteConstraintsComposite extends AbstractConstraintsCompositeBuilder {
     private final Label label = new Label(this, SWT.NONE);
 
-    public DeleteConstraintsComposite(Composite parent, int style, StorageConstraintsModel constraintsModel, VariableContainer variableContainer,
+    public DeleteConstraintsComposite(Composite parent, int style, StorageConstraintsModel constraintsModel, VariableProvider variableProvider,
             String variableTypeName) {
-        super(parent, style, constraintsModel, variableContainer, variableTypeName);
+        super(parent, style, constraintsModel, variableProvider, variableTypeName);
         label.setText(Messages.getString("label.DeleteVariableNotFound"));
     }
 
@@ -29,7 +28,7 @@ public class DeleteConstraintsComposite extends AbstractConstraintsCompositeBuil
 
     @Override
     public void build() {
-        final Optional<String> name = getVariableNamesByVariableTypeName(variableTypeName).findAny();
+        final Optional<String> name = variableNamesByVariableTypeName(variableTypeName).findAny();
         if (name.isPresent()) {
             constraintsModel.setVariableName(name.get());
             label.setVisible(false);
@@ -39,7 +38,7 @@ public class DeleteConstraintsComposite extends AbstractConstraintsCompositeBuil
     }
 
     @Override
-    protected Predicate<? super Variable> getFilterPredicate() {
+    protected Predicate<? super Variable> getFilterPredicate(String variableTypeName) {
         return variable -> variable.getUserType().getName().equals(variableTypeName);
     }
 

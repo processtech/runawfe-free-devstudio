@@ -7,16 +7,15 @@ import java.util.function.Predicate;
 import org.eclipse.swt.widgets.Composite;
 
 import ru.runa.gpd.lang.model.Variable;
-import ru.runa.gpd.lang.model.VariableContainer;
 import ru.runa.gpd.office.Messages;
 import ru.runa.gpd.office.store.StorageConstraintsModel;
 
 public class SelectConstraintsComposite extends AbstractOperatingVariableComboBasedConstraintsCompositeBuilder {
     private final Consumer<String> resultVariableNameConsumer;
 
-    public SelectConstraintsComposite(Composite parent, int style, StorageConstraintsModel constraintsModel, VariableContainer variableContainer,
+    public SelectConstraintsComposite(Composite parent, int style, StorageConstraintsModel constraintsModel, VariableProvider variableProvider,
             String variableTypeName, Consumer<String> resultVariableNameConsumer) {
-        super(parent, style, constraintsModel, variableContainer, variableTypeName);
+        super(parent, style, constraintsModel, variableProvider, variableTypeName);
         this.resultVariableNameConsumer = resultVariableNameConsumer;
     }
 
@@ -33,7 +32,7 @@ public class SelectConstraintsComposite extends AbstractOperatingVariableComboBa
     }
 
     @Override
-    protected Predicate<? super Variable> getFilterPredicate() {
+    protected Predicate<? super Variable> getFilterPredicate(String variableTypeName) {
         return variable -> variable.getFormatComponentClassNames()[0].equals(variableTypeName);
     }
 

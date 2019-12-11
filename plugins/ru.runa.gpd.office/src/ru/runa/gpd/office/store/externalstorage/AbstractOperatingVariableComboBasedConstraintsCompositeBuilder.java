@@ -9,16 +9,16 @@ import org.eclipse.swt.widgets.Label;
 
 import com.google.common.base.Strings;
 
-import ru.runa.gpd.lang.model.VariableContainer;
 import ru.runa.gpd.office.store.StorageConstraintsModel;
 
 abstract class AbstractOperatingVariableComboBasedConstraintsCompositeBuilder extends AbstractConstraintsCompositeBuilder {
-    protected Combo combo;
 
     public AbstractOperatingVariableComboBasedConstraintsCompositeBuilder(Composite parent, int style, StorageConstraintsModel constraintsModel,
-            VariableContainer variableContainer, String variableTypeName) {
-        super(parent, style, constraintsModel, variableContainer, variableTypeName);
+            VariableProvider variableProvider, String variableTypeName) {
+        super(parent, style, constraintsModel, variableProvider, variableTypeName);
     }
+
+    protected Combo combo;
 
     @Override
     public void build() {
@@ -28,7 +28,7 @@ abstract class AbstractOperatingVariableComboBasedConstraintsCompositeBuilder ex
 
     protected void addCombo() {
         combo = new Combo(getParent(), SWT.READ_ONLY);
-        getVariableNamesByVariableTypeName(variableTypeName).forEach(combo::add);
+        variableNamesByVariableTypeName(variableTypeName).forEach(combo::add);
 
         combo.addSelectionListener(new SelectionAdapter() {
             @Override

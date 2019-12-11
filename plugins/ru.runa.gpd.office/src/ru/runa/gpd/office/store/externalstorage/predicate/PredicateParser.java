@@ -4,8 +4,8 @@ import java.util.Optional;
 import java.util.StringTokenizer;
 
 import ru.runa.gpd.lang.model.Variable;
-import ru.runa.gpd.lang.model.VariableContainer;
 import ru.runa.gpd.lang.model.VariableUserType;
+import ru.runa.gpd.office.store.externalstorage.VariableProvider;
 import ru.runa.wfe.var.VariableDoesNotExistException;
 
 public class PredicateParser {
@@ -13,11 +13,11 @@ public class PredicateParser {
 
     private final String predicateString;
     private final VariableUserType variableUserType;
-    private final VariableContainer variableContainer;
+    private final VariableProvider variableProvider;
 
-    public PredicateParser(String predicateString, VariableUserType variableUserType, VariableContainer variableContainer) {
+    public PredicateParser(String predicateString, VariableUserType variableUserType, VariableProvider variableProvider) {
         this.variableUserType = variableUserType;
-        this.variableContainer = variableContainer;
+        this.variableProvider = variableProvider;
         this.predicateString = hideSpacesInAttributeNames(predicateString.trim());
     }
 
@@ -65,7 +65,7 @@ public class PredicateParser {
                 }
             } else if (token.startsWith("@")) {
                 final String variableName = token.substring(1);
-                final Variable comparingWithVariable = getVariableByScriptingName(variableName)
+                final Variable comparingWithVariable = variableProvider.variableByScriptingName(variableName)
                         .orElseThrow(() -> new VariableDoesNotExistException(variableName));
 
                 if (result != null && result instanceof VariablePredicate) {
@@ -82,10 +82,6 @@ public class PredicateParser {
 
     private Optional<Variable> getUserTypeFieldByName(String name) {
         return variableUserType.getAttributes().stream().filter(variable -> variable.getName().equals(name)).findAny();
-    }
-
-    private Optional<Variable> getVariableByScriptingName(String name) {
-        return variableContainer.getVariables(true, false).stream().filter(variable -> variable.getScriptingName().equals(name)).findAny();
     }
 
     private String hideSpacesInAttributeNames(String condition) {

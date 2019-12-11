@@ -1,9 +1,7 @@
 package ru.runa.gpd.office.store;
 
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
@@ -24,8 +22,9 @@ import ru.runa.gpd.extension.handler.XmlBasedConstructorProvider;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.GraphElement;
-import ru.runa.gpd.lang.model.Variable;
+import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.VariableContainer;
+import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.gpd.office.FilesSupplierMode;
 import ru.runa.gpd.office.Messages;
 import ru.runa.gpd.office.store.externalstorage.ConstraintsCompositeBuilder;
@@ -33,11 +32,11 @@ import ru.runa.gpd.office.store.externalstorage.DeleteConstraintsComposite;
 import ru.runa.gpd.office.store.externalstorage.ExternalStorageDataModel;
 import ru.runa.gpd.office.store.externalstorage.InsertConstraintsComposite;
 import ru.runa.gpd.office.store.externalstorage.PredicateCompositeDelegateBuilder;
+import ru.runa.gpd.office.store.externalstorage.ProcessDefinitionVariableProvider;
 import ru.runa.gpd.office.store.externalstorage.SelectConstraintsComposite;
 import ru.runa.gpd.office.store.externalstorage.UpdateConstraintsComposite;
+import ru.runa.gpd.office.store.externalstorage.VariableProvider;
 import ru.runa.gpd.util.EmbeddedFileUtils;
-import ru.runa.wfe.var.UserTypeMap;
-import ru.runa.wfe.var.format.ListFormat;
 
 public class ExternalStorageOperationHandlerCellEditorProvider extends XmlBasedConstructorProvider<ExternalStorageDataModel> {
     @Override
@@ -57,7 +56,14 @@ public class ExternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
 
     @Override
     protected Composite createConstructorComposite(Composite parent, Delegable delegable, ExternalStorageDataModel model) {
-        return new ConstructorView(parent, delegable, model);
+        if (delegable instanceof VariableContainer) {
+            final ProcessDefinition processDefinition = ((VariableContainer) delegable).getVariables(false, true).stream()
+                    .map(variable -> variable.getProcessDefinition()).findAny()
+                    .orElseThrow(() -> new IllegalStateException("process definition unavailable"));
+            return new ConstructorView(parent, delegable, model, new ProcessDefinitionVariableProvider(processDefinition));
+        } else {
+            throw new UnsupportedOperationException("Не реализован VariableProvider для " + delegable.getClass().getClass());
+        }
     }
 
     @Override
@@ -80,13 +86,16 @@ public class ExternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
     private class ConstructorView extends ConstructorComposite {
         private static final String INTERNAL_STORAGE_DATASOURCE_PATH = "datasource:InternalStorage";
 
+        private final VariableProvider variableProvider;
+
         private StorageConstraintsModel constraintsModel;
         private String variableTypeName;
 
         private ConstraintsCompositeBuilder constraintsCompositeBuilder;
 
-        public ConstructorView(Composite parent, Delegable delegable, ExternalStorageDataModel model) {
+        public ConstructorView(Composite parent, Delegable delegable, ExternalStorageDataModel model, VariableProvider variableProvider) {
             super(parent, delegable, model);
+            this.variableProvider = variableProvider;
             model.getInOutModel().inputPath = INTERNAL_STORAGE_DATASOURCE_PATH;
             setLayout(new GridLayout(2, false));
             buildFromModel();
@@ -100,7 +109,8 @@ public class ExternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
             }
 
             if (constraintsModel.getVariableName() != null && !constraintsModel.getVariableName().isEmpty()) {
-                variableTypeName = getVariableTypeNameByVariableName((VariableContainer) delegable, constraintsModel.getVariableName());
+                final VariableUserType userType = variableProvider.getUserType(constraintsModel.getSheetName());
+                variableTypeName = userType != null ? userType.getName() : "";
                 constraintsModel.setSheetName(variableTypeName);
             }
             new Label(this, SWT.NONE).setText(Messages.getString("label.ExecutionAction"));
@@ -118,11 +128,6 @@ public class ExternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
             ((ScrolledComposite) getParent()).setMinSize(computeSize(getSize().x, SWT.DEFAULT));
             this.layout(true, true);
             this.redraw();
-        }
-
-        private String getVariableTypeNameByVariableName(VariableContainer variableContainer, String variableName) {
-            return complexDataTypeNames(variable -> variable.getName().equals(variableName)).findAny()
-                    .orElseThrow(() -> new IllegalArgumentException("Не найден тип для переменной " + variableName));
         }
 
         private void initConstraintsModel() {
@@ -144,24 +149,21 @@ public class ExternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
             if (constraintsModel.getQueryType() != null) {
                 switch (constraintsModel.getQueryType()) {
                 case INSERT:
-                    constraintsCompositeBuilder = new InsertConstraintsComposite(this, SWT.NONE, constraintsModel, (VariableContainer) delegable,
+                    constraintsCompositeBuilder = new InsertConstraintsComposite(this, SWT.NONE, constraintsModel, variableProvider,
                             variableTypeName);
                     break;
                 case SELECT:
-                    constraintsCompositeBuilder = new PredicateCompositeDelegateBuilder(this, SWT.NONE, constraintsModel,
-                            (VariableContainer) delegable, variableTypeName,
-                            new SelectConstraintsComposite(this, SWT.NONE, constraintsModel, (VariableContainer) delegable, variableTypeName,
+                    constraintsCompositeBuilder = new PredicateCompositeDelegateBuilder(this, SWT.NONE, constraintsModel, variableProvider,
+                            variableTypeName, new SelectConstraintsComposite(this, SWT.NONE, constraintsModel, variableProvider, variableTypeName,
                                     (resultVariableName) -> model.getInOutModel().outputVariable = resultVariableName));
                     break;
                 case UPDATE:
-                    constraintsCompositeBuilder = new PredicateCompositeDelegateBuilder(this, SWT.NONE, constraintsModel,
-                            (VariableContainer) delegable, variableTypeName,
-                            new UpdateConstraintsComposite(this, SWT.NONE, constraintsModel, (VariableContainer) delegable, variableTypeName));
+                    constraintsCompositeBuilder = new PredicateCompositeDelegateBuilder(this, SWT.NONE, constraintsModel, variableProvider,
+                            variableTypeName, new UpdateConstraintsComposite(this, SWT.NONE, constraintsModel, variableProvider, variableTypeName));
                     break;
                 case DELETE:
-                    constraintsCompositeBuilder = new PredicateCompositeDelegateBuilder(this, SWT.NONE, constraintsModel,
-                            (VariableContainer) delegable, variableTypeName,
-                            new DeleteConstraintsComposite(this, SWT.NONE, constraintsModel, (VariableContainer) delegable, variableTypeName));
+                    constraintsCompositeBuilder = new PredicateCompositeDelegateBuilder(this, SWT.NONE, constraintsModel, variableProvider,
+                            variableTypeName, new DeleteConstraintsComposite(this, SWT.NONE, constraintsModel, variableProvider, variableTypeName));
                     break;
                 }
             }
@@ -169,7 +171,7 @@ public class ExternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
 
         private void addDataTypeCombo() {
             final Combo combo = new Combo(this, SWT.READ_ONLY);
-            complexDataTypeNames().collect(Collectors.toSet()).forEach(combo::add);
+            variableProvider.complexUserTypeNames().collect(Collectors.toSet()).forEach(combo::add);
             combo.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -215,25 +217,6 @@ public class ExternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
             });
 
             combo.setText(constraintsModel.getQueryType() != null ? constraintsModel.getQueryType().toString() : QueryType.SELECT.toString());
-        }
-
-        private Stream<String> complexDataTypeNames() {
-            return complexDataTypeNames(null);
-        }
-
-        private Stream<String> complexDataTypeNames(Predicate<? super Variable> predicate) {
-            Stream<Variable> stream = ((VariableContainer) delegable).getVariables(false, false, UserTypeMap.class.getName(), List.class.getName())
-                    .stream();
-            if (predicate != null) {
-                stream = stream.filter(predicate);
-            }
-            return stream.map(variable -> {
-                if (variable.getFormatClassName().equals(ListFormat.class.getName())) {
-                    return variable.getFormatComponentClassNames()[0];
-                } else {
-                    return variable.getUserType().getName();
-                }
-            });
         }
     }
 }
