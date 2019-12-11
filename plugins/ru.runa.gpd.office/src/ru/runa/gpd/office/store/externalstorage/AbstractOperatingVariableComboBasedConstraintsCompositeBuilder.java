@@ -13,7 +13,7 @@ import ru.runa.gpd.lang.model.VariableContainer;
 import ru.runa.gpd.office.store.StorageConstraintsModel;
 
 abstract class AbstractOperatingVariableComboBasedConstraintsCompositeBuilder extends AbstractConstraintsCompositeBuilder {
-    protected final Combo combo = new Combo(this, SWT.READ_ONLY);
+    protected Combo combo;
 
     public AbstractOperatingVariableComboBasedConstraintsCompositeBuilder(Composite parent, int style, StorageConstraintsModel constraintsModel,
             VariableContainer variableContainer, String variableTypeName) {
@@ -30,11 +30,12 @@ abstract class AbstractOperatingVariableComboBasedConstraintsCompositeBuilder ex
 
     @Override
     public void build() {
-        new Label(this, SWT.NONE).setText(getComboTitle());
+        new Label(getParent(), SWT.NONE).setText(getComboTitle());
         addCombo();
     }
 
     protected void addCombo() {
+        combo = new Combo(getParent(), SWT.READ_ONLY);
         getVariableNamesByVariableTypeName(variableTypeName).forEach(combo::add);
 
         combo.addSelectionListener(new SelectionAdapter() {

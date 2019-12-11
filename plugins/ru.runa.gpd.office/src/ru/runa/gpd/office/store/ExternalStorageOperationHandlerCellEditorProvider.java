@@ -110,6 +110,7 @@ public class ExternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
 
             initConstraintsCompositeBuilder();
             if (constraintsCompositeBuilder != null) {
+                new Label(this, SWT.NONE);
                 constraintsCompositeBuilder.build();
             }
 
@@ -176,6 +177,7 @@ public class ExternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
                     if (constraintsCompositeBuilder != null) {
                         constraintsCompositeBuilder.onChangeVariableTypeName(variableTypeName);
                     }
+                    buildFromModel();
                 }
             });
 
