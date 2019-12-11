@@ -61,7 +61,8 @@ public class ExternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
                     .orElseThrow(() -> new IllegalStateException("process definition unavailable"));
             return new ConstructorView(parent, delegable, model, new ProcessDefinitionVariableProvider(processDefinition));
         } else {
-            throw new UnsupportedOperationException("Не реализован VariableProvider для " + delegable.getClass().getClass());
+            // TODO 1506 Реализовать VariableProvider для параметров бота
+            throw new UnsupportedOperationException("Не реализован VariableProvider для " + delegable.getClass().getName());
         }
     }
 
