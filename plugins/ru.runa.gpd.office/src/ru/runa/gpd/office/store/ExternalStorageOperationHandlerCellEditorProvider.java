@@ -5,8 +5,7 @@ import java.util.stream.Collectors;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
@@ -172,25 +171,23 @@ public class ExternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
         private void addDataTypeCombo() {
             final Combo combo = new Combo(this, SWT.READ_ONLY);
             variableProvider.complexUserTypeNames().collect(Collectors.toSet()).forEach(combo::add);
-            combo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    final String text = combo.getText();
-                    if (Strings.isNullOrEmpty(text)) {
-                        return;
-                    }
-                    variableTypeName = text;
-                    constraintsModel.setSheetName(variableTypeName);
-                    if (constraintsCompositeBuilder != null) {
-                        constraintsCompositeBuilder.onChangeVariableTypeName(variableTypeName);
-                    }
-                    buildFromModel();
+            combo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+                final String text = combo.getText();
+                if (Strings.isNullOrEmpty(text)) {
+                    return;
                 }
-            });
+                variableTypeName = text;
+                constraintsModel.setSheetName(variableTypeName);
+                if (constraintsCompositeBuilder != null) {
+                    constraintsCompositeBuilder.onChangeVariableTypeName(variableTypeName);
+                }
+                buildFromModel();
+            }));
 
-            if (constraintsModel.getSheetName() != null) {
-                combo.setText(constraintsModel.getSheetName());
-                variableTypeName = constraintsModel.getSheetName();
+            final VariableUserType userType = variableProvider.getUserType(constraintsModel.getSheetName());
+            if (userType != null) {
+                combo.setText(userType.getName());
+                variableTypeName = userType.getName();
             }
         }
 
@@ -199,22 +196,19 @@ public class ExternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
             for (QueryType action : QueryType.values()) {
                 combo.add(action.toString());
             }
-            combo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    String text = combo.getText();
-                    if (Strings.isNullOrEmpty(text)) {
-                        return;
-                    }
-                    constraintsModel.setQueryType(QueryType.valueOf(combo.getText()));
-                    model.setMode(constraintsModel.getQueryType().equals(QueryType.SELECT) ? FilesSupplierMode.BOTH : FilesSupplierMode.IN);
-                    model.getInOutModel().outputVariable = null;
-                    buildFromModel();
-                    if (constraintsCompositeBuilder != null) {
-                        constraintsCompositeBuilder.clearConstraints();
-                    }
+            combo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+                String text = combo.getText();
+                if (Strings.isNullOrEmpty(text)) {
+                    return;
                 }
-            });
+                constraintsModel.setQueryType(QueryType.valueOf(combo.getText()));
+                model.setMode(constraintsModel.getQueryType().equals(QueryType.SELECT) ? FilesSupplierMode.BOTH : FilesSupplierMode.IN);
+                model.getInOutModel().outputVariable = null;
+                buildFromModel();
+                if (constraintsCompositeBuilder != null) {
+                    constraintsCompositeBuilder.clearConstraints();
+                }
+            }));
 
             combo.setText(constraintsModel.getQueryType() != null ? constraintsModel.getQueryType().toString() : QueryType.SELECT.toString());
         }

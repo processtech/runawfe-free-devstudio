@@ -1,8 +1,7 @@
 package ru.runa.gpd.office.store.externalstorage;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
@@ -30,17 +29,15 @@ abstract class AbstractOperatingVariableComboBasedConstraintsCompositeBuilder ex
         combo = new Combo(getParent(), SWT.READ_ONLY);
         variableNamesByVariableTypeName(variableTypeName).forEach(combo::add);
 
-        combo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                final String text = combo.getText();
-                if (Strings.isNullOrEmpty(text)) {
-                    return;
-                }
-                constraintsModel.setVariableName(text);
-                onWidgetSelected(text);
+        combo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+            final String text = combo.getText();
+            if (Strings.isNullOrEmpty(text)) {
+                return;
             }
-        });
+            constraintsModel.setVariableName(text);
+            onWidgetSelected(text);
+        }));
+
         if (constraintsModel.getVariableName() != null) {
             combo.setText(constraintsModel.getVariableName());
         }
