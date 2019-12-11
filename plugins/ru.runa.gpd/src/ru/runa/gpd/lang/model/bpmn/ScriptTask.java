@@ -8,7 +8,8 @@ import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.Transition;
 
 public class ScriptTask extends Node implements Delegable, IBoundaryEventContainer {
-    private boolean isUseExternalStorage = false;
+    private boolean isUseExternalStorageOut = false;
+    private boolean isUseExternalStorageIn = false;
 
     @Override
     public String getDelegationType() {
@@ -20,13 +21,26 @@ public class ScriptTask extends Node implements Delegable, IBoundaryEventContain
         return super.allowLeavingTransition(transitions) && transitions.size() == 0;
     }
 
-    public boolean isUseExternalStorage() {
-        return isUseExternalStorage;
+    public boolean isUseExternalStorageOut() {
+        return isUseExternalStorageOut;
     }
 
-    public void setUseExternalStorage(boolean isUseExternalStorage) {
-        this.isUseExternalStorage = isUseExternalStorage;
-        firePropertyChange(IS_USE_EXTERNAL_STORAGE, !isUseExternalStorage, isUseExternalStorage);
+    public void setUseExternalStorageOut(boolean isUseExternalStorageOut) {
+        this.isUseExternalStorageOut = isUseExternalStorageOut;
+        this.isUseExternalStorageIn = !isUseExternalStorageOut;
+        firePropertyChange(PROPERTY_USE_EXTERNAL_STORAGE_OUT, !isUseExternalStorageOut, isUseExternalStorageOut);
+        firePropertyChange(PROPERTY_USE_EXTERNAL_STORAGE_IN, !isUseExternalStorageIn, isUseExternalStorageIn);
+    }
+
+    public boolean isUseExternalStorageIn() {
+        return isUseExternalStorageIn;
+    }
+
+    public void setUseExternalStorageIn(boolean isUseExternalStorageIn) {
+        this.isUseExternalStorageIn = isUseExternalStorageIn;
+        this.isUseExternalStorageOut = !isUseExternalStorageIn;
+        firePropertyChange(PROPERTY_USE_EXTERNAL_STORAGE_IN, !isUseExternalStorageIn, isUseExternalStorageIn);
+        firePropertyChange(PROPERTY_USE_EXTERNAL_STORAGE_OUT, !isUseExternalStorageOut, isUseExternalStorageOut);
     }
 
 }

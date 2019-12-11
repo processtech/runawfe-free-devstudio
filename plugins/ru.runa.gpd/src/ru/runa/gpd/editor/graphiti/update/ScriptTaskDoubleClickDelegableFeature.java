@@ -13,7 +13,7 @@ public class ScriptTaskDoubleClickDelegableFeature extends DoubleClickDelegableF
     @Override
     public void execute(ICustomContext context) {
         final ScriptTask scriptTask = (ScriptTask) fp.getBusinessObjectForPictogramElement(context.getInnerPictogramElement());
-        if (!scriptTask.isUseExternalStorage()) {
+        if (!scriptTask.isUseExternalStorageOut() && !scriptTask.isUseExternalStorageIn()) {
             super.execute(context);
             return;
         }

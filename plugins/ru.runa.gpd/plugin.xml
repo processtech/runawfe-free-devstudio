@@ -173,9 +173,14 @@
              menubarPath="features/sp1">
        </action>
        <action
-             class="ru.runa.gpd.lang.action.UseExternalStorageFeatureDelegate"
-             id="delegable.3useExternalStorage"
-             label="%label.action.useExternalStorage">
+             class="ru.runa.gpd.lang.action.UseExternalStorageOutFeatureDelegate"
+             id="delegable.3useExternalStorageOut"
+             label="%label.action.useExternalStorageOut">
+       </action>
+       <action
+             class="ru.runa.gpd.lang.action.UseExternalStorageInFeatureDelegate"
+             id="delegable.4useExternalStorageIn"
+             label="%label.action.useExternalStorageIn">
        </action>
     </objectContribution>
     <objectContribution

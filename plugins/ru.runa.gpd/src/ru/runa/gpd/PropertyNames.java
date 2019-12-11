@@ -10,7 +10,8 @@ public interface PropertyNames {
     public static final String PROPERTY_SWIMLANE_REASSIGN = "swimlaneReassignment";
     public static final String PROPERTY_MULTIPROCESS = "multiProcess";
     public static final String PROPERTY_MINIMAZED_VIEW = "minimazedView";
-    public static final String IS_USE_EXTERNAL_STORAGE = "isUseExternalStorage";
+    public static final String PROPERTY_USE_EXTERNAL_STORAGE_OUT = "useExternalStorageOut";
+    public static final String PROPERTY_USE_EXTERNAL_STORAGE_IN = "useExternalStorageIn";
     public static final String PROPERTY_FORM_FILE = "formFile";
     public static final String PROPERTY_LANGUAGE = "language";
     public static final String PROPERTY_FORM_JS_VALIDATION = "jsValidation";

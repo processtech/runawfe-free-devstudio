@@ -6,6 +6,8 @@ import java.util.stream.Stream;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 
+import com.google.common.base.Strings;
+
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.office.store.QueryType;
 import ru.runa.gpd.office.store.StorageConstraintsModel;
@@ -34,7 +36,10 @@ abstract class AbstractConstraintsCompositeBuilder extends Composite implements 
 
     @Override
     public void clearConstraints() {
-        constraintsModel.setVariableName("");
+        if (!Strings.isNullOrEmpty(constraintsModel.getVariableName())
+                && variableNamesByVariableTypeName(variableTypeName).noneMatch(s -> s.equals(constraintsModel.getVariableName()))) {
+            constraintsModel.setVariableName("");
+        }
         if (QueryType.INSERT.equals(constraintsModel.getQueryType())) {
             constraintsModel.setQueryString("");
         }

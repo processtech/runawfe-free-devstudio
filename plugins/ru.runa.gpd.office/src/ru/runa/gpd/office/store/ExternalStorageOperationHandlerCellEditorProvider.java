@@ -24,6 +24,7 @@ import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.VariableContainer;
 import ru.runa.gpd.lang.model.VariableUserType;
+import ru.runa.gpd.lang.model.bpmn.ScriptTask;
 import ru.runa.gpd.office.FilesSupplierMode;
 import ru.runa.gpd.office.Messages;
 import ru.runa.gpd.office.store.externalstorage.ConstraintsCompositeBuilder;
@@ -35,6 +36,7 @@ import ru.runa.gpd.office.store.externalstorage.ProcessDefinitionVariableProvide
 import ru.runa.gpd.office.store.externalstorage.SelectConstraintsComposite;
 import ru.runa.gpd.office.store.externalstorage.UpdateConstraintsComposite;
 import ru.runa.gpd.office.store.externalstorage.VariableProvider;
+import ru.runa.gpd.ui.custom.SWTUtils;
 import ru.runa.gpd.util.EmbeddedFileUtils;
 
 public class ExternalStorageOperationHandlerCellEditorProvider extends XmlBasedConstructorProvider<ExternalStorageDataModel> {
@@ -56,10 +58,13 @@ public class ExternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
     @Override
     protected Composite createConstructorComposite(Composite parent, Delegable delegable, ExternalStorageDataModel model) {
         if (delegable instanceof VariableContainer) {
+            final boolean isUseExternalStorageIn = (delegable instanceof ScriptTask) ? ((ScriptTask) delegable).isUseExternalStorageIn() : false;
+            final boolean isUseExternalStorageOut = (delegable instanceof ScriptTask) ? ((ScriptTask) delegable).isUseExternalStorageOut() : false;
             final ProcessDefinition processDefinition = ((VariableContainer) delegable).getVariables(false, true).stream()
                     .map(variable -> variable.getProcessDefinition()).findAny()
                     .orElseThrow(() -> new IllegalStateException("process definition unavailable"));
-            return new ConstructorView(parent, delegable, model, new ProcessDefinitionVariableProvider(processDefinition));
+            return new ConstructorView(parent, delegable, model, new ProcessDefinitionVariableProvider(processDefinition), isUseExternalStorageIn,
+                    isUseExternalStorageOut);
         } else {
             // TODO 1506 Реализовать VariableProvider для параметров бота
             throw new UnsupportedOperationException("Не реализован VariableProvider для " + delegable.getClass().getName());
@@ -88,14 +93,20 @@ public class ExternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
 
         private final VariableProvider variableProvider;
 
+        private final boolean isUseExternalStorageIn;
+        private final boolean isUseExternalStorageOut;
+
         private StorageConstraintsModel constraintsModel;
         private String variableTypeName;
 
         private ConstraintsCompositeBuilder constraintsCompositeBuilder;
 
-        public ConstructorView(Composite parent, Delegable delegable, ExternalStorageDataModel model, VariableProvider variableProvider) {
+        public ConstructorView(Composite parent, Delegable delegable, ExternalStorageDataModel model, VariableProvider variableProvider,
+                boolean isUseExternalStorageIn, boolean isUseExternalStorageOut) {
             super(parent, delegable, model);
             this.variableProvider = variableProvider;
+            this.isUseExternalStorageIn = isUseExternalStorageIn;
+            this.isUseExternalStorageOut = isUseExternalStorageOut;
             model.getInOutModel().inputPath = INTERNAL_STORAGE_DATASOURCE_PATH;
             setLayout(new GridLayout(2, false));
             buildFromModel();
@@ -114,13 +125,20 @@ public class ExternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
                 constraintsModel.setSheetName(variableTypeName);
             }
             new Label(this, SWT.NONE).setText(Messages.getString("label.ExecutionAction"));
-            addActionCombo();
+            if (isUseExternalStorageIn) {
+                SWTUtils.createLabel(this, QueryType.SELECT.name());
+                constraintsModel.setQueryType(QueryType.SELECT);
+                model.setMode(FilesSupplierMode.BOTH);
+            } else {
+                addActionCombo(isUseExternalStorageIn, isUseExternalStorageOut);
+            }
 
             new Label(this, SWT.NONE).setText(Messages.getString("label.DataType"));
             addDataTypeCombo();
 
             initConstraintsCompositeBuilder();
             if (constraintsCompositeBuilder != null) {
+                constraintsCompositeBuilder.clearConstraints();
                 new Label(this, SWT.NONE);
                 constraintsCompositeBuilder.build();
             }
@@ -192,11 +210,13 @@ public class ExternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
             }
         }
 
-        private void addActionCombo() {
+        private void addActionCombo(boolean isUseExternalStorageIn, boolean isUseExternalStorageOut) {
             final Combo combo = new Combo(this, SWT.READ_ONLY);
-            for (QueryType action : QueryType.values()) {
-                combo.add(action.toString());
+            final List<QueryType> types = QueryType.byIntent(isUseExternalStorageIn, isUseExternalStorageOut);
+            for (QueryType type : types) {
+                combo.add(type.name());
             }
+
             combo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 String text = combo.getText();
                 if (Strings.isNullOrEmpty(text)) {
@@ -211,7 +231,12 @@ public class ExternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
                 }
             }));
 
-            combo.setText(constraintsModel.getQueryType() != null ? constraintsModel.getQueryType().toString() : QueryType.SELECT.toString());
+            if (constraintsModel.getQueryType() != null && types.contains(constraintsModel.getQueryType())) {
+                combo.setText(constraintsModel.getQueryType().name());
+            } else {
+                combo.setText(types.get(0).name());
+                constraintsModel.setQueryType(types.get(0));
+            }
         }
     }
 }
