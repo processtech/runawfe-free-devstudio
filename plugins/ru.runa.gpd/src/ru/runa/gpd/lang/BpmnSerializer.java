@@ -44,6 +44,7 @@ import ru.runa.gpd.lang.model.TransitionColor;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.bpmn.AbstractEventNode;
 import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
+import ru.runa.gpd.lang.model.bpmn.DataStore;
 import ru.runa.gpd.lang.model.bpmn.EventNodeType;
 import ru.runa.gpd.lang.model.bpmn.ExclusiveGateway;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEvent;
@@ -81,6 +82,7 @@ public class BpmnSerializer extends ProcessSerializer {
     private static final String TEXT = "text";
     private static final String SERVICE_TASK = "serviceTask";
     private static final String SCRIPT_TASK = "scriptTask";
+    private static final String DATA_STORE = "dataStore";
     private static final String VARIABLES = "variables";
     private static final String SOURCE_REF = "sourceRef";
     private static final String TARGET_REF = "targetRef";
@@ -211,6 +213,10 @@ public class BpmnSerializer extends ProcessSerializer {
         for (ScriptTask scriptTask : scriptTasks) {
             writeNode(processElement, scriptTask);
             writeBoundaryEvents(processElement, scriptTask);
+        }
+        List<DataStore> dataStores = definition.getChildren(DataStore.class);
+        for (DataStore dataStore : dataStores) {
+            writeNode(processElement, dataStore);
         }
         List<ParallelGateway> parallelGateways = definition.getChildren(ParallelGateway.class);
         for (ParallelGateway gateway : parallelGateways) {
@@ -778,6 +784,10 @@ public class BpmnSerializer extends ProcessSerializer {
         }
         List<Element> scriptTaskElements = processElement.elements(SCRIPT_TASK);
         for (Element node : scriptTaskElements) {
+            create(node, definition);
+        }
+        List<Element> dataStoreElements = processElement.elements(DATA_STORE);
+        for (Element node : dataStoreElements) {
             create(node, definition);
         }
         List<Element> parallelGatewayElements = processElement.elements(PARALLEL_GATEWAY);

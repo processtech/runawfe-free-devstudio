@@ -997,6 +997,22 @@
          </graphiti>
       </element>
       <element
+            bpmn="dataStore"
+            icon="datastore.png"
+            enabledInRegulationsByDefault="false"
+            label="%label.element.datastore"
+            model="ru.runa.gpd.lang.model.bpmn.DataStore"
+            type="node">
+         <graphiti
+               add="ru.runa.gpd.editor.graphiti.add.AddDataStoreNodeFeature"
+               create="ru.runa.gpd.editor.graphiti.create.CreateElementFeature"
+               fixedSize="true"
+               height="4"
+               update="ru.runa.gpd.editor.graphiti.update.UpdateStateNodeFeature"
+               width="4">
+         </graphiti>
+      </element>
+      <element
             bpmn="timerEventDefinition"
             jpdl="wait-state"
             icon="timer.png"
