@@ -26,7 +26,8 @@ public class ProcessDefinitionVariableProvider implements VariableProvider {
 
     @Override
     public Stream<? extends VariableUserType> complexUserTypes(Predicate<? super VariableUserType> predicate) {
-        Stream<? extends VariableUserType> stream = processDefinition.getVariableUserTypes().stream();
+        Stream<? extends VariableUserType> stream = processDefinition.getVariableUserTypes().stream()
+                .filter(VariableUserType::isStoreInExternalStorage);
         if (predicate != null) {
             stream = stream.filter(predicate);
         }
