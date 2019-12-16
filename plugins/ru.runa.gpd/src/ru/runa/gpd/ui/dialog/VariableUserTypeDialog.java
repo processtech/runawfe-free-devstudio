@@ -4,14 +4,17 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.extension.VariableFormatRegistry;
 import ru.runa.gpd.lang.model.ProcessDefinition;
@@ -21,6 +24,7 @@ import ru.runa.gpd.ui.custom.VariableNameChecker;
 
 public class VariableUserTypeDialog extends Dialog {
     private String name;
+    private boolean isStoreInExternalStorage;
     private final ProcessDefinition processDefinition;
     private final boolean createMode;
 
@@ -28,6 +32,7 @@ public class VariableUserTypeDialog extends Dialog {
         super(Display.getCurrent().getActiveShell());
         this.processDefinition = processDefinition;
         this.name = type != null ? type.getName() : "";
+        this.isStoreInExternalStorage = type != null ? type.isStoreInExternalStorage() : false;
         this.createMode = type == null;
     }
 
@@ -42,18 +47,18 @@ public class VariableUserTypeDialog extends Dialog {
         Composite area = (Composite) super.createDialogArea(parent);
         GridLayout layout = new GridLayout(1, false);
         area.setLayout(layout);
-        
+
         Composite composite = new Composite(area, SWT.NONE);
-        
+
         GridLayout gridLayout = new GridLayout();
         gridLayout.numColumns = 2;
         composite.setLayout(gridLayout);
         composite.setLayoutData(new GridData());
-        
+
         Label labelName = new Label(composite, SWT.NONE);
         labelName.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
         labelName.setText(Localization.getString("property.name") + ":");
-        
+
         final Text nameField = new Text(composite, SWT.BORDER);
         GridData nameTextData = new GridData(GridData.FILL_HORIZONTAL);
         nameTextData.minimumWidth = 200;
@@ -61,13 +66,23 @@ public class VariableUserTypeDialog extends Dialog {
         nameField.addKeyListener(new VariableNameChecker());
         nameField.setLayoutData(nameTextData);
         nameField.addModifyListener(new LoggingModifyTextAdapter() {
-            
+
             @Override
             protected void onTextChanged(ModifyEvent e) throws Exception {
                 name = nameField.getText();
                 updateButtons();
             }
         });
+
+        new Label(composite, SWT.NONE);
+        final Button storeInExternalStorageCheckbox = new Button(composite, SWT.CHECK);
+        storeInExternalStorageCheckbox.setText(Localization.getString("UserDefinedVariableType.storeInExternalStorage"));
+        storeInExternalStorageCheckbox.setSelection(isStoreInExternalStorage);
+        storeInExternalStorageCheckbox.addSelectionListener(SelectionListener.widgetSelectedAdapter(c -> {
+            isStoreInExternalStorage = !isStoreInExternalStorage;
+            updateButtons();
+        }));
+
         if (!createMode) {
             nameField.selectAll();
         }
@@ -75,10 +90,11 @@ public class VariableUserTypeDialog extends Dialog {
     }
 
     private void updateButtons() {
-    	VariableUserType type = processDefinition.getVariableUserType(name);
-        boolean allowCreation = type == null && VariableFormatRegistry.getInstance().getArtifactByLabel(name) == null
+        final VariableUserType type = processDefinition.getVariableUserType(name);
+        final boolean allowCreation = type == null && VariableFormatRegistry.getInstance().getArtifactByLabel(name) == null
                 && VariableNameChecker.isValid(name);
-        getButton(IDialogConstants.OK_ID).setEnabled(allowCreation);
+        final boolean allowEdit = (type != null && type.isStoreInExternalStorage() != isStoreInExternalStorage) || allowCreation;
+        getButton(IDialogConstants.OK_ID).setEnabled(createMode ? allowCreation : allowEdit);
     }
 
     @Override
@@ -91,4 +107,7 @@ public class VariableUserTypeDialog extends Dialog {
         return name;
     }
 
+    public boolean isStoreInExternalStorage() {
+        return isStoreInExternalStorage;
+    }
 }

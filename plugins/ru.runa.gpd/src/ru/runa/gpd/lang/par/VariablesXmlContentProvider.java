@@ -45,6 +45,7 @@ public class VariablesXmlContentProvider extends AuxContentProvider {
         for (Element typeElement : typeElements) {
             VariableUserType type = new VariableUserType();
             type.setName(typeElement.attributeValue(NAME));
+            type.setStoreInExternalStorage(Boolean.parseBoolean(typeElement.attributeValue(VariableUserType.PROPERTY_STORE_IN_EXTERNAL_STORAGE)));
             definition.addVariableUserType(type);
         }
         for (Element typeElement : typeElements) {
@@ -128,6 +129,7 @@ public class VariablesXmlContentProvider extends AuxContentProvider {
         for (VariableUserType type : definition.getVariableUserTypes()) {
             Element typeElement = root.addElement(USER_TYPE);
             typeElement.addAttribute(NAME, type.getName());
+            typeElement.addAttribute(VariableUserType.PROPERTY_STORE_IN_EXTERNAL_STORAGE, String.valueOf(type.isStoreInExternalStorage()));
             for (Variable variable : type.getAttributes()) {
                 writeVariable(typeElement, variable);
             }
