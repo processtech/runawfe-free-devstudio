@@ -1,5 +1,7 @@
 package ru.runa.gpd.office.store.externalstorage.predicate;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -12,12 +14,14 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 
 import com.google.common.base.Strings;
 
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableUserType;
+import ru.runa.gpd.office.Messages;
 import ru.runa.gpd.office.store.StorageConstraintsModel;
 import ru.runa.gpd.office.store.externalstorage.VariableProvider;
 import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
@@ -29,6 +33,7 @@ public class PredicateComposite extends Composite {
     private final VariableProvider variableProvider;
 
     private final Group group;
+    private final List<Label> labels = new ArrayList<>();
 
     private ConstraintsPredicate<?, ?> constraintsPredicate;
 
@@ -49,12 +54,12 @@ public class PredicateComposite extends Composite {
     }
 
     public void build() {
-        final String queryString = constraintsModel.getQueryString();
-        if (!Strings.isNullOrEmpty(queryString)) {
-            final PredicateParser predicateParser = new PredicateParser(queryString, variableProvider.getUserType(variableTypeName),
-                    variableProvider);
+        if (!Strings.isNullOrEmpty(constraintsModel.getQueryString())) {
+            final PredicateParser predicateParser = new PredicateParser(constraintsModel.getQueryString(),
+                    variableProvider.getUserType(variableTypeName), variableProvider);
             constraintsPredicate = predicateParser.parse();
             if (constraintsPredicate != null) {
+                buildLabels();
                 constructPredicateViewRecursive(constraintsPredicate);
             }
         }
@@ -73,6 +78,7 @@ public class PredicateComposite extends Composite {
         } else {
             constraintsPredicate = variablePredicate;
         }
+        buildLabels();
         buildVariablePredicate(new OnConstructedPredicateDelegate<Variable, Variable>(variablePredicate, this::onPredicateConstructed));
     }
 
@@ -187,10 +193,28 @@ public class PredicateComposite extends Composite {
 
         onPredicateConstructed(null);
 
+        labels.clear();
         for (Control c : group.getChildren()) {
             c.dispose();
         }
         build();
+        getParent().layout(true, true);
+    }
+
+    private void buildLabels() {
+        if (!labels.isEmpty()) {
+            if (constraintsPredicate instanceof ExpressionPredicate<?>) {
+                labels.get(4).setText(Messages.getString("label.LogicOperation"));
+            }
+            return;
+        } else {
+            labels.add(SWTUtils.createLabel(group, Messages.getString("label.DBTableField")));
+            labels.add(SWTUtils.createLabel(group, Messages.getString("label.ComparisonOperation")));
+            labels.add(SWTUtils.createLabel(group, Messages.getString("label.variable")));
+            labels.add(SWTUtils.createLabel(group, ""));
+            labels.add(SWTUtils.createLabel(group,
+                    (constraintsPredicate instanceof ExpressionPredicate<?>) ? Messages.getString("label.LogicOperation") : ""));
+        }
         getParent().layout(true, true);
     }
 }
