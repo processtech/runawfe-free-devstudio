@@ -96,12 +96,6 @@ public class CustomContextButtonManagerForPad extends ContextButtonManagerForPad
         }
 
         contextButtonShowing = true;
-
-    }
-
-    @Override
-    public DiagramBehavior getDiagramBehavior() {
-        return super.getDiagramBehavior();
     }
 
     private Map<IFigure, EditPart> getFigure2EditPart() {
@@ -221,7 +215,7 @@ public class CustomContextButtonManagerForPad extends ContextButtonManagerForPad
             IContextButtonPadDeclaration declaration;
             if (declarationType == 1) {
                 declaration = new SpecialContextButtonPadDeclaration(contextButtonPadData);
-            } else if (!Activator.getDefault().getPreferenceStore().getBoolean(PrefConstants.P_ELEMENT_EXPANDS_PAD)) {
+            } else if (Activator.getPrefBoolean(PrefConstants.P_BPMN_EXPAND_CONTEXT_BUTTON_PAD)) {
                 declaration = new CustomContextButtonPadDeclaration(contextButtonPadData);
             } else {
                 declaration = new StandardContextButtonPadDeclaration(contextButtonPadData);

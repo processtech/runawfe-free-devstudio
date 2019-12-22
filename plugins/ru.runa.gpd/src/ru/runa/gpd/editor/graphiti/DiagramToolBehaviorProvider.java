@@ -95,9 +95,8 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
         createContext.setTargetContainer(targetContainer);
         createContext.putProperty(CreateElementFeature.CONNECTION_PROPERTY, createConnectionContext);
 
-        boolean collapse = Activator.getDefault().getPreferenceStore().getBoolean(PrefConstants.P_ELEMENT_EXPANDS_PAD);
-        if (allowTargetNodeCreation && collapse) {
-            //
+        boolean expandContextButtonPad = Activator.getPrefBoolean(PrefConstants.P_BPMN_EXPAND_CONTEXT_BUTTON_PAD);
+        if (allowTargetNodeCreation && !expandContextButtonPad) {
             NodeTypeDefinition taskStateDefinition = NodeRegistry.getNodeTypeDefinition(TaskState.class);
             CreateDragAndDropElementFeature createTaskStateFeature = new CreateDragAndDropElementFeature(createContext);
             createTaskStateFeature.setNodeDefinition(taskStateDefinition);
@@ -124,7 +123,7 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
         
         if (allowTargetNodeCreation) {
             ContextButtonEntry createElementButton = null;
-            if (collapse) {
+            if (!expandContextButtonPad) {
                 createElementButton = new ContextButtonEntry(null, null);
                 createElementButton.setText(Localization.getString("new.element.label"));
                 createElementButton.setDescription(Localization.getString("new.element.description"));
@@ -139,27 +138,27 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
                 if (feature instanceof CreateElementFeature && feature.canCreate(createContext)) {
                     CreateElementFeature createElementFeature = (CreateElementFeature) feature;
                     NodeTypeDefinition typeDefinition = createElementFeature.getNodeDefinition();
-                    CreateDragAndDropElementFeature createDrugAndDropFeature = new CreateDragAndDropElementFeature(createContext);
-                    createDrugAndDropFeature.setNodeDefinition(typeDefinition);
-                    createDrugAndDropFeature.setFeatureProvider(getFeatureProvider());
-                    ContextButtonEntry createButton = new ContextButtonEntry(createDrugAndDropFeature, createConnectionContext);
+                    CreateDragAndDropElementFeature createDragAndDropElementFeature = new CreateDragAndDropElementFeature(createContext);
+                    createDragAndDropElementFeature.setNodeDefinition(typeDefinition);
+                    createDragAndDropElementFeature.setFeatureProvider(getFeatureProvider());
+                    ContextButtonEntry createButton = new ContextButtonEntry(createDragAndDropElementFeature, createConnectionContext);
                     createButton.setText(typeDefinition.getLabel());
                     createButton.setIconId(typeDefinition.getPaletteIcon());
-                    if (collapse) {
-                        createElementButton.addDragAndDropFeature(createDrugAndDropFeature);
-                        createElementButton.getContextButtonMenuEntries().add(createButton);
-                    } else {
-                        createButton.addDragAndDropFeature(createDrugAndDropFeature);
+                    if (expandContextButtonPad) {
+                        createButton.addDragAndDropFeature(createDragAndDropElementFeature);
                         data.getDomainSpecificContextButtons().add(createButton);
+                    } else {
+                        createElementButton.addDragAndDropFeature(createDragAndDropElementFeature);
+                        createElementButton.getContextButtonMenuEntries().add(createButton);
                     }
                 }
             }
         }
         if (createTransitionButton.getDragAndDropFeatures().size() > 0) {
-            if (collapse) {
-                data.getDomainSpecificContextButtons().add(createTransitionButton.getDragAndDropFeatures().size(), createTransitionButton);
-            } else {
+            if (expandContextButtonPad) {
                 data.getDomainSpecificContextButtons().add(createTransitionButton);
+            } else {
+                data.getDomainSpecificContextButtons().add(createTransitionButton.getDragAndDropFeatures().size(), createTransitionButton);
             }
         }
         return data;
