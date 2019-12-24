@@ -118,7 +118,7 @@ public class VariableUserType extends EventSupport implements VariableContainer,
     }
 
     public void setStoreInExternalStorage(boolean isStoreInExternalStorage) {
-        final boolean old = isStoreInExternalStorage;
+        final boolean old = this.isStoreInExternalStorage;
         this.isStoreInExternalStorage = isStoreInExternalStorage;
         firePropertyChange(PROPERTY_STORE_IN_EXTERNAL_STORAGE, old, isStoreInExternalStorage);
     }
