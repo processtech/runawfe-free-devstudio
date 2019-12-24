@@ -63,6 +63,7 @@ import ru.runa.gpd.ui.custom.TableViewerLocalDragAndDropSupport;
 import ru.runa.gpd.ui.dialog.ChooseUserTypeDialog;
 import ru.runa.gpd.ui.dialog.ChooseVariableDialog;
 import ru.runa.gpd.ui.dialog.ErrorDialog;
+import ru.runa.gpd.ui.dialog.RenameUserTypeDialog;
 import ru.runa.gpd.ui.dialog.UpdateVariableNameDialog;
 import ru.runa.gpd.ui.dialog.VariableUserTypeDialog;
 import ru.runa.gpd.ui.wizard.CompactWizardDialog;
@@ -73,6 +74,7 @@ import ru.runa.gpd.util.WorkspaceOperations;
 public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
 
     private TableViewer typeTableViewer;
+    private Button editTypeButton;
     private Button renameTypeButton;
     private Button moveUpTypeButton;
     private Button moveDownTypeButton;
@@ -124,6 +126,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
 
         Composite typeButtonsBar = createActionBar(leftComposite);
         addButton(typeButtonsBar, "button.create", new CreateTypeSelectionListener(), false);
+        editTypeButton = addButton(typeButtonsBar, "button.change", new EditTypeSelectionListener(), true);
         renameTypeButton = addButton(typeButtonsBar, "button.rename", new RenameTypeSelectionListener(), true);
         moveUpTypeButton = addButton(typeButtonsBar, "button.up", new MoveTypeSelectionListener(true), true);
         moveDownTypeButton = addButton(typeButtonsBar, "button.down", new MoveTypeSelectionListener(false), true);
@@ -205,6 +208,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
     protected void updateUI() {
         VariableUserType selectedType = getSelection();
         enableAction(deleteTypeButton, selectedType != null);
+        enableAction(editTypeButton, selectedType != null);
         enableAction(renameTypeButton, selectedType != null);
         enableAction(moveUpTypeButton, selectedType != null && getDefinition().getVariableUserTypes().indexOf(selectedType) > 0);
         enableAction(moveDownTypeButton, selectedType != null
@@ -269,7 +273,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
         }
     }
 
-    private class RenameTypeSelectionListener extends LoggingSelectionAdapter {
+    private class EditTypeSelectionListener extends LoggingSelectionAdapter {
         @Override
         protected void onSelection(SelectionEvent e) throws Exception {
             VariableUserType type = getSelection();
@@ -277,6 +281,17 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             if (dialog.open() == Window.OK) {
                 VariableUtils.renameUserType(getDefinition(), type, dialog.getName());
                 type.setStoreInExternalStorage(dialog.isStoreInExternalStorage());
+            }
+        }
+    }
+
+    private class RenameTypeSelectionListener extends LoggingSelectionAdapter {
+        @Override
+        protected void onSelection(SelectionEvent e) throws Exception {
+            VariableUserType type = getSelection();
+            RenameUserTypeDialog dialog = new RenameUserTypeDialog(getDefinition(), type);
+            if (dialog.open() == Window.OK) {
+                VariableUtils.renameUserType(getDefinition(), type, dialog.getName());
             }
         }
     }
