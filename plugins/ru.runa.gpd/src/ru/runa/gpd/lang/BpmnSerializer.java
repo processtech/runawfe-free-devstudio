@@ -116,6 +116,8 @@ public class BpmnSerializer extends ProcessSerializer {
     public static final String END_TEXT_DECORATION = "endTextDecoration";
     private static final String ACTION_HANDLER = "actionHandler";
     private static final String EVENT_TYPE = "eventType";
+    private static final String PROPERTY_USE_EXTERNAL_STORAGE_OUT = "useExternalStorageOut";
+    private static final String PROPERTY_USE_EXTERNAL_STORAGE_IN = "useExternalStorageIn";
 
     @Override
     public boolean isSupported(Document document) {
@@ -544,6 +546,12 @@ public class BpmnSerializer extends ProcessSerializer {
         if (delegable instanceof Variable && ((Variable) delegable).isGlobal()) {
             extensionsElement.addElement(RUNA_PREFIX + ":" + PROPERTY).addAttribute(NAME, GLOBAL).addAttribute(VALUE, "true");
         }
+        if (delegable instanceof ScriptTask) {
+            extensionsElement.addElement(RUNA_PREFIX + ":" + PROPERTY).addAttribute(NAME, PROPERTY_USE_EXTERNAL_STORAGE_IN).addAttribute(VALUE,
+                    String.valueOf(((ScriptTask) delegable).isUseExternalStorageIn()));
+            extensionsElement.addElement(RUNA_PREFIX + ":" + PROPERTY).addAttribute(NAME, PROPERTY_USE_EXTERNAL_STORAGE_OUT).addAttribute(VALUE,
+                    String.valueOf(((ScriptTask) delegable).isUseExternalStorageOut()));
+        }
     }
 
     @Override
@@ -604,6 +612,10 @@ public class BpmnSerializer extends ProcessSerializer {
         if (element instanceof Delegable) {
             element.setDelegationClassName(properties.get(CLASS));
             element.setDelegationConfiguration(properties.get(CONFIG));
+        }
+        if (element instanceof ScriptTask) {
+            ((ScriptTask) element).setUseExternalStorageIn(Boolean.valueOf(properties.get(PROPERTY_USE_EXTERNAL_STORAGE_IN)));
+            ((ScriptTask) element).setUseExternalStorageOut(Boolean.valueOf(properties.get(PROPERTY_USE_EXTERNAL_STORAGE_OUT)));
         }
         if (element instanceof Node && properties.containsKey(NODE_ASYNC_EXECUTION)) {
             ((Node) element).setAsyncExecution(NodeAsyncExecution.getByValueNotNull(properties.get(NODE_ASYNC_EXECUTION)));
