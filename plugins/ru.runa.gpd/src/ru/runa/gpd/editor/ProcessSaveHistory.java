@@ -35,7 +35,7 @@ public class ProcessSaveHistory {
         return Activator.getPrefBoolean(PrefConstants.P_PROCESS_SAVE_HISTORY);
     }
 
-    public static void addSavepoint(IFile processDefinitionFile) throws Exception {
+    static void addSavepoint(IFile processDefinitionFile) throws Exception {
         if (isActive()) {
             File historyFolder = new File(Activator.getPreferencesFolder() + File.separator + FOLDER_NAME + File.separator
                     + processDefinitionFile.getParent().getFullPath());
