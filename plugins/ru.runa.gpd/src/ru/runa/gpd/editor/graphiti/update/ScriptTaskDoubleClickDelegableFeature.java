@@ -8,8 +8,6 @@ import ru.runa.gpd.lang.model.bpmn.ScriptTask;
 
 public class ScriptTaskDoubleClickDelegableFeature extends DoubleClickDelegableFeature {
 
-    private static final String EXTERNAL_STORAGE_HANDLER_CLASS_NAME = "ru.runa.wfe.office.storage.handler.ExternalStorageHandler";
-
     @Override
     public void execute(ICustomContext context) {
         final ScriptTask scriptTask = (ScriptTask) fp.getBusinessObjectForPictogramElement(context.getInnerPictogramElement());
@@ -18,7 +16,6 @@ public class ScriptTaskDoubleClickDelegableFeature extends DoubleClickDelegableF
             return;
         }
 
-        scriptTask.setDelegationClassName(EXTERNAL_STORAGE_HANDLER_CLASS_NAME);
         final DelegableProvider provider = HandlerRegistry.getProvider(scriptTask.getDelegationClassName());
         final String newConfig = provider.showConfigurationDialog(scriptTask);
 
