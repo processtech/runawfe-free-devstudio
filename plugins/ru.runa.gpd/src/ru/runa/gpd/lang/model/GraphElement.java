@@ -70,7 +70,7 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
         if ("language".equals(name)) {
             return Objects.equal(value, getProcessDefinition().getLanguage().name().toLowerCase());
         }
-        if ("delegable".equals(name)) {
+        if ("delegableEditHandler".equals(name) || "delegableEditConfiguration".equals(name)) {
             return Objects.equal(value, String.valueOf(isDelegable()));
         }
         if ("regulationsEnabled".equals(name)) {

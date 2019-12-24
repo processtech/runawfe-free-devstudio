@@ -49,4 +49,12 @@ public class ScriptTask extends Node implements Delegable, IBoundaryEventContain
         }
     }
 
+    @Override
+    public boolean testAttribute(Object target, String name, String value) {
+        if ("delegableEditHandler".equals(name)) {
+            return !isUseExternalStorageOut && !isUseExternalStorageIn;
+        }
+        return super.testAttribute(target, name, value);
+    }
+
 }

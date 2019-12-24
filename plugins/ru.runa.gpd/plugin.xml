@@ -172,14 +172,24 @@
              label="%label.action.feature.compactView"
              menubarPath="features/sp1">
        </action>
+    </objectContribution>
+    <objectContribution
+          adaptable="false"
+          id="scripttask.useExternalStorageOut"
+          objectClass="ru.runa.gpd.lang.model.bpmn.ScriptTask">
        <action
              class="ru.runa.gpd.lang.action.UseExternalStorageOutFeatureDelegate"
-             id="delegable.3useExternalStorageOut"
+             id="scripttask.useExternalStorageOut"
              label="%label.action.useExternalStorageOut">
        </action>
+    </objectContribution>
+    <objectContribution
+          adaptable="false"
+          id="scripttask.useExternalStorageIn"
+          objectClass="ru.runa.gpd.lang.model.bpmn.ScriptTask">
        <action
              class="ru.runa.gpd.lang.action.UseExternalStorageInFeatureDelegate"
-             id="delegable.4useExternalStorageIn"
+             id="scripttask.useExternalStorageIn"
              label="%label.action.useExternalStorageIn">
        </action>
     </objectContribution>
@@ -470,7 +480,7 @@
           id="delegable.configuration"
           objectClass="ru.runa.gpd.lang.model.Delegable">
        <filter
-             name="delegable"
+             name="delegableEditHandler"
              value="true">
        </filter>
        <action
@@ -478,6 +488,15 @@
              id="delegable.1editHandler"
              label="%label.action.editHandler">
        </action>
+    </objectContribution>
+    <objectContribution
+          adaptable="false"
+          id="delegable.configuration"
+          objectClass="ru.runa.gpd.lang.model.Delegable">
+       <filter
+             name="delegableEditConfiguration"
+             value="true">
+       </filter>
        <action
              class="ru.runa.gpd.lang.action.OpenDelegableConfigurationDelegate"
              id="delegable.2editConfiguration"
