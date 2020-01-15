@@ -1,9 +1,14 @@
 package ru.runa.gpd.editor;
 
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.base.Objects;
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import java.beans.PropertyChangeEvent;
 import java.util.List;
 import java.util.Map;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -32,14 +37,6 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
-
-import com.google.common.base.Function;
-import com.google.common.base.Joiner;
-import com.google.common.base.Objects;
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.SharedImages;
@@ -362,7 +359,9 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
     }
 
     private enum RemoveAction {
-        NONE(""), OK("UserDefinedVariableType.deletion.NoUsageFound"), VAR_USAGE("UserDefinedVariableType.deletion.VariablesWillBeRemoved"),
+        NONE(""),
+        OK("UserDefinedVariableType.deletion.NoUsageFound"),
+        VAR_USAGE("UserDefinedVariableType.deletion.VariablesWillBeRemoved"),
         TYPE_USAGE("UserDefinedVariableType.deletion.UserTypeIsUsed");
 
         private final String messageKey;
