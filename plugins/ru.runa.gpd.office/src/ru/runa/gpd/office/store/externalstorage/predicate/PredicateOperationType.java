@@ -6,7 +6,15 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public enum PredicateOperationType {
-    EQUAL("=="), NOT_EQUAL("!="), GREATER_OR_EQUAL(">="), LESS_OR_EQUAL("<="), GREATER(">"), LESS("<"), LIKE("like"), AND("and"), OR("or");
+    EQUAL("=="),
+    NOT_EQUAL("!="),
+    GREATER_OR_EQUAL(">="),
+    LESS_OR_EQUAL("<="),
+    GREATER(">"),
+    LESS("<"),
+    LIKE("like"),
+    AND("and"),
+    OR("or");
 
     public final String code;
 

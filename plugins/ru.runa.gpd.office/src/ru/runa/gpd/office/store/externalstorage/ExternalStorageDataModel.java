@@ -32,7 +32,7 @@ public class ExternalStorageDataModel extends DataModel {
         final List<StorageConstraintsModel> constraints = (List<StorageConstraintsModel>) document.getRootElement().elements("binding").stream()
                 .map(element -> StorageConstraintsModel.deserialize((Element) element)).collect(Collectors.toList());
 
-        Preconditions.checkState(constraints.size() == 1, "Для обработчика внешнего хранилища данных используется только один constraint");
+        Preconditions.checkState(constraints.size() == 1, "Expected constraints.size() == 1, actual " + constraints.size());
 
         final StorageConstraintsModel constraintsModel = Iterables.getOnlyElement(constraints);
         final FilesSupplierMode mode = constraintsModel.getQueryType().equals(QueryType.SELECT) ? FilesSupplierMode.BOTH : FilesSupplierMode.IN;

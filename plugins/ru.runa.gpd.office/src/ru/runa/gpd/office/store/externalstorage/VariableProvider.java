@@ -23,7 +23,7 @@ public interface VariableProvider extends VariableContainer {
 
     default String getVariableTypeNameByVariableName(String variableName) throws IllegalArgumentException {
         return complexUserTypeNames(userType -> userType.getName().equals(variableName)).findAny()
-                .orElseThrow(() -> new IllegalArgumentException("Не найден тип для переменной " + variableName));
+                .orElseThrow(() -> new IllegalArgumentException("VariableUserType not found for variable " + variableName));
     }
 
     default Stream<String> variableNamesAccordingToType(String format) {

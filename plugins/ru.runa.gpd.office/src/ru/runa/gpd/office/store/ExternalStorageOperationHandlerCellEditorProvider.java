@@ -67,7 +67,7 @@ public class ExternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
                     isUseExternalStorageOut);
         } else {
             // TODO 1506 Реализовать VariableProvider для параметров бота
-            throw new UnsupportedOperationException("Не реализован VariableProvider для " + delegable.getClass().getName());
+            throw new UnsupportedOperationException("VariableProvider is not realized for " + delegable.getClass().getName());
         }
     }
 
@@ -154,8 +154,7 @@ public class ExternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
             }
 
             if (!model.constraints.isEmpty()) {
-                Preconditions.checkState(model.constraints.size() == 1,
-                        "Для обработчика внешнего хранилища данных используется только один constraint");
+                Preconditions.checkState(model.constraints.size() == 1, "Expected model.constraints.size() == 1, actual " + model.constraints.size());
                 constraintsModel = Iterables.getOnlyElement(model.constraints);
             } else {
                 constraintsModel = new StorageConstraintsModel(StorageConstraintsModel.ATTR, QueryType.SELECT);
