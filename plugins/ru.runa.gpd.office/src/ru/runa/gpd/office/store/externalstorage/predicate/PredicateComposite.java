@@ -1,10 +1,10 @@
 package ru.runa.gpd.office.store.externalstorage.predicate;
 
+import com.google.common.base.Strings;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.FillLayout;
@@ -16,9 +16,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
-
-import com.google.common.base.Strings;
-
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.gpd.office.Messages;

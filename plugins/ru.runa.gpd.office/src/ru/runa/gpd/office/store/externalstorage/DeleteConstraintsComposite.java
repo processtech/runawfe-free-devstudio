@@ -2,11 +2,9 @@ package ru.runa.gpd.office.store.externalstorage;
 
 import java.util.Optional;
 import java.util.function.Predicate;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.office.Messages;
 import ru.runa.gpd.office.store.StorageConstraintsModel;

@@ -1,13 +1,11 @@
 package ru.runa.gpd.office.store.externalstorage;
 
+import com.google.common.base.Strings;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-
-import com.google.common.base.Strings;
-
 import ru.runa.gpd.office.store.StorageConstraintsModel;
 
 abstract class AbstractOperatingVariableComboBasedConstraintsCompositeBuilder extends AbstractConstraintsCompositeBuilder {

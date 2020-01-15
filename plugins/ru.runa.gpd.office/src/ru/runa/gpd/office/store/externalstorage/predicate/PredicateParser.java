@@ -2,7 +2,6 @@ package ru.runa.gpd.office.store.externalstorage.predicate;
 
 import java.util.Optional;
 import java.util.StringTokenizer;
-
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.gpd.office.store.externalstorage.VariableProvider;

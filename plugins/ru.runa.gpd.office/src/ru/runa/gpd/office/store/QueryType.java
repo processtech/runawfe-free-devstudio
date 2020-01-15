@@ -4,7 +4,10 @@ import java.util.Arrays;
 import java.util.List;
 
 public enum QueryType {
-    INSERT, SELECT, UPDATE, DELETE;
+    INSERT,
+    SELECT,
+    UPDATE,
+    DELETE;
 
     public static List<QueryType> byIntent(boolean isUseExternalStorageIn, boolean isUseExternalStorageOut) {
         if (isUseExternalStorageIn) {

@@ -1,14 +1,11 @@
 package ru.runa.gpd.office.store.externalstorage;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.dom4j.Document;
-import org.dom4j.Element;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
-
+import java.util.List;
+import java.util.stream.Collectors;
+import org.dom4j.Document;
+import org.dom4j.Element;
 import ru.runa.gpd.office.FilesSupplierMode;
 import ru.runa.gpd.office.store.DataModel;
 import ru.runa.gpd.office.store.QueryType;

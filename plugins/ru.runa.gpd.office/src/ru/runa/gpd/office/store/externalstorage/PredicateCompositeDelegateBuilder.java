@@ -1,11 +1,9 @@
 package ru.runa.gpd.office.store.externalstorage;
 
+import com.google.common.base.Strings;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
-
-import com.google.common.base.Strings;
-
 import ru.runa.gpd.office.Messages;
 import ru.runa.gpd.office.store.StorageConstraintsModel;
 import ru.runa.gpd.office.store.externalstorage.predicate.PredicateComposite;

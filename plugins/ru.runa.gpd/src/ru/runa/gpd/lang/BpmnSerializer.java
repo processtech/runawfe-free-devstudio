@@ -760,8 +760,8 @@ public class BpmnSerializer extends ProcessSerializer {
                 if (state instanceof MultiTaskState) {
                     MultiTaskState multiTaskState = (MultiTaskState) state;
                     multiTaskState.setCreationMode(MultiTaskCreationMode.valueOf(properties.get(PropertyNames.PROPERTY_MULTI_TASK_CREATION_MODE)));
-                    multiTaskState.setSynchronizationMode(MultiTaskSynchronizationMode.valueOf(properties
-                            .get(PropertyNames.PROPERTY_MULTI_TASK_SYNCHRONIZATION_MODE)));
+                    multiTaskState.setSynchronizationMode(
+                            MultiTaskSynchronizationMode.valueOf(properties.get(PropertyNames.PROPERTY_MULTI_TASK_SYNCHRONIZATION_MODE)));
                     multiTaskState.setDiscriminatorUsage(properties.get(PropertyNames.PROPERTY_DISCRIMINATOR_USAGE));
                     multiTaskState.setDiscriminatorValue(properties.get(PropertyNames.PROPERTY_DISCRIMINATOR_VALUE));
                     multiTaskState.setDiscriminatorCondition(properties.get(PropertyNames.PROPERTY_DISCRIMINATOR_CONDITION));

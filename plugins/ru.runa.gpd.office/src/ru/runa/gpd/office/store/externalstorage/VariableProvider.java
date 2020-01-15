@@ -3,7 +3,6 @@ package ru.runa.gpd.office.store.externalstorage;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableContainer;
 import ru.runa.gpd.lang.model.VariableUserType;

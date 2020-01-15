@@ -1,7 +1,6 @@
 package ru.runa.gpd.editor.graphiti.update;
 
 import org.eclipse.graphiti.features.context.ICustomContext;
-
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.lang.model.bpmn.ScriptTask;

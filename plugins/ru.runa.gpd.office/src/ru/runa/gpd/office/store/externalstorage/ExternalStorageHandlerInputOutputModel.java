@@ -1,12 +1,9 @@
 package ru.runa.gpd.office.store.externalstorage;
 
+import com.google.common.base.Strings;
 import java.text.MessageFormat;
 import java.util.List;
-
 import org.dom4j.Element;
-
-import com.google.common.base.Strings;
-
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.office.FilesSupplierMode;
