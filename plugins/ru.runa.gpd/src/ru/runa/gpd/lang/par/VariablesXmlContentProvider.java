@@ -1,10 +1,9 @@
 package ru.runa.gpd.lang.par;
 
+import com.google.common.base.Strings;
 import java.util.List;
-
 import org.dom4j.Document;
 import org.dom4j.Element;
-
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
@@ -15,8 +14,6 @@ import ru.runa.gpd.util.VariableUtils;
 import ru.runa.gpd.util.XmlUtil;
 import ru.runa.wfe.commons.BackCompatibilityClassNames;
 import ru.runa.wfe.var.format.UserTypeFormat;
-
-import com.google.common.base.Strings;
 
 public class VariablesXmlContentProvider extends AuxContentProvider {
     private static final String XML_FILE_NAME = "variables.xml";
@@ -80,8 +77,9 @@ public class VariablesXmlContentProvider extends AuxContentProvider {
                     swimlane.setDescription(description);
                     swimlane.setPublicVisibility(publicVisibility);
                     swimlane.setEditorPath(element.attributeValue(EDITOR));
-                    swimlane.setStoreType(element.attributeValue(STORE_TYPE, null) != null ? VariableStoreType.valueOf(element.attributeValue(
-                            STORE_TYPE).toUpperCase()) : VariableStoreType.DEFAULT);
+                    swimlane.setStoreType(element.attributeValue(STORE_TYPE, null) != null
+                            ? VariableStoreType.valueOf(element.attributeValue(STORE_TYPE).toUpperCase())
+                            : VariableStoreType.DEFAULT);
                 } catch (Exception e) {
                     PluginLogger.logErrorWithoutDialog("No swimlane found for " + variableName, e);
                 }
@@ -108,8 +106,9 @@ public class VariablesXmlContentProvider extends AuxContentProvider {
         String defaultValue = element.attributeValue(DEFAULT_VALUE);
         String scriptingName = element.attributeValue(SCRIPTING_NAME, variableName);
         String description = element.attributeValue(DESCRIPTION);
-        VariableStoreType storeType = element.attributeValue(STORE_TYPE, null) != null ? VariableStoreType.valueOf(element.attributeValue(STORE_TYPE)
-                .toUpperCase()) : VariableStoreType.DEFAULT;
+        VariableStoreType storeType = element.attributeValue(STORE_TYPE, null) != null
+                ? VariableStoreType.valueOf(element.attributeValue(STORE_TYPE).toUpperCase())
+                : VariableStoreType.DEFAULT;
         if ("false".equals(description)) {
             // remove old comments due to some bug
             description = null;
