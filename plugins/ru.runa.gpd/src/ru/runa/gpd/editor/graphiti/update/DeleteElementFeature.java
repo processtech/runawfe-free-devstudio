@@ -23,6 +23,8 @@ import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.Transition;
+import ru.runa.gpd.lang.model.bpmn.DottedTransition;
+import ru.runa.gpd.lang.model.bpmn.ScriptTask;
 import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
 import ru.runa.gpd.settings.PrefConstants;
 
@@ -101,6 +103,14 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements ICusto
             Transition transition = (Transition) element;
             transition.getSource().removeLeavingTransition(transition);
             return;
+        } else if (element instanceof DottedTransition) {
+            final DottedTransition transition = (DottedTransition) element;
+            final ScriptTask scriptTask = transition.getSource() instanceof ScriptTask ? (ScriptTask) transition.getSource()
+                    : (ScriptTask) transition.getTarget();
+            scriptTask.setUseExternalStorageIn(false);
+            scriptTask.setUseExternalStorageOut(false);
+            scriptTask.setDelegationConfiguration(null);
+            scriptTask.setDelegationClassName(null);
         }
         element.getParent().removeChild(element);
     }
@@ -169,11 +179,9 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements ICusto
         super.preDelete(context);
         if (getBusinessObjectForPictogramElement(context.getPictogramElement()) instanceof Action) {
             PictogramElement pe = context.getPictogramElement();
-            context.putProperty(
-                    "action-container",
-                    pe instanceof ConnectionDecorator ?
-                            ((ConnectionDecorator) context.getPictogramElement()).getConnection() :
-                                ((Shape) context.getPictogramElement()).getContainer());
+            context.putProperty("action-container",
+                    pe instanceof ConnectionDecorator ? ((ConnectionDecorator) context.getPictogramElement()).getConnection()
+                            : ((Shape) context.getPictogramElement()).getContainer());
         }
     }
 

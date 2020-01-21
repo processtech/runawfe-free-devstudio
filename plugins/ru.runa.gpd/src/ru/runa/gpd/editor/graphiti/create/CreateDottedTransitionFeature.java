@@ -20,6 +20,8 @@ import ru.runa.gpd.lang.model.bpmn.DottedTransition;
 import ru.runa.gpd.lang.model.bpmn.ScriptTask;
 
 public class CreateDottedTransitionFeature extends AbstractCreateConnectionFeature {
+    private static final String EXTERNAL_STORAGE_HANDLER_CLASS_NAME = "ru.runa.wfe.office.storage.handler.ExternalStorageHandler";
+
     private final NodeTypeDefinition transitionDefinition;
     private IFeatureProvider featureProvider;
 
@@ -49,9 +51,11 @@ public class CreateDottedTransitionFeature extends AbstractCreateConnectionFeatu
         if (source instanceof DataStore) {
             final ScriptTask scriptTask = (ScriptTask) target;
             scriptTask.setUseExternalStorageIn(true);
+            scriptTask.setDelegationClassName(EXTERNAL_STORAGE_HANDLER_CLASS_NAME);
         } else {
             final ScriptTask scriptTask = (ScriptTask) source;
             scriptTask.setUseExternalStorageOut(true);
+            scriptTask.setDelegationClassName(EXTERNAL_STORAGE_HANDLER_CLASS_NAME);
         }
 
         transition.setName(source.getNextTransitionName(transitionDefinition));
