@@ -5,7 +5,7 @@ import java.util.stream.Collectors;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.Transition;
 
-public class DataStore extends Node implements IBoundaryEventContainer, ConnectableViaDottedTransition {
+public class DataStore extends Node implements ConnectableViaDottedTransition {
     @Override
     protected boolean allowLeavingTransition(List<Transition> transitions) {
         return false;
