@@ -5,8 +5,7 @@ import org.eclipse.graphiti.features.context.IAddBendpointContext;
 import org.eclipse.graphiti.features.impl.DefaultAddBendpointFeature;
 import org.eclipse.graphiti.mm.algorithms.styles.Point;
 import org.eclipse.graphiti.mm.pictograms.FreeFormConnection;
-
-import ru.runa.gpd.lang.model.Transition;
+import ru.runa.gpd.lang.model.AbstractTransition;
 
 public class AddTransitionBendpointFeature extends DefaultAddBendpointFeature {
     public AddTransitionBendpointFeature(IFeatureProvider fp) {
@@ -19,7 +18,7 @@ public class AddTransitionBendpointFeature extends DefaultAddBendpointFeature {
         int index = context.getBendpointIndex();
         FreeFormConnection connection = context.getConnection();
         Point point = connection.getBendpoints().get(index);
-        Transition transition = (Transition) getFeatureProvider().getBusinessObjectForPictogramElement(connection);
+        AbstractTransition transition = (AbstractTransition) getFeatureProvider().getBusinessObjectForPictogramElement(connection);
         transition.addBendpoint(index, new org.eclipse.draw2d.geometry.Point(point.getX(), point.getY()));
     }
 }
