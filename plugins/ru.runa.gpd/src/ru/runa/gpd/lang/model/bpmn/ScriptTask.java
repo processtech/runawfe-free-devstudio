@@ -8,6 +8,8 @@ import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.Transition;
 
 public class ScriptTask extends Node implements Delegable, IBoundaryEventContainer, ConnectableViaDottedTransition {
+    private static final String EXTERNAL_STORAGE_HANDLER_CLASS_NAME = "ru.runa.wfe.office.storage.handler.ExternalStorageHandler";
+
     private boolean isUseExternalStorageOut = false;
     private boolean isUseExternalStorageIn = false;
 
@@ -60,6 +62,8 @@ public class ScriptTask extends Node implements Delegable, IBoundaryEventContain
     @Override
     public void addLeavingDottedTransition(DottedTransition transition) {
         addChild(transition);
+        setUseExternalStorageOut(true);
+        setDelegationClassName(EXTERNAL_STORAGE_HANDLER_CLASS_NAME);
     }
 
     @Override
@@ -76,19 +80,26 @@ public class ScriptTask extends Node implements Delegable, IBoundaryEventContain
 
     @Override
     public void removeLeavingDottedTransition(DottedTransition transition) {
-        removeDottedTransition(transition);
+        removeChild(transition);
+        dottedTransitionRemoved(transition);
     }
 
     @Override
     public void removeArrivingDottedTransition(DottedTransition transition) {
-        removeDottedTransition(transition);
+        dottedTransitionRemoved(transition);
     }
 
-    private void removeDottedTransition(DottedTransition transition) {
-        removeChild(transition);
+    private void dottedTransitionRemoved(DottedTransition transition) {
         setUseExternalStorageIn(false);
         setUseExternalStorageOut(false);
         setDelegationConfiguration(null);
         setDelegationClassName(null);
+    }
+
+    @Override
+    public void addArrivingDottedTransition(DottedTransition transition) {
+        transition.setTarget(this);
+        setUseExternalStorageIn(true);
+        setDelegationClassName(EXTERNAL_STORAGE_HANDLER_CLASS_NAME);
     }
 }

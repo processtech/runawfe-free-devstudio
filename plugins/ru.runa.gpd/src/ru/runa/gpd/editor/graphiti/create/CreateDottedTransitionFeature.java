@@ -20,8 +20,6 @@ import ru.runa.gpd.lang.model.bpmn.DottedTransition;
 import ru.runa.gpd.lang.model.bpmn.ScriptTask;
 
 public class CreateDottedTransitionFeature extends AbstractCreateConnectionFeature {
-    private static final String EXTERNAL_STORAGE_HANDLER_CLASS_NAME = "ru.runa.wfe.office.storage.handler.ExternalStorageHandler";
-
     private final NodeTypeDefinition transitionDefinition;
     private IFeatureProvider featureProvider;
 
@@ -46,20 +44,10 @@ public class CreateDottedTransitionFeature extends AbstractCreateConnectionFeatu
         final Node target = (Node) getBusinessObjectForPictogramElement(context.getTargetPictogramElement());
         // create new business object
         final DottedTransition transition = transitionDefinition.createElement(source, false);
-        transition.setTarget(target);
-
-        if (source instanceof DataStore) {
-            final ScriptTask scriptTask = (ScriptTask) target;
-            scriptTask.setUseExternalStorageIn(true);
-            scriptTask.setDelegationClassName(EXTERNAL_STORAGE_HANDLER_CLASS_NAME);
-        } else {
-            final ScriptTask scriptTask = (ScriptTask) source;
-            scriptTask.setUseExternalStorageOut(true);
-            scriptTask.setDelegationClassName(EXTERNAL_STORAGE_HANDLER_CLASS_NAME);
-        }
-
         transition.setName(source.getNextTransitionName(transitionDefinition));
         ((ConnectableViaDottedTransition) source).addLeavingDottedTransition(transition);
+        ((ConnectableViaDottedTransition) target).addArrivingDottedTransition(transition);
+
         // add connection for business object
         Anchor sourceAnchor = context.getSourceAnchor();
         if (sourceAnchor == null) {

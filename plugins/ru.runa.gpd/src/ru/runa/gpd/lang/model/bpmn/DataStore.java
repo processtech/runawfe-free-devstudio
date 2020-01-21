@@ -51,8 +51,8 @@ public class DataStore extends Node implements ConnectableViaDottedTransition {
     }
 
     @Override
-    public void removeArrivingDottedTransition(DottedTransition transition) {
-        removeChild(transition);
+    public void addArrivingDottedTransition(DottedTransition transition) {
+        transition.setTarget(this);
     }
 
 }
