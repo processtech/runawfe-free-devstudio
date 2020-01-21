@@ -73,4 +73,22 @@ public class ScriptTask extends Node implements Delegable, IBoundaryEventContain
                 .flatMap(node -> ((ConnectableViaDottedTransition) node).getLeavingDottedTransitions().stream())
                 .filter(dottedTransition -> dottedTransition.getTarget().equals(this)).collect(Collectors.toList());
     }
+
+    @Override
+    public void removeLeavingDottedTransition(DottedTransition transition) {
+        removeDottedTransition(transition);
+    }
+
+    @Override
+    public void removeArrivingDottedTransition(DottedTransition transition) {
+        removeDottedTransition(transition);
+    }
+
+    private void removeDottedTransition(DottedTransition transition) {
+        removeChild(transition);
+        setUseExternalStorageIn(false);
+        setUseExternalStorageOut(false);
+        setDelegationConfiguration(null);
+        setDelegationClassName(null);
+    }
 }

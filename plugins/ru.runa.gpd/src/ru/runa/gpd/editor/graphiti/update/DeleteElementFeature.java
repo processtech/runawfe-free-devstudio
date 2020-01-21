@@ -23,8 +23,8 @@ import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.Transition;
+import ru.runa.gpd.lang.model.bpmn.ConnectableViaDottedTransition;
 import ru.runa.gpd.lang.model.bpmn.DottedTransition;
-import ru.runa.gpd.lang.model.bpmn.ScriptTask;
 import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
 import ru.runa.gpd.settings.PrefConstants;
 
@@ -105,12 +105,9 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements ICusto
             return;
         } else if (element instanceof DottedTransition) {
             final DottedTransition transition = (DottedTransition) element;
-            final ScriptTask scriptTask = transition.getSource() instanceof ScriptTask ? (ScriptTask) transition.getSource()
-                    : (ScriptTask) transition.getTarget();
-            scriptTask.setUseExternalStorageIn(false);
-            scriptTask.setUseExternalStorageOut(false);
-            scriptTask.setDelegationConfiguration(null);
-            scriptTask.setDelegationClassName(null);
+            ((ConnectableViaDottedTransition) transition.getSource()).removeLeavingDottedTransition(transition);
+            ((ConnectableViaDottedTransition) transition.getTarget()).removeArrivingDottedTransition(transition);
+            return;
         }
         element.getParent().removeChild(element);
     }
