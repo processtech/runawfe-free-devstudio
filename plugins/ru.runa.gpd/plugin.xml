@@ -869,6 +869,22 @@
          </graphiti>
       </element>
       <element
+            type="connection"
+            model="ru.runa.gpd.lang.model.bpmn.DottedTransition"
+            bpmn="dottedTransition"
+            icon="transitiondotted.png"
+            label="%label.element.transition">
+         <graphiti
+               add="ru.runa.gpd.editor.graphiti.add.AddDottedTransitionFeature"
+               create="ru.runa.gpd.editor.graphiti.create.CreateDottedTransitionFeature"
+               fixedSize="false"
+               height="1"
+               layout="ru.runa.gpd.editor.graphiti.layout.LayoutTransitionFeature"
+               update="ru.runa.gpd.editor.graphiti.update.UpdateDottedTransitionFeature"
+               width="1">
+         </graphiti>
+      </element>
+      <element
             bpmn="textAnnotation"
             label="%label.element.textAnnotation"
             icon="textAnnotation.png"

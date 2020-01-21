@@ -1,8 +1,8 @@
 package ru.runa.gpd.editor.graphiti.update;
 
+import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.IMoveShapeContext;
@@ -14,7 +14,6 @@ import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.mm.pictograms.FreeFormConnection;
 import org.eclipse.graphiti.mm.pictograms.Shape;
 import org.eclipse.graphiti.services.Graphiti;
-
 import ru.runa.gpd.editor.graphiti.HasTextDecorator;
 import ru.runa.gpd.editor.graphiti.TextDecoratorEmulation;
 import ru.runa.gpd.lang.model.Action;
@@ -27,10 +26,9 @@ import ru.runa.gpd.lang.model.SwimlanedNode;
 import ru.runa.gpd.lang.model.Timer;
 import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
+import ru.runa.gpd.lang.model.bpmn.DottedTransition;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
-
-import com.google.common.collect.Lists;
 
 public class MoveElementFeature extends DefaultMoveShapeFeature {
     public MoveElementFeature(IFeatureProvider provider) {
@@ -77,16 +75,32 @@ public class MoveElementFeature extends DefaultMoveShapeFeature {
                 }
             }
             for (FreeFormConnection connection : connections) {
-                Transition transition = (Transition) getFeatureProvider().getBusinessObjectForPictogramElement(connection);
-                List<Point> points = connection.getBendpoints();
-                if (points.size() != transition.getBendpoints().size()) {
-                    throw new RuntimeException("connection.getBendpoints().size() != transition.getBendpoints().size() for " + transition);
+                if (getFeatureProvider().getBusinessObjectForPictogramElement(connection) instanceof Transition) {
+                    Transition transition = (Transition) getFeatureProvider().getBusinessObjectForPictogramElement(connection);
+                    List<Point> points = connection.getBendpoints();
+                    if (points.size() != transition.getBendpoints().size()) {
+                        throw new RuntimeException("connection.getBendpoints().size() != transition.getBendpoints().size() for " + transition);
+                    }
+                    for (int i = 0; i < points.size(); i++) {
+                        Point diagramPoint = points.get(i);
+                        org.eclipse.draw2d.geometry.Point modelPoint = transition.getBendpoints().get(i);
+                        if (modelPoint.x != diagramPoint.getX() || modelPoint.y != diagramPoint.getY()) {
+                            transition.setBendpoint(i, new org.eclipse.draw2d.geometry.Point(diagramPoint.getX(), diagramPoint.getY()));
+                        }
+                    }
                 }
-                for (int i = 0; i < points.size(); i++) {
-                    Point diagramPoint = points.get(i);
-                    org.eclipse.draw2d.geometry.Point modelPoint = transition.getBendpoints().get(i);
-                    if (modelPoint.x != diagramPoint.getX() || modelPoint.y != diagramPoint.getY()) {
-                        transition.setBendpoint(i, new org.eclipse.draw2d.geometry.Point(diagramPoint.getX(), diagramPoint.getY()));
+                if (getFeatureProvider().getBusinessObjectForPictogramElement(connection) instanceof DottedTransition) {
+                    DottedTransition transition = (DottedTransition) getFeatureProvider().getBusinessObjectForPictogramElement(connection);
+                    List<Point> points = connection.getBendpoints();
+                    if (points.size() != transition.getBendpoints().size()) {
+                        throw new RuntimeException("connection.getBendpoints().size() != transition.getBendpoints().size() for " + transition);
+                    }
+                    for (int i = 0; i < points.size(); i++) {
+                        Point diagramPoint = points.get(i);
+                        org.eclipse.draw2d.geometry.Point modelPoint = transition.getBendpoints().get(i);
+                        if (modelPoint.x != diagramPoint.getX() || modelPoint.y != diagramPoint.getY()) {
+                            transition.setBendpoint(i, new org.eclipse.draw2d.geometry.Point(diagramPoint.getX(), diagramPoint.getY()));
+                        }
                     }
                 }
             }
