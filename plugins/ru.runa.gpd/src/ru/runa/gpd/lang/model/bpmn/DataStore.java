@@ -33,4 +33,16 @@ public class DataStore extends Node implements ConnectableViaDottedTransition {
                 .filter(dottedTransition -> dottedTransition.getTarget().equals(this)).collect(Collectors.toList());
     }
 
+    @SuppressWarnings("unlikely-arg-type")
+    @Override
+    public boolean canAddArrivingDottedTransition(ConnectableViaDottedTransition source) {
+        return !DataStore.class.equals(source.getClass())
+                && getArrivingDottedTransitions().stream().noneMatch(transition -> transition.getSource().equals(source));
+    }
+
+    @Override
+    public boolean canAddLeavingDottedTransition() {
+        return true;
+    }
+
 }
