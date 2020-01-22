@@ -1,6 +1,7 @@
 package ru.runa.gpd.lang;
 
 import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -44,7 +45,9 @@ import ru.runa.gpd.lang.model.TransitionColor;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.bpmn.AbstractEventNode;
 import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
+import ru.runa.gpd.lang.model.bpmn.ConnectableViaDottedTransition;
 import ru.runa.gpd.lang.model.bpmn.DataStore;
+import ru.runa.gpd.lang.model.bpmn.DottedTransition;
 import ru.runa.gpd.lang.model.bpmn.EventNodeType;
 import ru.runa.gpd.lang.model.bpmn.ExclusiveGateway;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEvent;
@@ -100,6 +103,7 @@ public class BpmnSerializer extends ProcessSerializer {
     private static final String FLOW_NODE_REF = "flowNodeRef";
     public static final String SHOW_SWIMLANE = "showSwimlane";
     private static final String SEQUENCE_FLOW = "sequenceFlow";
+    private static final String DOTTED_TRANSITION = "dottedTransition";
     private static final String DOCUMENTATION = "documentation";
     private static final String CONFIG = "config";
     private static final String MAPPED_NAME = "mappedName";
@@ -213,10 +217,12 @@ public class BpmnSerializer extends ProcessSerializer {
         for (ScriptTask scriptTask : scriptTasks) {
             writeNode(processElement, scriptTask);
             writeBoundaryEvents(processElement, scriptTask);
+            writeDottedTransitions(processElement, scriptTask);
         }
         List<DataStore> dataStores = definition.getChildren(DataStore.class);
         for (DataStore dataStore : dataStores) {
             writeNode(processElement, dataStore);
+            writeDottedTransitions(processElement, dataStore);
         }
         List<ParallelGateway> parallelGateways = definition.getChildren(ParallelGateway.class);
         for (ParallelGateway gateway : parallelGateways) {
@@ -463,6 +469,21 @@ public class BpmnSerializer extends ProcessSerializer {
                 properties.put(PropertyNames.PROPERTY_COLOR, transition.getColor().name().toLowerCase());
                 writeExtensionElements(transitionElement, properties);
             }
+        }
+    }
+
+    private void writeDottedTransitions(Element processElement, ConnectableViaDottedTransition node) {
+        final List<DottedTransition> transitions = node.getLeavingDottedTransitions();
+        for (DottedTransition transition : transitions) {
+            final Element transitionElement = processElement.addElement(DOTTED_TRANSITION);
+            transitionElement.addAttribute(ID, transition.getId());
+
+            final String sourceNodeId = transition.getSource().getId();
+            final String targetNodeId = transition.getTarget().getId();
+            Preconditions.checkState(!Objects.equal(sourceNodeId, targetNodeId), "Invalid transition " + transition);
+
+            transitionElement.addAttribute(SOURCE_REF, sourceNodeId);
+            transitionElement.addAttribute(TARGET_REF, targetNodeId);
         }
     }
 
@@ -904,6 +925,22 @@ public class BpmnSerializer extends ProcessSerializer {
             for (String nodeId : entry.getValue()) {
                 definition.getGraphElementByIdNotNull(nodeId).setParentContainer(entry.getKey());
             }
+        }
+
+        final List<Element> dottedTransitions = processElement.elements(DOTTED_TRANSITION);
+        for (Element transitionElement : dottedTransitions) {
+            final Node source = definition.getGraphElementByIdNotNull(transitionElement.attributeValue(SOURCE_REF));
+            final Node target = definition.getGraphElementById(transitionElement.attributeValue(TARGET_REF));
+            if (target == null) {
+                PluginLogger.logErrorWithoutDialog("Unable to restore transition " + transitionElement.attributeValue(ID)
+                        + " due to missed target node " + transitionElement.attributeValue(TARGET_REF));
+                continue;
+            }
+
+            final DottedTransition transition = NodeRegistry.getNodeTypeDefinition(DottedTransition.class).createElement(source, false);
+            transition.setId(transitionElement.attributeValue(ID));
+            transition.setTarget(target);
+            ((ConnectableViaDottedTransition) source).addLeavingDottedTransition(transition);
         }
         definition.onLoadingCompleted();
     }

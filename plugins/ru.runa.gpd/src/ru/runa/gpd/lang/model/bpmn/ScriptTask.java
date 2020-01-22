@@ -62,8 +62,10 @@ public class ScriptTask extends Node implements Delegable, IBoundaryEventContain
     @Override
     public void addLeavingDottedTransition(DottedTransition transition) {
         addChild(transition);
-        setUseExternalStorageOut(true);
-        setDelegationClassName(EXTERNAL_STORAGE_HANDLER_CLASS_NAME);
+        if (!isUseExternalStorageOut()) {
+            setUseExternalStorageOut(true);
+            setDelegationClassName(EXTERNAL_STORAGE_HANDLER_CLASS_NAME);
+        }
     }
 
     @Override
@@ -99,7 +101,9 @@ public class ScriptTask extends Node implements Delegable, IBoundaryEventContain
     @Override
     public void addArrivingDottedTransition(DottedTransition transition) {
         transition.setTarget(this);
-        setUseExternalStorageIn(true);
-        setDelegationClassName(EXTERNAL_STORAGE_HANDLER_CLASS_NAME);
+        if (!isUseExternalStorageIn()) {
+            setUseExternalStorageIn(true);
+            setDelegationClassName(EXTERNAL_STORAGE_HANDLER_CLASS_NAME);
+        }
     }
 }
