@@ -873,7 +873,7 @@
             model="ru.runa.gpd.lang.model.bpmn.DottedTransition"
             bpmn="dottedTransition"
             icon="transitiondotted.png"
-            label="%label.element.transition">
+            label="%label.element.dottedTransition">
          <graphiti
                add="ru.runa.gpd.editor.graphiti.add.AddDottedTransitionFeature"
                create="ru.runa.gpd.editor.graphiti.create.CreateDottedTransitionFeature"
