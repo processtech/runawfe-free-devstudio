@@ -31,7 +31,7 @@ public class ScriptTask extends Node implements Delegable, IBoundaryEventContain
         this.isUseExternalStorageOut = isUseExternalStorageOut;
         firePropertyChange(PROPERTY_USE_EXTERNAL_STORAGE_OUT, !isUseExternalStorageOut, isUseExternalStorageOut);
 
-        if (this.isUseExternalStorageIn) {
+        if (isUseExternalStorageOut && this.isUseExternalStorageIn) {
             this.isUseExternalStorageIn = false;
             firePropertyChange(PROPERTY_USE_EXTERNAL_STORAGE_IN, !isUseExternalStorageIn, isUseExternalStorageIn);
         }
@@ -45,7 +45,7 @@ public class ScriptTask extends Node implements Delegable, IBoundaryEventContain
         this.isUseExternalStorageIn = isUseExternalStorageIn;
         firePropertyChange(PROPERTY_USE_EXTERNAL_STORAGE_IN, !isUseExternalStorageIn, isUseExternalStorageIn);
 
-        if (this.isUseExternalStorageOut) {
+        if (isUseExternalStorageIn && this.isUseExternalStorageOut) {
             this.isUseExternalStorageOut = false;
             firePropertyChange(PROPERTY_USE_EXTERNAL_STORAGE_OUT, !isUseExternalStorageOut, isUseExternalStorageOut);
         }

@@ -175,26 +175,6 @@
     </objectContribution>
     <objectContribution
           adaptable="false"
-          id="scripttask.useExternalStorageOut"
-          objectClass="ru.runa.gpd.lang.model.bpmn.ScriptTask">
-       <action
-             class="ru.runa.gpd.lang.action.UseExternalStorageOutFeatureDelegate"
-             id="scripttask.useExternalStorageOut"
-             label="%label.action.useExternalStorageOut">
-       </action>
-    </objectContribution>
-    <objectContribution
-          adaptable="false"
-          id="scripttask.useExternalStorageIn"
-          objectClass="ru.runa.gpd.lang.model.bpmn.ScriptTask">
-       <action
-             class="ru.runa.gpd.lang.action.UseExternalStorageInFeatureDelegate"
-             id="scripttask.useExternalStorageIn"
-             label="%label.action.useExternalStorageIn">
-       </action>
-    </objectContribution>
-    <objectContribution
-          adaptable="false"
           id="subprocess.compactview"
           objectClass="ru.runa.gpd.lang.model.Subprocess">
        <action
