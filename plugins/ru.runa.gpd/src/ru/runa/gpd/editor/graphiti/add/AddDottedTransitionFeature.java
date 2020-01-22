@@ -5,6 +5,7 @@ import org.eclipse.graphiti.features.context.IAddContext;
 import org.eclipse.graphiti.features.impl.AbstractAddFeature;
 import org.eclipse.graphiti.mm.algorithms.Polygon;
 import org.eclipse.graphiti.mm.algorithms.Polyline;
+import org.eclipse.graphiti.mm.algorithms.styles.LineStyle;
 import org.eclipse.graphiti.mm.algorithms.styles.Point;
 import org.eclipse.graphiti.mm.algorithms.styles.StylesFactory;
 import org.eclipse.graphiti.mm.pictograms.Anchor;
@@ -16,7 +17,6 @@ import org.eclipse.graphiti.services.Graphiti;
 import org.eclipse.graphiti.services.IGaService;
 import org.eclipse.graphiti.services.IPeCreateService;
 import ru.runa.gpd.editor.graphiti.DiagramFeatureProvider;
-import ru.runa.gpd.editor.graphiti.GaProperty;
 import ru.runa.gpd.editor.graphiti.StyleUtil;
 import ru.runa.gpd.lang.model.bpmn.DottedTransition;
 
@@ -66,21 +66,14 @@ public class AddDottedTransitionFeature extends AbstractAddFeature {
         final IGaService gaService = Graphiti.getGaService();
         final Polyline polyline = gaService.createPlainPolyline(connection);
         polyline.setStyle(StyleUtil.getTransitionPolylineStyle(getDiagram()));
+        polyline.setLineStyle(LineStyle.DOT);
+        polyline.setLineWidth(2);
         // create link and wire it
         link(connection, transition);
         // add static graphical decorators (composition and navigable)
         createArrow(connection);
-        createDefaultFlow(connection);
+        // createDefaultFlow(connection);
         return connection;
-    }
-
-    private void createDefaultFlow(Connection connection) {
-        final ConnectionDecorator connectionDecorator = Graphiti.getPeCreateService().createConnectionDecorator(connection, false, 0.0, true);
-        final int xy[] = new int[] { -3, 7, -10, -7 };
-        final Polyline polyline = Graphiti.getGaCreateService().createPolyline(connectionDecorator, xy);
-        polyline.setStyle(StyleUtil.getTransitionPolylineStyle(getDiagram()));
-        connectionDecorator.getProperties().add(new GaProperty(GaProperty.ID, GaProperty.DEFAULT_FLOW));
-        connectionDecorator.setVisible(true);
     }
 
     private void createArrow(Connection connection) {
