@@ -85,7 +85,7 @@ public class BpmnSerializer extends ProcessSerializer {
     private static final String TEXT = "text";
     private static final String SERVICE_TASK = "serviceTask";
     private static final String SCRIPT_TASK = "scriptTask";
-    private static final String DATA_STORE = "dataStore";
+    private static final String DATA_STORE = "dataObject";
     private static final String VARIABLES = "variables";
     private static final String SOURCE_REF = "sourceRef";
     private static final String TARGET_REF = "targetRef";
@@ -103,7 +103,9 @@ public class BpmnSerializer extends ProcessSerializer {
     private static final String FLOW_NODE_REF = "flowNodeRef";
     public static final String SHOW_SWIMLANE = "showSwimlane";
     private static final String SEQUENCE_FLOW = "sequenceFlow";
-    private static final String DOTTED_TRANSITION = "dottedTransition";
+    private static final String DOTTED_TRANSITION = "dataObjectReference";
+    private static final String ITEM_SUBJECT_REF = "itemSubjectRef";
+    private static final String DATA_OBJECT_REF = "dataObjectRef";
     private static final String DOCUMENTATION = "documentation";
     private static final String CONFIG = "config";
     private static final String MAPPED_NAME = "mappedName";
@@ -483,8 +485,8 @@ public class BpmnSerializer extends ProcessSerializer {
             final String targetNodeId = transition.getTarget().getId();
             Preconditions.checkState(!Objects.equal(sourceNodeId, targetNodeId), "Invalid transition " + transition);
 
-            transitionElement.addAttribute(SOURCE_REF, sourceNodeId);
-            transitionElement.addAttribute(TARGET_REF, targetNodeId);
+            transitionElement.addAttribute(ITEM_SUBJECT_REF, sourceNodeId);
+            transitionElement.addAttribute(DATA_OBJECT_REF, targetNodeId);
         }
     }
 
@@ -930,11 +932,11 @@ public class BpmnSerializer extends ProcessSerializer {
 
         final List<Element> dottedTransitions = processElement.elements(DOTTED_TRANSITION);
         for (Element transitionElement : dottedTransitions) {
-            final Node source = definition.getGraphElementByIdNotNull(transitionElement.attributeValue(SOURCE_REF));
-            final Node target = definition.getGraphElementById(transitionElement.attributeValue(TARGET_REF));
+            final Node source = definition.getGraphElementByIdNotNull(transitionElement.attributeValue(ITEM_SUBJECT_REF));
+            final Node target = definition.getGraphElementById(transitionElement.attributeValue(DATA_OBJECT_REF));
             if (target == null) {
                 PluginLogger.logErrorWithoutDialog("Unable to restore transition " + transitionElement.attributeValue(ID)
-                        + " due to missed target node " + transitionElement.attributeValue(TARGET_REF));
+                        + " due to missed target node " + transitionElement.attributeValue(DATA_OBJECT_REF));
                 continue;
             }
 
