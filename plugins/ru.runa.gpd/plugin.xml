@@ -1001,7 +1001,7 @@
             type="node">
          <graphiti
                add="ru.runa.gpd.editor.graphiti.add.AddDataStoreNodeFeature"
-               create="ru.runa.gpd.editor.graphiti.create.CreateElementFeature"
+               create="ru.runa.gpd.editor.graphiti.create.CreateDataStoreFeature"
                fixedSize="true"
                height="4"
                update="ru.runa.gpd.editor.graphiti.update.UpdateStateNodeFeature"
