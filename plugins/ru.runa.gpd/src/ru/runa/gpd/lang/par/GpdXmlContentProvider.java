@@ -44,7 +44,7 @@ public class GpdXmlContentProvider extends AuxContentProvider {
     private static final String PROCESS_DIAGRAM = "process-diagram";
     private static final String NODE = "node";
     private static final String TRANSITION = "transition";
-    private static final String DOTTED_TRANSITION = "dataObjectReference";
+    private static final String DOTTED_TRANSITION = "dataStoreReference";
     private static final String BENDPOINT = "bendpoint";
     private static final String LABEL = "label";
     private static final String TEXT_DECORATION = "textDecoration";

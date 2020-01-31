@@ -85,7 +85,7 @@ public class BpmnSerializer extends ProcessSerializer {
     private static final String TEXT = "text";
     private static final String SERVICE_TASK = "serviceTask";
     private static final String SCRIPT_TASK = "scriptTask";
-    private static final String DATA_STORE = "dataObject";
+    private static final String DATA_STORE = "dataStore";
     private static final String VARIABLES = "variables";
     private static final String SOURCE_REF = "sourceRef";
     private static final String TARGET_REF = "targetRef";
@@ -103,9 +103,9 @@ public class BpmnSerializer extends ProcessSerializer {
     private static final String FLOW_NODE_REF = "flowNodeRef";
     public static final String SHOW_SWIMLANE = "showSwimlane";
     private static final String SEQUENCE_FLOW = "sequenceFlow";
-    private static final String DOTTED_TRANSITION = "dataObjectReference";
+    private static final String DOTTED_TRANSITION = "dataStoreReference";
     private static final String ITEM_SUBJECT_REF = "itemSubjectRef";
-    private static final String DATA_OBJECT_REF = "dataObjectRef";
+    private static final String DATA_STORE_REF = "dataStoreRef";
     private static final String DOCUMENTATION = "documentation";
     private static final String CONFIG = "config";
     private static final String MAPPED_NAME = "mappedName";
@@ -153,6 +153,7 @@ public class BpmnSerializer extends ProcessSerializer {
     @Override
     public void saveToXML(ProcessDefinition definition, Document document) {
         Element definitionsElement = document.getRootElement();
+        writeDataStores(definitionsElement, definition.getChildren(DataStore.class));
         Element processElement = definitionsElement.element(QName.get(PROCESS, BPMN_NAMESPACE));
         processElement.addAttribute(NAME, definition.getName());
         Map<String, String> processProperties = Maps.newLinkedHashMap();
@@ -223,7 +224,6 @@ public class BpmnSerializer extends ProcessSerializer {
         }
         List<DataStore> dataStores = definition.getChildren(DataStore.class);
         for (DataStore dataStore : dataStores) {
-            writeNode(processElement, dataStore);
             writeDottedTransitions(processElement, dataStore);
         }
         List<ParallelGateway> parallelGateways = definition.getChildren(ParallelGateway.class);
@@ -486,7 +486,7 @@ public class BpmnSerializer extends ProcessSerializer {
             Preconditions.checkState(!Objects.equal(sourceNodeId, targetNodeId), "Invalid transition " + transition);
 
             transitionElement.addAttribute(ITEM_SUBJECT_REF, sourceNodeId);
-            transitionElement.addAttribute(DATA_OBJECT_REF, targetNodeId);
+            transitionElement.addAttribute(DATA_STORE_REF, targetNodeId);
         }
     }
 
@@ -697,6 +697,7 @@ public class BpmnSerializer extends ProcessSerializer {
     @Override
     public void parseXML(Document document, ProcessDefinition definition) {
         Element definitionsElement = document.getRootElement();
+        parseDataStores(definitionsElement.elements(DATA_STORE), definition);
         Element processElement = definitionsElement.element(PROCESS);
         definition.setInvalid(!Boolean.parseBoolean(processElement.attributeValue(EXECUTABLE, "true")));
         Map<String, String> processProperties = parseExtensionProperties(processElement);
@@ -808,10 +809,6 @@ public class BpmnSerializer extends ProcessSerializer {
         }
         List<Element> scriptTaskElements = processElement.elements(SCRIPT_TASK);
         for (Element node : scriptTaskElements) {
-            create(node, definition);
-        }
-        List<Element> dataStoreElements = processElement.elements(DATA_STORE);
-        for (Element node : dataStoreElements) {
             create(node, definition);
         }
         List<Element> parallelGatewayElements = processElement.elements(PARALLEL_GATEWAY);
@@ -933,10 +930,10 @@ public class BpmnSerializer extends ProcessSerializer {
         final List<Element> dottedTransitions = processElement.elements(DOTTED_TRANSITION);
         for (Element transitionElement : dottedTransitions) {
             final Node source = definition.getGraphElementByIdNotNull(transitionElement.attributeValue(ITEM_SUBJECT_REF));
-            final Node target = definition.getGraphElementById(transitionElement.attributeValue(DATA_OBJECT_REF));
+            final Node target = definition.getGraphElementById(transitionElement.attributeValue(DATA_STORE_REF));
             if (target == null) {
                 PluginLogger.logErrorWithoutDialog("Unable to restore transition " + transitionElement.attributeValue(ID)
-                        + " due to missed target node " + transitionElement.attributeValue(DATA_OBJECT_REF));
+                        + " due to missed target node " + transitionElement.attributeValue(DATA_STORE_REF));
                 continue;
             }
 
@@ -976,6 +973,19 @@ public class BpmnSerializer extends ProcessSerializer {
             }
             eventNode.setVariableMappings(parseVariableMappings(eventElement));
             return eventNode;
+        }
+    }
+
+    private void writeDataStores(Element definitionsElement, List<DataStore> dataStores) {
+        for (DataStore dataStore : dataStores) {
+            final Element dataStoreElement = definitionsElement.addElement(DATA_STORE, BPMN_NAMESPACE);
+            writeBaseProperties(dataStoreElement, dataStore);
+        }
+    }
+
+    private void parseDataStores(List<Element> dataStoreElements, ProcessDefinition definition) {
+        for (Element dataStoreElement : dataStoreElements) {
+            create(dataStoreElement, definition);
         }
     }
 }

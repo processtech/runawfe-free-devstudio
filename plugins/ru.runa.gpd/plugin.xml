@@ -851,7 +851,7 @@
       <element
             type="connection"
             model="ru.runa.gpd.lang.model.bpmn.DottedTransition"
-            bpmn="dataObjectReference"
+            bpmn="dataStoreReference"
             icon="transitiondotted.png"
             label="%label.element.dottedTransition">
          <graphiti
@@ -993,7 +993,7 @@
          </graphiti>
       </element>
       <element
-            bpmn="dataObject"
+            bpmn="dataStore"
             icon="datastore.png"
             enabledInRegulationsByDefault="false"
             label="%label.element.datastore"
