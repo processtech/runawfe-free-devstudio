@@ -2,13 +2,16 @@ package ru.runa.gpd.lang.model.bpmn;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import ru.runa.gpd.extension.HandlerArtifact;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.Transition;
+import ru.runa.gpd.property.DelegableClassPropertyDescriptor;
 
 public class ScriptTask extends Node implements Delegable, IBoundaryEventContainer, ConnectableViaDottedTransition {
     private static final String EXTERNAL_STORAGE_HANDLER_CLASS_NAME = "ru.runa.wfe.office.storage.handler.ExternalStorageHandler";
+    private static final String PROPERTY_DELEGABLE_EDIT_HANDLER = "delegableEditHandler";
 
     private boolean isUseExternalStorageOut = false;
     private boolean isUseExternalStorageIn = false;
@@ -53,7 +56,7 @@ public class ScriptTask extends Node implements Delegable, IBoundaryEventContain
 
     @Override
     public boolean testAttribute(Object target, String name, String value) {
-        if ("delegableEditHandler".equals(name)) {
+        if (PROPERTY_DELEGABLE_EDIT_HANDLER.equals(name)) {
             return !isUseExternalStorageOut && !isUseExternalStorageIn;
         }
         return super.testAttribute(target, name, value);
@@ -104,6 +107,14 @@ public class ScriptTask extends Node implements Delegable, IBoundaryEventContain
         if (!isUseExternalStorageIn()) {
             setUseExternalStorageIn(true);
             setDelegationClassName(EXTERNAL_STORAGE_HANDLER_CLASS_NAME);
+        }
+    }
+
+    @Override
+    protected void populateCustomPropertyDescriptors(List<IPropertyDescriptor> descriptors) {
+        super.populateCustomPropertyDescriptors(descriptors);
+        if (isUseExternalStorageIn || isUseExternalStorageOut) {
+            descriptors.removeIf(descriptor -> descriptor instanceof DelegableClassPropertyDescriptor);
         }
     }
 }
