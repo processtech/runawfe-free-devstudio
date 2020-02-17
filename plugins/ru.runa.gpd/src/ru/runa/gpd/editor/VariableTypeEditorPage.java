@@ -763,7 +763,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
 
             IResource projectRoot = editor.getDefinitionFile().getParent();
 
-            List<Variable> variables = editor.getDefinition().getVariables(false, false, newType.getName());
+            List<Variable> variables = editor.getDefinition().getVariables(true, false, newType.getName());
             if (variables.size() == 0) {
                 List<Variable> result = VariableUtils.findVariablesOfTypeWithAttributeExpanded(getDefinition(), oldType, attribute);
                 if (result.size() > 0) {
