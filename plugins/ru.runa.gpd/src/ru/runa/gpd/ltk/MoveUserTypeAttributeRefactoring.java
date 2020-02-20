@@ -87,14 +87,14 @@ public class MoveUserTypeAttributeRefactoring extends Refactoring {
         return finalStatus;
     }
 
-    private CompositeChange cashedChange = null;
+    private CompositeChange cachedChange = null;
 
     @Override
     public CompositeChange createChange(IProgressMonitor progressMonitor) throws CoreException {
-        if (cashedChange == null) {
-            cashedChange = RefactoringUtils.createChangeUserTypeAttribute(getName(), progressMonitor, refactorings, finalStatus);
+        if (cachedChange == null) {
+            cachedChange = RefactoringUtils.createChangeUserTypeAttribute(getName(), progressMonitor, refactorings, finalStatus);
         }
-        return cashedChange;
+        return cachedChange;
     }
 
     public boolean isUserInteractionNeeded() {
