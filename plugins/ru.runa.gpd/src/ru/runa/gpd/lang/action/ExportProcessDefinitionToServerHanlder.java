@@ -54,22 +54,6 @@ public class ExportProcessDefinitionToServerHanlder extends AbstractHandler impl
             IFolder processFolder = (IFolder) definitionFile.getParent();
             processFolder.refreshLocal(IResource.DEPTH_ONE, null);
             ProcessDefinition definition = ProcessCache.getProcessDefinition(definitionFile);
-            int validationResult = ProcessDefinitionValidator.validateDefinition(definition);
-            if (validationResult != 0) {
-                Activator.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(ValidationErrorsView.ID);
-                if (validationResult == 2) {
-                    PluginLogger.logErrorWithoutDialog((Localization.getString("ExportParWizardPage.page.errorsExist")));
-                    return;
-                }
-            }
-            for (SubprocessDefinition subprocessDefinition : definition.getEmbeddedSubprocesses().values()) {
-                validationResult = ProcessDefinitionValidator.validateDefinition(subprocessDefinition);
-                if (validationResult != 0 && validationResult == 2) {
-                    PluginLogger.logErrorWithoutDialog((Localization.getString("ExportParWizardPage.page.errorsExistInEmbeddedSubprocess")));
-                    return;
-                }
-            }
-            definition.getLanguage().getSerializer().validateProcessDefinitionXML(definitionFile);
             List<IFile> resourcesToExport = new ArrayList<IFile>();
             IResource[] members = processFolder.members();
             for (IResource resource : members) {
@@ -79,7 +63,7 @@ public class ExportProcessDefinitionToServerHanlder extends AbstractHandler impl
             }
             new ParDeployOperation(resourcesToExport, definition.getName(), true).run(null);
         } catch (Throwable th) {
-            PluginLogger.logErrorWithoutDialog(Localization.getString("ExportParWizardPage.error.export"), th);
+            PluginLogger.logError(Localization.getString("ExportParWizardPage.error.export"), th);
         }
     }
 
