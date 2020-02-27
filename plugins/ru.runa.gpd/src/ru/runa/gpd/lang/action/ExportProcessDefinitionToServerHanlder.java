@@ -42,7 +42,7 @@ public class ExportProcessDefinitionToServerHanlder extends AbstractHandler impl
                 if (!processDefinition.isInvalid()) {
                     export(file);
                 } else {
-                    Dialogs.error(Localization.getString("ExportParToServer.error"));
+                    Dialogs.error(Localization.getString("ExportProcessDefinitionToServerHanlder.invalid.process.definition"));
                 }
             }
         }
@@ -68,6 +68,6 @@ public class ExportProcessDefinitionToServerHanlder extends AbstractHandler impl
     }
 
     private boolean saveDirtyEditors() {
-        return IDEWorkbenchPlugin.getDefault().getWorkbench().saveAllEditors(true);
+        return IDEWorkbenchPlugin.getDefault().getWorkbench().saveAllEditors(false);
     }
 }

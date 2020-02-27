@@ -2961,7 +2961,7 @@
     <command
           defaultHandler="ru.runa.gpd.lang.action.ExportProcessDefinitionToServerHanlder"
           id="ru.runa.gpd.commands.exportProcessDefinitionToServer"
-          name="xport process defninition to server">
+          name="Export process defninition to server">
     </command>
    </extension>
    <extension
