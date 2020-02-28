@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.draw2d.geometry.Rectangle;
-import org.eclipse.graphiti.features.ICustomUndoRedoFeature;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.IContext;
 import org.eclipse.graphiti.features.context.IMoveShapeContext;
@@ -16,6 +15,7 @@ import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.mm.pictograms.FreeFormConnection;
 import org.eclipse.graphiti.mm.pictograms.Shape;
 import org.eclipse.graphiti.services.Graphiti;
+import ru.runa.gpd.editor.graphiti.CustomUndoRedoFeature;
 import ru.runa.gpd.editor.graphiti.HasTextDecorator;
 import ru.runa.gpd.editor.graphiti.TextDecoratorEmulation;
 import ru.runa.gpd.lang.model.Action;
@@ -31,7 +31,7 @@ import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
 
-public class MoveElementFeature extends DefaultMoveShapeFeature implements ICustomUndoRedoFeature {
+public class MoveElementFeature extends DefaultMoveShapeFeature implements CustomUndoRedoFeature {
 
     private Rectangle undoConstraint;
     private Rectangle redoConstraint;
@@ -158,11 +158,6 @@ public class MoveElementFeature extends DefaultMoveShapeFeature implements ICust
     }
 
     @Override
-    public void preUndo(IContext context) {
-        // TODO Auto-generated method stub
-    }
-
-    @Override
     public void postUndo(IContext context) {
         if (context instanceof IMoveShapeContext) {
             IMoveShapeContext workContext = (IMoveShapeContext) context;
@@ -246,11 +241,6 @@ public class MoveElementFeature extends DefaultMoveShapeFeature implements ICust
     @Override
     public boolean canRedo(IContext context) {
         return redoConstraint != null;
-    }
-
-    @Override
-    public void preRedo(IContext context) {
-        // TODO Auto-generated method stub
     }
 
     @Override

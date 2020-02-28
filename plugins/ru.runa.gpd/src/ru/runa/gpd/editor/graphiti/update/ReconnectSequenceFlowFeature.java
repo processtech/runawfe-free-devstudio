@@ -1,17 +1,17 @@
 package ru.runa.gpd.editor.graphiti.update;
 
-import org.eclipse.graphiti.features.ICustomUndoRedoFeature;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.IContext;
 import org.eclipse.graphiti.features.context.IReconnectionContext;
 import org.eclipse.graphiti.features.context.impl.ReconnectionContext;
 import org.eclipse.graphiti.features.impl.DefaultReconnectionFeature;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
+import ru.runa.gpd.editor.graphiti.CustomUndoRedoFeature;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.Transition;
 
-public class ReconnectSequenceFlowFeature extends DefaultReconnectionFeature implements ICustomUndoRedoFeature {
+public class ReconnectSequenceFlowFeature extends DefaultReconnectionFeature implements CustomUndoRedoFeature {
 
     private boolean sourceReconnected = false;
     private boolean targetReconnected = false;
@@ -68,11 +68,6 @@ public class ReconnectSequenceFlowFeature extends DefaultReconnectionFeature imp
     }
 
     @Override
-    public void preUndo(IContext context) {
-        // TODO Auto-generated method stub
-    }
-
-    @Override
     public void postUndo(IContext context) {
         if (context instanceof IReconnectionContext) {
             Transition transition = (Transition) getFeatureProvider()
@@ -92,11 +87,6 @@ public class ReconnectSequenceFlowFeature extends DefaultReconnectionFeature imp
     @Override
     public boolean canRedo(IContext context) {
         return redoAllowed;
-    }
-
-    @Override
-    public void preRedo(IContext context) {
-        // TODO Auto-generated method stub
     }
 
     @Override

@@ -11,7 +11,6 @@ import org.eclipse.emf.transaction.RecordingCommand;
 import org.eclipse.emf.transaction.TransactionalEditingDomain;
 import org.eclipse.emf.transaction.util.TransactionUtil;
 import org.eclipse.gef.LayerConstants;
-import org.eclipse.gef.commands.CommandStack;
 import org.eclipse.gef.editparts.LayerManager;
 import org.eclipse.gef.editparts.ScalableFreeformRootEditPart;
 import org.eclipse.graphiti.features.IAddFeature;
@@ -65,7 +64,6 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
         super.init(site, input);
         editor.getDefinition().setDelegatedListener(this);
-
     }
 
     public ProcessDefinition getDefinition() {
@@ -185,11 +183,6 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
 
     public PictogramElement[] getAllPictogramElementsForBusinessObject(GraphElement model) {
         return getDiagramTypeProvider().getFeatureProvider().getAllPictogramElementsForBusinessObject(model);
-    }
-
-    @Override
-    public CommandStack getCommandStack() {
-        return super.getCommandStack();
     }
 
     @Override

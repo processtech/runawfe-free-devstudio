@@ -1,15 +1,15 @@
 package ru.runa.gpd.editor.graphiti.update;
 
 import org.eclipse.draw2d.geometry.Point;
-import org.eclipse.graphiti.features.ICustomUndoRedoFeature;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.IContext;
 import org.eclipse.graphiti.features.context.IRemoveBendpointContext;
 import org.eclipse.graphiti.features.impl.DefaultRemoveBendpointFeature;
 import org.eclipse.graphiti.mm.pictograms.FreeFormConnection;
+import ru.runa.gpd.editor.graphiti.CustomUndoRedoFeature;
 import ru.runa.gpd.lang.model.Transition;
 
-public class RemoveTransitionBendpointFeature extends DefaultRemoveBendpointFeature implements ICustomUndoRedoFeature {
+public class RemoveTransitionBendpointFeature extends DefaultRemoveBendpointFeature implements CustomUndoRedoFeature {
 
     private Point undoBendpoint;
     private boolean allowRedo = false;
@@ -34,11 +34,6 @@ public class RemoveTransitionBendpointFeature extends DefaultRemoveBendpointFeat
     }
 
     @Override
-    public void preUndo(IContext context) {
-        // TODO Auto-generated method stub
-    }
-
-    @Override
     public void postUndo(IContext context) {
         if (context instanceof IRemoveBendpointContext) {
             int index = ((IRemoveBendpointContext) context).getBendpointIndex();
@@ -52,11 +47,6 @@ public class RemoveTransitionBendpointFeature extends DefaultRemoveBendpointFeat
     @Override
     public boolean canRedo(IContext context) {
         return allowRedo;
-    }
-
-    @Override
-    public void preRedo(IContext context) {
-        // TODO Auto-generated method stub
     }
 
     @Override

@@ -24,7 +24,7 @@ public class GraphitiProcessEditor extends ProcessEditorBase {
             IEditorPart editor = ref.getEditor(true);
             if (editor instanceof GraphitiProcessEditor) {
                 ((GraphitiProcessEditor) editor).getDiagramEditorPage().applyStyles();
-                ((GraphitiProcessEditor) editor).getDiagramEditorPage().refreshConnections();
+                ((GraphitiProcessEditor) editor).getDiagramEditorPage().getDiagramBehavior().refresh();
             }
         }
     }

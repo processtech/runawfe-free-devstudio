@@ -1,6 +1,5 @@
 package ru.runa.gpd.editor.graphiti.create;
 
-import org.eclipse.graphiti.features.ICustomUndoRedoFeature;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.IContext;
 import org.eclipse.graphiti.features.context.ICreateConnectionContext;
@@ -13,18 +12,18 @@ import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.mm.pictograms.Shape;
 import org.eclipse.graphiti.services.Graphiti;
+import ru.runa.gpd.editor.graphiti.CustomUndoRedoFeature;
 import ru.runa.gpd.lang.NodeRegistry;
 import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.Transition;
 
-public class CreateTransitionFeature extends AbstractCreateConnectionFeature implements ICustomUndoRedoFeature {
+public class CreateTransitionFeature extends AbstractCreateConnectionFeature implements CustomUndoRedoFeature {
     private Transition transition;
     private Node sourceNode;
     private Node targetNode;
     private final NodeTypeDefinition transitionDefinition;
     private IFeatureProvider featureProvider;
-    private boolean allowRedo = false;
 
     public CreateTransitionFeature() {
         super(null, "", "");
@@ -117,32 +116,20 @@ public class CreateTransitionFeature extends AbstractCreateConnectionFeature imp
     }
 
     @Override
-    public void preUndo(IContext context) {
-        // TODO Auto-generated method stub
-    }
-
-    @Override
     public void postUndo(IContext context) {
         transition.getSource().removeLeavingTransition(transition);
-        transition.getParent().removeChild(transition);
-        allowRedo = true;
     }
 
     @Override
     public boolean canRedo(IContext context) {
-        return allowRedo && transition != null;
-    }
-
-    @Override
-    public void preRedo(IContext context) {
-        // TODO Auto-generated method stub
+        return transition != null;
     }
 
     @Override
     public void postRedo(IContext context) {
         if (context instanceof ICreateConnectionContext) {
-            transition.setTarget(targetNode);
             sourceNode.addLeavingTransition(transition);
+            getDiagramBehavior().refresh();
         }
 
     }

@@ -1,7 +1,6 @@
 package ru.runa.gpd.editor.graphiti.update;
 
 import org.eclipse.draw2d.geometry.Rectangle;
-import org.eclipse.graphiti.features.ICustomUndoRedoFeature;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.IContext;
 import org.eclipse.graphiti.features.context.IResizeShapeContext;
@@ -9,9 +8,10 @@ import org.eclipse.graphiti.features.context.impl.ResizeContext;
 import org.eclipse.graphiti.features.impl.DefaultResizeShapeFeature;
 import org.eclipse.graphiti.mm.pictograms.Shape;
 import ru.runa.gpd.editor.GEFConstants;
+import ru.runa.gpd.editor.graphiti.CustomUndoRedoFeature;
 import ru.runa.gpd.lang.model.GraphElement;
 
-public class ResizeElementFeature extends DefaultResizeShapeFeature implements GEFConstants, ICustomUndoRedoFeature {
+public class ResizeElementFeature extends DefaultResizeShapeFeature implements GEFConstants, CustomUndoRedoFeature {
 
     private Rectangle undoConstraint;
     private Rectangle redoConstraint;
@@ -48,11 +48,6 @@ public class ResizeElementFeature extends DefaultResizeShapeFeature implements G
     }
 
     @Override
-    public void preUndo(IContext context) {
-        // TODO Auto-generated method stub
-    }
-
-    @Override
     public void postUndo(IContext context) {
         if (context instanceof IResizeShapeContext) {
             Shape shape = ((IResizeShapeContext) context).getShape();
@@ -66,11 +61,6 @@ public class ResizeElementFeature extends DefaultResizeShapeFeature implements G
     @Override
     public boolean canRedo(IContext context) {
         return redoConstraint != null;
-    }
-
-    @Override
-    public void preRedo(IContext context) {
-        // TODO Auto-generated method stub
     }
 
     @Override

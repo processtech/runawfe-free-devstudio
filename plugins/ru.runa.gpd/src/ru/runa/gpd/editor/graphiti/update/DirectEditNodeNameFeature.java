@@ -1,6 +1,5 @@
 package ru.runa.gpd.editor.graphiti.update;
 
-import org.eclipse.graphiti.features.ICustomUndoRedoFeature;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.IContext;
 import org.eclipse.graphiti.features.context.IDirectEditingContext;
@@ -10,9 +9,10 @@ import org.eclipse.graphiti.mm.algorithms.MultiText;
 import org.eclipse.graphiti.mm.algorithms.Text;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.mm.pictograms.Shape;
+import ru.runa.gpd.editor.graphiti.CustomUndoRedoFeature;
 import ru.runa.gpd.lang.model.Node;
 
-public class DirectEditNodeNameFeature extends AbstractDirectEditingFeature implements ICustomUndoRedoFeature {
+public class DirectEditNodeNameFeature extends AbstractDirectEditingFeature implements CustomUndoRedoFeature {
     private boolean multiline = false;
     private String undoName;
     private String redoName;
@@ -82,11 +82,6 @@ public class DirectEditNodeNameFeature extends AbstractDirectEditingFeature impl
     }
 
     @Override
-    public void preUndo(IContext context) {
-        // TODO Auto-generated method stub
-    }
-
-    @Override
     public void postUndo(IContext context) {
         if (context instanceof IDirectEditingContext) {
             PictogramElement pe = ((IDirectEditingContext) context).getPictogramElement();
@@ -99,11 +94,6 @@ public class DirectEditNodeNameFeature extends AbstractDirectEditingFeature impl
     @Override
     public boolean canRedo(IContext context) {
         return redoName != null;
-    }
-
-    @Override
-    public void preRedo(IContext context) {
-        // TODO Auto-generated method stub
     }
 
     @Override
