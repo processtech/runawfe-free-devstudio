@@ -9,6 +9,7 @@ import org.eclipse.ui.PlatformUI;
 import ru.runa.gpd.editor.CopyAction;
 import ru.runa.gpd.editor.PasteAction;
 import ru.runa.gpd.editor.ProcessEditorBase;
+import ru.runa.gpd.editor.graphiti.CustomUndoRedoFeature;
 import ru.runa.gpd.editor.graphiti.DiagramEditorPage;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.ProcessDefinition;
@@ -110,6 +111,24 @@ public aspect ProcessEditorUserActivity extends UserActivity {
 
     after() throwing(Exception e) : execution(public void ru.runa.gpd.editor.PasteAction.run()) {
         log(((PasteAction) thisJoinPoint.getThis()).processEditor.getDefinition(), UserAction.TB_Paste.asString(e));
+    }
+
+    // Undo
+
+    after(CustomUndoRedoFeature feature) returning : execution(public void postUndo(..)) && this(feature) {
+        IEditorPart editorPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+        if (editorPart instanceof ProcessEditorBase) {
+            log(((ProcessEditorBase) editorPart).getDefinition(), UserAction.TB_Undo.asString());
+        }
+    }
+
+    // Redo
+
+    after(CustomUndoRedoFeature feature) returning : execution(public void postRedo(..)) && this(feature) {
+        IEditorPart editorPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+        if (editorPart instanceof ProcessEditorBase) {
+            log(((ProcessEditorBase) editorPart).getDefinition(), UserAction.TB_Redo.asString());
+        }
     }
 
     // Graph element change property
