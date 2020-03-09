@@ -1,4 +1,4 @@
-package ru.runa.gpd.editor.graphiti;
+package org.eclipse.graphiti.ui;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -12,6 +12,9 @@ import org.eclipse.graphiti.tb.IContextButtonPadData;
 import org.eclipse.graphiti.util.ColorConstant;
 import org.eclipse.graphiti.util.IColorConstant;
 
+/**
+ * File moved to this package because of @noimplement of super interface (but no another solution found for rm1457).
+ */
 public class CustomContextButtonPadDeclaration implements IContextButtonPadDeclaration {
 
     private static final IColorConstant PAD_OUTER_LINE_COLOR = new ColorConstant(173, 191, 204);

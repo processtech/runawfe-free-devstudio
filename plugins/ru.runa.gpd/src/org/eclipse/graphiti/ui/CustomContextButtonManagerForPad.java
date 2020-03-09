@@ -1,4 +1,4 @@
-package ru.runa.gpd.editor.graphiti;
+package org.eclipse.graphiti.ui;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,6 +34,9 @@ import org.eclipse.swt.SWT;
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.settings.PrefConstants;
 
+/**
+ * File moved to this package because of @noimplement of super interface (but no another solution found for rm1457).
+ */
 public class CustomContextButtonManagerForPad extends ContextButtonManagerForPad {
 
     protected static final double MINIMUM_ZOOM_LEVEL = 0.75d;
