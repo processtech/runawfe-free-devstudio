@@ -1,7 +1,6 @@
 package ru.runa.gpd.settings;
 
 import org.eclipse.jface.preference.PreferenceNode;
-
 import ru.runa.gpd.editor.graphiti.StyleUtil;
 import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.NodeTypeDefinition;
