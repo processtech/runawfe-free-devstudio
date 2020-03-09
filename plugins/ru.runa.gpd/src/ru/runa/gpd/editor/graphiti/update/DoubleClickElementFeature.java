@@ -26,4 +26,10 @@ public abstract class DoubleClickElementFeature extends AbstractCustomFeature {
         return fp != null;
     }
 
+    protected Object getBusinessObject(ICustomContext context) {
+        if (context.getPictogramElements().length != 1) {
+            return null;
+        }
+        return fp.getBusinessObjectForPictogramElement(context.getPictogramElements()[0]);
+    }
 }
