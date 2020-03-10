@@ -53,7 +53,7 @@ public class ResizeElementFeature extends DefaultResizeShapeFeature implements G
             Shape shape = ((IResizeShapeContext) context).getShape();
             GraphElement element = (GraphElement) getBusinessObjectForPictogramElement(shape);
             redoConstraint = element.getConstraint().getCopy();
-            element.setConstraintSilent(undoConstraint);
+            element.setConstraint(undoConstraint);
         }
 
     }
@@ -68,7 +68,7 @@ public class ResizeElementFeature extends DefaultResizeShapeFeature implements G
         if (context instanceof IResizeShapeContext) {
             Shape shape = ((IResizeShapeContext) context).getShape();
             GraphElement element = (GraphElement) getBusinessObjectForPictogramElement(shape);
-            element.setConstraintSilent(redoConstraint);
+            element.setConstraint(redoConstraint);
         }
     }
 }

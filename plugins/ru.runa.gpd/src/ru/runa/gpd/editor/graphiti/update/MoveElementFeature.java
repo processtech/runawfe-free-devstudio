@@ -164,7 +164,7 @@ public class MoveElementFeature extends DefaultMoveShapeFeature implements Custo
             Shape shape = workContext.getShape();
             GraphElement element = (GraphElement) getBusinessObjectForPictogramElement(shape);
             redoConstraint = element.getConstraint().getCopy();
-            element.setConstraintSilent(undoConstraint);
+            element.setConstraint(undoConstraint);
 
             // move transition bendpoints
             moveTransitionBendpointsUndoRedo(shape, element, undoBendpointsList);
@@ -249,7 +249,7 @@ public class MoveElementFeature extends DefaultMoveShapeFeature implements Custo
             IMoveShapeContext workContext = (IMoveShapeContext) context;
             Shape shape = workContext.getShape();
             GraphElement element = (GraphElement) getBusinessObjectForPictogramElement(shape);
-            element.setConstraintSilent(redoConstraint);
+            element.setConstraint(redoConstraint);
 
             // move transition bendpoints
             moveTransitionBendpointsUndoRedo(shape, element, redoBendpointsList);

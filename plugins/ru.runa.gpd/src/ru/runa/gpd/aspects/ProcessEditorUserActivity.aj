@@ -115,7 +115,7 @@ public aspect ProcessEditorUserActivity extends UserActivity {
 
     // Undo
 
-    after(CustomUndoRedoFeature feature) returning : execution(public void postUndo(..)) && this(feature) {
+    before(CustomUndoRedoFeature feature) : execution(public void postUndo(..)) && this(feature) {
         IEditorPart editorPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
         if (editorPart instanceof ProcessEditorBase) {
             log(((ProcessEditorBase) editorPart).getDefinition(), UserAction.TB_Undo.asString());
@@ -124,7 +124,7 @@ public aspect ProcessEditorUserActivity extends UserActivity {
 
     // Redo
 
-    after(CustomUndoRedoFeature feature) returning : execution(public void postRedo(..)) && this(feature) {
+    before(CustomUndoRedoFeature feature) : execution(public void postRedo(..)) && this(feature) {
         IEditorPart editorPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
         if (editorPart instanceof ProcessEditorBase) {
             log(((ProcessEditorBase) editorPart).getDefinition(), UserAction.TB_Redo.asString());

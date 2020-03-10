@@ -118,13 +118,6 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
         }
     }
 
-    public void setConstraintSilent(Rectangle newConstraint) {
-        if (!Objects.equal(this.constraint, newConstraint)) {
-            this.constraint = newConstraint;
-            setDirty();
-        }
-    }
-
     public ProcessDefinition getProcessDefinition() {
         if (this instanceof ProcessDefinition) {
             return (ProcessDefinition) this;
