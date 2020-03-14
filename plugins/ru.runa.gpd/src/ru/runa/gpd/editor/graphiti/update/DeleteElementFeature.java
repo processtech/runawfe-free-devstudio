@@ -1,10 +1,22 @@
 package ru.runa.gpd.editor.graphiti.update;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import java.text.MessageFormat;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.dom4j.Document;
+import org.dom4j.Element;
+import org.eclipse.core.internal.resources.Workspace;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFileState;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.IContext;
 import org.eclipse.graphiti.features.context.IDeleteContext;
@@ -18,15 +30,22 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.PlatformUI;
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
+import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.editor.graphiti.CustomUndoRedoFeature;
 import ru.runa.gpd.editor.graphiti.HasTextDecorator;
 import ru.runa.gpd.lang.model.Action;
+import ru.runa.gpd.lang.model.Delegable;
+import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
 import ru.runa.gpd.settings.PrefConstants;
+import ru.runa.gpd.util.EmbeddedFileUtils;
+import ru.runa.gpd.util.IOUtils;
+import ru.runa.gpd.util.XmlUtil;
+import ru.runa.wfe.definition.IFileDataProvider;
 
 public class DeleteElementFeature extends DefaultDeleteFeature implements CustomUndoRedoFeature {
 
@@ -34,6 +53,7 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements Custom
 
     private GraphElement element;
     private List<Transition> transitions;
+    private Map<Transition, Integer> transitionIndexes;
 
     public DeleteElementFeature(IFeatureProvider provider) {
         super(provider);
@@ -96,12 +116,18 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements Custom
             IDeleteContext delContext = new DeleteContext(withDefinition.getTextDecoratorEmulation().getDefinition().getUiContainer().getOwner());
             delete(delContext);
         } else if (element instanceof Node) {
-            Node node = (Node) element;
-            removeAndStoreTransitions(node);
+            if (element instanceof FormNode) {
+                removeFormFiles((FormNode) element);
+            }
+            removeAndStoreTransitions((Node) element);
         } else if (element instanceof Transition) {
             Transition transition = (Transition) element;
             transition.getSource().removeLeavingTransition(transition);
             return;
+        }
+        if (element instanceof Delegable) {
+            Delegable delegable = (Delegable) element;
+            removeProcessFiles(delegable);
         }
         element.getParent().removeChild(element);
     }
@@ -122,9 +148,15 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements Custom
             restoreTransitions();
         } else {
             element.getParent().addChild(element);
+            if (element instanceof FormNode) {
+                restoreFormFiles();
+            }
         }
         if (element instanceof Node) {
             restoreTransitions();
+        }
+        if (element instanceof Delegable) {
+            restoreProcessFiles();
         }
     }
 
@@ -140,12 +172,19 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements Custom
 
     private void removeAndStoreTransitions(Node node) {
         transitions = Stream.concat(node.getLeavingTransitions().stream(), node.getArrivingTransitions().stream()).collect(Collectors.toList());
-        transitions.stream().forEach(t -> t.getSource().removeLeavingTransition(t));
+        transitionIndexes = Maps.newHashMap();
+        transitions.stream().forEach(transition -> {
+            Node source = transition.getSource();
+            transitionIndexes.put(transition, source.getChildren(GraphElement.class).indexOf(transition));
+            source.removeLeavingTransition(transition);
+        });
+        getDiagramBehavior().refresh();
     }
 
     private void restoreTransitions() {
         if (transitions != null) {
-            transitions.stream().forEach(t -> t.getSource().addChild(t));
+            Collections.reverse(transitions);
+            transitions.stream().forEach(transition -> transition.getSource().addChild(transition, transitionIndexes.get(transition)));
         }
         getDiagramBehavior().refresh();
     }
@@ -169,6 +208,83 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements Custom
         if (element instanceof Action) {
             layoutPictogramElement((PictogramElement) context.getProperty("action-container"));
         }
+    }
+
+    private IPath formFilePath;
+    private IPath scriptFilePath;
+    private IPath validationFilePath;
+
+    private void removeFormFiles(FormNode formNode) {
+        IFile processDefinitionFile = formNode.getProcessDefinition().getFile();
+        if (formNode.hasFormValidation()) {
+            validationFilePath = removeFile(processDefinitionFile, formNode.getValidationFileName(), validationFilePath == null);
+        }
+        if (formNode.hasFormScript()) {
+            scriptFilePath = removeFile(processDefinitionFile, formNode.getScriptFileName(), scriptFilePath == null);
+        }
+        if (formNode.hasForm()) {
+            formFilePath = removeFile(processDefinitionFile, formNode.getFormFileName(), formFilePath == null);
+        }
+    }
+
+    private void restoreFormFiles() {
+        if (formFilePath != null) {
+            restoreFile(formFilePath);
+        }
+        if (scriptFilePath != null) {
+            restoreFile(scriptFilePath);
+        }
+        if (validationFilePath != null) {
+            restoreFile(validationFilePath);
+        }
+    }
+
+    private IPath removeFile(IFile adjacentFile, String fileName, boolean keepHistory) {
+        IPath removedFilePath = null;
+        try {
+            IFile file = IOUtils.getAdjacentFile(adjacentFile, fileName);
+            if (file.exists()) {
+                file.delete(true, keepHistory, null);
+                removedFilePath = file.getFullPath();
+            }
+        } catch (CoreException e) {
+            PluginLogger.logError(e);
+        }
+        return removedFilePath;
+    }
+
+    private void restoreFile(IPath filePath) {
+        try {
+            IFile file = (IFile) ((Workspace) element.getProcessDefinition().getFile().getWorkspace()).newResource(filePath, IResource.FILE);
+            IFileState[] fileStates = file.getHistory(null);
+            if (!file.exists() && fileStates.length > 0) {
+                file.create(fileStates[0].getContents(), true, null);
+            }
+        } catch (CoreException e) {
+            PluginLogger.logError(e);
+        }
+    }
+
+    private List<IPath> processFilePaths = Lists.newArrayList();
+
+    private void removeProcessFiles(Delegable delegable) {
+        String config = delegable.getDelegationConfiguration();
+        if (XmlUtil.isXml(config)) {
+            processFilePaths.clear();
+            IFile processDefinitionFile = ((GraphElement) delegable).getProcessDefinition().getFile();
+            Document document = XmlUtil.parseWithoutValidation(config);
+            for (Element inputElement : (List<Element>) document.getRootElement().elements("input")) {
+                String path = inputElement.attributeValue("path");
+                if (EmbeddedFileUtils.isProcessFile(path)) {
+                    String fileName = path.substring(IFileDataProvider.PROCESS_FILE_PROTOCOL.length());
+                    processFilePaths.add(removeFile(processDefinitionFile, fileName, true));
+                }
+            }
+        }
+    }
+
+    private void restoreProcessFiles() {
+        processFilePaths.stream().forEach(path -> restoreFile(path));
     }
 
 }

@@ -43,16 +43,11 @@ public class MoveTransitionLabelFeature extends DefaultMoveConnectionDecoratorFe
 
 
     @Override
-    public boolean canUndo(IContext context) {
-        return undoDecoratorPoint != null;
-    }
-
-    @Override
     public void postUndo(IContext context) {
         if (context instanceof IMoveConnectionDecoratorContext) {
             Connection connection = ((IMoveConnectionDecoratorContext) context).getConnectionDecorator().getConnection();
             Transition transition = (Transition) getBusinessObjectForPictogramElement(connection);
-            redoDecoratorPoint = transition.getLabelLocation().getCopy();
+            redoDecoratorPoint = transition.getLabelLocation() == null ? null : transition.getLabelLocation().getCopy();
             transition.setLabelLocation(undoDecoratorPoint);
         }
     }
@@ -67,7 +62,7 @@ public class MoveTransitionLabelFeature extends DefaultMoveConnectionDecoratorFe
         if (context instanceof IMoveConnectionDecoratorContext) {
             Connection connection = ((IMoveConnectionDecoratorContext) context).getConnectionDecorator().getConnection();
             Transition transition = (Transition) getBusinessObjectForPictogramElement(connection);
-            undoDecoratorPoint = transition.getLabelLocation().getCopy();
+            undoDecoratorPoint = transition.getLabelLocation() == null ? null : transition.getLabelLocation().getCopy();
             transition.setLabelLocation(redoDecoratorPoint);
         }
     }
