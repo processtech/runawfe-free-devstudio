@@ -59,14 +59,16 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
 
     @Override
     public ICustomFeature getDoubleClickFeature(IDoubleClickContext context) {
-        PictogramElement pe = context.getInnerPictogramElement();
-        GraphElement element = (GraphElement) getFeatureProvider().getBusinessObjectForPictogramElement(pe);
-        if (element instanceof Subprocess) {
-            return new OpenSubProcessFeature(getFeatureProvider());
-        }
-        NodeTypeDefinition definition = element.getTypeDefinition();
-        if (definition != null && definition.getGraphitiEntry() != null) {
-            return definition.getGraphitiEntry().createDoubleClickFeature(getFeatureProvider());
+        if (context.getPictogramElements().length == 1) {
+            PictogramElement pe = context.getPictogramElements()[0];
+            GraphElement element = (GraphElement) getFeatureProvider().getBusinessObjectForPictogramElement(pe);
+            if (element instanceof Subprocess) {
+                return new OpenSubProcessFeature(getFeatureProvider());
+            }
+            NodeTypeDefinition definition = element.getTypeDefinition();
+            if (definition != null && definition.getGraphitiEntry() != null) {
+                return definition.getGraphitiEntry().createDoubleClickFeature(getFeatureProvider());
+            }
         }
         return super.getDoubleClickFeature(context);
     }

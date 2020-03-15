@@ -19,12 +19,12 @@ public class DoubleClickFormNodeFeature extends DoubleClickElementFeature implem
 
     @Override
     public boolean canExecute(ICustomContext context) {
-        return fp.getBusinessObjectForPictogramElement(context.getInnerPictogramElement()) instanceof FormNode && super.canExecute(context);
+        return getBusinessObject(context) instanceof FormNode && super.canExecute(context);
     }
 
     @Override
     public void execute(ICustomContext context) {
-        FormNode formNode = (FormNode) fp.getBusinessObjectForPictogramElement(context.getInnerPictogramElement());
+        FormNode formNode = (FormNode) getBusinessObject(context);
         try {
             if (formNode.hasForm()) {
                 String fileName = formNode.getFormFileName();
