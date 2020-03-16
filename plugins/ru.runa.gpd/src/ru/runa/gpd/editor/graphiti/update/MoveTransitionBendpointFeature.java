@@ -63,4 +63,9 @@ public class MoveTransitionBendpointFeature extends DefaultMoveBendpointFeature 
         }
     }
 
+    @Override
+    public String getName() {
+        return getClass().getSimpleName();
+    }
+
 }

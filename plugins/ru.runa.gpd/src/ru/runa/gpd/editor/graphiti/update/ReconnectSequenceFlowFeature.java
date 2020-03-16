@@ -103,4 +103,10 @@ public class ReconnectSequenceFlowFeature extends DefaultReconnectionFeature imp
             }
         }
     }
+
+    @Override
+    public String getName() {
+        return getClass().getSimpleName();
+    }
+
 }

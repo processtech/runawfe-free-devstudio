@@ -197,4 +197,10 @@ public class CreateElementFeature extends AbstractCreateFeature implements GEFCo
         }
         getDiagramBehavior().refresh();
     }
+
+    @Override
+    public String getName() {
+        return getClass().getSimpleName();
+    }
+
 }

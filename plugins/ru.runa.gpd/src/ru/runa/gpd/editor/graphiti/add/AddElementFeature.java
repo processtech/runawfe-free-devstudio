@@ -4,7 +4,6 @@ import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.IAddContext;
 import org.eclipse.graphiti.features.impl.AbstractAddShapeFeature;
-
 import ru.runa.gpd.editor.GEFConstants;
 import ru.runa.gpd.editor.graphiti.DiagramFeatureProvider;
 import ru.runa.gpd.lang.model.GraphElement;
@@ -42,6 +41,11 @@ public abstract class AddElementFeature extends AbstractAddShapeFeature implemen
 
     public Dimension getDefaultSystemSize(GraphElement element, IAddContext context) {
         return element.getTypeDefinition().getGraphitiEntry().getDefaultSystemSize();
+    }
+
+    @Override
+    public String getName() {
+        return getClass().getSimpleName();
     }
 
 }

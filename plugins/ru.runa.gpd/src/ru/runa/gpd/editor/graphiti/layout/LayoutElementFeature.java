@@ -26,4 +26,15 @@ public abstract class LayoutElementFeature extends AbstractLayoutFeature impleme
     public boolean canLayout(ILayoutContext context) {
         return true;
     }
+
+    @Override
+    public boolean hasDoneChanges() {
+        return false;
+    }
+
+    @Override
+    public String getName() {
+        return getClass().getSimpleName();
+    }
+
 }

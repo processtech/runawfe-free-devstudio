@@ -77,9 +77,9 @@ public class MoveElementFeature extends DefaultMoveShapeFeature implements Custo
         element.setConstraint(newConstraint);
         if (element instanceof Node) {
             // move transition bendpoints
-            List<Anchor> anchros = getAnchors(shape);
+            List<Anchor> anchors = getAnchors(shape);
             List<FreeFormConnection> connections = Lists.newArrayList();
-            for (Anchor anchor : anchros) {
+            for (Anchor anchor : anchors) {
                 for (Connection connection : anchor.getOutgoingConnections()) {
                     if (connection instanceof FreeFormConnection) {
                         connections.add((FreeFormConnection) connection);
@@ -99,8 +99,8 @@ public class MoveElementFeature extends DefaultMoveShapeFeature implements Custo
                 for (int i = 0; i < points.size(); i++) {
                     Point diagramPoint = points.get(i);
                     org.eclipse.draw2d.geometry.Point modelPoint = transition.getBendpoints().get(i);
-                    undoBendpoints.add(new org.eclipse.draw2d.geometry.Point(diagramPoint.getX(), diagramPoint.getY()));
-                    redoBendpoints.add(new org.eclipse.draw2d.geometry.Point(modelPoint));
+                    undoBendpoints.add(new org.eclipse.draw2d.geometry.Point(new org.eclipse.draw2d.geometry.Point(modelPoint)));
+                    redoBendpoints.add(new org.eclipse.draw2d.geometry.Point(diagramPoint.getX(), diagramPoint.getY()));
                     if (modelPoint.x != diagramPoint.getX() || modelPoint.y != diagramPoint.getY()) {
                         transition.setBendpoint(i, new org.eclipse.draw2d.geometry.Point(diagramPoint.getX(), diagramPoint.getY()));
                     }
@@ -181,9 +181,9 @@ public class MoveElementFeature extends DefaultMoveShapeFeature implements Custo
 
     private void moveTransitionBendpointsUndoRedo(Shape shape, GraphElement element, List<List<org.eclipse.draw2d.geometry.Point>> bendpointList) {
         if (element instanceof Node) {
-            List<Anchor> anchros = getAnchors(shape);
+            List<Anchor> anchors = getAnchors(shape);
             List<FreeFormConnection> connections = Lists.newArrayList();
-            for (Anchor anchor : anchros) {
+            for (Anchor anchor : anchors) {
                 for (Connection connection : anchor.getOutgoingConnections()) {
                     if (connection instanceof FreeFormConnection) {
                         connections.add((FreeFormConnection) connection);
@@ -264,4 +264,10 @@ public class MoveElementFeature extends DefaultMoveShapeFeature implements Custo
         }
 
     }
+
+    @Override
+    public String getName() {
+        return getClass().getSimpleName();
+    }
+
 }

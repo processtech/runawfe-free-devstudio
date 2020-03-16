@@ -105,4 +105,10 @@ public class DirectEditNodeNameFeature extends AbstractDirectEditingFeature impl
         }
 
     }
+
+    @Override
+    public String getName() {
+        return getClass().getSimpleName();
+    }
+
 }

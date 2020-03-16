@@ -66,5 +66,10 @@ public class MoveTransitionLabelFeature extends DefaultMoveConnectionDecoratorFe
             transition.setLabelLocation(redoDecoratorPoint);
         }
     }
-    
+
+    @Override
+    public String getName() {
+        return getClass().getSimpleName();
+    }
+
 }

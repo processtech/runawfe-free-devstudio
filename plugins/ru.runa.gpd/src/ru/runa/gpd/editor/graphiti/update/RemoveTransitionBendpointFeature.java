@@ -57,4 +57,10 @@ public class RemoveTransitionBendpointFeature extends DefaultRemoveBendpointFeat
             transition.removeBendpoint(((IRemoveBendpointContext) context).getBendpointIndex());
         }
     }
+
+    @Override
+    public String getName() {
+        return getClass().getSimpleName();
+    }
+
 }

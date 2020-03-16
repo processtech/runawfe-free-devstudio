@@ -71,4 +71,10 @@ public class ResizeElementFeature extends DefaultResizeShapeFeature implements G
             element.setConstraint(redoConstraint);
         }
     }
+
+    @Override
+    public String getName() {
+        return getClass().getSimpleName();
+    }
+
 }

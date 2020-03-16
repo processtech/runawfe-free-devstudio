@@ -75,4 +75,10 @@ public class DirectEditDescriptionFeature extends AbstractDirectEditingFeature i
         }
 
     }
+
+    @Override
+    public String getName() {
+        return getClass().getSimpleName();
+    }
+
 }

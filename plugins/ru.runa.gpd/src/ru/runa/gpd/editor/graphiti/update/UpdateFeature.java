@@ -29,4 +29,10 @@ public abstract class UpdateFeature extends AbstractUpdateFeature {
     public boolean hasDoneChanges() {
         return false;
     }
+
+    @Override
+    public String getName() {
+        return getClass().getSimpleName();
+    }
+
 }
