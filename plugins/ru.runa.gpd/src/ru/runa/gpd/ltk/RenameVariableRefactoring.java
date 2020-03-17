@@ -151,16 +151,16 @@ public class RenameVariableRefactoring extends Refactoring {
         return finalStatus;
     }
 
-    private CompositeChange cashedChange = null;
+    private CompositeChange cachedChange = null;
 
     @Override
     public CompositeChange createChange(IProgressMonitor pm) {
-        if (cashedChange == null) {
-            cashedChange = new CompositeChange(getName());
+        if (cachedChange == null) {
+            cachedChange = new CompositeChange(getName());
             for (VariableRenameProvider<?> classPresentation : cache) {
                 try {
                     List<Change> changes = classPresentation.getChanges(variablesMap);
-                    cashedChange.addAll(changes.toArray(new Change[changes.size()]));
+                    cachedChange.addAll(changes.toArray(new Change[changes.size()]));
                 } catch (Exception e) {
                     PluginLogger.logErrorWithoutDialog("Unable to get used variabes in " + classPresentation.element, e);
                     RenameVariableRefactoringStatusContext context = new RenameVariableRefactoringStatusContext(classPresentation, definitionFolder);
@@ -169,7 +169,7 @@ public class RenameVariableRefactoring extends Refactoring {
                 }
             }
         }
-        return cashedChange;
+        return cachedChange;
     }
 
     public boolean isUserInteractionNeeded() {

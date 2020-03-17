@@ -590,17 +590,18 @@ public class CopyGraphCommand extends Command {
 
         private void copyUserType(Variable srcVar) {
             if (srcVar.isComplex()) {
+                VariableUserType sourceUserType = srcVar.getUserType().getCopy();
                 VariableUserType userType = targetDefinition.getVariableUserType(srcVar.getUserType().getName());
                 if (userType == null) {
-                    targetDefinition.addVariableUserType(srcVar.getUserType().getCopy());
-                    for (Variable v : srcVar.getUserType().getAttributes()) {
+                    targetDefinition.addVariableUserType(sourceUserType);
+                    for (Variable v : sourceUserType.getAttributes()) {
                         if (v.isComplex() || VariableUtils.isContainerVariable(v)) {
                             copyUserType(v);
                         }
                     }
                 } else {
                     List<Variable> userTypeAttributes = userType.getAttributes();
-                    for (Variable v : srcVar.getUserType().getAttributes()) {
+                    for (Variable v : sourceUserType.getAttributes()) {
                         if (!userTypeAttributes.contains(v)) {
                             if (v.isComplex() || VariableUtils.isContainerVariable(v)) {
                                 copyUserType(v);

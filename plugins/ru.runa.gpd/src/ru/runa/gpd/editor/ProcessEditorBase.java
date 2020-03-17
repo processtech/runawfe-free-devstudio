@@ -88,6 +88,7 @@ public abstract class ProcessEditorBase extends MultiPageEditorPart implements I
     @Override
     public void dispose() {
         try {
+            IOUtils.restoreDeletedFiles(definitionFile.getParent());
             if (definition != null) {
                 definition.removePropertyChangeListener(this);
                 // If process definition is dirty (hasn't been saved) we should
@@ -288,6 +289,7 @@ public abstract class ProcessEditorBase extends MultiPageEditorPart implements I
                     resource.delete(true, null);
                 }
             }
+            IOUtils.eraseDeletedFiles(folder);
         } catch (CoreException e) {
             PluginLogger.logErrorWithoutDialog("Cleaning unused form files", e);
         }
