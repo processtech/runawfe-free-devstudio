@@ -1,7 +1,6 @@
 package ru.runa.gpd.ui.view;
 
 import java.util.List;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IMarkerDelta;
@@ -30,12 +29,12 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.part.ViewPart;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.editor.ProcessEditorBase;
+import ru.runa.gpd.lang.ValidationErrorDetails;
 import ru.runa.gpd.lang.model.Action;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.NamedGraphElement;
@@ -124,6 +123,9 @@ public class ValidationErrorsView extends ViewPart implements ISelectionChangedL
             }
             if (graphElement != null) {
                 editor.select(graphElement);
+                if (marker.getAttribute(PluginConstants.VALIDATION_ERROR_DETAILS_KEY) != null) {
+                    ((ValidationErrorDetails) marker.getAttribute(PluginConstants.VALIDATION_ERROR_DETAILS_KEY)).show();
+                }
             }
         } catch (Exception e) {
             // don't display error to user

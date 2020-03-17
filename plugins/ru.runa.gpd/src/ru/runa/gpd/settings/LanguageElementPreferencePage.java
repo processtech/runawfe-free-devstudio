@@ -126,6 +126,8 @@ public class LanguageElementPreferencePage extends FieldEditorPreferencePage imp
     }
 
     private void init(GraphElement element) {
+        // TODO this section does not works until settings dialog opened
+        // it is better to move them to ru.runa.gpd.settings.PreferenceInitializer
         IPreferenceStore store = getPreferenceStore();
         if (element instanceof NamedGraphElement) {
             store.setDefault(getKey(P_LANGUAGE_NODE_NAME_PATTERN), definition.getLabel());
@@ -150,7 +152,6 @@ public class LanguageElementPreferencePage extends FieldEditorPreferencePage imp
         if (language == Language.BPMN) {
             switch (definition.getBpmnElementName()) {
             case "exclusiveGateway":
-                store.setDefault(getKey(P_BPMN_MARK_DEFAULT_TRANSITION), false);
                 store.setDefault(getKey(P_BPMN_DEFAULT_TRANSITION_NAMES), "");
                 break;
             case StyleUtil.TEXT_ANNOTATION_BPMN_NAME:

@@ -137,8 +137,12 @@ public class JavaScriptEditor extends TextEditor {
 
     @Override
     public void doSave(IProgressMonitor progressMonitor) {
+        boolean wasDirty = isDirty();
         super.doSave(progressMonitor);
         update();
+        if (wasDirty) {
+            ParContentProvider.saveFormsXml(formNode.getProcessDefinition());
+        }
     }
 
     @Override

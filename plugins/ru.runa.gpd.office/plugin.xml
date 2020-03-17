@@ -55,16 +55,6 @@
             enabled="true">
       </handler>
       <handler
-            actionHandler="false"
-            assignmentHandler="false"
-            botTaskHandler="true"
-            decisionHandler="false"
-            cellEditorProvider="ru.runa.gpd.office.word.MSWordTaskHandlerConfigurator"
-            className="ru.runa.wf.logic.bot.MSWordReportTaskHandler"
-            label="%ActionHandler.MSWordHandler"
-            enabled="true">
-      </handler>
-      <handler
             actionHandler="true"
             assignmentHandler="false"
             botTaskHandler="true"
