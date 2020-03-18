@@ -2678,6 +2678,14 @@
             <separator name="additions"/>
             <separator name="updates"/>
          </menu>
+         <menu
+               id="edit"
+               label="%label.menu.edit"
+               path="file">
+            <separator
+                  name="additions">
+            </separator>
+         </menu>
          <action
                class="ru.runa.gpd.ui.action.ShowActionsAction"
                id="enableActionsInGraph"
@@ -2820,6 +2828,13 @@
                label="%label.menu.exit"
                menubarPath="file/exit"
                style="push"/>
+         <action
+               class="ru.runa.gpd.ui.action.FindElementAction"
+               id="findElement"
+               label="%label.action.findElement"
+               menubarPath="edit/additions"
+               style="push">
+         </action>
       </actionSet>
    </extension>
 
