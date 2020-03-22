@@ -2612,6 +2612,23 @@
                toolbarPath="normal/syncbots"
                tooltip="%tooltip.menu.importBotElement"/>
          <action
+               class="ru.runa.gpd.ui.action.ExportGlobalSectionAction"
+               icon="icons/export_wiz.gif"
+               id="ru.runa.gpd.exportGlobalSection"
+               label="%label.menu.export.global.section"
+               menubarPath="file/export"
+               style="push"
+               toolbarPath="normal/syncproc"
+               tooltip="%tooltip.menu.export.global.section"/>
+         <action
+               class="ru.runa.gpd.ui.action.ImportGlobalSectionAction"
+               icon="icons/import_wiz.gif"
+               id="ru.runa.gpd.importGlobalSection"
+               label="%label.menu.import.global.section"
+               menubarPath="file/export"
+               style="push"
+               toolbarPath="normal/syncproc"/>               
+         <action
                class="ru.runa.gpd.ui.action.ExportProcessAction"
                icon="icons/export_wiz.gif"
                id="ru.runa.gpd.exportProcess"
@@ -2628,7 +2645,6 @@
                menubarPath="file/export"
                style="push"
                toolbarPath="normal/syncproc"/>
-          
          <action
                class="ru.runa.gpd.ui.action.ExportProject"
                icon="icons/export_bot.gif"

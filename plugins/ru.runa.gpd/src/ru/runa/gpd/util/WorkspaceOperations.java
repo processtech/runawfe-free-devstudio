@@ -79,10 +79,12 @@ import ru.runa.gpd.ui.wizard.ExportBotElementWizardPage;
 import ru.runa.gpd.ui.wizard.ExportBotWizard;
 import ru.runa.gpd.ui.wizard.ExportDataSourceWizard;
 import ru.runa.gpd.ui.wizard.ExportParWizard;
+import ru.runa.gpd.ui.wizard.ExportGlbWizard;
 import ru.runa.gpd.ui.wizard.ImportBotElementWizardPage;
 import ru.runa.gpd.ui.wizard.ImportBotWizard;
 import ru.runa.gpd.ui.wizard.ImportDataSourceWizard;
 import ru.runa.gpd.ui.wizard.ImportParWizard;
+import ru.runa.gpd.ui.wizard.ImportGlbWizard;
 import ru.runa.gpd.ui.wizard.NewBotStationWizard;
 import ru.runa.gpd.ui.wizard.NewBotTaskWizard;
 import ru.runa.gpd.ui.wizard.NewBotWizard;
@@ -408,6 +410,20 @@ public class WorkspaceOperations {
         dialog.open();
     }
 
+    public static void exportGlobalSectionDefinition(IStructuredSelection selection) {
+        ExportGlbWizard wizard = new ExportGlbWizard();
+        wizard.init(PlatformUI.getWorkbench(), selection);
+        CompactWizardDialog dialog = new CompactWizardDialog(wizard);
+        dialog.open();
+    }
+
+    public static void importGlobalSectionDefinition(IStructuredSelection selection) {
+        ImportGlbWizard wizard = new ImportGlbWizard();
+        wizard.init(PlatformUI.getWorkbench(), selection);
+        CompactWizardDialog dialog = new CompactWizardDialog(wizard);
+        dialog.open();
+    }
+    
     public static void showProcessSaveHistory(IStructuredSelection selection) {
         new ProcessSaveHistoryDialog((IFolder) selection.getFirstElement()).open();
     }
