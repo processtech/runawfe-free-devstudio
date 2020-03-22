@@ -2515,6 +2515,16 @@
                style="push"
                toolbarPath="normal/processes"
                tooltip="%tooltip.menu.newProcess"/>
+        <action
+               class="ru.runa.gpd.ui.action.NewGlobalSectionAction"
+               definitionId="ru.runa.gpd.commands.new.global.section"
+               icon="icons/process16.gif"
+               id="ru.runa.gpd.newGlobalSection"
+               label="%label.menu.newGlobalSection"
+               menubarPath="file/newFile/common"
+               style="push"
+               toolbarPath="normal/processes"
+               tooltip="%tooltip.menu.newGlobalSection"/>
          <action
                class="ru.runa.gpd.ui.action.NewProjectAction"
                icon="icons/new_project16x16.gif"
@@ -2866,6 +2876,12 @@
             sequence="Ctrl+N">
       </key>
       <key
+            commandId="ru.runa.gpd.commands.new.global.section"
+            contextId="ru.runa.gpd.context.app"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="Ctrl+G">
+      </key>
+      <key
             commandId="ru.runa.gpd.commands.save"
             contextId="ru.runa.gpd.context.app"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
@@ -2894,6 +2910,10 @@
       <command
             id="ru.runa.gpd.commands.new"
             name="ru.runa.gpd.commands.new">
+      </command>
+      <command
+            id="ru.runa.gpd.commands.new.global.section"
+            name="ru.runa.gpd.commands.new.global.section">
       </command>
       <command
             id="ru.runa.gpd.commands.save"

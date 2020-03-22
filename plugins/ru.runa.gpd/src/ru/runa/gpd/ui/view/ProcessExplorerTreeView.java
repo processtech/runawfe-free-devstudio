@@ -197,6 +197,14 @@ public class ProcessExplorerTreeView extends ViewPart implements ISelectionListe
             }
         }
         if (menuOnContainer) {
+            manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.newGlobalSection"),
+                    SharedImages.getImageDescriptor("icons/process.gif")) {
+
+                @Override
+                public void run() {
+                	WorkspaceOperations.createNewGlobalSectionDefinition(selection, ProcessDefinitionAccessType.Process);
+                }
+            });
             manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.newProcess"),
                     SharedImages.getImageDescriptor("icons/process.gif")) {
 
