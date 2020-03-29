@@ -90,6 +90,7 @@ import ru.runa.gpd.ui.wizard.NewBotTaskWizard;
 import ru.runa.gpd.ui.wizard.NewBotWizard;
 import ru.runa.gpd.ui.wizard.NewFolderWizard;
 import ru.runa.gpd.ui.wizard.NewProcessDefinitionWizard;
+import ru.runa.gpd.ui.wizard.NewGlobalSectionDefinitionWizard;
 import ru.runa.gpd.ui.wizard.NewProcessProjectWizard;
 import ru.runa.wfe.InternalApplicationException;
 import ru.runa.wfe.datasource.DataSourceStuff;
@@ -223,6 +224,16 @@ public class WorkspaceOperations {
         return null;
     }
 
+    public static ProcessDefinition createNewGlobalSectionDefinition(IStructuredSelection selection, ProcessDefinitionAccessType accessType) {
+        NewGlobalSectionDefinitionWizard wizard = new NewGlobalSectionDefinitionWizard(accessType);
+        wizard.init(PlatformUI.getWorkbench(), selection);
+        WizardDialog dialog = new WizardDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), wizard);
+        if (dialog.open() == Window.OK) {
+            return ProcessCache.getProcessDefinition(wizard.getDefinitionFile());
+        }
+        return null;
+    }
+    
     public static void copyProcessDefinition(IStructuredSelection selection) {
         IFolder processDefinitionFolder = (IFolder) selection.getFirstElement();
         IDE.saveAllEditors(new IResource[] { processDefinitionFolder }, true);
