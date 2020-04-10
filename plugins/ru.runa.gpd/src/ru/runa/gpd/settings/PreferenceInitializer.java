@@ -39,6 +39,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer impleme
         store.setDefault(P_CONFIRM_DELETION, true);
         store.setDefault(P_PROCESS_SAVE_HISTORY, true);
         store.setDefault(P_PROCESS_SAVEPOINT_NUMBER, 10);
+        store.setDefault(P_ENABLE_USER_ACTIVITY_LOGGING, true);
         // PreferenceConverter.FONTDATA_DEFAULT_DEFAULT
         // backward compatibility
         store.setDefault(LanguageElementPreferenceNode.getBpmnDefaultPropertyName(P_BPMN_FONT), new FontData("Arial", 8, SWT.NORMAL).toString());
