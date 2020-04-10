@@ -2518,7 +2518,7 @@
         <action
                class="ru.runa.gpd.ui.action.NewGlobalSectionAction"
                definitionId="ru.runa.gpd.commands.new.global.section"
-               icon="icons/process16.gif"
+               icon="icons/glb.gif"
                id="ru.runa.gpd.newGlobalSection"
                label="%label.menu.newGlobalSection"
                menubarPath="file/newFile/common"
@@ -2613,7 +2613,7 @@
                tooltip="%tooltip.menu.importBotElement"/>
          <action
                class="ru.runa.gpd.ui.action.ExportGlobalSectionAction"
-               icon="icons/export_wiz.gif"
+               icon="icons/export_glb.gif"
                id="ru.runa.gpd.exportGlobalSection"
                label="%label.menu.export.global.section"
                menubarPath="file/export"
@@ -2622,7 +2622,7 @@
                tooltip="%tooltip.menu.export.global.section"/>
          <action
                class="ru.runa.gpd.ui.action.ImportGlobalSectionAction"
-               icon="icons/import_wiz.gif"
+               icon="icons/import_glb.gif"
                id="ru.runa.gpd.importGlobalSection"
                label="%label.menu.import.global.section"
                menubarPath="file/export"

@@ -198,7 +198,7 @@ public class ProcessExplorerTreeView extends ViewPart implements ISelectionListe
         }
         if (menuOnContainer) {
             manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.newGlobalSection"),
-                    SharedImages.getImageDescriptor("icons/process.gif")) {
+                    SharedImages.getImageDescriptor("icons/glb.gif")) {
 
                 @Override
                 public void run() {
@@ -213,8 +213,8 @@ public class ProcessExplorerTreeView extends ViewPart implements ISelectionListe
                     WorkspaceOperations.createNewProcessDefinition(selection, ProcessDefinitionAccessType.Process);
                 }
             });
-            manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.exportGlobalSection"),
-                    SharedImages.getImageDescriptor("icons/import.gif")) {
+            manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.importGlobalSection"),
+                    SharedImages.getImageDescriptor("icons/import_glb.gif")) {
                 @Override
                 public void run() {
                     WorkspaceOperations.importGlobalSectionDefinition(selection);
@@ -241,7 +241,7 @@ public class ProcessExplorerTreeView extends ViewPart implements ISelectionListe
             }
             manager.add(copy);
             manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.exportGlobalSection"),
-                    SharedImages.getImageDescriptor("icons/export.gif")) {
+                    SharedImages.getImageDescriptor("icons/export_glb.gif")) {
                 @Override
                 public void run() {
                     WorkspaceOperations.exportGlobalSectionDefinition(selection);
