@@ -61,7 +61,7 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements Custom
 
     @Override
     public String getName() {
-        return NAME;
+        return NAME + " " + element;
     }
 
     @Override
@@ -106,24 +106,27 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements Custom
         if (bo == null) {
             return;
         }
-        element = (GraphElement) bo;
-        if (element instanceof TextDecorationNode) {
-            TextDecorationNode textDecoration = (TextDecorationNode) element;
+        if (element == null) {
+            element = (GraphElement) bo;
+        }
+        if (bo instanceof TextDecorationNode) {
+            TextDecorationNode textDecoration = (TextDecorationNode) bo;
             textDecoration.getTarget().getParent().removeChild(textDecoration.getTarget());
-            removeAndStoreTransitions(textDecoration.getTarget());
+            return;
         } else if (element instanceof HasTextDecorator) {
             HasTextDecorator withDefinition = (HasTextDecorator) element;
             IDeleteContext delContext = new DeleteContext(withDefinition.getTextDecoratorEmulation().getDefinition().getUiContainer().getOwner());
             delete(delContext);
-        } else if (element instanceof Node) {
-            if (element instanceof FormNode) {
-                removeFormFiles((FormNode) element);
-            }
-            removeAndStoreTransitions((Node) element);
         } else if (element instanceof Transition) {
             Transition transition = (Transition) element;
             transition.getSource().removeLeavingTransition(transition);
             return;
+        }
+        if (element instanceof Node) {
+            if (element instanceof FormNode) {
+                removeFormFiles((FormNode) element);
+            }
+            removeAndStoreTransitions((Node) element);
         }
         if (element instanceof Delegable) {
             Delegable delegable = (Delegable) element;
@@ -175,7 +178,7 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements Custom
         transitionIndexes = Maps.newHashMap();
         transitions.stream().forEach(transition -> {
             Node source = transition.getSource();
-            transitionIndexes.put(transition, source.getChildren(GraphElement.class).indexOf(transition));
+            transitionIndexes.put(transition, source.getElements().indexOf(transition));
             source.removeLeavingTransition(transition);
         });
         getDiagramBehavior().refresh();
