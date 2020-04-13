@@ -22,6 +22,7 @@ import ru.runa.gpd.editor.GEFConstants;
 import ru.runa.gpd.editor.graphiti.CustomUndoRedoFeature;
 import ru.runa.gpd.editor.graphiti.DiagramFeatureProvider;
 import ru.runa.gpd.editor.graphiti.HasTextDecorator;
+import ru.runa.gpd.editor.graphiti.UndoRedoUtil;
 import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.lang.model.Action;
 import ru.runa.gpd.lang.model.GraphElement;
@@ -84,6 +85,7 @@ public class CreateElementFeature extends AbstractCreateFeature implements GEFCo
     @Override
     public Object[] create(ICreateContext context) {
         graphElement = getNodeDefinition().createElement(getProcessDefinition(), true);
+        UndoRedoUtil.watch(graphElement);
         GraphElement parent = (GraphElement) getBusinessObjectForPictogramElement(context.getTargetContainer());
         if (graphElement instanceof Action) {
             if (context.getTargetConnection() != null) {

@@ -8,22 +8,16 @@ import ru.runa.gpd.lang.model.TimerAction;
 public class ChangeTimerActionFeature extends ChangePropertyFeature<Timer, TimerAction> {
 
     public ChangeTimerActionFeature(Timer target, TimerAction newValue) {
-        super(target, newValue);
+        super(target, target.getAction(), newValue);
     }
 
     @Override
-    public void postUndo(IContext context) {
+    protected void undo(IContext context) {
         target.setAction(oldValue);
     }
 
     @Override
-    public void postRedo(IContext context) {
-        target.setAction(newValue);
-    }
-
-    @Override
     public void execute(ICustomContext context) {
-        oldValue = target.getAction();
         target.setAction(newValue);
     }
 

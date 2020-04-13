@@ -9,22 +9,16 @@ import ru.runa.gpd.util.VariableMapping;
 public class ChangeVariableMappingsFeature extends ChangePropertyFeature<MessageNode, List<VariableMapping>> {
 
     public ChangeVariableMappingsFeature(MessageNode target, List<VariableMapping> newValue) {
-        super(target, newValue);
+        super(target, target.getVariableMappings(), newValue);
     }
 
     @Override
-    public void postUndo(IContext context) {
+    protected void undo(IContext context) {
         target.setVariableMappings(oldValue);
     }
 
     @Override
-    public void postRedo(IContext context) {
-        target.setVariableMappings(newValue);
-    }
-
-    @Override
     public void execute(ICustomContext context) {
-        oldValue = target.getVariableMappings();
         target.setVariableMappings(newValue);
     }
 

@@ -9,25 +9,22 @@ public class ChangeDelegationClassNameFeature extends ChangePropertyFeature<Dele
     private String oldConfiguration;
 
     public ChangeDelegationClassNameFeature(Delegable target, String newValue) {
-        super(target, newValue);
+        this(target, target.getDelegationClassName(), newValue);
+    }
+
+    public ChangeDelegationClassNameFeature(Delegable target, String oldValue, String newValue) {
+        super(target, oldValue, newValue);
+        oldConfiguration = target.getDelegationConfiguration();
     }
 
     @Override
-    public void postUndo(IContext context) {
+    protected void undo(IContext context) {
         target.setDelegationClassName(oldValue);
         target.setDelegationConfiguration(oldConfiguration);
     }
 
     @Override
-    public void postRedo(IContext context) {
-        target.setDelegationClassName(newValue);
-        target.setDelegationConfiguration(null);
-    }
-
-    @Override
     public void execute(ICustomContext context) {
-        oldValue = target.getDelegationClassName();
-        oldConfiguration = target.getDelegationConfiguration();
         target.setDelegationClassName(newValue);
         target.setDelegationConfiguration(null);
     }

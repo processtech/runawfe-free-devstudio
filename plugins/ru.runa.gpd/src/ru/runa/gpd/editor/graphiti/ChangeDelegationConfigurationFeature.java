@@ -7,22 +7,20 @@ import ru.runa.gpd.lang.model.Delegable;
 public class ChangeDelegationConfigurationFeature extends ChangePropertyFeature<Delegable, String> {
 
     public ChangeDelegationConfigurationFeature(Delegable target, String newValue) {
-        super(target, newValue);
+        this(target, target.getDelegationConfiguration(), newValue);
+    }
+
+    public ChangeDelegationConfigurationFeature(Delegable target, String oldValue, String newValue) {
+        super(target, oldValue, newValue);
     }
 
     @Override
-    public void postUndo(IContext context) {
+    protected void undo(IContext context) {
         target.setDelegationConfiguration(oldValue);
     }
 
     @Override
-    public void postRedo(IContext context) {
-        target.setDelegationConfiguration(newValue);
-    }
-
-    @Override
     public void execute(ICustomContext context) {
-        oldValue = target.getDelegationConfiguration();
         target.setDelegationConfiguration(newValue);
     }
 

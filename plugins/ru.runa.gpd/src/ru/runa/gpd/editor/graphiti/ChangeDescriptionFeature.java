@@ -7,22 +7,20 @@ import ru.runa.gpd.lang.model.Describable;
 public class ChangeDescriptionFeature extends ChangePropertyFeature<Describable, String> {
 
     public ChangeDescriptionFeature(Describable target, String newValue) {
-        super(target, newValue);
+        this(target, target.getDescription(), newValue);
+    }
+
+    public ChangeDescriptionFeature(Describable target, String oldValue, String newValue) {
+        super(target, oldValue, newValue);
     }
 
     @Override
-    public void postUndo(IContext context) {
+    protected void undo(IContext context) {
         target.setDescription(oldValue);
     }
 
     @Override
-    public void postRedo(IContext context) {
-        target.setDescription(newValue);
-    }
-
-    @Override
     public void execute(ICustomContext context) {
-        oldValue = target.getDescription();
         target.setDescription(newValue);
     }
 

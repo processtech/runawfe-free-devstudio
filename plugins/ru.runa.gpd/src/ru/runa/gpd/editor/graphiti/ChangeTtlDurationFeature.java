@@ -8,22 +8,16 @@ import ru.runa.gpd.util.Duration;
 public class ChangeTtlDurationFeature extends ChangePropertyFeature<MessageNode, Duration> {
 
     public ChangeTtlDurationFeature(MessageNode target, Duration newValue) {
-        super(target, newValue);
+        super(target, target.getTtlDuration(), newValue);
     }
 
     @Override
-    public void postUndo(IContext context) {
+    protected void undo(IContext context) {
         target.setTtlDuration(oldValue);
     }
 
     @Override
-    public void postRedo(IContext context) {
-        target.setTtlDuration(newValue);
-    }
-
-    @Override
     public void execute(ICustomContext context) {
-        oldValue = target.getTtlDuration();
         target.setTtlDuration(newValue);
     }
 

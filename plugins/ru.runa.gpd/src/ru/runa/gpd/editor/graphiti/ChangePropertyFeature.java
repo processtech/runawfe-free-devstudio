@@ -9,12 +9,13 @@ public abstract class ChangePropertyFeature<T, V> extends AbstractCustomFeature 
 
     protected IFeatureProvider fp;
     protected T target;
-    protected V newValue;
     protected V oldValue;
+    protected V newValue;
 
-    public ChangePropertyFeature(T target, V newValue) {
+    protected ChangePropertyFeature(T target, V oldValue, V newValue) {
         super(null);
         this.target = target;
+        this.oldValue = oldValue;
         this.newValue = newValue;
     }
 
@@ -45,6 +46,22 @@ public abstract class ChangePropertyFeature<T, V> extends AbstractCustomFeature 
 
     void setFeatureProvider(IFeatureProvider fp) {
         this.fp = fp;
+    }
+
+    protected abstract void undo(IContext context);
+
+    @Override
+    public void postUndo(IContext context) {
+        UndoRedoUtil.unwatch();
+        undo(context);
+        UndoRedoUtil.watch();
+    }
+
+    @Override
+    public void postRedo(IContext context) {
+        UndoRedoUtil.unwatch();
+        execute(context);
+        UndoRedoUtil.watch();
     }
 
 }

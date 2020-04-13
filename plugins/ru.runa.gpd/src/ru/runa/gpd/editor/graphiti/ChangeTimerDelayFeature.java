@@ -8,22 +8,16 @@ import ru.runa.gpd.util.Duration;
 public class ChangeTimerDelayFeature extends ChangePropertyFeature<Timer, Duration> {
 
     public ChangeTimerDelayFeature(Timer target, Duration newValue) {
-        super(target, newValue);
+        super(target, target.getDelay(), newValue);
     }
 
     @Override
-    public void postUndo(IContext context) {
+    protected void undo(IContext context) {
         target.setDelay(oldValue);
     }
 
     @Override
-    public void postRedo(IContext context) {
-        target.setDelay(newValue);
-    }
-
-    @Override
     public void execute(ICustomContext context) {
-        oldValue = target.getDelay();
         target.setDelay(newValue);
     }
 
