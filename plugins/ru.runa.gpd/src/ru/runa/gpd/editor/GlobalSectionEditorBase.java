@@ -117,12 +117,6 @@ public abstract class GlobalSectionEditorBase extends EditorBase implements ISel
             if (selectedObject == null) {
                 return;
             }
-            if (part instanceof GEFProcessEditor) {
-                // select only variables and swimlanes
-                if (selectedObject instanceof Swimlane || selectedObject instanceof Variable) {
-                    selectGraphElement((GraphElement) selectedObject);
-                }
-            }
             if (part instanceof ContentOutline) {
                 Object model = ((EditPart) selectedObject).getModel();
                 if (!(model instanceof GraphElement)) {
@@ -151,7 +145,6 @@ public abstract class GlobalSectionEditorBase extends EditorBase implements ISel
     @Override
     protected void createPages() {
         try {
-            graphPage = addNewPage(createGraphPage(), "DesignerEditor.title.diagram");
             if (!(definition instanceof SubprocessDefinition)) {
                 swimlanePage = addNewPage(new SwimlaneEditorPage(this), "DesignerEditor.title.swimlanes");
                 variablePage = addNewPage(new VariableEditorPage(this), "DesignerEditor.title.variables");
@@ -173,35 +166,12 @@ public abstract class GlobalSectionEditorBase extends EditorBase implements ISel
             variablePage.select((Variable) model);
         } else {
             openPage(0);
-            selectGraphElement(model);
         }
     }
 
     @Override
     public Object getAdapter(Class adapter) {
-        if (adapter == IContentOutlinePage.class) {
-            return getOutlineViewer();
-        }
-        if (adapter == ActionRegistry.class) {
-            return graphPage.getAdapter(adapter);
-        }
         return super.getAdapter(adapter);
-    }
-
-    public IFigure getRootFigure() {
-        return (IFigure) graphPage.getAdapter(IFigure.class);
-    }
-
-    public GraphicalViewer getGraphicalViewer() {
-        return (GraphicalViewer) graphPage.getAdapter(GraphicalViewer.class);
-    }
-
-    public CommandStack getCommandStack() {
-        return (CommandStack) graphPage.getAdapter(CommandStack.class);
-    }
-
-    public EditDomain getEditDomain() {
-        return getGraphicalViewer().getEditDomain();
     }
 
     public void openPage(int number) {
@@ -209,13 +179,6 @@ public abstract class GlobalSectionEditorBase extends EditorBase implements ISel
             setActivePage(number);
             setFocus();
         }
-    }
-
-    public void refresh() {
-        IFigure figure = getRootFigure();
-        figure.revalidate();
-        figure.repaint();
-        figure.invalidateTree();
     }
 
     public ProcessDefinition getDefinition() {
@@ -227,19 +190,13 @@ public abstract class GlobalSectionEditorBase extends EditorBase implements ISel
         if (PropertyNames.PROPERTY_DIRTY.equals(evt.getPropertyName())) {
             firePropertyChange(IEditorPart.PROP_DIRTY);
         }
-        if (PropertyNames.PROPERTY_SHOW_GRID.equals(evt.getPropertyName())) {
-            updateGridLayerVisibility(definition.isShowGrid());
-        }
     }
 
     @Override
     public void doSave(IProgressMonitor monitor) {
-        graphPage.doSave(monitor);
-        GEFImageHelper.save(getGraphicalViewer(), definition, getGraphImagePath());
         try {
             ProcessDefinitionValidator.validateDefinition(definition);
             WorkspaceOperations.saveProcessDefinition(definition);
-            getCommandStack().markSaveLocation();
             definition.setDirty(false);
             ProcessSaveHistory.addSavepoint(definitionFile);
         } catch (Exception e) {
@@ -292,24 +249,9 @@ public abstract class GlobalSectionEditorBase extends EditorBase implements ISel
     }
 
     @Override
-    public boolean isDirty() {
-        return graphPage.isDirty() || definition.isDirty();
-    }
-
-    @Override
     public boolean isSaveOnCloseNeeded() {
         return isDirty();
     }
-
-    public DiagramEditorPage getDiagramEditorPage() {
-        return graphPage instanceof DiagramEditorPage ? (DiagramEditorPage) graphPage : null;
-    }
-
-    protected abstract GraphicalEditor createGraphPage();
-
-    protected abstract void selectGraphElement(GraphElement model);
-
-    protected abstract void updateGridLayerVisibility(boolean enabled);
 
     @Override
     protected void pageChange(int newPageIndex) {

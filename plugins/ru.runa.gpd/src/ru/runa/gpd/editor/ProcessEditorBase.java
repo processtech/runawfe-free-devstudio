@@ -60,9 +60,10 @@ import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.WorkspaceOperations;
 
 public abstract class ProcessEditorBase extends EditorBase {
-
 	protected TextEditor sourcePage;
-	
+    protected GraphicalEditor graphPage;
+    protected OutlineViewer outlineViewer;
+    
     @Override
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
         super.init(site, input);
