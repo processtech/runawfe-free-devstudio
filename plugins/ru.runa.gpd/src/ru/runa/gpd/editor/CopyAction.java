@@ -18,9 +18,9 @@ import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
 import com.google.common.collect.Lists;
 
 public class CopyAction extends SelectionAction {
-    private final ProcessEditorBase editor;
+    private final EditorBase editor;
 
-    public CopyAction(ProcessEditorBase editor) {
+    public CopyAction(EditorBase editor) {
         super(editor);
         this.editor = editor;
         setText(Localization.getString("button.copy"));

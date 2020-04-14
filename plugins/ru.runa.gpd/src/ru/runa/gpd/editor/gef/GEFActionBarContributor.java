@@ -8,13 +8,13 @@ import org.eclipse.ui.actions.ActionFactory;
 
 import ru.runa.gpd.editor.CopyAction;
 import ru.runa.gpd.editor.PasteAction;
-import ru.runa.gpd.editor.ProcessEditorBase;
+import ru.runa.gpd.editor.EditorBase;
 import ru.runa.gpd.editor.ProcessEditorContributor;
 import ru.runa.gpd.editor.SelectAllAction;
 
 public class GEFActionBarContributor extends ProcessEditorContributor {
 
-    public static void createCustomGEFActions(ActionRegistry registry, ProcessEditorBase editor, List<String> selectionActionIds) {
+    public static void createCustomGEFActions(ActionRegistry registry, EditorBase editor, List<String> selectionActionIds) {
         IAction copyAction = new CopyAction(editor);
         copyAction.setId(ActionFactory.COPY.getId());
         registry.registerAction(copyAction);

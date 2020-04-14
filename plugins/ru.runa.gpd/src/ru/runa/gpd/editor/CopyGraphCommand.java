@@ -58,7 +58,7 @@ import ru.runa.gpd.util.VariableUtils;
 import ru.runa.wfe.var.UserType;
 
 public class CopyGraphCommand extends Command {
-    private final ProcessEditorBase targetEditor;
+    private final EditorBase targetEditor;
     private final Point targetViewportLocation;
     private final ProcessDefinition targetDefinition;
     private final IFolder targetFolder;
@@ -67,7 +67,7 @@ public class CopyGraphCommand extends Command {
     private final List<ExtraCopyAction> executedCopyActions = Lists.newArrayList();
     private final Map<String, String> nodeToSwimlaneNameMap = Maps.newHashMap();
 
-    public CopyGraphCommand(ProcessEditorBase targetEditor, IFolder targetFolder) {
+    public CopyGraphCommand(EditorBase targetEditor, IFolder targetFolder) {
         this.targetEditor = targetEditor;
         this.targetViewportLocation = ((FigureCanvas) targetEditor.getGraphicalViewer().getControl()).getViewport().getViewLocation();
         this.targetDefinition = targetEditor.getDefinition();

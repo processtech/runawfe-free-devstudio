@@ -59,10 +59,8 @@ import ru.runa.gpd.util.EditorUtils;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.WorkspaceOperations;
 
-public abstract class ProcessEditorBase extends EditorBase {
+public abstract class GlobalSectionEditorBase extends EditorBase implements ISelectionListener, IResourceChangeListener, PropertyChangeListener {
 
-	protected TextEditor sourcePage;
-	
     @Override
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
         super.init(site, input);
@@ -159,7 +157,6 @@ public abstract class ProcessEditorBase extends EditorBase {
                 variablePage = addNewPage(new VariableEditorPage(this), "DesignerEditor.title.variables");
                 variableTypeEditorPage = addNewPage(new VariableTypeEditorPage(this), "VariableUserType.collection");
             }
-            sourcePage = addNewPage(new TextEditor(), "DesignerEditor.title.source");
             ProcessDefinitionValidator.validateDefinition(definition);
         } catch (PartInitException e) {
             PluginLogger.logError(Localization.getString("DesignerEditor.error.can_not_create_graphical_viewer"), e);
@@ -205,13 +202,6 @@ public abstract class ProcessEditorBase extends EditorBase {
 
     public EditDomain getEditDomain() {
         return getGraphicalViewer().getEditDomain();
-    }
-
-    public OutlineViewer getOutlineViewer() {
-        if (outlineViewer == null && getGraphicalViewer() != null) {
-            outlineViewer = new OutlineViewer(this);
-        }
-        return outlineViewer;
     }
 
     public void openPage(int number) {

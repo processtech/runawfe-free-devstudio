@@ -49,10 +49,13 @@ import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.SubprocessMap;
 import ru.runa.gpd.editor.BotTaskEditor;
+import ru.runa.gpd.editor.EditorBase;
 import ru.runa.gpd.editor.ProcessEditorBase;
+import ru.runa.gpd.editor.GlobalSectionEditorBase;
 import ru.runa.gpd.editor.ProcessSaveHistory;
 import ru.runa.gpd.editor.gef.GEFProcessEditor;
 import ru.runa.gpd.editor.graphiti.GraphitiProcessEditor;
+import ru.runa.gpd.editor.graphiti.GraphitiGlobalSectionEditor;
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.extension.bot.IBotFileSupportProvider;
@@ -357,7 +360,7 @@ public class WorkspaceOperations {
         definition.getFile().setContents(new ByteArrayInputStream(bytes), true, false, null);
     }
 
-    public static ProcessEditorBase openProcessDefinition(IFile definitionFile) {
+    public static EditorBase openProcessDefinition(IFile definitionFile) {
         try {
             ProcessDefinition processDefinition = ProcessCache.getProcessDefinition(definitionFile);
             String editorId;
@@ -377,6 +380,26 @@ public class WorkspaceOperations {
         return null;
     }
 
+    public static EditorBase openGlobalSectionDefinition(IFile definitionFile) {
+        try {
+            ProcessDefinition processDefinition = ProcessCache.getProcessDefinition(definitionFile);
+            String editorId;
+            if (processDefinition.getLanguage() == Language.BPMN) {
+                editorId = GraphitiGlobalSectionEditor.ID;
+            } else {
+                editorId = GEFProcessEditor.ID;
+            }
+            IEditorPart editorPart = IDE.openEditor(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(), definitionFile, editorId,
+                    true);
+            if (editorPart instanceof GlobalSectionEditorBase) {
+                return (GlobalSectionEditorBase) editorPart;
+            }
+        } catch (PartInitException e) {
+            PluginLogger.logError("Unable open diagram", e);
+        }
+        return null;
+    }
+    
     /**
      * @return process editor or <code>null</code>
      */

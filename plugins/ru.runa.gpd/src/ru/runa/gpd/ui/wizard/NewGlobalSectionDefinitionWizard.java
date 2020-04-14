@@ -119,7 +119,7 @@ public class NewGlobalSectionDefinitionWizard extends Wizard implements INewWiza
                 }
                 monitor.worked(1);
                 ProcessCache.newProcessDefinitionWasCreated(definitionFile);
-                WorkspaceOperations.openProcessDefinition(definitionFile);
+                WorkspaceOperations.openGlobalSectionDefinition(definitionFile);
                 monitor.done();
             } catch (Exception e) {
                 throw new InvocationTargetException(e);
@@ -153,7 +153,7 @@ public class NewGlobalSectionDefinitionWizard extends Wizard implements INewWiza
                 definitionFile.create(new ByteArrayInputStream(bytes), true, null);
                 monitor.worked(1);
                 ProcessCache.newProcessDefinitionWasCreated(definitionFile);
-                WorkspaceOperations.openProcessDefinition(definitionFile);
+                WorkspaceOperations.openGlobalSectionDefinition(definitionFile);
                 monitor.done();
             } catch (Exception e) {
                 throw new InvocationTargetException(e);

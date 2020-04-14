@@ -59,14 +59,20 @@ import ru.runa.gpd.util.EditorUtils;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.WorkspaceOperations;
 
-public abstract class ProcessEditorBase extends EditorBase {
+public abstract class EditorBase extends MultiPageEditorPart implements ISelectionListener, IResourceChangeListener, PropertyChangeListener {
 
-	protected TextEditor sourcePage;
-	
+    protected ProcessDefinition definition;
+    protected IFile definitionFile;
+    protected GraphicalEditor graphPage;
+    protected SwimlaneEditorPage swimlanePage;
+    protected VariableEditorPage variablePage;
+    protected VariableTypeEditorPage variableTypeEditorPage;
+    protected OutlineViewer outlineViewer;
+
     @Override
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
         super.init(site, input);
-        /*
+
         getSite().getPage().addSelectionListener(this);
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this, IResourceChangeEvent.POST_CHANGE);
 
@@ -75,7 +81,7 @@ public abstract class ProcessEditorBase extends EditorBase {
         definition.setDirty(false);
         definition.addPropertyChangeListener(this);
 
-        setPartName(definition.getName());*/
+        setPartName(definition.getName());
     }
 
     @Override
@@ -152,6 +158,7 @@ public abstract class ProcessEditorBase extends EditorBase {
 
     @Override
     protected void createPages() {
+    	/*
         try {
             graphPage = addNewPage(createGraphPage(), "DesignerEditor.title.diagram");
             if (!(definition instanceof SubprocessDefinition)) {
@@ -164,10 +171,11 @@ public abstract class ProcessEditorBase extends EditorBase {
         } catch (PartInitException e) {
             PluginLogger.logError(Localization.getString("DesignerEditor.error.can_not_create_graphical_viewer"), e);
             throw new RuntimeException(e);
-        }
+        }*/
     }
 
     public void select(GraphElement model) {
+    	/*
         if (model instanceof Swimlane && swimlanePage != null) {
             openPage(1);
             swimlanePage.select((Swimlane) model);
@@ -177,7 +185,7 @@ public abstract class ProcessEditorBase extends EditorBase {
         } else {
             openPage(0);
             selectGraphElement(model);
-        }
+        }*/
     }
 
     @Override

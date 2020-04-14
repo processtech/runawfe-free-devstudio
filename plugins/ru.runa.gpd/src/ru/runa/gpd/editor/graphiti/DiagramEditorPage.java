@@ -39,7 +39,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import ru.runa.gpd.PropertyNames;
-import ru.runa.gpd.editor.ProcessEditorBase;
+import ru.runa.gpd.editor.EditorBase;
 import ru.runa.gpd.editor.gef.GEFActionBarContributor;
 import ru.runa.gpd.editor.graphiti.update.BOUpdateContext;
 import ru.runa.gpd.lang.model.Action;
@@ -54,10 +54,10 @@ import ru.runa.gpd.lang.model.bpmn.ExclusiveGateway;
 
 public class DiagramEditorPage extends DiagramEditor implements PropertyChangeListener {
 
-    private final ProcessEditorBase editor;
+    private final EditorBase editor;
     private DiagramCreator diagramCreator;
 
-    public DiagramEditorPage(ProcessEditorBase editor) {
+    public DiagramEditorPage(EditorBase editor) {
         this.editor = editor;
     }
 
@@ -146,7 +146,7 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
         }
     }
 
-    public ProcessEditorBase getEditor() {
+    public EditorBase getEditor() {
         return editor;
     }
 
