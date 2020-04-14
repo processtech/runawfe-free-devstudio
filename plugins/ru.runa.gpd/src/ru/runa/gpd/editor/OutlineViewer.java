@@ -37,7 +37,7 @@ import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Variable;
 
 public class OutlineViewer extends ContentOutlinePage implements ISelectionListener {
-    private final EditorBase editor;
+    private final ProcessEditorBase editor;
     private PageBook pageBook;
     private Control treeview;
     private Canvas overview;
@@ -45,7 +45,7 @@ public class OutlineViewer extends ContentOutlinePage implements ISelectionListe
     private IAction showOverviewAction;
     private IAction showTreeviewAction;
 
-    public OutlineViewer(EditorBase editor) {
+    public OutlineViewer(ProcessEditorBase editor) {
         super(new TreeViewer());
         this.editor = editor;
     }

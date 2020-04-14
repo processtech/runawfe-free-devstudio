@@ -20,7 +20,7 @@ import org.eclipse.graphiti.ui.editor.IDiagramContainerUI;
 import org.eclipse.graphiti.ui.internal.config.IConfigurationProviderInternal;
 import org.eclipse.graphiti.ui.internal.util.gef.ScalableRootEditPartAnimated;
 import org.eclipse.ui.part.MultiPageEditorSite;
-import ru.runa.gpd.editor.EditorBase;
+import ru.runa.gpd.editor.ProcessEditorBase;
 import ru.runa.gpd.editor.gef.GEFActionBarContributor;
 
 public class CustomDiagramBehavior extends DiagramBehavior {
@@ -49,7 +49,7 @@ public class CustomDiagramBehavior extends DiagramBehavior {
         super.initActionRegistry(zoomManager);
         IDiagramContainerUI diagramContainerUi = getDiagramContainer();
         GEFActionBarContributor.createCustomGEFActions(diagramContainerUi.getActionRegistry(),
-                (EditorBase) ((MultiPageEditorSite) diagramContainerUi.getSite()).getMultiPageEditor(),
+                (ProcessEditorBase) ((MultiPageEditorSite) diagramContainerUi.getSite()).getMultiPageEditor(),
                 diagramContainerUi.getSelectionActions());
     }
 

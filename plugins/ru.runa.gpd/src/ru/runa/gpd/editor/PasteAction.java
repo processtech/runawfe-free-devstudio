@@ -7,9 +7,9 @@ import ru.runa.gpd.Localization;
 import ru.runa.gpd.editor.graphiti.DrawAfterPasteCommand;
 
 public class PasteAction extends SelectionAction {
-    private final EditorBase editor;
+    private final ProcessEditorBase editor;
 
-    public PasteAction(EditorBase editor) {
+    public PasteAction(ProcessEditorBase editor) {
         super(editor);
         this.editor = editor;
         setText(Localization.getString("button.paste"));
