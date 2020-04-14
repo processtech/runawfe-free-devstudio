@@ -1,16 +1,14 @@
 package ru.runa.gpd.formeditor.ftl.parameter;
 
+import com.google.common.base.Function;
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import java.util.List;
-
 import ru.runa.gpd.formeditor.ftl.ComboOption;
 import ru.runa.gpd.formeditor.ftl.Component;
 import ru.runa.gpd.formeditor.ftl.ComponentParameter;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableUserType;
-
-import com.google.common.base.Function;
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 
 public class UserTypeAttributeParameter extends ComboParameter {
 
@@ -29,10 +27,11 @@ public class UserTypeAttributeParameter extends ComboParameter {
         });
     }
 
-    private final VariableUserType getUserType(Component component) {
+    protected final VariableUserType getUserType(Component component) {
         for (ComponentParameter componentParameter : component.getType().getParameters()) {
             if (componentParameter.getType() instanceof UserTypeVariableListComboParameter
-                    || componentParameter.getType() instanceof VariableComboParameter) {
+                    || componentParameter.getType() instanceof VariableComboParameter
+                    || componentParameter.getType() instanceof DbUserTypeListComboParameter) {
                 String variableName = (String) component.getParameterValue(componentParameter);
                 if (!Strings.isNullOrEmpty(variableName)) {
                     Variable variable = getVariables(componentParameter).get(variableName);

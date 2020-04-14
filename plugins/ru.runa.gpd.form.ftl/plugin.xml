@@ -107,6 +107,17 @@
             id="usertypevarlistcombo">
       </type>
       <type
+            class="ru.runa.gpd.formeditor.ftl.parameter.DbUserTypeListComboParameter"
+            validator="ru.runa.gpd.formeditor.ftl.validation.DefaultParameterTypeValidator"
+            id="dbusertypelistcombo">
+      </type>
+      <type
+            class="ru.runa.gpd.formeditor.ftl.parameter.DbUserTypeVariableListComboParameter"
+            validator="ru.runa.gpd.formeditor.ftl.validation.DefaultParameterTypeValidator"
+            depends="dbusertypelistcombo,combo"
+            id="dbusertypevarlistcombo">
+      </type>
+      <type
             class="ru.runa.gpd.formeditor.ftl.parameter.UserTypeAttributeParameter"
             depends="usertypevarlistcombo,varcombo,varfinder"
             validator="ru.runa.gpd.formeditor.ftl.validation.UserTypeAttributeValidator"
@@ -1204,6 +1215,39 @@
                optional="true"
                type="usertypeattributelist"
                variableAccess="NONE">
+         </param>
+      </component>
+      <component
+            enabled="true"
+            id="SelectFromInternalStorage"
+            imageProvider="ru.runa.gpd.formeditor.ftl.image.VariableComponentImageProvider"
+            name="%Method.SelectFromInternalStorage"
+            order="-80">
+         <param
+               name="UserType"
+               optional="false"
+               type="dbusertypelistcombo"
+               variableAccess="NONE">
+         </param>
+         <param
+               name="Multiplicity"
+               optional="false"
+               type="combo"
+               variableAccess="NONE">
+               <paramValue
+                  name="Choose one element"
+                  value="one">
+               </paramValue>
+               <paramValue
+                  name="Choose some elements"
+                  value="many">
+               </paramValue>
+         </param>
+         <param
+               name="Result"
+               optional="false"
+               type="dbusertypevarlistcombo"
+               variableAccess="WRITE">
          </param>
       </component>
    </extension>
