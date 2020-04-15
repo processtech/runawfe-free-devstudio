@@ -2,6 +2,7 @@ package ru.runa.gpd.util.files;
 
 import com.google.common.io.ByteStreams;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -45,7 +46,9 @@ public class ZipFileExporter implements IFileExporter {
     private void write(ZipEntry entry, IFile contents) throws IOException, CoreException {
         outputStream.putNextEntry(entry);
         try {
-            ByteStreams.copy(contents.getContents(), outputStream);
+            try (InputStream inputStream = contents.getContents()) {
+                ByteStreams.copy(inputStream, outputStream);
+            }
         } finally {
             outputStream.closeEntry();
         }
