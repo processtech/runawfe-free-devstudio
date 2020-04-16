@@ -22,10 +22,13 @@ import org.eclipse.graphiti.features.context.IContext;
 import org.eclipse.graphiti.features.context.IDeleteContext;
 import org.eclipse.graphiti.features.context.IMultiDeleteInfo;
 import org.eclipse.graphiti.features.context.impl.DeleteContext;
+import org.eclipse.graphiti.internal.command.GenericFeatureCommandWithContext;
 import org.eclipse.graphiti.mm.pictograms.ConnectionDecorator;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.mm.pictograms.Shape;
+import org.eclipse.graphiti.ui.editor.DiagramBehavior;
 import org.eclipse.graphiti.ui.features.DefaultDeleteFeature;
+import org.eclipse.graphiti.ui.internal.command.GefCommandWrapper;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.PlatformUI;
 import ru.runa.gpd.Activator;
@@ -101,6 +104,9 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements Custom
         return ge.getId();
     }
 
+    private DeleteElementFeature textDecorationDeleteFeature;
+
+    @SuppressWarnings("restriction")
     @Override
     protected void deleteBusinessObject(Object bo) {
         if (bo == null) {
@@ -114,9 +120,18 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements Custom
             textDecoration.getTarget().getParent().removeChild(textDecoration.getTarget());
             return;
         } else if (element instanceof HasTextDecorator) {
-            HasTextDecorator withDefinition = (HasTextDecorator) element;
-            IDeleteContext delContext = new DeleteContext(withDefinition.getTextDecoratorEmulation().getDefinition().getUiContainer().getOwner());
-            delete(delContext);
+            // TODO rm1090: Возможно не очень красивое решение с полем textDecorationDeleteFeature. Нужен свежий взгляд, как лучше отрефакторить
+            final HasTextDecorator withDefinition = (HasTextDecorator) element;
+            final IDeleteContext delContext = new DeleteContext(
+                    withDefinition.getTextDecoratorEmulation().getDefinition().getUiContainer().getOwner());
+            if (textDecorationDeleteFeature == null) {
+                textDecorationDeleteFeature = (DeleteElementFeature) getFeatureProvider().getDeleteFeature(delContext);
+                final DiagramBehavior db = (DiagramBehavior) getDiagramBehavior();
+                db.getEditDomain().getCommandStack().execute(
+                        new GefCommandWrapper(new GenericFeatureCommandWithContext(textDecorationDeleteFeature, delContext), db.getEditingDomain()));
+            } else {
+                textDecorationDeleteFeature.postRedo(delContext);
+            }
         } else if (element instanceof Transition) {
             Transition transition = (Transition) element;
             transition.getSource().removeLeavingTransition(transition);
@@ -197,11 +212,9 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements Custom
         super.preDelete(context);
         if (getBusinessObjectForPictogramElement(context.getPictogramElement()) instanceof Action) {
             PictogramElement pe = context.getPictogramElement();
-            context.putProperty(
-                    "action-container",
-                    pe instanceof ConnectionDecorator ?
-                            ((ConnectionDecorator) context.getPictogramElement()).getConnection() :
-                                ((Shape) context.getPictogramElement()).getContainer());
+            context.putProperty("action-container",
+                    pe instanceof ConnectionDecorator ? ((ConnectionDecorator) context.getPictogramElement()).getConnection()
+                            : ((Shape) context.getPictogramElement()).getContainer());
         }
     }
 
