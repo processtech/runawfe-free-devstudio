@@ -100,7 +100,7 @@ public class NewGlobalSectionDefinitionWizard extends Wizard implements INewWiza
                 IFolder folder = page.getProcessFolder();
                 folder.create(true, true, null);
                 monitor.worked(1);
-                definitionFile = IOUtils.getProcessDefinitionFile(folder);
+                definitionFile = IOUtils.getGlobalSectionDefinitionFile(folder);
                 String processName = folder.getName();
                 Language language = page.getLanguage();
                 Map<String, String> properties = Maps.newHashMap();
