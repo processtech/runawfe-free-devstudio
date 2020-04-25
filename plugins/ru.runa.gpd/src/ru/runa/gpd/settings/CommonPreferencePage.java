@@ -12,11 +12,13 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
+import ru.runa.gpd.aspects.UserActivity;
 import ru.runa.gpd.lang.Language;
 
 public class CommonPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage, PrefConstants {
 
     IntegerFieldEditor savepointNumberEditor;
+    BooleanFieldEditor enableUserActivityLogging;
 
     public CommonPreferencePage() {
         super(GRID);
@@ -58,6 +60,19 @@ public class CommonPreferencePage extends FieldEditorPreferencePage implements I
         savepointNumberEditor.setValidRange(1, 99);
         savepointNumberEditor.setEnabled(Activator.getPrefBoolean(P_PROCESS_SAVE_HISTORY), getFieldEditorParent());
         addField(savepointNumberEditor);
+        enableUserActivityLogging = new BooleanFieldEditor(P_ENABLE_USER_ACTIVITY_LOGGING,
+                Localization.getString("pref.commons.enableUserActivityLogging"), getFieldEditorParent());
+        addField(enableUserActivityLogging);
+    }
+
+    @Override
+    public boolean performOk() {
+        if (enableUserActivityLogging.getBooleanValue()) {
+            UserActivity.startLogging();
+        } else {
+            UserActivity.stopLogging();
+        }
+        return super.performOk();
     }
 
     public static boolean isRegulationsMenuItemsEnabled() {

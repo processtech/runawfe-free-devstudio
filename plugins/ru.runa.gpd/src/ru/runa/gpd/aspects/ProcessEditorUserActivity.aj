@@ -12,7 +12,9 @@ import ru.runa.gpd.editor.ProcessEditorBase;
 import ru.runa.gpd.editor.graphiti.DiagramEditorPage;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.ProcessDefinition;
+import ru.runa.gpd.ltk.RenameVariableRefactoring;
 import ru.runa.gpd.ui.action.Save;
+import ru.runa.gpd.util.VariableUtils;
 
 public aspect ProcessEditorUserActivity extends UserActivity {
 
@@ -116,7 +118,10 @@ public aspect ProcessEditorUserActivity extends UserActivity {
 
     pointcut graphElementProperyChange(String propertyName, Object oldValue, Object newValue) : 
         call(public void firePropertyChange(..)) && target(ru.runa.gpd.lang.model.GraphElement) && args(propertyName, oldValue, newValue) 
-        && !cflow(call(public static ProcessDefinition ru.runa.gpd.ProcessCache.getProcessDefinition(..)));
+        && !cflow(call(public static ProcessDefinition ru.runa.gpd.ProcessCache.getProcessDefinition(..)))
+        && !cflow(call(public static int ru.runa.gpd.lang.par.ProcessDefinitionValidator.validateDefinition(..)))
+        && !cflow(call(public RenameVariableRefactoring.new(..)))
+        && !cflow(call(public static * VariableUtils.expandComplexVariable(..)));
 
     after(String propertyName, Object oldValue, Object newValue) : graphElementProperyChange(propertyName, oldValue, newValue) {
         if (isStarted()) {

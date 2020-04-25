@@ -1,12 +1,16 @@
 package ru.runa.gpd.aspects;
 
 import org.eclipse.core.resources.IProject;
+import ru.runa.gpd.Activator;
+import ru.runa.gpd.settings.PrefConstants;
 import ru.runa.gpd.ui.action.SaveAll;
 
 public aspect WorkbenchUserActivity extends UserActivity {
 
     before() : execution(public void ru.runa.gpd.ApplicationWorkbenchAdvisor.postStartup()) {
-        startLogging();
+        if (Activator.getPrefBoolean(PrefConstants.P_ENABLE_USER_ACTIVITY_LOGGING)) {
+            startLogging();
+        }
     }
 
     before() : execution(public void ru.runa.gpd.ApplicationWorkbenchAdvisor.postShutdown()) {
