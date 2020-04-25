@@ -2959,7 +2959,7 @@
           defaultHandler="org.eclipse.equinox.internal.p2.ui.sdk.InstallNewSoftwareHandler">
     </command>
     <command
-          defaultHandler="ru.runa.gpd.lang.action.ExportProcessDefinitionToServerHanlder"
+          defaultHandler="ru.runa.gpd.lang.action.ExportProcessDefinitionToServerHandler"
           id="ru.runa.gpd.commands.exportProcessDefinitionToServer"
           name="Export process defninition to server">
     </command>

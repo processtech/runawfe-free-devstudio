@@ -9,25 +9,28 @@ import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
+import org.eclipse.jface.action.IStatusLineManager;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
-import ru.runa.gpd.lang.par.ProcessDefinitionValidator;
 import ru.runa.gpd.settings.PrefConstants;
 import ru.runa.gpd.ui.custom.Dialogs;
-import ru.runa.gpd.ui.view.ValidationErrorsView;
 import ru.runa.gpd.ui.wizard.ExportParWizardPage.ParDeployOperation;
 import ru.runa.gpd.util.IOUtils;
 
-public class ExportProcessDefinitionToServerHanlder extends AbstractHandler implements PrefConstants {
+public class ExportProcessDefinitionToServerHandler extends AbstractHandler implements PrefConstants {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         if (!Activator.getDefault().getPreferenceStore().getBoolean(P_ALLOW_UPDATE_LAST_VERSION_BY_KEYBINDING)) {
+            updateStatusBar(Localization.getString("ExportProcessDefinitionToServerHandler.disabled"));
             return null;
         }
         saveDirtyEditors();
@@ -41,8 +44,9 @@ public class ExportProcessDefinitionToServerHanlder extends AbstractHandler impl
                 ProcessDefinition processDefinition = ProcessCache.getProcessDefinition(file);
                 if (!processDefinition.isInvalid()) {
                     export(file);
+                    updateStatusBar(Localization.getString("ExportProcessDefinitionToServerHandler.completed"));
                 } else {
-                    Dialogs.error(Localization.getString("ExportProcessDefinitionToServerHanlder.invalid.process.definition"));
+                    Dialogs.error(Localization.getString("ExportProcessDefinitionToServerHandler.invalid.process.definition"));
                 }
             }
         }
@@ -68,6 +72,29 @@ public class ExportProcessDefinitionToServerHanlder extends AbstractHandler impl
     }
 
     private boolean saveDirtyEditors() {
-        return IDEWorkbenchPlugin.getDefault().getWorkbench().saveAllEditors(false);
+        return PlatformUI.getWorkbench().saveAllEditors(false);
     }
+
+    private void updateStatusBar(String message) {
+        IWorkbenchWindow activeWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+        if (activeWindow == null || activeWindow.getActivePage() == null) {
+            return;
+        }
+        IEditorPart editorPart = activeWindow.getActivePage().getActiveEditor();
+        if (editorPart == null) {
+            return;
+        }
+        IEditorSite editorSite = editorPart.getEditorSite();
+        if (editorSite == null) {
+            return;
+        }
+        final IStatusLineManager statusLineManager = editorSite.getActionBars().getStatusLineManager();
+        statusLineManager.setMessage(message);
+        PlatformUI.getWorkbench().getDisplay().timerExec(5000, new Runnable() {
+            public void run() {
+                statusLineManager.setMessage(null);
+            }
+        });
+    }
+
 }
