@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
@@ -54,14 +55,23 @@ public class ExternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
 
     @Override
     protected Composite createConstructorComposite(Composite parent, Delegable delegable, ExternalStorageDataModel model) {
-        if (delegable instanceof VariableContainer) {
-            final boolean isUseExternalStorageIn = (delegable instanceof ScriptTask) ? ((ScriptTask) delegable).isUseExternalStorageIn() : false;
-            final boolean isUseExternalStorageOut = (delegable instanceof ScriptTask) ? ((ScriptTask) delegable).isUseExternalStorageOut() : false;
-            final ProcessDefinition processDefinition = ((VariableContainer) delegable).getVariables(false, true).stream()
-                    .map(variable -> variable.getProcessDefinition()).findAny()
-                    .orElseThrow(() -> new IllegalStateException("process definition unavailable"));
-            return new ConstructorView(parent, delegable, model, new ProcessDefinitionVariableProvider(processDefinition), isUseExternalStorageIn,
-                    isUseExternalStorageOut);
+        final boolean isUseExternalStorageIn = (delegable instanceof ScriptTask) ? ((ScriptTask) delegable).isUseExternalStorageIn() : false;
+        final boolean isUseExternalStorageOut = (delegable instanceof ScriptTask) ? ((ScriptTask) delegable).isUseExternalStorageOut() : false;
+
+        Optional<ProcessDefinition> processDefinition = Optional.empty();
+        if (delegable instanceof GraphElement) {
+            processDefinition = Optional.ofNullable(((GraphElement) delegable).getProcessDefinition());
+        }
+        if (!processDefinition.isPresent() && delegable instanceof VariableContainer) {
+            processDefinition = ((VariableContainer) delegable).getVariables(false, true).stream().map(variable -> variable.getProcessDefinition())
+                    .findAny();
+        }
+
+        if (delegable instanceof ScriptTask) {
+            return new ConstructorView(parent, delegable, model,
+                    new ProcessDefinitionVariableProvider(
+                            processDefinition.orElseThrow(() -> new IllegalStateException("process definition unavailable"))),
+                    isUseExternalStorageIn, isUseExternalStorageOut);
         } else {
             // TODO 1506 Реализовать VariableProvider для параметров бота
             throw new UnsupportedOperationException("VariableProvider is not realized for " + delegable.getClass().getName());
