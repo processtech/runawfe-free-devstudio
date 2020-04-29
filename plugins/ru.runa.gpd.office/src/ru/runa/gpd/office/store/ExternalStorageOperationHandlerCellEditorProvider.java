@@ -89,6 +89,17 @@ public class ExternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
     }
 
     @Override
+    public boolean validateValue(Delegable delegable, List<ValidationError> errors) throws Exception {
+        final String configuration = delegable.getDelegationConfiguration();
+        if (configuration.trim().isEmpty()) {
+            errors.add(
+                    ValidationError.createError(((GraphElement) delegable), Messages.getString("model.validation.xlsx.constraint.variable.empty")));
+            return false;
+        }
+        return super.validateValue(delegable, errors);
+    }
+
+    @Override
     protected boolean validateModel(Delegable delegable, ExternalStorageDataModel model, List<ValidationError> errors) {
         GraphElement graphElement = ((GraphElement) delegable);
         model.validate(graphElement, errors);
