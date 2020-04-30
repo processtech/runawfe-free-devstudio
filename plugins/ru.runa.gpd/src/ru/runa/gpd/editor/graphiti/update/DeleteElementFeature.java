@@ -164,6 +164,7 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements Custom
             TextDecorationNode textDecoration = (TextDecorationNode) element;
             textDecoration.getTarget().getParent().addChild(textDecoration.getTarget());
             restoreTransitions();
+            return;
         } else {
             element.getParent().addChild(element);
             if (element instanceof FormNode) {

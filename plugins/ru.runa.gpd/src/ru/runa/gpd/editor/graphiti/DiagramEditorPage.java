@@ -34,6 +34,7 @@ import org.eclipse.graphiti.services.Graphiti;
 import org.eclipse.graphiti.ui.editor.DiagramBehavior;
 import org.eclipse.graphiti.ui.editor.DiagramEditor;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
@@ -76,8 +77,11 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
         PictogramElement pe = getDiagramTypeProvider().getFeatureProvider().getPictogramElementForBusinessObject(event.getSource());
         // TODO unify event propagation to interested parties
         if (pe != null) {
-            BOUpdateContext context = new BOUpdateContext(pe, event.getSource());
-            getDiagramTypeProvider().getFeatureProvider().updateIfPossibleAndNeeded(context);
+            final PictogramElement fpe = pe;
+            Display.getDefault().asyncExec(() -> {
+                BOUpdateContext context = new BOUpdateContext(fpe, event.getSource());
+                getDiagramTypeProvider().getFeatureProvider().updateIfPossibleAndNeeded(context);
+            });
             if (PropertyNames.NODE_BOUNDS_RESIZED.equals(event.getPropertyName())) {
                 LayoutContext layoutContext = new LayoutContext(pe);
                 getDiagramTypeProvider().getFeatureProvider().layoutIfPossible(layoutContext);
@@ -103,13 +107,15 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
     }
 
     private void updateLeavingTransitions(Node node) {
-        for (Transition transition : node.getLeavingTransitions()) {
-            PictogramElement pe = getDiagramTypeProvider().getFeatureProvider().getPictogramElementForBusinessObject(transition);
-            if (pe != null) {
-                BOUpdateContext context = new BOUpdateContext(pe, transition);
-                getDiagramTypeProvider().getFeatureProvider().updateIfPossibleAndNeeded(context);
+        Display.getDefault().asyncExec(() -> {
+            for (Transition transition : node.getLeavingTransitions()) {
+                PictogramElement pe = getDiagramTypeProvider().getFeatureProvider().getPictogramElementForBusinessObject(transition);
+                if (pe != null) {
+                    BOUpdateContext context = new BOUpdateContext(pe, transition);
+                    getDiagramTypeProvider().getFeatureProvider().updateIfPossibleAndNeeded(context);
+                }
             }
-        }
+        });
     }
 
     @Override
