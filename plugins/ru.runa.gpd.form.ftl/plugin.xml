@@ -1224,27 +1224,27 @@
             name="%Method.SelectFromInternalStorage"
             order="-80">
          <param
-               name="UserType"
+               name="%Param.UserType"
                optional="false"
                type="dbusertypelistcombo"
                variableAccess="NONE">
          </param>
          <param
-               name="Multiplicity"
+               name="%Param.Multiplicity"
                optional="false"
                type="combo"
                variableAccess="NONE">
                <paramValue
-                  name="Choose one element"
+                  name="%Param.ChooseOne"
                   value="one">
                </paramValue>
                <paramValue
-                  name="Choose some elements"
+                  name="%Param.ChooseSome"
                   value="many">
                </paramValue>
          </param>
          <param
-               name="Result"
+               name="%Param.WriteTo"
                optional="false"
                type="dbusertypevarlistcombo"
                variableAccess="WRITE">
