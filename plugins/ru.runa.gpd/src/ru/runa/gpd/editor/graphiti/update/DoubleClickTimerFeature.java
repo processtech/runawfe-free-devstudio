@@ -13,12 +13,12 @@ public class DoubleClickTimerFeature extends DoubleClickElementFeature {
 
     @Override
     public boolean canExecute(ICustomContext context) {
-        return fp.getBusinessObjectForPictogramElement(context.getInnerPictogramElement()) instanceof Timer && super.canExecute(context);
+        return getBusinessObject(context) instanceof Timer && super.canExecute(context);
     }
 
     @Override
     public void execute(ICustomContext context) {
-        Timer timer = (Timer) fp.getBusinessObjectForPictogramElement(context.getInnerPictogramElement());
+        Timer timer = (Timer) getBusinessObject(context);
         TimerAction oldAction = timer.getAction();
         TimerActionEditDialog dialog = new TimerActionEditDialog(timer.getProcessDefinition(), timer.getAction());
         TimerAction result = (TimerAction) dialog.openDialog();

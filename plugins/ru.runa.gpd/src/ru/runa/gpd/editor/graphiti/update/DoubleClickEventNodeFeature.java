@@ -18,12 +18,12 @@ public class DoubleClickEventNodeFeature extends DoubleClickElementFeature {
 
     @Override
     public boolean canExecute(ICustomContext context) {
-        return fp.getBusinessObjectForPictogramElement(context.getInnerPictogramElement()) instanceof AbstractEventNode && super.canExecute(context);
+        return getBusinessObject(context) instanceof AbstractEventNode && super.canExecute(context);
     }
 
     @Override
     public void execute(ICustomContext context) {
-        MessageNode messageNode = (MessageNode) fp.getBusinessObjectForPictogramElement(context.getInnerPictogramElement());
+        MessageNode messageNode = (MessageNode) getBusinessObject(context);
         List<VariableMapping> oldMappings = messageNode.getVariableMappings();
         MessageNodeDialog dialog = new MessageNodeDialog(messageNode.getProcessDefinition(), messageNode.getVariableMappings(),
                 messageNode instanceof ThrowEventNode || messageNode instanceof SendMessageNode, messageNode.getName());

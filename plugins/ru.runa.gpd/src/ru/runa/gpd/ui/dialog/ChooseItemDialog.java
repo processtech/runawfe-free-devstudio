@@ -134,6 +134,11 @@ public class ChooseItemDialog<T extends Comparable<? super T>> extends Dialog {
     }
 
     @Override
+    protected boolean isResizable() {
+        return true;
+    }
+
+    @Override
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
         newShell.setText(dialogText);

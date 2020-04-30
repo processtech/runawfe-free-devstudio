@@ -17,12 +17,12 @@ public class DoubleClickDelegableFeature extends DoubleClickElementFeature {
 
     @Override
     public boolean canExecute(ICustomContext context) {
-        return fp.getBusinessObjectForPictogramElement(context.getInnerPictogramElement()) instanceof Delegable && super.canExecute(context);
+        return getBusinessObject(context) instanceof Delegable && super.canExecute(context);
     }
 
     @Override
     public void execute(ICustomContext context) {
-        Delegable delegable = (Delegable) fp.getBusinessObjectForPictogramElement(context.getInnerPictogramElement());
+        Delegable delegable = (Delegable) getBusinessObject(context);
         if (delegable.getDelegationClassName() == null) {
             ChooseHandlerClassDialog dialog = new ChooseHandlerClassDialog(delegable.getDelegationType(), delegable.getDelegationClassName());
             String newClassName = dialog.openDialog();
