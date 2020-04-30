@@ -43,8 +43,12 @@ public class ExportProcessDefinitionToServerHandler extends AbstractHandler impl
             if (definition != null && !(definition instanceof SubprocessDefinition)) {
                 ProcessDefinition processDefinition = ProcessCache.getProcessDefinition(file);
                 if (!processDefinition.isInvalid()) {
-                    export(file);
-                    updateStatusBar(Localization.getString("ExportProcessDefinitionToServerHandler.completed"));
+                    try {
+                        export(file);
+                        updateStatusBar(Localization.getString("ExportProcessDefinitionToServerHandler.completed"));
+                    } catch (Throwable th) {
+                        PluginLogger.logError(Localization.getString("ExportParWizardPage.error.export"), th);
+                    }
                 } else {
                     Dialogs.error(Localization.getString("ExportProcessDefinitionToServerHandler.invalid.process.definition"));
                 }
@@ -53,22 +57,18 @@ public class ExportProcessDefinitionToServerHandler extends AbstractHandler impl
         return null;
     }
 
-    private void export(IFile definitionFile) {
-        try {
-            IFolder processFolder = (IFolder) definitionFile.getParent();
-            processFolder.refreshLocal(IResource.DEPTH_ONE, null);
-            ProcessDefinition definition = ProcessCache.getProcessDefinition(definitionFile);
-            List<IFile> resourcesToExport = new ArrayList<IFile>();
-            IResource[] members = processFolder.members();
-            for (IResource resource : members) {
-                if (resource instanceof IFile) {
-                    resourcesToExport.add((IFile) resource);
-                }
+    private void export(IFile definitionFile) throws Exception {
+        IFolder processFolder = (IFolder) definitionFile.getParent();
+        processFolder.refreshLocal(IResource.DEPTH_ONE, null);
+        ProcessDefinition definition = ProcessCache.getProcessDefinition(definitionFile);
+        List<IFile> resourcesToExport = new ArrayList<IFile>();
+        IResource[] members = processFolder.members();
+        for (IResource resource : members) {
+            if (resource instanceof IFile) {
+                resourcesToExport.add((IFile) resource);
             }
-            new ParDeployOperation(resourcesToExport, definition.getName(), true).run(null);
-        } catch (Throwable th) {
-            PluginLogger.logError(Localization.getString("ExportParWizardPage.error.export"), th);
         }
+        new ParDeployOperation(resourcesToExport, definition.getName(), true).run(null);
     }
 
     private boolean saveDirtyEditors() {
