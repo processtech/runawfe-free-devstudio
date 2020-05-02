@@ -23,6 +23,13 @@
           name="GraphitiEditor">
     </editor>
     <editor
+          class="ru.runa.gpd.editor.graphiti.GraphitiGlobalSectionEditor"
+          contributorClass="ru.runa.gpd.editor.graphiti.DiagramActionBarContributor"
+          icon="icons/bpmn/community_icon.png"
+          id="ru.runa.gpd.GraphitiGlobalSectionEditor"
+          name="GraphitiGlobalSectionEditor">
+    </editor>
+    <editor
           class="ru.runa.gpd.editor.gef.GEFProcessEditor"
           contributorClass="ru.runa.gpd.editor.gef.GEFActionBarContributor"
           icon="icons/process.gif"
