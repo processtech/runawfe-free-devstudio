@@ -496,6 +496,9 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
                 PluginLogger.logInfo("syncEditor2Browser = " + result);
             }
         }
+        if (selectedComponentNumber >= 0) {
+            selectComponent(selectedComponentNumber);
+        }
     }
 
     protected String getSourceDocumentHTML() {
@@ -585,6 +588,17 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
             syncEditor2Browser();
         } catch (Exception e) {
             PluginLogger.logError(e);
+        }
+    }
+
+    protected int selectedComponentNumber = -1;
+
+    public void selectComponent(int componentNumber) {
+        if (browser != null && browserLoaded) {
+            browser.execute("selectFormComponent(" + componentNumber + ");");
+            selectedComponentNumber = -1;
+        } else {
+            selectedComponentNumber = componentNumber;
         }
     }
 

@@ -3,7 +3,6 @@ package ru.runa.gpd.ui.dialog;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
@@ -22,7 +21,6 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.VersionInfo;
@@ -74,7 +72,7 @@ public class VersionCommentDialog extends Dialog {
                 historyTable.setSelection(tableItem);
                 fillDialogFields(tableItem);
                 getButton(IDialogConstants.OK_ID).setEnabled(true);
-                setDefaultButton(saveButton);
+                setDefaultButton(parent, saveButton);
             }
         });
 
@@ -95,16 +93,16 @@ public class VersionCommentDialog extends Dialog {
         int indexOfVersionInfo = definition.getVersionInfoListIndex(versionInfo);
         if (indexOfVersionInfo != -1 && definition.getVersionInfoList().get(indexOfVersionInfo).isSavedToFile() || historyTable.getItemCount() == 0) {
             saveButton.setEnabled(false);
-            parent.getShell().setDefaultButton(cancelButton);
+            setDefaultButton(parent, cancelButton);
         } else {
             saveButton.setEnabled(true);
-            parent.getShell().setDefaultButton(saveButton);
+            setDefaultButton(parent, saveButton);
         }
 
     }
 
-    protected void setDefaultButton(Button button) {
-        Display.getCurrent().getActiveShell().setDefaultButton(button);
+    protected void setDefaultButton(Composite parent, Button button) {
+        parent.getShell().setDefaultButton(button);
     }
 
     @Override
@@ -232,7 +230,7 @@ public class VersionCommentDialog extends Dialog {
                 commentText.setEnabled(false);
             }
         } else {
-            setDefaultButton(getButton(IDialogConstants.CANCEL_ID));
+            setDefaultButton(parent, getButton(IDialogConstants.CANCEL_ID));
             currentDateTime = new Date();
         }
 

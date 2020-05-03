@@ -14,6 +14,7 @@ public interface PrefConstants {
     public static final String P_BPMN_LINE_WIDTH = "lineWidth";
     public static final String P_BPMN_MARK_DEFAULT_TRANSITION = "markDefaultTransition";
     public static final String P_BPMN_DEFAULT_TRANSITION_NAMES = "defaultTransitionNames";
+    public static final String P_BPMN_EXPAND_CONTEXT_BUTTON_PAD = "expandContextButtonPad";
     public static final String P_LANGUAGE_NODE_NAME_PATTERN = "nodeNamePattern";
     public static final String P_LANGUAGE_NODE_WIDTH = "nodeWidth";
     public static final String P_LANGUAGE_NODE_HEIGHT = "nodeHeight";
@@ -63,4 +64,6 @@ public interface PrefConstants {
     public static final String P_CONFIRM_DELETION = "confirmDeletion";
     public static final String P_PROCESS_SAVE_HISTORY = "processSaveHistory";
     public static final String P_PROCESS_SAVEPOINT_NUMBER = "processSavepointNumber";
+    public static final String P_ENABLE_USER_ACTIVITY_LOGGING = "enableUserActivityLogging";
+    public static final String P_ALLOW_UPDATE_LAST_VERSION_BY_KEYBINDING = "allowUpdateLastVersionByKeybinding";
 }

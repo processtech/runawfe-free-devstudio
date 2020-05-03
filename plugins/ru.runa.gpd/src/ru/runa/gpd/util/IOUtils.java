@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import org.eclipse.core.internal.resources.Workspace;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -31,6 +32,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.gef.EditPart;
@@ -616,6 +618,37 @@ public class IOUtils {
             }
         }
         return file;
+    }
+
+    private static final String DELETED_FILE_EXTENSION = "deleted";
+
+    public static void markAsDeleted(IFile file) throws CoreException {
+        IPath deleted = file.getFullPath().addFileExtension(DELETED_FILE_EXTENSION);
+        Workspace ws = (Workspace) file.getWorkspace();
+        if (ws.getResourceInfo(deleted, false, false) != null) {
+            ws.newResource(deleted, IResource.FILE).delete(true, null);
+        }
+        file.move(deleted, true, null);
+    }
+
+    public static void eraseDeletedFiles(IContainer folder) throws CoreException {
+        for (IResource member : folder.members()) {
+            if (member instanceof IFile) {
+                if (((IFile) member).getFileExtension().equals(DELETED_FILE_EXTENSION)) {
+                    member.delete(true, null);
+                }
+            }
+        }
+    }
+
+    public static void restoreDeletedFiles(IContainer folder) throws CoreException {
+        for (IResource member : folder.members()) {
+            if (member instanceof IFile) {
+                if (((IFile) member).getFileExtension().equals(DELETED_FILE_EXTENSION)) {
+                    member.move(member.getFullPath().removeFileExtension(), true, null);
+                }
+            }
+        }
     }
 
 }
