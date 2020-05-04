@@ -12,18 +12,18 @@ import ru.runa.gpd.office.store.QueryType;
 import ru.runa.gpd.office.store.StorageConstraintsModel;
 import ru.runa.gpd.util.XmlUtil;
 
-public class ExternalStorageDataModel extends DataModel {
+public class InternalStorageDataModel extends DataModel {
 
-    public ExternalStorageDataModel(FilesSupplierMode mode) {
+    public InternalStorageDataModel(FilesSupplierMode mode) {
         super(mode, new ExternalStorageHandlerInputOutputModel());
     }
 
-    public ExternalStorageDataModel(FilesSupplierMode mode, ExternalStorageHandlerInputOutputModel inOutModel) {
+    public InternalStorageDataModel(FilesSupplierMode mode, ExternalStorageHandlerInputOutputModel inOutModel) {
         super(mode, inOutModel);
     }
 
     @SuppressWarnings("unchecked")
-    public static ExternalStorageDataModel fromXml(String xml) {
+    public static InternalStorageDataModel fromXml(String xml) {
         final Document document = XmlUtil.parseWithoutValidation(xml);
 
         final List<StorageConstraintsModel> constraints = (List<StorageConstraintsModel>) document.getRootElement().elements("binding").stream()
@@ -38,7 +38,7 @@ public class ExternalStorageDataModel extends DataModel {
                 mode.isInSupported() ? document.getRootElement().element("input") : null,
                 mode.isOutSupported() ? document.getRootElement().element("output") : null);
 
-        final ExternalStorageDataModel model = new ExternalStorageDataModel(mode, inOutModel);
+        final InternalStorageDataModel model = new InternalStorageDataModel(mode, inOutModel);
         model.constraints.addAll(constraints);
         return model;
     }

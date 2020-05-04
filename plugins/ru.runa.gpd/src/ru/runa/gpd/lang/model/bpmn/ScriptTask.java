@@ -10,7 +10,7 @@ import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.property.DelegableClassPropertyDescriptor;
 
 public class ScriptTask extends Node implements Delegable, IBoundaryEventContainer, ConnectableViaDottedTransition {
-    private static final String EXTERNAL_STORAGE_HANDLER_CLASS_NAME = "ru.runa.wfe.office.storage.handler.ExternalStorageHandler";
+    private static final String INTERNAL_STORAGE_HANDLER_CLASS_NAME = "ru.runa.wfe.office.storage.handler.InternalStorageHandler";
     private static final String PROPERTY_DELEGABLE_EDIT_HANDLER = "delegableEditHandler";
 
     private boolean isUseExternalStorageOut = false;
@@ -67,7 +67,7 @@ public class ScriptTask extends Node implements Delegable, IBoundaryEventContain
         addChild(transition);
         if (!isUseExternalStorageOut()) {
             setUseExternalStorageOut(true);
-            setDelegationClassName(EXTERNAL_STORAGE_HANDLER_CLASS_NAME);
+            setDelegationClassName(INTERNAL_STORAGE_HANDLER_CLASS_NAME);
         }
     }
 
@@ -97,7 +97,7 @@ public class ScriptTask extends Node implements Delegable, IBoundaryEventContain
     private void dottedTransitionRemoved(DottedTransition transition) {
         setUseExternalStorageIn(false);
         setUseExternalStorageOut(false);
-        setDelegationConfiguration(null);
+        setDelegationConfiguration("");
         setDelegationClassName(null);
     }
 
@@ -106,7 +106,7 @@ public class ScriptTask extends Node implements Delegable, IBoundaryEventContain
         transition.setTarget(this);
         if (!isUseExternalStorageIn()) {
             setUseExternalStorageIn(true);
-            setDelegationClassName(EXTERNAL_STORAGE_HANDLER_CLASS_NAME);
+            setDelegationClassName(INTERNAL_STORAGE_HANDLER_CLASS_NAME);
         }
     }
 
