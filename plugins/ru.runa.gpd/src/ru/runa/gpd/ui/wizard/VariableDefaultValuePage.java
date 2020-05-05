@@ -5,8 +5,11 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.json.simple.JSONValue;
@@ -52,59 +55,79 @@ public class VariableDefaultValuePage extends DynaContentWizardPage {
     @Override
     protected void createDynaContent() {
 
-        // Check FileFormat mode
         boolean isFileMode = isFileChooseMode();
        
-    	// Create file variable with defaultValue checking (in file mode)
         file = null;
     	if (isFileMode) {
     		if (isEmbeddedFileWithProtocol())
-    			file = EmbeddedFileUtils.getProcessFile(defaultValue);
+    			file = EmbeddedFileUtils.getProcessFile(EmbeddedFileUtils.getProcessFileName(defaultValue));
     		else 
     			defaultValue = "";
         } 
     	
-    	// Check "Use default" radio buttons group
         Button dontUseDefaultValueButton = new Button(dynaComposite, SWT.RADIO);
         dontUseDefaultValueButton.setText(Localization.getString("VariableDefaultValuePage.dontUse"));
         useDefaultValueButton = new Button(dynaComposite, SWT.RADIO);
         useDefaultValueButton.setText(Localization.getString("VariableDefaultValuePage.use"));
                 
-        // Create "File choose" button if needed
-        Button _fileChooseButton = null;
+        Button button = null;
+        Label label = null;
+        Text text = null;
+        
         if (isFileMode) {
-        	_fileChooseButton = new Button(dynaComposite, SWT.NONE);
-        	_fileChooseButton.setText(Localization.getString("button.choose"));
+        	FillLayout fillLayout = new FillLayout(SWT.HORIZONTAL);        			
+        	fillLayout.spacing = 15;
+
+        	Composite сomposite = new Composite( dynaComposite, SWT.NONE );
+        	сomposite.setLayout(fillLayout);        	
+        	button = new Button(сomposite, SWT.NONE);
+        	button.setText(Localization.getString("button.choose"));
+        	label = new Label(сomposite, SWT.NO_FOCUS);
+        	
+        	if (defaultValue != null && file != null)
+        		label.setText(EmbeddedFileUtils.getProcessFileName(defaultValue));
+        	
+        } else {        
+        	text = new Text(dynaComposite, SWT.BORDER);
+        	text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            
+            if (defaultValue != null)
+            	text.setText(defaultValue);
         }
-        final Button fileChooseButton = _fileChooseButton;
         
-        // Default value text box
-        final Text text = new Text(dynaComposite, SWT.BORDER);
-        text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        if (defaultValue != null) {
-        	text.setText(defaultValue);
+        final Button fileButton = button;
+        final Label fileLabel = label;
+        final Text variableText = text;
+        
+        if (!isFileMode) {
+        	variableText.addModifyListener(new LoggingModifyTextAdapter() {
+                @Override
+                protected void onTextChanged(ModifyEvent e) throws Exception {
+                	defaultValue = variableText.getText();
+                    verifyContentIsValid();
+                }
+            });
         }
-        text.addModifyListener(new LoggingModifyTextAdapter() {
-            @Override
-            protected void onTextChanged(ModifyEvent e) throws Exception {
-            	if (!isFileMode)
-            		defaultValue = text.getText();
-                verifyContentIsValid();
-            }
-        });
         
-        // onSelect event of "Use default" radio buttons group
+        
         useDefaultValueButton.addSelectionListener(new LoggingSelectionAdapter() {
             @Override
             protected void onSelection(SelectionEvent e) throws Exception {
-                if (fileChooseButton != null) {
-                	fileChooseButton.setEnabled(useDefaultValueButton.getSelection());
-                	text.setEditable(false);
-                } else
-                	text.setEditable(useDefaultValueButton.getSelection());
+            	
+            	boolean useDefaultValue = useDefaultValueButton.getSelection();
+                 
+                if (null != variableText)
+                	variableText.setEditable(useDefaultValue);
+                if (null != fileButton)
+                	fileButton.setEnabled(useDefaultValue);
                 
-                if (!useDefaultValueButton.getSelection()) {
-                    text.setText(defaultValue = "");
+                if (!useDefaultValue) {
+                	defaultValue = "";
+                	if (null != variableText)
+                		variableText.setText("");
+                	if (null != fileLabel)
+                		fileLabel.setText("");
+                    
                     if (null != file && file.exists())
         				EmbeddedFileUtils.deleteProcessFile(file);
                 }
@@ -112,19 +135,16 @@ public class VariableDefaultValuePage extends DynaContentWizardPage {
             }
         });
         
-        // Set "Use default" radio buttons group
-        if (Strings.isNullOrEmpty(defaultValue)) {
-            dontUseDefaultValueButton.setSelection(true);
-        } else {
-            useDefaultValueButton.setSelection(true);
-        }
+        if (isUseDefaultValue()) 
+        	useDefaultValueButton.setSelection(true);        
+        else
+        	dontUseDefaultValueButton.setSelection(true);
+            
         
-        // onClick of "File choose" button if needed 
-        if (fileChooseButton != null) {
-        	text.setEditable(false);
-        	fileChooseButton.setEnabled(useDefaultValueButton.getSelection());
+        if (isFileMode) {
+        	fileButton.setEnabled(useDefaultValueButton.getSelection());
         	
-        	fileChooseButton.addSelectionListener(new LoggingSelectionAdapter() {
+        	fileButton.addSelectionListener(new LoggingSelectionAdapter() {
                 @Override
                 protected void onSelection(SelectionEvent e) throws Exception {
                 	FileDialog dialog = new FileDialog(Display.getDefault().getActiveShell(), SWT.OPEN);
@@ -140,19 +160,38 @@ public class VariableDefaultValuePage extends DynaContentWizardPage {
             				return;
             			}   
             			setErrorMessage(null);
+
+            			IFile newFile = EmbeddedFileUtils.getProcessFile(f.getName());
+            			
+            			if (newFile.exists() && newFile.getName().compareToIgnoreCase(file.getName()) != 0) {
+            				String s = Localization.getString("VariableDefaultValuePage.error.EmbeddedFileNameAlreadyInUse") + ": " + newFile.getName();
+            				MessageBox messageBox = new MessageBox(dynaComposite.getShell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
+        			        messageBox.setMessage(s);
+        			        messageBox.setText(Localization.getString("confirm.continue"));
+        			        int response = messageBox.open();
+        			        if (response == SWT.NO)
+        			        	return;
+            			}
+            			
             			
             			if (null != file && file.exists())
-            				EmbeddedFileUtils.deleteProcessFile(file);
+							EmbeddedFileUtils.deleteProcessFile(file);
+
+            			file = newFile;
             			
-            			file = EmbeddedFileUtils.getProcessFile(EmbeddedFileUtils.getProcessFilePath(f.getName()));
             			IOUtils.copyFile(filePath, file);
             			
-            			text.setText(defaultValue = EmbeddedFileUtils.getProcessFilePath(file.getName()));            			
+            			defaultValue = EmbeddedFileUtils.getProcessFilePath(file.getName());
+            			fileLabel.setText(EmbeddedFileUtils.getProcessFileName(defaultValue));
+            			fileLabel.getParent().pack();
             		}
                 }
             });
-        } else
-        	text.setEditable(useDefaultValueButton.getSelection());
+        	
+        } else 
+        	variableText.setEditable(useDefaultValueButton.getSelection());
+        
+        	
     }
 
     @Override
@@ -173,11 +212,11 @@ public class VariableDefaultValuePage extends DynaContentWizardPage {
                     } else if (FileVariable.class.getName().equals(className)) {
                     	if (isUseDefaultValue()) {
 	                    	if (isEmbeddedFileWithProtocol()) {
-	                    		file = EmbeddedFileUtils.getProcessFile(defaultValue);
+	                    		file = EmbeddedFileUtils.getProcessFile(EmbeddedFileUtils.getProcessFileName(defaultValue));
 	                    		if (null == file || !file.exists())
-	                    			throw new Exception("IFile '" + defaultValue + "' is not exists!");
+	                    			throw new Exception("IFile '" + defaultValue + "' does not exists!");
 	                    	} else
-	                    		throw new Exception("The defaultValue '" + defaultValue + "' is not starts with protocol!");
+	                    		throw new Exception("The defaultValue '" + defaultValue + "' does not starts with protocol!");
                     	}
                     } else {
                         TypeConversionUtil.convertTo(ClassLoaderUtil.loadClass(className), defaultValue);
