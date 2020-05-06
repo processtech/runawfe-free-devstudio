@@ -622,13 +622,25 @@ public class IOUtils {
 
     private static final String DELETED_FILE_EXTENSION = "deleted";
 
-    public static void markAsDeleted(IFile file) throws CoreException {
+    public static IPath markAsDeleted(IFile file) throws CoreException {
         IPath deleted = file.getFullPath().addFileExtension(DELETED_FILE_EXTENSION);
         Workspace ws = (Workspace) file.getWorkspace();
         if (ws.getResourceInfo(deleted, false, false) != null) {
             ws.newResource(deleted, IResource.FILE).delete(true, null);
         }
         file.move(deleted, true, null);
+        return deleted;
+    }
+
+    public static void unmarkAsDeleted(IFile file) throws CoreException {
+        if (DELETED_FILE_EXTENSION.equals(file.getFileExtension())) {
+            IPath undeleted = file.getFullPath().removeFileExtension();
+            Workspace ws = (Workspace) file.getWorkspace();
+            if (ws.getResourceInfo(undeleted, false, false) != null) {
+                ws.newResource(undeleted, IResource.FILE).delete(true, null);
+            }
+            file.move(undeleted, true, null);
+        }
     }
 
     public static void eraseDeletedFiles(IContainer folder) throws CoreException {

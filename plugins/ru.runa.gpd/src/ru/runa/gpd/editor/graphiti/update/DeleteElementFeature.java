@@ -13,7 +13,6 @@ import org.dom4j.Document;
 import org.dom4j.Element;
 import org.eclipse.core.internal.resources.Workspace;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFileState;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -261,8 +260,7 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements Custom
         try {
             IFile file = IOUtils.getAdjacentFile(adjacentFile, fileName);
             if (file.exists()) {
-                file.delete(true, keepHistory, null);
-                removedFilePath = file.getFullPath();
+                removedFilePath = IOUtils.markAsDeleted(file);
             }
         } catch (CoreException e) {
             PluginLogger.logError(e);
@@ -273,10 +271,7 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements Custom
     private void restoreFile(IPath filePath) {
         try {
             IFile file = (IFile) ((Workspace) element.getProcessDefinition().getFile().getWorkspace()).newResource(filePath, IResource.FILE);
-            IFileState[] fileStates = file.getHistory(null);
-            if (!file.exists() && fileStates.length > 0) {
-                file.create(fileStates[0].getContents(), true, null);
-            }
+            IOUtils.unmarkAsDeleted(file);
         } catch (CoreException e) {
             PluginLogger.logError(e);
         }
