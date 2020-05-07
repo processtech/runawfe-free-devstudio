@@ -7,6 +7,7 @@ import java.util.Map;
 import org.dom4j.Document;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.gef.EditPart;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -25,6 +26,7 @@ import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.ProcessSerializer;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.par.ParContentProvider;
+import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.SwimlaneDisplayMode;
 import ru.runa.gpd.util.WorkspaceOperations;
@@ -96,6 +98,17 @@ public class NewGlobalSectionDefinitionWizard extends Wizard implements INewWiza
         @Override
         public void run(IProgressMonitor monitor) throws InvocationTargetException {
             try {
+            	if (page.getProcessFolder().getParent() != null) {
+            		for (IResource resource : page.getProcessFolder().getParent().members()) {
+            			if (resource instanceof IFolder && 
+            			resource.getName().startsWith(".") &&
+            			!page.getProcessFolder().equals(resource)) {
+            				Dialogs.error(Localization.getString("NewGlobalSectionDefinitionWizard.error.creation"));
+            				return;
+            			}
+            		}
+            	}
+            	
                 monitor.beginTask(Localization.getString("NewProcessDefinitionWizard.monitor.title"), 4);
                 IFolder folder = page.getProcessFolder();
                 folder.create(true, true, null);
