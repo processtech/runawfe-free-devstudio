@@ -52,7 +52,8 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
     private final IFile file;
     private boolean useGlobals;
     private List<Swimlane> globalSwimlanes;
-
+    private List<VariableUserType> globalTypes;
+    
     private final ArrayList<VersionInfo> versionInfoList;
 
     public ProcessDefinition(IFile file) {
@@ -472,6 +473,14 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
     }
 
     public List<VariableUserType> getVariableUserTypes() {
+        for (Iterator<VariableUserType> i = types.iterator(); i.hasNext();) {
+            if (i.next().isGlobal()) {
+                i.remove();
+            }
+        }
+        if (useGlobals) {
+        	types.addAll(getGlobalTypes(true));
+        }
         return types;
     }
 
@@ -494,7 +503,7 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
     }
 
     public VariableUserType getVariableUserType(String name) {
-        for (VariableUserType type : types) {
+        for (VariableUserType type : getVariableUserTypes()) {
             if (Objects.equal(name, type.getName())) {
                 return type;
             }
@@ -599,5 +608,42 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
             return getGlobalSwimlanes(parent, swimlanes);
         }
     }
-
+    
+    public List<VariableUserType> getGlobalTypes(boolean force) {
+        if (globalTypes == null || force) {
+        	globalTypes = getGlobalTypes(getFile(), new ArrayList<VariableUserType>());
+        }
+        return globalTypes;
+    }
+    
+    private List<VariableUserType> getGlobalTypes(IResource resource, List<VariableUserType> types) {
+        IContainer parent = resource.getParent();
+        if (parent == null) {
+            return types;
+        } else {
+            try {
+                for (IResource r : parent.members()) {
+                    if (!r.getName().equals(resource.getName()) && r.getName().startsWith(".") && r.getType() == IResource.FOLDER) {
+                        IFile definitionFile = (IFile) ((IFolder) r).findMember(ParContentProvider.PROCESS_DEFINITION_FILE_NAME);
+                        if (definitionFile != null) {
+                            List<VariableUserType> globalTypes = ProcessCache.getProcessDefinition(definitionFile).getVariableUserTypes();
+                            for (VariableUserType type : globalTypes) {
+                            	VariableUserType copy = new VariableUserType();
+                                copy.setName(IOUtils.GLOBAL_ROLE_REF_PREFIX + type.getName());
+                                if (!types.contains(copy)) {
+                                	copy.setProcessDefinition(type.getProcessDefinition());
+                                    copy.setGlobal(true);
+                                    types.add(copy);
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (CoreException e) {
+                PluginLogger.logError(e);
+                return types;
+            }
+            return getGlobalTypes(parent, types);
+        }
+    }
 }

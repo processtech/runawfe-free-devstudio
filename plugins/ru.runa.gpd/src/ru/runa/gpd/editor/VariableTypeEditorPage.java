@@ -208,6 +208,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
         enableAction(createAttributeButton, selectedType != null);
         @SuppressWarnings("unchecked")
         List<Variable> attributes = ((IStructuredSelection) attributeTableViewer.getSelection()).toList();
+        boolean withoutGlobals = withoutGlobals(attributes);
         enableAction(changeAttributeButton, attributes.size() == 1);
         enableAction(searchAttributeButton, attributes.size() == 1);
         enableAction(renameAttributeButton, attributes.size() == 1);
@@ -222,7 +223,16 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
 
         updateAttributeViewer();
     }
-
+    
+    private boolean withoutGlobals(List<Variable> list) {
+        for (Variable swimlane : list) {
+            if (swimlane.isGlobal()) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
     private void updateViewer() {
         List<VariableUserType> userTypes = getDefinition().getVariableUserTypes();
         typeTableViewer.setInput(userTypes);
