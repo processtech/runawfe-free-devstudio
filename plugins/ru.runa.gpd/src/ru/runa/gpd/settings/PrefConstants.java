@@ -59,4 +59,6 @@ public interface PrefConstants {
     public static final String P_CONFIRM_DELETION = "confirmDeletion";
     public static final String P_PROCESS_SAVE_HISTORY = "processSaveHistory";
     public static final String P_PROCESS_SAVEPOINT_NUMBER = "processSavepointNumber";
+    public static final String P_ENABLE_USER_ACTIVITY_LOGGING = "enableUserActivityLogging";
+    public static final String P_ALLOW_UPDATE_LAST_VERSION_BY_KEYBINDING = "allowUpdateLastVersionByKeybinding";
 }

@@ -349,7 +349,7 @@ public class ExportParWizardPage extends WizardArchiveFileResourceExportPage1 {
         }
     }
 
-    private class ParDeployOperation extends ParExportOperation {
+    public static class ParDeployOperation extends ParExportOperation {
         private final String definitionName;
         private final boolean updateLatestVersion;
 
