@@ -313,9 +313,9 @@ public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
                 if (processDefinitionFile.exists()) {
                     if (!resource.getName().startsWith(".")) {
                         String content = IOUtils.readStream(processDefinitionFile.getContents());
-                        String oldReference = "=\"" + Swimlane.GLOBAL_ROLE_REF_PREFIX + oldName + "\"";
+                        String oldReference = "=\"" + IOUtils.GLOBAL_ROLE_REF_PREFIX + oldName + "\"";
                         if (content.contains(oldReference)) {
-                            content = content.replaceAll(oldReference, "=\"" + (newName == null ? "" : Swimlane.GLOBAL_ROLE_REF_PREFIX + newName) + "\"");
+                            content = content.replaceAll(oldReference, "=\"" + (newName == null ? "" : IOUtils.GLOBAL_ROLE_REF_PREFIX + newName) + "\"");
                             processDefinitionFile.setContents(new ByteArrayInputStream(content.getBytes(Charsets.UTF_8)), true, true, null);
                             ProcessCache.invalidateProcessDefinition(processDefinitionFile);
                         }

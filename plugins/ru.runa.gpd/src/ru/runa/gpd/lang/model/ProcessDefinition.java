@@ -575,9 +575,9 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
                             List<Swimlane> globalSwimlanes = ProcessCache.getProcessDefinition(definitionFile).getChildren(Swimlane.class);
                             for (Swimlane swimlane : globalSwimlanes) {
                                 Swimlane copy = new Swimlane();
-                                copy.setName(Swimlane.GLOBAL_ROLE_REF_PREFIX + swimlane.getName());
+                                copy.setName(IOUtils.GLOBAL_ROLE_REF_PREFIX + swimlane.getName());
                                 if (!swimlanes.contains(copy)) {
-                                    copy.setScriptingName(Swimlane.GLOBAL_ROLE_REF_PREFIX + swimlane.getScriptingName());
+                                    copy.setScriptingName(IOUtils.GLOBAL_ROLE_REF_PREFIX + swimlane.getScriptingName());
                                     copy.setDescription(swimlane.getDescription());
                                     copy.setDefaultValue(swimlane.getDefaultValue());
                                     copy.setFormat(swimlane.getFormat());
