@@ -177,6 +177,9 @@ public class NewGlobalSectionDefinitionWizardPage extends WizardPage {
         } else if (!FileNameChecker.isValid(processText.getText())) {
             setErrorMessage(Localization.getString("error.process_name_not_valid"));
             setPageComplete(false);
+        } else if (FileNameChecker.firstSymbolIsDot(processText.getText())) {
+            setErrorMessage(Localization.getString("error.process_name_begins_with_dot"));
+            setPageComplete(false);
         } else if (isProcessExists()) {
             setErrorMessage(Localization.getString("error.process_already_exists"));
             setPageComplete(false);
@@ -195,7 +198,7 @@ public class NewGlobalSectionDefinitionWizardPage extends WizardPage {
     }
 
     public String getProcessName() {
-        return processText.getText();
+        return "." + processText.getText();
     }
 
     public Language getLanguage() {
