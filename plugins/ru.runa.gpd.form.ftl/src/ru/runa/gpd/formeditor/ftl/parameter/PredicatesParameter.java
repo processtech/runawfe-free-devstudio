@@ -75,7 +75,7 @@ public class PredicatesParameter extends ParameterType {
         }
     }
 
-    private String getVariableUserType(Component component, List<ComponentParameter> parameters, ProcessDefinition processDefinition) {
+    public static String getVariableUserType(Component component, List<ComponentParameter> parameters, ProcessDefinition processDefinition) {
         return parameters.stream().filter(parameter -> parameter.getType() instanceof DbUserTypeListComboParameter).findAny()
                 .map(parameter -> (String) component.getParameterValue(parameter)).orElse("");
     }

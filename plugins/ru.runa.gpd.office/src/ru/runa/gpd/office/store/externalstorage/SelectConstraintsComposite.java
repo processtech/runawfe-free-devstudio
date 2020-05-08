@@ -55,6 +55,15 @@ public class SelectConstraintsComposite extends AbstractOperatingVariableComboBa
         return new String[] { List.class.getName() };
     }
 
+    @Override
+    public void clearConstraints() {
+        if (variableUserTypeInfo.isImmutable()) {
+            constraintsModel.setVariableName(variableUserTypeInfo.getVariableTypeName());
+            return;
+        }
+        super.clearConstraints();
+    }
+
     private void produceResultVariableName(String variableName) {
         if (resultVariableNameConsumer != null) {
             resultVariableNameConsumer.accept(variableName);

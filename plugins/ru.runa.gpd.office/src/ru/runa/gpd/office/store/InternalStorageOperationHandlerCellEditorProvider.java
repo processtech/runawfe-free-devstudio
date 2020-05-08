@@ -20,6 +20,7 @@ import ru.runa.gpd.extension.handler.XmlBasedConstructorProvider;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.GraphElement;
+import ru.runa.gpd.lang.model.GraphElementAware;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.ProcessDefinitionAware;
 import ru.runa.gpd.lang.model.StorageAware;
@@ -111,7 +112,11 @@ public class InternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
 
     @Override
     protected boolean validateModel(Delegable delegable, InternalStorageDataModel model, List<ValidationError> errors) {
-        GraphElement graphElement = ((GraphElement) delegable);
+        final GraphElement graphElement = delegable instanceof GraphElementAware ? ((GraphElementAware) delegable).getGraphElement()
+                : ((GraphElement) delegable);
+        if (delegable instanceof GraphElementAware) {
+            model.setMode(FilesSupplierMode.IN);
+        }
         model.validate(graphElement, errors);
         return super.validateModel(delegable, model, errors);
     }
@@ -180,6 +185,8 @@ public class InternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
             if (variableUserTypeInfo.isImmutable()) {
                 SWTUtils.createLabel(this, variableUserTypeInfo.getVariableTypeName());
                 constraintsModel.setSheetName(variableUserTypeInfo.getVariableTypeName());
+                constraintsModel.setVariableName(variableUserTypeInfo.getVariableTypeName());
+                model.setMode(FilesSupplierMode.IN);
             } else {
                 addDataTypeCombo();
             }
