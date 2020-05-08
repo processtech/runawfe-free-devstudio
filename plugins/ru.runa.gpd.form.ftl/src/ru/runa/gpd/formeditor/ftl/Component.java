@@ -57,7 +57,7 @@ public class Component extends EventSupport implements IPropertySource {
         if (index == -1) {
             throw new RuntimeException("No parameter found:" + parameter + " in " + type.getParameters());
         }
-        if (value instanceof String) {
+        if (value instanceof String && !((String) value).contains("CDATA")) {
             value = StringEscapeUtils.unescapeXml((String) value);
         }
         return parameterValues.set(index, value);
@@ -140,8 +140,7 @@ public class Component extends EventSupport implements IPropertySource {
     }
 
     /**
-     * Note: this method is the part of the algorithm, don't change the return
-     * format
+     * Note: this method is the part of the algorithm, don't change the return format
      * 
      * @return freemarker expression ${type_name("param1",..)}
      */
@@ -162,7 +161,7 @@ public class Component extends EventSupport implements IPropertySource {
                 });
                 args.addAll(list);
             } else {
-                String string = stringQuotation((String) getParameterValue(parameter));
+                String string = stringQuotation(getParameterValue(parameter));
                 args.add(string);
             }
         }

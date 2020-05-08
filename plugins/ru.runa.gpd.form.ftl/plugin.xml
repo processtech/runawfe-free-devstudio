@@ -134,6 +134,12 @@
             validator="ru.runa.gpd.formeditor.ftl.validation.SwimlaneParameterValidator"
             id="swimlanecombo">
       </type>
+      <type
+            class="ru.runa.gpd.formeditor.ftl.parameter.PredicatesParameter"
+            validator="ru.runa.gpd.formeditor.ftl.validation.DefaultParameterTypeValidator"
+            depends="dbusertypelistcombo"
+            id="predicates">
+      </type>
    </extension>
    
    <extension
@@ -1227,7 +1233,7 @@
                name="%Param.UserType"
                optional="false"
                type="dbusertypelistcombo"
-               variableAccess="NONE">
+               variableAccess="READ">
          </param>
          <param
                name="%Param.Multiplicity"
@@ -1242,6 +1248,12 @@
                   name="%Param.ChooseSome"
                   value="many">
                </paramValue>
+         </param>
+         <param
+               name="%Param.Predicates"
+               optional="true"
+               type="predicates"
+               variableAccess="NONE">
          </param>
          <param
                name="%Param.WriteTo"

@@ -6,11 +6,12 @@ import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import ru.runa.gpd.extension.HandlerArtifact;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.Node;
+import ru.runa.gpd.lang.model.StorageAware;
 import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.property.DelegableClassPropertyDescriptor;
 
-public class ScriptTask extends Node implements Delegable, IBoundaryEventContainer, ConnectableViaDottedTransition {
-    private static final String INTERNAL_STORAGE_HANDLER_CLASS_NAME = "ru.runa.wfe.office.storage.handler.InternalStorageHandler";
+public class ScriptTask extends Node implements Delegable, IBoundaryEventContainer, ConnectableViaDottedTransition, StorageAware {
+    public static final String INTERNAL_STORAGE_HANDLER_CLASS_NAME = "ru.runa.wfe.office.storage.handler.InternalStorageHandler";
     private static final String PROPERTY_DELEGABLE_EDIT_HANDLER = "delegableEditHandler";
 
     private boolean isUseExternalStorageOut = false;
@@ -26,6 +27,7 @@ public class ScriptTask extends Node implements Delegable, IBoundaryEventContain
         return super.allowLeavingTransition(transitions) && transitions.size() == 0;
     }
 
+    @Override
     public boolean isUseExternalStorageOut() {
         return isUseExternalStorageOut;
     }
@@ -40,6 +42,7 @@ public class ScriptTask extends Node implements Delegable, IBoundaryEventContain
         }
     }
 
+    @Override
     public boolean isUseExternalStorageIn() {
         return isUseExternalStorageIn;
     }

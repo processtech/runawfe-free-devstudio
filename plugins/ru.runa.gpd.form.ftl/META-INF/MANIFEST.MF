@@ -39,7 +39,8 @@ Require-Bundle: org.eclipse.core.resources,
  org.eclipse.ui.views,
  org.eclipse.ui.workbench.texteditor,
  ru.runa.gpd,
- org.eclipse.ui.forms
+ org.eclipse.ui.forms,
+ ru.runa.gpd.office
 Bundle-ActivationPolicy: lazy
 Export-Package: com.steadystate.css,
  com.steadystate.css.dom,
