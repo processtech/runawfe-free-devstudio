@@ -216,6 +216,7 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements Custom
                     pe instanceof ConnectionDecorator ? ((ConnectionDecorator) context.getPictogramElement()).getConnection()
                             : ((Shape) context.getPictogramElement()).getContainer());
         }
+        ((DiagramBehavior) getDiagramBehavior()).getEditDomain().getCommandStack().flush();
     }
 
     @Override

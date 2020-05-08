@@ -10,7 +10,11 @@ import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.Describable;
 import ru.runa.gpd.lang.model.GraphElement;
+import ru.runa.gpd.lang.model.MessageNode;
 import ru.runa.gpd.lang.model.NamedGraphElement;
+import ru.runa.gpd.lang.model.Timer;
+import ru.runa.gpd.lang.model.TimerAction;
+import ru.runa.gpd.util.Duration;
 
 public class UndoRedoUtil implements PropertyNames {
 
@@ -18,22 +22,30 @@ public class UndoRedoUtil implements PropertyNames {
 
     private static final PropertyChangeListener pcl = pce -> {
         if (watching) {
-            GraphElement graphElement = (GraphElement) pce.getSource();
-            String propertyName = pce.getPropertyName();
+            Object source = pce.getSource();
+            Object oldValue = pce.getOldValue();
+            Object newValue = pce.getNewValue();
             switch (pce.getPropertyName()) {
             case PROPERTY_NAME:
-                executeFeature(new ChangeNameFeature((NamedGraphElement) pce.getSource(), (String) pce.getOldValue(), (String) pce.getNewValue()));
+                executeFeature(new ChangeNameFeature((NamedGraphElement) source, (String) oldValue, (String) newValue));
                 break;
             case PROPERTY_DESCRIPTION:
-                executeFeature(new ChangeDescriptionFeature((Describable) pce.getSource(), (String) pce.getOldValue(), (String) pce.getNewValue()));
+                executeFeature(new ChangeDescriptionFeature((Describable) source, (String) oldValue, (String) newValue));
                 break;
             case PROPERTY_CLASS:
-                executeFeature(
-                        new ChangeDelegationClassNameFeature((Delegable) pce.getSource(), (String) pce.getOldValue(), (String) pce.getNewValue()));
+                executeFeature(new ChangeDelegationClassNameFeature((Delegable) source, (String) oldValue, (String) newValue));
                 break;
             case PROPERTY_CONFIGURATION:
-                executeFeature(new ChangeDelegationConfigurationFeature((Delegable) pce.getSource(), (String) pce.getOldValue(),
-                        (String) pce.getNewValue()));
+                executeFeature(new ChangeDelegationConfigurationFeature((Delegable) source, (String) oldValue, (String) newValue));
+                break;
+            case PROPERTY_TIMER_DELAY:
+                executeFeature(new ChangeTimerDelayFeature((Timer) source, (Duration) oldValue, (Duration) newValue));
+                break;
+            case PROPERTY_TIMER_ACTION:
+                executeFeature(new ChangeTimerActionFeature((Timer) source, (TimerAction) oldValue, (TimerAction) newValue));
+                break;
+            case PROPERTY_TTL:
+                executeFeature(new ChangeTtlDurationFeature((MessageNode) source, (Duration) oldValue, (Duration) newValue));
                 break;
             }
         }

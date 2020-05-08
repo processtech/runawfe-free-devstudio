@@ -11,6 +11,10 @@ public class ChangeTimerDelayFeature extends ChangePropertyFeature<Timer, Durati
         super(target, target.getDelay(), newValue);
     }
 
+    public ChangeTimerDelayFeature(Timer target, Duration oldValue, Duration newValue) {
+        super(target, oldValue, newValue);
+    }
+
     @Override
     protected void undo(IContext context) {
         target.setDelay(oldValue);

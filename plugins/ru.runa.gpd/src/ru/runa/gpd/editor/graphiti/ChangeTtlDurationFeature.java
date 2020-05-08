@@ -11,6 +11,10 @@ public class ChangeTtlDurationFeature extends ChangePropertyFeature<MessageNode,
         super(target, target.getTtlDuration(), newValue);
     }
 
+    public ChangeTtlDurationFeature(MessageNode target, Duration oldValue, Duration newValue) {
+        super(target, oldValue, newValue);
+    }
+
     @Override
     protected void undo(IContext context) {
         target.setTtlDuration(oldValue);

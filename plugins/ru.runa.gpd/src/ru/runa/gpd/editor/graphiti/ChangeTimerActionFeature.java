@@ -11,6 +11,10 @@ public class ChangeTimerActionFeature extends ChangePropertyFeature<Timer, Timer
         super(target, target.getAction(), newValue);
     }
 
+    public ChangeTimerActionFeature(Timer target, TimerAction oldValue, TimerAction newValue) {
+        super(target, oldValue, newValue);
+    }
+
     @Override
     protected void undo(IContext context) {
         target.setAction(oldValue);
