@@ -1152,6 +1152,19 @@
          </gef>
       </element>
       <element
+            bpmn="process"
+            hasPreferencePage="false"
+            jpdl="process-definition"
+            label="%label.globalSectionDefinition"
+            model="ru.runa.gpd.lang.model.GlobalSectionDefinition"
+            type="definition">
+         <gef 
+            figure="ru.runa.gpd.editor.gef.figure.GridSupportLayer"
+            graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.ProcessDefinitionGraphicalEditPart"
+            treeEditPart="ru.runa.gpd.editor.gef.part.tree.ProcessDefinitionTreeEditPart">
+         </gef>
+      </element>
+      <element
             bpmn="subProcess"
             icon="subprocess.png"
             jpdl="process-state"
