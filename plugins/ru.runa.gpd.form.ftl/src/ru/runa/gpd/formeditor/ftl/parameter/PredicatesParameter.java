@@ -4,7 +4,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Supplier;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
@@ -23,6 +22,7 @@ import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.ProcessDefinitionAware;
 import ru.runa.gpd.lang.model.StorageAware;
 import ru.runa.gpd.lang.model.VariableUserType;
+import ru.runa.gpd.lang.model.VariableUserTypeNameAware;
 import ru.runa.gpd.lang.model.bpmn.ScriptTask;
 import ru.runa.gpd.office.store.InternalStorageOperationHandlerCellEditorProvider;
 
@@ -85,7 +85,7 @@ public class PredicatesParameter extends ParameterType implements DependsOnDbVar
                 .map(parameter -> (String) component.getParameterValue(parameter)).orElse("");
     }
 
-    public static class PredicatesDelegable implements Delegable, StorageAware, ProcessDefinitionAware, Supplier<String>, CdataAwareValue {
+    public static class PredicatesDelegable implements Delegable, StorageAware, ProcessDefinitionAware, VariableUserTypeNameAware, CdataAwareValue {
         private final ProcessDefinition processDefinition;
         private String variableUserType;
         private String configuration = "";
@@ -141,7 +141,7 @@ public class PredicatesParameter extends ParameterType implements DependsOnDbVar
         }
 
         @Override
-        public String get() {
+        public String getUserTypeName() {
             return variableUserType;
         }
 

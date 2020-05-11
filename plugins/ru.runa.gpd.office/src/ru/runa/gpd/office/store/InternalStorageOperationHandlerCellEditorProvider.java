@@ -5,7 +5,6 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
@@ -26,6 +25,7 @@ import ru.runa.gpd.lang.model.ProcessDefinitionAware;
 import ru.runa.gpd.lang.model.StorageAware;
 import ru.runa.gpd.lang.model.VariableContainer;
 import ru.runa.gpd.lang.model.VariableUserType;
+import ru.runa.gpd.lang.model.VariableUserTypeNameAware;
 import ru.runa.gpd.office.FilesSupplierMode;
 import ru.runa.gpd.office.Messages;
 import ru.runa.gpd.office.store.externalstorage.ConstraintsCompositeBuilder;
@@ -72,12 +72,12 @@ public class InternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
         }
 
         if (delegable instanceof StorageAware) {
-            if (delegable instanceof Supplier<?>) {
+            if (delegable instanceof VariableUserTypeNameAware) {
                 return new ConstructorView(parent, delegable, model,
                         new ProcessDefinitionVariableProvider(
                                 processDefinition.orElseThrow(() -> new IllegalStateException("process definition unavailable"))),
-                        isUseExternalStorageIn, isUseExternalStorageOut, new VariableUserTypeInfo(true, ((Supplier<String>) delegable).get()))
-                                .build();
+                        isUseExternalStorageIn, isUseExternalStorageOut,
+                        new VariableUserTypeInfo(true, ((VariableUserTypeNameAware) delegable).getUserTypeName())).build();
             }
             return new ConstructorView(parent, delegable, model,
                     new ProcessDefinitionVariableProvider(
