@@ -4,10 +4,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.Objects;
-import java.util.Scanner;
 import java.util.function.Supplier;
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
@@ -18,6 +15,7 @@ import org.eclipse.ui.views.properties.PropertyDescriptor;
 import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.formeditor.ftl.Component;
 import ru.runa.gpd.formeditor.ftl.ComponentParameter;
+import ru.runa.gpd.formeditor.ftl.util.CdataWrapUtils;
 import ru.runa.gpd.formeditor.resources.Messages;
 import ru.runa.gpd.formeditor.wysiwyg.FormEditor;
 import ru.runa.gpd.lang.model.Delegable;
@@ -32,7 +30,7 @@ public class PredicatesParameter extends ParameterType {
 
     @Override
     public PropertyDescriptor createPropertyDescriptor(Component component, ComponentParameter parameter, int propertyId) {
-        return new PredicatesPropertyDescriptor(propertyId, parameter.getLabel());
+        return new PropertyDescriptor(propertyId, parameter.getLabel());
     }
 
     @Override
@@ -73,6 +71,16 @@ public class PredicatesParameter extends ParameterType {
             delegable.setFtlConfiguration("");
             component.setParameterValue(parameter, delegable.getFtlConfiguration());
         }
+    }
+
+    @Override
+    public Object fromPropertyDescriptorValue(Component component, ComponentParameter parameter, Object editorValue) {
+        return super.fromPropertyDescriptorValue(component, parameter, editorValue);
+    }
+
+    @Override
+    public Object toPropertyDescriptorValue(Component component, ComponentParameter parameter, Object value) {
+        return CdataWrapUtils.unwrapCdata((String) value);
     }
 
     public static String getVariableUserType(Component component, List<ComponentParameter> parameters, ProcessDefinition processDefinition) {
@@ -145,18 +153,11 @@ public class PredicatesParameter extends ParameterType {
         }
 
         String getFtlConfiguration() {
-            final StringBuilder sb = new StringBuilder().append("<![CDATA[");
-            try (Scanner scanner = new Scanner(configuration)) {
-                while (scanner.hasNextLine()) {
-                    sb.append(scanner.nextLine().trim());
-                }
-            }
-            return sb.append("]]>").toString();
+            return CdataWrapUtils.wrapCdata(configuration);
         }
 
         void setFtlConfiguration(String configuration) {
-            this.configuration = StringUtils.isNotBlank(configuration) ? StringEscapeUtils
-                    .unescapeXml(configuration.replace("&amp;", "&").replace("amp;", "")).replace("<![CDATA[", "").replace("]]>", "") : "";
+            this.configuration = CdataWrapUtils.unwrapCdata(configuration);
         }
     }
 
