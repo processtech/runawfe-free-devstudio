@@ -4,7 +4,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Supplier;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
@@ -15,19 +14,16 @@ import org.eclipse.ui.views.properties.PropertyDescriptor;
 import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.formeditor.ftl.Component;
 import ru.runa.gpd.formeditor.ftl.ComponentParameter;
+import ru.runa.gpd.formeditor.ftl.ui.dialog.projection.ProjectionDialog;
 import ru.runa.gpd.formeditor.ftl.util.CdataWrapUtils;
 import ru.runa.gpd.formeditor.resources.Messages;
 import ru.runa.gpd.formeditor.wysiwyg.FormEditor;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.ProcessDefinition;
-import ru.runa.gpd.lang.model.ProcessDefinitionAware;
-import ru.runa.gpd.lang.model.StorageAware;
 import ru.runa.gpd.lang.model.VariableUserType;
-import ru.runa.gpd.lang.model.bpmn.ScriptTask;
-import ru.runa.gpd.office.store.InternalStorageOperationHandlerCellEditorProvider;
 
-public class PredicatesParameter extends ParameterType implements DependsOnDbVariableUserType {
-    private PredicatesDelegable delegable;
+public class ProjectionParameter extends ParameterType implements DependsOnDbVariableUserType {
+    private ProjectionDelegable delegable;
 
     @Override
     public PropertyDescriptor createPropertyDescriptor(Component component, ComponentParameter parameter, int propertyId) {
@@ -37,15 +33,15 @@ public class PredicatesParameter extends ParameterType implements DependsOnDbVar
     @Override
     public Object createEditor(Composite parent, Component component, ComponentParameter parameter, Object oldValue,
             PropertyChangeListener listener) {
-        final ProcessDefinition processDefinition = FormEditor.getCurrent().getProcessDefinition();
-        delegable = new PredicatesDelegable(processDefinition, null, (String) oldValue);
-
         final Composite composite = new Composite(parent, SWT.NONE);
         composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         composite.setLayout(new GridLayout(1, false));
 
+        final ProcessDefinition processDefinition = FormEditor.getCurrent().getProcessDefinition();
+        delegable = new ProjectionDelegable(processDefinition, (String) oldValue);
+
         final Button button = new Button(composite, SWT.PUSH);
-        button.setText(Messages.getString("ConfigurePredicates.title"));
+        button.setText(Messages.getString("ConfigureProjections.title"));
         button.setLayoutData(new GridData(GridData.FILL_BOTH));
         button.addSelectionListener(SelectionListener.widgetSelectedAdapter(c -> {
             final Optional<VariableUserType> userType = userType(component, processDefinition);
@@ -53,8 +49,7 @@ public class PredicatesParameter extends ParameterType implements DependsOnDbVar
                 return;
             }
 
-            delegable.setVariableUserType(userType.get().getName());
-            final InternalStorageOperationHandlerCellEditorProvider provider = new InternalStorageOperationHandlerCellEditorProvider();
+            final ProjectionDialog provider = new ProjectionDialog(userType.get());
             final String xml = provider.showConfigurationDialog(delegable);
             if (xml == null) {
                 return;
@@ -80,35 +75,18 @@ public class PredicatesParameter extends ParameterType implements DependsOnDbVar
         return CdataWrapUtils.unwrapCdata((String) value);
     }
 
-    public static String getVariableUserType(Component component, List<ComponentParameter> parameters, ProcessDefinition processDefinition) {
-        return parameters.stream().filter(parameter -> parameter.getType() instanceof DbUserTypeListComboParameter).findAny()
-                .map(parameter -> (String) component.getParameterValue(parameter)).orElse("");
-    }
-
-    public static class PredicatesDelegable implements Delegable, StorageAware, ProcessDefinitionAware, Supplier<String>, CdataAwareValue {
+    private static class ProjectionDelegable implements Delegable, CdataAwareValue {
         private final ProcessDefinition processDefinition;
-        private String variableUserType;
-        private String configuration = "";
+        private String configuration;
 
-        public PredicatesDelegable(ProcessDefinition processDefinition, String variableUserType, String configuration) {
+        private ProjectionDelegable(ProcessDefinition processDefinition, String configuration) {
             this.processDefinition = processDefinition;
-            this.variableUserType = variableUserType;
             setFtlConfiguration(configuration);
         }
 
         @Override
-        public boolean isUseExternalStorageIn() {
-            return true;
-        }
-
-        @Override
-        public boolean isUseExternalStorageOut() {
-            return false;
-        }
-
-        @Override
         public String getDelegationClassName() {
-            return ScriptTask.INTERNAL_STORAGE_HANDLER_CLASS_NAME;
+            return null;
         }
 
         @Override
@@ -127,7 +105,7 @@ public class PredicatesParameter extends ParameterType implements DependsOnDbVar
 
         @Override
         public String getDelegationType() {
-            return ScriptTask.INTERNAL_STORAGE_HANDLER_CLASS_NAME;
+            return null;
         }
 
         @Override
@@ -136,17 +114,8 @@ public class PredicatesParameter extends ParameterType implements DependsOnDbVar
         }
 
         @Override
-        public ProcessDefinition getProcessDefinition() {
-            return processDefinition;
-        }
-
-        @Override
-        public String get() {
-            return variableUserType;
-        }
-
-        void setVariableUserType(String variableUserType) {
-            this.variableUserType = variableUserType;
+        public void setFtlConfiguration(String configuration) {
+            this.configuration = CdataWrapUtils.unwrapCdata(configuration);
         }
 
         @Override
@@ -154,10 +123,6 @@ public class PredicatesParameter extends ParameterType implements DependsOnDbVar
             return CdataWrapUtils.wrapCdata(configuration);
         }
 
-        @Override
-        public void setFtlConfiguration(String configuration) {
-            this.configuration = CdataWrapUtils.unwrapCdata(configuration);
-        }
     }
 
 }

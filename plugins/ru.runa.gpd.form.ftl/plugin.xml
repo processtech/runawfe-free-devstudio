@@ -140,6 +140,12 @@
             depends="dbusertypelistcombo"
             id="predicates">
       </type>
+      <type
+            class="ru.runa.gpd.formeditor.ftl.parameter.ProjectionParameter"
+            validator="ru.runa.gpd.formeditor.ftl.validation.DefaultParameterTypeValidator"
+            depends="dbusertypelistcombo"
+            id="projections">
+      </type>
    </extension>
    
    <extension
@@ -1250,9 +1256,15 @@
                </paramValue>
          </param>
          <param
-               name="%Param.Predicates"
+               name=""
                optional="true"
                type="predicates"
+               variableAccess="NONE">
+         </param>
+         <param
+               name=""
+               optional="true"
+               type="projections"
                variableAccess="NONE">
          </param>
          <param

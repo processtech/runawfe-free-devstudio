@@ -103,8 +103,9 @@ public class InternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
     public boolean validateValue(Delegable delegable, List<ValidationError> errors) throws Exception {
         final String configuration = delegable.getDelegationConfiguration();
         if (configuration.trim().isEmpty()) {
-            errors.add(
-                    ValidationError.createError(((GraphElement) delegable), Messages.getString("model.validation.xlsx.constraint.variable.empty")));
+            errors.add(ValidationError.createError(
+                    delegable instanceof GraphElementAware ? ((GraphElementAware) delegable).getGraphElement() : ((GraphElement) delegable),
+                    Messages.getString("model.validation.xlsx.constraint.variable.empty")));
             return false;
         }
         return super.validateValue(delegable, errors);
