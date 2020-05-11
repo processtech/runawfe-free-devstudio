@@ -60,8 +60,6 @@ public class Projection {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + ((sort == null) ? 0 : sort.hashCode());
-        result = prime * result + ((visibility == null) ? 0 : visibility.hashCode());
         return result;
     }
 
@@ -79,11 +77,11 @@ public class Projection {
                 return false;
         } else if (!name.equals(other.name))
             return false;
-        if (sort != other.sort)
-            return false;
-        if (visibility != other.visibility)
-            return false;
         return true;
     }
 
+    @Override
+    public String toString() {
+        return "Projection [name=" + name + ", visibility=" + visibility + ", sort=" + sort + "]";
+    }
 }

@@ -49,7 +49,7 @@ public class ProjectionParameter extends ParameterType implements DependsOnDbVar
                 return;
             }
 
-            final ProjectionDialog provider = new ProjectionDialog(userType.get());
+            final ProjectionDialog provider = new ProjectionDialog(userType.get(), null);
             final String xml = provider.showConfigurationDialog(delegable);
             if (xml == null) {
                 return;
@@ -75,11 +75,11 @@ public class ProjectionParameter extends ParameterType implements DependsOnDbVar
         return CdataWrapUtils.unwrapCdata((String) value);
     }
 
-    private static class ProjectionDelegable implements Delegable, CdataAwareValue {
+    public static class ProjectionDelegable implements Delegable, CdataAwareValue {
         private final ProcessDefinition processDefinition;
         private String configuration;
 
-        private ProjectionDelegable(ProcessDefinition processDefinition, String configuration) {
+        public ProjectionDelegable(ProcessDefinition processDefinition, String configuration) {
             this.processDefinition = processDefinition;
             setFtlConfiguration(configuration);
         }

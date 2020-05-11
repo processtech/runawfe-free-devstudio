@@ -142,7 +142,7 @@
       </type>
       <type
             class="ru.runa.gpd.formeditor.ftl.parameter.ProjectionParameter"
-            validator="ru.runa.gpd.formeditor.ftl.validation.DefaultParameterTypeValidator"
+            validator="ru.runa.gpd.formeditor.ftl.validation.ProjectionComponentValidator"
             depends="dbusertypelistcombo"
             id="projections">
       </type>
