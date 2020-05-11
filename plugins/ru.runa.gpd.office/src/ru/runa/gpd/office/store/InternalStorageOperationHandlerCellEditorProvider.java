@@ -56,7 +56,6 @@ public class InternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
         return Messages.getString("InternalStorageHandlerConfig.title");
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected Composite createConstructorComposite(Composite parent, Delegable delegable, InternalStorageDataModel model) {
         final boolean isUseExternalStorageIn = (delegable instanceof StorageAware) ? ((StorageAware) delegable).isUseExternalStorageIn() : false;
