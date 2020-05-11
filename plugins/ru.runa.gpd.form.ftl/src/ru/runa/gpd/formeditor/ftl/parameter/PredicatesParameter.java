@@ -74,11 +74,6 @@ public class PredicatesParameter extends ParameterType {
     }
 
     @Override
-    public Object fromPropertyDescriptorValue(Component component, ComponentParameter parameter, Object editorValue) {
-        return super.fromPropertyDescriptorValue(component, parameter, editorValue);
-    }
-
-    @Override
     public Object toPropertyDescriptorValue(Component component, ComponentParameter parameter, Object value) {
         return CdataWrapUtils.unwrapCdata((String) value);
     }
