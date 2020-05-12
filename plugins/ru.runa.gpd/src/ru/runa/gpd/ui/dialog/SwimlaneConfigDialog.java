@@ -20,14 +20,14 @@ import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
-import ru.runa.gpd.swimlane.ISwimlaneElementListener;
+import ru.runa.gpd.swimlane.SwimlaneElementListener;
 import ru.runa.gpd.swimlane.SwimlaneElement;
 import ru.runa.gpd.swimlane.SwimlaneElementRegistry;
 import ru.runa.gpd.swimlane.SwimlaneInitializer;
 import ru.runa.gpd.swimlane.SwimlaneInitializerParser;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public class SwimlaneConfigDialog extends Dialog implements ISwimlaneElementListener {
+public class SwimlaneConfigDialog extends Dialog implements SwimlaneElementListener {
     private final List<SwimlaneElement> swimlaneElements = SwimlaneElementRegistry.getSwimlaneElements();
     private CTabFolder typeTabFolder;
     private CTabFolder orgFunctionsTabFolder;

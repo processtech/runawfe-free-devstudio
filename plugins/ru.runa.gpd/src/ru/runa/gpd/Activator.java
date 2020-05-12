@@ -50,4 +50,8 @@ public class Activator extends AbstractUIPlugin implements PluginConstants {
         return getDefault().getPreferenceStore().getBoolean(name);
     }
 
+    public static int getPrefInt(String name) {
+        return getDefault().getPreferenceStore().getInt(name);
+    }
+
 }

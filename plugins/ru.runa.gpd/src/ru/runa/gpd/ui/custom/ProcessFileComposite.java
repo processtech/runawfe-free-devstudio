@@ -37,7 +37,7 @@ public abstract class ProcessFileComposite extends Composite {
         }
         if (!file.exists()) {
             if (hasTemplate()) {
-                SWTUtils.createLink(this, Localization.getString("button.create"), new LoggingHyperlinkAdapter() {
+                SwtUtils.createLink(this, Localization.getString("button.create"), new LoggingHyperlinkAdapter() {
 
                     @Override
                     protected void onLinkActivated(HyperlinkEvent e) throws Exception {
@@ -47,7 +47,7 @@ public abstract class ProcessFileComposite extends Composite {
                     }
                 });
             }
-            SWTUtils.createLink(this, Localization.getString("button.import"), new LoggingHyperlinkAdapter() {
+            SwtUtils.createLink(this, Localization.getString("button.import"), new LoggingHyperlinkAdapter() {
 
                 @Override
                 protected void onLinkActivated(HyperlinkEvent e) throws Exception {
@@ -65,14 +65,14 @@ public abstract class ProcessFileComposite extends Composite {
                 }
             });
         } else {
-            SWTUtils.createLink(this, Localization.getString("button.change"), new LoggingHyperlinkAdapter() {
+            SwtUtils.createLink(this, Localization.getString("button.change"), new LoggingHyperlinkAdapter() {
 
                 @Override
                 protected void onLinkActivated(HyperlinkEvent e) throws Exception {
                     IDE.openEditor(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(), file, true);
                 }
             });
-            SWTUtils.createLink(this, Localization.getString("button.export"), new LoggingHyperlinkAdapter() {
+            SwtUtils.createLink(this, Localization.getString("button.export"), new LoggingHyperlinkAdapter() {
 
                 @Override
                 protected void onLinkActivated(HyperlinkEvent e) throws Exception {
@@ -90,7 +90,7 @@ public abstract class ProcessFileComposite extends Composite {
                 }
             });
             if (isDeleteFileOperationSupported()) {
-                SWTUtils.createLink(this, Localization.getString("button.delete"), new LoggingHyperlinkAdapter() {
+                SwtUtils.createLink(this, Localization.getString("button.delete"), new LoggingHyperlinkAdapter() {
 
                     @Override
                     protected void onLinkActivated(HyperlinkEvent e) throws Exception {

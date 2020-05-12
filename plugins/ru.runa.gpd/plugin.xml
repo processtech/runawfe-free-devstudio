@@ -9,7 +9,7 @@
    <extension-point id="formats" name="Variable formats" schema="schema/formats.exsd"/>
    <extension-point id="swimlaneElements" name="Swimlane elements" schema="schema/swimlaneElements.exsd"/>
    <extension-point id="validators" name="Variable validators" schema="schema/validators.exsd"/>
-   <extension-point id="wfeConnectors" name="wfeConnectors" schema="schema/wfeConnectors.exsd"/>
+   <extension-point id="wfeServerConnectors" name="wfeServerConnectors" schema="schema/wfeServerConnectors.exsd"/>
    <extension-point id="cssTemplates" name="form CSS templates" schema="schema/cssTemplates.exsd"/>
    <extension-point id="regulations" name="regulations" schema="schema/regulations.exsd"/>
    <extension-point id="groovyStuff" name="Groovy stuff" schema="schema/groovyStuff.exsd"/>
@@ -759,17 +759,6 @@
                 </or>
              </visibleWhen>
        </command>
-    </menuContribution>
-    <menuContribution
-          allPopups="true"
-          locationURI="toolbar:org.eclipse.ui.main.toolbar?after=connections">
-       <toolbar
-             id="ru.runa.gpd.toolbarWFEConnections">
-          <control
-                class="ru.runa.gpd.ui.custom.WFEConnectionsControl"
-                id="WFEConnectionsControl">
-          </control>
-       </toolbar>
     </menuContribution>
  </extension>
  <extension
@@ -2091,7 +2080,7 @@
          </element>
       </element>
       <element
-            className="ru.runa.gpd.swimlane.ExecutorGroupSwimlaneElement"
+            className="ru.runa.gpd.swimlane.WfeServerGroupSwimlaneElement"
             name="SwimlaneElement.WFFunctionsGroupLabel">
          <param
                name="description"
@@ -2126,7 +2115,7 @@
             className="ru.runa.gpd.swimlane.GroupSwimlaneElement"
             name="SwimlaneElement.CustomFunctionsGroupLabel">
          <element
-               className="ru.runa.gpd.swimlane.ActiveDirectorySwimlaneElement"
+               className="ru.runa.gpd.swimlane.LdapServerExecutorSwimlaneElement"
                name="SwimlaneElement.ADExecutorsLabel">
          </element>
       </element>
@@ -2389,7 +2378,7 @@
              name="%pref.form">
        </page>
        <page
-       class="ru.runa.gpd.settings.EmptyPreferencePage"
+             class="ru.runa.gpd.settings.EmptyPreferencePage"
              id="gpd.pref.task.escalation"
              name="%pref.task.escalation">
        </page>
@@ -2401,17 +2390,17 @@
        </page>
        <page
              class="ru.runa.gpd.settings.EmptyPreferencePage"
-             id="gpd.pref.connection"
+             id="gpd.pref.connector"
              name="%pref.connection">
        </page>
        <page
-             category="gpd.pref.connection"
-             class="ru.runa.gpd.ldap.LDAPConnectionPreferencePage"
-             id="gpd.pref.connection.ldap"
+             category="gpd.pref.connector"
+             class="ru.runa.gpd.sync.LdapServerConnectorPreferencePage"
+             id="gpd.pref.connector.ldap"
              name="%pref.connection.ldap">
        </page>
        <page
-       class="ru.runa.gpd.settings.EmptyPreferencePage"
+             class="ru.runa.gpd.settings.EmptyPreferencePage"
              id="gpd.pref.extensions"
              name="%pref.extensions">
        </page>

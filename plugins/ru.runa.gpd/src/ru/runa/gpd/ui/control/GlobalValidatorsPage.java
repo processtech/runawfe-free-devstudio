@@ -55,7 +55,7 @@ import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
 import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionChangedAdapter;
-import ru.runa.gpd.ui.custom.SWTUtils;
+import ru.runa.gpd.ui.custom.SwtUtils;
 import ru.runa.gpd.ui.dialog.ChooseGroovyStuffDialog;
 import ru.runa.gpd.ui.dialog.ChooseVariableNameDialog;
 import ru.runa.gpd.util.GroovyStuff;
@@ -393,7 +393,7 @@ public class GlobalValidatorsPage extends Composite implements PropertyChangeLis
             codeComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
             tabs[1].setControl(codeComposite);
             if (GroovyStuff.TYPE.getAll().size() > 0) {
-                SWTUtils.createLink(codeComposite, Localization.getString("Insert.TYPE.link"), new LoggingHyperlinkAdapter() {
+                SwtUtils.createLink(codeComposite, Localization.getString("Insert.TYPE.link"), new LoggingHyperlinkAdapter() {
                     @Override
                     public void onLinkActivated(HyperlinkEvent e) {
                         Item item = new ChooseGroovyStuffDialog(GroovyStuff.TYPE).openDialog();
@@ -407,7 +407,7 @@ public class GlobalValidatorsPage extends Composite implements PropertyChangeLis
                 }).setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
             }
             if (GroovyStuff.CONSTANT.getAll().size() > 0) {
-                SWTUtils.createLink(codeComposite, Localization.getString("Insert.CONSTANT.link"), new LoggingHyperlinkAdapter() {
+                SwtUtils.createLink(codeComposite, Localization.getString("Insert.CONSTANT.link"), new LoggingHyperlinkAdapter() {
                     @Override
                     public void onLinkActivated(HyperlinkEvent e) {
                         Item item = new ChooseGroovyStuffDialog(GroovyStuff.CONSTANT).openDialog();
@@ -421,7 +421,7 @@ public class GlobalValidatorsPage extends Composite implements PropertyChangeLis
                 }).setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
             }
             if (GroovyStuff.STATEMENT.getAll().size() > 0) {
-                SWTUtils.createLink(codeComposite, Localization.getString("Insert.STATEMENT.link"), new LoggingHyperlinkAdapter() {
+                SwtUtils.createLink(codeComposite, Localization.getString("Insert.STATEMENT.link"), new LoggingHyperlinkAdapter() {
                     @Override
                     public void onLinkActivated(HyperlinkEvent e) {
                         Item item = new ChooseGroovyStuffDialog(GroovyStuff.STATEMENT).openDialog();
@@ -435,7 +435,7 @@ public class GlobalValidatorsPage extends Composite implements PropertyChangeLis
                 }).setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
             }
             if (GroovyStuff.METHOD.getAll().size() > 0) {
-                SWTUtils.createLink(codeComposite, Localization.getString("Insert.METHOD.link"), new LoggingHyperlinkAdapter() {
+                SwtUtils.createLink(codeComposite, Localization.getString("Insert.METHOD.link"), new LoggingHyperlinkAdapter() {
                     @Override
                     public void onLinkActivated(HyperlinkEvent e) {
                         Item item = new ChooseGroovyStuffDialog(GroovyStuff.METHOD).openDialog();
@@ -448,7 +448,7 @@ public class GlobalValidatorsPage extends Composite implements PropertyChangeLis
                     }
                 }).setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
             }
-            SWTUtils.createLink(codeComposite, Localization.getString("button.insert_variable"), new LoggingHyperlinkAdapter() {
+            SwtUtils.createLink(codeComposite, Localization.getString("button.insert_variable"), new LoggingHyperlinkAdapter() {
                 @Override
                 protected void onLinkActivated(HyperlinkEvent e) throws Exception {
                     ChooseVariableNameDialog dialog = new ChooseVariableNameDialog(contextVariableNames);

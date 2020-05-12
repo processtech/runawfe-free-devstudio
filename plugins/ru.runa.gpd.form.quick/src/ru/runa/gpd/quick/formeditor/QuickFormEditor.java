@@ -83,7 +83,7 @@ import ru.runa.gpd.ui.custom.InsertVariableTextMenuDetectListener;
 import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionChangedAdapter;
-import ru.runa.gpd.ui.custom.SWTUtils;
+import ru.runa.gpd.ui.custom.SwtUtils;
 import ru.runa.gpd.ui.custom.TableViewerLocalDragAndDropSupport;
 import ru.runa.gpd.ui.wizard.CompactWizardDialog;
 import ru.runa.gpd.util.EditorUtils;
@@ -300,7 +300,7 @@ public class QuickFormEditor extends EditorPart implements ISelectionListener, I
                 }
             }
         });
-        changeButton = SWTUtils.createButtonFillHorizontal(buttonsBar, Messages.getString("editor.button.change"), new LoggingSelectionAdapter() {
+        changeButton = SwtUtils.createButtonFillHorizontal(buttonsBar, Messages.getString("editor.button.change"), new LoggingSelectionAdapter() {
             @Override
             protected void onSelection(SelectionEvent e) throws Exception {
                 IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
@@ -320,7 +320,7 @@ public class QuickFormEditor extends EditorPart implements ISelectionListener, I
                 }
             }
         });
-        previewButton = SWTUtils.createButtonFillHorizontal(buttonsBar, Messages.getString("editor.button.preview"), new LoggingSelectionAdapter() {
+        previewButton = SwtUtils.createButtonFillHorizontal(buttonsBar, Messages.getString("editor.button.preview"), new LoggingSelectionAdapter() {
             @Override
             protected void onSelection(SelectionEvent e) throws Exception {
                 String filename = formNode.getTemplateFileName();
@@ -375,7 +375,7 @@ public class QuickFormEditor extends EditorPart implements ISelectionListener, I
                 dialog.open();
             }
         });
-        moveUpButton = SWTUtils.createButtonFillHorizontal(buttonsBar, Messages.getString("editor.button.up"), new LoggingSelectionAdapter() {
+        moveUpButton = SwtUtils.createButtonFillHorizontal(buttonsBar, Messages.getString("editor.button.up"), new LoggingSelectionAdapter() {
             @Override
             protected void onSelection(SelectionEvent e) throws Exception {
                 IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
@@ -395,7 +395,7 @@ public class QuickFormEditor extends EditorPart implements ISelectionListener, I
                 }
             }
         });
-        moveDownButton = SWTUtils.createButtonFillHorizontal(buttonsBar, Messages.getString("editor.button.down"), new LoggingSelectionAdapter() {
+        moveDownButton = SwtUtils.createButtonFillHorizontal(buttonsBar, Messages.getString("editor.button.down"), new LoggingSelectionAdapter() {
             @Override
             protected void onSelection(SelectionEvent e) throws Exception {
                 IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
@@ -415,7 +415,7 @@ public class QuickFormEditor extends EditorPart implements ISelectionListener, I
                 }
             }
         });
-        deleteButton = SWTUtils.createButtonFillHorizontal(buttonsBar, Messages.getString("editor.button.delete"), new LoggingSelectionAdapter() {
+        deleteButton = SwtUtils.createButtonFillHorizontal(buttonsBar, Messages.getString("editor.button.delete"), new LoggingSelectionAdapter() {
 
             @Override
             protected void onSelection(SelectionEvent e) throws Exception {
@@ -425,12 +425,12 @@ public class QuickFormEditor extends EditorPart implements ISelectionListener, I
                 setDirty(true);
             }
         });
-        SWTUtils.createButtonFillHorizontal(buttonsBar, Messages.getString("editor.button.rules"), new LoggingSelectionAdapter() {
+        SwtUtils.createButtonFillHorizontal(buttonsBar, Messages.getString("editor.button.rules"), new LoggingSelectionAdapter() {
             @Override
             protected void onSelection(SelectionEvent e) throws Exception {
             }
         }).setEnabled(false);
-        convertButton = SWTUtils.createButtonFillHorizontal(buttonsBar, Messages.getString("editor.button.convert"), new LoggingSelectionAdapter() {
+        convertButton = SwtUtils.createButtonFillHorizontal(buttonsBar, Messages.getString("editor.button.convert"), new LoggingSelectionAdapter() {
             @Override
             protected void onSelection(SelectionEvent e) throws Exception {
                 QuickFormConvertor.convertQuickFormToSimple(new ConverterSource() {

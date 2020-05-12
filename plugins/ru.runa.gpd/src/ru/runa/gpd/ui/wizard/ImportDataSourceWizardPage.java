@@ -1,25 +1,20 @@
 package ru.runa.gpd.ui.wizard;
 
+import com.google.common.base.Throwables;
+import com.google.common.collect.Lists;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.List;
-
-import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.jface.viewers.ListViewer;
-import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -30,37 +25,28 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.TreeItem;
-
-import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
-import ru.runa.gpd.settings.WFEConnectionPreferencePage;
-import ru.runa.gpd.ui.custom.Dialogs;
-import ru.runa.gpd.ui.custom.SyncUIHelper;
+import ru.runa.gpd.sync.ConnectorCallback;
+import ru.runa.gpd.sync.WfeServerConnectorComposite;
+import ru.runa.gpd.sync.WfeServerDataSourceImporter;
 import ru.runa.gpd.util.DataSourceUtils;
 import ru.runa.gpd.util.IOUtils;
-import ru.runa.gpd.wfe.ConnectorCallback;
-import ru.runa.gpd.wfe.WFEServerDataSourceImporter;
 import ru.runa.wfe.datasource.DataSourceStuff;
 
-public class ImportDataSourceWizardPage extends WizardPage {
-    
-    private ListViewer projectViewer;
-    private final IContainer initialSelection;
+public class ImportDataSourceWizardPage extends ImportWizardPage {
     private Button importFromFileButton;
     private Composite fileSelectionArea;
-    private Text selectedDataSourcesLabel;
+    private Text selectedDataSourcesText;
     private Button selectDataSourcesButton;
     private Button importFromServerButton;
+    private WfeServerConnectorComposite serverConnectorComposite;
     private TreeViewer serverDataSourceViewer;
     private String selectedDirFileName;
     private String[] selectedFileNames;
 
-    public ImportDataSourceWizardPage(String pageName, IStructuredSelection selection) {
-        super(pageName);
-        initialSelection = (IContainer) IOUtils.getProcessSelectionResource(selection);
+    public ImportDataSourceWizardPage(IStructuredSelection selection) {
+        super(ImportDataSourceWizardPage.class, selection);
         setTitle(Localization.getString("ImportDataSourceWizardPage.page.title"));
         setDescription(Localization.getString("ImportDataSourceWizardPage.page.description"));
     }
@@ -70,19 +56,16 @@ public class ImportDataSourceWizardPage extends WizardPage {
         Composite pageControl = new Composite(parent, SWT.NONE);
         pageControl.setLayout(new GridLayout(1, false));
         pageControl.setLayoutData(new GridData(GridData.FILL_BOTH));
-        SashForm sashForm = new SashForm(pageControl, SWT.HORIZONTAL);
-        sashForm.setLayoutData(new GridData(GridData.FILL_BOTH));
-        createProjectsGroup(sashForm);
-        Group importGroup = new Group(sashForm, SWT.NONE);
+        Group importGroup = new Group(pageControl, SWT.NONE);
         importGroup.setLayout(new GridLayout(1, false));
         importGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
         importFromFileButton = new Button(importGroup, SWT.RADIO);
-        importFromFileButton.setText(Localization.getString("ImportParWizardPage.page.importFromFileButton"));
+        importFromFileButton.setText(Localization.getString("button.importFromFile"));
         importFromFileButton.setSelection(true);
         importFromFileButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                setImportMode();
+                onImportModeChanged();
             }
         });
         fileSelectionArea = new Composite(importGroup, SWT.NONE);
@@ -95,10 +78,10 @@ public class ImportDataSourceWizardPage extends WizardPage {
         fileSelectionLayout.marginWidth = 0;
         fileSelectionLayout.marginHeight = 0;
         fileSelectionArea.setLayout(fileSelectionLayout);
-        selectedDataSourcesLabel = new Text(fileSelectionArea, SWT.MULTI | SWT.READ_ONLY | SWT.V_SCROLL);
+        selectedDataSourcesText = new Text(fileSelectionArea, SWT.MULTI | SWT.READ_ONLY | SWT.V_SCROLL | SWT.BORDER);
         GridData gridData = new GridData(GridData.GRAB_HORIZONTAL | GridData.FILL_HORIZONTAL);
         gridData.heightHint = 30;
-        selectedDataSourcesLabel.setLayoutData(gridData);
+        selectedDataSourcesText.setLayoutData(gridData);
         selectDataSourcesButton = new Button(fileSelectionArea, SWT.PUSH);
         selectDataSourcesButton.setText(Localization.getString("button.choose"));
         selectDataSourcesButton.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_END));
@@ -114,76 +97,39 @@ public class ImportDataSourceWizardPage extends WizardPage {
                     for (String fileName : selectedFileNames) {
                         text += fileName + "\n";
                     }
-                    selectedDataSourcesLabel.setText(text);
+                    selectedDataSourcesText.setText(text);
                 }
             }
         });
         importFromServerButton = new Button(importGroup, SWT.RADIO);
-        importFromServerButton.setText(Localization.getString("ImportParWizardPage.page.importFromServerButton"));
-        SyncUIHelper.createHeader(importGroup, WFEServerDataSourceImporter.getInstance(), WFEConnectionPreferencePage.class,
-                new ConnectorCallback() {
+        importFromServerButton.setText(Localization.getString("button.importFromServer"));
+        serverConnectorComposite = new WfeServerConnectorComposite(importGroup, WfeServerDataSourceImporter.getInstance(), new ConnectorCallback() {
 
-                    @Override
-                    public void onSynchronizationFailed(Exception e) {
-                        Dialogs.error(Localization.getString("error.Synchronize"), e);
-                    }
+            @Override
+            public void onSynchronizationCompleted() {
+                setupServerDataSourceViewer();
+            }
 
-                    @Override
-                    public void onSynchronizationCompleted() {
-                        setupServerDataSourceViewer();
-                    }
-                });
+        });
         createServerDataSourcesGroup(importGroup);
         setControl(pageControl);
+        onImportModeChanged();
     }
 
-    private void createProjectsGroup(Composite parent) {
-        Group projectListGroup = new Group(parent, SWT.NONE);
-        projectListGroup.setLayout(new GridLayout());
-        projectListGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
-        projectListGroup.setText(Localization.getString("label.project"));
-        createProjectsList(projectListGroup);
-    }
-
-    private void createProjectsList(Composite parent) {
-        projectViewer = new ListViewer(parent, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
-        GridData gridData = new GridData(GridData.FILL_BOTH);
-        gridData.heightHint = 100;
-        projectViewer.getControl().setLayoutData(gridData);
-        projectViewer.setLabelProvider(new LabelProvider() {
-            @Override
-            public String getText(Object element) {
-                return ((IContainer) element).getName();
-            }
-        });
-        projectViewer.setContentProvider(new ArrayContentProvider());
-        projectViewer.setInput(Lists.newArrayList(DataSourceUtils.getDataSourcesProject()));
-        if (initialSelection != null) {
-            projectViewer.setSelection(new StructuredSelection(initialSelection));
-        }
-    }
-
-    private void setImportMode() {
+    private void onImportModeChanged() {
         boolean fromFile = importFromFileButton.getSelection();
         selectDataSourcesButton.setEnabled(fromFile);
+        serverConnectorComposite.setEnabled(!fromFile);
+        serverDataSourceViewer.getControl().setEnabled(!fromFile);
         if (fromFile) {
             serverDataSourceViewer.setInput(new Object());
         } else {
-            if (WFEServerDataSourceImporter.getInstance().isConfigured()) {
-                if (!WFEServerDataSourceImporter.getInstance().hasCachedData()) {
-                    long start = System.currentTimeMillis();
-                    WFEServerDataSourceImporter.getInstance().synchronize();
-                    long end = System.currentTimeMillis();
-                    PluginLogger.logInfo("def sync [sec]: " + ((end - start) / 1000));
-                }
-                setupServerDataSourceViewer();
-            }
+            setupServerDataSourceViewer();
         }
     }
 
     private void setupServerDataSourceViewer() {
-        List<String> dataSourceNames = WFEServerDataSourceImporter.getInstance().getDataSourceNames();
-        serverDataSourceViewer.setInput(dataSourceNames);
+        serverDataSourceViewer.setInput(WfeServerDataSourceImporter.getInstance().getData());
         serverDataSourceViewer.refresh(true);
     }
 
@@ -197,19 +143,9 @@ public class ImportDataSourceWizardPage extends WizardPage {
         serverDataSourceViewer.setInput(new Object());
     }
 
-    private IContainer getSelectedContainer() throws Exception {
-        IStructuredSelection selectedProject = (IStructuredSelection) projectViewer.getSelection();
-        IContainer container = (IContainer) selectedProject.getFirstElement();
-        if (container == null) {
-            throw new Exception(Localization.getString("ImportParWizardPage.error.selectTargetProject"));
-        }
-        return container;
-    }
-
     public boolean performFinish() {
         List<DataSourceImportInfo> importInfos = Lists.newArrayList();
         try {
-            IContainer container = getSelectedContainer();
             boolean fromFile = importFromFileButton.getSelection();
             if (fromFile) {
                 if (selectedDirFileName == null) {
@@ -218,12 +154,12 @@ public class ImportDataSourceWizardPage extends WizardPage {
                 for (int i = 0; i < selectedFileNames.length; i++) {
                     String dataSourceName = selectedFileNames[i].substring(0, selectedFileNames[i].length() - DataSourceStuff.DATA_SOURCE_ARCHIVE_SUFFIX.length());
                     String fileName = selectedDirFileName + File.separator + selectedFileNames[i];
-                    importInfos.add(new DataSourceImportInfo(dataSourceName, "", new FileInputStream(fileName)));
+                    importInfos.add(new DataSourceImportInfo(dataSourceName, new FileInputStream(fileName)));
                 }
             } else {
                 for (TreeItem treeItem : serverDataSourceViewer.getTree().getSelection()) {
-                    importInfos.add(new DataSourceImportInfo(treeItem.getText(), "", 
-                            new ByteArrayInputStream(WFEServerDataSourceImporter.getInstance().getDataSourceFile(treeItem.getText()))));
+                    importInfos.add(new DataSourceImportInfo(treeItem.getText(),
+                            new ByteArrayInputStream(WfeServerDataSourceImporter.getInstance().getDataSourceFile(treeItem.getText()))));
                 }
             }
             if (importInfos.isEmpty()) {
@@ -271,6 +207,7 @@ public class ImportDataSourceWizardPage extends WizardPage {
             return null;
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public Object[] getChildren(Object parent) {
             return parent instanceof List<?> ? ((List<String>) parent).toArray(new String[] {}) : new Object[0];
@@ -284,21 +221,13 @@ public class ImportDataSourceWizardPage extends WizardPage {
 
     class DataSourceImportInfo {
         private final String name;
-        private final String path;
         private final InputStream inputStream;
 
-        public DataSourceImportInfo(String name, String path, InputStream inputStream) {
+        public DataSourceImportInfo(String name, InputStream inputStream) {
             this.name = name;
-            this.path = path;
             this.inputStream = inputStream;
         }
 
-        private String getFolderPath() {
-            if (path.trim().isEmpty()) {
-                return name;
-            }
-            return path + File.separator + name;
-        }
     }
 
 }

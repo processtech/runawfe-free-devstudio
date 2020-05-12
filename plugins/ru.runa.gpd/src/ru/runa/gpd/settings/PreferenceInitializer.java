@@ -8,6 +8,7 @@ import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.editor.graphiti.StyleUtil;
 import ru.runa.gpd.lang.Language;
+import ru.runa.gpd.sync.WfeServerConnectorSettings;
 
 /**
  * Class used to initialize default preference values.
@@ -24,22 +25,21 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer impleme
         store.setDefault(P_FORM_EXTERNAL_EDITOR_PATH, "");
         store.setDefault(P_FORM_USE_EXTERNAL_EDITOR, false);
         store.setDefault(P_FORM_IGNORE_ERRORS_FROM_WEBPAGE, true);
-        store.setDefault(P_WFE_LIST_CONNECTIONS_HEAD, 1);
-        store.setDefault(P_WFE_LIST_CONNECTIONS_TAIL, 1);
 
-        int i = Activator.getDefault().getPreferenceStore().getInt(P_WFE_LIST_CONNECTIONS_HEAD);
-        do {
-            String inst = WFEConnectionPreferenceNode.genId(i);
-            store.setDefault(inst + "." + P_WFE_CONNECTION_PROTOCOL, "http");
-            store.setDefault(inst + "." + P_WFE_CONNECTION_HOST, "localhost");
-            store.setDefault(inst + "." + P_WFE_CONNECTION_PORT, "8080");
-            store.setDefault(inst + "." + P_WFE_CONNECTION_VERSION, "auto");
-            store.setDefault(inst + "." + P_WFE_CONNECTION_LOGIN_MODE, LOGIN_MODE_LOGIN_PASSWORD);
-            store.setDefault(inst + "." + P_WFE_CONNECTION_LOGIN, "Administrator");
-            store.setDefault(inst + "." + P_WFE_CONNECTION_PASSWORD, "wf");
-            store.setDefault(inst + "." + P_WFE_LOAD_PROCESS_DEFINITIONS_HISTORY, false);
-            i = Activator.getDefault().getPreferenceStore().getInt(inst + "." + P_WFE_CONNECTION_NODE_NEXT);
-        } while (i != 0);
+        store.setDefault(P_WFE_SERVER_CONNECTOR_INDICES, "0");
+        store.setDefault(P_WFE_SERVER_CONNECTOR_SELECTED_INDEX, 0);
+        String prefix = WfeServerConnectorPreferenceNode.getId(0);
+        WfeServerConnectorSettings connectorSettings = WfeServerConnectorSettings.createDefault();
+        store.setDefault(prefix + "." + P_WFE_SERVER_CONNECTOR_PROTOCOL_SUFFIX, connectorSettings.getProtocol());
+        store.setDefault(prefix + "." + P_WFE_SERVER_CONNECTOR_HOST_SUFFIX, connectorSettings.getHost());
+        store.setDefault(prefix + "." + P_WFE_SERVER_CONNECTOR_PORT_SUFFIX, connectorSettings.getPort());
+        store.setDefault(prefix + "." + P_WFE_SERVER_CONNECTOR_AUTHENTICATION_TYPE_SUFFIX, connectorSettings.getAuthenticationType());
+        store.setDefault(prefix + "." + P_WFE_SERVER_CONNECTOR_LOGIN_SUFFIX, connectorSettings.getLogin());
+        store.setDefault(prefix + "." + P_WFE_SERVER_CONNECTOR_PASSWORD_SUFFIX, connectorSettings.getPassword());
+        store.setDefault(prefix + "." + P_WFE_SERVER_CONNECTOR_LOAD_PROCESS_DEFINITIONS_HISTORY_SUFFIX,
+                connectorSettings.isLoadProcessDefinitionsHistory());
+        store.setDefault(prefix + "." + P_WFE_SERVER_CONNECTOR_ALLOW_UPDATE_LAST_VERSION_BY_KEY_BINDING_SUFFIX,
+                connectorSettings.isAllowUpdateLastVersionByKeyBinding());
 
         store.setDefault(P_LDAP_CONNECTION_PROVIDER_URL, "ldap://192.168.0.1/dc=domain,dc=com");
         store.setDefault(P_DATE_FORMAT_PATTERN, "dd.MM.yyyy");

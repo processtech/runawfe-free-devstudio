@@ -24,7 +24,7 @@ import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.ui.custom.HelpDialog;
 import ru.runa.gpd.ui.custom.HighlightTextStyling;
 import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
-import ru.runa.gpd.ui.custom.SWTUtils;
+import ru.runa.gpd.ui.custom.SwtUtils;
 import ru.runa.gpd.ui.dialog.ChooseItemDialog;
 import ru.runa.gpd.ui.dialog.ChooseVariableNameDialog;
 
@@ -84,7 +84,7 @@ public class FormulaCellEditorProvider extends DelegableProvider {
             composite.setLayout(new GridLayout(3, false));
             composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            Hyperlink hl1 = SWTUtils.createLink(composite, Localization.getString("help"), new LoggingHyperlinkAdapter() {
+            Hyperlink hl1 = SwtUtils.createLink(composite, Localization.getString("help"), new LoggingHyperlinkAdapter() {
                 @Override
                 public void onLinkActivated(HyperlinkEvent e) throws IOException {
                     HelpDialog dialog = new HelpDialog(FormulaCellEditorProvider.class);
@@ -93,7 +93,7 @@ public class FormulaCellEditorProvider extends DelegableProvider {
             });
             hl1.setLayoutData(new GridData(GridData.GRAB_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
 
-            Hyperlink hl2 = SWTUtils.createLink(composite, Localization.getString("button.insert_function"), new LoggingHyperlinkAdapter() {
+            Hyperlink hl2 = SwtUtils.createLink(composite, Localization.getString("button.insert_function"), new LoggingHyperlinkAdapter() {
                 @Override
                 public void onLinkActivated(HyperlinkEvent e) {
                     ChooseFunctionDialog dialog = new ChooseFunctionDialog();
@@ -107,7 +107,7 @@ public class FormulaCellEditorProvider extends DelegableProvider {
             });
             hl2.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
-            Hyperlink hl3 = SWTUtils.createLink(composite, Localization.getString("button.insert_variable"), new LoggingHyperlinkAdapter() {
+            Hyperlink hl3 = SwtUtils.createLink(composite, Localization.getString("button.insert_variable"), new LoggingHyperlinkAdapter() {
                 @Override
                 public void onLinkActivated(HyperlinkEvent e) {
                     ChooseVariableNameDialog dialog = new ChooseVariableNameDialog(variableNames);

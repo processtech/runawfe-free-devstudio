@@ -29,7 +29,7 @@ import ru.runa.gpd.ui.custom.InsertVariableTextMenuDetectListener;
 import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
 import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
-import ru.runa.gpd.ui.custom.SWTUtils;
+import ru.runa.gpd.ui.custom.SwtUtils;
 import ru.runa.gpd.util.Duration;
 
 import com.google.common.base.Objects;
@@ -146,8 +146,8 @@ public class SetDateVariableHandlerProvider<T extends CalendarConfig> extends Xm
         }
 
         protected void addHelpSection() {
-            Composite strokeComposite = SWTUtils.createStrokeComposite(this, get3GridData(), null, 3);
-            SWTUtils.createLink(strokeComposite, Localization.getString("help"), new LoggingHyperlinkAdapter() {
+            Composite strokeComposite = SwtUtils.createStrokeComposite(this, get3GridData(), null, 3);
+            SwtUtils.createLink(strokeComposite, Localization.getString("help"), new LoggingHyperlinkAdapter() {
 
                 @Override
                 protected void onLinkActivated(HyperlinkEvent e) throws Exception {
@@ -230,15 +230,15 @@ public class SetDateVariableHandlerProvider<T extends CalendarConfig> extends Xm
             composite.setLayoutData(data);
             data = new GridData(GridData.FILL_HORIZONTAL);
             data.horizontalSpan = 5;
-            Composite strokeComposite = SWTUtils.createStrokeComposite(composite, data, Localization.getString("label.operations"), 5);
-            SWTUtils.createLink(strokeComposite, Localization.getString("button.add"), new LoggingHyperlinkAdapter() {
+            Composite strokeComposite = SwtUtils.createStrokeComposite(composite, data, Localization.getString("label.operations"), 5);
+            SwtUtils.createLink(strokeComposite, Localization.getString("button.add"), new LoggingHyperlinkAdapter() {
 
                 @Override
                 protected void onLinkActivated(HyperlinkEvent e) throws Exception {
                     model.addOperation(CalendarOperation.ADD);
                 }
             });
-            SWTUtils.createLink(strokeComposite, Localization.getString("button.set"), new LoggingHyperlinkAdapter() {
+            SwtUtils.createLink(strokeComposite, Localization.getString("button.set"), new LoggingHyperlinkAdapter() {
 
                 @Override
                 protected void onLinkActivated(HyperlinkEvent e) throws Exception {
@@ -292,7 +292,7 @@ public class SetDateVariableHandlerProvider<T extends CalendarConfig> extends Xm
                     new InsertVariableTextMenuDetectListener(text, variableNames);
                 }
             }
-            SWTUtils.createLink(parent, "[X]", new LoggingHyperlinkAdapter() {
+            SwtUtils.createLink(parent, "[X]", new LoggingHyperlinkAdapter() {
 
                 @Override
                 protected void onLinkActivated(HyperlinkEvent e) throws Exception {

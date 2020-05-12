@@ -14,13 +14,13 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
-import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.settings.PrefConstants;
+import ru.runa.gpd.sync.WfeServerConnector;
 import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.ui.wizard.ExportParWizardPage.ParDeployOperation;
 import ru.runa.gpd.util.IOUtils;
@@ -29,7 +29,7 @@ public class ExportProcessDefinitionToServerHandler extends AbstractHandler impl
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        if (!Activator.getDefault().getPreferenceStore().getBoolean(P_ALLOW_UPDATE_LAST_VERSION_BY_KEYBINDING)) {
+        if (!WfeServerConnector.getInstance().getSettings().isAllowUpdateLastVersionByKeyBinding()) {
             updateStatusBar(Localization.getString("ExportProcessDefinitionToServerHandler.disabled"));
             return null;
         }
@@ -45,7 +45,8 @@ public class ExportProcessDefinitionToServerHandler extends AbstractHandler impl
                 if (!processDefinition.isInvalid()) {
                     try {
                         export(file);
-                        updateStatusBar(Localization.getString("ExportProcessDefinitionToServerHandler.completed"));
+                        updateStatusBar(Localization.getString("ExportProcessDefinitionToServerHandler.completed") + " "
+                                + WfeServerConnector.getInstance().getSettings().getUrl());
                     } catch (Throwable th) {
                         PluginLogger.logError(Localization.getString("ExportParWizardPage.error.export"), th);
                     }
