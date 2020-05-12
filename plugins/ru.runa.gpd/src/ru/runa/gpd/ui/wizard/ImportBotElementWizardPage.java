@@ -28,11 +28,11 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
-import ru.runa.gpd.sync.ConnectorCallback;
 import ru.runa.gpd.sync.WfeServerBotImporter;
 import ru.runa.gpd.sync.WfeServerBotStationImporter;
 import ru.runa.gpd.sync.WfeServerConnectorComposite;
 import ru.runa.gpd.sync.WfeServerConnectorDataImporter;
+import ru.runa.gpd.sync.WfeServerConnectorSynchronizationCallback;
 import ru.runa.wfe.bot.Bot;
 import ru.runa.wfe.bot.BotStation;
 import ru.runa.wfe.bot.BotTask;
@@ -110,30 +110,34 @@ public abstract class ImportBotElementWizardPage extends ImportWizardPage {
         });
         importFromServerButton = new Button(importGroup, SWT.RADIO);
         importFromServerButton.setText(Localization.getString("button.importFromServer"));
-        serverConnectorComposite = new WfeServerConnectorComposite(importGroup, getDataImporter(), new ConnectorCallback() {
+        serverConnectorComposite = new WfeServerConnectorComposite(importGroup, getDataImporter(), new WfeServerConnectorSynchronizationCallback() {
 
             @Override
-            public void onSynchronizationCompleted() {
-                getServerDataViewerInput();
+            public void onCompleted() {
+                updateServerDataViewer(getServerDataViewerInput());
+            }
+
+            @Override
+            public void onFailed() {
+                updateServerDataViewer(null);
             }
             
         });
-        createServerDataGroup(importGroup);
+        createServerDataViewer(importGroup);
         setControl(pageControl);
         onImportModeChanged();
     }
 
     private void onImportModeChanged() {
         boolean fromFile = importFromFileButton.getSelection();
+        selectedElementsText.setEnabled(fromFile);
         selectParsButton.setEnabled(fromFile);
         serverConnectorComposite.setEnabled(!fromFile);
         serverDataViewer.getControl().setEnabled(!fromFile);
         if (fromFile) {
-            serverDataViewer.setInput(new Object());
+            updateServerDataViewer(null);
         } else {
-            Object data = getServerDataViewerInput();
-            serverDataViewer.setInput(data);
-            serverDataViewer.refresh(true);
+            updateServerDataViewer(getServerDataViewerInput());
         }
     }
 
@@ -150,7 +154,7 @@ public abstract class ImportBotElementWizardPage extends ImportWizardPage {
 
     protected abstract Object getServerDataViewerInput();
 
-    private void createServerDataGroup(Composite parent) {
+    private void createServerDataViewer(Composite parent) {
         serverDataViewer = new TreeViewer(parent);
         GridData gridData = new GridData(GridData.FILL_BOTH);
         gridData.heightHint = 100;
@@ -158,6 +162,11 @@ public abstract class ImportBotElementWizardPage extends ImportWizardPage {
         serverDataViewer.setContentProvider(getServerDataViewerContentProvider());
         serverDataViewer.setLabelProvider(new BotStationLabelProvider());
         serverDataViewer.setInput(new Object());
+    }
+
+    private void updateServerDataViewer(Object data) {
+        serverDataViewer.setInput(data);
+        serverDataViewer.refresh(true);
     }
 
     public boolean performFinish() {

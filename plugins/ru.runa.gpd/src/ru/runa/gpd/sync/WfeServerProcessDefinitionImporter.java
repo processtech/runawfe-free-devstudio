@@ -56,7 +56,7 @@ public class WfeServerProcessDefinitionImporter extends WfeServerConnectorDataIm
                 if (e instanceof DefinitionDoesNotExistException || e instanceof DefinitionAlreadyExistException
                         || e instanceof DefinitionNameMismatchException) {
                     PluginLogger.logInfo("Retrying due to " + e);
-                    synchronize();
+                    synchronize(null);
                     uploadPar(definitionName, updateLatestVersion, par, false);
                     return;
                 }

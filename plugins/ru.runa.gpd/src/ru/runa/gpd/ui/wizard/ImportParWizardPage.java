@@ -44,9 +44,9 @@ import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.lang.model.ProcessDefinition;
-import ru.runa.gpd.sync.ConnectorCallback;
 import ru.runa.gpd.sync.WfeServerConnector;
 import ru.runa.gpd.sync.WfeServerConnectorComposite;
+import ru.runa.gpd.sync.WfeServerConnectorSynchronizationCallback;
 import ru.runa.gpd.sync.WfeServerProcessDefinitionImporter;
 import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.util.IOUtils;
@@ -55,7 +55,7 @@ import ru.runa.wfe.definition.dto.WfDefinition;
 public class ImportParWizardPage extends ImportWizardPage {
     private Button importFromFileButton;
     private Composite fileSelectionArea;
-    private Text selectedParsLabel;
+    private Text selectedParsText;
     private Button selectParsButton;
     private Button importFromServerButton;
     private WfeServerConnectorComposite serverConnectorComposite;
@@ -107,10 +107,10 @@ public class ImportParWizardPage extends ImportWizardPage {
         fileSelectionLayout.marginWidth = 0;
         fileSelectionLayout.marginHeight = 0;
         fileSelectionArea.setLayout(fileSelectionLayout);
-        selectedParsLabel = new Text(fileSelectionArea, SWT.MULTI | SWT.READ_ONLY | SWT.V_SCROLL | SWT.BORDER);
+        selectedParsText = new Text(fileSelectionArea, SWT.MULTI | SWT.READ_ONLY | SWT.V_SCROLL | SWT.BORDER);
         GridData gridData = new GridData(GridData.GRAB_HORIZONTAL | GridData.FILL_HORIZONTAL);
         gridData.heightHint = 30;
-        selectedParsLabel.setLayoutData(gridData);
+        selectedParsText.setLayoutData(gridData);
         selectParsButton = new Button(fileSelectionArea, SWT.PUSH);
         selectParsButton.setText(Localization.getString("button.choose"));
         selectParsButton.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_END));
@@ -126,21 +126,26 @@ public class ImportParWizardPage extends ImportWizardPage {
                     for (String fileName : selectedFileNames) {
                         text += fileName + "\n";
                     }
-                    selectedParsLabel.setText(text);
+                    selectedParsText.setText(text);
                 }
             }
         });
         importFromServerButton = new Button(importGroup, SWT.RADIO);
         importFromServerButton.setText(Localization.getString("button.importFromServer"));
         serverConnectorComposite = new WfeServerConnectorComposite(importGroup, WfeServerProcessDefinitionImporter.getInstance(),
-                new ConnectorCallback() {
+                new WfeServerConnectorSynchronizationCallback() {
 
-            @Override
-            public void onSynchronizationCompleted() {
-                setupServerDefinitionViewer();
-            }
+                    @Override
+                    public void onCompleted() {
+                        updateServerDefinitionViewer(WfeServerProcessDefinitionImporter.getInstance().getData());
+                    }
 
-        });
+                    @Override
+                    public void onFailed() {
+                        updateServerDefinitionViewer(null);
+                    }
+
+                });
         createServerDefinitionsGroup(importGroup);
         setControl(pageControl);
         onImportModeChanged();
@@ -148,18 +153,18 @@ public class ImportParWizardPage extends ImportWizardPage {
 
     private void onImportModeChanged() {
         boolean fromFile = importFromFileButton.getSelection();
+        selectedParsText.setEnabled(fromFile);
         selectParsButton.setEnabled(fromFile);
         serverConnectorComposite.setEnabled(!fromFile);
         serverDefinitionViewer.getControl().setEnabled(!fromFile);
         if (fromFile) {
-            serverDefinitionViewer.setInput(new Object());
+            updateServerDefinitionViewer(null);
         } else {
-            setupServerDefinitionViewer();
+            updateServerDefinitionViewer(WfeServerProcessDefinitionImporter.getInstance().getData());
         }
     }
 
-    private void setupServerDefinitionViewer() {
-        List<WfDefinition> definitions = WfeServerProcessDefinitionImporter.getInstance().getData();
+    private void updateServerDefinitionViewer(List<WfDefinition> definitions) {
         if (definitions != null) {
             DefinitionTreeNode treeDefinitions = createTree(definitions);
             serverDefinitionViewer.setInput(treeDefinitions);

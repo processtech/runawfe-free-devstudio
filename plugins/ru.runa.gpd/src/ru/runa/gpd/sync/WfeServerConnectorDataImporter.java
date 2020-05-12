@@ -30,12 +30,12 @@ public abstract class WfeServerConnectorDataImporter<T> {
             if (!getConnector().isConfigured()) {
                 return null;
             }
-            synchronize();
+            synchronize(null);
         }
         return data;
     }
 
-    public final void synchronize() {
+    public final void synchronize(final WfeServerConnectorSynchronizationCallback callback) {
         Shell shell = Display.getCurrent() != null ? Display.getCurrent().getActiveShell() : null;
         final ProgressMonitorDialog monitorDialog = new ProgressMonitorDialog(shell);
         monitorDialog.setCancelable(true);
@@ -66,8 +66,14 @@ public abstract class WfeServerConnectorDataImporter<T> {
         };
         try {
             monitorDialog.run(true, false, runnable);
+            if (callback != null) {
+                callback.onCompleted();
+            }
         } catch (InvocationTargetException ex) {
             Dialogs.error(Localization.getString("error.Synchronize"), ex.getTargetException());
+            if (callback != null) {
+                callback.onFailed();
+            }
         } catch (InterruptedException consumed) {
         }
     }

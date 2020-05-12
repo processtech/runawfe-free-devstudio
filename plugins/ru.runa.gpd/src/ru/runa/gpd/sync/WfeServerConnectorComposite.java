@@ -26,11 +26,11 @@ import ru.runa.gpd.ui.custom.SwtUtils;
 
 public class WfeServerConnectorComposite extends Composite {
     private final WfeServerConnectorDataImporter<?> importer;
-    private final ConnectorCallback callback;
+    private final WfeServerConnectorSynchronizationCallback callback;
     private Combo combo;
     private Hyperlink synchronizeLink;
 
-    public WfeServerConnectorComposite(Composite parent, WfeServerConnectorDataImporter<?> importer, ConnectorCallback callback) {
+    public WfeServerConnectorComposite(Composite parent, WfeServerConnectorDataImporter<?> importer, WfeServerConnectorSynchronizationCallback callback) {
         super(parent, SWT.NONE);
         this.importer = importer;
         this.callback = callback;
@@ -65,16 +65,14 @@ public class WfeServerConnectorComposite extends Composite {
                 for (String[] entry : items) {
                     if (name.equals(entry[0])) {
                         IPreferenceStore store = Activator.getDefault().getPreferenceStore();
-                        store.setValue(PrefConstants.P_WFE_SERVER_CONNECTOR_SELECTED_INDEX, entry[1]);
+                        store.setValue(PrefConstants.P_WFE_SERVER_CONNECTOR_SELECTED_INDEX, Integer.valueOf(entry[1]));
+                        // Activator.getDefault().savePluginPreferences();
                         WfeServerConnector.getInstance().setSettings(WfeServerConnectorSettings.loadSelected());
                         break;
                     }
                 }
                 synchronizeLink.setEnabled(WfeServerConnector.getInstance().isConfigured());
-                importer.synchronize();
-                if (callback != null) {
-                    callback.onSynchronizationCompleted();
-                }
+                importer.synchronize(callback);
             }
         });
     }
@@ -99,10 +97,7 @@ public class WfeServerConnectorComposite extends Composite {
         dialog.create();
         dialog.setMessage(page.getTitle());
         if (dialog.open() == IDialogConstants.OK_ID) {
-            importer.synchronize();
-            if (callback != null) {
-                callback.onSynchronizationCompleted();
-            }
+            importer.synchronize(callback);
         }
     }
 
@@ -111,10 +106,7 @@ public class WfeServerConnectorComposite extends Composite {
 
             @Override
             protected void onLinkActivated(HyperlinkEvent e) throws Exception {
-                importer.synchronize();
-                if (callback != null) {
-                    callback.onSynchronizationCompleted();
-                }
+                importer.synchronize(callback);
             }
 
         });

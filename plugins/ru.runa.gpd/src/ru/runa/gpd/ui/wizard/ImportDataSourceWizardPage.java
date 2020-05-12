@@ -27,8 +27,8 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.TreeItem;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
-import ru.runa.gpd.sync.ConnectorCallback;
 import ru.runa.gpd.sync.WfeServerConnectorComposite;
+import ru.runa.gpd.sync.WfeServerConnectorSynchronizationCallback;
 import ru.runa.gpd.sync.WfeServerDataSourceImporter;
 import ru.runa.gpd.util.DataSourceUtils;
 import ru.runa.gpd.util.IOUtils;
@@ -103,14 +103,20 @@ public class ImportDataSourceWizardPage extends ImportWizardPage {
         });
         importFromServerButton = new Button(importGroup, SWT.RADIO);
         importFromServerButton.setText(Localization.getString("button.importFromServer"));
-        serverConnectorComposite = new WfeServerConnectorComposite(importGroup, WfeServerDataSourceImporter.getInstance(), new ConnectorCallback() {
+        serverConnectorComposite = new WfeServerConnectorComposite(importGroup, WfeServerDataSourceImporter.getInstance(),
+                new WfeServerConnectorSynchronizationCallback() {
 
-            @Override
-            public void onSynchronizationCompleted() {
-                setupServerDataSourceViewer();
-            }
+                    @Override
+                    public void onCompleted() {
+                        updateServerDataSourceViewer(WfeServerDataSourceImporter.getInstance().getData());
+                    }
 
-        });
+                    @Override
+                    public void onFailed() {
+                        updateServerDataSourceViewer(null);
+                    }
+
+                });
         createServerDataSourcesGroup(importGroup);
         setControl(pageControl);
         onImportModeChanged();
@@ -118,18 +124,19 @@ public class ImportDataSourceWizardPage extends ImportWizardPage {
 
     private void onImportModeChanged() {
         boolean fromFile = importFromFileButton.getSelection();
+        selectedDataSourcesText.setEnabled(fromFile);
         selectDataSourcesButton.setEnabled(fromFile);
         serverConnectorComposite.setEnabled(!fromFile);
         serverDataSourceViewer.getControl().setEnabled(!fromFile);
         if (fromFile) {
-            serverDataSourceViewer.setInput(new Object());
+            updateServerDataSourceViewer(null);
         } else {
-            setupServerDataSourceViewer();
+            updateServerDataSourceViewer(WfeServerDataSourceImporter.getInstance().getData());
         }
     }
 
-    private void setupServerDataSourceViewer() {
-        serverDataSourceViewer.setInput(WfeServerDataSourceImporter.getInstance().getData());
+    private void updateServerDataSourceViewer(Object data) {
+        serverDataSourceViewer.setInput(data);
         serverDataSourceViewer.refresh(true);
     }
 
