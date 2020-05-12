@@ -58,32 +58,40 @@ public class InternalStorageDataModel extends DataModel {
 
     @Override
     public void validate(GraphElement graphElement, List<ValidationError> errors) {
-        super.validate(graphElement, errors);
-        if (!errors.isEmpty()) {
+        if (constraints.size() != 1) {
+            errors.add(ValidationError.createError(graphElement, "Expected model.constraints.size() == 1, actual " + constraints.size()));
             return;
         }
 
-        for (StorageConstraintsModel constraintsModel : constraints) {
-            final String queryString = constraintsModel.getQueryString();
-            if (queryString == null || queryString.trim().isEmpty()) {
-                continue;
+        final StorageConstraintsModel constraintsModel = Iterables.getOnlyElement(constraints);
+        if (constraintsModel.getQueryType() == QueryType.INSERT || constraintsModel.getQueryType() == QueryType.UPDATE) {
+            super.validate(graphElement, errors);
+            if (!errors.isEmpty()) {
+                return;
             }
+        } else {
+            inOutModel.validate(graphElement, mode, errors);
+        }
 
-            final String pattern = PredicateOperationType.codes().stream()
-                    .filter(code -> !code.equals(PredicateOperationType.AND.code) && !code.equals(PredicateOperationType.OR.code))
-                    .collect(Collectors.joining("|", "(", ")"));
-            try (Scanner expressionScanner = new Scanner(queryString)
-                    .useDelimiter("(" + PredicateOperationType.AND.code + "|" + PredicateOperationType.OR.code + ")")) {
-                while (expressionScanner.hasNext()) {
-                    try (Scanner variableScanner = new Scanner(expressionScanner.next()).useDelimiter(pattern)) {
-                        while (variableScanner.hasNext()) {
-                            final String candidate = variableScanner.next();
-                            final int i = candidate.indexOf("@");
-                            if (i == -1) {
-                                continue;
-                            }
-                            validateVariableHasDefaultValue(graphElement, errors, candidate.substring(i + 1).trim());
+        final String queryString = constraintsModel.getQueryString();
+        if (queryString == null || queryString.trim().isEmpty()) {
+            return;
+        }
+
+        final String pattern = PredicateOperationType.codes().stream()
+                .filter(code -> !code.equals(PredicateOperationType.AND.code) && !code.equals(PredicateOperationType.OR.code))
+                .collect(Collectors.joining("|", "(", ")"));
+        try (Scanner expressionScanner = new Scanner(queryString)
+                .useDelimiter("(" + PredicateOperationType.AND.code + "|" + PredicateOperationType.OR.code + ")")) {
+            while (expressionScanner.hasNext()) {
+                try (Scanner variableScanner = new Scanner(expressionScanner.next()).useDelimiter(pattern)) {
+                    while (variableScanner.hasNext()) {
+                        final String candidate = variableScanner.next();
+                        final int i = candidate.indexOf("@");
+                        if (i == -1) {
+                            continue;
                         }
+                        validateVariableHasDefaultValue(graphElement, errors, candidate.substring(i + 1).trim());
                     }
                 }
             }

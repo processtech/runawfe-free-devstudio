@@ -1,23 +1,23 @@
 package ru.runa.gpd.office.store.externalstorage;
 
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 import org.eclipse.swt.widgets.Composite;
 import ru.runa.gpd.lang.model.Variable;
+import ru.runa.gpd.office.InputOutputModel;
 import ru.runa.gpd.office.Messages;
 import ru.runa.gpd.office.store.InternalStorageOperationHandlerCellEditorProvider.VariableUserTypeInfo;
 import ru.runa.gpd.office.store.StorageConstraintsModel;
 
 public class SelectConstraintsComposite extends AbstractOperatingVariableComboBasedConstraintsCompositeBuilder {
-    private final Consumer<String> resultVariableNameConsumer;
     private final VariableUserTypeInfo variableUserTypeInfo;
+    private final InputOutputModel inOutModel;
 
     public SelectConstraintsComposite(Composite parent, int style, StorageConstraintsModel constraintsModel, VariableProvider variableProvider,
-            VariableUserTypeInfo variableUserTypeInfo, Consumer<String> resultVariableNameConsumer) {
+            VariableUserTypeInfo variableUserTypeInfo, InputOutputModel inOutModel) {
         super(parent, style, constraintsModel, variableProvider, variableUserTypeInfo.getVariableTypeName());
         this.variableUserTypeInfo = variableUserTypeInfo;
-        this.resultVariableNameConsumer = resultVariableNameConsumer;
+        this.inOutModel = inOutModel;
     }
 
     @Override
@@ -29,6 +29,7 @@ public class SelectConstraintsComposite extends AbstractOperatingVariableComboBa
     @Override
     protected void onWidgetSelected(String text) {
         super.onWidgetSelected(text);
+        constraintsModel.setVariableName(null);
         produceResultVariableName(text);
     }
 
@@ -57,17 +58,23 @@ public class SelectConstraintsComposite extends AbstractOperatingVariableComboBa
 
     @Override
     public void clearConstraints() {
+        constraintsModel.setVariableName(null);
         if (variableUserTypeInfo.isImmutable()) {
-            constraintsModel.setVariableName(variableUserTypeInfo.getVariableTypeName());
             return;
         }
         super.clearConstraints();
     }
 
-    private void produceResultVariableName(String variableName) {
-        if (resultVariableNameConsumer != null) {
-            resultVariableNameConsumer.accept(variableName);
+    @Override
+    protected void addCombo() {
+        super.addCombo();
+        if (inOutModel.outputVariable != null) {
+            combo.setText(inOutModel.outputVariable);
         }
+    }
+
+    private void produceResultVariableName(String variableName) {
+        inOutModel.outputVariable = variableName;
     }
 
 }

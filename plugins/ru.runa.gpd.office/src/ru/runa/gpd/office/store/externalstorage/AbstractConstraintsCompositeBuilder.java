@@ -29,6 +29,7 @@ abstract class AbstractConstraintsCompositeBuilder extends Composite implements 
     public void onChangeVariableTypeName(String variableTypeName) {
         this.variableTypeName = variableTypeName;
         constraintsModel.setVariableName("");
+        constraintsModel.setQueryString("");
     }
 
     @Override

@@ -162,13 +162,12 @@ public class InternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
                 control.dispose();
             }
 
-            if (constraintsModel.getVariableName() != null && !constraintsModel.getVariableName().isEmpty()) {
+            if (constraintsModel.getSheetName() != null && !constraintsModel.getSheetName().isEmpty()) {
+                final VariableUserType userType = variableProvider.getUserType(constraintsModel.getSheetName());
+                variableUserTypeInfo.setVariableTypeName(userType != null ? userType.getName() : "");
+
                 if (variableUserTypeInfo.isImmutable() && !variableUserTypeInfo.getVariableTypeName().equals(constraintsModel.getSheetName())) {
                     constraintsModel.setQueryString("");
-                } else {
-                    final VariableUserType userType = variableProvider.getUserType(constraintsModel.getSheetName());
-                    variableUserTypeInfo.setVariableTypeName(userType != null ? userType.getName() : "");
-                    constraintsModel.setSheetName(variableUserTypeInfo.getVariableTypeName());
                 }
             }
 
@@ -185,7 +184,7 @@ public class InternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
             if (variableUserTypeInfo.isImmutable()) {
                 SWTUtils.createLabel(this, variableUserTypeInfo.getVariableTypeName());
                 constraintsModel.setSheetName(variableUserTypeInfo.getVariableTypeName());
-                constraintsModel.setVariableName(variableUserTypeInfo.getVariableTypeName());
+                constraintsModel.setVariableName(null);
                 model.setMode(FilesSupplierMode.IN);
             } else {
                 addDataTypeCombo();
@@ -226,9 +225,8 @@ public class InternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
                     break;
                 case SELECT:
                     constraintsCompositeBuilder = new PredicateCompositeDelegateBuilder(this, SWT.NONE, constraintsModel, variableProvider,
-                            variableUserTypeInfo.getVariableTypeName(),
-                            new SelectConstraintsComposite(this, SWT.NONE, constraintsModel, variableProvider, variableUserTypeInfo,
-                                    (resultVariableName) -> model.getInOutModel().outputVariable = resultVariableName));
+                            variableUserTypeInfo.getVariableTypeName(), new SelectConstraintsComposite(this, SWT.NONE, constraintsModel,
+                                    variableProvider, variableUserTypeInfo, model.getInOutModel()));
                     break;
                 case UPDATE:
                     constraintsCompositeBuilder = new PredicateCompositeDelegateBuilder(this, SWT.NONE, constraintsModel, variableProvider,
