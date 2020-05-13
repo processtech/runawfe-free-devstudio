@@ -27,11 +27,10 @@ public class UserTypeAttributeParameter extends ComboParameter {
         });
     }
 
-    protected final VariableUserType getUserType(Component component) {
+    protected VariableUserType getUserType(Component component) {
         for (ComponentParameter componentParameter : component.getType().getParameters()) {
             if (componentParameter.getType() instanceof UserTypeVariableListComboParameter
-                    || componentParameter.getType() instanceof VariableComboParameter
-                    || componentParameter.getType() instanceof DbUserTypeListComboParameter) {
+                    || componentParameter.getType() instanceof VariableComboParameter) {
                 String variableName = (String) component.getParameterValue(componentParameter);
                 if (!Strings.isNullOrEmpty(variableName)) {
                     Variable variable = getVariables(componentParameter).get(variableName);
