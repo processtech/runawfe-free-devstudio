@@ -53,6 +53,7 @@ public class ProjectionDialog extends XmlBasedConstructorProvider<ProjectionData
     public boolean validateValue(Delegable delegable, List<ValidationError> errors) throws Exception {
         if (StringUtils.isBlank(delegable.getDelegationConfiguration())) {
             errors.add(ValidationError.createError(graphElement, Messages.getString("validation.projection.not.set")));
+            return false;
         }
         return validateModel(delegable, ProjectionDataModel.fromXml(delegable.getDelegationConfiguration()).get(), errors);
     }
@@ -66,6 +67,7 @@ public class ProjectionDialog extends XmlBasedConstructorProvider<ProjectionData
                 || projections.size() < actualProjections.size() && !CollectionUtil.diffSet(actualProjections, projections).isEmpty()) {
             errors.add(ValidationError.createError(graphElement,
                     MessageFormat.format(Messages.getString("validation.projection.usertype.changed"), userType.getName())));
+            return false;
         }
         return super.validateModel(delegable, model, errors);
     }
