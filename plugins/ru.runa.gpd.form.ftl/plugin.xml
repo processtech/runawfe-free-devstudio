@@ -114,7 +114,7 @@
       <type
             class="ru.runa.gpd.formeditor.ftl.parameter.DbUserTypeVariableListComboParameter"
             validator="ru.runa.gpd.formeditor.ftl.validation.DefaultParameterTypeValidator"
-            depends="dbusertypelistcombo,combo"
+            depends="dbusertypelistcombo"
             id="dbusertypevarlistcombo">
       </type>
       <type
