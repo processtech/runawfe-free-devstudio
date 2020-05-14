@@ -101,8 +101,9 @@ public class NewGlobalSectionDefinitionWizard extends Wizard implements INewWiza
             	if (page.getProcessFolder().getParent() != null) {
             		for (IResource resource : page.getProcessFolder().getParent().members()) {
             			if (resource instanceof IFolder && 
-            			resource.getName().startsWith(".") &&
-            			!page.getProcessFolder().equals(resource)) {
+            				IOUtils.isProcessDefinitionFolder((IFolder)resource) &&	
+	            			resource.getName().startsWith(".") &&
+	            			!page.getProcessFolder().equals(resource)) {
             				Dialogs.error(Localization.getString("NewGlobalSectionDefinitionWizard.error.creation"));
             				return;
             			}
