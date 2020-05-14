@@ -33,33 +33,13 @@ import ru.runa.wfe.webservice.ExecutorWebService;
 import ru.runa.wfe.webservice.Relation;
 import ru.runa.wfe.webservice.RelationAPI;
 import ru.runa.wfe.webservice.RelationWebService;
+import ru.runa.wfe.webservice.SystemAPI;
+import ru.runa.wfe.webservice.SystemWebService;
 import ru.runa.wfe.webservice.User;
 import ru.runa.wfe.webservice.WfExecutor;
 
 public abstract class AbstractWebServiceWfeServerConnector extends WfeServerConnector {
     private User user;
-
-    protected abstract URL getUrl(String serviceName);
-
-    protected String getVersion() {
-        String version = settings.getVersion();
-        if (version == null) {
-            String url = settings.getUrl() + "/wfe/version";
-            try {
-                InputStreamReader reader = new InputStreamReader(new URL(url).openStream());
-                version = CharStreams.toString(reader);
-                int colonIndex = version.indexOf(":");
-                if (colonIndex != -1) {
-                    version = version.substring(colonIndex + 1);
-                }
-                reader.close();
-            } catch (Exception e) {
-                throw new RuntimeException("Unable to acquire version using " + url);
-            }
-            settings.setVersion(version);
-        }
-        return version;
-    }
 
     @Override
     public void connect() {
@@ -78,27 +58,6 @@ public abstract class AbstractWebServiceWfeServerConnector extends WfeServerConn
     @Override
     public void disconnect() throws Exception {
         user = null;
-    }
-
-    private User getUser() {
-        if (user == null) {
-            connect();
-        } else {
-            try {
-                // check user is up to date
-                getExecutorService().getExecutor(user, user.getActor().getId());
-            } catch (SOAPFaultException e) {
-                if (e.getMessage() == null || !e.getMessage().contains("Error in subject decryption")) {
-                    Throwables.propagate(e);
-                }
-                connect();
-            }
-        }
-        return user;
-    }
-
-    private ExecutorAPI getExecutorService() {
-        return new ExecutorWebService(getUrl("Executor")).getExecutorAPIPort();
     }
 
     @Override
@@ -125,10 +84,6 @@ public abstract class AbstractWebServiceWfeServerConnector extends WfeServerConn
             result.add(relation.getName());
         }
         return result;
-    }
-
-    private DefinitionAPI getDefinitionService() {
-        return new DefinitionWebService(getUrl("Definition")).getDefinitionAPIPort();
     }
 
     @Override
@@ -202,17 +157,14 @@ public abstract class AbstractWebServiceWfeServerConnector extends WfeServerConn
         }
     }
 
-    private BotAPI getBotService() {
-        return new BotWebService(getUrl("Bot")).getBotAPIPort();
-    }
-
     @Override
     public Map<Bot, List<BotTask>> getBots() {
+        User user = getUser();
         Map<Bot, List<BotTask>> result = Maps.newHashMap();
         List<BotStation> botStations = BotStationAdapter.toDTOs(getBotService().getBotStations());
         for (BotStation botStation : botStations) {
-            for (Bot bot : BotAdapter.toDTOs(getBotService().getBots(getUser(), botStation.getId()))) {
-                result.put(bot, BotTaskAdapter.toDTOs(getBotService().getBotTasks(getUser(), bot.getId())));
+            for (Bot bot : BotAdapter.toDTOs(getBotService().getBots(user, botStation.getId()))) {
+                result.put(bot, BotTaskAdapter.toDTOs(getBotService().getBotTasks(user, bot.getId())));
             }
         }
         return result;
@@ -252,10 +204,6 @@ public abstract class AbstractWebServiceWfeServerConnector extends WfeServerConn
         return BotStationAdapter.toDTOs(getBotService().getBotStations());
     }
 
-    private DataSourceAPI getDataSourceService() {
-        return new DataSourceWebService(getUrl("DataSource")).getDataSourceAPIPort();
-    }
-
     @Override
     public void deployDataSourceArchive(byte[] archive) {
         getDataSourceService().importDataSource(getUser(), archive);
@@ -269,6 +217,65 @@ public abstract class AbstractWebServiceWfeServerConnector extends WfeServerConn
     @Override
     public List<String> getDataSourceNames() {
         return getDataSourceService().getNames();
+    }
+
+    protected abstract URL getUrl(String serviceName);
+
+    protected String getVersion() {
+        String version = settings.getVersion();
+        if (version == null) {
+            String url = settings.getUrl() + "/wfe/version";
+            try {
+                InputStreamReader reader = new InputStreamReader(new URL(url).openStream());
+                version = CharStreams.toString(reader);
+                int colonIndex = version.indexOf(":");
+                if (colonIndex != -1) {
+                    version = version.substring(colonIndex + 1);
+                }
+                reader.close();
+            } catch (Exception e) {
+                throw new RuntimeException("Unable to acquire version using " + url);
+            }
+            settings.setVersion(version);
+        }
+        return version;
+    }
+
+    private User getUser() {
+        if (user == null) {
+            connect();
+        } else {
+            try {
+                // check user is up to date
+                getSystemService().login(user);
+            } catch (SOAPFaultException e) {
+                if (e.getMessage() == null || !e.getMessage().contains("Error in subject decryption")) {
+                    Throwables.propagate(e);
+                }
+                connect();
+            }
+        }
+        return user;
+    }
+
+    private ExecutorAPI getExecutorService() {
+        return new ExecutorWebService(getUrl("Executor")).getExecutorAPIPort();
+    }
+
+    private DefinitionAPI getDefinitionService() {
+        return new DefinitionWebService(getUrl("Definition")).getDefinitionAPIPort();
+    }
+
+    private BotAPI getBotService() {
+        return new BotWebService(getUrl("Bot")).getBotAPIPort();
+    }
+
+    private DataSourceAPI getDataSourceService() {
+        return new DataSourceWebService(getUrl("DataSource")).getDataSourceAPIPort();
+    }
+
+    private SystemAPI getSystemService() {
+        return new SystemWebService(getUrl("System")).getSystemAPIPort();
     }
 
 }

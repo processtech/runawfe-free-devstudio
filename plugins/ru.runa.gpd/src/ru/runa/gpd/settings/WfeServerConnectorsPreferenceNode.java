@@ -6,6 +6,7 @@ import java.util.List;
 import org.eclipse.jface.preference.IPreferenceNode;
 import org.eclipse.jface.preference.IPreferencePageContainer;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.preference.PreferenceNode;
 import org.eclipse.ui.PlatformUI;
@@ -96,8 +97,12 @@ public class WfeServerConnectorsPreferenceNode extends PreferenceNode implements
     }
 
     public void updateUi(IPreferencePageContainer preferencePageContainer, String selectedNodeId) {
-        FilteredPreferenceDialog preferenceDialog = (FilteredPreferenceDialog) preferencePageContainer;
-        preferenceDialog.getTreeViewer().refresh();
-        preferenceDialog.setCurrentPageId(selectedNodeId);
+        if (preferencePageContainer instanceof PreferenceDialog) {
+            ((PreferenceDialog) preferencePageContainer).getTreeViewer().refresh();
+        }
+        if (preferencePageContainer instanceof FilteredPreferenceDialog) {
+            // #624#note-15
+            ((FilteredPreferenceDialog) preferencePageContainer).setCurrentPageId(selectedNodeId);
+        }
     }
 }
