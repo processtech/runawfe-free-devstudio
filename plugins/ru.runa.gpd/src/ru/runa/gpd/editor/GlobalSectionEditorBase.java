@@ -165,7 +165,7 @@ public abstract class GlobalSectionEditorBase extends ProcessEditorBase {
                 variablePage = addNewPage(new VariableEditorPage((ProcessEditorBase)this), "DesignerEditor.title.variables");
                 variableTypeEditorPage = addNewPage(new VariableTypeEditorPage((ProcessEditorBase)this), "VariableUserType.collection");
             }
-            sourcePage = addNewPage(new TextEditor(), "DesignerEditor.title.source");
+            sourcePage = new TextEditor();
             ProcessDefinitionValidator.validateDefinition(definition);
         } catch (PartInitException e) {
             PluginLogger.logError(Localization.getString("DesignerEditor.error.can_not_create_graphical_viewer"), e);

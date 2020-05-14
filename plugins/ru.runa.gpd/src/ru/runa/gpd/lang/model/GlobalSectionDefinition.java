@@ -402,7 +402,6 @@ public class GlobalSectionDefinition extends ProcessDefinition {
 
     @Override
     protected void populateCustomPropertyDescriptors(List<IPropertyDescriptor> descriptors) {
-        super.populateCustomPropertyDescriptors(descriptors);
         descriptors.add(new StartImagePropertyDescriptor("startProcessImage", Localization.getString("ProcessDefinition.property.startImage")));
         descriptors.add(new PropertyDescriptor(PROPERTY_LANGUAGE, Localization.getString("ProcessDefinition.property.language")));
         descriptors.add(new DurationPropertyDescriptor(PROPERTY_TASK_DEADLINE, this, getDefaultTaskTimeoutDelay(), Localization
@@ -413,7 +412,7 @@ public class GlobalSectionDefinition extends ProcessDefinition {
                 array));
         descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_NODE_ASYNC_EXECUTION, Localization
                 .getString("ProcessDefinition.property.nodeAsyncExecution"), NodeAsyncExecution.LABELS));
-        descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_USE_GLOBALS, Localization.getString("Definition.property.useGlobals"), new String[] {"true"}));
+        descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_USE_GLOBALS, Localization.getString("GlobalSectionDefinition.property.useGlobals"), new String[] {"true"}));
     }
 
     @Override
@@ -465,48 +464,13 @@ public class GlobalSectionDefinition extends ProcessDefinition {
     }
     
     public void addVariableUserType(VariableUserType type) {
-    	type.setName(IOUtils.GLOBAL_ROLE_REF_PREFIX + type.getName());
         type.setProcessDefinition(this);
+        if (!type.getName().startsWith(IOUtils.GLOBAL_ROLE_REF_PREFIX)) {
+        	type.setName(IOUtils.GLOBAL_ROLE_REF_PREFIX + type.getName());
+        }
         type.setGlobal(true);
         types.add(type);
-        if (file != null && file.getParent() != null && file.getParent().getParent() != null) {
-        	addVariableUserTypeToAllChild(file.getParent().getParent(), type);
-        }
         firePropertyChange(PROPERTY_USER_TYPES_CHANGED, null, type);
-    }
-
-    void addVariableUserTypeToAllChild(IContainer resource, VariableUserType type) {
-    	try {
-    		//для проверки, если появится 
-    		boolean this_section_space = true;
-    		for (IResource r : resource.members()) {
-    			if (r instanceof IFolder) {
-    				if (IOUtils.isProcessDefinitionFolder((IFolder)r)) {
-    					IFile definitionFile = (IFile) ((IFolder) r).findMember(ParContentProvider.PROCESS_DEFINITION_FILE_NAME);
-    					ProcessDefinition definition = ProcessCache.getProcessDefinition(definitionFile);
-    					List<VariableUserType> list = definition.getVariableUserTypes();
-    					VariableUserType equalType = list.stream().filter(p -> p.getName().equals(type.getName())).findAny().orElse(null);
-    					if (equalType != null) {
-    						if (this_section_space) {
-    							list.set(list.indexOf(equalType), type);
-    							definition.addVariableUserType(type);
-    						}
-    					}
-    					else {
-    						definition.addVariableUserType(type);
-    					}
-    				}
-    				else if (!r.getName().startsWith(".")) {
-    					this_section_space = false;
-    				}
-    				else if (r instanceof IContainer){
-    					addVariableUserTypeToAllChild((IContainer)r, type);
-    				}
-    			}
-    		}
-        } catch (CoreException e) {
-        	PluginLogger.logError(e);
-        }
     }
 
     public void changeVariableUserTypePosition(VariableUserType type, int position) {
@@ -517,10 +481,11 @@ public class GlobalSectionDefinition extends ProcessDefinition {
     }
 
     public void removeVariableUserType(VariableUserType type) {
+    	removeVariableUserTypeInAllProcess(type, file.getParent().getParent());
         types.remove(type);
         firePropertyChange(PROPERTY_USER_TYPES_CHANGED, null, type);
     }
-
+    
     public VariableUserType getVariableUserType(String name) {
         for (VariableUserType type : types) {
             if (Objects.equal(name, type.getName())) {
@@ -571,48 +536,81 @@ public class GlobalSectionDefinition extends ProcessDefinition {
     }
 
     public List<Swimlane> getGlobalSwimlanes(boolean force) {
-        if (globalSwimlanes == null || force) {
-            globalSwimlanes = getGlobalSwimlanes(getFile(), new ArrayList<Swimlane>());
-        }
         return globalSwimlanes;
     }
-
-    private List<Swimlane> getGlobalSwimlanes(IResource resource, List<Swimlane> swimlanes) {
-        IContainer parent = resource.getParent();
-        if (parent == null) {
-            return swimlanes;
-        } else {
-            try {
-                for (IResource r : parent.members()) {
-                    if (!r.getName().equals(resource.getName()) && r.getName().startsWith(".") && r.getType() == IResource.FOLDER) {
+    
+    public void removeGlobalSwimlaneInAllProcess(Swimlane swimlane, IContainer folder) {
+        try {
+			for (IResource r : folder.members()) {
+				if (r instanceof IFolder) {
+					if (IOUtils.isProcessDefinitionFolder((IFolder)r) && !r.getName().startsWith(".")) {
                         IFile definitionFile = (IFile) ((IFolder) r).findMember(ParContentProvider.PROCESS_DEFINITION_FILE_NAME);
                         if (definitionFile != null) {
-                            List<Swimlane> globalSwimlanes = ProcessCache.getProcessDefinition(definitionFile).getChildren(Swimlane.class);
-                            for (Swimlane swimlane : globalSwimlanes) {
-                                Swimlane copy = new Swimlane();
-                                copy.setName(IOUtils.GLOBAL_ROLE_REF_PREFIX + swimlane.getName());
-                                if (!swimlanes.contains(copy)) {
-                                    copy.setScriptingName(IOUtils.GLOBAL_ROLE_REF_PREFIX + swimlane.getScriptingName());
-                                    copy.setDescription(swimlane.getDescription());
-                                    copy.setDefaultValue(swimlane.getDefaultValue());
-                                    copy.setFormat(swimlane.getFormat());
-                                    copy.setDelegationClassName(swimlane.getDelegationClassName());
-                                    copy.setDelegationConfiguration(swimlane.getDelegationConfiguration());
-                                    copy.setPublicVisibility(swimlane.isPublicVisibility());
-                                    copy.setStoreType(swimlane.getStoreType());
-                                    copy.setGlobal(true);
-                                    swimlanes.add(copy);
-                                }
-                            }
+                        	ProcessDefinition definition = ProcessCache.getProcessDefinition(definitionFile);
+                        	Swimlane globalSwimlane = definition.getGlobalSwimlaneByName(IOUtils.GLOBAL_ROLE_REF_PREFIX + swimlane.getName());
+                        	if (globalSwimlane != null) {
+                        		System.out.println(globalSwimlane.getName());
+                        		globalSwimlane.setGlobal(false);
+                        	}
                         }
+					}
+                    if (r instanceof IContainer) {
+                    	removeGlobalSwimlaneInAllProcess(swimlane, (IContainer)r);
                     }
-                }
-            } catch (CoreException e) {
-                PluginLogger.logError(e);
-                return swimlanes;
-            }
-            return getGlobalSwimlanes(parent, swimlanes);
-        }
+				}
+			}
+		} catch (CoreException e) {
+			PluginLogger.logError(e);
+		}
     }
 
+    public void removeGlobalVariableInAllProcess(Variable variable, IContainer folder) {
+        try {
+			for (IResource r : folder.members()) {
+				if (r instanceof IFolder) {
+					if (IOUtils.isProcessDefinitionFolder((IFolder)r) && !r.getName().startsWith(".")) {
+                        IFile definitionFile = (IFile) ((IFolder) r).findMember(ParContentProvider.PROCESS_DEFINITION_FILE_NAME);
+                        if (definitionFile != null) {
+                        	ProcessDefinition definition = ProcessCache.getProcessDefinition(definitionFile);
+                        	Variable globalVariable = definition.getGlobalVariableByName(IOUtils.GLOBAL_ROLE_REF_PREFIX + variable.getName());
+                        	if (globalVariable != null) {
+                        		System.out.println(globalVariable.getName());
+                        		globalVariable.setGlobal(false);
+                        	}
+                        }
+					}
+                    if (r instanceof IContainer) {
+                    	removeGlobalVariableInAllProcess(variable, (IContainer)r);
+                    }
+				}
+			}
+		} catch (CoreException e) {
+			PluginLogger.logError(e);
+		}
+    }
+    
+    private void removeVariableUserTypeInAllProcess(VariableUserType type, IContainer folder) {
+        try {
+			for (IResource r : folder.members()) {
+				if (r instanceof IFolder) {
+					if (IOUtils.isProcessDefinitionFolder((IFolder)r) && !r.getName().startsWith(".")) {
+                        IFile definitionFile = (IFile) ((IFolder) r).findMember(ParContentProvider.PROCESS_DEFINITION_FILE_NAME);
+                        if (definitionFile != null) {
+                        	ProcessDefinition definition = ProcessCache.getProcessDefinition(definitionFile);
+                        	VariableUserType globalType = definition.getTypeByName(type.getName());
+                        	if (globalType != null) {
+                        		System.out.println(globalType.getName());
+                        		globalType.setGlobal(false);
+                        	}
+                        }
+					}
+                    if (r instanceof IContainer) {
+                    	removeVariableUserTypeInAllProcess(type, (IContainer)r);
+                    }
+				}
+			}
+		} catch (CoreException e) {
+			PluginLogger.logError(e);
+		}
+    }
 }

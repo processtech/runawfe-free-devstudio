@@ -45,6 +45,7 @@ import ru.runa.gpd.lang.NodeRegistry;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
+import ru.runa.gpd.lang.model.GlobalSectionDefinition;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.gpd.lang.par.ParContentProvider;
@@ -73,7 +74,9 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
     private Button moveUpTypeButton;
     private Button moveDownTypeButton;
     private Button deleteTypeButton;
-
+    private Button copyTypeButton;
+    private Button pasteTypeButton;
+    
     private TableViewer attributeTableViewer;
     private Button createAttributeButton;
     private Button changeAttributeButton;
@@ -84,7 +87,9 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
     private Button moveDownAttributeButton;
     private Button deleteAttributeButton;
     private Button moveToTypeAttributeButton;
-
+    private Button copyAttributeButton;
+    private Button pasteAttributeButton;
+    
     public VariableTypeEditorPage(ProcessEditorBase editor) {
         super(editor);
     }
@@ -123,8 +128,8 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
         moveUpTypeButton = addButton(typeButtonsBar, "button.up", new MoveTypeSelectionListener(true), true);
         moveDownTypeButton = addButton(typeButtonsBar, "button.down", new MoveTypeSelectionListener(false), true);
         deleteTypeButton = addButton(typeButtonsBar, "button.delete", new RemoveTypeSelectionListener(), true);
-        addButton(typeButtonsBar, "button.copy", new CopyTypeSelectionListener(), true);
-        addButton(typeButtonsBar, "button.paste", new PasteTypeSelectionListener(), true);
+        copyTypeButton = addButton(typeButtonsBar, "button.copy", new CopyTypeSelectionListener(), true);
+        pasteTypeButton = addButton(typeButtonsBar, "button.paste", new PasteTypeSelectionListener(), true);
 
         Composite rightComposite = createSection(sashForm, "VariableUserType.attributes");
         rightComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -167,8 +172,8 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
         moveDownAttributeButton = addButton(attributeButtonsBar, "button.down", new MoveAttributeSelectionListener(false), true);
         deleteAttributeButton = addButton(attributeButtonsBar, "button.delete", new DeleteAttributeSelectionListener(), true);
         moveToTypeAttributeButton = addButton(attributeButtonsBar, "button.move", new MoveToTypeAttributeSelectionListener(), true);
-        addButton(attributeButtonsBar, "button.copy", new CopyAttributeSelectionListener(), true);
-        addButton(attributeButtonsBar, "button.paste", new PasteAttributeSelectionListener(), true);
+        copyAttributeButton = addButton(attributeButtonsBar, "button.copy", new CopyAttributeSelectionListener(), true);
+        pasteAttributeButton = addButton(attributeButtonsBar, "button.paste", new PasteAttributeSelectionListener(), true);
 
         updateViewer();
     }
@@ -198,34 +203,11 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
 
     @Override
     protected void updateUI() {
-        VariableUserType selectedType = getSelection();
-        enableAction(deleteTypeButton, selectedType != null);
-        enableAction(renameTypeButton, selectedType != null);
-        enableAction(moveUpTypeButton, selectedType != null && getDefinition().getVariableUserTypes().indexOf(selectedType) > 0);
-        enableAction(moveDownTypeButton, selectedType != null
-                && getDefinition().getVariableUserTypes().indexOf(selectedType) < getDefinition().getVariableUserTypes().size() - 1);
-
-        enableAction(createAttributeButton, selectedType != null);
-        @SuppressWarnings("unchecked")
-        List<Variable> attributes = ((IStructuredSelection) attributeTableViewer.getSelection()).toList();
-        boolean withoutGlobals = withoutGlobals(attributes);
-        enableAction(changeAttributeButton, attributes.size() == 1);
-        enableAction(searchAttributeButton, attributes.size() == 1);
-        enableAction(renameAttributeButton, attributes.size() == 1);
-        enableAction(mergeAttributesButton, attributes.size() == 2);
-        enableAction(moveUpAttributeButton, selectedType != null && attributes.size() == 1
-                && selectedType.getAttributes().indexOf(attributes.get(0)) > 0);
-        enableAction(moveDownAttributeButton,
-                selectedType != null && attributes.size() == 1
-                        && selectedType.getAttributes().indexOf(attributes.get(0)) < selectedType.getAttributes().size() - 1);
-        enableAction(deleteAttributeButton, attributes.size() > 0);
-        enableAction(moveToTypeAttributeButton, attributes.size() == 1);
-
-        updateAttributeViewer();
+    	updateViewer();
     }
     
-    private boolean withoutGlobals(List<Variable> list) {
-        for (Variable swimlane : list) {
+    private boolean withoutGlobals(List<VariableUserType> list) {
+        for (VariableUserType swimlane : list) {
             if (swimlane.isGlobal()) {
                 return false;
             }
@@ -235,12 +217,53 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
     
     private void updateViewer() {
         List<VariableUserType> userTypes = getDefinition().getVariableUserTypes();
+        boolean withoutGlobals = withoutGlobals(userTypes);
         typeTableViewer.setInput(userTypes);
         for (VariableUserType userType : userTypes) {
             userType.addPropertyChangeListener(this);
         }
         updateAttributeViewer();
-        updateUI();
+        if (getDefinition() instanceof GlobalSectionDefinition) {
+        	withoutGlobals = true;
+        }
+        VariableUserType selectedType = getSelection();
+        enableAction(copyTypeButton, withoutGlobals && selectedType != null);
+        enableAction(pasteTypeButton, withoutGlobals && selectedType != null);
+        enableAction(deleteTypeButton, withoutGlobals && selectedType != null);
+        enableAction(renameTypeButton, withoutGlobals && selectedType != null);
+        enableAction(moveUpTypeButton, selectedType != null && getDefinition().getVariableUserTypes().indexOf(selectedType) > 0);
+        enableAction(moveDownTypeButton, selectedType != null
+                && getDefinition().getVariableUserTypes().indexOf(selectedType) < getDefinition().getVariableUserTypes().size() - 1);
+
+        enableAction(createAttributeButton, selectedType != null);
+        @SuppressWarnings("unchecked")
+        List<Variable> attributes = ((IStructuredSelection) attributeTableViewer.getSelection()).toList();
+        withoutGlobals = true;
+        if (!(getDefinition() instanceof GlobalSectionDefinition)) {
+            for (Variable attribute : attributes) {
+                for (VariableUserType userType : userTypes) {
+                	if (userType.getAttributes().contains(attribute) && userType.isGlobal()) {
+                		withoutGlobals = false;
+                		break;
+                	}
+                }
+            }
+        }
+        enableAction(copyAttributeButton, withoutGlobals && selectedType != null);
+        enableAction(pasteAttributeButton, withoutGlobals && selectedType != null);
+        enableAction(changeAttributeButton, attributes.size() == 1 && withoutGlobals);
+        enableAction(searchAttributeButton, attributes.size() == 1);
+        enableAction(renameAttributeButton, attributes.size() == 1 && withoutGlobals);
+        enableAction(mergeAttributesButton, attributes.size() == 2 && withoutGlobals);
+        enableAction(moveUpAttributeButton, selectedType != null || attributes.size() == 1
+                && selectedType.getAttributes().indexOf(attributes.get(0)) > 0);
+        enableAction(moveDownAttributeButton,
+                selectedType != null && attributes.size() == 1
+                        && selectedType.getAttributes().indexOf(attributes.get(0)) < selectedType.getAttributes().size() - 1);
+        enableAction(deleteAttributeButton, attributes.size() > 0 && withoutGlobals);
+        enableAction(moveToTypeAttributeButton, attributes.size() == 1 && withoutGlobals);
+
+        updateAttributeViewer();
     }
 
     private Variable getAttributeSelection() {

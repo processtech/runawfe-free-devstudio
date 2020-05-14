@@ -51,8 +51,8 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
     private final List<VariableUserType> types = Lists.newArrayList();
     private final IFile file;
     private boolean useGlobals;
-    private List<Swimlane> globalSwimlanes;
-    private List<VariableUserType> globalTypes;
+    private List<Swimlane> globalSwimlanes = new ArrayList<Swimlane>();
+    private List<Variable> globalVariables = new ArrayList<Variable>();
     
     private final ArrayList<VersionInfo> versionInfoList;
 
@@ -286,6 +286,18 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
         }
     }
 
+    public Variable getGlobalVariableByName(String name) {
+    	if (name == null) {
+    		return null;
+        }
+        for (Variable variable : getGlobalVariables(true)) {
+        	if (name.equals(variable.getName())) {
+        		return variable;
+        	}
+        }
+        return null;
+    }
+    
     public List<String> getVariableNames(boolean expandComplexTypes, boolean includeSwimlanes, String... typeClassNameFilters) {
         return VariableUtils.getVariableNames(getVariables(expandComplexTypes, includeSwimlanes, typeClassNameFilters));
     }
@@ -305,6 +317,9 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
         }
         if (includeSwimlanes && useGlobals) {
             variables.addAll(getGlobalSwimlanes(true));
+        }
+        if (useGlobals) {
+        	variables.addAll(getGlobalVariables(true));
         }
         List<Variable> result = Lists.newArrayList();
         for (Variable variable : variables) {
@@ -479,7 +494,7 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
             }
         }
         if (useGlobals) {
-        	types.addAll(getGlobalTypes(true));
+        	getGlobalTypes(getFile(), types);
         }
         return types;
     }
@@ -502,6 +517,18 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
         firePropertyChange(PROPERTY_USER_TYPES_CHANGED, null, type);
     }
 
+    public VariableUserType getTypeByName(String name) {
+        if (name == null) {
+            return null;
+        }
+        for (VariableUserType type : types) {
+            if (name.equals(type.getName())) {
+                return type;
+            }
+        }
+        return null;
+    }
+    
     public VariableUserType getVariableUserType(String name) {
         for (VariableUserType type : getVariableUserTypes()) {
             if (Objects.equal(name, type.getName())) {
@@ -566,7 +593,12 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
 
     public List<Swimlane> getGlobalSwimlanes(boolean force) {
         if (globalSwimlanes == null || force) {
-            globalSwimlanes = getGlobalSwimlanes(getFile(), new ArrayList<Swimlane>());
+            for (Iterator<Swimlane> i = globalSwimlanes.iterator(); i.hasNext();) {
+                if (i.next().isGlobal()) {
+                    i.remove();
+                }
+            }
+            getGlobalSwimlanes(getFile(), globalSwimlanes);
         }
         return globalSwimlanes;
     }
@@ -583,10 +615,10 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
                         if (definitionFile != null) {
                             List<Swimlane> globalSwimlanes = ProcessCache.getProcessDefinition(definitionFile).getChildren(Swimlane.class);
                             for (Swimlane swimlane : globalSwimlanes) {
-                                Swimlane copy = new Swimlane();
-                                copy.setName(IOUtils.GLOBAL_ROLE_REF_PREFIX + swimlane.getName());
-                                if (!swimlanes.contains(copy)) {
-                                    copy.setScriptingName(IOUtils.GLOBAL_ROLE_REF_PREFIX + swimlane.getScriptingName());
+                                if (!swimlanes.stream().filter(s -> s.getName().equals(IOUtils.GLOBAL_ROLE_REF_PREFIX + swimlane.getName())).findFirst().isPresent()) {
+                                    Swimlane copy = new Swimlane();
+                                    copy.setName(IOUtils.GLOBAL_ROLE_REF_PREFIX + swimlane.getName());
+                                	copy.setScriptingName(IOUtils.GLOBAL_ROLE_REF_PREFIX + swimlane.getScriptingName());
                                     copy.setDescription(swimlane.getDescription());
                                     copy.setDefaultValue(swimlane.getDefaultValue());
                                     copy.setFormat(swimlane.getFormat());
@@ -609,13 +641,6 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
         }
     }
     
-    public List<VariableUserType> getGlobalTypes(boolean force) {
-        if (globalTypes == null || force) {
-        	globalTypes = getGlobalTypes(getFile(), new ArrayList<VariableUserType>());
-        }
-        return globalTypes;
-    }
-    
     private List<VariableUserType> getGlobalTypes(IResource resource, List<VariableUserType> types) {
         IContainer parent = resource.getParent();
         if (parent == null) {
@@ -628,12 +653,13 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
                         if (definitionFile != null) {
                             List<VariableUserType> globalTypes = ProcessCache.getProcessDefinition(definitionFile).getVariableUserTypes();
                             for (VariableUserType type : globalTypes) {
-                            	VariableUserType copy = new VariableUserType();
-                                copy.setName(IOUtils.GLOBAL_ROLE_REF_PREFIX + type.getName());
-                                if (!types.contains(copy)) {
+                            	if (!types.contains(type)) {
+                                //if (!types.stream().filter(t -> t.getName().equals(IOUtils.GLOBAL_ROLE_REF_PREFIX + type.getName())).findFirst().isPresent()) {
+                                	/*VariableUserType copy = new VariableUserType();
+                                    copy.setName(IOUtils.GLOBAL_ROLE_REF_PREFIX + type.getName());
                                 	copy.setProcessDefinition(type.getProcessDefinition());
-                                    copy.setGlobal(true);
-                                    types.add(copy);
+                                    copy.setGlobal(true);*/
+                            		types.add(type);
                                 }
                             }
                         }
@@ -646,4 +672,55 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
             return getGlobalTypes(parent, types);
         }
     }
+    
+    public List<Variable> getGlobalVariables(boolean force) {
+        if (globalVariables == null || force) {
+            for (Iterator<Variable> i = globalVariables.iterator(); i.hasNext();) {
+                if (i.next().isGlobal()) {
+                    i.remove();
+                }
+            }
+        	getGlobalVariables(getFile(), globalVariables);
+        }
+        return globalVariables;
+    }
+    
+    private List<Variable> getGlobalVariables(IResource resource, List<Variable> variables) {
+        IContainer parent = resource.getParent();
+        if (parent == null) {
+            return variables;
+        } else {
+            try {
+                for (IResource r : parent.members()) {
+                    if (!r.getName().equals(resource.getName()) && r.getName().startsWith(".") && r.getType() == IResource.FOLDER) {
+                        IFile definitionFile = (IFile) ((IFolder) r).findMember(ParContentProvider.PROCESS_DEFINITION_FILE_NAME);
+                        if (definitionFile != null) {
+                            List<Variable> globalVariables = ProcessCache.getProcessDefinition(definitionFile).getChildren(Variable.class);
+                            for (Variable variable : globalVariables) {
+                                if (!variables.stream().filter(v -> v.getName().equals(IOUtils.GLOBAL_ROLE_REF_PREFIX + variable.getName())).findFirst().isPresent()) {
+                                	Variable copy = new Variable();
+                                    copy.setName(IOUtils.GLOBAL_ROLE_REF_PREFIX + variable.getName());
+                                	copy.setScriptingName(IOUtils.GLOBAL_ROLE_REF_PREFIX + variable.getScriptingName());
+                                    copy.setDescription(variable.getDescription());
+                                    copy.setDefaultValue(variable.getDefaultValue());
+                                    copy.setFormat(variable.getFormat());
+                                    copy.setDelegationClassName(variable.getDelegationClassName());
+                                    copy.setDelegationConfiguration(variable.getDelegationConfiguration());
+                                    copy.setPublicVisibility(variable.isPublicVisibility());
+                                    copy.setStoreType(variable.getStoreType());
+                                    copy.setGlobal(true);
+                                    variables.add(copy);
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (CoreException e) {
+                PluginLogger.logError(e);
+                return variables;
+            }
+            return getGlobalVariables(parent, variables);
+        }
+    }
+    
 }

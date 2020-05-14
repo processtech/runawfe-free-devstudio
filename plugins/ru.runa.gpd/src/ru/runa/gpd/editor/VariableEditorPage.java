@@ -37,7 +37,9 @@ import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.clipboard.VariableTransfer;
 import ru.runa.gpd.editor.gef.command.ProcessDefinitionRemoveVariablesCommand;
 import ru.runa.gpd.lang.model.FormNode;
+import ru.runa.gpd.lang.model.GlobalSectionDefinition;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
+import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.gpd.lang.par.ParContentProvider;
@@ -72,7 +74,8 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
     private Button copyButton;
     private Button moveToTypeAttributeButton;
     private Button usageReportButton;
-
+    private Button pasteButton;
+    
     private static Function<Variable, String> joinVariableNamesFunction = new Function<Variable, String>() {
 
         @Override
@@ -125,7 +128,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
         renameButton = addButton(buttonsBar, "button.rename", new RenameVariableSelectionListener(), true);
         changeButton = addButton(buttonsBar, "button.change", new ChangeVariableSelectionListener(), true);
         copyButton = addButton(buttonsBar, "button.copy", new CopyVariableSelectionListener(), true);
-        addButton(buttonsBar, "button.paste", new PasteVariableSelectionListener(), true);
+        pasteButton = addButton(buttonsBar, "button.paste", new PasteVariableSelectionListener(), true);
         searchButton = addButton(buttonsBar, "button.search", new SearchVariableUsageSelectionListener(), true);
         usageReportButton = addButton(buttonsBar, "button.report", new ReportUsageSelectionListener(), true);
         usageReportButton.setToolTipText(Localization.getString("DesignerVariableEditorPage.report.variablesUsage.tooltip"));
@@ -159,26 +162,37 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
 
     @Override
     protected void updateUI() {
-        List<?> variables = (List<?>) tableViewer.getInput();
-        List<?> selected = ((IStructuredSelection) tableViewer.getSelection()).toList();
-        enableAction(searchButton, selected.size() == 1);
-        enableAction(changeButton, selected.size() == 1);
-        enableAction(moveUpButton, selected.size() == 1 && variables.indexOf(selected.get(0)) > 0);
-        enableAction(moveDownButton, selected.size() == 1 && variables.indexOf(selected.get(0)) < variables.size() - 1);
-        enableAction(deleteButton, selected.size() > 0);
-        enableAction(renameButton, selected.size() == 1);
-        enableAction(copyButton, selected.size() > 0);
-        enableAction(moveToTypeAttributeButton, selected.size() == 1);
-        enableAction(usageReportButton, variables.size() > 0);
+    	updateViewer();
     }
 
+    private boolean withoutGlobals(List<?> list) {
+        for (Object variable : list) {
+            if (variable instanceof Variable && ((Variable)variable).isGlobal()) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
     private void updateViewer() {
-        List<Variable> variables = getDefinition().getVariables(false, false);
-        tableViewer.setInput(variables);
-        for (Variable variable : variables) {
+        List<Variable> variable_list = getDefinition().getVariables(false, false);
+        tableViewer.setInput(variable_list);
+        for (Variable variable : variable_list) {
             variable.addPropertyChangeListener(this);
         }
-        updateUI();
+        List<?> variables = (List<?>) tableViewer.getInput();
+        List<?> selected = ((IStructuredSelection) tableViewer.getSelection()).toList();
+        boolean withoutGlobals = withoutGlobals(selected);
+        enableAction(searchButton, withoutGlobals && selected.size() == 1);
+        enableAction(changeButton, withoutGlobals && selected.size() == 1);
+        enableAction(moveUpButton, withoutGlobals && selected.size() == 1 && variables.indexOf(selected.get(0)) > 0);
+        enableAction(moveDownButton, withoutGlobals && selected.size() == 1 && variables.indexOf(selected.get(0)) < variables.size() - 1);
+        enableAction(deleteButton, withoutGlobals && selected.size() > 0);
+        enableAction(renameButton, withoutGlobals && selected.size() == 1);
+        enableAction(copyButton, withoutGlobals && selected.size() > 0);
+        enableAction(moveToTypeAttributeButton, withoutGlobals && selected.size() == 1);
+        enableAction(usageReportButton, variables.size() > 0);
+        enableAction(pasteButton, withoutGlobals);
     }
 
     private class MoveVariableSelectionListener extends LoggingSelectionAdapter {
@@ -282,6 +296,9 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
             @SuppressWarnings("unchecked")
             List<Variable> variables = selection.toList();
             for (Variable variable : variables) {
+            	if (getDefinition() instanceof GlobalSectionDefinition) {
+            		((GlobalSectionDefinition)getDefinition()).removeGlobalVariableInAllProcess(variable, getDefinition().getFile().getParent().getParent());
+            	}
                 delete(variable);
             }
         }
