@@ -36,7 +36,12 @@ public class ProcessExplorerLabelProvider extends LabelProvider {
         if (element instanceof IFolder) {
             IFolder folder = (IFolder) element;
             if (IOUtils.isProcessDefinitionFolder(folder)) {
-                return SharedImages.getImage("icons/process.gif");
+            	if (folder.getName().startsWith(".")) {
+                    return SharedImages.getImage("icons/glb.gif");
+            	}
+            	else {
+	                return SharedImages.getImage("icons/process.gif");
+            	}
             }
             return SharedImages.getImage("icons/folder.gif");
         }
