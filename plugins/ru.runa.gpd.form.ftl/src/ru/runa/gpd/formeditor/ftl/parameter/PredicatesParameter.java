@@ -4,6 +4,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.Optional;
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
@@ -156,7 +157,17 @@ public class PredicatesParameter extends ParameterType implements DependsOnDbVar
 
         @Override
         public void setFtlConfiguration(String configuration) {
-            this.configuration = CdataWrapUtils.unwrapCdata(configuration);
+            String unwrapped = CdataWrapUtils.unwrapCdata(configuration);
+            if (StringUtils.isNotBlank(unwrapped)) {
+                final int queryIndex = unwrapped.indexOf("query");
+                if (queryIndex != -1) {
+                    final String afterQuery = unwrapped.substring(queryIndex + "query".length() + 2);
+                    final String query = afterQuery.substring(0, afterQuery.indexOf("\""));
+                    String escapeXml = query.replace("<", "&lt;").replace(">", "&gt;");
+                    unwrapped = unwrapped.replace(query, escapeXml);
+                }
+            }
+            this.configuration = unwrapped;
         }
     }
 
