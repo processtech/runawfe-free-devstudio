@@ -4,15 +4,15 @@ import com.google.common.base.Joiner;
 import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.jface.preference.IPreferenceNode;
+import org.eclipse.jface.preference.IPreferencePageContainer;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.preference.PreferenceNode;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.dialogs.PreferencesUtil;
+import org.eclipse.ui.internal.dialogs.FilteredPreferenceDialog;
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
+import ru.runa.gpd.sync.WfeServerConnectorSettings;
 
 public class WfeServerConnectorsPreferenceNode extends PreferenceNode implements PrefConstants {
     public static final String ID = "gpd.pref.connector.wfe";
@@ -67,6 +67,22 @@ public class WfeServerConnectorsPreferenceNode extends PreferenceNode implements
         setPage(new WfeServerConnectorsPreferencePage());
     }
 
+    @Override
+    public boolean remove(IPreferenceNode node) {
+        boolean removed = super.remove(node);
+        if (removed) {
+            WfeServerConnectorSettings connectorSettings = WfeServerConnectorSettings.load(((WfeServerConnectorPreferenceNode) node).getIndex());
+            connectorSettings.removeFromStore();
+            saveIndices();
+        }
+        return removed;
+    }
+
+    @Override
+    public IPreferenceNode remove(String id) {
+        throw new UnsupportedOperationException("Implement like remove(IPreferenceNode node) if you need it");
+    }
+
     public void saveIndices() {
         IPreferenceNode wfeServerConnectorsNode = WfeServerConnectorsPreferenceNode.getInstance();
         IPreferenceNode[] children = wfeServerConnectorsNode.getSubNodes();
@@ -79,9 +95,9 @@ public class WfeServerConnectorsPreferenceNode extends PreferenceNode implements
         store.setValue(P_WFE_SERVER_CONNECTOR_INDICES, Joiner.on(INDICES_DELIMITER).join(indices));
     }
 
-    public void updateUi(String selectedNodeId) {
-        Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
-        PreferenceDialog dialog = PreferencesUtil.createPreferenceDialogOn(shell, selectedNodeId, null, null);
-        dialog.getTreeViewer().refresh();
+    public void updateUi(IPreferencePageContainer preferencePageContainer, String selectedNodeId) {
+        FilteredPreferenceDialog preferenceDialog = (FilteredPreferenceDialog) preferencePageContainer;
+        preferenceDialog.getTreeViewer().refresh();
+        preferenceDialog.setCurrentPageId(selectedNodeId);
     }
 }

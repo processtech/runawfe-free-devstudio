@@ -5,8 +5,6 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.preference.FieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IPreferenceNode;
-import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.preference.PreferenceNode;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -34,6 +32,7 @@ public class WfeServerConnectorsPreferencePage extends FieldEditorPreferencePage
         super(GRID);
         setPreferenceStore(Activator.getDefault().getPreferenceStore());
         setTitle(Localization.getString("pref.connection.wfe.title"));
+        noDefaultButton();
     }
 
     @Override
@@ -71,32 +70,18 @@ public class WfeServerConnectorsPreferencePage extends FieldEditorPreferencePage
                     WfeServerConnectorsPreferenceNode wfeServerConnectorsNode = WfeServerConnectorsPreferenceNode.getInstance();
                     IPreferenceNode[] children = wfeServerConnectorsNode.getSubNodes();
                     WfeServerConnectorPreferenceNode lastNode = (WfeServerConnectorPreferenceNode) children[children.length - 1];
-                    PreferenceNode node = new WfeServerConnectorPreferenceNode(lastNode.getIndex() + 1);
+                    WfeServerConnectorPreferenceNode node = new WfeServerConnectorPreferenceNode(lastNode.getIndex() + 1);
                     wfeServerConnectorsNode.add(node);
                     wfeServerConnectorsNode.saveIndices();
-                    initNodePreferences(node.getId());
-                    wfeServerConnectorsNode.updateUi(node.getId());
+                    WfeServerConnectorSettings connectorSettings = WfeServerConnectorSettings.createDefault(node.getIndex());
+                    connectorSettings.saveToStore();
+                    wfeServerConnectorsNode.updateUi(getContainer(), node.getId());
                 } catch (Throwable th) {
                     Dialogs.error(Localization.getString("error"), th);
                 }
             }
         });
         applyDialogFont(buttonBar);
-    }
-
-    private void initNodePreferences(String prefix) {
-        IPreferenceStore store = getPreferenceStore();
-        WfeServerConnectorSettings connectorSettings = WfeServerConnectorSettings.createDefault();
-        store.setDefault(prefix + "." + P_WFE_SERVER_CONNECTOR_PROTOCOL_SUFFIX, connectorSettings.getProtocol());
-        store.setDefault(prefix + "." + P_WFE_SERVER_CONNECTOR_HOST_SUFFIX, connectorSettings.getHost());
-        store.setDefault(prefix + "." + P_WFE_SERVER_CONNECTOR_PORT_SUFFIX, connectorSettings.getPort());
-        store.setDefault(prefix + "." + P_WFE_SERVER_CONNECTOR_AUTHENTICATION_TYPE_SUFFIX, connectorSettings.getAuthenticationType());
-        store.setDefault(prefix + "." + P_WFE_SERVER_CONNECTOR_LOGIN_SUFFIX, connectorSettings.getLogin());
-        store.setDefault(prefix + "." + P_WFE_SERVER_CONNECTOR_PASSWORD_SUFFIX, connectorSettings.getPassword());
-        store.setDefault(prefix + "." + P_WFE_SERVER_CONNECTOR_LOAD_PROCESS_DEFINITIONS_HISTORY_SUFFIX,
-                connectorSettings.isLoadProcessDefinitionsHistory());
-        store.setDefault(prefix + "." + P_WFE_SERVER_CONNECTOR_ALLOW_UPDATE_LAST_VERSION_BY_KEY_BINDING_SUFFIX,
-                connectorSettings.isAllowUpdateLastVersionByKeyBinding());
     }
 
     @Override

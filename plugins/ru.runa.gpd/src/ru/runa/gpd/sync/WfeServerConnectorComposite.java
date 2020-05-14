@@ -28,6 +28,7 @@ public class WfeServerConnectorComposite extends Composite {
     private final WfeServerConnectorDataImporter<?> importer;
     private final WfeServerConnectorSynchronizationCallback callback;
     private Combo combo;
+    private Hyperlink settingsLink;
     private Hyperlink synchronizeLink;
 
     public WfeServerConnectorComposite(Composite parent, WfeServerConnectorDataImporter<?> importer, WfeServerConnectorSynchronizationCallback callback) {
@@ -44,6 +45,8 @@ public class WfeServerConnectorComposite extends Composite {
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
         combo.setEnabled(enabled);
+        settingsLink.setEnabled(enabled);
+        synchronizeLink.setEnabled(enabled && WfeServerConnector.getInstance().isConfigured());
     }
 
     private void createCombo() {
@@ -66,7 +69,6 @@ public class WfeServerConnectorComposite extends Composite {
                     if (name.equals(entry[0])) {
                         IPreferenceStore store = Activator.getDefault().getPreferenceStore();
                         store.setValue(PrefConstants.P_WFE_SERVER_CONNECTOR_SELECTED_INDEX, Integer.valueOf(entry[1]));
-                        // Activator.getDefault().savePluginPreferences();
                         WfeServerConnector.getInstance().setSettings(WfeServerConnectorSettings.loadSelected());
                         break;
                     }
@@ -78,7 +80,7 @@ public class WfeServerConnectorComposite extends Composite {
     }
 
     private void createConnectionSettingsLink() {
-        SwtUtils.createLink(this, Localization.getString("button.ConnectionSettings"), new LoggingHyperlinkAdapter() {
+        settingsLink = SwtUtils.createLink(this, Localization.getString("button.ConnectionSettings"), new LoggingHyperlinkAdapter() {
 
             @Override
             protected void onLinkActivated(HyperlinkEvent e) throws Exception {
@@ -110,7 +112,6 @@ public class WfeServerConnectorComposite extends Composite {
             }
 
         });
-        synchronizeLink.setEnabled(WfeServerConnector.getInstance().isConfigured());
     }
 
 }

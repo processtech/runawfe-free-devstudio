@@ -30,7 +30,8 @@ public class ExportProcessDefinitionToServerHandler extends AbstractHandler impl
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         if (!WfeServerConnector.getInstance().getSettings().isAllowUpdateLastVersionByKeyBinding()) {
-            updateStatusBar(Localization.getString("ExportProcessDefinitionToServerHandler.disabled"));
+            updateStatusBar(Localization.getString("ExportProcessDefinitionToServerHandler.disabled") + " "
+                    + WfeServerConnector.getInstance().getSettings().getUrl());
             return null;
         }
         saveDirtyEditors();

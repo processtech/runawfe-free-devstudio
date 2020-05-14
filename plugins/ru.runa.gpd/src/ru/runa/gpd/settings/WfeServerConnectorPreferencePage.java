@@ -39,6 +39,7 @@ public class WfeServerConnectorPreferencePage extends FieldEditorPreferencePage 
         setPreferenceStore(Activator.getDefault().getPreferenceStore());
         setTitle(Localization.getString("pref.connection.wfe.title"));
         this.id = id;
+        noDefaultButton();
     }
 
     @Override
@@ -143,8 +144,7 @@ public class WfeServerConnectorPreferencePage extends FieldEditorPreferencePage 
                         WfeServerConnectorsPreferenceNode wfeServerConnectorsNode = WfeServerConnectorsPreferenceNode.getInstance();
                         IPreferenceNode node = wfeServerConnectorsNode.findSubNode(id);
                         wfeServerConnectorsNode.remove(node);
-                        wfeServerConnectorsNode.saveIndices();
-                        wfeServerConnectorsNode.updateUi(WfeServerConnectorsPreferenceNode.getSelectedPrefix());
+                        wfeServerConnectorsNode.updateUi(getContainer(), WfeServerConnectorsPreferenceNode.getSelectedPrefix());
                     } else {
                         Dialogs.warning(Localization.getString("warn.DeleteConnection"));
                     }
@@ -180,7 +180,7 @@ public class WfeServerConnectorPreferencePage extends FieldEditorPreferencePage 
         WfeServerConnectorsPreferenceNode wfeServerConnectorsNode = WfeServerConnectorsPreferenceNode.getInstance();
         WfeServerConnectorPreferenceNode node = (WfeServerConnectorPreferenceNode) wfeServerConnectorsNode.findSubNode(id);
         node.updateName();
-        wfeServerConnectorsNode.updateUi(node.getId());
+        wfeServerConnectorsNode.updateUi(getContainer(), node.getId());
         if (node.isSelected()) {
             WfeServerConnector.getInstance().setSettings(WfeServerConnectorSettings.loadSelected());
         }

@@ -28,18 +28,8 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer impleme
 
         store.setDefault(P_WFE_SERVER_CONNECTOR_INDICES, "0");
         store.setDefault(P_WFE_SERVER_CONNECTOR_SELECTED_INDEX, 0);
-        String prefix = WfeServerConnectorPreferenceNode.getId(0);
-        WfeServerConnectorSettings connectorSettings = WfeServerConnectorSettings.createDefault();
-        store.setDefault(prefix + "." + P_WFE_SERVER_CONNECTOR_PROTOCOL_SUFFIX, connectorSettings.getProtocol());
-        store.setDefault(prefix + "." + P_WFE_SERVER_CONNECTOR_HOST_SUFFIX, connectorSettings.getHost());
-        store.setDefault(prefix + "." + P_WFE_SERVER_CONNECTOR_PORT_SUFFIX, connectorSettings.getPort());
-        store.setDefault(prefix + "." + P_WFE_SERVER_CONNECTOR_AUTHENTICATION_TYPE_SUFFIX, connectorSettings.getAuthenticationType());
-        store.setDefault(prefix + "." + P_WFE_SERVER_CONNECTOR_LOGIN_SUFFIX, connectorSettings.getLogin());
-        store.setDefault(prefix + "." + P_WFE_SERVER_CONNECTOR_PASSWORD_SUFFIX, connectorSettings.getPassword());
-        store.setDefault(prefix + "." + P_WFE_SERVER_CONNECTOR_LOAD_PROCESS_DEFINITIONS_HISTORY_SUFFIX,
-                connectorSettings.isLoadProcessDefinitionsHistory());
-        store.setDefault(prefix + "." + P_WFE_SERVER_CONNECTOR_ALLOW_UPDATE_LAST_VERSION_BY_KEY_BINDING_SUFFIX,
-                connectorSettings.isAllowUpdateLastVersionByKeyBinding());
+        WfeServerConnectorSettings connectorSettings = WfeServerConnectorSettings.createDefault(0);
+        connectorSettings.saveDefaultToStore();
 
         store.setDefault(P_LDAP_CONNECTION_PROVIDER_URL, "ldap://192.168.0.1/dc=domain,dc=com");
         store.setDefault(P_DATE_FORMAT_PATTERN, "dd.MM.yyyy");

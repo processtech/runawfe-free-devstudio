@@ -1,5 +1,6 @@
 package ru.runa.gpd.sync;
 
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Display;
 import ru.runa.gpd.Activator;
@@ -11,7 +12,7 @@ import ru.runa.gpd.settings.WfeServerConnectorsPreferenceNode;
 import ru.runa.gpd.ui.dialog.UserInputDialog;
 
 public class WfeServerConnectorSettings implements PrefConstants {
-    private static final String PROTOCOL_SPLITTER = "://";
+    private final int index;
     private final String protocol;
     private final String host;
     private final int port;
@@ -24,51 +25,41 @@ public class WfeServerConnectorSettings implements PrefConstants {
     private final boolean allowUpdateLastVersionByKeyBinding;
 
     public static WfeServerConnectorSettings load(int index) {
-        return new WfeServerConnectorSettings(index);
+        return new WfeServerConnectorSettings(index, true);
     }
 
     public static WfeServerConnectorSettings loadSelected() {
-        return new WfeServerConnectorSettings(WfeServerConnectorsPreferenceNode.getSelectedIndex());
+        return new WfeServerConnectorSettings(WfeServerConnectorsPreferenceNode.getSelectedIndex(), true);
     }
 
-    public static WfeServerConnectorSettings createDefault() {
-        return new WfeServerConnectorSettings();
+    public static WfeServerConnectorSettings createDefault(int index) {
+        return new WfeServerConnectorSettings(index, false);
     }
 
-    private WfeServerConnectorSettings(int index) {
-        String prefix = WfeServerConnectorPreferenceNode.getId(index);
-        this.protocol = Activator.getPrefString(prefix + '.' + P_WFE_SERVER_CONNECTOR_PROTOCOL_SUFFIX);
-        String hostSetting = Activator.getPrefString(prefix + '.' + P_WFE_SERVER_CONNECTOR_HOST_SUFFIX);
-        String[] hostProtocol = hostSetting.split(PROTOCOL_SPLITTER);
-        if (hostProtocol.length == 2) {
-            this.host = hostProtocol[1];
+    private WfeServerConnectorSettings(int index, boolean loadFromStore) {
+        this.index = index;
+        if (loadFromStore) {
+            String prefix = WfeServerConnectorPreferenceNode.getId(index);
+            this.protocol = Activator.getPrefString(prefix + '.' + P_WFE_SERVER_CONNECTOR_PROTOCOL_SUFFIX);
+            this.host = Activator.getPrefString(prefix + '.' + P_WFE_SERVER_CONNECTOR_HOST_SUFFIX);
+            this.port = Activator.getPrefInt(prefix + '.' + P_WFE_SERVER_CONNECTOR_PORT_SUFFIX);
+            this.authenticationType = Activator.getPrefString(prefix + '.' + P_WFE_SERVER_CONNECTOR_AUTHENTICATION_TYPE_SUFFIX);
+            this.login = Activator.getPrefString(prefix + '.' + P_WFE_SERVER_CONNECTOR_LOGIN_SUFFIX);
+            this.password = Activator.getPrefString(prefix + '.' + P_WFE_SERVER_CONNECTOR_PASSWORD_SUFFIX);
+            this.loadProcessDefinitionsHistory = Activator
+                    .getPrefBoolean(prefix + '.' + P_WFE_SERVER_CONNECTOR_LOAD_PROCESS_DEFINITIONS_HISTORY_SUFFIX);
+            this.allowUpdateLastVersionByKeyBinding = Activator
+                    .getPrefBoolean(prefix + '.' + P_WFE_SERVER_CONNECTOR_ALLOW_UPDATE_LAST_VERSION_BY_KEY_BINDING_SUFFIX);
         } else {
-            this.host = hostSetting;
+            this.protocol = "http";
+            this.host = "localhost";
+            this.port = 8080;
+            this.authenticationType = AUTHENTICATION_TYPE_LOGIN_PASSWORD;
+            this.login = "Administrator";
+            this.password = "wf";
+            this.loadProcessDefinitionsHistory = false;
+            this.allowUpdateLastVersionByKeyBinding = false;
         }
-        String portString = Activator.getPrefString(prefix + '.' + P_WFE_SERVER_CONNECTOR_PORT_SUFFIX);
-        int portNumber = 0;
-        try {
-            portNumber = Integer.parseInt(portString);
-        } catch (NumberFormatException e) {
-        }
-        this.port = portNumber;
-        this.authenticationType = Activator.getPrefString(prefix + '.' + P_WFE_SERVER_CONNECTOR_AUTHENTICATION_TYPE_SUFFIX);
-        this.login = Activator.getPrefString(prefix + '.' + P_WFE_SERVER_CONNECTOR_LOGIN_SUFFIX);
-        this.password = Activator.getPrefString(prefix + '.' + P_WFE_SERVER_CONNECTOR_PASSWORD_SUFFIX);
-        this.loadProcessDefinitionsHistory = Activator.getPrefBoolean(prefix + '.' + P_WFE_SERVER_CONNECTOR_LOAD_PROCESS_DEFINITIONS_HISTORY_SUFFIX);
-        this.allowUpdateLastVersionByKeyBinding = Activator
-                .getPrefBoolean(prefix + '.' + P_WFE_SERVER_CONNECTOR_ALLOW_UPDATE_LAST_VERSION_BY_KEY_BINDING_SUFFIX);
-    }
-
-    private WfeServerConnectorSettings() {
-        this.protocol = "http";
-        this.host = "localhost";
-        this.port = 8080;
-        this.authenticationType = AUTHENTICATION_TYPE_LOGIN_PASSWORD;
-        this.login = "Administrator";
-        this.password = "wf";
-        this.loadProcessDefinitionsHistory = false;
-        this.allowUpdateLastVersionByKeyBinding = false;
     }
 
     public boolean isConfigured() {
@@ -148,7 +139,45 @@ public class WfeServerConnectorSettings implements PrefConstants {
     }
 
     public String getUrl() {
-        return protocol + PROTOCOL_SPLITTER + host + ":" + port;
+        return protocol + "://" + host + ":" + port;
     }
 
+    public void saveToStore() {
+        IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+        String prefix = WfeServerConnectorPreferenceNode.getId(index);
+        store.setValue(prefix + "." + P_WFE_SERVER_CONNECTOR_PROTOCOL_SUFFIX, protocol);
+        store.setValue(prefix + "." + P_WFE_SERVER_CONNECTOR_HOST_SUFFIX, host);
+        store.setValue(prefix + "." + P_WFE_SERVER_CONNECTOR_PORT_SUFFIX, port);
+        store.setValue(prefix + "." + P_WFE_SERVER_CONNECTOR_AUTHENTICATION_TYPE_SUFFIX, authenticationType);
+        store.setValue(prefix + "." + P_WFE_SERVER_CONNECTOR_LOGIN_SUFFIX, login);
+        store.setValue(prefix + "." + P_WFE_SERVER_CONNECTOR_PASSWORD_SUFFIX, password);
+        store.setValue(prefix + "." + P_WFE_SERVER_CONNECTOR_LOAD_PROCESS_DEFINITIONS_HISTORY_SUFFIX, loadProcessDefinitionsHistory);
+        store.setValue(prefix + "." + P_WFE_SERVER_CONNECTOR_ALLOW_UPDATE_LAST_VERSION_BY_KEY_BINDING_SUFFIX, allowUpdateLastVersionByKeyBinding);
+    }
+
+    public void saveDefaultToStore() {
+        IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+        String prefix = WfeServerConnectorPreferenceNode.getId(index);
+        store.setDefault(prefix + "." + P_WFE_SERVER_CONNECTOR_PROTOCOL_SUFFIX, protocol);
+        store.setDefault(prefix + "." + P_WFE_SERVER_CONNECTOR_HOST_SUFFIX, host);
+        store.setDefault(prefix + "." + P_WFE_SERVER_CONNECTOR_PORT_SUFFIX, port);
+        store.setDefault(prefix + "." + P_WFE_SERVER_CONNECTOR_AUTHENTICATION_TYPE_SUFFIX, authenticationType);
+        store.setDefault(prefix + "." + P_WFE_SERVER_CONNECTOR_LOGIN_SUFFIX, login);
+        store.setDefault(prefix + "." + P_WFE_SERVER_CONNECTOR_PASSWORD_SUFFIX, password);
+        store.setDefault(prefix + "." + P_WFE_SERVER_CONNECTOR_LOAD_PROCESS_DEFINITIONS_HISTORY_SUFFIX, loadProcessDefinitionsHistory);
+        store.setDefault(prefix + "." + P_WFE_SERVER_CONNECTOR_ALLOW_UPDATE_LAST_VERSION_BY_KEY_BINDING_SUFFIX, allowUpdateLastVersionByKeyBinding);
+    }
+
+    public void removeFromStore() {
+        IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+        String prefix = WfeServerConnectorPreferenceNode.getId(index);
+        store.setToDefault(prefix + '.' + P_WFE_SERVER_CONNECTOR_PROTOCOL_SUFFIX);
+        store.setToDefault(prefix + '.' + P_WFE_SERVER_CONNECTOR_HOST_SUFFIX);
+        store.setToDefault(prefix + '.' + P_WFE_SERVER_CONNECTOR_PORT_SUFFIX);
+        store.setToDefault(prefix + '.' + P_WFE_SERVER_CONNECTOR_AUTHENTICATION_TYPE_SUFFIX);
+        store.setToDefault(prefix + '.' + P_WFE_SERVER_CONNECTOR_LOGIN_SUFFIX);
+        store.setToDefault(prefix + '.' + P_WFE_SERVER_CONNECTOR_PASSWORD_SUFFIX);
+        store.setToDefault(prefix + '.' + P_WFE_SERVER_CONNECTOR_LOAD_PROCESS_DEFINITIONS_HISTORY_SUFFIX);
+        store.setToDefault(prefix + '.' + P_WFE_SERVER_CONNECTOR_ALLOW_UPDATE_LAST_VERSION_BY_KEY_BINDING_SUFFIX);
+    }
 }
