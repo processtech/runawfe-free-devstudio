@@ -261,7 +261,7 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements Custom
         try {
             IFile file = IOUtils.getAdjacentFile(adjacentFile, fileName);
             if (file.exists()) {
-                removedFilePath = IOUtils.markAsDeleted(file);
+                removedFilePath = IOUtils.markAsDeleted(file, keepHistory);
             }
         } catch (CoreException e) {
             PluginLogger.logError(e);

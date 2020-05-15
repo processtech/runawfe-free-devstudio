@@ -1,9 +1,14 @@
 package ru.runa.gpd.lang.par;
 
 import com.google.common.base.Strings;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.dom4j.Document;
 import org.dom4j.Element;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.runtime.CoreException;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
@@ -80,5 +85,33 @@ public class FormsXmlContentProvider extends AuxContentProvider {
             }
         }
         return document;
+    }
+
+    public static Set<String> getFormFiles(ProcessDefinition definition) throws CoreException {
+        Set<String> files = new HashSet<>();
+        IFile file = ((IFolder) definition.getFile().getParent()).getFile(FormsXmlContentProvider.XML_FILE_NAME);
+        if (file.exists()) {
+            Document document = XmlUtil.parseWithoutValidation(file.getContents(true));
+            List<Element> formElementsList = document.getRootElement().elements(FORM_ELEMENT_NAME);
+            for (Element formElement : formElementsList) {
+                String fileName = formElement.attributeValue(FILE_ATTRIBUTE_NAME);
+                if (!Strings.isNullOrEmpty(fileName)) {
+                    files.add(fileName);
+                }
+                String validationFileName = formElement.attributeValue(VALIDATION_FILE_ATTRIBUTE_NAME);
+                if (!Strings.isNullOrEmpty(validationFileName)) {
+                    files.add(validationFileName);
+                }
+                String scriptFileName = formElement.attributeValue(SCRIPT_FILE_ATTRIBUTE_NAME);
+                if (!Strings.isNullOrEmpty(scriptFileName)) {
+                    files.add(scriptFileName);
+                }
+                String templateFileName = formElement.attributeValue(TEMPLATE_FILE_NAME);
+                if (!Strings.isNullOrEmpty(templateFileName)) {
+                    files.add(templateFileName);
+                }
+            }
+        }
+        return files;
     }
 }

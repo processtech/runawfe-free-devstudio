@@ -52,6 +52,7 @@ import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.Variable;
+import ru.runa.gpd.lang.par.FormsXmlContentProvider;
 import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.lang.par.ProcessDefinitionValidator;
 import ru.runa.gpd.ui.view.ValidationErrorsView;
@@ -105,6 +106,7 @@ public abstract class ProcessEditorBase extends MultiPageEditorPart implements I
         } catch (Exception e) {
             PluginLogger.logError(e);
         }
+        cleanUpUnusedFormFiles(null);
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
         getSite().getPage().removeSelectionListener(this);
         super.dispose();
@@ -262,6 +264,10 @@ public abstract class ProcessEditorBase extends MultiPageEditorPart implements I
         } catch (Exception e) {
             PluginLogger.logError(e);
         }
+        cleanUpUnusedFormFiles(monitor);
+    }
+
+    private void cleanUpUnusedFormFiles(IProgressMonitor monitor) {
         ProcessDefinition mainProcessDefinition = definition.getMainProcessDefinition();
         try {
             Set<String> usedFormFiles = new HashSet<String>();
@@ -343,20 +349,24 @@ public abstract class ProcessEditorBase extends MultiPageEditorPart implements I
         return imageFile.getRawLocation().toOSString();
     }
 
-    private void fetchUsedFormFiles(Set<String> usedFormFiles, ProcessDefinition processDefinition) {
-        List<FormNode> formNodes = processDefinition.getChildren(FormNode.class);
-        for (FormNode formNode : formNodes) {
-            if (formNode.hasForm()) {
-                usedFormFiles.add(formNode.getFormFileName());
-            }
-            if (formNode.hasFormTemplate()) {
-                usedFormFiles.add(formNode.getTemplateFileName());
-            }
-            if (formNode.hasFormValidation()) {
-                usedFormFiles.add(formNode.getValidationFileName());
-            }
-            if (formNode.hasFormScript()) {
-                usedFormFiles.add(formNode.getScriptFileName());
+    private void fetchUsedFormFiles(Set<String> usedFormFiles, ProcessDefinition processDefinition) throws CoreException {
+        if (isDirty()) {
+            usedFormFiles.addAll(FormsXmlContentProvider.getFormFiles(processDefinition));
+        } else {
+            List<FormNode> formNodes = processDefinition.getChildren(FormNode.class);
+            for (FormNode formNode : formNodes) {
+                if (formNode.hasForm()) {
+                    usedFormFiles.add(formNode.getFormFileName());
+                }
+                if (formNode.hasFormTemplate()) {
+                    usedFormFiles.add(formNode.getTemplateFileName());
+                }
+                if (formNode.hasFormValidation()) {
+                    usedFormFiles.add(formNode.getValidationFileName());
+                }
+                if (formNode.hasFormScript()) {
+                    usedFormFiles.add(formNode.getScriptFileName());
+                }
             }
         }
     }

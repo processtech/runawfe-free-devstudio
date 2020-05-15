@@ -39,7 +39,9 @@ public class UndoRedoUtil implements PropertyNames {
                 executeFeature(new ChangeDelegationConfigurationFeature((Delegable) source, (String) oldValue, (String) newValue));
                 break;
             case PROPERTY_TIMER_DELAY:
-                executeFeature(new ChangeTimerDelayFeature((Timer) source, (Duration) oldValue, (Duration) newValue));
+                if (source instanceof Timer) { // can be ProcessDefinition (RM1090u116)
+                    executeFeature(new ChangeTimerDelayFeature((Timer) source, (Duration) oldValue, (Duration) newValue));
+                }
                 break;
             case PROPERTY_TIMER_ACTION:
                 executeFeature(new ChangeTimerActionFeature((Timer) source, (TimerAction) oldValue, (TimerAction) newValue));
