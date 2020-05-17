@@ -642,6 +642,9 @@ public class IOUtils {
     }
 
     public static void restoreDeletedFiles(IContainer folder) throws CoreException {
+        if (!folder.exists()) {
+            return;
+        }
         for (IResource member : folder.members()) {
             if (member instanceof IFile) {
                 if (((IFile) member).getFileExtension().equals(DELETED_FILE_EXTENSION)) {
