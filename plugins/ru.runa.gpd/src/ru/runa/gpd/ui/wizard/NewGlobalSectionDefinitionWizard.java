@@ -98,18 +98,6 @@ public class NewGlobalSectionDefinitionWizard extends Wizard implements INewWiza
         @Override
         public void run(IProgressMonitor monitor) throws InvocationTargetException {
             try {
-            	if (page.getProcessFolder().getParent() != null) {
-            		for (IResource resource : page.getProcessFolder().getParent().members()) {
-            			if (resource instanceof IFolder && 
-            				IOUtils.isProcessDefinitionFolder((IFolder)resource) &&	
-	            			resource.getName().startsWith(".") &&
-	            			!page.getProcessFolder().equals(resource)) {
-            				Dialogs.error(Localization.getString("NewGlobalSectionDefinitionWizard.error.creation"));
-            				return;
-            			}
-            		}
-            	}
-            	
                 monitor.beginTask(Localization.getString("NewProcessDefinitionWizard.monitor.title"), 4);
                 IFolder folder = page.getProcessFolder();
                 folder.create(true, true, null);

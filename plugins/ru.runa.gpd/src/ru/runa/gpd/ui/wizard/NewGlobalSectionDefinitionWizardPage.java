@@ -72,7 +72,22 @@ public class NewGlobalSectionDefinitionWizardPage extends WizardPage {
         label.setText(Localization.getString("label.project"));
         projectCombo = new Combo(parent, SWT.SINGLE | SWT.READ_ONLY | SWT.BORDER);
         for (IContainer container : processContainers) {
-            projectCombo.add(IOUtils.getProcessContainerName(container));
+        	try {
+        		boolean folderContainGlobalSection = false;
+				for (IResource resource : container.members()) {
+					if (resource instanceof IFolder && 
+					IOUtils.isProcessDefinitionFolder((IFolder)resource) &&
+					resource.getName().startsWith(".")) {
+						folderContainGlobalSection = true;
+						break;
+					}
+				}
+				if (!folderContainGlobalSection) {
+					projectCombo.add(IOUtils.getProcessContainerName(container));
+				}
+			} catch (CoreException e1) {
+				e1.printStackTrace();
+			}
         }
         projectCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         if (initialSelection != null) {
