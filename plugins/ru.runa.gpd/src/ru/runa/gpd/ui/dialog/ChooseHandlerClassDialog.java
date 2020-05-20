@@ -5,7 +5,7 @@ import java.util.Comparator;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.extension.HandlerArtifact;
 import ru.runa.gpd.extension.HandlerRegistry;
-import ru.runa.gpd.extension.LocalizationLabelProvider;
+import ru.runa.gpd.extension.DelegableClassLabelProvider;
 import ru.runa.gpd.extension.LocalizationRegistry;
 
 import com.google.common.base.Function;
@@ -21,7 +21,7 @@ public class ChooseHandlerClassDialog extends ChooseItemDialog<String> {
                 return artifact.getName();
             }
         }), true, Localization.getString("ChooseClass.message"), true);
-        setLabelProvider(new LocalizationLabelProvider(false));
+        setLabelProvider(new DelegableClassLabelProvider(false));
         setComparator(new Comparator<String>() {
 
             @Override

@@ -2888,6 +2888,12 @@
             name="runa"
             parentId="org.eclipse.ui.defaultAcceleratorConfiguration">
       </scheme>
+      <key
+            commandId="ru.runa.gpd.commands.exportProcessDefinitionToServer"
+            contextId="ru.runa.gpd.context.app"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="CTRL+D">
+      </key>
    </extension>
    <extension
          point="org.eclipse.ui.commands">
@@ -2951,6 +2957,11 @@
           name="%Install.command"
           id="org.eclipse.equinox.p2.ui.sdk.install">
           defaultHandler="org.eclipse.equinox.internal.p2.ui.sdk.InstallNewSoftwareHandler">
+    </command>
+    <command
+          defaultHandler="ru.runa.gpd.lang.action.ExportProcessDefinitionToServerHandler"
+          id="ru.runa.gpd.commands.exportProcessDefinitionToServer"
+          name="Export process defninition to server">
     </command>
    </extension>
    <extension

@@ -39,6 +39,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer impleme
         store.setDefault(P_CONFIRM_DELETION, true);
         store.setDefault(P_PROCESS_SAVE_HISTORY, true);
         store.setDefault(P_PROCESS_SAVEPOINT_NUMBER, 10);
+        store.setDefault(P_ENABLE_USER_ACTIVITY_LOGGING, true);
         // PreferenceConverter.FONTDATA_DEFAULT_DEFAULT
         // backward compatibility
         store.setDefault(LanguageElementPreferenceNode.getBpmnDefaultPropertyName(P_BPMN_FONT), new FontData("Arial", 8, SWT.NORMAL).toString());
@@ -46,8 +47,10 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer impleme
         store.setDefault(LanguageElementPreferenceNode.getBpmnDefaultPropertyName(P_BPMN_BACKGROUND_COLOR), "250, 251, 252");
         store.setDefault(LanguageElementPreferenceNode.getBpmnDefaultPropertyName(P_BPMN_FOREGROUND_COLOR), "3, 104, 154");
         store.setDefault(LanguageElementPreferenceNode.getBpmnDefaultPropertyName(P_BPMN_LINE_WIDTH), 2);
+        store.setDefault(P_BPMN_EXPAND_CONTEXT_BUTTON_PAD, true);
         store.setDefault(LanguageElementPreferenceNode.getBpmnPropertyName(StyleUtil.TEXT_ANNOTATION_BPMN_NAME, P_BPMN_FOREGROUND_COLOR), "0, 0, 0");
         store.setDefault(LanguageElementPreferenceNode.getBpmnPropertyName(StyleUtil.TRANSITION_BPMN_NAME, P_BPMN_FOREGROUND_COLOR), "0, 0, 0");
         store.setDefault(LanguageElementPreferenceNode.getBpmnPropertyName(StyleUtil.TRANSITION_BPMN_NAME, P_BPMN_LINE_WIDTH), 1);
+        store.setDefault(LanguageElementPreferenceNode.getBpmnPropertyName("exclusiveGateway", P_BPMN_MARK_DEFAULT_TRANSITION), true);
     }
 }

@@ -4,7 +4,6 @@ import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
-
 import ru.runa.gpd.util.UiUtil;
 
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
@@ -20,7 +19,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
     @Override
     public void preWindowOpen() {
         IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
-        configurer.setShowStatusLine(false);
+        configurer.setShowStatusLine(true);
         configurer.setTitle(Localization.getString("ApplicationWorkbenchWindowAdvisor.window.title"));
         configurer.getWorkbenchConfigurer().setSaveAndRestore(true);
         configurer.setShowCoolBar(true);
