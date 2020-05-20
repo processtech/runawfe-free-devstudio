@@ -104,9 +104,7 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements ICusto
             transition.getSource().removeLeavingTransition(transition);
             return;
         } else if (element instanceof DottedTransition) {
-            final DottedTransition transition = (DottedTransition) element;
-            ((ConnectableViaDottedTransition) transition.getSource()).removeLeavingDottedTransition(transition);
-            ((ConnectableViaDottedTransition) transition.getTarget()).removeArrivingDottedTransition(transition);
+            removeDottedTransition((DottedTransition) element);
             return;
         }
         element.getParent().removeChild(element);
@@ -156,6 +154,11 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements ICusto
         for (Transition transition : arrivingTransitions) {
             transition.getSource().removeLeavingTransition(transition);
         }
+
+        if (node instanceof ConnectableViaDottedTransition) {
+            ((ConnectableViaDottedTransition) node).getArrivingDottedTransitions().forEach(this::removeDottedTransition);
+            ((ConnectableViaDottedTransition) node).getLeavingDottedTransitions().forEach(this::removeDottedTransition);
+        }
     }
 
     private void restoreTransitions() {
@@ -190,4 +193,8 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements ICusto
         }
     }
 
+    private void removeDottedTransition(DottedTransition transition) {
+        ((ConnectableViaDottedTransition) transition.getSource()).removeLeavingDottedTransition(transition);
+        ((ConnectableViaDottedTransition) transition.getTarget()).removeArrivingDottedTransition(transition);
+    }
 }
