@@ -34,11 +34,6 @@ public class GraphitiGlobalSectionEditor extends GlobalSectionEditorBase {
         return new DiagramEditorPage(this);
     }
 
-    @Override
-    protected void selectGraphElement(GraphElement model) {
-        ((DiagramEditorPage) graphPage).select(model);
-    }
-
     public IPropertySource translateSelection(ISelection selection) {
         if (selection instanceof IStructuredSelection) {
             IStructuredSelection structuredSelection = (IStructuredSelection) selection;
@@ -47,7 +42,6 @@ public class GraphitiGlobalSectionEditor extends GlobalSectionEditorBase {
                 EditPart editPart = (EditPart) object;
                 if (editPart.getModel() instanceof PictogramElement) {
                     PictogramElement pe = (PictogramElement) editPart.getModel();
-                    object = ((DiagramEditorPage) graphPage).getDiagramTypeProvider().getFeatureProvider().getBusinessObjectForPictogramElement(pe);
                 }
             }
             if (object instanceof IPropertySource) {
@@ -55,11 +49,6 @@ public class GraphitiGlobalSectionEditor extends GlobalSectionEditorBase {
             }
         }
         return null;
-    }
-
-    @Override
-    protected void updateGridLayerVisibility(boolean enabled) {
-        ((DiagramEditorPage) graphPage).updateGridLayerVisibility(enabled);
     }
 
     @Override
@@ -73,5 +62,17 @@ public class GraphitiGlobalSectionEditor extends GlobalSectionEditorBase {
             getDiagramEditorPage().getDiagramBehavior().refreshContent();
         }
     }
+
+	@Override
+	protected void selectGraphElement(GraphElement model) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void updateGridLayerVisibility(boolean enabled) {
+		// TODO Auto-generated method stub
+		
+	}
 
 }

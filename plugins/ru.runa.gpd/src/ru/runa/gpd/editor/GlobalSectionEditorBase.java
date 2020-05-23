@@ -63,12 +63,9 @@ public abstract class GlobalSectionEditorBase extends ProcessEditorBase {
 
     protected ProcessDefinition definition;
     protected IFile definitionFile;
-    protected GraphicalEditor graphPage;
     protected SwimlaneEditorPage swimlanePage;
     protected VariableEditorPage variablePage;
     protected VariableTypeEditorPage variableTypeEditorPage;
-    protected TextEditor sourcePage;
-    private OutlineViewer outlineViewer;
 
     @Override
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
@@ -159,13 +156,11 @@ public abstract class GlobalSectionEditorBase extends ProcessEditorBase {
     @Override
     protected void createPages() {
         try {
-            graphPage = addNewPage(createGraphPage(), "DesignerEditor.title.diagram");
             if (!(definition instanceof SubprocessDefinition)) {
                 swimlanePage = addNewPage(new SwimlaneEditorPage((ProcessEditorBase)this), "DesignerEditor.title.swimlanes");
                 variablePage = addNewPage(new VariableEditorPage((ProcessEditorBase)this), "DesignerEditor.title.variables");
                 variableTypeEditorPage = addNewPage(new VariableTypeEditorPage((ProcessEditorBase)this), "VariableUserType.collection");
             }
-            sourcePage = new TextEditor();
             ProcessDefinitionValidator.validateDefinition(definition);
         } catch (PartInitException e) {
             PluginLogger.logError(Localization.getString("DesignerEditor.error.can_not_create_graphical_viewer"), e);
@@ -188,36 +183,7 @@ public abstract class GlobalSectionEditorBase extends ProcessEditorBase {
 
     @Override
     public Object getAdapter(Class adapter) {
-        if (adapter == IContentOutlinePage.class) {
-            return getOutlineViewer();
-        }
-        if (adapter == ActionRegistry.class) {
-            return graphPage.getAdapter(adapter);
-        }
-        return super.getAdapter(adapter);
-    }
-
-    public IFigure getRootFigure() {
-        return (IFigure) graphPage.getAdapter(IFigure.class);
-    }
-
-    public GraphicalViewer getGraphicalViewer() {
-        return (GraphicalViewer) graphPage.getAdapter(GraphicalViewer.class);
-    }
-
-    public CommandStack getCommandStack() {
-        return (CommandStack) graphPage.getAdapter(CommandStack.class);
-    }
-
-    public EditDomain getEditDomain() {
-        return getGraphicalViewer().getEditDomain();
-    }
-
-    public OutlineViewer getOutlineViewer() {
-        if (outlineViewer == null && getGraphicalViewer() != null) {
-            outlineViewer = new OutlineViewer(this);
-        }
-        return outlineViewer;
+        return null;
     }
 
     public void openPage(int number) {
@@ -250,12 +216,9 @@ public abstract class GlobalSectionEditorBase extends ProcessEditorBase {
 
     @Override
     public void doSave(IProgressMonitor monitor) {
-        graphPage.doSave(monitor);
-        GEFImageHelper.save(getGraphicalViewer(), definition, getGraphImagePath());
         try {
             ProcessDefinitionValidator.validateDefinition(definition);
             WorkspaceOperations.saveProcessDefinition(definition);
-            getCommandStack().markSaveLocation();
             definition.setDirty(false);
             ProcessSaveHistory.addSavepoint(definitionFile);
         } catch (Exception e) {
@@ -309,16 +272,12 @@ public abstract class GlobalSectionEditorBase extends ProcessEditorBase {
 
     @Override
     public boolean isDirty() {
-        return graphPage.isDirty() || definition.isDirty();
+        return definition.isDirty();
     }
 
     @Override
     public boolean isSaveOnCloseNeeded() {
         return isDirty();
-    }
-
-    public DiagramEditorPage getDiagramEditorPage() {
-        return graphPage instanceof DiagramEditorPage ? (DiagramEditorPage) graphPage : null;
     }
 
     protected abstract GraphicalEditor createGraphPage();
