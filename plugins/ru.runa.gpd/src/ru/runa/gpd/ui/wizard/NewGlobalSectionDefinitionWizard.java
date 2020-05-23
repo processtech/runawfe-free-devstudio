@@ -99,7 +99,7 @@ public class NewGlobalSectionDefinitionWizard extends Wizard implements INewWiza
         public void run(IProgressMonitor monitor) throws InvocationTargetException {
             try {
                 monitor.beginTask(Localization.getString("NewProcessDefinitionWizard.monitor.title"), 4);
-                IFolder folder = page.getProcessFolder();
+                IFolder folder = page.getProcessFolderByCreate();
                 folder.create(true, true, null);
                 monitor.worked(1);
                 definitionFile = IOUtils.getProcessDefinitionFile(folder);

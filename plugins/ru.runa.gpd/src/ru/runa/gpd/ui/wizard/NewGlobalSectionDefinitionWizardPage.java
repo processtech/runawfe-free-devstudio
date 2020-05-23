@@ -3,6 +3,8 @@ package ru.runa.gpd.ui.wizard;
 import java.util.List;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.WizardPage;
@@ -208,7 +210,7 @@ public class NewGlobalSectionDefinitionWizardPage extends WizardPage {
         if (parentProcessDefinition != null) {
             return parentProcessDefinition.getEmbeddedSubprocessByName(getProcessName()) != null;
         } else {
-            return getProcessFolder().exists();
+            return getProcessFolderByCreate().exists();
         }
     }
 
@@ -231,6 +233,16 @@ public class NewGlobalSectionDefinitionWizardPage extends WizardPage {
         return cssTemplateCombo.getText();
     }
 
+    public IFolder getProcessFolderByCreate() {
+    	String projectName = projectCombo.getItem(projectCombo.getSelectionIndex());
+    	IContainer container = processContainers.stream().filter(p -> String.join("/", p.getFullPath().segments()).equals(projectName)).findFirst().get();
+    	if (parentProcessDefinition != null) {
+            return (IFolder) container;
+        } else {
+            return IOUtils.getProcessFolder(container, getProcessName());
+        }
+    }
+    
     public IFolder getProcessFolder() {
         IContainer container = processContainers.get(projectCombo.getSelectionIndex());
         if (parentProcessDefinition != null) {
