@@ -23,6 +23,11 @@ public class ProcessExplorerLabelProvider extends LabelProvider {
             return ((IFile) element).getName();
         }
         if (element instanceof IResource) {
+        	if (element instanceof IFolder && IOUtils.isProcessDefinitionFolder((IFolder)element)
+        		&& ((IResource) element).getName().startsWith(".")
+        		&& ((IResource) element).getName().length() >= 1) {
+        		return ((IResource) element).getName().substring(1);
+        	}
             return ((IResource) element).getName();
         }
         return super.getText(element);

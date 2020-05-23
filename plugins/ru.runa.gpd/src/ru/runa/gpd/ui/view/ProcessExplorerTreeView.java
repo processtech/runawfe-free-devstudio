@@ -148,7 +148,12 @@ public class ProcessExplorerTreeView extends ViewPart implements ISelectionListe
         if (element instanceof IFolder) {
             IFile definitionFile = IOUtils.getProcessDefinitionFile((IFolder) element);
             if (definitionFile.exists()) {
-                WorkspaceOperations.openProcessDefinition(definitionFile);
+                if (((IFolder) element).getName().startsWith(".")) {
+                	WorkspaceOperations.openGlobalSectionDefinition(definitionFile);
+                }
+                else {
+                	WorkspaceOperations.openProcessDefinition(definitionFile);
+                }
             }
         }
         if (element instanceof IFile) {

@@ -456,7 +456,7 @@ public class GlobalSectionDefinition extends ProcessDefinition {
 
     @Override
     public Image getEntryImage() {
-        return SharedImages.getImage("icons/process.gif");
+        return SharedImages.getImage("icons/glb.gif");
     }
 
     public List<VariableUserType> getVariableUserTypes() {
