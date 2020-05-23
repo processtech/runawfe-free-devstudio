@@ -294,6 +294,58 @@ public class WorkspaceOperations {
         }
     }
 
+    public static void renameGlobalDefinition(IStructuredSelection selection) {
+        IFolder oldDefinitionFolder = (IFolder) selection.getFirstElement();
+        IFile oldDefinitionFile = IOUtils.getProcessDefinitionFile(oldDefinitionFolder);
+        RenameProcessDefinitionDialog dialog = new RenameProcessDefinitionDialog(oldDefinitionFolder);
+        ProcessDefinition definition = ProcessCache.getProcessDefinition(oldDefinitionFile);
+        String oldName = definition.getName();
+        if (oldName.length() > 1) {
+        	oldName = oldName.substring(1);
+        }
+        dialog.setName(oldName);
+        if (dialog.open() != IDialogConstants.OK_ID) {
+            return;
+        }
+        String newName = "." + dialog.getName();
+        try {
+            // Close ALL editors related to the process BEFORE renaiming it.
+            IProject project = oldDefinitionFolder.getProject();
+            IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+            IEditorReference[] editorRefs = page.getEditorReferences();
+            ArrayList<IEditorReference> editorRefsToClose = new ArrayList<IEditorReference>(editorRefs.length);
+            for (IEditorReference e : editorRefs) {
+                // Work only on IEditorReference-s since IEditorPart-s may be uninitialized and we don't want to "restore" them just to close.
+                if (e.getEditorInput() instanceof IFileEditorInput) {
+                    // We get here at least if e is GraphitiProcessEditor or FormEditor.
+                    IFile f = ((IFileEditorInput) e.getEditorInput()).getFile();
+                    if (f.getProject() == project && Objects.equal(f.getFullPath().segment(1), oldName)) {
+                        editorRefsToClose.add(e);
+                    }
+                }
+            }
+            if (!editorRefsToClose.isEmpty()) {
+                // Close all at once! Otherwise, for example, when ProcessEditor is closed FormEditor may take focus and initialize.
+                // 2nd parameter save=false prevents "Save changed files?" dialog: they are saved anyway.
+                page.closeEditors(editorRefsToClose.toArray(new IEditorReference[editorRefsToClose.size()]), false);
+            }
+            ProcessCache.processDefinitionWasDeleted(oldDefinitionFile);
+            IPath newPath = oldDefinitionFolder.getParent().getFolder(new Path(newName)).getFullPath();
+            IFolder newDefinitionFolder = ResourcesPlugin.getWorkspace().getRoot().getFolder(newPath);
+            oldDefinitionFolder.copy(newDefinitionFolder.getFullPath(), true, new NullProgressMonitor());
+            IFile newDefinitionFile = IOUtils.getProcessDefinitionFile(newDefinitionFolder);
+            definition = ProcessCache.getProcessDefinition(newDefinitionFile);
+            definition.setName(newName);
+            saveProcessDefinition(definition);
+            ProcessCache.newProcessDefinitionWasCreated(newDefinitionFile);
+            ProcessSaveHistory.clear(oldDefinitionFolder);
+            oldDefinitionFolder.delete(true, new NullProgressMonitor());
+            refreshResource(newDefinitionFolder);
+        } catch (Exception e) {
+            PluginLogger.logError(e);
+        }
+    }
+    
     public static void renameSubProcessDefinition(IStructuredSelection selection) {
         IFile subdefinitionFile = (IFile) selection.getFirstElement();
         IFolder definitionFolder = (IFolder) subdefinitionFile.getParent();

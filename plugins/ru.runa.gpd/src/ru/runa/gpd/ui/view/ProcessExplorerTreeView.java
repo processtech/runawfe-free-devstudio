@@ -261,7 +261,12 @@ public class ProcessExplorerTreeView extends ViewPart implements ISelectionListe
                     if (menuOnSubprocess) {
                         WorkspaceOperations.renameSubProcessDefinition(selection);
                     } else {
-                        WorkspaceOperations.renameProcessDefinition(selection);
+                    	if (((IResource) selectedObject).getName().startsWith(".")) {
+                    			WorkspaceOperations.renameGlobalDefinition(selection);
+                    	}
+                    	else {
+                    		WorkspaceOperations.renameProcessDefinition(selection);
+                    	}
                     }
                 }
             });
