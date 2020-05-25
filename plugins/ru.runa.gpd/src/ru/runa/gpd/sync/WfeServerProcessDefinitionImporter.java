@@ -39,17 +39,21 @@ public class WfeServerProcessDefinitionImporter extends WfeServerConnectorDataIm
             if (updateLatestVersion && oldVersion != null) {
                 getConnector().updateProcessDefinitionArchive(oldVersion.getId(), par);
             } else {
+                WfDefinition newDefinition;
                 if (oldVersion != null) {
                     String[] types = oldVersion.getCategories();
                     if (types == null) {
                         types = new String[] { "GPD" };
                     }
-                    getConnector().redeployProcessDefinitionArchive(oldVersion.getId(), par, Lists.newArrayList(types));
+                    newDefinition = getConnector().redeployProcessDefinitionArchive(oldVersion.getId(), par, Lists.newArrayList(types));
                 } else {
-                    WfDefinition newDefinition = getConnector().deployProcessDefinitionArchive(par);
-                    // changing underlying structure
-                    data.add(newDefinition);
+                    newDefinition = getConnector().deployProcessDefinitionArchive(par);
                 }
+                // changing underlying structure to provide subsequent updates
+                if (oldVersion != null) {
+                    data.remove(oldVersion);
+                }
+                data.add(newDefinition);
             }
         } catch (Exception e) {
             if (retryWithSynchronize) {

@@ -48,10 +48,12 @@ import ru.runa.gpd.editor.ProcessSaveHistory;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.par.ProcessDefinitionValidator;
+import ru.runa.gpd.sync.WfeServerConnector;
 import ru.runa.gpd.sync.WfeServerConnectorComposite;
 import ru.runa.gpd.sync.WfeServerProcessDefinitionImporter;
 import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
+import ru.runa.gpd.ui.custom.StatusBarUtils;
 import ru.runa.gpd.ui.view.ValidationErrorsView;
 import ru.runa.gpd.util.IOUtils;
 
@@ -311,6 +313,13 @@ public class ExportParWizardPage extends ExportWizardPage {
             exportResources(progressMonitor);
             final ByteArrayOutputStream baos = (ByteArrayOutputStream) outputStream;
             WfeServerProcessDefinitionImporter.getInstance().uploadPar(definitionName, updateLatestVersion, baos.toByteArray(), true);
+            String message;
+            if (updateLatestVersion) {
+                message = Localization.getString("ExportParWizardPage.par.update.completed");
+            } else {
+                message = Localization.getString("ExportParWizardPage.par.deploy.completed");
+            }
+            StatusBarUtils.updateStatusBar(message + " " + WfeServerConnector.getInstance().getSettings().getUrl());
         }
     }
 
