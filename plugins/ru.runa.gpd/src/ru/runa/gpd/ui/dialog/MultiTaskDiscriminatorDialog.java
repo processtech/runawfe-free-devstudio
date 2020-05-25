@@ -34,7 +34,7 @@ import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.ui.custom.DragAndDropAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionChangedAdapter;
-import ru.runa.gpd.ui.custom.SWTUtils;
+import ru.runa.gpd.ui.custom.SwtUtils;
 import ru.runa.gpd.ui.custom.TableViewerLocalDragAndDropSupport;
 import ru.runa.gpd.util.MultiinstanceParameters;
 import ru.runa.gpd.util.VariableMapping;
@@ -158,14 +158,14 @@ public class MultiTaskDiscriminatorDialog extends Dialog {
             gridData.horizontalAlignment = SWT.LEFT;
             gridData.verticalAlignment = SWT.TOP;
             buttonsComposite.setLayoutData(gridData);
-            SWTUtils.createButtonFillHorizontal(buttonsComposite, Localization.getString("button.add"), new LoggingSelectionAdapter() {
+            SwtUtils.createButtonFillHorizontal(buttonsComposite, Localization.getString("button.add"), new LoggingSelectionAdapter() {
 
                 @Override
                 protected void onSelection(SelectionEvent e) throws Exception {
                     editVariableMapping(null);
                 }
             });
-            changeButton = SWTUtils.createButtonFillHorizontal(buttonsComposite, Localization.getString("button.change"),
+            changeButton = SwtUtils.createButtonFillHorizontal(buttonsComposite, Localization.getString("button.change"),
                     new LoggingSelectionAdapter() {
 
                         @Override
@@ -177,11 +177,11 @@ public class MultiTaskDiscriminatorDialog extends Dialog {
                             }
                         }
                     });
-            moveUpButton = SWTUtils.createButtonFillHorizontal(buttonsComposite, Localization.getString("button.up"),
+            moveUpButton = SwtUtils.createButtonFillHorizontal(buttonsComposite, Localization.getString("button.up"),
                     new MoveVariableSelectionListener(true));
-            moveDownButton = SWTUtils.createButtonFillHorizontal(buttonsComposite, Localization.getString("button.down"),
+            moveDownButton = SwtUtils.createButtonFillHorizontal(buttonsComposite, Localization.getString("button.down"),
                     new MoveVariableSelectionListener(false));
-            deleteButton = SWTUtils.createButtonFillHorizontal(buttonsComposite, Localization.getString("button.delete"),
+            deleteButton = SwtUtils.createButtonFillHorizontal(buttonsComposite, Localization.getString("button.delete"),
                     new LoggingSelectionAdapter() {
 
                         @Override

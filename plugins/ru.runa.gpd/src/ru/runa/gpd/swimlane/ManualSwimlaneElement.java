@@ -24,7 +24,7 @@ import ru.runa.gpd.ui.custom.InsertVariableTextMenuDetectListener;
 import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
 import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
-import ru.runa.gpd.ui.custom.SWTUtils;
+import ru.runa.gpd.ui.custom.SwtUtils;
 
 import static ru.runa.gpd.extension.orgfunction.OrgFunctionDefinition.DEFAULT;
 
@@ -106,7 +106,7 @@ public class ManualSwimlaneElement extends OrgFunctionSwimlaneElement {
             String message = Localization.getString(parameter.getDefinition().getName()) + " *:";
             Control control;
             if (parameter.getDefinition().isMultiple()) {
-                control = SWTUtils.createLink(paramsComposite, message, new LoggingHyperlinkAdapter() {
+                control = SwtUtils.createLink(paramsComposite, message, new LoggingHyperlinkAdapter() {
                     @Override
                     protected void onLinkActivated(HyperlinkEvent e) throws Exception {
                         getSwimlaneInitializerNotNull().propagateParameter(parameter, 1);
@@ -123,7 +123,7 @@ public class ManualSwimlaneElement extends OrgFunctionSwimlaneElement {
             if (parameter.isCanBeDeleted()) {
                 GridData gridData = createLayoutData(1, false);
                 gridData.widthHint = 20;
-                SWTUtils.createLink(paramsComposite, "[-]", new LoggingHyperlinkAdapter() {
+                SwtUtils.createLink(paramsComposite, "[-]", new LoggingHyperlinkAdapter() {
                     @Override
                     protected void onLinkActivated(HyperlinkEvent e) throws Exception {
                         getSwimlaneInitializerNotNull().removeParameter(parameter);

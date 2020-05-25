@@ -5,9 +5,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.IStructuredSelection;
-
 import ru.runa.gpd.BotStationNature;
-import ru.runa.gpd.Localization;
 import ru.runa.gpd.ui.wizard.ImportBotStationWizardPage;
 import ru.runa.gpd.ui.wizard.ImportBotTaskWizardPage;
 import ru.runa.gpd.ui.wizard.ImportBotWizardPage;
@@ -26,11 +24,11 @@ public class ImportBotElementAction extends BaseActionDelegate {
         }
         boolean menuOnBot = selectedObject instanceof IFolder;
         if (menuOnBotStation) {
-            WorkspaceOperations.importBotElement(selection, new ImportBotWizardPage(Localization.getString("ImportParWizard.wizard.title"), selection));
+            WorkspaceOperations.importBotElement(selection, new ImportBotWizardPage(selection));
         } else if (menuOnBot) {
-            WorkspaceOperations.importBotElement(selection, new ImportBotTaskWizardPage(Localization.getString("ImportParWizard.wizard.title"), selection));
+            WorkspaceOperations.importBotElement(selection, new ImportBotTaskWizardPage(selection));
         } else {
-            WorkspaceOperations.importBotElement(selection, new ImportBotStationWizardPage(Localization.getString("ImportParWizard.wizard.title"), selection));
+            WorkspaceOperations.importBotElement(selection, new ImportBotStationWizardPage(selection));
         }
     }
 }

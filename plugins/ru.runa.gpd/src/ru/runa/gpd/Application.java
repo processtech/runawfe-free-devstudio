@@ -13,7 +13,6 @@ import org.osgi.framework.Version;
 public class Application implements IApplication {
     @Override
     public Object start(IApplicationContext context) throws Exception {
-        //org.eclipse.ui.internal.misc.Policy.DEBUG_SWT_GRAPHICS = true;
         Display display = PlatformUI.createDisplay();
         try {
             int returnCode = PlatformUI.createAndRunWorkbench(display, new ApplicationWorkbenchAdvisor());

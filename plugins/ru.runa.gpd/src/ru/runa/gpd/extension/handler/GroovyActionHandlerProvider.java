@@ -21,7 +21,7 @@ import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.search.VariableSearchVisitor;
 import ru.runa.gpd.ui.custom.JavaHighlightTextStyling;
 import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
-import ru.runa.gpd.ui.custom.SWTUtils;
+import ru.runa.gpd.ui.custom.SwtUtils;
 import ru.runa.gpd.ui.dialog.ChooseGroovyStuffDialog;
 import ru.runa.gpd.ui.dialog.ChooseVariableNameDialog;
 import ru.runa.gpd.util.GroovyStuff;
@@ -78,7 +78,7 @@ public class GroovyActionHandlerProvider extends DelegableProvider {
             composite.setLayout(new GridLayout(5, false));
             composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             if (GroovyStuff.TYPE.getAll().size() > 0) {
-                SWTUtils.createLink(composite, Localization.getString("Insert.TYPE.link"), new LoggingHyperlinkAdapter() {
+                SwtUtils.createLink(composite, Localization.getString("Insert.TYPE.link"), new LoggingHyperlinkAdapter() {
                     @Override
                     public void onLinkActivated(HyperlinkEvent e) {
                         Item item = new ChooseGroovyStuffDialog(GroovyStuff.TYPE).openDialog();
@@ -92,7 +92,7 @@ public class GroovyActionHandlerProvider extends DelegableProvider {
                 }).setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
             }
             if (GroovyStuff.CONSTANT.getAll().size() > 0) {
-                SWTUtils.createLink(composite, Localization.getString("Insert.CONSTANT.link"), new LoggingHyperlinkAdapter() {
+                SwtUtils.createLink(composite, Localization.getString("Insert.CONSTANT.link"), new LoggingHyperlinkAdapter() {
                     @Override
                     public void onLinkActivated(HyperlinkEvent e) {
                         Item item = new ChooseGroovyStuffDialog(GroovyStuff.CONSTANT).openDialog();
@@ -106,7 +106,7 @@ public class GroovyActionHandlerProvider extends DelegableProvider {
                 }).setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
             }
             if (GroovyStuff.STATEMENT.getAll().size() > 0) {
-                SWTUtils.createLink(composite, Localization.getString("Insert.STATEMENT.link"), new LoggingHyperlinkAdapter() {
+                SwtUtils.createLink(composite, Localization.getString("Insert.STATEMENT.link"), new LoggingHyperlinkAdapter() {
                     @Override
                     public void onLinkActivated(HyperlinkEvent e) {
                         Item item = new ChooseGroovyStuffDialog(GroovyStuff.STATEMENT).openDialog();
@@ -120,7 +120,7 @@ public class GroovyActionHandlerProvider extends DelegableProvider {
                 }).setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
             }
             if (GroovyStuff.METHOD.getAll().size() > 0) {
-                SWTUtils.createLink(composite, Localization.getString("Insert.METHOD.link"), new LoggingHyperlinkAdapter() {
+                SwtUtils.createLink(composite, Localization.getString("Insert.METHOD.link"), new LoggingHyperlinkAdapter() {
                     @Override
                     public void onLinkActivated(HyperlinkEvent e) {
                         Item item = new ChooseGroovyStuffDialog(GroovyStuff.METHOD).openDialog();
@@ -133,7 +133,7 @@ public class GroovyActionHandlerProvider extends DelegableProvider {
                     }
                 }).setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
             }
-            SWTUtils.createLink(composite, Localization.getString("button.insert_variable"), new LoggingHyperlinkAdapter() {
+            SwtUtils.createLink(composite, Localization.getString("button.insert_variable"), new LoggingHyperlinkAdapter() {
 
                 @Override
                 protected void onLinkActivated(HyperlinkEvent e) throws Exception {

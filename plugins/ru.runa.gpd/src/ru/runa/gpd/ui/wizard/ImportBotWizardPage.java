@@ -3,72 +3,55 @@ package ru.runa.gpd.ui.wizard;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
-
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.bot.BotImportCommand;
+import ru.runa.gpd.sync.WfeServerBotImporter;
+import ru.runa.gpd.sync.WfeServerConnectorDataImporter;
 import ru.runa.gpd.util.IOUtils;
-import ru.runa.gpd.wfe.DataImporter;
-import ru.runa.gpd.wfe.WFEServerBotElementImporter;
-import ru.runa.wfe.bot.Bot;
 
 public class ImportBotWizardPage extends ImportBotElementWizardPage {
-    public ImportBotWizardPage(String pageName, IStructuredSelection selection) {
-        super(pageName, selection);
+
+    public ImportBotWizardPage(IStructuredSelection selection) {
+        super(ImportBotWizardPage.class, selection);
         setTitle(Localization.getString("ImportBotWizardPage.page.title"));
         setDescription(Localization.getString("ImportBotWizardPage.page.description"));
-        for (IProject resource : IOUtils.getAllBotStationProjects()) {
-            importObjectNameFileMap.put(resource.getName(), resource);
-        }
     }
 
     @Override
-    protected Class<Bot> getBotElementClass() {
-        return Bot.class;
-    }
-
-    @Override
-    protected String getInputSuffix() {
+    protected String getFilterExtension() {
         return "*.bot";
     }
 
     @Override
-    protected String getSelectionResourceKey(IResource resource) {
-        return resource.getName();
-    }
-
-    @Override
     public void runImport(InputStream parInputStream, String botName) throws InvocationTargetException, InterruptedException {
-        String selectedDefinitionName = getBotElementSelection();
-        IResource importToResource = importObjectNameFileMap.get(selectedDefinitionName);
-        getContainer().run(true, true, new BotImportCommand(parInputStream, botName, importToResource.getName()));
-    }
-
-    @Override
-    protected void populateInputView() {
-        if (importFromServerButton.getSelection()) {
-            serverDataViewer.setInput(WFEServerBotElementImporter.getInstance().getBots());
+        IContainer selectedProject = getSelectedProject();
+        if (selectedProject == null) {
+            return;
         }
+        getContainer().run(true, true, new BotImportCommand(parInputStream, botName, selectedProject.getName()));
     }
 
     @Override
-    protected DataImporter getDataImporter() {
-        return WFEServerBotElementImporter.getInstance();
+    protected List<? extends IContainer> getProjectDataViewerInput() {
+        return IOUtils.getAllBotStationProjects();
     }
 
     @Override
-    protected Object[] getBotElements() {
-        List<Bot> bots = WFEServerBotElementImporter.getInstance().getBots();
-        return bots.toArray(new Object[0]);
+    protected Object getServerDataViewerInput() {
+        return WfeServerBotImporter.getInstance().getBots();
     }
 
     @Override
-    protected ITreeContentProvider getContentProvider() {
+    protected WfeServerConnectorDataImporter<?> getDataImporter() {
+        return WfeServerBotImporter.getInstance();
+    }
+
+    @Override
+    protected ITreeContentProvider getServerDataViewerContentProvider() {
         return new BotTreeContentProvider();
     }
 
@@ -88,7 +71,7 @@ public class ImportBotWizardPage extends ImportBotElementWizardPage {
             return false;
         }
 
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings({ "unchecked", "rawtypes" })
         @Override
         public Object[] getElements(Object inputElement) {
             if (inputElement instanceof List) {
