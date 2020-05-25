@@ -838,5 +838,6 @@ public class JpdlSerializer extends ProcessSerializer {
                 throw new RuntimeException("Problem with " + transition.getId() + ": " + transition.getParent() + " -> " + targetNodeId);
             }
         }
+        definition.onLoadingCompleted();
     }
 }
