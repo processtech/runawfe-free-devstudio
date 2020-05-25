@@ -194,7 +194,7 @@ public class FieldValidatorsPage extends Composite implements PropertyChangeList
         data.minimumHeight = 300;
         tabFolder.setLayoutData(data);
 
-        variablesTableViewer = createTableViewer(tabFolder, SWT.BORDER | SWT.V_SCROLL | SWT.FULL_SELECTION);
+        variablesTableViewer = createTableViewer(tabFolder, SWT.BORDER | SWT.FULL_SELECTION);
         variablesTableViewer.setLabelProvider(new VariableTableLabelProvider());
         variablesTableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
             @Override
@@ -245,7 +245,7 @@ public class FieldValidatorsPage extends Composite implements PropertyChangeList
         tabItem1.setText(Localization.getString("FieldValidatorsWizardPage.Variables"));
         tabItem1.setControl(variablesTableViewer.getControl());
 
-        swimlanesTableViewer = createTableViewer(tabFolder, SWT.BORDER | SWT.V_SCROLL | SWT.FULL_SELECTION);
+        swimlanesTableViewer = createTableViewer(tabFolder, SWT.BORDER | SWT.FULL_SELECTION);
         swimlanesTableViewer.setLabelProvider(new VariableTableLabelProvider());
         swimlanesTableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
             @Override
