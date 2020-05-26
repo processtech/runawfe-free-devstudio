@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.CoreException;
@@ -115,14 +116,16 @@ public class CopyGraphCommand extends Command {
                 NamedGraphElement copy = (NamedGraphElement) node.makeCopy(targetDefinition);
                 adjustLocation(copy);
                 newElements.add(copy);
-                for (Variable variable : node.getUsedVariables(copyBuffer.getSourceFolder())) {
+                List<Variable> usedVariables = node.getUsedVariables(copyBuffer.getSourceFolder());
+                List<String> usedVariableNames = usedVariables.stream().map(v -> v.getName()).collect(Collectors.toList());
+                for (Variable variable : usedVariables) {
                     ExtraCopyAction copyAction;
                     if (variable instanceof Swimlane) {
                         copyAction = new CopySwimlaneAction((Swimlane) variable);
                     } else {
                         String rootVariableName = variable.getName().split(Pattern.quote(UserType.DELIM))[0];
                         copyAction = new CopyVariableAction(node.getProcessDefinition(),
-                                VariableUtils.getVariableByName(node.getProcessDefinition(), rootVariableName));
+                                VariableUtils.getVariableByName(node.getProcessDefinition(), rootVariableName), usedVariableNames);
                     }
                     copyActions.add(copyAction);
                 }
@@ -198,14 +201,16 @@ public class CopyGraphCommand extends Command {
                         copy.setTarget((Node) target);
                         newElements.add(copy);
                     }
-                    for (Variable variable : transition.getUsedVariables(copyBuffer.getSourceFolder())) {
+                    List<Variable> usedVariables = node.getUsedVariables(copyBuffer.getSourceFolder());
+                    List<String> usedVariableNames = usedVariables.stream().map(v -> v.getName()).collect(Collectors.toList());
+                    for (Variable variable : usedVariables) {
                         ExtraCopyAction copyAction;
                         if (variable instanceof Swimlane) {
                             copyAction = new CopySwimlaneAction((Swimlane) variable);
                         } else {
                             String rootVariableName = variable.getName().split(Pattern.quote(UserType.DELIM))[0];
                             copyAction = new CopyVariableAction(node.getProcessDefinition(),
-                                    VariableUtils.getVariableByName(node.getProcessDefinition(), rootVariableName));
+                                    VariableUtils.getVariableByName(node.getProcessDefinition(), rootVariableName), usedVariableNames);
                         }
                         copyActions.add(copyAction);
                     }
@@ -507,8 +512,9 @@ public class CopyGraphCommand extends Command {
         private final Variable oldVariable;
         private Variable addedVariable;
         private VariableUserType addedUserType;
+        private List<String> usedVariableNames;
 
-        public CopyVariableAction(ProcessDefinition sourceProcessDefinition, Variable sourceVariable) {
+        public CopyVariableAction(ProcessDefinition sourceProcessDefinition, Variable sourceVariable, List<String> usedVariableNames) {
             super(CopyBuffer.GROUP_VARIABLES, sourceVariable.getName());
             this.sourceProcessDefinition = sourceProcessDefinition;
             this.sourceVariable = sourceVariable;
@@ -516,6 +522,7 @@ public class CopyGraphCommand extends Command {
             if (oldVariable != null) {
                 setEnabled(getChanges() != null);
             }
+            this.usedVariableNames = usedVariableNames;
         }
 
         @Override
@@ -594,16 +601,19 @@ public class CopyGraphCommand extends Command {
                 VariableUserType sourceUserType = srcVar.getUserType().getCopy();
                 VariableUserType userType = targetDefinition.getVariableUserType(srcVar.getUserType().getName());
                 if (userType == null) {
-                    targetDefinition.addVariableUserType(sourceUserType);
+                    targetDefinition.addVariableUserType(userType = new VariableUserType(srcVar.getUserType().getName()));
                     for (Variable v : sourceUserType.getAttributes()) {
-                        if (v.isComplex() || VariableUtils.isContainerVariable(v)) {
-                            copyUserType(v);
+                        if (usedVariableNames.contains(srcVar.getName() + UserType.DELIM + v.getName())) {
+                            if (v.isComplex() || VariableUtils.isContainerVariable(v)) {
+                                copyUserType(v);
+                            }
+                            userType.addAttribute(v);
                         }
                     }
                 } else {
                     List<Variable> userTypeAttributes = userType.getAttributes();
                     for (Variable v : sourceUserType.getAttributes()) {
-                        if (!userTypeAttributes.contains(v)) {
+                        if (!userTypeAttributes.contains(v) && usedVariableNames.contains(srcVar.getName() + UserType.DELIM + v.getName())) {
                             if (v.isComplex() || VariableUtils.isContainerVariable(v)) {
                                 copyUserType(v);
                             }
