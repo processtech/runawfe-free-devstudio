@@ -2,9 +2,8 @@ package ru.runa.gpd.editor.graphiti;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.eclipse.gef.commands.Command;
-
+import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.ProcessDefinition;
@@ -37,12 +36,12 @@ public class DrawAfterPasteCommand extends Command {
 		if ( processDefinition.getSwimlaneDisplayMode() == SwimlaneDisplayMode.none) {
 			removeSwimlanes(elementList);
 		}
-		diagramPage.drawElements(diagramPage.getDiagramTypeProvider().getDiagram(), elementList);
+        diagramPage.drawElements(diagramPage.getDiagramTypeProvider().getDiagram(), elementList);
 		List<Transition> transitions = new ArrayList<Transition>();
 		for (NamedGraphElement element : elementList) {
 			transitions.addAll(element.getChildrenRecursive(Transition.class));
 		}
-		diagramPage.drawTransitions(transitions);
+        diagramPage.drawTransitions(transitions);
 	}
 	
 	private void removeSwimlanes(List<NamedGraphElement> elementList ) {
@@ -62,5 +61,10 @@ public class DrawAfterPasteCommand extends Command {
 		super.undo();
 		// TODO How to remove graphic presentation of element(nodes)?
 	}
+
+    @Override
+    public String getLabel() {
+        return Localization.getString(this.getClass().getSimpleName());
+    }
 
 }

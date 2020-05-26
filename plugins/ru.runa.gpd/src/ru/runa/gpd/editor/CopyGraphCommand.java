@@ -82,7 +82,7 @@ public class CopyGraphCommand extends Command {
 
     @Override
     public String getLabel() {
-        return Localization.getString("button.paste");
+        return Localization.getString("button.paste") + " " + this.getClass().getSimpleName();
     }
 
     @Override
