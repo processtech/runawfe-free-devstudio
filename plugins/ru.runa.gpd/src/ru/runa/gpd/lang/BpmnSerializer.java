@@ -877,6 +877,7 @@ public class BpmnSerializer extends ProcessSerializer {
                 definition.getGraphElementByIdNotNull(nodeId).setParentContainer(entry.getKey());
             }
         }
+        definition.onLoadingCompleted();
     }
 
     private GraphElement parseEventElement(ProcessDefinition definition, GraphElement parent, Element eventElement) {
