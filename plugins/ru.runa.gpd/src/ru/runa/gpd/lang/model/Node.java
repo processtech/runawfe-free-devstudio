@@ -223,8 +223,12 @@ public abstract class Node extends NamedGraphElement implements Describable {
     }
 
     public void addLeavingTransition(Transition transition) {
+        addLeavingTransition(transition, getElements().size());
+    }
+
+    public void addLeavingTransition(Transition transition, int index) {
         boolean renameAfterAddition = getTransitionByName(transition.getName()) != null;
-        addChild(transition);
+        addChild(transition, index);
         if (renameAfterAddition) {
             transition.setName(getNextTransitionName(transition.getTypeDefinition()));
         }

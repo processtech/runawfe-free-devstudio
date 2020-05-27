@@ -36,7 +36,9 @@ public class CustomCommandStack extends GFCommandStack implements IOperationHist
 
     private boolean hasDoneChanges(Command gefCommand) {
         if (gefCommand != null) {
-            if (gefCommand instanceof IFeatureHolder) {
+            if (gefCommand instanceof CopyGraphAndDrawAfterPasteCommand) {
+                return true;
+            } else if (gefCommand instanceof IFeatureHolder) {
                 return ((IFeatureHolder) gefCommand).getFeature().hasDoneChanges();
             } else if (gefCommand instanceof GefCommandWrapper) {
                 ICommand graphitiCommand = ((GefCommandWrapper) gefCommand).getCommand();
@@ -71,18 +73,25 @@ public class CustomCommandStack extends GFCommandStack implements IOperationHist
 
     @Override
     public void historyNotification(OperationHistoryEvent event) {
-        switch(event.getEventType()) {
-        case OperationHistoryEvent.UNDONE:
-            gefCommand(event).undo();
-            break;
-        case OperationHistoryEvent.REDONE:
-            gefCommand(event).redo();
-            break;
+        Command command = gefCommand(event);
+        if (command != null && command instanceof CopyGraphAndDrawAfterPasteCommand) {
+            switch (event.getEventType()) {
+            case OperationHistoryEvent.UNDONE:
+                command.undo();
+                break;
+            case OperationHistoryEvent.REDONE:
+                command.redo();
+                break;
+            }
         }
     }
 
     private Command gefCommand(OperationHistoryEvent event) {
-        return ((EmfOnGefCommand) ((GFPreparableCommand2) ((EMFCommandOperation) event.getOperation()).getCommand()).getCommand()).getGefCommand();
+        org.eclipse.emf.common.command.Command emfCommand = ((EMFCommandOperation) event.getOperation()).getCommand();
+        if (emfCommand instanceof GFPreparableCommand2) {
+            return ((EmfOnGefCommand) ((GFPreparableCommand2) emfCommand).getCommand()).getGefCommand();
+        }
+        return null;
     }
 
 }

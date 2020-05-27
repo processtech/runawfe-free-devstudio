@@ -38,7 +38,7 @@ public class UpdateTransitionFeature extends UpdateFeature {
         if (nameTextGa != null) {
             boolean nameLabelVisible = !Strings.isNullOrEmpty(transition.getLabel());
             if (nameTextGa.getPictogramElement().isVisible() != nameLabelVisible) {
-                return Reason.createTrueReason();
+                return Reason.createTrueReason("Transition name must be " + (nameLabelVisible ? "visible" : "invisible"));
             }
             if (!Objects.equal(nameTextGa.getValue(), transition.getLabel())) {
                 return Reason.createTrueReason("Name is out of date");
@@ -50,14 +50,14 @@ public class UpdateTransitionFeature extends UpdateFeature {
                 return Reason.createTrueReason("Transition number is out of date");
             }
             if (!numberGa.getStyle().getId().endsWith(transition.getColor().name())) {
-                return Reason.createTrueReason();
+                return Reason.createTrueReason("Transition style is wrong");
             }
             GraphicsAlgorithm colorMarkerGa = PropertyUtil.findGaRecursiveByName(pe, GaProperty.TRANSITION_COLOR_MARKER);
             if (numberGa.getY() != nameTextGa.getY() || numberGa.getX() + numberOffsetX(colorMarkerGa, numberGa) != nameTextGa.getX()) {
-                return Reason.createTrueReason();
+                return Reason.createTrueReason("Transition number position is wrong");
             }
             if (colorMarkerGa.getY() != nameTextGa.getY() || colorMarkerGa.getX() + colorMarkerGa.getWidth() + 1 != nameTextGa.getX()) {
-                return Reason.createTrueReason();
+                return Reason.createTrueReason("Transition color marker position is wrong");
             }
         }
         return Reason.createFalseReason();

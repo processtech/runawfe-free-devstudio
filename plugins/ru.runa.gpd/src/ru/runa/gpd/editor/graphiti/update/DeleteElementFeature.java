@@ -202,7 +202,7 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements Custom
     private void restoreTransitions() {
         if (transitions != null) {
             Collections.reverse(transitions);
-            transitions.stream().forEach(transition -> transition.getSource().addChild(transition, transitionIndexes.get(transition)));
+            transitions.stream().forEach(transition -> transition.getSource().addLeavingTransition(transition, transitionIndexes.get(transition)));
         }
         getDiagramBehavior().refresh();
     }
