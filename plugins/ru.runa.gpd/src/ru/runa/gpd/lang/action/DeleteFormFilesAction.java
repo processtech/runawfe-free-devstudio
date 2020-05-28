@@ -39,7 +39,7 @@ public class DeleteFormFilesAction extends BaseModelActionDelegate {
             items.add(deleteValidationFile);
         }
         SelectionItem deleteScriptFile = null;
-        if (formNode.hasFormScript()) {
+        if (formNode.hasFormScript() && formNode.hasDifferencesBetweenCurrecntAndNewScriptFile()) {
             deleteScriptFile = new SelectionItem(true, Localization.getString("form.scriptFile"));
             items.add(deleteScriptFile);
         }
