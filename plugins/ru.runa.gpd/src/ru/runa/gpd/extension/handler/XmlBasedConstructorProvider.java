@@ -1,11 +1,12 @@
 package ru.runa.gpd.extension.handler;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.window.Window;
@@ -21,20 +22,18 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.DelegableProvider;
+import ru.runa.gpd.extension.DialogShowMode;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.ui.custom.XmlHighlightTextStyling;
 import ru.runa.gpd.util.XmlUtil;
-
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 
 public abstract class XmlBasedConstructorProvider<T extends Observable> extends DelegableProvider {
 
@@ -45,6 +44,12 @@ public abstract class XmlBasedConstructorProvider<T extends Observable> extends 
             return dialog.getResult();
         }
         return null;
+    }
+
+    @Override
+    public void showEmbeddedConfigurationDialog(final Composite mainComposite, Delegable delegable, DialogShowMode dialogShowMode) {
+        XmlBasedConstructorDialog dialog = new XmlBasedConstructorDialog(delegable);
+        dialog.createEmbeddedWindow(mainComposite, dialogShowMode);
     }
 
     @Override
@@ -81,6 +86,10 @@ public abstract class XmlBasedConstructorProvider<T extends Observable> extends 
     }
 
     protected abstract String getTitle();
+
+    protected Composite createConstructorComposite(Composite parent, Delegable delegable, T model, DialogShowMode dialogShowMode) {
+        throw new RuntimeException("Not implemented behavior for provided 'dialogShowMode' argument");
+    }
 
     protected abstract Composite createConstructorComposite(Composite parent, Delegable delegable, T model);
 
@@ -120,12 +129,14 @@ public abstract class XmlBasedConstructorProvider<T extends Observable> extends 
         private final String initialValue;
         private String result;
         protected final Delegable delegable;
+        private DialogShowMode dialogShowMode;
 
         public XmlBasedConstructorDialog(Delegable delegable) {
             super(Display.getCurrent().getActiveShell());
             setShellStyle(getShellStyle() | SWT.RESIZE);
             this.delegable = delegable;
             this.initialValue = delegable.getDelegationConfiguration();
+            this.dialogShowMode = new DialogShowMode();
         }
 
         @Override
@@ -133,20 +144,15 @@ public abstract class XmlBasedConstructorProvider<T extends Observable> extends 
             return new Point(600, 400);
         }
 
+        public void createEmbeddedWindow(Composite mainComposite, DialogShowMode dialogShowMode) {
+            this.dialogShowMode = dialogShowMode;
+            createDialogArea(mainComposite);
+
+        }
+
         @Override
         protected Control createDialogArea(Composite parent) {
-            getShell().setText(getTitle());
-            tabFolder = new TabFolder(parent, SWT.BORDER);
-            tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
-            Composite composite = new Composite(tabFolder, SWT.NONE);
-            composite.setLayout(new GridLayout());
-            TabItem tabItem1 = new TabItem(tabFolder, SWT.NONE);
-            tabItem1.setText(Localization.getString("SQLActionHandlerConfig.title.configuration"));
-            tabItem1.setControl(composite);
-            ScrolledComposite scrolledComposite = new ScrolledComposite(composite, SWT.V_SCROLL | SWT.BORDER);
-            scrolledComposite.setExpandHorizontal(true);
-            scrolledComposite.setExpandVertical(true);
-            scrolledComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
+
             try {
                 if (initialValue.trim().length() != 0) {
                     model = fromXml(initialValue);
@@ -157,21 +163,60 @@ public abstract class XmlBasedConstructorProvider<T extends Observable> extends 
                 PluginLogger.logError(Localization.getString("config.error.parse"), ex);
                 model = createDefault();
             }
-            constructorView = createConstructorComposite(scrolledComposite, delegable, model);
-            constructorView.setLayoutData(new GridData(GridData.FILL_BOTH));
-            if (constructorView instanceof Observer) {
-                model.addObserver((Observer) constructorView);
+
+            if (dialogShowMode.checkDocxMode() && dialogShowMode.not(DialogShowMode.DOCX_SHOW_XML_VIEW)) {
+
+                Composite composite = new Composite(parent, SWT.NONE);
+                composite.setLayout(new GridLayout());
+
+                ScrolledComposite scrolledComposite = new ScrolledComposite(composite, SWT.V_SCROLL);
+                scrolledComposite.setExpandHorizontal(true);
+                scrolledComposite.setExpandVertical(true);
+                scrolledComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+                constructorView = createConstructorComposite(scrolledComposite, delegable, model, dialogShowMode);
+                constructorView.setLayoutData(new GridData(GridData.FILL_BOTH));
+                if (constructorView instanceof Observer) {
+                    model.addObserver((Observer) constructorView);
+                }
+
+                scrolledComposite.setContent(constructorView);
+
+                return constructorView;
+
+            } else {
+
+                Shell shell = getShell();
+                if (null != shell) {
+                    shell.setText(getTitle());
+                }
+                tabFolder = new TabFolder(parent, SWT.BORDER);
+                tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
+                Composite composite = new Composite(tabFolder, SWT.NONE);
+                composite.setLayout(new GridLayout());
+                TabItem tabItem1 = new TabItem(tabFolder, SWT.NONE);
+                tabItem1.setText(Localization.getString("SQLActionHandlerConfig.title.configuration"));
+                tabItem1.setControl(composite);
+                ScrolledComposite scrolledComposite = new ScrolledComposite(composite, SWT.V_SCROLL | SWT.BORDER);
+                scrolledComposite.setExpandHorizontal(true);
+                scrolledComposite.setExpandVertical(true);
+                scrolledComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
+                constructorView = createConstructorComposite(scrolledComposite, delegable, model);
+                constructorView.setLayoutData(new GridData(GridData.FILL_BOTH));
+                if (constructorView instanceof Observer) {
+                    model.addObserver((Observer) constructorView);
+                }
+                scrolledComposite.setContent(constructorView);
+                xmlContentView = new XmlContentView(tabFolder, SWT.NONE);
+                xmlContentView.setLayoutData(new GridData(GridData.FILL_BOTH));
+                xmlContentView.setValue(initialValue);
+                TabItem tabItem2 = new TabItem(tabFolder, SWT.NONE);
+                tabItem2.setText(" XML ");
+                tabItem2.setControl(xmlContentView);
+                tabFolder.setSelection(getSelectedTabIndex(delegable, model));
+                tabFolder.addSelectionListener(new TabSelectionHandler());
+                return tabFolder;
             }
-            scrolledComposite.setContent(constructorView);
-            xmlContentView = new XmlContentView(tabFolder, SWT.NONE);
-            xmlContentView.setLayoutData(new GridData(GridData.FILL_BOTH));
-            xmlContentView.setValue(initialValue);
-            TabItem tabItem2 = new TabItem(tabFolder, SWT.NONE);
-            tabItem2.setText(" XML ");
-            tabItem2.setControl(xmlContentView);
-            tabFolder.setSelection(getSelectedTabIndex(delegable, model));
-            tabFolder.addSelectionListener(new TabSelectionHandler());
-            return tabFolder;
         }
 
         @Override

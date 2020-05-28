@@ -1,8 +1,8 @@
 package ru.runa.gpd.office;
 
+import com.google.common.base.Strings;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -16,9 +16,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-
-import com.google.common.base.Strings;
-
+import ru.runa.gpd.extension.DialogShowMode;
 import ru.runa.gpd.lang.model.BotTask;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.GraphElement;
@@ -35,7 +33,8 @@ public class InputOutputComposite extends Composite {
     private final Delegable delegable;
     private final String fileExtension;
 
-    public InputOutputComposite(Composite parent, Delegable delegable, final InputOutputModel model, FilesSupplierMode mode, String fileExtension) {
+    public InputOutputComposite(Composite parent, Delegable delegable, final InputOutputModel model, FilesSupplierMode mode, String fileExtension,
+            DialogShowMode dialogShowMode) {
         super(parent, SWT.NONE);
         this.model = model;
         this.delegable = delegable;
@@ -48,7 +47,10 @@ public class InputOutputComposite extends Composite {
             Group inputGroup = new Group(this, SWT.NONE);
             inputGroup.setText(Messages.getString("label.input"));
             inputGroup.setLayout(new GridLayout(2, false));
-            new ChooseStringOrFile(inputGroup, model.inputPath, model.inputVariable, Messages.getString("label.filePath"), FilesSupplierMode.IN) {
+
+            new ChooseStringOrFile(inputGroup, model.inputPath, model.inputVariable, Messages.getString("label.filePath"), FilesSupplierMode.IN,
+                    dialogShowMode) {
+
                 @Override
                 public void setFileName(String fileName) {
                     model.inputPath = fileName;
@@ -61,6 +63,7 @@ public class InputOutputComposite extends Composite {
                     model.inputVariable = variable;
                 }
             };
+
         }
         if (mode.isOutSupported()) {
             Group outputGroup = new Group(this, SWT.NONE);
@@ -80,7 +83,8 @@ public class InputOutputComposite extends Composite {
                     model.outputFilename = fileNameText.getText();
                 }
             });
-            new ChooseStringOrFile(outputGroup, model.outputDir, model.outputVariable, Messages.getString("label.fileDir"), FilesSupplierMode.OUT) {
+            new ChooseStringOrFile(outputGroup, model.outputDir, model.outputVariable, Messages.getString("label.fileDir"), FilesSupplierMode.OUT,
+                    dialogShowMode) {
                 @Override
                 public void setFileName(String fileName) {
                     model.outputDir = fileName;
@@ -105,7 +109,8 @@ public class InputOutputComposite extends Composite {
         private Control control = null;
         private final Composite composite;
 
-        public ChooseStringOrFile(Composite composite, String fileName, String variableName, String stringLabel, FilesSupplierMode mode) {
+        public ChooseStringOrFile(Composite composite, String fileName, String variableName, String stringLabel, FilesSupplierMode mode,
+                DialogShowMode dialogShowMode) {
             this.composite = composite;
             final Combo combo = new Combo(composite, SWT.READ_ONLY);
             combo.add(stringLabel);
@@ -117,7 +122,13 @@ public class InputOutputComposite extends Composite {
                 combo.add(Messages.getString("label.dataSourceName"));
                 combo.add(Messages.getString("label.dataSourceNameVariable"));
             }
-            if (!Strings.isNullOrEmpty(variableName)) {
+
+            /// !!!
+
+            if (dialogShowMode.checkDocxMode() && dialogShowMode.is(DialogShowMode.DOCX_SHOW_INPUT)) {
+                combo.select(2);
+                showEmbeddedFile(fileName);
+            } else if (!Strings.isNullOrEmpty(variableName)) {
                 combo.select(1);
                 showVariable(variableName);
             } else if ((delegable instanceof GraphElement && EmbeddedFileUtils.isProcessFile(fileName))
@@ -285,6 +296,7 @@ public class InputOutputComposite extends Composite {
                     return;
                 }
             }
+
             String fileName;
 
             if (delegable instanceof GraphElement) {
@@ -309,6 +321,7 @@ public class InputOutputComposite extends Composite {
             control = new TemplateFileComposite(composite, fileName, fileExtension);
             ((TemplateFileComposite) control).getEventSupport().addPropertyChangeListener(this);
             composite.layout(true, true);
+
         }
 
         @Override

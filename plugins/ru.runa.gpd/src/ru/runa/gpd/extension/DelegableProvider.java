@@ -1,19 +1,17 @@
 package ru.runa.gpd.extension;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.jface.window.Window;
+import org.eclipse.swt.widgets.Composite;
 import org.osgi.framework.Bundle;
-
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.Variable;
-
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 
 public class DelegableProvider {
     protected Bundle bundle;
@@ -36,6 +34,10 @@ public class DelegableProvider {
             return dialog.getResult();
         }
         return null;
+    }
+
+    public void showEmbeddedConfigurationDialog(final Composite mainComposite, Delegable delegable, DialogShowMode dialogShowMode) {
+        throw new RuntimeException("Embedded dialog is not implemented yet!");
     }
 
     /**

@@ -1,7 +1,7 @@
 package ru.runa.gpd.office.word;
 
+import com.google.common.base.Strings;
 import java.util.List;
-
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.eclipse.core.resources.IFolder;
@@ -19,9 +19,9 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
+import ru.runa.gpd.extension.DialogShowMode;
 import ru.runa.gpd.extension.bot.IBotFileSupportProvider;
 import ru.runa.gpd.extension.handler.XmlBasedConstructorProvider;
 import ru.runa.gpd.lang.ValidationError;
@@ -38,13 +38,16 @@ import ru.runa.gpd.ui.custom.SWTUtils;
 import ru.runa.gpd.util.EmbeddedFileUtils;
 import ru.runa.gpd.util.XmlUtil;
 
-import com.google.common.base.Strings;
-
 public class DocxHandlerCellEditorProvider extends XmlBasedConstructorProvider<DocxModel> implements IBotFileSupportProvider {
 
     @Override
     protected Composite createConstructorComposite(Composite parent, Delegable delegable, DocxModel model) {
-        return new ConstructorView(parent, delegable, model);
+        return new ConstructorView(parent, delegable, model, new DialogShowMode());
+    }
+
+    @Override
+    protected Composite createConstructorComposite(Composite parent, Delegable delegable, DocxModel model, DialogShowMode dialogShowMode) {
+        return new ConstructorView(parent, delegable, model, dialogShowMode);
     }
 
     @Override
@@ -99,9 +102,12 @@ public class DocxHandlerCellEditorProvider extends XmlBasedConstructorProvider<D
 
     private class ConstructorView extends ConstructorComposite {
 
-        public ConstructorView(Composite parent, Delegable delegable, DocxModel model) {
+        final private DialogShowMode dialogShowMode;
+
+        public ConstructorView(Composite parent, Delegable delegable, DocxModel model, DialogShowMode dialogShowMode) {
             super(parent, delegable, model);
             setLayout(new GridLayout(2, false));
+            this.dialogShowMode = dialogShowMode;
             buildFromModel();
         }
 
@@ -111,23 +117,40 @@ public class DocxHandlerCellEditorProvider extends XmlBasedConstructorProvider<D
                 for (Control control : getChildren()) {
                     control.dispose();
                 }
-                final Button strict = new Button(this, SWT.CHECK);
-                strict.setText(Messages.getString("label.strict"));
-                strict.setSelection(model.isStrict());
-                strict.addSelectionListener(new LoggingSelectionAdapter() {
 
-                    @Override
-                    protected void onSelection(SelectionEvent e) throws Exception {
-                        model.setStrict(strict.getSelection());
-                    }
-                });
-                new Label(this, SWT.NONE);
-                new InputOutputComposite(this, delegable, model.getInOutModel(), FilesSupplierMode.BOTH, "docx");
+                if (dialogShowMode.isOrDefault(DialogShowMode.DOCX_SHOW_STRICT_LABEL)) {
+                    final Button strict = new Button(this, SWT.CHECK);
+                    strict.setText(Messages.getString("label.strict"));
+                    strict.setSelection(model.isStrict());
+                    strict.addSelectionListener(new LoggingSelectionAdapter() {
+
+                        @Override
+                        protected void onSelection(SelectionEvent e) throws Exception {
+                            model.setStrict(strict.getSelection());
+                        }
+                    });
+                    new Label(this, SWT.NONE);
+                }
+
+                if (dialogShowMode.isOrDefault(DialogShowMode.DOCX_SHOW_INPUT) && dialogShowMode.isOrDefault(DialogShowMode.DOCX_SHOW_OUTPUT)) {
+                    new InputOutputComposite(this, delegable, model.getInOutModel(), FilesSupplierMode.BOTH, "docx", dialogShowMode);
+                } else if (dialogShowMode.is(DialogShowMode.DOCX_SHOW_INPUT)) {
+                    new InputOutputComposite(this, delegable, model.getInOutModel(), FilesSupplierMode.IN, "docx", dialogShowMode);
+                } else if (dialogShowMode.is(DialogShowMode.DOCX_SHOW_OUTPUT)) {
+                    new InputOutputComposite(this, delegable, model.getInOutModel(), FilesSupplierMode.OUT, "docx", dialogShowMode);
+                }
+
                 int i = 0;
                 for (DocxTableModel table : model.getTables()) {
                     addTableSection(table, i++);
                 }
-                ((ScrolledComposite) getParent()).setMinSize(computeSize(getSize().x, SWT.DEFAULT));
+
+                Composite composite = getParent();
+
+                if (composite instanceof ScrolledComposite) {
+                    ((ScrolledComposite) getParent()).setMinSize(computeSize(getSize().x, SWT.DEFAULT));
+                }
+
                 this.layout(true, true);
             } catch (Throwable e) {
                 PluginLogger.logErrorWithoutDialog("Cannot build model", e);

@@ -2,7 +2,6 @@ package ru.runa.gpd.ui.custom;
 
 import java.io.File;
 import java.io.InputStream;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
@@ -13,9 +12,8 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.ide.IDE;
-
-import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.Localization;
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.util.EmbeddedFileUtils;
 import ru.runa.gpd.util.EventSupport;
 import ru.runa.gpd.util.IOUtils;
@@ -27,7 +25,7 @@ public abstract class ProcessFileComposite extends Composite {
     public ProcessFileComposite(Composite parent, IFile file) {
         super(parent, SWT.NONE);
         this.file = file;
-        setLayout(new GridLayout(3, false));
+        setLayout(new GridLayout(5, true));
         rebuild();
     }
 
@@ -35,7 +33,8 @@ public abstract class ProcessFileComposite extends Composite {
         for (Control control : getChildren()) {
             control.dispose();
         }
-        if (!file.exists()) {
+        /// !!!
+        if (null == file || !file.exists()) {
             if (hasTemplate()) {
                 SWTUtils.createLink(this, Localization.getString("button.create"), new LoggingHyperlinkAdapter() {
 

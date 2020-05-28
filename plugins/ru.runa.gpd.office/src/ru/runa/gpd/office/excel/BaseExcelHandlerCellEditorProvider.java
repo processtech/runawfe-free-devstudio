@@ -1,7 +1,6 @@
 package ru.runa.gpd.office.excel;
 
 import java.util.List;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.ModifyEvent;
@@ -18,8 +17,8 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
-
 import ru.runa.gpd.PluginLogger;
+import ru.runa.gpd.extension.DialogShowMode;
 import ru.runa.gpd.extension.handler.XmlBasedConstructorProvider;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.Delegable;
@@ -106,7 +105,7 @@ public abstract class BaseExcelHandlerCellEditorProvider extends XmlBasedConstru
                         buildFromModel();
                     }
                 }).setLayoutData(new GridData(GridData.GRAB_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
-                new InputOutputComposite(this, delegable, model.getInOutModel(), getMode(), "xlsx");
+                new InputOutputComposite(this, delegable, model.getInOutModel(), getMode(), "xlsx", new DialogShowMode());
                 for (ConstraintsModel c : model.constraints) {
                     switch (c.type) {
                     case ConstraintsModel.CELL:

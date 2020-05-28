@@ -6,4 +6,5 @@ tnms-devstudio-pom.xml
 /plugins/ru.runa.spz.maven
 spz-devstudio-pom.xml
 .settings
-
+*.iml
+.idea
