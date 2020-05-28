@@ -305,7 +305,7 @@ public class FieldValidatorsPage extends Composite implements PropertyChangeList
         Label validatorsLabel = new Label(topPane, SWT.NONE);
         validatorsLabel.setText(Localization.getString("FieldValidatorsWizardPage.Validators"));
 
-        validatorsTableViewer = createTableViewer(topPane, SWT.BORDER | SWT.V_SCROLL | SWT.FULL_SELECTION);
+        validatorsTableViewer = createTableViewer(topPane, SWT.BORDER | SWT.FULL_SELECTION);
         validatorsTableViewer.setLabelProvider(new ValidatorDefinitionTableLabelProvider());
 
         Composite bottomPane = new Composite(right, SWT.NONE);

@@ -50,7 +50,6 @@ public abstract class ValidatorInfoControl extends Composite {
             errorMessageText.setText(config.getMessage());
             parametersComposite.clear();
             parametersComposite.build(definition, config.getParams());
-            errorMessageText.setFocus();
         }
         setVisible(config != null);
     }
