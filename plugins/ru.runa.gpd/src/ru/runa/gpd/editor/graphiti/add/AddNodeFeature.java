@@ -21,8 +21,4 @@ public abstract class AddNodeFeature extends AddElementFeature {
         return false;
     }
 
-    @Override
-    public boolean hasDoneChanges() {
-        return false;
-    }
 }
