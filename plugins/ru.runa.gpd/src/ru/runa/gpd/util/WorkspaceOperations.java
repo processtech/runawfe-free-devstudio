@@ -233,13 +233,23 @@ public class WorkspaceOperations {
     public static void renameProcessDefinition(IStructuredSelection selection) {
         IFolder oldDefinitionFolder = (IFolder) selection.getFirstElement();
         IFile oldDefinitionFile = IOUtils.getProcessDefinitionFile(oldDefinitionFolder);
-        RenameProcessDefinitionDialog dialog = new RenameProcessDefinitionDialog(oldDefinitionFolder);
         ProcessDefinition definition = ProcessCache.getProcessDefinition(oldDefinitionFile);
+        
+        boolean saved = !definition.isDirty();
+        RenameProcessDefinitionDialog dialog = new RenameProcessDefinitionDialog(oldDefinitionFolder, saved);
+                
+        if (!saved) {
+        	dialog.open();
+            return;
+        }       
+                
         String oldName = definition.getName();
         dialog.setName(oldName);
         if (dialog.open() != IDialogConstants.OK_ID) {
             return;
         }
+        
+        
         String newName = dialog.getName();
         try {
             // Close ALL editors related to the process BEFORE renaiming it.
@@ -257,6 +267,7 @@ public class WorkspaceOperations {
                     }
                 }
             }
+            
             if (!editorRefsToClose.isEmpty()) {
                 // Close all at once! Otherwise, for example, when ProcessEditor is closed FormEditor may take focus and initialize.
                 // 2nd parameter save=false prevents "Save changed files?" dialog: they are saved anyway.
@@ -273,7 +284,11 @@ public class WorkspaceOperations {
             ProcessCache.newProcessDefinitionWasCreated(newDefinitionFile);
             ProcessSaveHistory.clear(oldDefinitionFolder);
             oldDefinitionFolder.delete(true, new NullProgressMonitor());
-            refreshResource(newDefinitionFolder);
+            refreshResource(newDefinitionFolder);     
+            
+           //System.out.println("newDefinitionFile="+newDefinitionFile.getName());
+           // openProcessDefinition(newDefinitionFile);
+            
         } catch (Exception e) {
             PluginLogger.logError(e);
         }
@@ -328,7 +343,8 @@ public class WorkspaceOperations {
                 
                 saveProcessDefinition(subprocessDefinition);
                 ProcessCache.invalidateProcessDefinition(subdefinitionFile);
-                refreshResource(definitionFolder);
+                refreshResource(definitionFolder);       
+                
             } catch (Exception e) {
                 PluginLogger.logError(e);
             }
