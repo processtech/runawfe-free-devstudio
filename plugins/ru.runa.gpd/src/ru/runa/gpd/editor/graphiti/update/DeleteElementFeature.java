@@ -290,7 +290,10 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements Custom
                 String path = inputElement.attributeValue("path");
                 if (EmbeddedFileUtils.isProcessFile(path)) {
                     String fileName = path.substring(IFileDataProvider.PROCESS_FILE_PROTOCOL.length());
-                    processFilePaths.add(removeFile(processDefinitionFile, fileName, true));
+                    IPath removedPath = removeFile(processDefinitionFile, fileName, true);
+                    if (removedPath != null) {
+                        processFilePaths.add(removedPath);
+                    }
                 }
             }
         }
