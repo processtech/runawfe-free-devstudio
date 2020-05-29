@@ -20,7 +20,14 @@
 	<classpathentry exported="true" kind="lib" path="lib/json-simple-1.1.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/freemarker-2.3.28.jar" sourcepath="C:/Users/me/.sourceattacher/freemarker-2.3.28-sources.jar"/>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="lib" path="lib/poi-3.10-FINAL.jar"/>
+	<classpathentry kind="lib" path="lib/poi/poi-3.17.jar"/>
 	<classpathentry kind="lib" path="lib/pdfbox-2.0.7.jar"/>
+	<classpathentry kind="lib" path="lib/poi/commons-codec-1.10.jar"/>
+	<classpathentry kind="lib" path="lib/poi/commons-collections4-4.1.jar"/>
+	<classpathentry kind="lib" path="lib/poi/curvesapi-1.04.jar"/>
+	<classpathentry kind="lib" path="lib/poi/poi-ooxml-3.17.jar"/>
+	<classpathentry kind="lib" path="lib/poi/poi-ooxml-schemas-3.17.jar"/>
+	<classpathentry kind="lib" path="lib/poi/stax-api-1.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/poi/xmlbeans-2.6.0.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

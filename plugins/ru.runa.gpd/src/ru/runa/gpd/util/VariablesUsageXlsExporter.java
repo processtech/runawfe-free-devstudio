@@ -1,5 +1,9 @@
 package ru.runa.gpd.util;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -9,18 +13,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.Platform;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.FormNode;
@@ -30,13 +34,8 @@ import ru.runa.gpd.lang.model.StartState;
 import ru.runa.gpd.lang.model.Subprocess;
 import ru.runa.gpd.lang.model.Variable;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-
 public class VariablesUsageXlsExporter {
-    
+
     private static List<Variable> variables;
     private static Set<Variable> usedVariables = Sets.newHashSet();
     private static Map<String, String[]> componentParamAccess = Maps.newHashMap();
@@ -61,18 +60,18 @@ public class VariablesUsageXlsExporter {
             PluginLogger.logError("Unable to load FTL components", th);
         }
     }
-    
+
     public static void go(ProcessDefinition definition, String filePath) throws Exception {
         try (OutputStream os = new FileOutputStream(filePath)) {
             go(definition, os);
         }
     }
-    
+
     public static void go(ProcessDefinition definition, OutputStream os) throws Exception {
         fillBook(definition).write(os);
         os.flush();
     }
-    
+
     private static HSSFWorkbook fillBook(ProcessDefinition pd) throws Exception {
         variables = pd.getVariables(true, false);
         Collections.sort(variables);
@@ -80,7 +79,7 @@ public class VariablesUsageXlsExporter {
         fillSheet(book, pd);
         List<Subprocess> external = new ArrayList<>();
         for (Subprocess sp : pd.getChildren(Subprocess.class)) {
-             if (!sp.isEmbedded()) {
+            if (!sp.isEmbedded()) {
                 external.add(sp);
             }
         }
@@ -90,10 +89,10 @@ public class VariablesUsageXlsExporter {
         for (int i = 0; i < book.getNumberOfSheets(); i++) {
             HSSFSheet sheet = book.getSheetAt(i);
             HSSFCellStyle style = book.createCellStyle();
-            style.setFillPattern(CellStyle.SOLID_FOREGROUND);
+            style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
             style.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
             HSSFCellStyle style2 = sheet.getWorkbook().createCellStyle();
-            style2.setAlignment(CellStyle.ALIGN_CENTER);
+            style2.setAlignment(HorizontalAlignment.CENTER);
             int rowNum = 1;
             for (Variable variable : variables) {
                 HSSFRow row = sheet.getRow(rowNum++);
@@ -109,7 +108,7 @@ public class VariablesUsageXlsExporter {
         }
         return book;
     }
-    
+
     private static String asSortValue(String phrase) {
         // #9-9A-A.9-9A-A.9-9A-A. AAAAA...
         phrase = phrase.trim();
@@ -191,24 +190,26 @@ public class VariablesUsageXlsExporter {
         cell.setCellValue(Localization.getString("DesignerVariableEditorPage.report.variablesUsage.header1"));
         HSSFCellStyle style = sheet.getWorkbook().createCellStyle();
         style.setWrapText(true);
-        style.setAlignment(CellStyle.ALIGN_CENTER);
-        style.setVerticalAlignment(CellStyle.VERTICAL_CENTER);
+        style.setAlignment(HorizontalAlignment.CENTER);
+        style.setVerticalAlignment(VerticalAlignment.CENTER);
         cell.setCellStyle(style);
         Collection<FormNode> formNodes = gatherForms(ge, null);
         cell = row.createCell(1);
         cell.setCellValue(Localization.getString("DesignerVariableEditorPage.report.variablesUsage.variable_used"));
         style = sheet.getWorkbook().createCellStyle();
         style.setRotation((short) 90);
-        style.setAlignment(CellStyle.ALIGN_CENTER);
+        style.setAlignment(HorizontalAlignment.CENTER);
         cell.setCellStyle(style);
         List<String> forms = new ArrayList<>();
         int colNum = 2;
         for (FormNode form : formNodes) {
             cell = row.createCell(colNum++);
-            cell.setCellValue((form instanceof StartState && Strings.isNullOrEmpty(form.getName()) ?
-                    Localization.getString("DesignerVariableEditorPage.report.variablesUsage.start") : "") + form.getLabel());
+            cell.setCellValue((form instanceof StartState && Strings.isNullOrEmpty(form.getName())
+                    ? Localization.getString("DesignerVariableEditorPage.report.variablesUsage.start")
+                    : "") + form.getLabel());
             cell.setCellStyle(style);
-            forms.add(IOUtils.readStream(ge.getProcessDefinition().getFile().getParent().getFolder(null).getFile(form.getFormFileName()).getContents()));
+            forms.add(IOUtils
+                    .readStream(ge.getProcessDefinition().getFile().getParent().getFolder(null).getFile(form.getFormFileName()).getContents()));
         }
         return forms;
     }
@@ -223,7 +224,7 @@ public class VariablesUsageXlsExporter {
             HSSFCell cell = row.createCell(0);
             cell.setCellValue(variable.getName());
             HSSFCellStyle style = book.createCellStyle();
-            style.setAlignment(CellStyle.ALIGN_CENTER);
+            style.setAlignment(HorizontalAlignment.CENTER);
             String search = "\"" + variable.getName() + "\"";
             for (int i = 0; i < forms.size(); i++) {
                 String form = forms.get(i);
@@ -266,7 +267,7 @@ public class VariablesUsageXlsExporter {
             if (!usedForms.contains(form)) {
                 HSSFRow header = sheet.getRow(0);
                 HSSFCellStyle style = header.getCell(i + 2).getCellStyle();
-                style.setFillPattern(CellStyle.SOLID_FOREGROUND);
+                style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
                 style.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
             }
             sheet.setColumnWidth(i + 2, 5 * 256);
@@ -274,7 +275,7 @@ public class VariablesUsageXlsExporter {
         sheet.autoSizeColumn(0);
         sheet.autoSizeColumn(1);
     }
-    
+
     private static void fillSheet(HSSFWorkbook book, List<Subprocess> subprocesses) throws Exception {
         HSSFSheet sheet = book.createSheet(Localization.getString("DesignerVariableEditorPage.report.variablesUsage.subprocesses"));
         HSSFRow row = sheet.createRow(0);
@@ -282,14 +283,14 @@ public class VariablesUsageXlsExporter {
         cell.setCellValue(Localization.getString("DesignerVariableEditorPage.report.variablesUsage.header2"));
         HSSFCellStyle style = sheet.getWorkbook().createCellStyle();
         style.setWrapText(true);
-        style.setAlignment(CellStyle.ALIGN_CENTER);
-        style.setVerticalAlignment(CellStyle.VERTICAL_CENTER);
+        style.setAlignment(HorizontalAlignment.CENTER);
+        style.setVerticalAlignment(VerticalAlignment.CENTER);
         cell.setCellStyle(style);
         cell = row.createCell(1);
         cell.setCellValue(Localization.getString("DesignerVariableEditorPage.report.variablesUsage.variable_used"));
         style = sheet.getWorkbook().createCellStyle();
         style.setRotation((short) 90);
-        style.setAlignment(CellStyle.ALIGN_CENTER);
+        style.setAlignment(HorizontalAlignment.CENTER);
         cell.setCellStyle(style);
         int colNum = 2;
         for (Subprocess subprocess : subprocesses) {
@@ -303,7 +304,7 @@ public class VariablesUsageXlsExporter {
             cell = row.createCell(0);
             cell.setCellValue(variable.getName());
             style = book.createCellStyle();
-            style.setAlignment(CellStyle.ALIGN_CENTER);
+            style.setAlignment(HorizontalAlignment.CENTER);
         }
         for (int i = 0; i < variables.size(); i++) {
             Variable variable = variables.get(i);
@@ -322,5 +323,5 @@ public class VariablesUsageXlsExporter {
         sheet.autoSizeColumn(0);
         sheet.autoSizeColumn(1);
     }
-    
+
 }

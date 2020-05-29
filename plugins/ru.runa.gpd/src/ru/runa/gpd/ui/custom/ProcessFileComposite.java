@@ -2,7 +2,13 @@ package ru.runa.gpd.ui.custom;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import org.apache.poi.xwpf.usermodel.IBodyElement;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -33,6 +39,7 @@ public abstract class ProcessFileComposite extends Composite {
         for (Control control : getChildren()) {
             control.dispose();
         }
+
         /// !!!
         if (null == file || !file.exists()) {
             if (hasTemplate()) {
@@ -64,6 +71,11 @@ public abstract class ProcessFileComposite extends Composite {
                 }
             });
         } else {
+
+            if (true) {
+                checkDocxVariables();
+            }
+
             SWTUtils.createLink(this, Localization.getString("button.change"), new LoggingHyperlinkAdapter() {
 
                 @Override
@@ -100,7 +112,51 @@ public abstract class ProcessFileComposite extends Composite {
                 });
             }
         }
+
         layout(true, true);
+    }
+
+    private void checkDocxVariables() {
+
+        if (null == file || !file.exists()) {
+            return;
+        }
+
+        InputStream inputStream;
+        try {
+            inputStream = file.getContents();
+        } catch (CoreException e) {
+            // TODO Auto-generated catch block
+            return;
+        }
+
+        if (null == inputStream) {
+            return;
+        }
+
+        /// !!!
+        try (XWPFDocument document = new XWPFDocument(inputStream)) {
+            boolean f = false;
+
+            List<IBodyElement> bodyElements = document.getBodyElements();
+            // List<XWPFParagraph> paragraphs = Lists.newArrayList();
+            for (IBodyElement bodyElement : new ArrayList<IBodyElement>(bodyElements)) {
+                if (bodyElement instanceof XWPFParagraph) {
+                    XWPFParagraph paragraph = (XWPFParagraph) bodyElement;
+                    String paragraphText = paragraph.getText();
+                    if (paragraphText.indexOf("{") > 0) {
+                        // paragraphs.add((XWPFParagraph) bodyElement);
+                        // continue;
+                        f = true;
+                    }
+                }
+            }
+
+        } catch (Throwable e) {
+            // TODO Auto-generated catch block
+            return;
+        }
+
     }
 
     public EventSupport getEventSupport() {
