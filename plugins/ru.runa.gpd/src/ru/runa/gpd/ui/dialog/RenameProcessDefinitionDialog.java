@@ -25,10 +25,12 @@ public class RenameProcessDefinitionDialog extends Dialog {
     private String name;
     private IFolder definitionFolder;
     private ProcessDefinition definition;
+    boolean processSaved;
 
-    public RenameProcessDefinitionDialog(IFolder definitionFolder) {
+    public RenameProcessDefinitionDialog(IFolder definitionFolder, boolean isProcessSaved) {
         super(Display.getDefault().getActiveShell());
         this.definitionFolder = definitionFolder;
+        this.processSaved = isProcessSaved;
     }
 
     public RenameProcessDefinitionDialog(ProcessDefinition definition) {
@@ -48,6 +50,12 @@ public class RenameProcessDefinitionDialog extends Dialog {
         final Label labelTitle = new Label(area, SWT.NO_BACKGROUND);
         final GridData labelData = new GridData();
         labelTitle.setLayoutData(labelData);
+                
+        if(!processSaved) {        	
+        	labelTitle.setText("       "+Localization.getString("alert.save_before_rename")+"        ");
+        	return area;
+        }
+        
         labelTitle.setText(Localization.getString("button.rename"));
 
         final Composite composite = new Composite(area, SWT.NONE);
@@ -78,12 +86,19 @@ public class RenameProcessDefinitionDialog extends Dialog {
 
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
-        super.createButtonsForButtonBar(parent);
-        getButton(IDialogConstants.OK_ID).setEnabled(false);
+    	if(processSaved) {
+    		super.createButtonsForButtonBar(parent);
+    		getButton(IDialogConstants.OK_ID).setEnabled(false);
+    	}else {
+    		createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
+    		getButton(IDialogConstants.OK_ID).setEnabled(true);
+    	}        
     }
 
-    private void updateButtons() {
-    	IWorkspace workspace = ResourcesPlugin.getWorkspace();
+    
+    private void updateButtons() {    	    
+		@SuppressWarnings("unused")
+		IWorkspace workspace = ResourcesPlugin.getWorkspace();
         boolean allowCreation = FileNameChecker.isValid(name);
         if (definitionFolder != null) {
             allowCreation &= !IOUtils.isChildFolderExists(definitionFolder.getParent(), name);
@@ -95,8 +110,12 @@ public class RenameProcessDefinitionDialog extends Dialog {
 
     @Override
     protected void configureShell(Shell newShell) {
-        super.configureShell(newShell);
-        newShell.setText(Localization.getString("RenameProcessDefinitionDialog.title"));
+        super.configureShell(newShell);        
+        if(processSaved) {
+        	newShell.setText(Localization.getString("RenameProcessDefinitionDialog.title"));
+        }else {
+    		newShell.setText(" Process unsaved  ");
+    	}    
     }
 
     public String getName() {
