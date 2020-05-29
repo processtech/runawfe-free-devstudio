@@ -1,12 +1,8 @@
 package ru.runa.gpd.lang.model;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
-import com.google.common.io.CharStreams;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Map;
 import org.eclipse.core.resources.IFile;
@@ -21,7 +17,6 @@ import ru.runa.gpd.form.FormVariableAccess;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.property.FormFilesPropertyDescriptor;
 import ru.runa.gpd.util.IOUtils;
-import ru.runa.gpd.util.TemplateUtils;
 import ru.runa.gpd.util.VariableUtils;
 import ru.runa.gpd.validation.FormNodeValidation;
 import ru.runa.gpd.validation.ValidatorConfig;
@@ -68,28 +63,7 @@ public abstract class FormNode extends SwimlanedNode {
     }
 
     public boolean hasFormScript() {
-        return getFormScript().exists();
-    }
-    
-    public IFile getFormScript() {
-    	return IOUtils.getAdjacentFile(getProcessDefinition().getFile(), getScriptFileName());
-    }
-    
-    public boolean hasDifferencesBetweenCurrecntAndNewScriptFile() {
-        IFile script = getFormScript();
-        if (script.exists()) {
-            try (InputStream is = script.getContents()) {
-                String js = CharStreams.toString(new InputStreamReader(is, Charsets.UTF_8));
-                if (Strings.isNullOrEmpty(js) || TemplateUtils.getFormTemplateAsString().equals(js)) {
-                    return false;
-                } else {
-                    return true;
-                }
-            } catch (Exception e) {
-                PluginLogger.logError(e);
-            }
-        };
-        return false;
+        return IOUtils.getAdjacentFile(getProcessDefinition().getFile(), getScriptFileName()).exists();
     }
 
     public String getFormFileName() {
