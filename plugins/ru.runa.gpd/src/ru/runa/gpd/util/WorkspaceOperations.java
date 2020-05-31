@@ -285,9 +285,8 @@ public class WorkspaceOperations {
             ProcessSaveHistory.clear(oldDefinitionFolder);
             oldDefinitionFolder.delete(true, new NullProgressMonitor());
             refreshResource(newDefinitionFolder);     
-            
-           //System.out.println("newDefinitionFile="+newDefinitionFile.getName());
-           // openProcessDefinition(newDefinitionFile);
+                       
+            openProcessDefinition(newDefinitionFile);
             
         } catch (Exception e) {
             PluginLogger.logError(e);
