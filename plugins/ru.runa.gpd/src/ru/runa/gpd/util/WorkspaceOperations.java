@@ -306,6 +306,8 @@ public class WorkspaceOperations {
 			refreshResource(newDefinitionFolder);
 
 			openProcessDefinition(newDefinitionFile);
+			
+			System.out.println("commit ok");
 
 		} catch (Exception e) {
 			PluginLogger.logError(e);
