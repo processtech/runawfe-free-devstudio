@@ -305,9 +305,8 @@ public class WorkspaceOperations {
 			oldDefinitionFolder.delete(true, new NullProgressMonitor());
 			refreshResource(newDefinitionFolder);
 
-			openProcessDefinition(newDefinitionFile);
-			
-			System.out.println("commit ok");
+			openProcessDefinition(newDefinitionFile);			
+
 
 		} catch (Exception e) {
 			PluginLogger.logError(e);
