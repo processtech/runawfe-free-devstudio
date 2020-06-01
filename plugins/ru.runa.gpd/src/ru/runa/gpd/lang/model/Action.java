@@ -10,6 +10,7 @@ public class Action extends NamedGraphElement implements Delegable, Describable 
         return HandlerArtifact.ACTION;
     }
 
+    @Override
     public String getLabel() {
         String className = getDelegationClassName();
         if (className == null || className.length() == 0) {
@@ -24,11 +25,10 @@ public class Action extends NamedGraphElement implements Delegable, Describable 
     }
 
     @Override
-    public Action makeCopy(GraphElement parent) {
-        Action copy = (Action) super.makeCopy(parent);
+    protected void fillCopyCustomFields(GraphElement copy) {
+        super.fillCopyCustomFields(copy);
         copy.setDelegationClassName(getDelegationClassName());
         copy.setDelegationConfiguration(getDelegationConfiguration());
-        return copy;
     }
 
 }

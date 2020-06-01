@@ -16,11 +16,15 @@ import java.util.Set;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.PluginLogger;
+import ru.runa.gpd.ProcessCache;
+import ru.runa.gpd.SubprocessMap;
 import ru.runa.gpd.extension.regulations.ui.RegulationsNotesView;
+import ru.runa.gpd.lang.NodeRegistry;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.Decision;
 import ru.runa.gpd.lang.model.EndState;
@@ -117,7 +121,7 @@ public class RegulationsUtil {
         return result;
     }
 
-    public static void autoFillRegulationProperties(ProcessDefinition processDefinition) {
+    public static void autoFillRegulationProperties(ProcessDefinition processDefinition) throws Exception {
         LinkedList<Node> sequencedNodes = new LinkedList<>();
         List<Node> endTokenNodes = new LinkedList<>();
         List<Node> endNodes = new LinkedList<>();
@@ -135,7 +139,21 @@ public class RegulationsUtil {
                 continue;
             }
             if (node instanceof Subprocess) {
-                autoFillRegulationProperties(((Subprocess)node).getEmbeddedSubprocess());
+                ProcessDefinition subProcessDefinition = null;
+                Subprocess subprocess = (Subprocess) node;
+                if (subprocess.isEmbedded()) {
+                    subProcessDefinition = subprocess.getEmbeddedSubprocess();
+                } else {
+                    String subProcessFolderName = SubprocessMap.get(subprocess.getQualifiedId());
+                    if (subProcessFolderName != null) {
+                        IFile definitionFile = (IFile) ResourcesPlugin.getWorkspace().getRoot()
+                                .findMember(subProcessFolderName + "/" + ParContentProvider.PROCESS_DEFINITION_FILE_NAME);
+                        subProcessDefinition = NodeRegistry.parseProcessDefinition(definitionFile);
+                    } else {
+                        subProcessDefinition = ProcessCache.getFirstProcessDefinition(subprocess.getSubProcessName(), null);
+                    }
+                }
+                autoFillRegulationProperties(subProcessDefinition);
             }
             sequencedNodes.addLast(node);
         }

@@ -593,7 +593,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             if (useLtk && editor.getDefinition().getEmbeddedSubprocesses().size() > 0) {
                 IDE.saveAllEditors(new IResource[] { projectRoot }, false);
                 for (SubprocessDefinition subprocessDefinition : editor.getDefinition().getEmbeddedSubprocesses().values()) {
-                    WorkspaceOperations.saveProcessDefinition(subprocessDefinition.getFile(), subprocessDefinition);
+                    WorkspaceOperations.saveProcessDefinition(subprocessDefinition);
                 }
             }
         }
@@ -629,7 +629,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             if (useLtk && editor.getDefinition().getEmbeddedSubprocesses().size() > 0) {
                 IDE.saveAllEditors(new IResource[] { projectRoot }, false);
                 for (SubprocessDefinition subprocessDefinition : editor.getDefinition().getEmbeddedSubprocesses().values()) {
-                    WorkspaceOperations.saveProcessDefinition(subprocessDefinition.getFile(), subprocessDefinition);
+                    WorkspaceOperations.saveProcessDefinition(subprocessDefinition);
                 }
             }
         }
@@ -750,7 +750,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             if (useLtk && editor.getDefinition().getEmbeddedSubprocesses().size() > 0) {
                 IDE.saveAllEditors(new IResource[] { projectRoot }, false);
                 for (SubprocessDefinition subprocessDefinition : editor.getDefinition().getEmbeddedSubprocesses().values()) {
-                    WorkspaceOperations.saveProcessDefinition(subprocessDefinition.getFile(), subprocessDefinition);
+                    WorkspaceOperations.saveProcessDefinition(subprocessDefinition);
                 }
             }
         }
@@ -763,7 +763,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
 
             IResource projectRoot = editor.getDefinitionFile().getParent();
 
-            List<Variable> variables = editor.getDefinition().getVariables(false, false, newType.getName());
+            List<Variable> variables = editor.getDefinition().getVariables(true, false, newType.getName());
             if (variables.size() == 0) {
                 List<Variable> result = VariableUtils.findVariablesOfTypeWithAttributeExpanded(getDefinition(), oldType, attribute);
                 if (result.size() > 0) {
@@ -808,7 +808,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             if (useLtk && editor.getDefinition().getEmbeddedSubprocesses().size() > 0) {
                 IDE.saveAllEditors(new IResource[] { projectRoot }, false);
                 for (SubprocessDefinition subprocessDefinition : editor.getDefinition().getEmbeddedSubprocesses().values()) {
-                    WorkspaceOperations.saveProcessDefinition(subprocessDefinition.getFile(), subprocessDefinition);
+                    WorkspaceOperations.saveProcessDefinition(subprocessDefinition);
                 }
             }
         }

@@ -3,60 +3,45 @@ package ru.runa.gpd.ui.wizard;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
-
-import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.bot.BotStationImportCommand;
-import ru.runa.gpd.wfe.DataImporter;
-import ru.runa.gpd.wfe.WFEServerBotStationElementImporter;
-import ru.runa.wfe.bot.BotStation;
+import ru.runa.gpd.sync.WfeServerBotStationImporter;
+import ru.runa.gpd.sync.WfeServerConnectorDataImporter;
 
 public class ImportBotStationWizardPage extends ImportBotElementWizardPage {
-    public ImportBotStationWizardPage(String pageName, IStructuredSelection selection) {
-        super(pageName, selection);
+
+    public ImportBotStationWizardPage(IStructuredSelection selection) {
+        super(ImportBotStationWizardPage.class, selection);
         setTitle(Localization.getString("ImportBotStationWizardPage.page.title"));
         setDescription(Localization.getString("ImportBotStationWizardPage.page.description"));
     }
 
     @Override
-    protected Class<BotStation> getBotElementClass() {
-        return BotStation.class;
-    }
-
-    @Override
-    protected String getInputSuffix() {
+    protected String getFilterExtension() {
         return "*.botstation";
     }
 
     @Override
-    protected String getSelectionResourceKey(IResource resource) {
-        return resource.getName();
+    protected List<? extends IContainer> getProjectDataViewerInput() {
+        return null;
     }
 
     @Override
-    protected void populateInputView() {
-        if (importFromServerButton.getSelection()) {
-            serverDataViewer.setInput(WFEServerBotStationElementImporter.getInstance().getBotStations());
-        }
+    protected Object getServerDataViewerInput() {
+        return WfeServerBotStationImporter.getInstance().getData();
     }
 
     @Override
-    protected DataImporter getDataImporter() {
-        return WFEServerBotStationElementImporter.getInstance();
+    protected WfeServerConnectorDataImporter<?> getDataImporter() {
+        return WfeServerBotStationImporter.getInstance();
     }
 
     @Override
-    protected Object[] getBotElements() {
-        List<BotStation> botStations = WFEServerBotStationElementImporter.getInstance().getBotStations();
-        return botStations.toArray(new Object[0]);
-    }
-
-    @Override
-    protected ITreeContentProvider getContentProvider() {
+    protected ITreeContentProvider getServerDataViewerContentProvider() {
         return new BotStationTreeContentProvider();
     }
 
@@ -81,7 +66,7 @@ public class ImportBotStationWizardPage extends ImportBotElementWizardPage {
             return false;
         }
 
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings({ "unchecked", "rawtypes" })
         @Override
         public Object[] getElements(Object inputElement) {
             if (inputElement instanceof List) {

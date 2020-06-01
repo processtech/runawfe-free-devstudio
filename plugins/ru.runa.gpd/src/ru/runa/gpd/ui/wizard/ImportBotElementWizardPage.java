@@ -1,5 +1,6 @@
 package ru.runa.gpd.ui.wizard;
 
+import com.google.common.base.Throwables;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -7,19 +8,11 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.jface.viewers.ListViewer;
-import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
@@ -33,49 +26,30 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
-import ru.runa.gpd.settings.WFEConnectionPreferencePage;
-import ru.runa.gpd.ui.custom.Dialogs;
-import ru.runa.gpd.ui.custom.SyncUIHelper;
-import ru.runa.gpd.wfe.ConnectorCallback;
-import ru.runa.gpd.wfe.DataImporter;
-import ru.runa.gpd.wfe.WFEServerBotElementImporter;
-import ru.runa.gpd.wfe.WFEServerBotStationElementImporter;
+import ru.runa.gpd.sync.WfeServerBotImporter;
+import ru.runa.gpd.sync.WfeServerBotStationImporter;
+import ru.runa.gpd.sync.WfeServerConnectorComposite;
+import ru.runa.gpd.sync.WfeServerConnectorDataImporter;
+import ru.runa.gpd.sync.WfeServerConnectorSynchronizationCallback;
 import ru.runa.wfe.bot.Bot;
 import ru.runa.wfe.bot.BotStation;
 import ru.runa.wfe.bot.BotTask;
 
-import com.google.common.base.Throwables;
-
 public abstract class ImportBotElementWizardPage extends ImportWizardPage {
     private Button importFromFileButton;
     private Composite fileSelectionArea;
-    private Text selectedParsLabel;
+    private Text selectedElementsText;
     private Button selectParsButton;
-    protected Button importFromServerButton;
-    protected TreeViewer serverDataViewer;
+    private Button importFromServerButton;
+    private WfeServerConnectorComposite serverConnectorComposite;
+    private TreeViewer serverDataViewer;
     private String selectedDirFileName;
     private String[] selectedFileNames;
-    protected final IResource importResource;
-    protected Map<String, IResource> importObjectNameFileMap = new TreeMap<String, IResource>();
 
-    public ImportBotElementWizardPage(String pageName, IStructuredSelection selection) {
-        super(pageName, selection);
-        this.importResource = getInitialElement(selection);
-    }
-
-    private IResource getInitialElement(IStructuredSelection selection) {
-        if (selection != null && !selection.isEmpty()) {
-            Object selectedElement = selection.getFirstElement();
-            if (selectedElement instanceof IAdaptable) {
-                IAdaptable adaptable = (IAdaptable) selectedElement;
-                IResource resource = (IResource) adaptable.getAdapter(IResource.class);
-                return resource;
-            }
-        }
-        return null;
+    public ImportBotElementWizardPage(Class<? extends ImportWizardPage> clazz, IStructuredSelection selection) {
+        super(clazz, selection);
     }
 
     @Override
@@ -85,17 +59,20 @@ public abstract class ImportBotElementWizardPage extends ImportWizardPage {
         pageControl.setLayoutData(new GridData(GridData.FILL_BOTH));
         SashForm sashForm = new SashForm(pageControl, SWT.HORIZONTAL);
         sashForm.setLayoutData(new GridData(GridData.FILL_BOTH));
-        createBotStationsGroup(sashForm);
+        List<? extends IContainer> projectData = getProjectDataViewerInput();
+        if (projectData != null) {
+            createProjectsGroup(sashForm, projectData, getProjectDataViewerLabelProvider());
+        }
         Group importGroup = new Group(sashForm, SWT.NONE);
         importGroup.setLayout(new GridLayout(1, false));
         importGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
         importFromFileButton = new Button(importGroup, SWT.RADIO);
-        importFromFileButton.setText(Localization.getString("ImportParWizardPage.page.importFromFileButton"));
+        importFromFileButton.setText(Localization.getString("button.importFromFile"));
         importFromFileButton.setSelection(true);
         importFromFileButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                setImportMode();
+                onImportModeChanged();
             }
         });
         fileSelectionArea = new Composite(importGroup, SWT.NONE);
@@ -108,10 +85,10 @@ public abstract class ImportBotElementWizardPage extends ImportWizardPage {
         fileSelectionLayout.marginWidth = 0;
         fileSelectionLayout.marginHeight = 0;
         fileSelectionArea.setLayout(fileSelectionLayout);
-        selectedParsLabel = new Text(fileSelectionArea, SWT.MULTI | SWT.READ_ONLY | SWT.V_SCROLL);
+        selectedElementsText = new Text(fileSelectionArea, SWT.MULTI | SWT.READ_ONLY | SWT.V_SCROLL | SWT.BORDER);
         GridData gridData = new GridData(GridData.GRAB_HORIZONTAL | GridData.FILL_HORIZONTAL);
         gridData.heightHint = 30;
-        selectedParsLabel.setLayoutData(gridData);
+        selectedElementsText.setLayoutData(gridData);
         selectParsButton = new Button(fileSelectionArea, SWT.PUSH);
         selectParsButton.setText(Localization.getString("button.choose"));
         selectParsButton.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_END));
@@ -119,8 +96,7 @@ public abstract class ImportBotElementWizardPage extends ImportWizardPage {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 FileDialog dialog = new FileDialog(getShell(), SWT.OPEN | SWT.MULTI);
-                // dialog.setFileName(startingDirectory.getPath());
-                dialog.setFilterExtensions(new String[] { getInputSuffix() });
+                dialog.setFilterExtensions(new String[] { getFilterExtension() });
                 if (dialog.open() != null) {
                     selectedDirFileName = dialog.getFilterPath();
                     selectedFileNames = dialog.getFileNames();
@@ -128,73 +104,79 @@ public abstract class ImportBotElementWizardPage extends ImportWizardPage {
                     for (String fileName : selectedFileNames) {
                         text += fileName + "\n";
                     }
-                    selectedParsLabel.setText(text);
+                    selectedElementsText.setText(text);
                 }
             }
         });
         importFromServerButton = new Button(importGroup, SWT.RADIO);
-        importFromServerButton.setText(Localization.getString("ImportParWizardPage.page.importFromServerButton"));
-        SyncUIHelper.createHeader(importGroup, getDataImporter(), WFEConnectionPreferencePage.class, new ConnectorCallback() {
+        importFromServerButton.setText(Localization.getString("button.importFromServer"));
+        serverConnectorComposite = new WfeServerConnectorComposite(importGroup, getDataImporter(), new WfeServerConnectorSynchronizationCallback() {
 
             @Override
-            public void onSynchronizationCompleted() {
-                populateInputView();
+            public void onCompleted() {
+                updateServerDataViewer(getServerDataViewerInput());
             }
 
             @Override
-            public void onSynchronizationFailed(Exception e) {
-                Dialogs.error(Localization.getString("error.Synchronize"), e);
+            public void onFailed() {
+                updateServerDataViewer(null);
             }
             
         });
-        createServerDataGroup(importGroup);
+        createServerDataViewer(importGroup);
         setControl(pageControl);
+        onImportModeChanged();
     }
 
-    private void setImportMode() {
+    private void onImportModeChanged() {
         boolean fromFile = importFromFileButton.getSelection();
-        // editor.setEnabled(fromFile, fileSelectionArea);
+        selectedElementsText.setEnabled(fromFile);
         selectParsButton.setEnabled(fromFile);
+        serverConnectorComposite.setEnabled(!fromFile);
+        serverDataViewer.getControl().setEnabled(!fromFile);
         if (fromFile) {
-            serverDataViewer.setInput(new Object());
-            //serverDefinitionViewer.refresh(true);
+            updateServerDataViewer(null);
         } else {
-            if (getDataImporter().isConfigured()) {
-                if (!getDataImporter().hasCachedData()) {
-                    long start = System.currentTimeMillis();
-                    getDataImporter().synchronize();
-                    long end = System.currentTimeMillis();
-                    PluginLogger.logInfo("def sync [sec]: " + ((end - start) / 1000));
-                }
-                populateInputView();
-                serverDataViewer.refresh(true);
-            }
+            updateServerDataViewer(getServerDataViewerInput());
         }
     }
 
-    protected abstract void populateInputView();
+    protected abstract List<? extends IContainer> getProjectDataViewerInput();
 
-    private void createServerDataGroup(Composite parent) {
+    protected LabelProvider getProjectDataViewerLabelProvider() {
+        return new LabelProvider() {
+            @Override
+            public String getText(Object element) {
+                return ((IContainer) element).getName();
+            }
+        };
+    }
+
+    protected abstract Object getServerDataViewerInput();
+
+    private void createServerDataViewer(Composite parent) {
         serverDataViewer = new TreeViewer(parent);
         GridData gridData = new GridData(GridData.FILL_BOTH);
         gridData.heightHint = 100;
         serverDataViewer.getControl().setLayoutData(gridData);
-        serverDataViewer.setContentProvider(getContentProvider());
+        serverDataViewer.setContentProvider(getServerDataViewerContentProvider());
         serverDataViewer.setLabelProvider(new BotStationLabelProvider());
         serverDataViewer.setInput(new Object());
     }
 
-    protected abstract Class<?> getBotElementClass();
+    private void updateServerDataViewer(Object data) {
+        serverDataViewer.setInput(data);
+        serverDataViewer.refresh(true);
+    }
 
     public boolean performFinish() {
         try {
-            //IProject project = getSelectedProject();
             String[] processNames;
             InputStream[] parInputStreams;
             boolean fromFile = importFromFileButton.getSelection();
             if (fromFile) {
                 if (selectedDirFileName == null) {
-                    throw new Exception(Localization.getString("ImportParWizardPage.error.selectValidPar"));
+                    throw new Exception(Localization.getString("error.selectValidFile"));
                 }
                 processNames = new String[selectedFileNames.length];
                 parInputStreams = new InputStream[selectedFileNames.length];
@@ -210,7 +192,7 @@ public abstract class ImportBotElementWizardPage extends ImportWizardPage {
                     defSelections.add(object);
                 }
                 if (defSelections.isEmpty()) {
-                    throw new Exception(Localization.getString("ImportParWizardPage.error.selectValidDefinition"));
+                    throw new Exception(Localization.getString("ImportBotElementWizardPage.error.empty.serverViewer.selection"));
                 }
                 processNames = new String[defSelections.size()];
                 parInputStreams = new InputStream[defSelections.size()];
@@ -220,17 +202,17 @@ public abstract class ImportBotElementWizardPage extends ImportWizardPage {
                     if (obj instanceof BotStation) {
                         BotStation botStation = (BotStation) obj;
                         processNames[i] = botStation.getName();
-                        byte[] par = ((WFEServerBotStationElementImporter) getDataImporter()).getBotStationFile(botStation);
+                        byte[] par = ((WfeServerBotStationImporter) getDataImporter()).getBotStationFile(botStation);
                         parInputStreams[i] = new ByteArrayInputStream(par);
                     } else if (obj instanceof Bot) {
                         Bot bot = (Bot) obj;
                         processNames[i] = bot.getUsername();
-                        byte[] par = ((WFEServerBotElementImporter) getDataImporter()).getBotFile(bot);
+                        byte[] par = ((WfeServerBotImporter) getDataImporter()).getBotFile(bot);
                         parInputStreams[i] = new ByteArrayInputStream(par);
                     } else if (obj instanceof BotTask) {
                         BotTask botTask = (BotTask) obj;
                         processNames[i] = botTask.getName();
-                        byte[] par = ((WFEServerBotElementImporter) getDataImporter()).getBotTaskFile((Bot) treePath.getFirstSegment(), botTask.getName());
+                        byte[] par = ((WfeServerBotImporter) getDataImporter()).getBotTaskFile((Bot) treePath.getFirstSegment(), botTask.getName());
                         parInputStreams[i] = new ByteArrayInputStream(par);
                     }
                 }
@@ -250,17 +232,7 @@ public abstract class ImportBotElementWizardPage extends ImportWizardPage {
 
     public abstract void runImport(InputStream parInputStream, String botName) throws InvocationTargetException, InterruptedException;
 
-    protected abstract String getInputSuffix();
-
-    protected abstract String getSelectionResourceKey(IResource resource);
-
-    protected String getKey(IProject project, IResource resource) {
-        return project.getName() + "/" + resource.getName();
-    }
-
-    protected String getBotElementSelection() {
-        return (String) ((IStructuredSelection) projectViewer.getSelection()).getFirstElement();
-    }
+    protected abstract String getFilterExtension();
 
     public static class BotStationLabelProvider extends LabelProvider {
         @Override
@@ -276,29 +248,7 @@ public abstract class ImportBotElementWizardPage extends ImportWizardPage {
         }
     }
 
-    protected void createBotStationsGroup(Composite parent) {
-        Group projectListGroup = new Group(parent, SWT.NONE);
-        projectListGroup.setLayout(new GridLayout(1, false));
-        projectListGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
-        projectListGroup.setText(Localization.getString("label.project"));
-        createBotStationsList(projectListGroup);
-    }
+    protected abstract WfeServerConnectorDataImporter<?> getDataImporter();
 
-    private void createBotStationsList(Composite parent) {
-        projectViewer = new ListViewer(parent, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
-        GridData gridData = new GridData(GridData.FILL_BOTH);
-        gridData.heightHint = 100;
-        projectViewer.getControl().setLayoutData(gridData);
-        projectViewer.setContentProvider(new ArrayContentProvider());
-        projectViewer.setInput(importObjectNameFileMap.keySet());
-        if (importResource != null) {
-            projectViewer.setSelection(new StructuredSelection(getSelectionResourceKey(importResource)));
-        }
-    }
-
-    protected abstract DataImporter getDataImporter();
-
-    protected abstract Object[] getBotElements();
-
-    protected abstract ITreeContentProvider getContentProvider();
+    protected abstract ITreeContentProvider getServerDataViewerContentProvider();
 }

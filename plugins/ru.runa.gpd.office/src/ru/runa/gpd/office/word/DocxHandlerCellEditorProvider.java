@@ -34,7 +34,7 @@ import ru.runa.gpd.office.Messages;
 import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
 import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
-import ru.runa.gpd.ui.custom.SWTUtils;
+import ru.runa.gpd.ui.custom.SwtUtils;
 import ru.runa.gpd.util.EmbeddedFileUtils;
 import ru.runa.gpd.util.XmlUtil;
 
@@ -152,7 +152,7 @@ public class DocxHandlerCellEditorProvider extends XmlBasedConstructorProvider<D
                     model.getTables().get(tableIndex).setName(text.getText());
                 }
             });
-            SWTUtils.createLink(group, "[X]", new LoggingHyperlinkAdapter() {
+            SwtUtils.createLink(group, "[X]", new LoggingHyperlinkAdapter() {
 
                 @Override
                 protected void onLinkActivated(HyperlinkEvent e) throws Exception {
@@ -212,7 +212,7 @@ public class DocxHandlerCellEditorProvider extends XmlBasedConstructorProvider<D
             headerLabel.setText(Messages.getString(labelKey));
             strokeLabel = new Label(strokeComposite, SWT.SEPARATOR | SWT.HORIZONTAL);
             strokeLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            SWTUtils.createLink(strokeComposite, Localization.getString("button.add"), new LoggingHyperlinkAdapter() {
+            SwtUtils.createLink(strokeComposite, Localization.getString("button.add"), new LoggingHyperlinkAdapter() {
 
                 @Override
                 protected void onLinkActivated(HyperlinkEvent e) throws Exception {
@@ -238,7 +238,7 @@ public class DocxHandlerCellEditorProvider extends XmlBasedConstructorProvider<D
                 }
             });
             if (columnIndex != 0) {
-                SWTUtils.createLink(parent, Localization.getString("button.up"), new LoggingHyperlinkAdapter() {
+                SwtUtils.createLink(parent, Localization.getString("button.up"), new LoggingHyperlinkAdapter() {
 
                     @Override
                     protected void onLinkActivated(HyperlinkEvent e) throws Exception {
@@ -249,7 +249,7 @@ public class DocxHandlerCellEditorProvider extends XmlBasedConstructorProvider<D
             } else {
                 new Label(parent, SWT.NONE);
             }
-            SWTUtils.createLink(parent, "[X]", new LoggingHyperlinkAdapter() {
+            SwtUtils.createLink(parent, "[X]", new LoggingHyperlinkAdapter() {
 
                 @Override
                 protected void onLinkActivated(HyperlinkEvent e) throws Exception {

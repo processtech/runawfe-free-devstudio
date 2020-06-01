@@ -176,7 +176,7 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
         }
         children.remove(child);
         firePropertyChange(NODE_REMOVED, child, null);
-        firePropertyChange(PROPERTY_CHILDREN_CHANGED, null, children);
+        firePropertyChange(PROPERTY_CHILDREN_CHANGED, child, null);
         if (child.delegatedListener != null) {
             child.removePropertyChangeListener(child.delegatedListener);
         }
@@ -199,13 +199,10 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
         children.add(index, child);
         child.setParent(this);
         child.setDelegatedListener(delegatedListener);
-        firePropertyChange(PROPERTY_CHILDREN_CHANGED, null, 1);
-        String nodeId = child.getId();
-        if (nodeId == null) {
-            nodeId = getProcessDefinition().getNextNodeId();
-            child.setId(nodeId);
-        } else {
-            getProcessDefinition().setNextNodeIdIfApplicable(nodeId);
+        firePropertyChange(NODE_ADDED, null, child);
+        firePropertyChange(PROPERTY_CHILDREN_CHANGED, null, child);
+        if (child.getId() == null && !(child instanceof Variable)) {
+            child.setId(getProcessDefinition().getNextNodeId());
         }
     }
 
@@ -433,6 +430,7 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
 
     public GraphElement makeCopy(GraphElement parent) {
         GraphElement copy = getTypeDefinition().createElement(parent, false);
+        copy.setId(parent.getProcessDefinition().getNextNodeId());
         if (this instanceof Describable) {
             copy.setDescription(getDescription());
         }

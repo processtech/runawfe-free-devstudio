@@ -20,7 +20,6 @@ import ru.runa.gpd.formeditor.FtlFormType;
 import ru.runa.gpd.formeditor.ftl.TemplateProcessor;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.ProcessDefinition;
-import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.quick.Messages;
 import ru.runa.gpd.quick.extension.QuickTemplateRegister;
 import ru.runa.gpd.quick.formeditor.QuickForm;
@@ -101,13 +100,7 @@ public final class QuickFormConvertor {
         converterSource.getFormNode().setFormType("ftl");
         converterSource.getFormNode().setTemplateFileName(null);
         ProcessDefinition definition = converterSource.getProcessDefinition();
-        IFile definitionFile;
-        if (definition instanceof SubprocessDefinition) {
-            definitionFile = IOUtils.getSubprocessDefinitionFile(processFolder, (SubprocessDefinition) definition);
-        } else {
-            definitionFile = IOUtils.getProcessDefinitionFile(processFolder);
-        }
-        WorkspaceOperations.saveProcessDefinition(definitionFile, definition);
+        WorkspaceOperations.saveProcessDefinition(definition);
         return IOUtils.getFile(newFileName);
     }
 

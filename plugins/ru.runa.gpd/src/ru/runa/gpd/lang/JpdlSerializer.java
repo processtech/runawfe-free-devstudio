@@ -473,7 +473,7 @@ public class JpdlSerializer extends ProcessSerializer {
             }
         }
         if (element instanceof Variable && node.attributes().contains(GLOBAL)) {
-            ((Variable) element).setGlobal("true".equals(node.attribute(GLOBAL)));
+            ((Variable) element).setGlobal("true".equals(node.attributeValue(GLOBAL)));
         }
     }
 
@@ -842,5 +842,6 @@ public class JpdlSerializer extends ProcessSerializer {
                 throw new RuntimeException("Problem with " + transition.getId() + ": " + transition.getParent() + " -> " + targetNodeId);
             }
         }
+        definition.onLoadingCompleted();
     }
 }

@@ -269,7 +269,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
             if (useLtk) {
                 IDE.saveAllEditors(new IResource[] { projectRoot }, false);
                 for (SubprocessDefinition subprocessDefinition : editor.getDefinition().getEmbeddedSubprocesses().values()) {
-                    WorkspaceOperations.saveProcessDefinition(subprocessDefinition.getFile(), subprocessDefinition);
+                    WorkspaceOperations.saveProcessDefinition(subprocessDefinition);
                 }
             }
         }
@@ -439,7 +439,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
                 return;
             }
 
-            List<Variable> variables = editor.getDefinition().getVariables(false, false, newType.getName());
+            List<Variable> variables = editor.getDefinition().getVariables(true, false, newType.getName());
             if (variables.size() == 0) {
                 ErrorDialog.open(Localization.getString("VariableTypeEditorPage.error.variable.move.without.substitution.variable"));
                 return;
@@ -482,7 +482,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
             if (useLtk && editor.getDefinition().getEmbeddedSubprocesses().size() > 0) {
                 IDE.saveAllEditors(new IResource[] { projectRoot }, false);
                 for (SubprocessDefinition subprocessDefinition : editor.getDefinition().getEmbeddedSubprocesses().values()) {
-                    WorkspaceOperations.saveProcessDefinition(subprocessDefinition.getFile(), subprocessDefinition);
+                    WorkspaceOperations.saveProcessDefinition(subprocessDefinition);
                 }
             }
         }

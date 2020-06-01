@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -44,7 +45,8 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
     private boolean showGrid;
     private Duration defaultTaskTimeoutDelay = new Duration();
     private boolean invalid;
-    private int nextNodeIdCounter;
+    // may be there is no concurrency but if any this is very important variable
+    private final AtomicInteger nextNodeIdCounter = new AtomicInteger();
     private SwimlaneDisplayMode swimlaneDisplayMode = SwimlaneDisplayMode.none;
     private final Map<String, SubprocessDefinition> embeddedSubprocesses = Maps.newHashMap();
     private ProcessDefinitionAccessType accessType = ProcessDefinitionAccessType.Process;
@@ -218,27 +220,31 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
         }
     }
 
-    public void setNextNodeIdIfApplicable(String nodeId) {
-        int nextNodeId = 0;
-        int dotIndex = nodeId.lastIndexOf(".");
-        if (dotIndex != -1) {
-            nodeId = nodeId.substring(dotIndex + 1);
-        }
-        if (nodeId.startsWith("ID")) {
-            nodeId = nodeId.substring(2);
-        }
-        try {
-            nextNodeId = Integer.parseInt(nodeId);
-        } catch (NumberFormatException e) {
-        }
-        if (nextNodeId > this.nextNodeIdCounter) {
-            this.nextNodeIdCounter = nextNodeId;
+    public void setInvalid(boolean invalid) {
+        this.invalid = invalid;
+    }
+
+    public void onLoadingCompleted() {
+        for (GraphElement graphElement : getChildrenRecursive(GraphElement.class)) {
+            String nodeId = graphElement.getId();
+            if (nodeId == null) {
+                // variables do not have this property
+                continue;
+            }
+            try {
+                int id = Integer.parseInt(nodeId.substring(nodeId.lastIndexOf(".") + 1).substring(2));
+                if (id > nextNodeIdCounter.get()) {
+                    this.nextNodeIdCounter.set(id);
+                }
+            } catch (NumberFormatException e) {
+                throw new RuntimeException("Unable to parse node id " + nodeId);
+            }
         }
     }
 
     public String getNextNodeId() {
-        nextNodeIdCounter++;
-        String nextNodeId = "ID" + nextNodeIdCounter;
+        int nextId = this.nextNodeIdCounter.incrementAndGet();
+        String nextNodeId = "ID" + nextId;
         if (this instanceof SubprocessDefinition) {
             nextNodeId = getId() + "." + nextNodeId;
         }
@@ -268,12 +274,16 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
         if (startStates.size() > 1) {
             errors.add(ValidationError.createLocalizedError(this, "multipleStartStatesNotAllowed"));
         }
-        this.invalid = false;
+        boolean invalid = false;
         for (ValidationError validationError : errors) {
             if (validationError.getSeverity() == IMarker.SEVERITY_ERROR) {
-                this.invalid = true;
+                invalid = true;
                 break;
             }
+        }
+        if (this.invalid != invalid) {
+            this.invalid = invalid;
+            setDirty(true);
         }
     }
 

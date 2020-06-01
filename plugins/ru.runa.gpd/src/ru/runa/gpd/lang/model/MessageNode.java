@@ -1,11 +1,10 @@
 package ru.runa.gpd.lang.model;
 
+import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.property.DurationPropertyDescriptor;
@@ -14,13 +13,11 @@ import ru.runa.gpd.util.Duration;
 import ru.runa.gpd.util.VariableMapping;
 import ru.runa.gpd.util.VariableUtils;
 
-import com.google.common.collect.Lists;
-
 public abstract class MessageNode extends Node {
     protected final List<VariableMapping> variableMappings = new ArrayList<VariableMapping>();
     private static final List<String> SELECTOR_SPECIAL_NAMES = Lists.newArrayList(VariableUtils.CURRENT_PROCESS_ID,
             VariableUtils.CURRENT_PROCESS_DEFINITION_NAME, VariableUtils.CURRENT_NODE_NAME, VariableUtils.CURRENT_NODE_ID);
-    private Duration ttlDuration = new Duration("1 days");
+    private Duration ttlDuration = new Duration("0 minutes");
 
     public List<VariableMapping> getVariableMappings() {
         return variableMappings;
@@ -106,13 +103,12 @@ public abstract class MessageNode extends Node {
     }
 
     @Override
-    public MessageNode makeCopy(GraphElement parent) {
-        MessageNode copy = (MessageNode) super.makeCopy(parent);
-        copy.setTtlDuration(getTtlDuration());
+    protected void fillCopyCustomFields(GraphElement copy) {
+        super.fillCopyCustomFields(copy);
+        ((MessageNode) copy).setTtlDuration(getTtlDuration());
         for (VariableMapping mapping : getVariableMappings()) {
-            copy.getVariableMappings().add(mapping.getCopy());
+            ((MessageNode) copy).getVariableMappings().add(mapping.getCopy());
         }
-        return copy;
     }
 
     protected void validateOnEmptyRules(List<ValidationError> errors) {

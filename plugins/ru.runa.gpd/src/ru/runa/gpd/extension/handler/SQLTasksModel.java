@@ -1,17 +1,14 @@
 package ru.runa.gpd.extension.handler;
 
+import com.google.common.base.Strings;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
-
 import org.dom4j.Document;
 import org.dom4j.Element;
-
 import ru.runa.gpd.util.XmlUtil;
-
-import com.google.common.base.Strings;
 
 public class SQLTasksModel extends Observable {
     public List<SQLTaskModel> tasks = new ArrayList<SQLTaskModel>();
@@ -222,7 +219,7 @@ public class SQLTasksModel extends Observable {
                 paramElement.addAttribute("field", fieldName);
             }
             if (swimlaneVar) {
-                paramElement.addAttribute("field", "code");
+                paramElement.addAttribute("field", "name");
             }
         }
 
