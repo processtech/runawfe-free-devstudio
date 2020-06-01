@@ -2814,6 +2814,12 @@
                label="%label.menu.exit"
                menubarPath="file/exit"
                style="push"/>
+         <action
+               class="ru.runa.gpd.ui.action.FindElementAction"
+               id="findElement"
+               label="%label.action.findElement"
+               menubarPath="view/additions"
+               style="push"/>
       </actionSet>
    </extension>
 
