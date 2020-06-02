@@ -32,9 +32,10 @@ public class RenameProcessDefinitionDialog extends Dialog {
         this.processSaved = isProcessSaved;
     }
 
-    public RenameProcessDefinitionDialog(ProcessDefinition definition) {
+    public RenameProcessDefinitionDialog(ProcessDefinition definition, boolean isProcessSaved) {
         super(Display.getDefault().getActiveShell());
         this.definition = definition;
+        this.processSaved = isProcessSaved;
     }
 
     public void setName(String name) {

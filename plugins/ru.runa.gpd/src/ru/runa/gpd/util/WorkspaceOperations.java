@@ -299,62 +299,82 @@ public class WorkspaceOperations {
             PluginLogger.logError(e);
         }
     }
-
+    
     public static void renameSubProcessDefinition(IStructuredSelection selection) {
         IFile subdefinitionFile = (IFile) selection.getFirstElement();
         IFolder definitionFolder = (IFolder) subdefinitionFile.getParent();
         SubprocessDefinition subprocessDefinition = (SubprocessDefinition) ProcessCache.getProcessDefinition(subdefinitionFile);
         ProcessDefinition definition = subprocessDefinition.getParent();
-
-        RenameProcessDefinitionDialog dialog = new RenameProcessDefinitionDialog(definition);
-        dialog.setName(subprocessDefinition.getName());
-        if (dialog.open() == IDialogConstants.OK_ID) {
-            String newName = dialog.getName();
+        boolean saved = !subprocessDefinition.isDirty();
+        String oldName = subprocessDefinition.getName();         
+        RenameProcessDefinitionDialog dialog = new RenameProcessDefinitionDialog(definition, saved);
+        dialog.setName(oldName);
+        if (!saved) {
+            if (dialog.open() != IDialogConstants.OK_ID) {
+                return;
+            }
             try {
-                IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-                IEditorPart editor = page.findEditor(new FileEditorInput(subdefinitionFile));
-                if (editor != null) {
-                    page.closeEditor(editor, false);
+                saveProcessDefinition(subprocessDefinition);
+                subprocessDefinition.setDirty(false);
+                renameSubProcessDefinition(selection);
+                return;
+            } catch (Exception e) {
+                PluginLogger.logError("Unexpected error in renameSubProcessDefinition", e);
+            }
+        } else {
+            dialog.setName(oldName);
+            if (dialog.open() != IDialogConstants.OK_ID) {
+                return;
+            }
+        }
+        String newName = dialog.getName();
+        try {
+            IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+            IEditorPart editor = page.findEditor(new FileEditorInput(subdefinitionFile));            
+            if (editor != null) {
+                page.closeEditor(editor, false);
+            }            
+            for (Subprocess sp : definition.getChildren(Subprocess.class)) {
+                if (sp.getSubProcessName().equals(subprocessDefinition.getName())) {
+                    sp.setSubProcessName(newName);
+                    IFile definitionFile = IOUtils.getProcessDefinitionFile(definitionFolder);
+                    editor = page.findEditor(new FileEditorInput(definitionFile));
+                    if (editor != null) {
+                        page.closeEditor(editor, false);
+                    }
+                    saveProcessDefinition(definition);
+                    ProcessCache.invalidateProcessDefinition(definitionFile);
+                    break;
                 }
-
-                for (Subprocess sp : definition.getChildren(Subprocess.class)) {
-                    if (sp.getSubProcessName().equals(subprocessDefinition.getName())) {
+            }
+            for (SubprocessDefinition subdefinition : definition.getEmbeddedSubprocesses().values()) {              
+                for (Subprocess sp : subdefinition.getChildren(Subprocess.class)) {
+                    if (sp.getSubProcessName().equals(subprocessDefinition.getName())) {                        
                         sp.setSubProcessName(newName);
-                        IFile definitionFile = IOUtils.getProcessDefinitionFile(definitionFolder);
-                        editor = page.findEditor(new FileEditorInput(definitionFile));
+                        IFile file = IOUtils.getFile(subdefinition.getId() + "." + ParContentProvider.PROCESS_DEFINITION_FILE_NAME);
+                        editor = page.findEditor(new FileEditorInput(file));
                         if (editor != null) {
                             page.closeEditor(editor, false);
                         }
-                        saveProcessDefinition(definition);
-                        ProcessCache.invalidateProcessDefinition(definitionFile);
+                        saveProcessDefinition(subdefinition);
+                        ProcessCache.invalidateProcessDefinition(file);
                         break;
                     }
                 }
-                for (SubprocessDefinition subdefinition : definition.getEmbeddedSubprocesses().values()) {
-                    for (Subprocess sp : subdefinition.getChildren(Subprocess.class)) {
-                        if (sp.getSubProcessName().equals(subprocessDefinition.getName())) {
-                            sp.setSubProcessName(newName);
-                            IFile file = IOUtils.getFile(subdefinition.getId() + "." + ParContentProvider.PROCESS_DEFINITION_FILE_NAME);
-                            editor = page.findEditor(new FileEditorInput(file));
-                            if (editor != null) {
-                                page.closeEditor(editor, false);
-                            }
-                            saveProcessDefinition(subdefinition);
-                            ProcessCache.invalidateProcessDefinition(file);
-                            break;
-                        }
-                    }
-                }
-                subprocessDefinition.setName(newName);
-
-                saveProcessDefinition(subprocessDefinition);
-                ProcessCache.invalidateProcessDefinition(subdefinitionFile);
-                refreshResource(definitionFolder);
-
-            } catch (Exception e) {
-                PluginLogger.logError(e);
             }
+            subprocessDefinition.setName(newName);
+            saveProcessDefinition(subprocessDefinition);            
+            ProcessCache.invalidateProcessDefinition(subdefinitionFile);
+            refreshResource(definitionFolder);
+            
+            /**  Code below have no effect, and  this is the problem - closed editor not open again.          
+             *   So, how to reopen closed subprocess editor from code?   **/
+            openProcessDefinition(subdefinitionFile); 
+            
+        } catch (Exception e) {
+            PluginLogger.logError(e);
         }
+
     }
 
     public static void saveProcessDefinition(ProcessDefinition definition) throws Exception {
