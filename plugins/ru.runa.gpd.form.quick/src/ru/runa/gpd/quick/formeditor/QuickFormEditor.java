@@ -164,6 +164,7 @@ public class QuickFormEditor extends EditorPart implements ISelectionListener, I
                 }
             }
         });
+        formNode.setFormEditorOpened(true);
     }
 
     @Override
@@ -735,6 +736,7 @@ public class QuickFormEditor extends EditorPart implements ISelectionListener, I
         firePropertyChange(CLOSED);
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
         super.dispose();
+        formNode.setFormEditorOpened(false);
     }
 
     public boolean isEmpty() {
