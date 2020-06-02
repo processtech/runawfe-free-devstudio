@@ -49,21 +49,17 @@ public class RenameProcessDefinitionDialog extends Dialog {
 		final Label labelTitle = new Label(area, SWT.NO_BACKGROUND);
 		final GridData labelData = new GridData();
 		labelTitle.setLayoutData(labelData);
-
 		if (!processSaved) {
 			labelTitle.setText("       " + Localization.getString("alert.save_before_rename") + "        ");
 			return area;
 		}
-
 		labelTitle.setText(Localization.getString("button.rename"));
-
 		final Composite composite = new Composite(area, SWT.NONE);
 		final GridLayout gridLayout = new GridLayout();
 		gridLayout.numColumns = 2;
 		composite.setLayout(gridLayout);
 		GridData nameData = new GridData();
 		composite.setLayoutData(nameData);
-
 		Label labelName = new Label(composite, SWT.NONE);
 		labelName.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 		labelName.setText(Localization.getString("property.name") + ":");
