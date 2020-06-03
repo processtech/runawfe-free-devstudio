@@ -156,6 +156,16 @@ public class QuickFormEditor extends EditorPart implements ISelectionListener, I
                         if (isEmpty() && !getSite().getWorkbenchWindow().getWorkbench().isClosing()) {
                             try {
                                 formFile.delete(true, null);
+                                formNode.setFormFileName("");
+                                String templateFileName = formNode.getTemplateFileName();
+                                if (!Strings.isNullOrEmpty(templateFileName)) {
+                                    IFile templateFile = definitionFolder.getFile(templateFileName);
+                                    if (templateFile.exists()) {
+                                        templateFile.delete(true, null);
+                                    }
+                                    formNode.setTemplateFileName(null);
+                                }
+                                ParContentProvider.saveFormsXml(formNode.getProcessDefinition());
                             } catch (CoreException e) {
                                 PluginLogger.logError(e);
                             }
@@ -168,13 +178,16 @@ public class QuickFormEditor extends EditorPart implements ISelectionListener, I
 
     @Override
     public void doSave(IProgressMonitor monitor) {
-        try {
-            InputStream content = new ByteArrayInputStream(getFormData());
-            formFile.setContents(content, true, true, null);
-            updateButtons();
-            this.setDirty(false);
-        } catch (Exception e) {
-            PluginLogger.logError("Error on saving template form: '" + quickForm.getName() + "'", e);
+        if (isDirty()) {
+            try {
+                InputStream content = new ByteArrayInputStream(getFormData());
+                formFile.setContents(content, true, true, null);
+                updateButtons();
+                ParContentProvider.saveFormsXml(formNode.getProcessDefinition());
+                setDirty(false);
+            } catch (Exception e) {
+                PluginLogger.logError("Error on saving template form: '" + quickForm.getName() + "'", e);
+            }
         }
     }
 
