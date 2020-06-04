@@ -262,25 +262,30 @@ public class WorkspaceOperations {
             // Close ALL editors related to the process BEFORE renaiming it.
             IProject project = oldDefinitionFolder.getProject();
             IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-            IEditorReference[] editorRefs = page.getEditorReferences();
-            ArrayList<IEditorReference> editorRefsToClose = new ArrayList<IEditorReference>(editorRefs.length);
-            for (IEditorReference e : editorRefs) {
+            IEditorReference[] editors = page.getEditorReferences();
+            ArrayList<IEditorReference> editorsToClose = new ArrayList<IEditorReference>(editors.length);
+            ArrayList<String> filesToReOpen = new ArrayList<String>(editors.length);
+            for (IEditorReference editor : editors) {
                 // Work only on IEditorReference-s since IEditorPart-s may be uninitialized and
                 // we don't want to "restore" them just to close.
-                if (e.getEditorInput() instanceof IFileEditorInput) {
-                    // We get here at least if e is GraphitiProcessEditor or FormEditor.
-                    IFile f = ((IFileEditorInput) e.getEditorInput()).getFile();
-                    if (f.getProject() == project && Objects.equal(f.getFullPath().segment(1), oldName)) {
-                        editorRefsToClose.add(e);
+
+                /** How to detect that this editor is focused (selected) ? */
+
+                if (editor.getEditorInput() instanceof IFileEditorInput) {
+                    // We get here at least if editor is GraphitiProcessEditor or FormEditor.
+                    IFile file = ((IFileEditorInput) editor.getEditorInput()).getFile();
+                    if (file.getProject() == project && Objects.equal(file.getFullPath().segment(1), oldName)) {
+                        editorsToClose.add(editor);
+                        filesToReOpen.add(file.getFullPath().segment(2));
                     }
                 }
             }
-            if (!editorRefsToClose.isEmpty()) {
+            if (!editorsToClose.isEmpty()) {
                 // Close all at once! Otherwise, for example, when ProcessEditor is closed
                 // FormEditor may take focus and initialize.
                 // 2nd parameter save=false prevents "Save changed files?" dialog: they are
                 // saved anyway.
-                page.closeEditors(editorRefsToClose.toArray(new IEditorReference[editorRefsToClose.size()]), false);
+                page.closeEditors(editorsToClose.toArray(new IEditorReference[editorsToClose.size()]), false);
             }
             ProcessCache.processDefinitionWasDeleted(oldDefinitionFile);
             IPath newPath = oldDefinitionFolder.getParent().getFolder(new Path(newName)).getFullPath();
@@ -295,19 +300,27 @@ public class WorkspaceOperations {
             oldDefinitionFolder.delete(true, new NullProgressMonitor());
             refreshResource(newDefinitionFolder);
             openProcessDefinition(newDefinitionFile);
+            for (SubprocessDefinition subdefinition : definition.getEmbeddedSubprocesses().values()) {
+                IFile file = IOUtils.getFile(subdefinition.getId() + "." + ParContentProvider.PROCESS_DEFINITION_FILE_NAME);
+                if (filesToReOpen.contains(file.getFullPath().segment(2))) {
+                    openProcessDefinition(file);
+                }
+            }
+            /** until we dont know wich editor was focused before renaming (process or any subprocess), we set focus to process. */
+            openProcessDefinition(newDefinitionFile);
         } catch (Exception e) {
             PluginLogger.logError(e);
         }
     }
-    
+
     public static void renameSubProcessDefinition(IStructuredSelection selection) {
         IFile subdefinitionFile = (IFile) selection.getFirstElement();
         IFolder definitionFolder = (IFolder) subdefinitionFile.getParent();
         SubprocessDefinition subprocessDefinition = (SubprocessDefinition) ProcessCache.getProcessDefinition(subdefinitionFile);
-        ProcessDefinition definition = subprocessDefinition.getParent();
+        ProcessDefinition processDefinition = subprocessDefinition.getParent();
         boolean saved = !subprocessDefinition.isDirty();
-        String oldName = subprocessDefinition.getName();         
-        RenameProcessDefinitionDialog dialog = new RenameProcessDefinitionDialog(definition, saved);
+        String oldName = subprocessDefinition.getName();
+        RenameProcessDefinitionDialog dialog = new RenameProcessDefinitionDialog(processDefinition, saved);
         dialog.setName(oldName);
         if (!saved) {
             if (dialog.open() != IDialogConstants.OK_ID) {
@@ -330,27 +343,28 @@ public class WorkspaceOperations {
         String newName = dialog.getName();
         try {
             IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-            IEditorPart editor = page.findEditor(new FileEditorInput(subdefinitionFile));            
+            IEditorPart editor = page.findEditor(new FileEditorInput(subdefinitionFile));
             if (editor != null) {
                 page.closeEditor(editor, false);
-            }            
-            for (Subprocess sp : definition.getChildren(Subprocess.class)) {
-                if (sp.getSubProcessName().equals(subprocessDefinition.getName())) {
-                    sp.setSubProcessName(newName);
+            }
+            for (Subprocess subProcess : processDefinition.getChildren(Subprocess.class)) {
+                if (subProcess.getSubProcessName().equals(subprocessDefinition.getName())) {
+                    subProcess.setSubProcessName(newName);
                     IFile definitionFile = IOUtils.getProcessDefinitionFile(definitionFolder);
                     editor = page.findEditor(new FileEditorInput(definitionFile));
                     if (editor != null) {
                         page.closeEditor(editor, false);
                     }
-                    saveProcessDefinition(definition);
+                    saveProcessDefinition(processDefinition);
                     ProcessCache.invalidateProcessDefinition(definitionFile);
                     break;
                 }
             }
-            for (SubprocessDefinition subdefinition : definition.getEmbeddedSubprocesses().values()) {              
-                for (Subprocess sp : subdefinition.getChildren(Subprocess.class)) {
-                    if (sp.getSubProcessName().equals(subprocessDefinition.getName())) {                        
-                        sp.setSubProcessName(newName);
+            for (SubprocessDefinition subdefinition : processDefinition.getEmbeddedSubprocesses().values()) {
+                for (Subprocess subProcess : subdefinition.getChildren(Subprocess.class)) {
+
+                    if (subProcess.getSubProcessName().equals(subprocessDefinition.getName())) {
+                        subProcess.setSubProcessName(newName);
                         IFile file = IOUtils.getFile(subdefinition.getId() + "." + ParContentProvider.PROCESS_DEFINITION_FILE_NAME);
                         editor = page.findEditor(new FileEditorInput(file));
                         if (editor != null) {
@@ -363,18 +377,16 @@ public class WorkspaceOperations {
                 }
             }
             subprocessDefinition.setName(newName);
-            saveProcessDefinition(subprocessDefinition);            
+            saveProcessDefinition(processDefinition);
+            saveProcessDefinition(subprocessDefinition);
             ProcessCache.invalidateProcessDefinition(subdefinitionFile);
             refreshResource(definitionFolder);
-            
-            /**  Code below have no effect, and  this is the problem - closed editor not open again.          
-             *   So, how to reopen closed subprocess editor from code?   **/
-            openProcessDefinition(subdefinitionFile); 
-            
+            subprocessDefinition.setDirty(false);
+            openProcessDefinition(subdefinitionFile);
+            saveProcessDefinition(subprocessDefinition); /** sic, again */
         } catch (Exception e) {
             PluginLogger.logError(e);
         }
-
     }
 
     public static void saveProcessDefinition(ProcessDefinition definition) throws Exception {
