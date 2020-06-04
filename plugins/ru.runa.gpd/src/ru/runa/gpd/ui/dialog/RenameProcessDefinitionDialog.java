@@ -51,7 +51,7 @@ public class RenameProcessDefinitionDialog extends Dialog {
         final GridData labelData = new GridData();
         labelTitle.setLayoutData(labelData);
         if (!processSaved) {
-            labelTitle.setText("       " + Localization.getString("alert.save_before_rename") + "        ");
+            labelTitle.setText(Localization.getString("alert.save_before_rename"));
             return area;
         }
         labelTitle.setText(Localization.getString("button.rename"));
@@ -102,7 +102,7 @@ public class RenameProcessDefinitionDialog extends Dialog {
         if (processSaved) {
             shell.setText(Localization.getString("RenameProcessDefinitionDialog.title"));
         } else {
-            shell.setText(" Process unsaved  ");
+            shell.setText(Localization.getString("alert.process_unsaved"));
         }
     }
 
