@@ -40,7 +40,7 @@ public class RenameProcessDefinitionDialog extends Dialog {
 
     public void setName(String name) {
         this.name = name;
-    }
+    }    
 
     @Override
     protected Control createDialogArea(Composite parent) {

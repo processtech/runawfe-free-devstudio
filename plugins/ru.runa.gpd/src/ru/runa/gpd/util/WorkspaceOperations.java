@@ -36,6 +36,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
@@ -259,18 +260,16 @@ public class WorkspaceOperations {
         }
         String newName = dialog.getName();
         try {
+            IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+            IEditorPart activeEditor = page.getActiveEditor();
             // Close ALL editors related to the process BEFORE renaiming it.
             IProject project = oldDefinitionFolder.getProject();
-            IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
             IEditorReference[] editors = page.getEditorReferences();
             ArrayList<IEditorReference> editorsToClose = new ArrayList<IEditorReference>(editors.length);
             ArrayList<String> filesToReOpen = new ArrayList<String>(editors.length);
             for (IEditorReference editor : editors) {
                 // Work only on IEditorReference-s since IEditorPart-s may be uninitialized and
                 // we don't want to "restore" them just to close.
-
-                /** How to detect that this editor is focused (selected) ? */
-
                 if (editor.getEditorInput() instanceof IFileEditorInput) {
                     // We get here at least if editor is GraphitiProcessEditor or FormEditor.
                     IFile file = ((IFileEditorInput) editor.getEditorInput()).getFile();
@@ -278,6 +277,13 @@ public class WorkspaceOperations {
                         editorsToClose.add(editor);
                         filesToReOpen.add(file.getFullPath().segment(2));
                     }
+                }
+            }
+            /** added missed operation */
+            for (SubprocessDefinition subdefinition : definition.getEmbeddedSubprocesses().values()) {
+                if (subdefinition.isDirty()) {
+                    saveProcessDefinition(subdefinition);
+                    subdefinition.setDirty(false);
                 }
             }
             if (!editorsToClose.isEmpty()) {
@@ -300,14 +306,18 @@ public class WorkspaceOperations {
             oldDefinitionFolder.delete(true, new NullProgressMonitor());
             refreshResource(newDefinitionFolder);
             openProcessDefinition(newDefinitionFile);
+            /** fixed bug with closing parent process editor after renaming */
             for (SubprocessDefinition subdefinition : definition.getEmbeddedSubprocesses().values()) {
                 IFile file = IOUtils.getFile(subdefinition.getId() + "." + ParContentProvider.PROCESS_DEFINITION_FILE_NAME);
                 if (filesToReOpen.contains(file.getFullPath().segment(2))) {
                     openProcessDefinition(file);
                 }
             }
-            /** until we dont know wich editor was focused before renaming (process or any subprocess), we set focus to process. */
-            openProcessDefinition(newDefinitionFile);
+            if (activeEditor != null) {
+                page.activate(activeEditor);
+                System.out.println("saveProcessSubdefinition  page.activate(activeEditor) " + activeEditor.getTitle());
+            }
+
         } catch (Exception e) {
             PluginLogger.logError(e);
         }
@@ -317,10 +327,10 @@ public class WorkspaceOperations {
         IFile subdefinitionFile = (IFile) selection.getFirstElement();
         IFolder definitionFolder = (IFolder) subdefinitionFile.getParent();
         SubprocessDefinition subprocessDefinition = (SubprocessDefinition) ProcessCache.getProcessDefinition(subdefinitionFile);
-        ProcessDefinition processDefinition = subprocessDefinition.getParent();
+        ProcessDefinition parentProcessDefinition = subprocessDefinition.getParent();
         boolean saved = !subprocessDefinition.isDirty();
         String oldName = subprocessDefinition.getName();
-        RenameProcessDefinitionDialog dialog = new RenameProcessDefinitionDialog(processDefinition, saved);
+        RenameProcessDefinitionDialog dialog = new RenameProcessDefinitionDialog(parentProcessDefinition, saved);
         dialog.setName(oldName);
         if (!saved) {
             if (dialog.open() != IDialogConstants.OK_ID) {
@@ -343,32 +353,37 @@ public class WorkspaceOperations {
         String newName = dialog.getName();
         try {
             IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+            IEditorPart activeEditor = page.getActiveEditor();
             IEditorPart editor = page.findEditor(new FileEditorInput(subdefinitionFile));
+            ArrayList<IFile> filesToReOpen = new ArrayList<IFile>();
             if (editor != null) {
                 page.closeEditor(editor, false);
+                IFile parentDefinitionFile = parentProcessDefinition.getFile();
+                filesToReOpen.add(parentDefinitionFile);
             }
-            for (Subprocess subProcess : processDefinition.getChildren(Subprocess.class)) {
+            for (Subprocess subProcess : parentProcessDefinition.getChildren(Subprocess.class)) {
                 if (subProcess.getSubProcessName().equals(subprocessDefinition.getName())) {
                     subProcess.setSubProcessName(newName);
                     IFile definitionFile = IOUtils.getProcessDefinitionFile(definitionFolder);
                     editor = page.findEditor(new FileEditorInput(definitionFile));
                     if (editor != null) {
                         page.closeEditor(editor, false);
+                        filesToReOpen.add(definitionFile);
                     }
-                    saveProcessDefinition(processDefinition);
+                    saveProcessDefinition(parentProcessDefinition);
                     ProcessCache.invalidateProcessDefinition(definitionFile);
                     break;
                 }
             }
-            for (SubprocessDefinition subdefinition : processDefinition.getEmbeddedSubprocesses().values()) {
+            for (SubprocessDefinition subdefinition : parentProcessDefinition.getEmbeddedSubprocesses().values()) {
                 for (Subprocess subProcess : subdefinition.getChildren(Subprocess.class)) {
-
                     if (subProcess.getSubProcessName().equals(subprocessDefinition.getName())) {
                         subProcess.setSubProcessName(newName);
                         IFile file = IOUtils.getFile(subdefinition.getId() + "." + ParContentProvider.PROCESS_DEFINITION_FILE_NAME);
                         editor = page.findEditor(new FileEditorInput(file));
                         if (editor != null) {
                             page.closeEditor(editor, false);
+                            filesToReOpen.add(file);
                         }
                         saveProcessDefinition(subdefinition);
                         ProcessCache.invalidateProcessDefinition(file);
@@ -377,13 +392,19 @@ public class WorkspaceOperations {
                 }
             }
             subprocessDefinition.setName(newName);
-            saveProcessDefinition(processDefinition);
+            saveProcessDefinition(parentProcessDefinition);
             saveProcessDefinition(subprocessDefinition);
             ProcessCache.invalidateProcessDefinition(subdefinitionFile);
             refreshResource(definitionFolder);
             subprocessDefinition.setDirty(false);
             openProcessDefinition(subdefinitionFile);
             saveProcessDefinition(subprocessDefinition); /** sic, again */
+            for (IFile fileToOpen : filesToReOpen) {
+                openProcessDefinition(fileToOpen);
+            }
+            if (activeEditor != null) {
+                page.activate(activeEditor);
+            }
         } catch (Exception e) {
             PluginLogger.logError(e);
         }
@@ -407,11 +428,20 @@ public class WorkspaceOperations {
             } else {
                 editorId = GEFProcessEditor.ID;
             }
-            IEditorPart editorPart = IDE.openEditor(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(), definitionFile, editorId,
-                    true);
-            if (editorPart instanceof ProcessEditorBase) {
-                return (ProcessEditorBase) editorPart;
+            IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+            IEditorReference existedEditor = null;
+            IEditorReference[] editors = page.getEditorReferences();
+            for (IEditorReference editor : editors) {
+                if (editor.getTitle().equals(processDefinition.getName())) {
+                    existedEditor = editor;
+                }
             }
+            if (existedEditor == null) {
+                return (ProcessEditorBase) IDE.openEditor(page, definitionFile, editorId, true);
+            }
+            IWorkbenchPart part = existedEditor.getPart(true);
+            page.activate(part);
+            return (ProcessEditorBase) existedEditor.getEditor(true);
         } catch (PartInitException e) {
             PluginLogger.logError("Unable open diagram", e);
         }

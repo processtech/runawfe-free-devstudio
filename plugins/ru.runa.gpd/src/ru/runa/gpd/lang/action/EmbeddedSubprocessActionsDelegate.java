@@ -46,7 +46,7 @@ public class EmbeddedSubprocessActionsDelegate extends BaseModelDropDownActionDe
                 action.setEnabled(false);
             }
         }
-    }
+    }    
 
     /**
      * Fills the menu with applicable launch shortcuts
@@ -115,7 +115,7 @@ public class EmbeddedSubprocessActionsDelegate extends BaseModelDropDownActionDe
         @Override
         public void run() {
             setEmbeddedSubprocess(getText());
-            WorkspaceOperations.openSubprocessDefinition(subprocess);
+           // WorkspaceOperations.openSubprocessDefinition(subprocess);
         }
     }
 
