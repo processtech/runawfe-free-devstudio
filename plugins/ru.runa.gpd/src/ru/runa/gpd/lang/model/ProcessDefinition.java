@@ -51,8 +51,6 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
     private final List<VariableUserType> types = Lists.newArrayList();
     private final IFile file;
     private boolean useGlobals;
-    private List<Swimlane> globalSwimlanes = new ArrayList<Swimlane>();
-    private List<Variable> globalVariables = new ArrayList<Variable>();
     
     private final ArrayList<VersionInfo> versionInfoList;
 
@@ -290,7 +288,7 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
     	if (name == null) {
     		return null;
         }
-        for (Variable variable : getGlobalVariables(true)) {
+        for (Variable variable : getGlobalVariables(true, new ArrayList<>())) {
         	if (name.equals(variable.getName())) {
         		return variable;
         	}
@@ -316,10 +314,10 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
             }
         }
         if (includeSwimlanes && useGlobals) {
-            variables.addAll(getGlobalSwimlanes(true));
+            getGlobalSwimlanes(true, getSwimlanes());
         }
         if (useGlobals) {
-        	variables.addAll(getGlobalVariables(true));
+        	getGlobalVariables(true, variables);
         }
         List<Variable> result = Lists.newArrayList();
         for (Variable variable : variables) {
@@ -332,13 +330,9 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
 
     public List<Swimlane> getSwimlanes() {
         List<Swimlane> swimlanes = getChildren(Swimlane.class);
-        for (Iterator<Swimlane> i = swimlanes.iterator(); i.hasNext();) {
-            if (i.next().isGlobal()) {
-                i.remove();
-            }
-        }
+        swimlanes.removeIf(swimlane -> swimlane.isGlobal());
         if (useGlobals) {
-            swimlanes.addAll(getGlobalSwimlanes(true));
+            getGlobalSwimlanes(true, swimlanes);
         }
         return swimlanes;
     }
@@ -360,7 +354,7 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
         if (name == null) {
             return null;
         }
-        for (Swimlane swimlane : getGlobalSwimlanes(true)) {
+        for (Swimlane swimlane : getGlobalSwimlanes(true, new ArrayList<>())) {
             if (name.equals(swimlane.getName())) {
                 return swimlane;
             }
@@ -591,16 +585,12 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
         versionInfoList.set(index, versionInfo);
     }
 
-    public List<Swimlane> getGlobalSwimlanes(boolean force) {
-        if (globalSwimlanes == null || force) {
-            for (Iterator<Swimlane> i = globalSwimlanes.iterator(); i.hasNext();) {
-                if (i.next().isGlobal()) {
-                    i.remove();
-                }
-            }
-            getGlobalSwimlanes(getFile(), globalSwimlanes);
+    public List<Swimlane> getGlobalSwimlanes(boolean force, List<Swimlane> swimlanes) {
+        if (force) {
+        	swimlanes.removeIf(swimlane -> swimlane.isGlobal());
+            getGlobalSwimlanes(getFile(), swimlanes);
         }
-        return globalSwimlanes;
+        return swimlanes;
     }
 
     private List<Swimlane> getGlobalSwimlanes(IResource resource, List<Swimlane> swimlanes) {
@@ -653,13 +643,15 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
                         if (definitionFile != null) {
                             List<VariableUserType> globalTypes = ProcessCache.getProcessDefinition(definitionFile).getVariableUserTypes();
                             for (VariableUserType type : globalTypes) {
-                            	if (!types.contains(type)) {
-                                //if (!types.stream().filter(t -> t.getName().equals(IOUtils.GLOBAL_ROLE_REF_PREFIX + type.getName())).findFirst().isPresent()) {
+                            	if (!types.stream().filter(t -> t.getName().equals(IOUtils.GLOBAL_ROLE_REF_PREFIX + type.getName())).findFirst().isPresent()) {
                                 	/*VariableUserType copy = new VariableUserType();
                                     copy.setName(IOUtils.GLOBAL_ROLE_REF_PREFIX + type.getName());
                                 	copy.setProcessDefinition(type.getProcessDefinition());
                                     copy.setGlobal(true);*/
-                            		types.add(type);
+                            		VariableUserType copy = type.getCopy();
+                            		copy.setName(IOUtils.GLOBAL_ROLE_REF_PREFIX + copy.getName());
+                            		copy.setGlobal(true);
+                            		types.add(copy);
                                 }
                             }
                         }
@@ -673,16 +665,12 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
         }
     }
     
-    public List<Variable> getGlobalVariables(boolean force) {
-        if (globalVariables == null || force) {
-            for (Iterator<Variable> i = globalVariables.iterator(); i.hasNext();) {
-                if (i.next().isGlobal()) {
-                    i.remove();
-                }
-            }
-        	getGlobalVariables(getFile(), globalVariables);
+    public List<Variable> getGlobalVariables(boolean force, List<Variable> variables) {
+        if (force) {
+        	variables.removeIf(variable -> variable.isGlobal());
+        	getGlobalVariables(getFile(), variables);
         }
-        return globalVariables;
+        return variables;
     }
     
     private List<Variable> getGlobalVariables(IResource resource, List<Variable> variables) {

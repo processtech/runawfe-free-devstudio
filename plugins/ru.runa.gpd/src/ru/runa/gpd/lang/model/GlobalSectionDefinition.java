@@ -465,10 +465,6 @@ public class GlobalSectionDefinition extends ProcessDefinition {
     
     public void addVariableUserType(VariableUserType type) {
         type.setProcessDefinition(this);
-        if (!type.getName().startsWith(IOUtils.GLOBAL_ROLE_REF_PREFIX)) {
-        	type.setName(IOUtils.GLOBAL_ROLE_REF_PREFIX + type.getName());
-        }
-        type.setGlobal(true);
         types.add(type);
         firePropertyChange(PROPERTY_USER_TYPES_CHANGED, null, type);
     }
@@ -549,8 +545,8 @@ public class GlobalSectionDefinition extends ProcessDefinition {
                         	ProcessDefinition definition = ProcessCache.getProcessDefinition(definitionFile);
                         	Swimlane globalSwimlane = definition.getGlobalSwimlaneByName(IOUtils.GLOBAL_ROLE_REF_PREFIX + swimlane.getName());
                         	if (globalSwimlane != null) {
-                        		System.out.println(globalSwimlane.getName());
                         		globalSwimlane.setGlobal(false);
+                        		definition.addChild(globalSwimlane);
                         	}
                         }
 					}
@@ -574,8 +570,8 @@ public class GlobalSectionDefinition extends ProcessDefinition {
                         	ProcessDefinition definition = ProcessCache.getProcessDefinition(definitionFile);
                         	Variable globalVariable = definition.getGlobalVariableByName(IOUtils.GLOBAL_ROLE_REF_PREFIX + variable.getName());
                         	if (globalVariable != null) {
-                        		System.out.println(globalVariable.getName());
                         		globalVariable.setGlobal(false);
+                        		definition.addChild(globalVariable);
                         	}
                         }
 					}
@@ -597,9 +593,8 @@ public class GlobalSectionDefinition extends ProcessDefinition {
                         IFile definitionFile = (IFile) ((IFolder) r).findMember(ParContentProvider.PROCESS_DEFINITION_FILE_NAME);
                         if (definitionFile != null) {
                         	ProcessDefinition definition = ProcessCache.getProcessDefinition(definitionFile);
-                        	VariableUserType globalType = definition.getTypeByName(type.getName());
+                        	VariableUserType globalType = definition.getTypeByName(IOUtils.GLOBAL_ROLE_REF_PREFIX + type.getName());
                         	if (globalType != null) {
-                        		System.out.println(globalType.getName());
                         		globalType.setGlobal(false);
                         	}
                         }

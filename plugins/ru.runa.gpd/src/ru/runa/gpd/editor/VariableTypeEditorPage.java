@@ -206,31 +206,18 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
     	updateViewer();
     }
     
-    private boolean withoutGlobals(List<VariableUserType> list) {
-        for (VariableUserType swimlane : list) {
-            if (swimlane.isGlobal()) {
-                return false;
-            }
-        }
-        return true;
-    }
-    
     private void updateViewer() {
         List<VariableUserType> userTypes = getDefinition().getVariableUserTypes();
-        boolean withoutGlobals = withoutGlobals(userTypes);
         typeTableViewer.setInput(userTypes);
         for (VariableUserType userType : userTypes) {
             userType.addPropertyChangeListener(this);
         }
         updateAttributeViewer();
-        if (getDefinition() instanceof GlobalSectionDefinition) {
-        	withoutGlobals = true;
-        }
         VariableUserType selectedType = getSelection();
-        enableAction(copyTypeButton, withoutGlobals && selectedType != null);
-        enableAction(pasteTypeButton, withoutGlobals && selectedType != null);
-        enableAction(deleteTypeButton, withoutGlobals && selectedType != null);
-        enableAction(renameTypeButton, withoutGlobals && selectedType != null);
+        enableAction(copyTypeButton, selectedType != null && !selectedType.isGlobal());
+        enableAction(pasteTypeButton, selectedType != null && !selectedType.isGlobal());
+        enableAction(deleteTypeButton, selectedType != null && !selectedType.isGlobal());
+        enableAction(renameTypeButton, selectedType != null && !selectedType.isGlobal());
         enableAction(moveUpTypeButton, selectedType != null && getDefinition().getVariableUserTypes().indexOf(selectedType) > 0);
         enableAction(moveDownTypeButton, selectedType != null
                 && getDefinition().getVariableUserTypes().indexOf(selectedType) < getDefinition().getVariableUserTypes().size() - 1);
@@ -238,7 +225,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
         enableAction(createAttributeButton, selectedType != null);
         @SuppressWarnings("unchecked")
         List<Variable> attributes = ((IStructuredSelection) attributeTableViewer.getSelection()).toList();
-        withoutGlobals = true;
+        boolean withoutGlobals = true;
         if (!(getDefinition() instanceof GlobalSectionDefinition)) {
             for (Variable attribute : attributes) {
                 for (VariableUserType userType : userTypes) {
