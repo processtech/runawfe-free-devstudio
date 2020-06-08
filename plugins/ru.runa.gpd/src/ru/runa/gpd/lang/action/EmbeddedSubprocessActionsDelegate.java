@@ -26,7 +26,7 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
 public class EmbeddedSubprocessActionsDelegate extends BaseModelDropDownActionDelegate {
-    private String selectedName;
+    private String selectedName = "";
     private ProcessDefinition definition;
     private Subprocess subprocess;
     private IFile definitionFile;
@@ -115,7 +115,9 @@ public class EmbeddedSubprocessActionsDelegate extends BaseModelDropDownActionDe
         @Override
         public void run() {
             setEmbeddedSubprocess(getText());
-           // WorkspaceOperations.openSubprocessDefinition(subprocess);
+            if(selectedName.equals(getText())) {
+                WorkspaceOperations.openSubprocessDefinition(subprocess);
+            }
         }
     }
 

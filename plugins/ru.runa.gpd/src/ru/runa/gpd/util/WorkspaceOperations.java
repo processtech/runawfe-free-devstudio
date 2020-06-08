@@ -246,7 +246,7 @@ public class WorkspaceOperations {
             }
             try {
                 saveProcessDefinition(definition);
-                definition.setDirty(false);
+                //definition.setDirty(false);
                 renameProcessDefinition(selection);
                 return;
             } catch (Exception e) {
@@ -267,6 +267,7 @@ public class WorkspaceOperations {
             IEditorReference[] editors = page.getEditorReferences();
             ArrayList<IEditorReference> editorsToClose = new ArrayList<IEditorReference>(editors.length);
             ArrayList<String> filesToReOpen = new ArrayList<String>(editors.length);
+            boolean renamedProcessEditorWasOpen = false;
             for (IEditorReference editor : editors) {
                 // Work only on IEditorReference-s since IEditorPart-s may be uninitialized and
                 // we don't want to "restore" them just to close.
@@ -277,13 +278,16 @@ public class WorkspaceOperations {
                         editorsToClose.add(editor);
                         filesToReOpen.add(file.getFullPath().segment(2));
                     }
+                    if (file.getProject() == project && editor.getTitle().equals(oldName)) {
+                        renamedProcessEditorWasOpen = true;
+                    }
                 }
             }
             /** added missed operation */
             for (SubprocessDefinition subdefinition : definition.getEmbeddedSubprocesses().values()) {
                 if (subdefinition.isDirty()) {
                     saveProcessDefinition(subdefinition);
-                    subdefinition.setDirty(false);
+
                 }
             }
             if (!editorsToClose.isEmpty()) {
@@ -305,19 +309,27 @@ public class WorkspaceOperations {
             ProcessSaveHistory.clear(oldDefinitionFolder);
             oldDefinitionFolder.delete(true, new NullProgressMonitor());
             refreshResource(newDefinitionFolder);
-            openProcessDefinition(newDefinitionFile);
+            if (renamedProcessEditorWasOpen) {
+                openProcessDefinition(newDefinitionFile);
+            }
             /** fixed bug with closing parent process editor after renaming */
             for (SubprocessDefinition subdefinition : definition.getEmbeddedSubprocesses().values()) {
                 IFile file = IOUtils.getFile(subdefinition.getId() + "." + ParContentProvider.PROCESS_DEFINITION_FILE_NAME);
+                if (file == null) {
+                    continue;
+                }
                 if (filesToReOpen.contains(file.getFullPath().segment(2))) {
                     openProcessDefinition(file);
                 }
             }
-            if (activeEditor != null) {
-                page.activate(activeEditor);
-                System.out.println("saveProcessSubdefinition  page.activate(activeEditor) " + activeEditor.getTitle());
+            if (activeEditor != null) {                
+                editors = page.getEditorReferences();
+                for (IEditorReference editorReference : editors) {                    
+                    if(((IFileEditorInput) editorReference.getEditorInput()).getFile().equals(definition.getFile())) {
+                         page.activate(editorReference.getEditor(true));
+                    }                    
+                }
             }
-
         } catch (Exception e) {
             PluginLogger.logError(e);
         }
@@ -338,7 +350,6 @@ public class WorkspaceOperations {
             }
             try {
                 saveProcessDefinition(subprocessDefinition);
-                subprocessDefinition.setDirty(false);
                 renameSubProcessDefinition(selection);
                 return;
             } catch (Exception e) {
@@ -356,10 +367,12 @@ public class WorkspaceOperations {
             IEditorPart activeEditor = page.getActiveEditor();
             IEditorPart editor = page.findEditor(new FileEditorInput(subdefinitionFile));
             ArrayList<IFile> filesToReOpen = new ArrayList<IFile>();
-            if (editor != null) {
+            boolean renamedProcessEditorWasOpen = editor != null;
+            if (renamedProcessEditorWasOpen) {
                 page.closeEditor(editor, false);
-                IFile parentDefinitionFile = parentProcessDefinition.getFile();
-                filesToReOpen.add(parentDefinitionFile);
+                // IFile parentDefinitionFile = parentProcessDefinition.getFile();
+                // filesToReOpen.add(parentDefinitionFile);
+                filesToReOpen.add(subdefinitionFile);
             }
             for (Subprocess subProcess : parentProcessDefinition.getChildren(Subprocess.class)) {
                 if (subProcess.getSubProcessName().equals(subprocessDefinition.getName())) {
@@ -396,14 +409,18 @@ public class WorkspaceOperations {
             saveProcessDefinition(subprocessDefinition);
             ProcessCache.invalidateProcessDefinition(subdefinitionFile);
             refreshResource(definitionFolder);
-            subprocessDefinition.setDirty(false);
-            openProcessDefinition(subdefinitionFile);
-            saveProcessDefinition(subprocessDefinition); /** sic, again */
             for (IFile fileToOpen : filesToReOpen) {
                 openProcessDefinition(fileToOpen);
             }
+            saveProcessDefinition(subprocessDefinition); /** sic, again */
+            subprocessDefinition.setDirty(false);
             if (activeEditor != null) {
-                page.activate(activeEditor);
+                IEditorReference[] editors = page.getEditorReferences();
+                for (IEditorReference editorReference : editors) {                    
+                    if(((IFileEditorInput) editorReference.getEditorInput()).getFile().equals(subprocessDefinition.getFile())) {
+                        page.activate(editorReference.getEditor(true));
+                   }      
+                }
             }
         } catch (Exception e) {
             PluginLogger.logError(e);
@@ -417,6 +434,7 @@ public class WorkspaceOperations {
         byte[] bytes = XmlUtil.writeXml(document);
         ParContentProvider.saveAuxInfo(definition.getFile(), definition);
         definition.getFile().setContents(new ByteArrayInputStream(bytes), true, false, null);
+        definition.setDirty(false);
     }
 
     public static ProcessEditorBase openProcessDefinition(IFile definitionFile) {
@@ -432,9 +450,10 @@ public class WorkspaceOperations {
             IEditorReference existedEditor = null;
             IEditorReference[] editors = page.getEditorReferences();
             for (IEditorReference editor : editors) {
-                if (editor.getTitle().equals(processDefinition.getName())) {
+                IFile editorFile = ((IFileEditorInput) editor.getEditorInput()).getFile();
+                if (definitionFile.equals(editorFile)) {
                     existedEditor = editor;
-                }
+                }               
             }
             if (existedEditor == null) {
                 return (ProcessEditorBase) IDE.openEditor(page, definitionFile, editorId, true);
