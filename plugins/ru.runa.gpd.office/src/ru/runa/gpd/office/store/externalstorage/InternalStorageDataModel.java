@@ -12,6 +12,7 @@ import org.dom4j.Document;
 import org.dom4j.Element;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.GraphElement;
+import ru.runa.gpd.lang.model.StartState;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.office.FilesSupplierMode;
 import ru.runa.gpd.office.Messages;
@@ -71,6 +72,10 @@ public class InternalStorageDataModel extends DataModel {
             }
         } else {
             inOutModel.validate(graphElement, mode, errors);
+        }
+
+        if (!(graphElement instanceof StartState)) {
+            return;
         }
 
         final String queryString = constraintsModel.getQueryString();
