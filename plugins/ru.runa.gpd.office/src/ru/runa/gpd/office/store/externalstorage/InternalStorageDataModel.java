@@ -80,9 +80,9 @@ public class InternalStorageDataModel extends DataModel {
 
         final String pattern = PredicateOperationType.codes().stream()
                 .filter(code -> !code.equals(PredicateOperationType.AND.code) && !code.equals(PredicateOperationType.OR.code))
-                .collect(Collectors.joining("|", "(", ")"));
+                .map(code -> " " + code + " ").collect(Collectors.joining("|", "(", ")"));
         try (Scanner expressionScanner = new Scanner(queryString)
-                .useDelimiter("(" + PredicateOperationType.AND.code + "|" + PredicateOperationType.OR.code + ")")) {
+                .useDelimiter("( " + PredicateOperationType.AND.code + " | " + PredicateOperationType.OR.code + " )")) {
             while (expressionScanner.hasNext()) {
                 try (Scanner variableScanner = new Scanner(expressionScanner.next()).useDelimiter(pattern)) {
                     while (variableScanner.hasNext()) {
