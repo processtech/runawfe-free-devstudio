@@ -28,11 +28,12 @@ import org.eclipse.swt.widgets.TabItem;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.DelegableProvider;
-import ru.runa.gpd.extension.DialogShowMode;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.ui.custom.XmlHighlightTextStyling;
+import ru.runa.gpd.ui.enhancement.DialogEnhancementMode;
+import ru.runa.gpd.ui.enhancement.DocxDialogEnhancementMode;
 import ru.runa.gpd.util.XmlUtil;
 
 public abstract class XmlBasedConstructorProvider<T extends Observable> extends DelegableProvider {
@@ -47,9 +48,9 @@ public abstract class XmlBasedConstructorProvider<T extends Observable> extends 
     }
 
     @Override
-    public void showEmbeddedConfigurationDialog(final Composite mainComposite, Delegable delegable, DialogShowMode dialogShowMode) {
+    public void showEmbeddedConfigurationDialog(final Composite mainComposite, Delegable delegable, DialogEnhancementMode dialogEnhancementMode) {
         XmlBasedConstructorDialog dialog = new XmlBasedConstructorDialog(delegable);
-        dialog.createEmbeddedWindow(mainComposite, dialogShowMode);
+        dialog.createEmbeddedWindow(mainComposite, dialogEnhancementMode);
     }
 
     @Override
@@ -87,8 +88,8 @@ public abstract class XmlBasedConstructorProvider<T extends Observable> extends 
 
     protected abstract String getTitle();
 
-    protected Composite createConstructorComposite(Composite parent, Delegable delegable, T model, DialogShowMode dialogShowMode) {
-        throw new RuntimeException("Not implemented behavior for provided 'dialogShowMode' argument");
+    protected Composite createConstructorComposite(Composite parent, Delegable delegable, T model, DialogEnhancementMode dialogEnhancementMode) {
+        throw new RuntimeException("Not implemented behavior for provided 'DialogEnhancementMode' argument");
     }
 
     protected abstract Composite createConstructorComposite(Composite parent, Delegable delegable, T model);
@@ -129,14 +130,13 @@ public abstract class XmlBasedConstructorProvider<T extends Observable> extends 
         private final String initialValue;
         private String result;
         protected final Delegable delegable;
-        private DialogShowMode dialogShowMode;
+        private DialogEnhancementMode dialogEnhancementMode = null;
 
         public XmlBasedConstructorDialog(Delegable delegable) {
             super(Display.getCurrent().getActiveShell());
             setShellStyle(getShellStyle() | SWT.RESIZE);
             this.delegable = delegable;
             this.initialValue = delegable.getDelegationConfiguration();
-            this.dialogShowMode = new DialogShowMode();
         }
 
         @Override
@@ -144,8 +144,8 @@ public abstract class XmlBasedConstructorProvider<T extends Observable> extends 
             return new Point(600, 400);
         }
 
-        public void createEmbeddedWindow(Composite mainComposite, DialogShowMode dialogShowMode) {
-            this.dialogShowMode = dialogShowMode;
+        public void createEmbeddedWindow(Composite mainComposite, DialogEnhancementMode dialogEnhancementMode) {
+            this.dialogEnhancementMode = dialogEnhancementMode;
             createDialogArea(mainComposite);
 
         }
@@ -164,7 +164,8 @@ public abstract class XmlBasedConstructorProvider<T extends Observable> extends 
                 model = createDefault();
             }
 
-            if (dialogShowMode.checkDocxMode() && dialogShowMode.not(DialogShowMode.DOCX_SHOW_XML_VIEW)) {
+            if (null != dialogEnhancementMode && dialogEnhancementMode.checkDocxEnhancementMode()
+                    && dialogEnhancementMode.not(DocxDialogEnhancementMode.DOCX_SHOW_XML_VIEW)) {
 
                 Composite composite = new Composite(parent, SWT.NONE);
                 composite.setLayout(new GridLayout());
@@ -174,7 +175,7 @@ public abstract class XmlBasedConstructorProvider<T extends Observable> extends 
                 scrolledComposite.setExpandVertical(true);
                 scrolledComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-                constructorView = createConstructorComposite(scrolledComposite, delegable, model, dialogShowMode);
+                constructorView = createConstructorComposite(scrolledComposite, delegable, model, dialogEnhancementMode);
                 constructorView.setLayoutData(new GridData(GridData.FILL_BOTH));
                 if (constructorView instanceof Observer) {
                     model.addObserver((Observer) constructorView);

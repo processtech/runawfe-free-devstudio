@@ -1,9 +1,10 @@
 package ru.runa.gpd.office.word;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.SelectionEvent;
@@ -19,7 +20,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.widgets.Hyperlink;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.GraphElement;
@@ -33,9 +33,6 @@ import ru.runa.gpd.ui.custom.SWTUtils;
 import ru.runa.gpd.util.EmbeddedFileUtils;
 import ru.runa.wfe.InternalApplicationException;
 import ru.runa.wfe.var.file.FileVariable;
-
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 
 public class MergeInputOutputComposite extends Composite {
     public final MergeInputOutputModel model;
@@ -343,7 +340,7 @@ public class MergeInputOutputComposite extends Composite {
             // http://sourceforge.net/p/runawfe/bugs/628/
             updateEmbeddedFileName(fileName);
 
-            control = new TemplateFileComposite(composite, fileName, fileExtension);
+            control = new TemplateFileComposite(composite, fileName, fileExtension, null);
             ((TemplateFileComposite) control).getEventSupport().addPropertyChangeListener(this);
             composite.layout(true, true);
         }

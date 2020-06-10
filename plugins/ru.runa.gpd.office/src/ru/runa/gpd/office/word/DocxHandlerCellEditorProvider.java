@@ -21,7 +21,6 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
-import ru.runa.gpd.extension.DialogShowMode;
 import ru.runa.gpd.extension.bot.IBotFileSupportProvider;
 import ru.runa.gpd.extension.handler.XmlBasedConstructorProvider;
 import ru.runa.gpd.lang.ValidationError;
@@ -35,6 +34,8 @@ import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
 import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.custom.SWTUtils;
+import ru.runa.gpd.ui.enhancement.DialogEnhancementMode;
+import ru.runa.gpd.ui.enhancement.DocxDialogEnhancementMode;
 import ru.runa.gpd.util.EmbeddedFileUtils;
 import ru.runa.gpd.util.XmlUtil;
 
@@ -42,12 +43,13 @@ public class DocxHandlerCellEditorProvider extends XmlBasedConstructorProvider<D
 
     @Override
     protected Composite createConstructorComposite(Composite parent, Delegable delegable, DocxModel model) {
-        return new ConstructorView(parent, delegable, model, new DialogShowMode());
+        return new ConstructorView(parent, delegable, model, new DialogEnhancementMode());
     }
 
     @Override
-    protected Composite createConstructorComposite(Composite parent, Delegable delegable, DocxModel model, DialogShowMode dialogShowMode) {
-        return new ConstructorView(parent, delegable, model, dialogShowMode);
+    protected Composite createConstructorComposite(Composite parent, Delegable delegable, DocxModel model,
+            DialogEnhancementMode dialogEnhancementMode) {
+        return new ConstructorView(parent, delegable, model, dialogEnhancementMode);
     }
 
     @Override
@@ -102,12 +104,12 @@ public class DocxHandlerCellEditorProvider extends XmlBasedConstructorProvider<D
 
     private class ConstructorView extends ConstructorComposite {
 
-        final private DialogShowMode dialogShowMode;
+        final private DialogEnhancementMode dialogEnhancementMode;
 
-        public ConstructorView(Composite parent, Delegable delegable, DocxModel model, DialogShowMode dialogShowMode) {
+        public ConstructorView(Composite parent, Delegable delegable, DocxModel model, DialogEnhancementMode dialogEnhancementMode) {
             super(parent, delegable, model);
             setLayout(new GridLayout(2, false));
-            this.dialogShowMode = dialogShowMode;
+            this.dialogEnhancementMode = dialogEnhancementMode;
             buildFromModel();
         }
 
@@ -118,7 +120,11 @@ public class DocxHandlerCellEditorProvider extends XmlBasedConstructorProvider<D
                     control.dispose();
                 }
 
-                if (dialogShowMode.isOrDefault(DialogShowMode.DOCX_SHOW_STRICT_LABEL)) {
+                if (dialogEnhancementMode != null && dialogEnhancementMode.checkDocxEnhancementMode()) {
+                    ((DocxDialogEnhancementMode) dialogEnhancementMode).docxModel = model;
+                }
+
+                if (null == dialogEnhancementMode || dialogEnhancementMode.isOrDefault(DocxDialogEnhancementMode.DOCX_SHOW_OUTPUT)) {
                     final Button strict = new Button(this, SWT.CHECK);
                     strict.setText(Messages.getString("label.strict"));
                     strict.setSelection(model.isStrict());
@@ -127,17 +133,22 @@ public class DocxHandlerCellEditorProvider extends XmlBasedConstructorProvider<D
                         @Override
                         protected void onSelection(SelectionEvent e) throws Exception {
                             model.setStrict(strict.getSelection());
+
+                            if (dialogEnhancementMode != null && dialogEnhancementMode.checkDocxEnhancementMode()) {
+                                ((DocxDialogEnhancementMode) dialogEnhancementMode).reloadXmlFromModel(model.toString(), null, null, null);
+                            }
                         }
                     });
                     new Label(this, SWT.NONE);
                 }
 
-                if (dialogShowMode.isOrDefault(DialogShowMode.DOCX_SHOW_INPUT) && dialogShowMode.isOrDefault(DialogShowMode.DOCX_SHOW_OUTPUT)) {
-                    new InputOutputComposite(this, delegable, model.getInOutModel(), FilesSupplierMode.BOTH, "docx", dialogShowMode);
-                } else if (dialogShowMode.is(DialogShowMode.DOCX_SHOW_INPUT)) {
-                    new InputOutputComposite(this, delegable, model.getInOutModel(), FilesSupplierMode.IN, "docx", dialogShowMode);
-                } else if (dialogShowMode.is(DialogShowMode.DOCX_SHOW_OUTPUT)) {
-                    new InputOutputComposite(this, delegable, model.getInOutModel(), FilesSupplierMode.OUT, "docx", dialogShowMode);
+                if (null == dialogEnhancementMode || (dialogEnhancementMode.isOrDefault(DocxDialogEnhancementMode.DOCX_SHOW_INPUT)
+                        && dialogEnhancementMode.isOrDefault(DocxDialogEnhancementMode.DOCX_SHOW_OUTPUT))) {
+                    new InputOutputComposite(this, delegable, model.getInOutModel(), FilesSupplierMode.BOTH, "docx", dialogEnhancementMode);
+                } else if (dialogEnhancementMode.is(DocxDialogEnhancementMode.DOCX_SHOW_INPUT)) {
+                    new InputOutputComposite(this, delegable, model.getInOutModel(), FilesSupplierMode.IN, "docx", dialogEnhancementMode);
+                } else if (dialogEnhancementMode.is(DocxDialogEnhancementMode.DOCX_SHOW_OUTPUT)) {
+                    new InputOutputComposite(this, delegable, model.getInOutModel(), FilesSupplierMode.OUT, "docx", dialogEnhancementMode);
                 }
 
                 int i = 0;

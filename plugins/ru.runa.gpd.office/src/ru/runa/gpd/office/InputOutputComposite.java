@@ -16,12 +16,14 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import ru.runa.gpd.extension.DialogShowMode;
 import ru.runa.gpd.lang.model.BotTask;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.GraphElement;
+import ru.runa.gpd.office.word.DocxModel;
 import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
+import ru.runa.gpd.ui.enhancement.DialogEnhancementMode;
+import ru.runa.gpd.ui.enhancement.DocxDialogEnhancementMode;
 import ru.runa.gpd.util.DataSourceUtils;
 import ru.runa.gpd.util.EmbeddedFileUtils;
 import ru.runa.wfe.InternalApplicationException;
@@ -34,7 +36,7 @@ public class InputOutputComposite extends Composite {
     private final String fileExtension;
 
     public InputOutputComposite(Composite parent, Delegable delegable, final InputOutputModel model, FilesSupplierMode mode, String fileExtension,
-            DialogShowMode dialogShowMode) {
+            DialogEnhancementMode dialogEnhancementMode) {
         super(parent, SWT.NONE);
         this.model = model;
         this.delegable = delegable;
@@ -49,18 +51,22 @@ public class InputOutputComposite extends Composite {
             inputGroup.setLayout(new GridLayout(2, false));
 
             new ChooseStringOrFile(inputGroup, model.inputPath, model.inputVariable, Messages.getString("label.filePath"), FilesSupplierMode.IN,
-                    dialogShowMode) {
+                    dialogEnhancementMode) {
 
                 @Override
-                public void setFileName(String fileName) {
+                public void setFileName(String fileName, Boolean embeddedMode) {
                     model.inputPath = fileName;
                     model.inputVariable = "";
+
+                    boolean enableReadDocxButton = EmbeddedFileUtils.isBotTaskFile(fileName);
+                    updateDialogEnhancementMode(dialogEnhancementMode, fileName, enableReadDocxButton, embeddedMode);
                 }
 
                 @Override
                 public void setVariable(String variable) {
                     model.inputPath = "";
                     model.inputVariable = variable;
+                    updateDialogEnhancementMode(dialogEnhancementMode, "", false, false);
                 }
             };
 
@@ -81,37 +87,54 @@ public class InputOutputComposite extends Composite {
                 @Override
                 protected void onTextChanged(ModifyEvent e) throws Exception {
                     model.outputFilename = fileNameText.getText();
+                    updateDialogEnhancementMode(dialogEnhancementMode, null, null, null);
                 }
             });
             new ChooseStringOrFile(outputGroup, model.outputDir, model.outputVariable, Messages.getString("label.fileDir"), FilesSupplierMode.OUT,
-                    dialogShowMode) {
+                    dialogEnhancementMode) {
                 @Override
-                public void setFileName(String fileName) {
+                public void setFileName(String fileName, Boolean embeddedMode) {
                     model.outputDir = fileName;
                     model.outputVariable = "";
+                    updateDialogEnhancementMode(dialogEnhancementMode, null, null, embeddedMode);
                 }
 
                 @Override
                 public void setVariable(String variable) {
                     model.outputDir = "";
                     model.outputVariable = variable;
+                    updateDialogEnhancementMode(dialogEnhancementMode, null, null, null);
                 }
             };
         }
         layout(true, true);
     }
 
+    private void updateDialogEnhancementMode(DialogEnhancementMode dialogEnhancementMode, String embeddedFileName, Boolean enableReadDocxButton,
+            Boolean enableDocxMode) {
+        if (null != dialogEnhancementMode && dialogEnhancementMode.checkDocxEnhancementMode()) {
+            DocxModel docxModel = (DocxModel) ((DocxDialogEnhancementMode) dialogEnhancementMode).docxModel;
+            ((DocxDialogEnhancementMode) dialogEnhancementMode).reloadXmlFromModel(docxModel.toString(), embeddedFileName, enableReadDocxButton,
+                    enableDocxMode);
+        }
+    }
+
     private abstract class ChooseStringOrFile implements PropertyChangeListener {
-        public abstract void setFileName(String fileName);
+        public abstract void setFileName(String fileName, Boolean embeddedMode);
 
         public abstract void setVariable(String variable);
 
         private Control control = null;
         private final Composite composite;
+        private final DialogEnhancementMode dialogEnhancementMode;
 
         public ChooseStringOrFile(Composite composite, String fileName, String variableName, String stringLabel, FilesSupplierMode mode,
-                DialogShowMode dialogShowMode) {
+                DialogEnhancementMode dialogEnhancementMode) {
             this.composite = composite;
+            this.dialogEnhancementMode = dialogEnhancementMode;
+            final boolean docxEnhancementModeInput = null != dialogEnhancementMode && dialogEnhancementMode.checkDocxEnhancementMode()
+                    && dialogEnhancementMode.is(DocxDialogEnhancementMode.DOCX_SHOW_INPUT);
+
             final Combo combo = new Combo(composite, SWT.READ_ONLY);
             combo.add(stringLabel);
             combo.add(Messages.getString("label.fileVariable"));
@@ -123,28 +146,28 @@ public class InputOutputComposite extends Composite {
                 combo.add(Messages.getString("label.dataSourceNameVariable"));
             }
 
-            /// !!!
-
-            if (dialogShowMode.checkDocxMode() && dialogShowMode.is(DialogShowMode.DOCX_SHOW_INPUT)) {
-                combo.select(2);
-                showEmbeddedFile(fileName);
-            } else if (!Strings.isNullOrEmpty(variableName)) {
+            if (!Strings.isNullOrEmpty(variableName)) {
                 combo.select(1);
                 showVariable(variableName);
             } else if ((delegable instanceof GraphElement && EmbeddedFileUtils.isProcessFile(fileName))
                     || (delegable instanceof BotTask && EmbeddedFileUtils.isBotTaskFile(fileName))) {
                 combo.select(2);
-                showEmbeddedFile(fileName);
+                showEmbeddedFile(fileName, false);
             } else {
-                combo.select(0);
-                showFileName(fileName);
-                if (!Strings.isNullOrEmpty(fileName)) {
-                    if (fileName.startsWith(DataSourceStuff.PATH_PREFIX_DATA_SOURCE)) {
-                        combo.select(3);
-                        showDataSource(fileName);
-                    } else if (fileName.startsWith(DataSourceStuff.PATH_PREFIX_DATA_SOURCE_VARIABLE)) {
-                        combo.select(4);
-                        showDataSourceVariable(fileName);
+                if (docxEnhancementModeInput && (null == fileName) || (fileName.isEmpty())) {
+                    combo.select(2);
+                    showEmbeddedFile(fileName, true);
+                } else {
+                    combo.select(0);
+                    showFileName(fileName);
+                    if (!Strings.isNullOrEmpty(fileName)) {
+                        if (fileName.startsWith(DataSourceStuff.PATH_PREFIX_DATA_SOURCE)) {
+                            combo.select(3);
+                            showDataSource(fileName);
+                        } else if (fileName.startsWith(DataSourceStuff.PATH_PREFIX_DATA_SOURCE_VARIABLE)) {
+                            combo.select(4);
+                            showDataSourceVariable(fileName);
+                        }
                     }
                 }
             }
@@ -157,7 +180,7 @@ public class InputOutputComposite extends Composite {
                         showFileName(null);
                         break;
                     case 2:
-                        showEmbeddedFile(null);
+                        showEmbeddedFile(null, false);
                         break;
                     case 3:
                         showDataSource(null);
@@ -190,7 +213,7 @@ public class InputOutputComposite extends Composite {
 
                 @Override
                 protected void onTextChanged(ModifyEvent e) throws Exception {
-                    setFileName(text.getText());
+                    setFileName(text.getText(), false);
                 }
             });
             control = text;
@@ -244,14 +267,14 @@ public class InputOutputComposite extends Composite {
 
                 @Override
                 protected void onSelection(SelectionEvent e) throws Exception {
-                    setFileName(DataSourceStuff.PATH_PREFIX_DATA_SOURCE + combo.getText());
+                    setFileName(DataSourceStuff.PATH_PREFIX_DATA_SOURCE + combo.getText(), null);
                 }
             });
             combo.addModifyListener(new LoggingModifyTextAdapter() {
 
                 @Override
                 protected void onTextChanged(ModifyEvent e) throws Exception {
-                    setFileName(DataSourceStuff.PATH_PREFIX_DATA_SOURCE + combo.getText());
+                    setFileName(DataSourceStuff.PATH_PREFIX_DATA_SOURCE + combo.getText(), null);
                 }
             });
             control = combo;
@@ -274,21 +297,21 @@ public class InputOutputComposite extends Composite {
 
                 @Override
                 protected void onSelection(SelectionEvent e) throws Exception {
-                    setFileName(DataSourceStuff.PATH_PREFIX_DATA_SOURCE_VARIABLE + combo.getText());
+                    setFileName(DataSourceStuff.PATH_PREFIX_DATA_SOURCE_VARIABLE + combo.getText(), null);
                 }
             });
             combo.addModifyListener(new LoggingModifyTextAdapter() {
 
                 @Override
                 protected void onTextChanged(ModifyEvent e) throws Exception {
-                    setFileName(DataSourceStuff.PATH_PREFIX_DATA_SOURCE_VARIABLE + combo.getText());
+                    setFileName(DataSourceStuff.PATH_PREFIX_DATA_SOURCE_VARIABLE + combo.getText(), null);
                 }
             });
             control = combo;
             composite.layout(true, true);
         }
 
-        private void showEmbeddedFile(String path) {
+        private void showEmbeddedFile(String path, boolean showFileAsNewFirstTime) {
             if (control != null) {
                 if (TemplateFileComposite.class != control.getClass()) {
                     control.dispose();
@@ -315,10 +338,21 @@ public class InputOutputComposite extends Composite {
                 throw new InternalApplicationException("Unexpected classtype " + delegable);
             }
 
-            // http://sourceforge.net/p/runawfe/bugs/628/
-            updateEmbeddedFileName(fileName);
+            if (dialogEnhancementMode != null && dialogEnhancementMode.checkDocxEnhancementMode()) {
+                IFile file = EmbeddedFileUtils.getProcessFile(fileName);
+                boolean fileNotExists = null != file && !file.exists();
+                updateEmbeddedFileName(fileNotExists || showFileAsNewFirstTime ? "" : fileName);
+            } else {
+                // http://sourceforge.net/p/runawfe/bugs/628/
+                updateEmbeddedFileName(fileName);
+            }
 
-            control = new TemplateFileComposite(composite, fileName, fileExtension);
+            if (null != dialogEnhancementMode && dialogEnhancementMode.checkDocxEnhancementMode()) {
+                ((DocxDialogEnhancementMode) dialogEnhancementMode).defaultFileName = fileName;
+                ((DocxDialogEnhancementMode) dialogEnhancementMode).showFileAsNewFirstTime = showFileAsNewFirstTime;
+            }
+
+            control = new TemplateFileComposite(composite, fileName, fileExtension, dialogEnhancementMode);
             ((TemplateFileComposite) control).getEventSupport().addPropertyChangeListener(this);
             composite.layout(true, true);
 
@@ -331,9 +365,9 @@ public class InputOutputComposite extends Composite {
 
         private void updateEmbeddedFileName(String fileName) {
             if (delegable instanceof GraphElement) {
-                setFileName(EmbeddedFileUtils.getProcessFilePath(fileName));
+                setFileName(EmbeddedFileUtils.getProcessFilePath(fileName), null);
             } else if (delegable instanceof BotTask) {
-                setFileName(EmbeddedFileUtils.getBotTaskFilePath(fileName));
+                setFileName(EmbeddedFileUtils.getBotTaskFilePath(fileName), true);
             } else {
                 throw new InternalApplicationException("Unexpected classtype " + delegable);
             }

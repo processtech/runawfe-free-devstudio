@@ -2,13 +2,7 @@ package ru.runa.gpd.ui.custom;
 
 import java.io.File;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import org.apache.poi.xwpf.usermodel.IBodyElement;
-import org.apache.poi.xwpf.usermodel.XWPFDocument;
-import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -20,16 +14,30 @@ import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.ide.IDE;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PropertyNames;
+import ru.runa.gpd.ui.enhancement.DialogEnhancementMode;
+import ru.runa.gpd.ui.enhancement.DocxDialogEnhancementMode;
 import ru.runa.gpd.util.EmbeddedFileUtils;
 import ru.runa.gpd.util.EventSupport;
 import ru.runa.gpd.util.IOUtils;
 
 public abstract class ProcessFileComposite extends Composite {
     private final EventSupport eventSupport = new EventSupport(this);
-    protected final IFile file;
+    protected IFile file;
+    private final String defaultFileName;
+    private boolean showFileAsNewFirstTime;
+    private boolean firstRebuild = true;
+    private final DialogEnhancementMode dialogEnhancementMode;
 
-    public ProcessFileComposite(Composite parent, IFile file) {
+    public ProcessFileComposite(Composite parent, IFile file, DialogEnhancementMode dialogEnhancementMode) {
         super(parent, SWT.NONE);
+
+        if (null != (this.dialogEnhancementMode = dialogEnhancementMode) && dialogEnhancementMode.checkDocxEnhancementMode()) {
+            this.defaultFileName = ((DocxDialogEnhancementMode) dialogEnhancementMode).defaultFileName;
+            this.showFileAsNewFirstTime = ((DocxDialogEnhancementMode) dialogEnhancementMode).showFileAsNewFirstTime;
+        } else {
+            this.defaultFileName = "";
+            this.showFileAsNewFirstTime = false;
+        }
         this.file = file;
         setLayout(new GridLayout(5, true));
         rebuild();
@@ -40,15 +48,29 @@ public abstract class ProcessFileComposite extends Composite {
             control.dispose();
         }
 
-        /// !!!
-        if (null == file || !file.exists()) {
+        boolean forceFileExists = false;
+
+        if (firstRebuild) {
+            firstRebuild = false;
+            forceFileExists = !showFileAsNewFirstTime && null != dialogEnhancementMode && dialogEnhancementMode.checkDocxEnhancementMode()
+                    && null != defaultFileName && !defaultFileName.isEmpty();
+
+            boolean fileNotExists = null != file && !file.exists();
+            if (fileNotExists) {
+                forceFileExists = false;
+            }
+        }
+
+        showFileAsNewFirstTime = false;
+
+        if (!forceFileExists && (null == file || !file.exists())) {
             if (hasTemplate()) {
                 SWTUtils.createLink(this, Localization.getString("button.create"), new LoggingHyperlinkAdapter() {
 
                     @Override
                     protected void onLinkActivated(HyperlinkEvent e) throws Exception {
-                        IOUtils.copyFile(getTemplateInputStream(), file);
-                        eventSupport.firePropertyChange(PropertyNames.PROPERTY_VALUE, null, file.getName());
+                        IOUtils.copyFile(getTemplateInputStream(), getFile());
+                        eventSupport.firePropertyChange(PropertyNames.PROPERTY_VALUE, null, getFile().getName());
                         rebuild();
                     }
                 });
@@ -65,22 +87,17 @@ public abstract class ProcessFileComposite extends Composite {
                     if (path == null) {
                         return;
                     }
-                    IOUtils.copyFile(path, file);
-                    eventSupport.firePropertyChange(PropertyNames.PROPERTY_VALUE, null, file.getName());
+                    IOUtils.copyFile(path, getFile());
+                    eventSupport.firePropertyChange(PropertyNames.PROPERTY_VALUE, null, getFile().getName());
                     rebuild();
                 }
             });
         } else {
-
-            if (true) {
-                checkDocxVariables();
-            }
-
             SWTUtils.createLink(this, Localization.getString("button.change"), new LoggingHyperlinkAdapter() {
 
                 @Override
                 protected void onLinkActivated(HyperlinkEvent e) throws Exception {
-                    IDE.openEditor(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(), file, true);
+                    IDE.openEditor(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(), getFile(), true);
                 }
             });
             SWTUtils.createLink(this, Localization.getString("button.export"), new LoggingHyperlinkAdapter() {
@@ -92,12 +109,12 @@ public abstract class ProcessFileComposite extends Composite {
                     if (getFileExtension() != null) {
                         dialog.setFilterExtensions(new String[] { "*." + getFileExtension() });
                     }
-                    dialog.setFileName(file.getName());
+                    dialog.setFileName(getFile().getName());
                     String path = dialog.open();
                     if (path == null) {
                         return;
                     }
-                    IOUtils.copyFile(file.getContents(), new File(path));
+                    IOUtils.copyFile(getFile().getContents(), new File(path));
                 }
             });
             if (isDeleteFileOperationSupported()) {
@@ -105,9 +122,9 @@ public abstract class ProcessFileComposite extends Composite {
 
                     @Override
                     protected void onLinkActivated(HyperlinkEvent e) throws Exception {
-                        EmbeddedFileUtils.deleteProcessFile(file);
+                        EmbeddedFileUtils.deleteProcessFile(getFile());
                         rebuild();
-                        eventSupport.firePropertyChange(PropertyNames.PROPERTY_VALUE, file.getName(), null);
+                        eventSupport.firePropertyChange(PropertyNames.PROPERTY_VALUE, getFile().getName(), null);
                     }
                 });
             }
@@ -116,47 +133,11 @@ public abstract class ProcessFileComposite extends Composite {
         layout(true, true);
     }
 
-    private void checkDocxVariables() {
-
-        if (null == file || !file.exists()) {
-            return;
+    private IFile getFile() {
+        if (null == file && dialogEnhancementMode != null && dialogEnhancementMode.checkDocxEnhancementMode()) {
+            file = EmbeddedFileUtils.getProcessFile(defaultFileName);
         }
-
-        InputStream inputStream;
-        try {
-            inputStream = file.getContents();
-        } catch (CoreException e) {
-            // TODO Auto-generated catch block
-            return;
-        }
-
-        if (null == inputStream) {
-            return;
-        }
-
-        /// !!!
-        try (XWPFDocument document = new XWPFDocument(inputStream)) {
-            boolean f = false;
-
-            List<IBodyElement> bodyElements = document.getBodyElements();
-            // List<XWPFParagraph> paragraphs = Lists.newArrayList();
-            for (IBodyElement bodyElement : new ArrayList<IBodyElement>(bodyElements)) {
-                if (bodyElement instanceof XWPFParagraph) {
-                    XWPFParagraph paragraph = (XWPFParagraph) bodyElement;
-                    String paragraphText = paragraph.getText();
-                    if (paragraphText.indexOf("{") > 0) {
-                        // paragraphs.add((XWPFParagraph) bodyElement);
-                        // continue;
-                        f = true;
-                    }
-                }
-            }
-
-        } catch (Throwable e) {
-            // TODO Auto-generated catch block
-            return;
-        }
-
+        return file;
     }
 
     public EventSupport getEventSupport() {

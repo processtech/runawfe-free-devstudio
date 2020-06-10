@@ -12,6 +12,7 @@ import org.osgi.framework.Bundle;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.Variable;
+import ru.runa.gpd.ui.enhancement.DialogEnhancementMode;
 
 public class DelegableProvider {
     protected Bundle bundle;
@@ -36,7 +37,7 @@ public class DelegableProvider {
         return null;
     }
 
-    public void showEmbeddedConfigurationDialog(final Composite mainComposite, Delegable delegable, DialogShowMode dialogShowMode) {
+    public void showEmbeddedConfigurationDialog(final Composite mainComposite, Delegable delegable, DialogEnhancementMode dialogEnhancementMode) {
         throw new RuntimeException("Embedded dialog is not implemented yet!");
     }
 

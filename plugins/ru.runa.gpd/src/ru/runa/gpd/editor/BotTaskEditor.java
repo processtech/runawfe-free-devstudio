@@ -1,10 +1,19 @@
 package ru.runa.gpd.editor;
 
+import com.google.common.collect.Lists;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import org.apache.poi.xwpf.usermodel.IBodyElement;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFFooter;
+import org.apache.poi.xwpf.usermodel.XWPFHeader;
+import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -50,7 +59,6 @@ import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.extension.DelegableProvider;
-import ru.runa.gpd.extension.DialogShowMode;
 import ru.runa.gpd.extension.HandlerArtifact;
 import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.extension.VariableFormatRegistry;
@@ -66,10 +74,13 @@ import ru.runa.gpd.ui.custom.LoggingSelectionChangedAdapter;
 import ru.runa.gpd.ui.custom.SWTUtils;
 import ru.runa.gpd.ui.custom.XmlHighlightTextStyling;
 import ru.runa.gpd.ui.dialog.ChooseHandlerClassDialog;
+import ru.runa.gpd.ui.enhancement.DialogEnhancement;
+import ru.runa.gpd.ui.enhancement.DocxDialogEnhancementMode;
 import ru.runa.gpd.ui.wizard.BotTaskParamDefWizard;
 import ru.runa.gpd.ui.wizard.CompactWizardDialog;
 import ru.runa.gpd.util.BotTaskUtils;
 import ru.runa.gpd.util.EditorUtils;
+import ru.runa.gpd.util.EmbeddedFileUtils;
 import ru.runa.gpd.util.WorkspaceOperations;
 import ru.runa.gpd.util.XmlUtil;
 
@@ -86,6 +97,13 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
     private StyledText configurationText;
     private TableViewer inputParamTableViewer;
     private TableViewer outputParamTableViewer;
+    private Boolean enableReadDocxParametersButtons;
+    private Boolean enableReadDocxButton;
+    private Button addParameterButton;
+    private Button editParameterButton;
+    private Button deleteParameterButton;
+    private Button readDocxParametersButton;
+    private String embeddedFileName;
 
     @Override
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
@@ -178,7 +196,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
             Composite innerComposite = new Composite(scrolledComposite, SWT.NONE);
             innerComposite.setLayout(new GridLayout());
             createParamteresFields(composite, innerComposite);
-            if (!isBotDocxHandler()) {
+            if (!isBotDocxHandlerEnhancement()) {
                 createConfigurationFields(innerComposite);
             }
             createConfigurationArea(innerComposite);
@@ -231,9 +249,9 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
 
     private void createParamteresFields(final Composite mainComposite, Composite parent) {
 
-        boolean isBotDocxHandler = isBotDocxHandler();
+        boolean isBotDocxHandlerEnhancement = isBotDocxHandlerEnhancement();
 
-        if (!isBotDocxHandler) {
+        if (!isBotDocxHandlerEnhancement) {
             Composite dynaComposite = new Composite(parent, SWT.NONE);
             dynaComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             dynaComposite.setLayout(new GridLayout(3, false));
@@ -243,29 +261,186 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
 
         if (botTask.getType() == BotTaskType.EXTENDED) {
 
-            if (isBotDocxHandler) {
+            if (isBotDocxHandlerEnhancement) {
                 DelegableProvider provider = HandlerRegistry.getProvider(botTask.getDelegationClassName());
-                provider.showEmbeddedConfigurationDialog(parent, botTask,
-                        new DialogShowMode(DialogShowMode.DOCX_EMBEDDED_VIEWMODE | DialogShowMode.DOCX_SHOW_INPUT));
+                provider.showEmbeddedConfigurationDialog(parent, botTask, new DocxDialogEnhancementMode(DocxDialogEnhancementMode.DOCX_SHOW_INPUT) {
+                    @Override
+                    public void reloadXmlFromModel(String newConfiguration, String embeddedFileName, Boolean enableReadDocxButton,
+                            Boolean enableDocxMode) {
+                        reloadDialogXmlFromModel(newConfiguration, embeddedFileName, enableReadDocxButton, enableDocxMode);
+                    }
+                });
             }
 
             createConfTableViewer(parent, ParamDefGroup.NAME_INPUT);
 
-            if (isBotDocxHandler) {
+            if (isBotDocxHandlerEnhancement) {
                 DelegableProvider provider = HandlerRegistry.getProvider(botTask.getDelegationClassName());
-                provider.showEmbeddedConfigurationDialog(parent, botTask,
-                        new DialogShowMode(DialogShowMode.DOCX_EMBEDDED_VIEWMODE | DialogShowMode.DOCX_SHOW_OUTPUT));
+                provider.showEmbeddedConfigurationDialog(parent, botTask, new DocxDialogEnhancementMode(DocxDialogEnhancementMode.DOCX_SHOW_OUTPUT) {
+                    @Override
+                    public void reloadXmlFromModel(String newConfiguration, String embeddedFileName, Boolean enableReadDocxButton,
+                            Boolean enableDocxMode) {
+                        reloadDialogXmlFromModel(newConfiguration, embeddedFileName, enableReadDocxButton, enableDocxMode);
+                    }
+                });
             } else {
                 createConfTableViewer(parent, ParamDefGroup.NAME_OUTPUT);
             }
         }
 
-        if (isBotDocxHandler) {
+        if (isBotDocxHandlerEnhancement) {
             Composite dynaComposite = new Composite(parent, SWT.NONE);
             dynaComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             dynaComposite.setLayout(new GridLayout(3, false));
 
             createButtonParametersDisabler(mainComposite, dynaComposite);
+        }
+    }
+
+    private void reloadDialogXmlFromModel(String newConfiguration, String embeddedFileName, Boolean enableReadDocxButton, Boolean enableDocxMode) {
+        if (configurationText != null && newConfiguration != null) {
+            configurationText.setText(newConfiguration);
+            botTask.setDelegationConfiguration(newConfiguration);
+            setDirty(true);
+        }
+        if (embeddedFileName != null) {
+            this.embeddedFileName = embeddedFileName;
+        }
+
+        if (enableReadDocxButton != null) {
+            this.enableReadDocxButton = enableReadDocxButton;
+            if (null != readDocxParametersButton) {
+                readDocxParametersButton.setEnabled(enableReadDocxButton);
+            }
+        }
+
+        if (enableDocxMode != null) {
+            this.enableReadDocxParametersButtons = enableDocxMode;
+            if (null != addParameterButton) {
+                addParameterButton.setEnabled(!enableDocxMode);
+            }
+            if (null != deleteParameterButton) {
+                deleteParameterButton.setEnabled(!enableDocxMode);
+            }
+            if (null != editParameterButton) {
+                editParameterButton.setEnabled(true);
+            }
+        }
+    }
+
+    private Map<String, Integer> getVariableNamesFromDocxTemplate(InputStream templateInputStream) {
+        // List<String> variablesList = new ArrayList<>();
+        Map<String, Integer> variablesMap = new HashMap<String, Integer>();
+        try (XWPFDocument document = new XWPFDocument(templateInputStream)) {
+            for (XWPFHeader header : document.getHeaderList()) {
+                getVariableNamesFromDocxBodyElements(header.getBodyElements(), variablesMap);
+            }
+            getVariableNamesFromDocxBodyElements(document.getBodyElements(), variablesMap);
+            for (XWPFFooter footer : document.getFooterList()) {
+                getVariableNamesFromDocxBodyElements(footer.getBodyElements(), variablesMap);
+            }
+        } catch (Throwable th) {
+
+        }
+
+        return variablesMap;
+    }
+
+    private void getVariableNamesFromDocxBodyElements(List<IBodyElement> bodyElements, Map<String, Integer> variablesMap) {
+        List<XWPFParagraph> paragraphs = Lists.newArrayList();
+        for (IBodyElement bodyElement : new ArrayList<IBodyElement>(bodyElements)) {
+            if (bodyElement instanceof XWPFParagraph) {
+                paragraphs.add((XWPFParagraph) bodyElement);
+                continue;
+            }
+            /*
+             * if (!paragraphs.isEmpty()) { getVariableNamesFromDocxParagraphs(paragraphs, variablesList); paragraphs.clear(); }
+             */
+            // if (bodyElement instanceof XWPFTable) {
+            // XWPFTable table = (XWPFTable) bodyElement;
+            // List<XWPFTableRow> rows = table.getRows();
+            // for (XWPFTableRow row : Lists.newArrayList(rows)) {
+            // List<XWPFTableCell> cells = row.getTableCells();
+            // // try to expand cells by column
+            // TableExpansionOperation tableExpansionOperation = new TableExpansionOperation(row);
+            // for (int columnIndex = 0; columnIndex < cells.size(); columnIndex++) {
+            // final XWPFTableCell cell = cells.get(columnIndex);
+            // ColumnExpansionOperation operation = DocxUtils.parseIterationOperation(config, variableProvider, cell.getText(),
+            // new ColumnExpansionOperation());
+            // if (operation != null && operation.isValid()) {
+            // tableExpansionOperation.addOperation(columnIndex, operation);
+            // } else {
+            // operation = new ColumnSetValueOperation();
+            // operation.setContainerValue(cell.getText());
+            // tableExpansionOperation.addOperation(columnIndex, operation);
+            // }
+            // String text0 = tableExpansionOperation.getStringValue(config, variableProvider, columnIndex, 0);
+            // if (!java.util.Objects.equals(text0, cell.getText())) {
+            // DocxUtils.setCellText(cell, text0);
+            // }
+            // }
+            // if (tableExpansionOperation.getRows() == 0) {
+            // for (XWPFTableCell cell : cells) {
+            // DocxUtils.replaceInParagraphs(config, variableProvider, cell.getParagraphs());
+            // }
+            // } else {
+            // int templateRowIndex = table.getRows().indexOf(tableExpansionOperation.getTemplateRow());
+            // for (int rowIndex = 1; rowIndex < tableExpansionOperation.getRows(); rowIndex++) {
+            // XWPFTableRow dynamicRow = table.insertNewTableRow(templateRowIndex + rowIndex);
+            // for (int columnIndex = 0; columnIndex < tableExpansionOperation.getTemplateRow().getTableCells().size(); columnIndex++) {
+            // dynamicRow.createCell();
+            // }
+            // for (int columnIndex = 0; columnIndex < dynamicRow.getTableCells().size(); columnIndex++) {
+            // String text = tableExpansionOperation.getStringValue(config, variableProvider, columnIndex, rowIndex);
+            // DocxUtils.setCellText(dynamicRow.getCell(columnIndex), text, tableExpansionOperation.getTemplateCell(columnIndex));
+            // if (OfficeProperties.getDocxPlaceholderVMerge().equals(text)) {
+            // CTTcPr tcPr = dynamicRow.getCell(columnIndex).getCTTc().getTcPr();
+            // tcPr.addNewVMerge().setVal(STMerge.CONTINUE);
+            //
+            // int restartVMergeRowIndex = table.getRows().indexOf(dynamicRow) - 1;
+            // if (restartVMergeRowIndex >= 0) {
+            // XWPFTableRow restartRow = table.getRow(restartVMergeRowIndex);
+            // CTTcPr previousTcPr = restartRow.getCell(columnIndex).getCTTc().getTcPr();
+            // if (previousTcPr.getVMerge() == null) {
+            // previousTcPr.addNewVMerge().setVal(STMerge.RESTART);
+            // }
+            // }
+            // }
+            // }
+            // }
+            // }
+            // }
+            // }
+        }
+        if (!paragraphs.isEmpty()) {
+            getVariableNamesFromDocxParagraphs(paragraphs, variablesMap);
+            paragraphs.clear();
+        }
+    }
+
+    public static final String PLACEHOLDER_START = "${";
+    public static final String PLACEHOLDER_END = "}";
+    // public static final String CLOSING_PLACEHOLDER_START = PLACEHOLDER_START + "/";
+
+    private void getVariableNamesFromDocxParagraphs(List<XWPFParagraph> paragraphs, Map<String, Integer> variablesMap) {
+        for (XWPFParagraph paragraph : Lists.newArrayList(paragraphs)) {
+            String paragraphText = paragraph.getText();
+            while (true) {
+                if (!paragraphText.contains(PLACEHOLDER_START)) {
+                    break;
+                }
+                paragraphText = paragraphText.substring(paragraphText.indexOf(PLACEHOLDER_START) + PLACEHOLDER_START.length());
+                if (!paragraphText.contains(PLACEHOLDER_END)) {
+                    break;
+                }
+                String var = paragraphText.substring(0, paragraphText.indexOf(PLACEHOLDER_END));
+
+                if (!variablesMap.containsKey(var)) {
+                    variablesMap.put(var, 1);
+                }
+
+                paragraphText = paragraphText.substring(paragraphText.indexOf(PLACEHOLDER_END) + PLACEHOLDER_END.length());
+            }
         }
     }
 
@@ -329,8 +504,8 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
         });
     }
 
-    private boolean isBotDocxHandler() {
-        return null != botTask && 0 == botTask.getDelegationClassName().compareTo(DocxHandlerID);
+    private boolean isBotDocxHandlerEnhancement() {
+        return null != botTask && DialogEnhancement.isOn() && 0 == botTask.getDelegationClassName().compareTo(DocxHandlerID);
     }
 
     private void createConfigurationFields(Composite parent) {
@@ -403,7 +578,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
         int[] columnWidths = new int[] { 400, 200, 100, 100 };
         int[] columnAlignments = new int[] { SWT.LEFT, SWT.LEFT, SWT.LEFT, SWT.LEFT };
 
-        int columnNamesLength = isBotDocxHandler() ? columnNames.length - 1 : columnNames.length;
+        int columnNamesLength = isBotDocxHandlerEnhancement() ? columnNames.length - 1 : columnNames.length;
 
         for (int i = 0; i < columnNamesLength; i++) {
             TableColumn tableColumn = new TableColumn(table, columnAlignments[i]);
@@ -421,35 +596,36 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
     private void createConfTableButtons(Composite dynaConfComposite, TableViewer confTableViewer, final String parameterType) {
         Composite buttonArea = new Composite(dynaConfComposite, SWT.NONE);
         buttonArea.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        buttonArea.setLayout(new GridLayout(3, false));
 
-        boolean isBotDocxHandler = isBotDocxHandler();
+        boolean isBotDocxHandler = isBotDocxHandlerEnhancement();
 
-        if (!isBotDocxHandler) {
-            Button addParameterButton = new Button(buttonArea, SWT.NONE);
-            addParameterButton.setText(Localization.getString("button.add"));
-            addParameterButton.setEnabled(botTask.getType() != BotTaskType.PARAMETERIZED);
-            addParameterButton.addSelectionListener(new LoggingSelectionAdapter() {
-                @Override
-                protected void onSelection(SelectionEvent e) throws Exception {
-                    for (ParamDefGroup group : botTask.getParamDefConfig().getGroups()) {
-                        if (parameterType.equals(group.getName())) {
-                            BotTaskParamDefWizard wizard = new BotTaskParamDefWizard(group, null);
-                            CompactWizardDialog dialog = new CompactWizardDialog(wizard);
-                            if (dialog.open() == Window.OK) {
-                                setTableInput(parameterType);
-                                setDirty(true);
-                            }
+        buttonArea.setLayout(new GridLayout(isBotDocxHandler ? 4 : 3, false));
+
+        addParameterButton = new Button(buttonArea, SWT.NONE);
+        addParameterButton.setText(Localization.getString("button.add"));
+        addParameterButton.setEnabled(!isBotDocxHandler && botTask.getType() != BotTaskType.PARAMETERIZED);
+        addParameterButton.addSelectionListener(new LoggingSelectionAdapter() {
+            @Override
+            protected void onSelection(SelectionEvent e) throws Exception {
+                for (ParamDefGroup group : botTask.getParamDefConfig().getGroups()) {
+                    if (parameterType.equals(group.getName())) {
+                        BotTaskParamDefWizard wizard = new BotTaskParamDefWizard(group, null);
+                        CompactWizardDialog dialog = new CompactWizardDialog(wizard);
+                        if (dialog.open() == Window.OK) {
+                            setTableInput(parameterType);
+                            setDirty(true);
                         }
                     }
                 }
-            });
-        }
-        final Button editParameterButton = new Button(buttonArea, SWT.NONE);
+            }
+        });
+
+        editParameterButton = new Button(buttonArea, SWT.NONE);
         editParameterButton.setText(Localization.getString("button.edit"));
         editParameterButton.setEnabled(botTask.getType() != BotTaskType.PARAMETERIZED
                 && ((IStructuredSelection) getParamTableViewer(parameterType).getSelection()).getFirstElement() != null);
         editParameterButton.addSelectionListener(new LoggingSelectionAdapter() {
+
             @Override
             protected void onSelection(SelectionEvent e) throws Exception {
                 for (ParamDefGroup group : botTask.getParamDefConfig().getGroups()) {
@@ -474,46 +650,118 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
                 }
             }
         });
-        Button deleteParameterButton = null;
-        if (!isBotDocxHandler) {
-            deleteParameterButton = new Button(buttonArea, SWT.NONE);
-            deleteParameterButton.setText(Localization.getString("button.delete"));
-            deleteParameterButton.setEnabled(botTask.getType() != BotTaskType.PARAMETERIZED
-                    && ((IStructuredSelection) getParamTableViewer(parameterType).getSelection()).getFirstElement() != null);
-            deleteParameterButton.addSelectionListener(new LoggingSelectionAdapter() {
-                @Override
-                protected void onSelection(SelectionEvent e) throws Exception {
-                    for (ParamDefGroup group : botTask.getParamDefConfig().getGroups()) {
-                        if (parameterType.equals(group.getName())) {
-                            IStructuredSelection selection = (IStructuredSelection) getParamTableViewer(parameterType).getSelection();
-                            String[] row = (String[]) selection.getFirstElement();
-                            if (row == null) {
-                                return;
-                            }
-                            for (ParamDef paramDef : group.getParameters()) {
-                                if (paramDef.getName().equals(row[0])) {
-                                    group.getParameters().remove(paramDef);
-                                    setTableInput(parameterType);
-                                    setDirty(true);
-                                    break;
-                                }
+
+        deleteParameterButton = new Button(buttonArea, SWT.NONE);
+        deleteParameterButton.setText(Localization.getString("button.delete"));
+        deleteParameterButton.setEnabled(!isBotDocxHandler && botTask.getType() != BotTaskType.PARAMETERIZED
+                && ((IStructuredSelection) getParamTableViewer(parameterType).getSelection()).getFirstElement() != null);
+        deleteParameterButton.addSelectionListener(new LoggingSelectionAdapter() {
+            @Override
+            protected void onSelection(SelectionEvent e) throws Exception {
+                for (ParamDefGroup group : botTask.getParamDefConfig().getGroups()) {
+                    if (parameterType.equals(group.getName())) {
+                        IStructuredSelection selection = (IStructuredSelection) getParamTableViewer(parameterType).getSelection();
+                        String[] row = (String[]) selection.getFirstElement();
+                        if (row == null) {
+                            return;
+                        }
+                        for (ParamDef paramDef : group.getParameters()) {
+                            if (paramDef.getName().equals(row[0])) {
+                                group.getParameters().remove(paramDef);
+                                setTableInput(parameterType);
+                                setDirty(true);
+                                break;
                             }
                         }
                     }
                 }
+            }
+        });
+
+        if (isBotDocxHandler) {
+            readDocxParametersButton = new Button(buttonArea, SWT.NONE);
+            readDocxParametersButton.setText(Localization.getString("button.read.docx"));
+            readDocxParametersButton.setEnabled(enableReadDocxParametersButtons != null ? enableReadDocxParametersButtons : true);
+            readDocxParametersButton.addSelectionListener(new LoggingSelectionAdapter() {
+                @Override
+                protected void onSelection(SelectionEvent e) throws Exception {
+                    if (embeddedFileName == null || embeddedFileName.isEmpty() || !EmbeddedFileUtils.isBotTaskFile(embeddedFileName)) {
+                        return;
+                    }
+                    IFile file = EmbeddedFileUtils.getProcessFile(embeddedFileName);
+                    if (null == file || !file.exists()) {
+                        return;
+                    }
+
+                    try (InputStream inputStream = file.getContents()) {
+                        if (null == inputStream) {
+                            return;
+                        }
+                        Map<String, Integer> variablesMap = getVariableNamesFromDocxTemplate(inputStream);
+
+                        for (ParamDefGroup group : botTask.getParamDefConfig().getGroups()) {
+                            if (ParamDefGroup.NAME_INPUT.equals(group.getName())) {
+                                List<ParamDef> params = group.getParameters();
+
+                                for (Map.Entry<String, Integer> entry : variablesMap.entrySet()) {
+                                    ParamDef pd = new ParamDef(entry.getKey(), entry.getKey());
+                                    List<String> formats = pd.getFormatFilters();
+                                    formats.add("java.lang.Object");
+                                    params.add(pd);
+                                }
+                                setDirty(true);
+                                break;
+                            }
+                        }
+
+                        setTableInput(ParamDefGroup.NAME_INPUT);
+
+                        // // TableViewer confTableViewer = getParamTableViewer(ParamDefGroup.NAME_INPUT);
+                        // List<ParamDef> paramDefs = new ArrayList<ParamDef>();
+                        // for (ParamDefGroup group : botTask.getParamDefConfig().getGroups()) {
+                        // if (ParamDefGroup.NAME_INPUT.equals(group.getName())) {
+                        // paramDefs.addAll(group.getParameters());
+                        //
+                        // for (ParamDef pd : paramDefs) {
+                        // List<String> hh = pd.getFormatFilters();
+                        // int t = 0;
+                        // t++;
+                        // }
+                        // }
+                        // }
+
+                    }
+
+                    // for (ParamDefGroup group : botTask.getParamDefConfig().getGroups()) {
+                    // if (parameterType.equals(group.getName())) {
+                    // IStructuredSelection selection = (IStructuredSelection) getParamTableViewer(parameterType).getSelection();
+                    // String[] row = (String[]) selection.getFirstElement();
+                    // if (row == null) {
+                    // return;
+                    // }
+                    // for (ParamDef paramDef : group.getParameters()) {
+                    // if (paramDef.getName().equals(row[0])) {
+                    // group.getParameters().remove(paramDef);
+                    // setTableInput(parameterType);
+                    // setDirty(true);
+                    // break;
+                    // }
+                    // }
+                    // }
+                    // }
+                }
             });
         }
 
-        final Button deleteParameterBtn = deleteParameterButton;
         confTableViewer.addSelectionChangedListener(new LoggingSelectionChangedAdapter() {
             @Override
             protected void onSelectionChanged(SelectionChangedEvent event) throws Exception {
                 IStructuredSelection selection = (IStructuredSelection) event.getSelection();
+                addParameterButton.setEnabled(null != enableReadDocxParametersButtons ? !enableReadDocxParametersButtons : !isBotDocxHandler);
                 editParameterButton.setEnabled(botTask.getType() != BotTaskType.PARAMETERIZED && selection.getFirstElement() != null);
-
-                if (null != deleteParameterBtn) {
-                    deleteParameterBtn.setEnabled(botTask.getType() != BotTaskType.PARAMETERIZED && selection.getFirstElement() != null);
-                }
+                deleteParameterButton.setEnabled((null != enableReadDocxParametersButtons ? !enableReadDocxParametersButtons : !isBotDocxHandler)
+                        && botTask.getType() != BotTaskType.PARAMETERIZED && selection.getFirstElement() != null);
+                readDocxParametersButton.setEnabled(enableReadDocxButton != null ? enableReadDocxButton : isBotDocxHandler);
             }
         });
     }
