@@ -91,7 +91,7 @@ public class ProjectionDialog extends XmlBasedConstructorProvider<ProjectionData
             }
 
             SWTUtils.createLabel(this, Messages.getString("ProjectionDialog.label.attributes"));
-            SWTUtils.createLabel(this, "");
+            SWTUtils.createLabel(this, Messages.getString("ProjectionDialog.label.visible"));
             SWTUtils.createLabel(this, Messages.getString("ProjectionDialog.label.sort"));
 
             for (Projection projection : model.getProjections()) {
@@ -105,19 +105,19 @@ public class ProjectionDialog extends XmlBasedConstructorProvider<ProjectionData
         private void buildProjectionView(Projection projection) {
             SWTUtils.createLabel(this, projection.getName());
 
-            final Button button = SWTUtils.createButton(this, projection.getVisibility().getMessage(), null);
-            button.addSelectionListener(LoggingSelectionAdapter.widgetSelectedAdapter(e -> {
-                projection.setVisibility(projection.getVisibility() == Visibility.VISIBLE ? Visibility.INVISIBLE : Visibility.VISIBLE);
-                button.setText(projection.getVisibility().getMessage());
-                updateComponents();
-            }));
+            final Button button = new Button(this, SWT.CHECK);
+            button.setSelection(projection.getVisibility() == Visibility.VISIBLE);
+            button.addSelectionListener(LoggingSelectionAdapter.widgetSelectedAdapter(
+                    e -> projection.setVisibility(projection.getVisibility() == Visibility.VISIBLE ? Visibility.INVISIBLE : Visibility.VISIBLE)));
 
             final Combo combo = new Combo(this, SWT.READ_ONLY);
             Sort.messages().forEach(combo::add);
             combo.setText(projection.getSort().getMessage());
 
-            combo.addSelectionListener(
-                    LoggingSelectionAdapter.widgetSelectedAdapter(e -> projection.setSort(Sort.by(combo.getText()).orElse(Sort.NONE))));
+            combo.addSelectionListener(LoggingSelectionAdapter.widgetSelectedAdapter(e -> {
+                projection.setSort(Sort.by(combo.getText()).orElse(Sort.NONE));
+                updateComponents();
+            }));
         }
 
         private void updateComponents() {
