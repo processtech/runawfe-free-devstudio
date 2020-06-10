@@ -27,7 +27,9 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.window.Window;
@@ -232,21 +234,44 @@ public class WorkspaceOperations {
         CompactWizardDialog dialog = new CompactWizardDialog(wizard);
         dialog.open();
     }
+    
+
+    private static void saveAll() {/** copy from ru.runa.gpd.ui.action.SaveAll.run(IAction) */
+        IEditorPart[] dirtyEditors = getDirtyEditors();
+        for (IEditorPart editorPart : dirtyEditors) {
+            if (!(editorPart instanceof ProcessEditorBase)) {
+                editorPart.doSave(null);
+            }
+        }
+        for (IEditorPart editorPart : dirtyEditors) {
+            if (editorPart instanceof ProcessEditorBase) {
+                editorPart.doSave(null);
+            }
+        }
+    }
+    
+    private static IEditorPart[] getDirtyEditors() {
+        IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+        return page.getDirtyEditors();
+    }    
+    
+    private static boolean hasDirtyEditors() {        
+        return getDirtyEditors().length > 0;
+    }    
 
     public static void renameProcessDefinition(IStructuredSelection selection) {
         IFolder oldDefinitionFolder = (IFolder) selection.getFirstElement();
         IFile oldDefinitionFile = IOUtils.getProcessDefinitionFile(oldDefinitionFolder);
         ProcessDefinition definition = ProcessCache.getProcessDefinition(oldDefinitionFile);
-        boolean saved = !definition.isDirty();
-        RenameProcessDefinitionDialog dialog = new RenameProcessDefinitionDialog(oldDefinitionFolder, saved);
+        boolean allSaved = !hasDirtyEditors(); 
+        RenameProcessDefinitionDialog dialog = new RenameProcessDefinitionDialog(oldDefinitionFolder, allSaved);
         String oldName = definition.getName();
-        if (!saved) {
+        if (!allSaved) {
             if (dialog.open() != IDialogConstants.OK_ID) {
                 return;
             }
             try {
-                saveProcessDefinition(definition);
-                //definition.setDirty(false);
+                saveAll() ;
                 renameProcessDefinition(selection);
                 return;
             } catch (Exception e) {
@@ -281,13 +306,6 @@ public class WorkspaceOperations {
                     if (file.getProject() == project && editor.getTitle().equals(oldName)) {
                         renamedProcessEditorWasOpen = true;
                     }
-                }
-            }
-            /** added missed operation */
-            for (SubprocessDefinition subdefinition : definition.getEmbeddedSubprocesses().values()) {
-                if (subdefinition.isDirty()) {
-                    saveProcessDefinition(subdefinition);
-
                 }
             }
             if (!editorsToClose.isEmpty()) {
@@ -340,7 +358,7 @@ public class WorkspaceOperations {
         IFolder definitionFolder = (IFolder) subdefinitionFile.getParent();
         SubprocessDefinition subprocessDefinition = (SubprocessDefinition) ProcessCache.getProcessDefinition(subdefinitionFile);
         ProcessDefinition parentProcessDefinition = subprocessDefinition.getParent();
-        boolean saved = !subprocessDefinition.isDirty();
+        boolean saved = !hasDirtyEditors(); 
         String oldName = subprocessDefinition.getName();
         RenameProcessDefinitionDialog dialog = new RenameProcessDefinitionDialog(parentProcessDefinition, saved);
         dialog.setName(oldName);
@@ -349,7 +367,7 @@ public class WorkspaceOperations {
                 return;
             }
             try {
-                saveProcessDefinition(subprocessDefinition);
+                saveAll();
                 renameSubProcessDefinition(selection);
                 return;
             } catch (Exception e) {
@@ -370,8 +388,6 @@ public class WorkspaceOperations {
             boolean renamedProcessEditorWasOpen = editor != null;
             if (renamedProcessEditorWasOpen) {
                 page.closeEditor(editor, false);
-                // IFile parentDefinitionFile = parentProcessDefinition.getFile();
-                // filesToReOpen.add(parentDefinitionFile);
                 filesToReOpen.add(subdefinitionFile);
             }
             for (Subprocess subProcess : parentProcessDefinition.getChildren(Subprocess.class)) {
@@ -449,7 +465,7 @@ public class WorkspaceOperations {
             IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
             IEditorReference existedEditor = null;
             IEditorReference[] editors = page.getEditorReferences();
-            for (IEditorReference editor : editors) {
+            for (IEditorReference editor : editors) {         
                 IFile editorFile = ((IFileEditorInput) editor.getEditorInput()).getFile();
                 if (definitionFile.equals(editorFile)) {
                     existedEditor = editor;
