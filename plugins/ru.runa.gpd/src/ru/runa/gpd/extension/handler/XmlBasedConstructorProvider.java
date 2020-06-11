@@ -48,9 +48,9 @@ public abstract class XmlBasedConstructorProvider<T extends Observable> extends 
     }
 
     @Override
-    public void showEmbeddedConfigurationDialog(final Composite mainComposite, Delegable delegable, DialogEnhancementMode dialogEnhancementMode) {
+    public Object showEmbeddedConfigurationDialog(final Composite mainComposite, Delegable delegable, DialogEnhancementMode dialogEnhancementMode) {
         XmlBasedConstructorDialog dialog = new XmlBasedConstructorDialog(delegable);
-        dialog.createEmbeddedWindow(mainComposite, dialogEnhancementMode);
+        return dialog.createEmbeddedWindow(mainComposite, dialogEnhancementMode);
     }
 
     @Override
@@ -144,17 +144,21 @@ public abstract class XmlBasedConstructorProvider<T extends Observable> extends 
             return new Point(600, 400);
         }
 
-        public void createEmbeddedWindow(Composite mainComposite, DialogEnhancementMode dialogEnhancementMode) {
+        public T createEmbeddedWindow(Composite mainComposite, DialogEnhancementMode dialogEnhancementMode) {
             this.dialogEnhancementMode = dialogEnhancementMode;
             createDialogArea(mainComposite);
-
+            return model;
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         protected Control createDialogArea(Composite parent) {
 
             try {
-                if (initialValue.trim().length() != 0) {
+                if (dialogEnhancementMode != null && dialogEnhancementMode.checkDocxEnhancementMode()
+                        && null != ((DocxDialogEnhancementMode) dialogEnhancementMode).docxModel) {
+                    model = (T) ((DocxDialogEnhancementMode) dialogEnhancementMode).docxModel;
+                } else if (initialValue.trim().length() != 0) {
                     model = fromXml(initialValue);
                 } else {
                     model = createDefault();

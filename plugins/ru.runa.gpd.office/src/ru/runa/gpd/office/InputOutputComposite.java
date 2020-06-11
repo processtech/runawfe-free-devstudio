@@ -154,7 +154,7 @@ public class InputOutputComposite extends Composite {
                 combo.select(2);
                 showEmbeddedFile(fileName, false);
             } else {
-                if (docxEnhancementModeInput && (null == fileName) || (fileName.isEmpty())) {
+                if (docxEnhancementModeInput && ((null == fileName) || (fileName.isEmpty()))) {
                     combo.select(2);
                     showEmbeddedFile(fileName, true);
                 } else {

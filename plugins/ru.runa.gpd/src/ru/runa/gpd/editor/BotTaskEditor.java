@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.swing.JOptionPane;
 import org.apache.poi.xwpf.usermodel.IBodyElement;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFFooter;
@@ -183,6 +184,12 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
         for (Control control : composite.getChildren()) {
             control.dispose();
         }
+        configurationText = null;
+        addParameterButton = null;
+        editParameterButton = null;
+        deleteParameterButton = null;
+        readDocxParametersButton = null;
+
         createTaskHandlerClassField(composite);
         if (botTask.getType() == BotTaskType.PARAMETERIZED) {
             createConfTableViewer(composite, ParamDefGroup.NAME_INPUT);
@@ -261,28 +268,33 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
 
         if (botTask.getType() == BotTaskType.EXTENDED) {
 
+            Object docxModel = null;
             if (isBotDocxHandlerEnhancement) {
                 DelegableProvider provider = HandlerRegistry.getProvider(botTask.getDelegationClassName());
-                provider.showEmbeddedConfigurationDialog(parent, botTask, new DocxDialogEnhancementMode(DocxDialogEnhancementMode.DOCX_SHOW_INPUT) {
-                    @Override
-                    public void reloadXmlFromModel(String newConfiguration, String embeddedFileName, Boolean enableReadDocxButton,
-                            Boolean enableDocxMode) {
-                        reloadDialogXmlFromModel(newConfiguration, embeddedFileName, enableReadDocxButton, enableDocxMode);
-                    }
-                });
+                docxModel = provider.showEmbeddedConfigurationDialog(parent, botTask,
+                        new DocxDialogEnhancementMode(DocxDialogEnhancementMode.DOCX_SHOW_INPUT) {
+                            @Override
+                            public void reloadXmlFromModel(String newConfiguration, String embeddedFileName, Boolean enableReadDocxButton,
+                                    Boolean enableDocxMode) {
+                                reloadDialogXmlFromModel(newConfiguration, embeddedFileName, enableReadDocxButton, enableDocxMode);
+                            }
+                        });
             }
 
             createConfTableViewer(parent, ParamDefGroup.NAME_INPUT);
 
             if (isBotDocxHandlerEnhancement) {
                 DelegableProvider provider = HandlerRegistry.getProvider(botTask.getDelegationClassName());
-                provider.showEmbeddedConfigurationDialog(parent, botTask, new DocxDialogEnhancementMode(DocxDialogEnhancementMode.DOCX_SHOW_OUTPUT) {
+                DocxDialogEnhancementMode docxDialogEnhancementMode = new DocxDialogEnhancementMode(DocxDialogEnhancementMode.DOCX_SHOW_OUTPUT) {
                     @Override
                     public void reloadXmlFromModel(String newConfiguration, String embeddedFileName, Boolean enableReadDocxButton,
                             Boolean enableDocxMode) {
                         reloadDialogXmlFromModel(newConfiguration, embeddedFileName, enableReadDocxButton, enableDocxMode);
                     }
-                });
+                };
+
+                docxDialogEnhancementMode.docxModel = docxModel;
+                provider.showEmbeddedConfigurationDialog(parent, botTask, docxDialogEnhancementMode);
             } else {
                 createConfTableViewer(parent, ParamDefGroup.NAME_OUTPUT);
             }
@@ -329,9 +341,9 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
     }
 
     private Map<String, Integer> getVariableNamesFromDocxTemplate(InputStream templateInputStream) {
-        // List<String> variablesList = new ArrayList<>();
         Map<String, Integer> variablesMap = new HashMap<String, Integer>();
         try (XWPFDocument document = new XWPFDocument(templateInputStream)) {
+            JOptionPane.showMessageDialog(null, "DOCX Stream opened.");
             for (XWPFHeader header : document.getHeaderList()) {
                 getVariableNamesFromDocxBodyElements(header.getBodyElements(), variablesMap);
             }
@@ -340,7 +352,8 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
                 getVariableNamesFromDocxBodyElements(footer.getBodyElements(), variablesMap);
             }
         } catch (Throwable th) {
-
+            JOptionPane.showMessageDialog(null, "Can't open DOCX Stream " + th.getMessage());
+            th.printStackTrace();
         }
 
         return variablesMap;
@@ -425,6 +438,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
     private void getVariableNamesFromDocxParagraphs(List<XWPFParagraph> paragraphs, Map<String, Integer> variablesMap) {
         for (XWPFParagraph paragraph : Lists.newArrayList(paragraphs)) {
             String paragraphText = paragraph.getText();
+            JOptionPane.showMessageDialog(null, paragraphText);
             while (true) {
                 if (!paragraphText.contains(PLACEHOLDER_START)) {
                     break;
@@ -437,6 +451,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
 
                 if (!variablesMap.containsKey(var)) {
                     variablesMap.put(var, 1);
+                    JOptionPane.showMessageDialog(null, "Var: " + var);
                 }
 
                 paragraphText = paragraphText.substring(paragraphText.indexOf(PLACEHOLDER_END) + PLACEHOLDER_END.length());

@@ -37,7 +37,7 @@ public class DelegableProvider {
         return null;
     }
 
-    public void showEmbeddedConfigurationDialog(final Composite mainComposite, Delegable delegable, DialogEnhancementMode dialogEnhancementMode) {
+    public Object showEmbeddedConfigurationDialog(final Composite mainComposite, Delegable delegable, DialogEnhancementMode dialogEnhancementMode) {
         throw new RuntimeException("Embedded dialog is not implemented yet!");
     }
 
