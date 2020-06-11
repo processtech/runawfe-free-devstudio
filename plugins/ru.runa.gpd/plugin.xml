@@ -3150,6 +3150,9 @@
       <method
             label="java.lang.Math.random()">
       </method>
+      <method
+            label="validator.getValidatorContext().addFieldError(variableName, message)">
+      </method>
       <constant
             label="null">
       </constant>
