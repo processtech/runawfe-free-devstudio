@@ -8,6 +8,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import javax.swing.JOptionPane;
 import org.apache.poi.xwpf.usermodel.IBodyElement;
@@ -340,10 +341,11 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
         }
     }
 
+    // to server size !!!
+
     private Map<String, Integer> getVariableNamesFromDocxTemplate(InputStream templateInputStream) {
         Map<String, Integer> variablesMap = new HashMap<String, Integer>();
         try (XWPFDocument document = new XWPFDocument(templateInputStream)) {
-            JOptionPane.showMessageDialog(null, "DOCX Stream opened.");
             for (XWPFHeader header : document.getHeaderList()) {
                 getVariableNamesFromDocxBodyElements(header.getBodyElements(), variablesMap);
             }
@@ -352,7 +354,6 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
                 getVariableNamesFromDocxBodyElements(footer.getBodyElements(), variablesMap);
             }
         } catch (Throwable th) {
-            JOptionPane.showMessageDialog(null, "Can't open DOCX Stream " + th.getMessage());
             th.printStackTrace();
         }
 
@@ -431,9 +432,8 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
         }
     }
 
-    public static final String PLACEHOLDER_START = "${";
-    public static final String PLACEHOLDER_END = "}";
-    // public static final String CLOSING_PLACEHOLDER_START = PLACEHOLDER_START + "/";
+    private static final String PLACEHOLDER_START = "${";
+    private static final String PLACEHOLDER_END = "}";
 
     private void getVariableNamesFromDocxParagraphs(List<XWPFParagraph> paragraphs, Map<String, Integer> variablesMap) {
         for (XWPFParagraph paragraph : Lists.newArrayList(paragraphs)) {
@@ -451,13 +451,15 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
 
                 if (!variablesMap.containsKey(var)) {
                     variablesMap.put(var, 1);
-                    JOptionPane.showMessageDialog(null, "Var: " + var);
+                    JOptionPane.showMessageDialog(null, "var = " + var);
                 }
 
                 paragraphText = paragraphText.substring(paragraphText.indexOf(PLACEHOLDER_END) + PLACEHOLDER_END.length());
             }
         }
     }
+
+    // to server size !!!
 
     private void createButtonParametersDisabler(final Composite mainComposite, final Composite dynaComposite) {
 
@@ -700,29 +702,75 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
             readDocxParametersButton.addSelectionListener(new LoggingSelectionAdapter() {
                 @Override
                 protected void onSelection(SelectionEvent e) throws Exception {
+                    JOptionPane.showMessageDialog(null, "In On Select");
                     if (embeddedFileName == null || embeddedFileName.isEmpty() || !EmbeddedFileUtils.isBotTaskFile(embeddedFileName)) {
                         return;
                     }
+
+                    JOptionPane.showMessageDialog(null, "embeddedFileName = " + embeddedFileName);
+
                     IFile file = EmbeddedFileUtils.getProcessFile(embeddedFileName);
+
+                    if (null == file) {
+                        JOptionPane.showMessageDialog(null, "embeddedFileName is null");
+                    } else {
+                        JOptionPane.showMessageDialog(null, "embeddedFileName NOT null");
+                    }
+
+                    if (null != file) {
+                        JOptionPane.showMessageDialog(null, "embeddedFileName exists = " + (file.exists() ? "YES" : "NO"));
+                    }
+
                     if (null == file || !file.exists()) {
                         return;
                     }
 
+                    JOptionPane.showMessageDialog(null, "before get stream");
+
                     try (InputStream inputStream = file.getContents()) {
+
+                        JOptionPane.showMessageDialog(null, "in try");
                         if (null == inputStream) {
                             return;
                         }
+                        JOptionPane.showMessageDialog(null, "Before function call");
                         Map<String, Integer> variablesMap = getVariableNamesFromDocxTemplate(inputStream);
+                        JOptionPane.showMessageDialog(null, "After function call");
 
                         for (ParamDefGroup group : botTask.getParamDefConfig().getGroups()) {
                             if (ParamDefGroup.NAME_INPUT.equals(group.getName())) {
                                 List<ParamDef> params = group.getParameters();
+                                ListIterator<ParamDef> paramsIterator = params.listIterator();
+                                while (paramsIterator.hasNext()) {
+                                    String name = paramsIterator.next().getName();
+                                    boolean exists = false;
+                                    for (Map.Entry<String, Integer> varsEntry : variablesMap.entrySet()) {
+                                        if (name == varsEntry.getKey()) {
+                                            exists = true;
+                                            break;
+                                        }
+                                    }
+                                    if (!exists) {
+                                        paramsIterator.remove();
+                                    }
+                                }
 
                                 for (Map.Entry<String, Integer> entry : variablesMap.entrySet()) {
-                                    ParamDef pd = new ParamDef(entry.getKey(), entry.getKey());
-                                    List<String> formats = pd.getFormatFilters();
-                                    formats.add("java.lang.Object");
-                                    params.add(pd);
+                                    ListIterator<ParamDef> paramsIter = params.listIterator();
+                                    boolean exists = false;
+                                    while (paramsIter.hasNext()) {
+                                        if (entry.getKey() == paramsIter.next().getName()) {
+                                            exists = true;
+                                            break;
+                                        }
+                                    }
+
+                                    if (!exists) {
+                                        ParamDef pd = new ParamDef(entry.getKey(), entry.getKey());
+                                        List<String> formats = pd.getFormatFilters();
+                                        formats.add("java.lang.Object");
+                                        params.add(pd);
+                                    }
                                 }
                                 setDirty(true);
                                 break;
