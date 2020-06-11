@@ -83,6 +83,9 @@ public class VariableFormatRegistry extends ArtifactRegistry<VariableFormatArtif
         try {
             Class<?> testingClass = Class.forName(className);
             return superClass.isAssignableFrom(testingClass);
+        } catch (ClassNotFoundException e) {
+            // UserType
+            return false;
         } catch (Throwable th) {
             PluginLogger.logErrorWithoutDialog(className, th);
             return false;
