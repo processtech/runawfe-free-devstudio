@@ -118,11 +118,9 @@ public class VariableFormatRegistry extends ArtifactRegistry<VariableFormatArtif
             String[] formatComponentClassNames = variable.getFormatComponentClassNames();
             if (formatComponentClassNames.length == 1) {
                 VariableFormatArtifact variableFormatArtifact = getInstance().getArtifact(formatComponentClassNames[0]);
-                String componentClassNameFilter = classNameFilter.substring(classNameFilter.indexOf(Variable.FORMAT_COMPONENT_TYPE_START) + 1,
-                        classNameFilter.indexOf(Variable.FORMAT_COMPONENT_TYPE_END));
-                //returns null if classNameFilter component does not exist and it is a list of complex variables inside bp
-                VariableFormatArtifact variableFormatArtifactFilter = getInstance().getArtifact(componentClassNameFilter);
-                if (variableFormatArtifact != null && variableFormatArtifactFilter != null) {
+                if (variableFormatArtifact != null) {
+                    String componentClassNameFilter = classNameFilter.substring(classNameFilter.indexOf(Variable.FORMAT_COMPONENT_TYPE_START) + 1,
+                            classNameFilter.indexOf(Variable.FORMAT_COMPONENT_TYPE_END));
                     String componentClassName = variableFormatArtifact.getJavaClassName();
                     return isAssignableFrom(componentClassNameFilter, componentClassName)
                             || isAssignableFrom(componentClassName, componentClassNameFilter);
@@ -132,11 +130,6 @@ public class VariableFormatRegistry extends ArtifactRegistry<VariableFormatArtif
                     return Objects.equal(classNameFilter, userTypeClassName);
                 }
             }
-        }
-        //replaces list of bp complex variable name with List.class name for filtering Role variables
-        if (classNameFilter.contains(List.class.getName()) && classNameFilter.contains(Variable.FORMAT_COMPONENT_TYPE_START)
-                && classNameFilter.contains(Variable.FORMAT_COMPONENT_TYPE_END)) {
-            classNameFilter = List.class.getName();
         }
         return isAssignableFrom(classNameFilter, variable.getJavaClassName()) || isAssignableFrom(variable.getJavaClassName(), classNameFilter);
     }
