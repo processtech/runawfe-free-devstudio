@@ -26,7 +26,7 @@ public class ProcessCache {
             for (IFile file : IOUtils.getAllProcessDefinitionFiles()) {
                 try {
                     ProcessDefinition definition = NodeRegistry.parseProcessDefinition(file);
-                    cacheProcessDefinition(file, definition);                                    
+                    cacheProcessDefinition(file, definition);                    
                 } catch (Exception e) {
                     PluginLogger.logErrorWithoutDialog("parsing process " + file, e);
                 }
@@ -122,7 +122,7 @@ public class ProcessCache {
         if (!CACHE_BY_FILE.containsKey(file)) {
             try {
                 ProcessDefinition definition = NodeRegistry.parseProcessDefinition(file);
-                cacheProcessDefinition(file, definition);    
+                cacheProcessDefinition(file, definition);                
             } catch (Exception e) {
                 throw new RuntimeException("Parsing process definition failed: " + file, e);
             }
