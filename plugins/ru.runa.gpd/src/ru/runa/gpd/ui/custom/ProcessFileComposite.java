@@ -39,7 +39,7 @@ public abstract class ProcessFileComposite extends Composite {
             this.showFileAsNewFirstTime = false;
         }
         this.file = file;
-        setLayout(new GridLayout(5, true));
+        setLayout(new GridLayout(3, false));
         rebuild();
     }
 

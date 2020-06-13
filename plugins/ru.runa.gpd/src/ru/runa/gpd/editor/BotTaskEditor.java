@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import javax.swing.JOptionPane;
+//import javax.swing.JOptionPane;
 import org.apache.poi.xwpf.usermodel.IBodyElement;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFFooter;
@@ -271,8 +271,11 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
 
             Object docxModel = null;
             if (isBotDocxHandlerEnhancement) {
+                Composite dynaComposite = new Composite(parent, SWT.NONE);
+                dynaComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                dynaComposite.setLayout(new GridLayout(2, true));
                 DelegableProvider provider = HandlerRegistry.getProvider(botTask.getDelegationClassName());
-                docxModel = provider.showEmbeddedConfigurationDialog(parent, botTask,
+                docxModel = provider.showEmbeddedConfigurationDialog(dynaComposite, botTask,
                         new DocxDialogEnhancementMode(DocxDialogEnhancementMode.DOCX_SHOW_INPUT) {
                             @Override
                             public void reloadXmlFromModel(String newConfiguration, String embeddedFileName, Boolean enableReadDocxButton,
@@ -280,6 +283,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
                                 reloadDialogXmlFromModel(newConfiguration, embeddedFileName, enableReadDocxButton, enableDocxMode);
                             }
                         });
+                createButtonUpdateFromTemplate(dynaComposite);
             }
 
             createConfTableViewer(parent, ParamDefGroup.NAME_INPUT);
@@ -287,9 +291,13 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
             if (isBotDocxHandlerEnhancement) {
                 DelegableProvider provider = HandlerRegistry.getProvider(botTask.getDelegationClassName());
                 DocxDialogEnhancementMode docxDialogEnhancementMode = new DocxDialogEnhancementMode(DocxDialogEnhancementMode.DOCX_SHOW_OUTPUT) {
+
                     @Override
                     public void reloadXmlFromModel(String newConfiguration, String embeddedFileName, Boolean enableReadDocxButton,
                             Boolean enableDocxMode) {
+                        if (null != enableDocxMode) {
+                            this.enableDocxMode = enableDocxMode;
+                        }
                         reloadDialogXmlFromModel(newConfiguration, embeddedFileName, enableReadDocxButton, enableDocxMode);
                     }
                 };
@@ -302,12 +310,75 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
         }
 
         if (isBotDocxHandlerEnhancement) {
+
             Composite dynaComposite = new Composite(parent, SWT.NONE);
             dynaComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             dynaComposite.setLayout(new GridLayout(3, false));
 
             createButtonParametersDisabler(mainComposite, dynaComposite);
         }
+
+    }
+
+    private void createButtonUpdateFromTemplate(Composite buttonArea) {
+        if (!isBotDocxHandlerEnhancement()) {
+            return;
+        }
+        readDocxParametersButton = new Button(buttonArea, SWT.NONE);
+        readDocxParametersButton.setText(Localization.getString("button.read.docx"));
+        readDocxParametersButton.setEnabled(enableReadDocxParametersButtons != null ? enableReadDocxParametersButtons : true);
+        readDocxParametersButton.addSelectionListener(new LoggingSelectionAdapter() {
+            @Override
+            protected void onSelection(SelectionEvent e) throws Exception {
+                if (embeddedFileName == null || embeddedFileName.isEmpty() || !EmbeddedFileUtils.isBotTaskFile(embeddedFileName)) {
+                    PluginLogger.logInfo("No or bad embedded DOCX file!"); // this message should never be shown to User, just in case
+                    return;
+                }
+                IFile file = EmbeddedFileUtils.getProcessFile(EmbeddedFileUtils.getBotTaskFileName(embeddedFileName));
+                if (null == file || !file.exists()) {
+                    PluginLogger.logInfo("Can't get IFile!"); // this message should never be shown to User, just in case
+                    return;
+                }
+                try (InputStream inputStream = file.getContents()) {
+                    if (null == file || !file.exists()) {
+                        PluginLogger.logInfo("Can't get InputStream!"); // this message should never be shown to User, just in case
+                        return;
+                    }
+                    Map<String, Integer> variablesMap = getVariableNamesFromDocxTemplate(inputStream);
+                    for (ParamDefGroup group : botTask.getParamDefConfig().getGroups()) {
+                        if (ParamDefGroup.NAME_INPUT.equals(group.getName())) {
+                            List<ParamDef> params = group.getParameters();
+                            ListIterator<ParamDef> paramsIterator = params.listIterator();
+                            while (paramsIterator.hasNext()) {
+                                if (!variablesMap.containsKey(paramsIterator.next().getName())) {
+                                    paramsIterator.remove();
+                                    setDirty(true);
+                                }
+                            }
+                            for (Map.Entry<String, Integer> entry : variablesMap.entrySet()) {
+                                ListIterator<ParamDef> paramsIter = params.listIterator();
+                                boolean exists = false;
+                                while (paramsIter.hasNext()) {
+                                    if (paramsIter.next().getName().compareTo(entry.getKey()) == 0) {
+                                        exists = true;
+                                        break;
+                                    }
+                                }
+                                if (!exists) {
+                                    ParamDef pd = new ParamDef(entry.getKey(), entry.getKey());
+                                    List<String> formats = pd.getFormatFilters();
+                                    formats.add("java.lang.Object");
+                                    params.add(pd);
+                                    setDirty(true);
+                                }
+                            }
+                            setTableInput(ParamDefGroup.NAME_INPUT);
+                            break;
+                        }
+                    }
+                }
+            }
+        });
     }
 
     private void reloadDialogXmlFromModel(String newConfiguration, String embeddedFileName, Boolean enableReadDocxButton, Boolean enableDocxMode) {
@@ -341,7 +412,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
         }
     }
 
-    // to server size !!!
+    // to server side !!!
 
     private Map<String, Integer> getVariableNamesFromDocxTemplate(InputStream templateInputStream) {
         Map<String, Integer> variablesMap = new HashMap<String, Integer>();
@@ -367,64 +438,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
                 paragraphs.add((XWPFParagraph) bodyElement);
                 continue;
             }
-            /*
-             * if (!paragraphs.isEmpty()) { getVariableNamesFromDocxParagraphs(paragraphs, variablesList); paragraphs.clear(); }
-             */
-            // if (bodyElement instanceof XWPFTable) {
-            // XWPFTable table = (XWPFTable) bodyElement;
-            // List<XWPFTableRow> rows = table.getRows();
-            // for (XWPFTableRow row : Lists.newArrayList(rows)) {
-            // List<XWPFTableCell> cells = row.getTableCells();
-            // // try to expand cells by column
-            // TableExpansionOperation tableExpansionOperation = new TableExpansionOperation(row);
-            // for (int columnIndex = 0; columnIndex < cells.size(); columnIndex++) {
-            // final XWPFTableCell cell = cells.get(columnIndex);
-            // ColumnExpansionOperation operation = DocxUtils.parseIterationOperation(config, variableProvider, cell.getText(),
-            // new ColumnExpansionOperation());
-            // if (operation != null && operation.isValid()) {
-            // tableExpansionOperation.addOperation(columnIndex, operation);
-            // } else {
-            // operation = new ColumnSetValueOperation();
-            // operation.setContainerValue(cell.getText());
-            // tableExpansionOperation.addOperation(columnIndex, operation);
-            // }
-            // String text0 = tableExpansionOperation.getStringValue(config, variableProvider, columnIndex, 0);
-            // if (!java.util.Objects.equals(text0, cell.getText())) {
-            // DocxUtils.setCellText(cell, text0);
-            // }
-            // }
-            // if (tableExpansionOperation.getRows() == 0) {
-            // for (XWPFTableCell cell : cells) {
-            // DocxUtils.replaceInParagraphs(config, variableProvider, cell.getParagraphs());
-            // }
-            // } else {
-            // int templateRowIndex = table.getRows().indexOf(tableExpansionOperation.getTemplateRow());
-            // for (int rowIndex = 1; rowIndex < tableExpansionOperation.getRows(); rowIndex++) {
-            // XWPFTableRow dynamicRow = table.insertNewTableRow(templateRowIndex + rowIndex);
-            // for (int columnIndex = 0; columnIndex < tableExpansionOperation.getTemplateRow().getTableCells().size(); columnIndex++) {
-            // dynamicRow.createCell();
-            // }
-            // for (int columnIndex = 0; columnIndex < dynamicRow.getTableCells().size(); columnIndex++) {
-            // String text = tableExpansionOperation.getStringValue(config, variableProvider, columnIndex, rowIndex);
-            // DocxUtils.setCellText(dynamicRow.getCell(columnIndex), text, tableExpansionOperation.getTemplateCell(columnIndex));
-            // if (OfficeProperties.getDocxPlaceholderVMerge().equals(text)) {
-            // CTTcPr tcPr = dynamicRow.getCell(columnIndex).getCTTc().getTcPr();
-            // tcPr.addNewVMerge().setVal(STMerge.CONTINUE);
-            //
-            // int restartVMergeRowIndex = table.getRows().indexOf(dynamicRow) - 1;
-            // if (restartVMergeRowIndex >= 0) {
-            // XWPFTableRow restartRow = table.getRow(restartVMergeRowIndex);
-            // CTTcPr previousTcPr = restartRow.getCell(columnIndex).getCTTc().getTcPr();
-            // if (previousTcPr.getVMerge() == null) {
-            // previousTcPr.addNewVMerge().setVal(STMerge.RESTART);
-            // }
-            // }
-            // }
-            // }
-            // }
-            // }
-            // }
-            // }
+
         }
         if (!paragraphs.isEmpty()) {
             getVariableNamesFromDocxParagraphs(paragraphs, variablesMap);
@@ -438,7 +452,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
     private void getVariableNamesFromDocxParagraphs(List<XWPFParagraph> paragraphs, Map<String, Integer> variablesMap) {
         for (XWPFParagraph paragraph : Lists.newArrayList(paragraphs)) {
             String paragraphText = paragraph.getText();
-            JOptionPane.showMessageDialog(null, paragraphText);
+            // JOptionPane.showMessageDialog(null, paragraphText);
             while (true) {
                 if (!paragraphText.contains(PLACEHOLDER_START)) {
                     break;
@@ -451,7 +465,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
 
                 if (!variablesMap.containsKey(var)) {
                     variablesMap.put(var, 1);
-                    JOptionPane.showMessageDialog(null, "var = " + var);
+                    // JOptionPane.showMessageDialog(null, "var = " + var);
                 }
 
                 paragraphText = paragraphText.substring(paragraphText.indexOf(PLACEHOLDER_END) + PLACEHOLDER_END.length());
@@ -459,7 +473,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
         }
     }
 
-    // to server size !!!
+    // to server side !!!
 
     private void createButtonParametersDisabler(final Composite mainComposite, final Composite dynaComposite) {
 
@@ -626,7 +640,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
             protected void onSelection(SelectionEvent e) throws Exception {
                 for (ParamDefGroup group : botTask.getParamDefConfig().getGroups()) {
                     if (parameterType.equals(group.getName())) {
-                        BotTaskParamDefWizard wizard = new BotTaskParamDefWizard(group, null);
+                        BotTaskParamDefWizard wizard = new BotTaskParamDefWizard(group, null, new DocxDialogEnhancementMode(0));
                         CompactWizardDialog dialog = new CompactWizardDialog(wizard);
                         if (dialog.open() == Window.OK) {
                             setTableInput(parameterType);
@@ -654,7 +668,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
                         }
                         for (ParamDef paramDef : group.getParameters()) {
                             if (paramDef.getName().equals(row[0])) {
-                                BotTaskParamDefWizard wizard = new BotTaskParamDefWizard(group, paramDef);
+                                BotTaskParamDefWizard wizard = new BotTaskParamDefWizard(group, paramDef, new DocxDialogEnhancementMode(0));
                                 CompactWizardDialog dialog = new CompactWizardDialog(wizard);
                                 if (dialog.open() == Window.OK) {
                                     setTableInput(parameterType);
@@ -694,127 +708,6 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
                 }
             }
         });
-
-        if (isBotDocxHandler) {
-            readDocxParametersButton = new Button(buttonArea, SWT.NONE);
-            readDocxParametersButton.setText(Localization.getString("button.read.docx"));
-            readDocxParametersButton.setEnabled(enableReadDocxParametersButtons != null ? enableReadDocxParametersButtons : true);
-            readDocxParametersButton.addSelectionListener(new LoggingSelectionAdapter() {
-                @Override
-                protected void onSelection(SelectionEvent e) throws Exception {
-                    JOptionPane.showMessageDialog(null, "In On Select");
-                    if (embeddedFileName == null || embeddedFileName.isEmpty() || !EmbeddedFileUtils.isBotTaskFile(embeddedFileName)) {
-                        return;
-                    }
-
-                    JOptionPane.showMessageDialog(null, "embeddedFileName = " + embeddedFileName);
-
-                    IFile file = EmbeddedFileUtils.getProcessFile(embeddedFileName);
-
-                    if (null == file) {
-                        JOptionPane.showMessageDialog(null, "embeddedFileName is null");
-                    } else {
-                        JOptionPane.showMessageDialog(null, "embeddedFileName NOT null");
-                    }
-
-                    if (null != file) {
-                        JOptionPane.showMessageDialog(null, "embeddedFileName exists = " + (file.exists() ? "YES" : "NO"));
-                    }
-
-                    if (null == file || !file.exists()) {
-                        return;
-                    }
-
-                    JOptionPane.showMessageDialog(null, "before get stream");
-
-                    try (InputStream inputStream = file.getContents()) {
-
-                        JOptionPane.showMessageDialog(null, "in try");
-                        if (null == inputStream) {
-                            return;
-                        }
-                        JOptionPane.showMessageDialog(null, "Before function call");
-                        Map<String, Integer> variablesMap = getVariableNamesFromDocxTemplate(inputStream);
-                        JOptionPane.showMessageDialog(null, "After function call");
-
-                        for (ParamDefGroup group : botTask.getParamDefConfig().getGroups()) {
-                            if (ParamDefGroup.NAME_INPUT.equals(group.getName())) {
-                                List<ParamDef> params = group.getParameters();
-                                ListIterator<ParamDef> paramsIterator = params.listIterator();
-                                while (paramsIterator.hasNext()) {
-                                    String name = paramsIterator.next().getName();
-                                    boolean exists = false;
-                                    for (Map.Entry<String, Integer> varsEntry : variablesMap.entrySet()) {
-                                        if (name == varsEntry.getKey()) {
-                                            exists = true;
-                                            break;
-                                        }
-                                    }
-                                    if (!exists) {
-                                        paramsIterator.remove();
-                                    }
-                                }
-
-                                for (Map.Entry<String, Integer> entry : variablesMap.entrySet()) {
-                                    ListIterator<ParamDef> paramsIter = params.listIterator();
-                                    boolean exists = false;
-                                    while (paramsIter.hasNext()) {
-                                        if (entry.getKey() == paramsIter.next().getName()) {
-                                            exists = true;
-                                            break;
-                                        }
-                                    }
-
-                                    if (!exists) {
-                                        ParamDef pd = new ParamDef(entry.getKey(), entry.getKey());
-                                        List<String> formats = pd.getFormatFilters();
-                                        formats.add("java.lang.Object");
-                                        params.add(pd);
-                                    }
-                                }
-                                setDirty(true);
-                                break;
-                            }
-                        }
-
-                        setTableInput(ParamDefGroup.NAME_INPUT);
-
-                        // // TableViewer confTableViewer = getParamTableViewer(ParamDefGroup.NAME_INPUT);
-                        // List<ParamDef> paramDefs = new ArrayList<ParamDef>();
-                        // for (ParamDefGroup group : botTask.getParamDefConfig().getGroups()) {
-                        // if (ParamDefGroup.NAME_INPUT.equals(group.getName())) {
-                        // paramDefs.addAll(group.getParameters());
-                        //
-                        // for (ParamDef pd : paramDefs) {
-                        // List<String> hh = pd.getFormatFilters();
-                        // int t = 0;
-                        // t++;
-                        // }
-                        // }
-                        // }
-
-                    }
-
-                    // for (ParamDefGroup group : botTask.getParamDefConfig().getGroups()) {
-                    // if (parameterType.equals(group.getName())) {
-                    // IStructuredSelection selection = (IStructuredSelection) getParamTableViewer(parameterType).getSelection();
-                    // String[] row = (String[]) selection.getFirstElement();
-                    // if (row == null) {
-                    // return;
-                    // }
-                    // for (ParamDef paramDef : group.getParameters()) {
-                    // if (paramDef.getName().equals(row[0])) {
-                    // group.getParameters().remove(paramDef);
-                    // setTableInput(parameterType);
-                    // setDirty(true);
-                    // break;
-                    // }
-                    // }
-                    // }
-                    // }
-                }
-            });
-        }
 
         confTableViewer.addSelectionChangedListener(new LoggingSelectionChangedAdapter() {
             @Override

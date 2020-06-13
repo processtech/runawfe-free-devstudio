@@ -173,6 +173,9 @@ public abstract class XmlBasedConstructorProvider<T extends Observable> extends 
 
                 Composite composite = new Composite(parent, SWT.NONE);
                 composite.setLayout(new GridLayout());
+                GridData gridData = new GridData();
+                gridData.widthHint = 700;
+                composite.setLayoutData(gridData);
 
                 ScrolledComposite scrolledComposite = new ScrolledComposite(composite, SWT.V_SCROLL);
                 scrolledComposite.setExpandHorizontal(true);

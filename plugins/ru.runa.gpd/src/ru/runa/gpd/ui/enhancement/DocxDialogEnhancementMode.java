@@ -14,7 +14,12 @@ public class DocxDialogEnhancementMode extends DialogEnhancementMode {
         throw new RuntimeException("Not implemented method!");
     };
 
+    public boolean checkDocxMode() {
+        return null != enableDocxMode && enableDocxMode;
+    }
+
     public Object docxModel = null;
     public String defaultFileName;
     public boolean showFileAsNewFirstTime;
+    public Boolean enableDocxMode;
 }
