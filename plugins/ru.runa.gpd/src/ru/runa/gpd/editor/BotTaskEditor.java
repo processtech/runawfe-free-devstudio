@@ -80,7 +80,6 @@ import ru.runa.gpd.util.XmlUtil;
 
 public class BotTaskEditor extends EditorPart implements ISelectionListener, IResourceChangeListener, PropertyChangeListener {
     public static final String ID = "ru.runa.gpd.editor.BotTaskEditor";
-    public static final String DocxHandlerID = "ru.runa.wfe.office.doc.DocxHandler";
     private BotTask botTask;
     private boolean dirty;
     private IFile botTaskFile;
@@ -505,7 +504,8 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
     }
 
     private boolean isBotDocxHandlerEnhancement() {
-        return null != botTask && DialogEnhancement.isOn() && 0 == botTask.getDelegationClassName().compareTo(DocxHandlerID);
+        return null != botTask && DialogEnhancement.isOn()
+                && 0 == botTask.getDelegationClassName().compareTo(DocxDialogEnhancementMode.DocxHandlerID);
     }
 
     private void createConfigurationFields(Composite parent) {
@@ -601,10 +601,13 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
 
         buttonArea.setLayout(new GridLayout(isBotDocxHandler ? 4 : 3, false));
 
-        addParameterButton = new Button(buttonArea, SWT.NONE);
-        addParameterButton.setText(Localization.getString("button.add"));
-        addParameterButton.setEnabled(!isBotDocxHandler && botTask.getType() != BotTaskType.PARAMETERIZED);
-        addParameterButton.addSelectionListener(new LoggingSelectionAdapter() {
+        Button addParameterButtonLocal = new Button(buttonArea, SWT.NONE);
+        if (isBotDocxHandler) {
+            addParameterButton = addParameterButtonLocal;
+        }
+        addParameterButtonLocal.setText(Localization.getString("button.add"));
+        addParameterButtonLocal.setEnabled(!isBotDocxHandler && botTask.getType() != BotTaskType.PARAMETERIZED);
+        addParameterButtonLocal.addSelectionListener(new LoggingSelectionAdapter() {
             @Override
             protected void onSelection(SelectionEvent e) throws Exception {
                 for (ParamDefGroup group : botTask.getParamDefConfig().getGroups()) {
@@ -620,11 +623,14 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
             }
         });
 
-        editParameterButton = new Button(buttonArea, SWT.NONE);
-        editParameterButton.setText(Localization.getString("button.edit"));
-        editParameterButton.setEnabled(botTask.getType() != BotTaskType.PARAMETERIZED
+        Button editParameterButtonLocal = new Button(buttonArea, SWT.NONE);
+        if (isBotDocxHandler) {
+            editParameterButton = editParameterButtonLocal;
+        }
+        editParameterButtonLocal.setText(Localization.getString("button.edit"));
+        editParameterButtonLocal.setEnabled(botTask.getType() != BotTaskType.PARAMETERIZED
                 && ((IStructuredSelection) getParamTableViewer(parameterType).getSelection()).getFirstElement() != null);
-        editParameterButton.addSelectionListener(new LoggingSelectionAdapter() {
+        editParameterButtonLocal.addSelectionListener(new LoggingSelectionAdapter() {
 
             @Override
             protected void onSelection(SelectionEvent e) throws Exception {
@@ -651,11 +657,14 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
             }
         });
 
-        deleteParameterButton = new Button(buttonArea, SWT.NONE);
-        deleteParameterButton.setText(Localization.getString("button.delete"));
-        deleteParameterButton.setEnabled(!isBotDocxHandler && botTask.getType() != BotTaskType.PARAMETERIZED
+        Button deleteParameterButtonLocal = new Button(buttonArea, SWT.NONE);
+        if (isBotDocxHandler) {
+            deleteParameterButton = deleteParameterButtonLocal;
+        }
+        deleteParameterButtonLocal.setText(Localization.getString("button.delete"));
+        deleteParameterButtonLocal.setEnabled((!DialogEnhancement.isOn() || !isBotDocxHandler) && botTask.getType() != BotTaskType.PARAMETERIZED
                 && ((IStructuredSelection) getParamTableViewer(parameterType).getSelection()).getFirstElement() != null);
-        deleteParameterButton.addSelectionListener(new LoggingSelectionAdapter() {
+        deleteParameterButtonLocal.addSelectionListener(new LoggingSelectionAdapter() {
             @Override
             protected void onSelection(SelectionEvent e) throws Exception {
                 for (ParamDefGroup group : botTask.getParamDefConfig().getGroups()) {
@@ -682,11 +691,14 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
             @Override
             protected void onSelectionChanged(SelectionChangedEvent event) throws Exception {
                 IStructuredSelection selection = (IStructuredSelection) event.getSelection();
-                addParameterButton.setEnabled(null != enableReadDocxParametersButtons ? !enableReadDocxParametersButtons : !isBotDocxHandler);
-                editParameterButton.setEnabled(botTask.getType() != BotTaskType.PARAMETERIZED && selection.getFirstElement() != null);
-                deleteParameterButton.setEnabled((null != enableReadDocxParametersButtons ? !enableReadDocxParametersButtons : !isBotDocxHandler)
+                addParameterButtonLocal.setEnabled(null != enableReadDocxParametersButtons ? !enableReadDocxParametersButtons : !isBotDocxHandler);
+                editParameterButtonLocal.setEnabled(botTask.getType() != BotTaskType.PARAMETERIZED && selection.getFirstElement() != null);
+                deleteParameterButtonLocal.setEnabled((!DialogEnhancement.isOn()
+                        || (null != enableReadDocxParametersButtons ? !enableReadDocxParametersButtons : !isBotDocxHandler))
                         && botTask.getType() != BotTaskType.PARAMETERIZED && selection.getFirstElement() != null);
-                readDocxParametersButton.setVisible(enableReadDocxButton != null ? enableReadDocxButton : isBotDocxHandler);
+                if (null != readDocxParametersButton) {
+                    readDocxParametersButton.setVisible(enableReadDocxButton != null ? enableReadDocxButton : isBotDocxHandler);
+                }
             }
         });
     }

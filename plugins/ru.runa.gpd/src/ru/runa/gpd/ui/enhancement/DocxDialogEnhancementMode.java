@@ -41,6 +41,7 @@ public class DocxDialogEnhancementMode extends DialogEnhancementMode {
     public static final String PLACEHOLDER_START = "${";
     public static final String PLACEHOLDER_END = "}";
     public final static String FILE_VARIABLE_FORMAT = "ru.runa.wfe.var.file.FileVariable";
+    public static final String DocxHandlerID = "ru.runa.wfe.office.doc.DocxHandler";
 
     public static String getInputFileParamName() {
         return Localization.getString("MSWordConfig.label.template");
