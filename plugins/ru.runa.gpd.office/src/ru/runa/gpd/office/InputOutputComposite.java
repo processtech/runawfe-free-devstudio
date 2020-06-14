@@ -23,6 +23,7 @@ import ru.runa.gpd.office.word.DocxModel;
 import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.enhancement.DialogEnhancementMode;
+import ru.runa.gpd.ui.enhancement.DialogEnhancementObserver;
 import ru.runa.gpd.ui.enhancement.DocxDialogEnhancementMode;
 import ru.runa.gpd.util.DataSourceUtils;
 import ru.runa.gpd.util.EmbeddedFileUtils;
@@ -30,10 +31,13 @@ import ru.runa.wfe.InternalApplicationException;
 import ru.runa.wfe.datasource.DataSourceStuff;
 import ru.runa.wfe.var.file.FileVariable;
 
-public class InputOutputComposite extends Composite {
+public class InputOutputComposite extends Composite implements DialogEnhancementObserver {
     public final InputOutputModel model;
     private final Delegable delegable;
     private final String fileExtension;
+    private final DialogEnhancementMode dialogEnhancementMode;
+    private ChooseStringOrFile chooseStringOrFileOutput;
+    private Text fileNameText;
 
     public InputOutputComposite(Composite parent, Delegable delegable, final InputOutputModel model, FilesSupplierMode mode, String fileExtension,
             DialogEnhancementMode dialogEnhancementMode) {
@@ -41,6 +45,7 @@ public class InputOutputComposite extends Composite {
         this.model = model;
         this.delegable = delegable;
         this.fileExtension = fileExtension;
+        this.dialogEnhancementMode = dialogEnhancementMode;
         GridData data = new GridData(GridData.FILL_HORIZONTAL);
         data.horizontalSpan = 3;
         setLayoutData(data);
@@ -77,10 +82,13 @@ public class InputOutputComposite extends Composite {
             outputGroup.setLayout(new GridLayout(2, false));
             Label fileNameLabel = new Label(outputGroup, SWT.NONE);
             fileNameLabel.setText(Messages.getString("label.fileName"));
-            final Text fileNameText = new Text(outputGroup, SWT.BORDER);
+            fileNameText = new Text(outputGroup, SWT.BORDER);
             fileNameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             if (model.outputFilename != null) {
                 fileNameText.setText(model.outputFilename);
+            }
+            if (null != dialogEnhancementMode && dialogEnhancementMode.checkDocxEnhancementMode()) {
+                ((DocxDialogEnhancementMode) dialogEnhancementMode).observer = this;
             }
             fileNameText.addModifyListener(new LoggingModifyTextAdapter() {
 
@@ -90,8 +98,8 @@ public class InputOutputComposite extends Composite {
                     updateDialogEnhancementMode(dialogEnhancementMode, null, null, null);
                 }
             });
-            new ChooseStringOrFile(outputGroup, model.outputDir, model.outputVariable, Messages.getString("label.fileDir"), FilesSupplierMode.OUT,
-                    dialogEnhancementMode) {
+            chooseStringOrFileOutput = new ChooseStringOrFile(outputGroup, model.outputDir, model.outputVariable, Messages.getString("label.fileDir"),
+                    FilesSupplierMode.OUT, dialogEnhancementMode) {
                 @Override
                 public void setFileName(String fileName, Boolean embeddedMode) {
                     model.outputDir = fileName;
@@ -108,6 +116,19 @@ public class InputOutputComposite extends Composite {
             };
         }
         layout(true, true);
+    }
+
+    @Override
+    public void invokeEnhancementObserver() {
+        if (null != dialogEnhancementMode && dialogEnhancementMode.checkDocxEnhancementMode()) {
+            String outputFileParamName = DocxDialogEnhancementMode.getOutputFileParamName();
+            if (null != fileNameText && fileNameText.getText().isEmpty()) {
+                fileNameText.setText(model.outputFilename = outputFileParamName + ".docx");
+            }
+        }
+        if (null != chooseStringOrFileOutput) {
+            chooseStringOrFileOutput.invokeEnhancementObserver();
+        }
     }
 
     private void updateDialogEnhancementMode(DialogEnhancementMode dialogEnhancementMode, String embeddedFileName, Boolean enableReadDocxButton,
@@ -127,17 +148,21 @@ public class InputOutputComposite extends Composite {
         private Control control = null;
         private final Composite composite;
         private final DialogEnhancementMode dialogEnhancementMode;
+        final boolean docxEnhancementModeInput;
+        private Combo variableCombo;
 
         public ChooseStringOrFile(Composite composite, String fileName, String variableName, String stringLabel, FilesSupplierMode mode,
                 DialogEnhancementMode dialogEnhancementMode) {
             this.composite = composite;
             this.dialogEnhancementMode = dialogEnhancementMode;
-            final boolean docxEnhancementModeInput = null != dialogEnhancementMode && dialogEnhancementMode.checkDocxEnhancementMode()
+            docxEnhancementModeInput = null != dialogEnhancementMode && dialogEnhancementMode.checkDocxEnhancementMode()
                     && dialogEnhancementMode.is(DocxDialogEnhancementMode.DOCX_SHOW_INPUT);
 
             final Combo combo = new Combo(composite, SWT.READ_ONLY);
             combo.add(stringLabel);
-            combo.add(Messages.getString("label.fileVariable"));
+            combo.add(Messages.getString(null != dialogEnhancementMode && dialogEnhancementMode.checkDocxEnhancementMode()
+                    && dialogEnhancementMode.is(DocxDialogEnhancementMode.DOCX_DONT_USE_VARIABLE_TITLE) ? "label.fileParameter"
+                            : "label.fileVariable"));
             if (mode == FilesSupplierMode.IN) {
                 combo.add(Messages.getString("label.processDefinitionFile"));
             }
@@ -175,6 +200,7 @@ public class InputOutputComposite extends Composite {
 
                 @Override
                 protected void onSelection(SelectionEvent e) throws Exception {
+                    variableCombo = null;
                     switch (combo.getSelectionIndex()) {
                     case 0:
                         showFileName(null);
@@ -196,6 +222,19 @@ public class InputOutputComposite extends Composite {
             });
         }
 
+        public void invokeEnhancementObserver() {
+            if (null == variableCombo || null == dialogEnhancementMode || docxEnhancementModeInput) {
+                return;
+            }
+            String outputFileParamName = DocxDialogEnhancementMode.getOutputFileParamName();
+            for (int i = 0, isize = variableCombo.getItemCount(); i < isize; i++) {
+                if (outputFileParamName.compareTo(variableCombo.getItem(i)) == 0) {
+                    variableCombo.select(i);
+                    return;
+                }
+            }
+        }
+
         private void showFileName(String filename) {
             if (control != null) {
                 if (!Text.class.isInstance(control)) {
@@ -207,13 +246,15 @@ public class InputOutputComposite extends Composite {
             final Text text = new Text(composite, SWT.BORDER);
             if (filename != null) {
                 text.setText(filename);
+            } else if (docxEnhancementModeInput) {
+                setFileName("", false);
             }
             text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             text.addModifyListener(new LoggingModifyTextAdapter() {
 
                 @Override
                 protected void onTextChanged(ModifyEvent e) throws Exception {
-                    setFileName(text.getText(), false);
+                    setFileName(text.getText(), docxEnhancementModeInput ? false : null);
                 }
             });
             control = text;
@@ -224,13 +265,15 @@ public class InputOutputComposite extends Composite {
             if (control != null) {
                 control.dispose();
             }
-            final Combo combo = new Combo(composite, SWT.READ_ONLY);
+            final Combo combo = variableCombo = new Combo(composite, SWT.READ_ONLY);
             combo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             for (String variableName : delegable.getVariableNames(false, FileVariable.class.getName())) {
                 combo.add(variableName);
             }
             if (variable != null) {
                 combo.setText(variable);
+            } else if (docxEnhancementModeInput) {
+                setVariable("");
             }
             combo.addSelectionListener(new LoggingSelectionAdapter() {
 

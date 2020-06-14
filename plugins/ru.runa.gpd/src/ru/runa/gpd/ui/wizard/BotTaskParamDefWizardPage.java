@@ -53,8 +53,9 @@ public class BotTaskParamDefWizardPage extends WizardPage {
         composite.setLayout(layout);
         createNameField(composite);
         createVariableTypeField(composite);
-        if (!(null != dialogEnhancementMode && dialogEnhancementMode.checkDocxEnhancementMode()
-                && ((DocxDialogEnhancementMode) dialogEnhancementMode).checkDocxMode())) {
+        boolean isDocxMode = null != dialogEnhancementMode && dialogEnhancementMode.checkDocxEnhancementMode()
+                && ((DocxDialogEnhancementMode) dialogEnhancementMode).checkDocxMode();
+        if (!isDocxMode) {
             createUseVariableCheckbox(composite);
         }
         createOptionalCheckbox(composite);
@@ -66,6 +67,11 @@ public class BotTaskParamDefWizardPage extends WizardPage {
                 String type = paramDef.getFormatFilters().get(0);
                 String label = VariableFormatRegistry.getInstance().getFilterLabel(type);
                 typeCombo.setText(label);
+                if (isDocxMode && paramDef.getName().compareTo(DocxDialogEnhancementMode.getInputFileParamName()) == 0
+                        && type.compareTo(DocxDialogEnhancementMode.FILE_VARIABLE_FORMAT) == 0) {
+                    typeCombo.setEnabled(false);
+                }
+
             }
             if (useVariableButton != null) {
                 useVariableButton.setSelection(paramDef.isUseVariable());

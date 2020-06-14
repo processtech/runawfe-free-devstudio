@@ -1,5 +1,6 @@
 package ru.runa.gpd.ui.wizard;
 
+import java.util.List;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
@@ -29,6 +30,23 @@ public class BotTaskParamDefWizard extends Wizard implements INewWizard {
 
     @Override
     public boolean performFinish() {
+        if (null != dialogEnhancementMode && dialogEnhancementMode.checkDocxEnhancementMode()) {
+            List<ParamDef> params = paramDefGroup.getParameters();
+            boolean ok = false;
+            for (int i = 0, isize = params.size(); i < isize; i++) {
+                if (params.get(i) == paramDef) {
+                    ParamDef paramDef = new ParamDef(page.getName(), page.getName());
+                    paramDef.getFormatFilters().add(page.getType());
+                    paramDef.setUseVariable(page.isUseVariable());
+                    paramDef.setOptional(page.isOptional());
+                    params.set(i, paramDef);
+                    ok = true;
+                }
+            }
+            if (ok) {
+                return true;
+            }
+        }
         if (page.getParamDef() != null) {
             paramDefGroup.getParameters().remove(paramDef);
         }

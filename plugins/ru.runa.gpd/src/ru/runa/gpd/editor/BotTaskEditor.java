@@ -1,21 +1,13 @@
 package ru.runa.gpd.editor;
 
-import com.google.common.collect.Lists;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-//import javax.swing.JOptionPane;
-import org.apache.poi.xwpf.usermodel.IBodyElement;
-import org.apache.poi.xwpf.usermodel.XWPFDocument;
-import org.apache.poi.xwpf.usermodel.XWPFFooter;
-import org.apache.poi.xwpf.usermodel.XWPFHeader;
-import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -106,6 +98,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
     private Button deleteParameterButton;
     private Button readDocxParametersButton;
     private String embeddedFileName;
+    private DocxDialogEnhancementMode docxDialogEnhancementModeInput, docxDialogEnhancementModeOutput;
 
     @Override
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
@@ -204,10 +197,18 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
             Composite innerComposite = new Composite(scrolledComposite, SWT.NONE);
             innerComposite.setLayout(new GridLayout());
             createParamteresFields(composite, innerComposite);
-            if (!isBotDocxHandlerEnhancement()) {
+            boolean isBotDocxHandlerEnhancement = isBotDocxHandlerEnhancement();
+            if (!isBotDocxHandlerEnhancement) {
                 createConfigurationFields(innerComposite);
             }
             createConfigurationArea(innerComposite);
+            if (isBotDocxHandlerEnhancement) {
+                Composite dynaComposite = new Composite(innerComposite, SWT.NONE);
+                dynaComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                dynaComposite.setLayout(new GridLayout(3, false));
+                createButtonParametersDisabler(composite, dynaComposite);
+            }
+
             scrolledComposite.setMinSize(SWT.DEFAULT, 700);
             scrolledComposite.setContent(innerComposite);
         }
@@ -263,12 +264,10 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
             Composite dynaComposite = new Composite(parent, SWT.NONE);
             dynaComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             dynaComposite.setLayout(new GridLayout(3, false));
-
             createButtonParametersDisabler(mainComposite, dynaComposite);
         }
 
         if (botTask.getType() == BotTaskType.EXTENDED) {
-
             Object docxModel = null;
             if (isBotDocxHandlerEnhancement) {
                 Composite dynaComposite = new Composite(parent, SWT.NONE);
@@ -276,7 +275,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
                 dynaComposite.setLayout(new GridLayout(2, true));
                 DelegableProvider provider = HandlerRegistry.getProvider(botTask.getDelegationClassName());
                 docxModel = provider.showEmbeddedConfigurationDialog(dynaComposite, botTask,
-                        new DocxDialogEnhancementMode(DocxDialogEnhancementMode.DOCX_SHOW_INPUT) {
+                        docxDialogEnhancementModeInput = new DocxDialogEnhancementMode(DocxDialogEnhancementMode.DOCX_SHOW_INPUT) {
                             @Override
                             public void reloadXmlFromModel(String newConfiguration, String embeddedFileName, Boolean enableReadDocxButton,
                                     Boolean enableDocxMode) {
@@ -290,34 +289,19 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
 
             if (isBotDocxHandlerEnhancement) {
                 DelegableProvider provider = HandlerRegistry.getProvider(botTask.getDelegationClassName());
-                DocxDialogEnhancementMode docxDialogEnhancementMode = new DocxDialogEnhancementMode(DocxDialogEnhancementMode.DOCX_SHOW_OUTPUT) {
-
+                docxDialogEnhancementModeOutput = new DocxDialogEnhancementMode(DocxDialogEnhancementMode.DOCX_SHOW_OUTPUT) {
                     @Override
                     public void reloadXmlFromModel(String newConfiguration, String embeddedFileName, Boolean enableReadDocxButton,
                             Boolean enableDocxMode) {
-                        if (null != enableDocxMode) {
-                            this.enableDocxMode = enableDocxMode;
-                        }
                         reloadDialogXmlFromModel(newConfiguration, embeddedFileName, enableReadDocxButton, enableDocxMode);
                     }
                 };
-
-                docxDialogEnhancementMode.docxModel = docxModel;
-                provider.showEmbeddedConfigurationDialog(parent, botTask, docxDialogEnhancementMode);
+                docxDialogEnhancementModeOutput.docxModel = docxModel;
+                provider.showEmbeddedConfigurationDialog(parent, botTask, docxDialogEnhancementModeOutput);
             } else {
                 createConfTableViewer(parent, ParamDefGroup.NAME_OUTPUT);
             }
         }
-
-        if (isBotDocxHandlerEnhancement) {
-
-            Composite dynaComposite = new Composite(parent, SWT.NONE);
-            dynaComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            dynaComposite.setLayout(new GridLayout(3, false));
-
-            createButtonParametersDisabler(mainComposite, dynaComposite);
-        }
-
     }
 
     private void createButtonUpdateFromTemplate(Composite buttonArea) {
@@ -326,7 +310,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
         }
         readDocxParametersButton = new Button(buttonArea, SWT.NONE);
         readDocxParametersButton.setText(Localization.getString("button.read.docx"));
-        readDocxParametersButton.setEnabled(enableReadDocxParametersButtons != null ? enableReadDocxParametersButtons : true);
+        readDocxParametersButton.setVisible(enableReadDocxParametersButtons != null ? enableReadDocxParametersButtons : true);
         readDocxParametersButton.addSelectionListener(new LoggingSelectionAdapter() {
             @Override
             protected void onSelection(SelectionEvent e) throws Exception {
@@ -344,13 +328,24 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
                         PluginLogger.logInfo("Can't get InputStream!"); // this message should never be shown to User, just in case
                         return;
                     }
-                    Map<String, Integer> variablesMap = getVariableNamesFromDocxTemplate(inputStream);
+                    Map<String, Integer> variablesMap = DocxDialogEnhancementMode.getVariableNamesFromDocxTemplate(inputStream);
                     for (ParamDefGroup group : botTask.getParamDefConfig().getGroups()) {
                         if (ParamDefGroup.NAME_INPUT.equals(group.getName())) {
+                            String inputFileParamName = DocxDialogEnhancementMode.getInputFileParamName();
+                            boolean wasInputFileParam = false;
                             List<ParamDef> params = group.getParameters();
                             ListIterator<ParamDef> paramsIterator = params.listIterator();
                             while (paramsIterator.hasNext()) {
-                                if (!variablesMap.containsKey(paramsIterator.next().getName())) {
+                                ParamDef pd = paramsIterator.next();
+                                String paramName = pd.getName();
+                                if (paramName == inputFileParamName) {
+                                    if (pd.getFormatFilters().size() > 0
+                                            && pd.getFormatFilters().get(0).compareTo(DocxDialogEnhancementMode.FILE_VARIABLE_FORMAT) == 0) {
+                                        wasInputFileParam = true;
+                                        continue;
+                                    }
+                                }
+                                if (!variablesMap.containsKey(paramName)) {
                                     paramsIterator.remove();
                                     setDirty(true);
                                 }
@@ -372,10 +367,40 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
                                     setDirty(true);
                                 }
                             }
-                            setTableInput(ParamDefGroup.NAME_INPUT);
-                            break;
+                            if (!wasInputFileParam) {
+                                ParamDef pd = new ParamDef(inputFileParamName, inputFileParamName);
+                                List<String> formats = pd.getFormatFilters();
+                                formats.add(DocxDialogEnhancementMode.FILE_VARIABLE_FORMAT);
+                                params.add(pd);
+                                setDirty(true);
+                            }
+                        } else if (ParamDefGroup.NAME_OUTPUT.equals(group.getName())) {
+                            String outputFileParamName = DocxDialogEnhancementMode.getOutputFileParamName();
+                            boolean wasOutputFileParam = false;
+                            List<ParamDef> params = group.getParameters();
+                            ListIterator<ParamDef> paramsIterator = params.listIterator();
+                            while (paramsIterator.hasNext()) {
+                                ParamDef pd = paramsIterator.next();
+                                String paramName = pd.getName();
+                                if (paramName == outputFileParamName) {
+                                    if (pd.getFormatFilters().size() > 0
+                                            && pd.getFormatFilters().get(0).compareTo(DocxDialogEnhancementMode.FILE_VARIABLE_FORMAT) == 0) {
+                                        wasOutputFileParam = true;
+                                        continue;
+                                    }
+                                }
+                            }
+                            if (!wasOutputFileParam) {
+                                ParamDef pd = new ParamDef(outputFileParamName, outputFileParamName);
+                                List<String> formats = pd.getFormatFilters();
+                                formats.add(DocxDialogEnhancementMode.FILE_VARIABLE_FORMAT);
+                                params.add(pd);
+                                setDirty(true);
+                            }
                         }
                     }
+                    setTableInput(ParamDefGroup.NAME_INPUT);
+                    docxDialogEnhancementModeOutput.updateObserver();
                 }
             }
         });
@@ -394,7 +419,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
         if (enableReadDocxButton != null) {
             this.enableReadDocxButton = enableReadDocxButton;
             if (null != readDocxParametersButton) {
-                readDocxParametersButton.setEnabled(enableReadDocxButton);
+                readDocxParametersButton.setVisible(enableReadDocxButton);
             }
         }
 
@@ -409,71 +434,15 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
             if (null != editParameterButton) {
                 editParameterButton.setEnabled(true);
             }
-        }
-    }
-
-    // to server side !!!
-
-    private Map<String, Integer> getVariableNamesFromDocxTemplate(InputStream templateInputStream) {
-        Map<String, Integer> variablesMap = new HashMap<String, Integer>();
-        try (XWPFDocument document = new XWPFDocument(templateInputStream)) {
-            for (XWPFHeader header : document.getHeaderList()) {
-                getVariableNamesFromDocxBodyElements(header.getBodyElements(), variablesMap);
+            if (null != docxDialogEnhancementModeInput) {
+                docxDialogEnhancementModeInput.enableDocxMode = enableDocxMode;
             }
-            getVariableNamesFromDocxBodyElements(document.getBodyElements(), variablesMap);
-            for (XWPFFooter footer : document.getFooterList()) {
-                getVariableNamesFromDocxBodyElements(footer.getBodyElements(), variablesMap);
-            }
-        } catch (Throwable th) {
-            th.printStackTrace();
-        }
-
-        return variablesMap;
-    }
-
-    private void getVariableNamesFromDocxBodyElements(List<IBodyElement> bodyElements, Map<String, Integer> variablesMap) {
-        List<XWPFParagraph> paragraphs = Lists.newArrayList();
-        for (IBodyElement bodyElement : new ArrayList<IBodyElement>(bodyElements)) {
-            if (bodyElement instanceof XWPFParagraph) {
-                paragraphs.add((XWPFParagraph) bodyElement);
-                continue;
-            }
-
-        }
-        if (!paragraphs.isEmpty()) {
-            getVariableNamesFromDocxParagraphs(paragraphs, variablesMap);
-            paragraphs.clear();
-        }
-    }
-
-    private static final String PLACEHOLDER_START = "${";
-    private static final String PLACEHOLDER_END = "}";
-
-    private void getVariableNamesFromDocxParagraphs(List<XWPFParagraph> paragraphs, Map<String, Integer> variablesMap) {
-        for (XWPFParagraph paragraph : Lists.newArrayList(paragraphs)) {
-            String paragraphText = paragraph.getText();
-            // JOptionPane.showMessageDialog(null, paragraphText);
-            while (true) {
-                if (!paragraphText.contains(PLACEHOLDER_START)) {
-                    break;
-                }
-                paragraphText = paragraphText.substring(paragraphText.indexOf(PLACEHOLDER_START) + PLACEHOLDER_START.length());
-                if (!paragraphText.contains(PLACEHOLDER_END)) {
-                    break;
-                }
-                String var = paragraphText.substring(0, paragraphText.indexOf(PLACEHOLDER_END));
-
-                if (!variablesMap.containsKey(var)) {
-                    variablesMap.put(var, 1);
-                    // JOptionPane.showMessageDialog(null, "var = " + var);
-                }
-
-                paragraphText = paragraphText.substring(paragraphText.indexOf(PLACEHOLDER_END) + PLACEHOLDER_END.length());
+            if (null != docxDialogEnhancementModeOutput) {
+                docxDialogEnhancementModeOutput.enableDocxMode = enableDocxMode;
             }
         }
-    }
 
-    // to server side !!!
+    }
 
     private void createButtonParametersDisabler(final Composite mainComposite, final Composite dynaComposite) {
 
@@ -668,7 +637,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
                         }
                         for (ParamDef paramDef : group.getParameters()) {
                             if (paramDef.getName().equals(row[0])) {
-                                BotTaskParamDefWizard wizard = new BotTaskParamDefWizard(group, paramDef, new DocxDialogEnhancementMode(0));
+                                BotTaskParamDefWizard wizard = new BotTaskParamDefWizard(group, paramDef, docxDialogEnhancementModeInput);
                                 CompactWizardDialog dialog = new CompactWizardDialog(wizard);
                                 if (dialog.open() == Window.OK) {
                                     setTableInput(parameterType);
@@ -717,7 +686,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
                 editParameterButton.setEnabled(botTask.getType() != BotTaskType.PARAMETERIZED && selection.getFirstElement() != null);
                 deleteParameterButton.setEnabled((null != enableReadDocxParametersButtons ? !enableReadDocxParametersButtons : !isBotDocxHandler)
                         && botTask.getType() != BotTaskType.PARAMETERIZED && selection.getFirstElement() != null);
-                readDocxParametersButton.setEnabled(enableReadDocxButton != null ? enableReadDocxButton : isBotDocxHandler);
+                readDocxParametersButton.setVisible(enableReadDocxButton != null ? enableReadDocxButton : isBotDocxHandler);
             }
         });
     }

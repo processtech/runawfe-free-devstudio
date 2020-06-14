@@ -1,17 +1,18 @@
 package ru.runa.gpd.extension.handler;
 
+import com.google.common.collect.Lists;
 import java.util.List;
-
 import org.dom4j.Element;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.util.BackCompatibilityUtils;
 
-import com.google.common.collect.Lists;
-
 public class ParamDef {
     public static enum Presentation {
-        undefined, combo, text, richcombo, checkbox
+        undefined,
+        combo,
+        text,
+        richcombo,
+        checkbox
     }
 
     public static final int XML_TYPE_ATTR = 1;
