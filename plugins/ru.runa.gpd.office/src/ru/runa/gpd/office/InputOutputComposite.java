@@ -149,6 +149,7 @@ public class InputOutputComposite extends Composite implements DialogEnhancement
         private final Composite composite;
         private final DialogEnhancementMode dialogEnhancementMode;
         final boolean docxEnhancementModeInput;
+        final boolean docxEnhancementModeOutput;
         private Combo variableCombo;
 
         public ChooseStringOrFile(Composite composite, String fileName, String variableName, String stringLabel, FilesSupplierMode mode,
@@ -157,6 +158,8 @@ public class InputOutputComposite extends Composite implements DialogEnhancement
             this.dialogEnhancementMode = dialogEnhancementMode;
             docxEnhancementModeInput = null != dialogEnhancementMode && dialogEnhancementMode.checkDocxEnhancementMode()
                     && dialogEnhancementMode.is(DocxDialogEnhancementMode.DOCX_SHOW_INPUT);
+            docxEnhancementModeOutput = null != dialogEnhancementMode && dialogEnhancementMode.checkDocxEnhancementMode()
+                    && dialogEnhancementMode.is(DocxDialogEnhancementMode.DOCX_SHOW_OUTPUT);
 
             final Combo combo = new Combo(composite, SWT.READ_ONLY);
             combo.add(stringLabel);
@@ -179,9 +182,12 @@ public class InputOutputComposite extends Composite implements DialogEnhancement
                 combo.select(2);
                 showEmbeddedFile(fileName, false);
             } else {
-                if (docxEnhancementModeInput && ((null == fileName) || (fileName.isEmpty()))) {
+                if (docxEnhancementModeInput && Strings.isNullOrEmpty(fileName)) {
                     combo.select(2);
                     showEmbeddedFile(fileName, true);
+                } else if (docxEnhancementModeOutput && Strings.isNullOrEmpty(variableName)) {
+                    combo.select(1);
+                    showVariable(variableName);
                 } else {
                     combo.select(0);
                     showFileName(fileName);
@@ -226,13 +232,7 @@ public class InputOutputComposite extends Composite implements DialogEnhancement
             if (null == variableCombo || null == dialogEnhancementMode || docxEnhancementModeInput) {
                 return;
             }
-            String outputFileParamName = DocxDialogEnhancementMode.getOutputFileParamName();
-            for (int i = 0, isize = variableCombo.getItemCount(); i < isize; i++) {
-                if (outputFileParamName.compareTo(variableCombo.getItem(i)) == 0) {
-                    variableCombo.select(i);
-                    return;
-                }
-            }
+            showVariable(DocxDialogEnhancementMode.getOutputFileParamName());
         }
 
         private void showFileName(String filename) {
@@ -246,7 +246,7 @@ public class InputOutputComposite extends Composite implements DialogEnhancement
             final Text text = new Text(composite, SWT.BORDER);
             if (filename != null) {
                 text.setText(filename);
-            } else if (docxEnhancementModeInput) {
+            } else if (docxEnhancementModeInput || docxEnhancementModeOutput) {
                 setFileName("", false);
             }
             text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -254,7 +254,7 @@ public class InputOutputComposite extends Composite implements DialogEnhancement
 
                 @Override
                 protected void onTextChanged(ModifyEvent e) throws Exception {
-                    setFileName(text.getText(), docxEnhancementModeInput ? false : null);
+                    setFileName(text.getText(), (docxEnhancementModeInput || docxEnhancementModeOutput) ? false : null);
                 }
             });
             control = text;
@@ -272,7 +272,7 @@ public class InputOutputComposite extends Composite implements DialogEnhancement
             }
             if (variable != null) {
                 combo.setText(variable);
-            } else if (docxEnhancementModeInput) {
+            } else if (docxEnhancementModeInput || docxEnhancementModeOutput) {
                 setVariable("");
             }
             combo.addSelectionListener(new LoggingSelectionAdapter() {
