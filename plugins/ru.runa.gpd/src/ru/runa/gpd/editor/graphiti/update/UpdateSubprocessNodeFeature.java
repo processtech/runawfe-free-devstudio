@@ -19,7 +19,10 @@ public class UpdateSubprocessNodeFeature extends UpdateStateNodeFeature {
         PictogramElement pe = context.getPictogramElement();
         Subprocess bo = (Subprocess) getBusinessObjectForPictogramElement(pe);
         String transactional = PropertyUtil.getPropertyValue(pe, GaProperty.TRANSACTIONAL);
-        if (transactional != null && !Objects.equal(transactional, String.valueOf(bo.isTransactional()))) {
+        String embedded = PropertyUtil.getPropertyValue(pe, GaProperty.EMBEDDED);
+
+        if ((transactional != null && !Objects.equal(transactional, String.valueOf(bo.isTransactional())))
+                || (embedded != null && !Objects.equal(embedded, String.valueOf(bo.isEmbedded())))) {
             return Reason.createTrueReason();
         }
         return super.updateNeeded(context);
@@ -38,8 +41,16 @@ public class UpdateSubprocessNodeFeature extends UpdateStateNodeFeature {
         } else {
             secondBorder.setLineVisible(false);
         }
-
         PropertyUtil.setPropertyValue(pe, GaProperty.TRANSACTIONAL, String.valueOf(bo.isTransactional()));
+
+        GraphicsAlgorithm borderRect = PropertyUtil.findGaRecursiveByName(ga, LayoutSubprocessNodeFeature.BORDER_RECT);
+        if (bo.isEmbedded()) {
+            borderRect.setLineWidth(secondBorder.getStyle().getLineWidth());
+        } else {
+            borderRect.setLineWidth(secondBorder.getStyle().getLineWidth() + 1);
+        }
+        PropertyUtil.setPropertyValue(pe, GaProperty.EMBEDDED, String.valueOf(bo.isEmbedded()));
+
         return super.update(context);
     }
 
