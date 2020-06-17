@@ -36,7 +36,6 @@ public class DocxDialogEnhancementMode extends DialogEnhancementMode {
     public String defaultFileName;
     public boolean showFileAsNewFirstTime;
     public Boolean enableDocxMode;
-    public DialogEnhancementObserver observer;
 
     public static final String PLACEHOLDER_START = "${";
     public static final String PLACEHOLDER_END = "}";
@@ -49,12 +48,6 @@ public class DocxDialogEnhancementMode extends DialogEnhancementMode {
 
     public static String getOutputFileParamName() {
         return Localization.getString("MSWordConfig.label.result");
-    }
-
-    public void updateObserver() {
-        if (null != observer) {
-            observer.invokeEnhancementObserver();
-        }
     }
 
     public static Map<String, Integer> getVariableNamesFromDocxTemplate(InputStream templateInputStream) {

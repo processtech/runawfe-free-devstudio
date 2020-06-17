@@ -71,6 +71,10 @@ public abstract class ProcessFileComposite extends Composite {
                     protected void onLinkActivated(HyperlinkEvent e) throws Exception {
                         IOUtils.copyFile(getTemplateInputStream(), getFile());
                         eventSupport.firePropertyChange(PropertyNames.PROPERTY_VALUE, null, getFile().getName());
+
+                        if (null != dialogEnhancementMode && dialogEnhancementMode.checkDocxEnhancementMode()) {
+                            IDE.openEditor(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(), getFile(), true);
+                        }
                         rebuild();
                     }
                 });
@@ -90,6 +94,9 @@ public abstract class ProcessFileComposite extends Composite {
                     IOUtils.copyFile(path, getFile());
                     eventSupport.firePropertyChange(PropertyNames.PROPERTY_VALUE, null, getFile().getName());
                     rebuild();
+                    if (null != dialogEnhancementMode && dialogEnhancementMode.checkDocxEnhancementMode()) {
+                        dialogEnhancementMode.invoke(DialogEnhancementMode.DOCX_RELOAD_FROM_TEMPLATE);
+                    }
                 }
             });
         } else {

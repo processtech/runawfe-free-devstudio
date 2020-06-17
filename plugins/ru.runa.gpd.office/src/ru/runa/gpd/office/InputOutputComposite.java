@@ -46,6 +46,9 @@ public class InputOutputComposite extends Composite implements DialogEnhancement
         this.delegable = delegable;
         this.fileExtension = fileExtension;
         this.dialogEnhancementMode = dialogEnhancementMode;
+        if (null != dialogEnhancementMode && dialogEnhancementMode.checkDocxEnhancementMode()) {
+            ((DocxDialogEnhancementMode) dialogEnhancementMode).observer = this;
+        }
         GridData data = new GridData(GridData.FILL_HORIZONTAL);
         data.horizontalSpan = 3;
         setLayoutData(data);
@@ -55,8 +58,8 @@ public class InputOutputComposite extends Composite implements DialogEnhancement
             inputGroup.setText(Messages.getString("label.input"));
             inputGroup.setLayout(new GridLayout(2, false));
 
-            new ChooseStringOrFile(inputGroup, model.inputPath, model.inputVariable, Messages.getString("label.filePath"), FilesSupplierMode.IN,
-                    dialogEnhancementMode) {
+            chooseStringOrFileOutput = new ChooseStringOrFile(inputGroup, model.inputPath, model.inputVariable, Messages.getString("label.filePath"),
+                    FilesSupplierMode.IN, dialogEnhancementMode) {
 
                 @Override
                 public void setFileName(String fileName, Boolean embeddedMode) {
@@ -87,9 +90,6 @@ public class InputOutputComposite extends Composite implements DialogEnhancement
             if (model.outputFilename != null) {
                 fileNameText.setText(model.outputFilename);
             }
-            if (null != dialogEnhancementMode && dialogEnhancementMode.checkDocxEnhancementMode()) {
-                ((DocxDialogEnhancementMode) dialogEnhancementMode).observer = this;
-            }
             fileNameText.addModifyListener(new LoggingModifyTextAdapter() {
 
                 @Override
@@ -119,15 +119,16 @@ public class InputOutputComposite extends Composite implements DialogEnhancement
     }
 
     @Override
-    public void invokeEnhancementObserver() {
-        if (null != dialogEnhancementMode && dialogEnhancementMode.checkDocxEnhancementMode()) {
+    public void invokeEnhancementObserver(long flags) {
+        if (null != dialogEnhancementMode && dialogEnhancementMode.checkDocxEnhancementMode()
+                && DialogEnhancementMode.check(flags, DialogEnhancementMode.DOCX_OUTPUT_VARIABLE_MODE_SELECTED)) {
             String outputFileParamName = DocxDialogEnhancementMode.getOutputFileParamName();
             if (null != fileNameText && fileNameText.getText().isEmpty()) {
                 fileNameText.setText(model.outputFilename = outputFileParamName + ".docx");
             }
         }
         if (null != chooseStringOrFileOutput) {
-            chooseStringOrFileOutput.invokeEnhancementObserver();
+            chooseStringOrFileOutput.invokeEnhancementObserver(flags);
         }
     }
 
@@ -155,12 +156,13 @@ public class InputOutputComposite extends Composite implements DialogEnhancement
         public ChooseStringOrFile(Composite composite, String fileName, String variableName, String stringLabel, FilesSupplierMode mode,
                 DialogEnhancementMode dialogEnhancementMode) {
             this.composite = composite;
-            this.dialogEnhancementMode = dialogEnhancementMode;
-            docxEnhancementModeInput = null != dialogEnhancementMode && dialogEnhancementMode.checkDocxEnhancementMode()
-                    && dialogEnhancementMode.is(DocxDialogEnhancementMode.DOCX_SHOW_INPUT);
-            docxEnhancementModeOutput = null != dialogEnhancementMode && dialogEnhancementMode.checkDocxEnhancementMode()
-                    && dialogEnhancementMode.is(DocxDialogEnhancementMode.DOCX_SHOW_OUTPUT);
-
+            if (null != (this.dialogEnhancementMode = dialogEnhancementMode) && dialogEnhancementMode.checkDocxEnhancementMode()) {
+                docxEnhancementModeInput = dialogEnhancementMode.is(DocxDialogEnhancementMode.DOCX_SHOW_INPUT);
+                docxEnhancementModeOutput = dialogEnhancementMode.is(DocxDialogEnhancementMode.DOCX_SHOW_OUTPUT);
+            } else {
+                docxEnhancementModeInput = false;
+                docxEnhancementModeOutput = false;
+            }
             final Combo combo = new Combo(composite, SWT.READ_ONLY);
             combo.add(stringLabel);
             combo.add(Messages.getString(null != dialogEnhancementMode && dialogEnhancementMode.checkDocxEnhancementMode()
@@ -228,11 +230,14 @@ public class InputOutputComposite extends Composite implements DialogEnhancement
             });
         }
 
-        public void invokeEnhancementObserver() {
-            if (null == variableCombo || null == dialogEnhancementMode || docxEnhancementModeInput) {
+        public void invokeEnhancementObserver(long flags) {
+            if (null == variableCombo || null == dialogEnhancementMode) {
                 return;
             }
-            showVariable(DocxDialogEnhancementMode.getOutputFileParamName());
+            variableCombo = null;
+            showVariable(DocxDialogEnhancementMode.check(flags, DocxDialogEnhancementMode.DOCX_INPUT_VARIABLE_MODE_SELECTED)
+                    ? DocxDialogEnhancementMode.getInputFileParamName()
+                    : DocxDialogEnhancementMode.getOutputFileParamName());
         }
 
         private void showFileName(String filename) {
@@ -247,14 +252,14 @@ public class InputOutputComposite extends Composite implements DialogEnhancement
             if (filename != null) {
                 text.setText(filename);
             } else if (docxEnhancementModeInput || docxEnhancementModeOutput) {
-                setFileName("", false);
+                setFileName("", docxEnhancementModeInput ? false : null);
             }
             text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             text.addModifyListener(new LoggingModifyTextAdapter() {
 
                 @Override
                 protected void onTextChanged(ModifyEvent e) throws Exception {
-                    setFileName(text.getText(), (docxEnhancementModeInput || docxEnhancementModeOutput) ? false : null);
+                    setFileName(text.getText(), docxEnhancementModeInput ? false : null);
                 }
             });
             control = text;
@@ -270,10 +275,12 @@ public class InputOutputComposite extends Composite implements DialogEnhancement
             for (String variableName : delegable.getVariableNames(false, FileVariable.class.getName())) {
                 combo.add(variableName);
             }
+            boolean needInvokeParent = false;
             if (variable != null) {
                 combo.setText(variable);
             } else if (docxEnhancementModeInput || docxEnhancementModeOutput) {
                 setVariable("");
+                needInvokeParent = true;
             }
             combo.addSelectionListener(new LoggingSelectionAdapter() {
 
@@ -291,6 +298,11 @@ public class InputOutputComposite extends Composite implements DialogEnhancement
             });
             control = combo;
             composite.layout(true, true);
+
+            if (needInvokeParent) {
+                dialogEnhancementMode.invoke(docxEnhancementModeInput ? DialogEnhancementMode.DOCX_INPUT_VARIABLE_MODE_SELECTED
+                        : DialogEnhancementMode.DOCX_OUTPUT_VARIABLE_MODE_SELECTED);
+            }
         }
 
         private void showDataSource(String dataSource) {
