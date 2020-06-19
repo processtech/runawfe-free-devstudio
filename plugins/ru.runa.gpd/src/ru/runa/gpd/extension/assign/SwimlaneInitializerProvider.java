@@ -1,18 +1,18 @@
 package ru.runa.gpd.extension.assign;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.HandlerArtifact;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.ui.dialog.SwimlaneConfigDialog;
+import ru.runa.gpd.ui.enhancement.DialogEnhancementMode;
 
 public class SwimlaneInitializerProvider extends DelegableProvider {
 
     @Override
-    public String showConfigurationDialog(Delegable delegable) {
+    public String showConfigurationDialog(Delegable delegable, DialogEnhancementMode dialogEnhancementMode) {
         if (!HandlerArtifact.ASSIGNMENT.equals(delegable.getDelegationType())) {
             throw new IllegalArgumentException("For assignment handler only");
         }

@@ -43,7 +43,7 @@ public class DocxHandlerCellEditorProvider extends XmlBasedConstructorProvider<D
 
     @Override
     protected Composite createConstructorComposite(Composite parent, Delegable delegable, DocxModel model) {
-        return new ConstructorView(parent, delegable, model, new DialogEnhancementMode());
+        return new ConstructorView(parent, delegable, model, null);
     }
 
     @Override

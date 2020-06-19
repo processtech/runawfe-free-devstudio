@@ -151,6 +151,7 @@ public class InputOutputComposite extends Composite implements DialogEnhancement
         private final DialogEnhancementMode dialogEnhancementMode;
         final boolean docxEnhancementModeInput;
         final boolean docxEnhancementModeOutput;
+        final boolean docxScriptEnhancementMode;
         private Combo variableCombo;
 
         public ChooseStringOrFile(Composite composite, String fileName, String variableName, String stringLabel, FilesSupplierMode mode,
@@ -163,35 +164,50 @@ public class InputOutputComposite extends Composite implements DialogEnhancement
                 docxEnhancementModeInput = false;
                 docxEnhancementModeOutput = false;
             }
+            docxScriptEnhancementMode = null != dialogEnhancementMode && dialogEnhancementMode.checkScriptDocxEnhancementMode();
             final Combo combo = new Combo(composite, SWT.READ_ONLY);
-            combo.add(stringLabel);
+            if (!docxScriptEnhancementMode) {
+                combo.add(stringLabel);
+            }
             combo.add(Messages.getString(null != dialogEnhancementMode && dialogEnhancementMode.checkDocxEnhancementMode()
                     && dialogEnhancementMode.is(DocxDialogEnhancementMode.DOCX_DONT_USE_VARIABLE_TITLE) ? "label.fileParameter"
                             : "label.fileVariable"));
             if (mode == FilesSupplierMode.IN) {
-                combo.add(Messages.getString("label.processDefinitionFile"));
+                combo.add(Messages.getString(docxScriptEnhancementMode ? "label.processDefinitionFileDocx" : "label.processDefinitionFile"));
             }
             if (model.canWorkWithDataSource) {
                 combo.add(Messages.getString("label.dataSourceName"));
                 combo.add(Messages.getString("label.dataSourceNameVariable"));
             }
+            if (docxScriptEnhancementMode) {
+                combo.add(stringLabel);
+            }
 
             if (!Strings.isNullOrEmpty(variableName)) {
-                combo.select(1);
+                combo.select(docxScriptEnhancementMode ? 0 : 1);
                 showVariable(variableName);
             } else if ((delegable instanceof GraphElement && EmbeddedFileUtils.isProcessFile(fileName))
                     || (delegable instanceof BotTask && EmbeddedFileUtils.isBotTaskFile(fileName))) {
-                combo.select(2);
+                combo.select(docxScriptEnhancementMode ? 1 : 2);
                 showEmbeddedFile(fileName, false);
             } else {
+                // default behavior
                 if (docxEnhancementModeInput && Strings.isNullOrEmpty(fileName)) {
                     combo.select(2);
                     showEmbeddedFile(fileName, true);
                 } else if (docxEnhancementModeOutput && Strings.isNullOrEmpty(variableName)) {
                     combo.select(1);
                     showVariable(variableName);
+                } else if (docxScriptEnhancementMode) {
+                    if (mode == FilesSupplierMode.IN) {
+                        combo.select(1);
+                        showEmbeddedFile(fileName, true);
+                    } else {
+                        combo.select(0);
+                        showVariable(variableName);
+                    }
                 } else {
-                    combo.select(0);
+                    combo.select(docxScriptEnhancementMode ? 2 : 0);
                     showFileName(fileName);
                     if (!Strings.isNullOrEmpty(fileName)) {
                         if (fileName.startsWith(DataSourceStuff.PATH_PREFIX_DATA_SOURCE)) {
@@ -211,20 +227,42 @@ public class InputOutputComposite extends Composite implements DialogEnhancement
                     variableCombo = null;
                     switch (combo.getSelectionIndex()) {
                     case 0:
-                        showFileName(null);
+                        if (docxScriptEnhancementMode) {
+                            showVariable(null);
+                        } else {
+                            showFileName(null);
+                        }
                         break;
                     case 2:
-                        showEmbeddedFile(null, false);
+                        if (docxScriptEnhancementMode) {
+                            showFileName(null);
+                        } else {
+                            showEmbeddedFile(null, false);
+                        }
                         break;
                     case 3:
-                        showDataSource(null);
+                        if (!docxScriptEnhancementMode) {
+                            showDataSource(null);
+                        }
                         break;
                     case 4:
-                        showDataSourceVariable(null);
+                        if (!docxScriptEnhancementMode) {
+                            showDataSourceVariable(null);
+                        }
                         break;
                     case 1:
+                        if (docxScriptEnhancementMode) {
+                            if (mode == FilesSupplierMode.IN) {
+                                showEmbeddedFile(null, false);
+                            } else {
+                                showVariable(null);
+                            }
+                            break;
+                        }
                     default:
-                        showVariable(null);
+                        if (!docxScriptEnhancementMode) {
+                            showVariable(null);
+                        }
                     }
                 }
             });

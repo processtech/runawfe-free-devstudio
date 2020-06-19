@@ -49,6 +49,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.part.FileEditorInput;
+import ru.runa.gpd.Activator;
 import ru.runa.gpd.BotCache;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
@@ -63,6 +64,7 @@ import ru.runa.gpd.extension.handler.ParamDefConfig;
 import ru.runa.gpd.extension.handler.ParamDefGroup;
 import ru.runa.gpd.lang.model.BotTask;
 import ru.runa.gpd.lang.model.BotTaskType;
+import ru.runa.gpd.settings.PrefConstants;
 import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
@@ -168,6 +170,10 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
         return false;
     }
 
+    public void recreateView() {
+        rebuildView(editorComposite);
+    }
+
     @Override
     public void createPartControl(Composite parent) {
         editorComposite = new Composite(parent, SWT.NONE);
@@ -177,14 +183,15 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
     }
 
     private void rebuildView(Composite composite) {
-        for (Control control : composite.getChildren()) {
-            control.dispose();
-        }
         configurationText = null;
         addParameterButton = null;
         editParameterButton = null;
         deleteParameterButton = null;
         readDocxParametersButton = null;
+
+        for (Control control : composite.getChildren()) {
+            control.dispose();
+        }
 
         createTaskHandlerClassField(composite);
         if (botTask.getType() == BotTaskType.PARAMETERIZED) {
@@ -471,6 +478,9 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
     }
 
     private void createButtonParametersDisabler(final Composite mainComposite, final Composite innerComposite) {
+        if (!Activator.getPrefBoolean(PrefConstants.P_ENABLE_USE_BOT_CONFIG_WITHOUT_PARAMETERS_OPTION)) {
+            return;
+        }
 
         Composite dynaComposite = new Composite(innerComposite, SWT.NONE);
         dynaComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -556,7 +566,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
             @Override
             protected void onSelection(SelectionEvent e) throws Exception {
                 DelegableProvider provider = HandlerRegistry.getProvider(botTask.getDelegationClassName());
-                String newConfiguration = provider.showConfigurationDialog(botTask);
+                String newConfiguration = provider.showConfigurationDialog(botTask, null);
                 if (newConfiguration != null) {
                     configurationText.setText(newConfiguration);
                     botTask.setDelegationConfiguration(newConfiguration);
@@ -568,6 +578,9 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
     }
 
     private void createConfigurationArea(Composite parent) {
+        if (!Activator.getPrefBoolean(PrefConstants.P_SHOW_XML_BOT_CONFIG)) {
+            return;
+        }
         Composite dynaComposite = new Composite(parent, SWT.NONE);
         dynaComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
         dynaComposite.setLayout(new GridLayout());

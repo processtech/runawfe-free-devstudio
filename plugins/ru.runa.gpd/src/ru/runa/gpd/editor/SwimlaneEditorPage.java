@@ -315,7 +315,8 @@ public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
                         String content = IOUtils.readStream(processDefinitionFile.getContents());
                         String oldReference = "=\"" + Swimlane.GLOBAL_ROLE_REF_PREFIX + oldName + "\"";
                         if (content.contains(oldReference)) {
-                            content = content.replaceAll(oldReference, "=\"" + (newName == null ? "" : Swimlane.GLOBAL_ROLE_REF_PREFIX + newName) + "\"");
+                            content = content.replaceAll(oldReference,
+                                    "=\"" + (newName == null ? "" : Swimlane.GLOBAL_ROLE_REF_PREFIX + newName) + "\"");
                             processDefinitionFile.setContents(new ByteArrayInputStream(content.getBytes(Charsets.UTF_8)), true, true, null);
                             ProcessCache.invalidateProcessDefinition(processDefinitionFile);
                         }
@@ -359,7 +360,7 @@ public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
             IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
             Swimlane swimlane = (Swimlane) selection.getFirstElement();
             DelegableProvider provider = HandlerRegistry.getProvider(swimlane.getDelegationClassName());
-            String configuration = provider.showConfigurationDialog(swimlane);
+            String configuration = provider.showConfigurationDialog(swimlane, null);
             if (configuration != null) {
                 swimlane.setDelegationConfiguration(configuration);
                 tableViewer.setSelection(selection);

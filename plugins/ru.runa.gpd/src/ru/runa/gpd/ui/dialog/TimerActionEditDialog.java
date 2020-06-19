@@ -14,7 +14,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.DelegableProvider;
@@ -77,7 +76,8 @@ public class TimerActionEditDialog extends Dialog {
             button.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    ChooseHandlerClassDialog dialog = new ChooseHandlerClassDialog(HandlerArtifact.ACTION, editableTimerAction.getDelegationClassName());
+                    ChooseHandlerClassDialog dialog = new ChooseHandlerClassDialog(HandlerArtifact.ACTION,
+                            editableTimerAction.getDelegationClassName());
                     String className = dialog.openDialog();
                     if (className != null) {
                         editableTimerAction.setDelegationClassName(className);
@@ -109,7 +109,7 @@ public class TimerActionEditDialog extends Dialog {
                 public void widgetSelected(SelectionEvent e) {
                     try {
                         DelegableProvider provider = HandlerRegistry.getProvider(editableTimerAction.getDelegationClassName());
-                        String config = provider.showConfigurationDialog(editableTimerAction);
+                        String config = provider.showConfigurationDialog(editableTimerAction, null);
                         if (config != null) {
                             editableTimerAction.setDelegationConfiguration(config);
                         }
@@ -139,7 +139,8 @@ public class TimerActionEditDialog extends Dialog {
             button.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    DurationEditDialog dialog = new DurationEditDialog(editableTimerAction.getProcessDefinition(), editableTimerAction.getRepeatDelay());
+                    DurationEditDialog dialog = new DurationEditDialog(editableTimerAction.getProcessDefinition(),
+                            editableTimerAction.getRepeatDelay());
                     Duration duration = (Duration) dialog.openDialog();
                     if (duration != null) {
                         editableTimerAction.setRepeatDuration(duration.getDuration());

@@ -28,7 +28,7 @@ public class DoubleClickDelegableFeature extends DoubleClickElementFeature {
             }
         } else {
             DelegableProvider provider = HandlerRegistry.getProvider(delegable.getDelegationClassName());
-            String newConfig = provider.showConfigurationDialog(delegable);
+            String newConfig = provider.showConfigurationDialog(delegable, null);
             if (newConfig != null) {
                 delegable.setDelegationConfiguration(newConfig);
                 if (delegable instanceof ExclusiveGateway) {

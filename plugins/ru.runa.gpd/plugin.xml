@@ -2373,6 +2373,11 @@
              name="%pref.common">
        </page>
        <page
+             class="ru.runa.gpd.settings.BotsPreferencePage"
+             id="gpd.pref.bots"
+             name="%pref.bots">
+       </page>
+       <page
              class="ru.runa.gpd.settings.FormPreferencePage"
              id="gpd.pref.form"
              name="%pref.form">

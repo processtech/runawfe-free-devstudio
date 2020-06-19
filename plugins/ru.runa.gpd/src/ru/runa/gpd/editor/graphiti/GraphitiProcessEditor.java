@@ -12,6 +12,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.views.properties.IPropertySource;
 import ru.runa.gpd.PropertyNames;
+import ru.runa.gpd.editor.BotTaskEditor;
 import ru.runa.gpd.editor.ProcessEditorBase;
 import ru.runa.gpd.lang.model.GraphElement;
 
@@ -25,6 +26,16 @@ public class GraphitiProcessEditor extends ProcessEditorBase {
             if (editor instanceof GraphitiProcessEditor) {
                 ((GraphitiProcessEditor) editor).getDiagramEditorPage().applyStyles();
                 ((GraphitiProcessEditor) editor).getDiagramEditorPage().refreshConnections();
+            }
+        }
+    }
+
+    public static void refreshAllBotTaskEditors() {
+        IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+        for (IEditorReference ref : page.getEditorReferences()) {
+            IEditorPart editor = ref.getEditor(true);
+            if (editor instanceof BotTaskEditor) {
+                ((BotTaskEditor) editor).recreateView();
             }
         }
     }

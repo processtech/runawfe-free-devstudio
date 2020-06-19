@@ -52,5 +52,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer impleme
         store.setDefault(LanguageElementPreferenceNode.getBpmnPropertyName(StyleUtil.TRANSITION_BPMN_NAME, P_BPMN_FOREGROUND_COLOR), "0, 0, 0");
         store.setDefault(LanguageElementPreferenceNode.getBpmnPropertyName(StyleUtil.TRANSITION_BPMN_NAME, P_BPMN_LINE_WIDTH), 1);
         store.setDefault(LanguageElementPreferenceNode.getBpmnPropertyName("exclusiveGateway", P_BPMN_MARK_DEFAULT_TRANSITION), true);
+        store.setDefault(P_ENABLE_USE_BOT_CONFIG_WITHOUT_PARAMETERS_OPTION, false);
+        store.setDefault(P_SHOW_XML_BOT_CONFIG, false);
     }
 }

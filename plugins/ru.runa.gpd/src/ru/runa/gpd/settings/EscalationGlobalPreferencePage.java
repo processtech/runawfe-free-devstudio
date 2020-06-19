@@ -1,11 +1,11 @@
 package ru.runa.gpd.settings;
 
+import com.google.common.base.Strings;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.StringButtonFieldEditor;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
-
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
@@ -15,8 +15,6 @@ import ru.runa.gpd.lang.model.TimerAction;
 import ru.runa.gpd.ui.dialog.DurationEditDialog;
 import ru.runa.gpd.util.Duration;
 import ru.runa.wfe.extension.handler.EscalationActionHandler;
-
-import com.google.common.base.Strings;
 
 public class EscalationGlobalPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage, PrefConstants {
     private final TimerAction timerAction;
@@ -78,7 +76,7 @@ public class EscalationGlobalPreferencePage extends FieldEditorPreferencePage im
         protected String changePressed() {
             try {
                 DelegableProvider provider = HandlerRegistry.getProvider(timerAction.getDelegationClassName());
-                String config = provider.showConfigurationDialog(timerAction);
+                String config = provider.showConfigurationDialog(timerAction, null);
                 if (config != null) {
                     timerAction.setDelegationConfiguration(config);
                 }

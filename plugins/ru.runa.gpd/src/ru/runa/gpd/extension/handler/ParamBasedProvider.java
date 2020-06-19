@@ -1,8 +1,10 @@
 package ru.runa.gpd.extension.handler;
 
+import com.google.common.base.Objects;
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.Map;
-
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.wizard.Wizard;
@@ -18,18 +20,14 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.LocalizationRegistry;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.Variable;
+import ru.runa.gpd.ui.enhancement.DialogEnhancementMode;
 import ru.runa.gpd.ui.wizard.CompactWizardDialog;
-
-import com.google.common.base.Objects;
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 
 public abstract class ParamBasedProvider extends DelegableProvider {
     protected abstract ParamDefConfig getParamConfig(Delegable delegable);
@@ -39,7 +37,7 @@ public abstract class ParamBasedProvider extends DelegableProvider {
     }
 
     @Override
-    public String showConfigurationDialog(Delegable delegable) {
+    public String showConfigurationDialog(Delegable delegable, DialogEnhancementMode dialogEnhancementMode) {
         ParamDefConfig config = getParamConfig(delegable);
         return showConfigurationDialog(delegable, config, getLogo());
     }

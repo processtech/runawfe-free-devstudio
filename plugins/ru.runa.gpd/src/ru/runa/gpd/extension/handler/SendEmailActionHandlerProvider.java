@@ -1,10 +1,11 @@
 package ru.runa.gpd.extension.handler;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
@@ -19,7 +20,6 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.DelegableProvider;
@@ -28,21 +28,19 @@ import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Variable;
+import ru.runa.gpd.ui.enhancement.DialogEnhancementMode;
 import ru.runa.gpd.ui.wizard.CompactWizardDialog;
 import ru.runa.gpd.util.VariableUtils;
 import ru.runa.wfe.commons.email.EmailConfig;
 import ru.runa.wfe.commons.email.EmailConfigParser;
 import ru.runa.wfe.commons.email.EmailUtils;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
-
 public class SendEmailActionHandlerProvider extends DelegableProvider {
 
-    private static String[][] configVarDelimeters = {{"\"", "\""}, {"${", "}"}};
+    private static String[][] configVarDelimeters = { { "\"", "\"" }, { "${", "}" } };
 
     @Override
-    public String showConfigurationDialog(Delegable delegable) {
+    public String showConfigurationDialog(Delegable delegable, DialogEnhancementMode dialogEnhancementMode) {
         final EmailConfigWizardPage wizardPage = new EmailConfigWizardPage(bundle, delegable);
         final ConfigurationWizard wizard = new ConfigurationWizard(wizardPage);
         CompactWizardDialog wizardDialog = new CompactWizardDialog(wizard) {
@@ -110,7 +108,7 @@ public class SendEmailActionHandlerProvider extends DelegableProvider {
         List<String> result = Lists.newArrayList();
         for (String variableName : delegable.getVariableNames(true)) {
             for (String[] delimiters : configVarDelimeters) {
-                String[] varNames = {variableName, VariableUtils.toScriptingName(variableName)};
+                String[] varNames = { variableName, VariableUtils.toScriptingName(variableName) };
                 for (String varName : varNames) {
                     if (configuration.contains(delimiters[0] + varName + delimiters[1])) {
                         result.add(variableName);
@@ -120,11 +118,11 @@ public class SendEmailActionHandlerProvider extends DelegableProvider {
         }
         return result;
     }
-    
+
     @Override
     public String getConfigurationOnVariableRename(Delegable delegable, Variable currentVariable, Variable previewVariable) {
         String configuration = delegable.getDelegationConfiguration();
-        String[] currentVariableNames = {currentVariable.getName(), currentVariable.getScriptingName()};
+        String[] currentVariableNames = { currentVariable.getName(), currentVariable.getScriptingName() };
         for (String[] delimiters : configVarDelimeters) {
             for (String currentVariableName : currentVariableNames) {
                 String oldString = Pattern.quote(delimiters[0] + currentVariableName + delimiters[1]);

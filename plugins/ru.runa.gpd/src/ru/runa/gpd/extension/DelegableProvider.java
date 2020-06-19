@@ -29,7 +29,7 @@ public class DelegableProvider {
         return new DelegableConfigurationDialog(delegable.getDelegationConfiguration());
     }
 
-    public String showConfigurationDialog(Delegable delegable) {
+    public String showConfigurationDialog(Delegable delegable, DialogEnhancementMode dialogEnhancementMode) {
         DelegableConfigurationDialog dialog = createConfigurationDialog(delegable);
         if (dialog.open() == Window.OK) {
             return dialog.getResult();

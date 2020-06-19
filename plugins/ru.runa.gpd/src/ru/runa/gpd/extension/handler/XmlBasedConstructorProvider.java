@@ -39,8 +39,9 @@ import ru.runa.gpd.util.XmlUtil;
 public abstract class XmlBasedConstructorProvider<T extends Observable> extends DelegableProvider {
 
     @Override
-    public String showConfigurationDialog(Delegable delegable) {
+    public String showConfigurationDialog(Delegable delegable, DialogEnhancementMode dialogEnhancementMode) {
         XmlBasedConstructorDialog dialog = new XmlBasedConstructorDialog(delegable);
+        dialog.setDialogEnhancementMode(dialogEnhancementMode);
         if (dialog.open() == Window.OK) {
             return dialog.getResult();
         }
@@ -139,6 +140,10 @@ public abstract class XmlBasedConstructorProvider<T extends Observable> extends 
             this.initialValue = delegable.getDelegationConfiguration();
         }
 
+        void setDialogEnhancementMode(DialogEnhancementMode dialogEnhancementMode) {
+            this.dialogEnhancementMode = dialogEnhancementMode;
+        }
+
         @Override
         protected Point getInitialSize() {
             return new Point(600, 400);
@@ -209,7 +214,11 @@ public abstract class XmlBasedConstructorProvider<T extends Observable> extends 
                 scrolledComposite.setExpandHorizontal(true);
                 scrolledComposite.setExpandVertical(true);
                 scrolledComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
-                constructorView = createConstructorComposite(scrolledComposite, delegable, model);
+                if (null != dialogEnhancementMode && dialogEnhancementMode.checkScriptDocxEnhancementMode()) {
+                    constructorView = createConstructorComposite(scrolledComposite, delegable, model, dialogEnhancementMode);
+                } else {
+                    constructorView = createConstructorComposite(scrolledComposite, delegable, model);
+                }
                 constructorView.setLayoutData(new GridData(GridData.FILL_BOTH));
                 if (constructorView instanceof Observer) {
                     model.addObserver((Observer) constructorView);

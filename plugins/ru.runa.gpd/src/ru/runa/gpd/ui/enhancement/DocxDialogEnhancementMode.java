@@ -19,6 +19,14 @@ public class DocxDialogEnhancementMode extends DialogEnhancementMode {
         dialogOptionFlags = DOCX_EMBEDDED_VIEWMODE | DOCX_DONT_USE_VARIABLE_TITLE | modeWithFlags;
     }
 
+    public DocxDialogEnhancementMode(boolean isScriptMode, long modeWithFlags) {
+        if (isScriptMode) {
+            dialogOptionFlags = DOCX_SCRIPT_EMBEDDED_VIEWMODE | DOCX_DONT_USE_VARIABLE_TITLE | DOCX_SHOW_INPUT | DOCX_SHOW_OUTPUT | modeWithFlags;
+        } else {
+            dialogOptionFlags = DOCX_EMBEDDED_VIEWMODE | DOCX_DONT_USE_VARIABLE_TITLE | modeWithFlags;
+        }
+    }
+
     public static long DOCX_DONT_USE_VARIABLE_TITLE = (1L << 6);
     public static long DOCX_SHOW_XML_VIEW = (1L << 5);
     public static long DOCX_SHOW_INPUT = (1L << 4);

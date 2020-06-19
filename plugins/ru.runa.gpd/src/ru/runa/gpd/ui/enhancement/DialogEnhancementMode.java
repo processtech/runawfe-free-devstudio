@@ -12,6 +12,7 @@ public class DialogEnhancementMode {
     // Dialog enhancement modes
     public static long DEFAULT_VIEWMODE = (1L << 63);
     public static long DOCX_EMBEDDED_VIEWMODE = (1L << 62);
+    public static long DOCX_SCRIPT_EMBEDDED_VIEWMODE = (1L << 61);
 
     // Invoke/updateObserver codes
     public static long DOCX_NO_PARAMS = 0L;
@@ -30,7 +31,11 @@ public class DialogEnhancementMode {
     }
 
     public boolean checkDocxEnhancementMode() {
-        return is(DOCX_EMBEDDED_VIEWMODE) && not(DEFAULT_VIEWMODE);
+        return is(DOCX_EMBEDDED_VIEWMODE) && not(DOCX_SCRIPT_EMBEDDED_VIEWMODE) && not(DEFAULT_VIEWMODE);
+    }
+
+    public boolean checkScriptDocxEnhancementMode() {
+        return is(DOCX_SCRIPT_EMBEDDED_VIEWMODE) && not(DOCX_EMBEDDED_VIEWMODE) && not(DEFAULT_VIEWMODE);
     }
 
     // Common check functions
