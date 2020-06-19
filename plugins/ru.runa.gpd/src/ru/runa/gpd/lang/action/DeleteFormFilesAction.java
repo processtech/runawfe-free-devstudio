@@ -20,7 +20,11 @@ public class DeleteFormFilesAction extends BaseModelActionDelegate {
         super.selectionChanged(action, selection);
         FormNode formNode = getSelection();
         if (formNode != null) {
-            action.setEnabled(formNode.hasForm() || formNode.hasFormValidation() || formNode.hasFormScript());
+            if (formNode.isFormEditorOpened()) {
+                action.setEnabled(false);
+            } else {
+                action.setEnabled(formNode.hasForm() || formNode.hasFormValidation() || formNode.hasFormScript());
+            }
         }
     }
 
