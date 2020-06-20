@@ -55,8 +55,7 @@ public class ImportGlbWizardPage extends ImportWizardPage {
     private Button importFromFileButton;
     private Composite fileSelectionArea;
     private Text selectedParsLabel;
-    private Button selectParsButton;
-    private Button importFromServerButton;
+    private Button selectGlbButton;
     private TreeViewer serverDefinitionViewer;
     private String selectedDirFileName;
     private String[] selectedFileNames;
@@ -101,14 +100,14 @@ public class ImportGlbWizardPage extends ImportWizardPage {
         GridData gridData = new GridData(GridData.GRAB_HORIZONTAL | GridData.FILL_HORIZONTAL);
         gridData.heightHint = 30;
         selectedParsLabel.setLayoutData(gridData);
-        selectParsButton = new Button(fileSelectionArea, SWT.PUSH);
-        selectParsButton.setText(Localization.getString("button.choose"));
-        selectParsButton.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_END));
-        selectParsButton.addSelectionListener(new SelectionAdapter() {
+        selectGlbButton = new Button(fileSelectionArea, SWT.PUSH);
+        selectGlbButton.setText(Localization.getString("button.choose"));
+        selectGlbButton.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_END));
+        selectGlbButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 FileDialog dialog = new FileDialog(getShell(), SWT.OPEN | SWT.MULTI);
-                dialog.setFilterExtensions(new String[] { "*.par" });
+                dialog.setFilterExtensions(new String[] { "*.glb" });
                 if (dialog.open() != null) {
                     selectedDirFileName = dialog.getFilterPath();
                     selectedFileNames = dialog.getFileNames();
@@ -120,8 +119,6 @@ public class ImportGlbWizardPage extends ImportWizardPage {
                 }
             }
         });
-        importFromServerButton = new Button(importGroup, SWT.RADIO);
-        importFromServerButton.setText(Localization.getString("ImportParWizardPage.page.importFromServerButton"));
         SyncUIHelper.createHeader(importGroup, WFEServerProcessDefinitionImporter.getInstance(), WFEConnectionPreferencePage.class,
                 new ConnectorCallback() {
 
@@ -141,7 +138,7 @@ public class ImportGlbWizardPage extends ImportWizardPage {
 
     private void setImportMode() {
         boolean fromFile = importFromFileButton.getSelection();
-        selectParsButton.setEnabled(fromFile);
+        selectGlbButton.setEnabled(fromFile);
         if (fromFile) {
             serverDefinitionViewer.setInput(new Object());
         } else {

@@ -49,6 +49,7 @@ import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.aspects.UserActivity;
 import ru.runa.gpd.editor.ProcessSaveHistory;
+import ru.runa.gpd.lang.model.GlobalSectionDefinition;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.par.ProcessDefinitionValidator;
@@ -74,7 +75,7 @@ public class ExportGlbWizardPage extends WizardArchiveFileResourceExportPage1 {
         this.definitionNameFileMap = new TreeMap<String, IFile>();
         for (IFile file : ProcessCache.getAllProcessDefinitionsMap().keySet()) {
             ProcessDefinition definition = ProcessCache.getProcessDefinition(file);
-            if (definition != null && !(definition instanceof SubprocessDefinition)) {
+            if (definition != null && !(definition instanceof SubprocessDefinition) && (definition instanceof GlobalSectionDefinition)) {
                 definitionNameFileMap.put(getKey(file, definition), file);
             }
         }
@@ -241,7 +242,7 @@ public class ExportGlbWizardPage extends WizardArchiveFileResourceExportPage1 {
                             && !Dialogs.confirm(Localization.getString("ExportParWizardPage.confirm.export.invalid.process", definition.getName()))) {
                         continue;
                     }
-                    String outputFileName = getDestinationValue() + definition.getName() + ".gbl";
+                    String outputFileName = getDestinationValue() + definition.getName() + ".glb";
                     new ParExportOperation(resourcesToExport, new FileOutputStream(outputFileName)).run(null);
                     if (ProcessSaveHistory.isActive()) {
                         Map<String, File> savepoints = ProcessSaveHistory.getSavepoints(processFolder);
