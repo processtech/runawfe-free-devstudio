@@ -259,11 +259,7 @@ public class GlobalSectionDefinition extends ProcessDefinition {
 
     @Override
     public void validate(List<ValidationError> errors, IFile definitionFile) {
-        super.validate(errors, definitionFile);
         List<StartState> startStates = getChildren(StartState.class);
-        if (startStates.size() == 0) {
-            errors.add(ValidationError.createLocalizedError(this, "startState.doesNotExist"));
-        }
         if (startStates.size() > 1) {
             errors.add(ValidationError.createLocalizedError(this, "multipleStartStatesNotAllowed"));
         }
