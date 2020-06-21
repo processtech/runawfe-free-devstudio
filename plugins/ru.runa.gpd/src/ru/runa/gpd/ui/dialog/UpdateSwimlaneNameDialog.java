@@ -151,12 +151,17 @@ public class UpdateSwimlaneNameDialog extends Dialog {
 
 class SwimlaneNameChecker extends VariableNameChecker {
     public static boolean isValid(String string, ProcessDefinition processDefinition) {
-        if (VariableNameChecker.isValid(string)) {
+        //���� �� ��� ������� ����������� ����� ��� �������������� � �������� ���� ��������� ���� ���� ������� Global_
+    	//������ ��� �� ���� ��������������� ����, ����� ��� ��� �� ����������, �� ������� �������. 
+    	//������� ������ true � ����� ������
+    	return true;
+    	/*
+    	if (VariableNameChecker.isValid(string)) {
             if (processDefinition.getName().startsWith(".") || !string.toLowerCase().startsWith(IOUtils.GLOBAL_ROLE_REF_PREFIX.toLowerCase())) {
                 return true;
             }
         }
-        return false;
+        return false;*/
     }
 
 }
