@@ -1,11 +1,16 @@
 package ru.runa.gpd.editor;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import java.beans.PropertyChangeEvent;
+import java.io.ByteArrayInputStream;
 import java.util.List;
+
+import org.eclipse.core.internal.resources.Folder;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -33,6 +38,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
 import ru.runa.gpd.Localization;
+import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.clipboard.VariableTransfer;
 import ru.runa.gpd.editor.gef.command.ProcessDefinitionRemoveVariablesCommand;
@@ -58,6 +64,7 @@ import ru.runa.gpd.ui.dialog.ErrorDialog;
 import ru.runa.gpd.ui.dialog.UpdateVariableNameDialog;
 import ru.runa.gpd.ui.wizard.CompactWizardDialog;
 import ru.runa.gpd.ui.wizard.VariableWizard;
+import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.VariableUtils;
 import ru.runa.gpd.util.VariablesUsageXlsExporter;
 import ru.runa.gpd.util.WorkspaceOperations;
@@ -267,6 +274,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
                 }
             }
             // update variables
+            String oldName = variable.getName();
             variable.setName(newName);
             variable.setScriptingName(newScriptingName);
 
@@ -286,9 +294,36 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
                     WorkspaceOperations.saveProcessDefinition(subprocessDefinition);
                 }
             }
+            if (editor.getPartName().startsWith(".")) { // globals
+                replaceAllReferences(oldName, variable.getName(), null);
+            }
         }
     }
 
+    private void replaceAllReferences(String oldName, String newName, IContainer parent) throws Exception {
+        if (parent == null) {
+            parent = editor.getDefinitionFile().getParent().getParent();
+        }
+        for (IResource resource : parent.members()) {
+            if (resource instanceof Folder) {
+                IFile processDefinitionFile = ((Folder) resource).getFile(ParContentProvider.PROCESS_DEFINITION_FILE_NAME);
+                if (processDefinitionFile.exists()) {
+                    if (!resource.getName().startsWith(".")) {
+                        String content = IOUtils.readStream(processDefinitionFile.getContents());
+                        String oldReference = IOUtils.GLOBAL_ROLE_REF_PREFIX + oldName;
+                        if (content.contains(oldReference)) {
+                            content = content.replaceAll(oldReference, newName == null ? "" : IOUtils.GLOBAL_ROLE_REF_PREFIX + newName);
+                            processDefinitionFile.setContents(new ByteArrayInputStream(content.getBytes(Charsets.UTF_8)), true, true, null);
+                            ProcessCache.invalidateProcessDefinition(processDefinitionFile);
+                        }
+                    }
+                } else {
+                    replaceAllReferences(oldName, newName, (Folder) resource);
+                }
+            }
+        }
+    }
+    
     private class DeleteVariableSelectionListener extends LoggingSelectionAdapter {
         @Override
         protected void onSelection(SelectionEvent e) throws Exception {
