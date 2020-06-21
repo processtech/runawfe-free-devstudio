@@ -684,6 +684,7 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
                         IFile definitionFile = (IFile) ((IFolder) r).findMember(ParContentProvider.PROCESS_DEFINITION_FILE_NAME);
                         if (definitionFile != null) {
                             List<Variable> globalVariables = ProcessCache.getProcessDefinition(definitionFile).getChildren(Variable.class);
+                            globalVariables.removeIf(var -> var instanceof Swimlane);
                             for (Variable variable : globalVariables) {
                                 if (!variables.stream().filter(v -> v.getName().equals(IOUtils.GLOBAL_ROLE_REF_PREFIX + variable.getName())).findFirst().isPresent()) {
                                 	Variable copy = new Variable();
