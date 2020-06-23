@@ -135,7 +135,7 @@ public class DocxHandlerCellEditorProvider extends XmlBasedConstructorProvider<D
                             model.setStrict(strict.getSelection());
 
                             if (dialogEnhancementMode != null && dialogEnhancementMode.checkBotDocxTemplateEnhancementMode()) {
-                                ((DocxDialogEnhancementMode) dialogEnhancementMode).reloadXmlFromModel(model.toString(), null, null, null);
+                                ((DocxDialogEnhancementMode) dialogEnhancementMode).reloadBotTaskEditorXmlFromModel(model.toString(), null, null, null);
                             }
                         }
                     });

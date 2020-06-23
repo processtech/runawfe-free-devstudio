@@ -27,12 +27,13 @@ public class DocxDialogEnhancementMode extends DialogEnhancementMode {
         }
     }
 
-    public static long DOCX_DONT_USE_VARIABLE_TITLE = (1L << 6);
-    public static long DOCX_SHOW_XML_VIEW = (1L << 5);
-    public static long DOCX_SHOW_INPUT = (1L << 4);
-    public static long DOCX_SHOW_OUTPUT = (1L << 3);
+    // Create options
+    public static long DOCX_DONT_USE_VARIABLE_TITLE = (1L << 56);
+    public static long DOCX_SHOW_XML_VIEW = (1L << 55);
+    public static long DOCX_SHOW_INPUT = (1L << 54);
+    public static long DOCX_SHOW_OUTPUT = (1L << 53);
 
-    public void reloadXmlFromModel(String xml, String embeddedFileName, Boolean enableReadDocxButton, Boolean enableDocxMode) {
+    public void reloadBotTaskEditorXmlFromModel(String xml, String embeddedFileName, Boolean enableReadDocxButton, Boolean enableDocxMode) {
         throw new RuntimeException("Not implemented method!");
     };
 

@@ -49,13 +49,13 @@ public class InputOutputComposite extends Composite implements DialogEnhancement
                         public void setFileName(String fileName, Boolean embeddedMode) {
                             super.setFileName(fileName, embeddedMode);
                             boolean enableReadDocxButton = EmbeddedFileUtils.isBotTaskFile(fileName);
-                            updateDialogEnhancementMode(dialogEnhancementMode, fileName, enableReadDocxButton, embeddedMode);
+                            updateBotTaskEditorDialog(dialogEnhancementMode, fileName, enableReadDocxButton, embeddedMode);
                         }
 
                         @Override
                         public void setVariable(String variable) {
                             super.setVariable(variable);
-                            updateDialogEnhancementMode(dialogEnhancementMode, "", false, false);
+                            updateBotTaskEditorDialog(dialogEnhancementMode, "", false, false);
                         }
                     };
                 } else if (dialogEnhancementMode.checkScriptDocxTemplateEnhancementMode()) {
@@ -84,7 +84,7 @@ public class InputOutputComposite extends Composite implements DialogEnhancement
                 @Override
                 protected void onTextChanged(ModifyEvent e) throws Exception {
                     model.outputFilename = fileNameText.getText();
-                    updateDialogEnhancementMode(dialogEnhancementMode, null, null, null);
+                    updateBotTaskEditorDialog(dialogEnhancementMode, null, null, null);
                 }
             });
             if (null != dialogEnhancementMode) {
@@ -94,13 +94,13 @@ public class InputOutputComposite extends Composite implements DialogEnhancement
                         @Override
                         public void setFileName(String fileName, Boolean embeddedMode) {
                             super.setFileName(fileName, embeddedMode);
-                            updateDialogEnhancementMode(dialogEnhancementMode, null, null, embeddedMode);
+                            updateBotTaskEditorDialog(dialogEnhancementMode, null, null, embeddedMode);
                         }
 
                         @Override
                         public void setVariable(String variable) {
                             super.setVariable(variable);
-                            updateDialogEnhancementMode(dialogEnhancementMode, null, null, null);
+                            updateBotTaskEditorDialog(dialogEnhancementMode, null, null, null);
                         }
                     };
                 } else if (dialogEnhancementMode.checkScriptDocxTemplateEnhancementMode()) {
@@ -146,11 +146,11 @@ public class InputOutputComposite extends Composite implements DialogEnhancement
             changedOut = chooseStringOrFileOutput.invokeEnhancementObserver(flags);
         }
         if (changedIn || changedOut) {
-            updateDialogEnhancementMode(dialogEnhancementMode, null, null, null);
+            updateBotTaskEditorDialog(dialogEnhancementMode, null, null, null);
         }
     }
 
-    private void updateDialogEnhancementMode(DialogEnhancementMode dialogEnhancementMode, String embeddedFileName, Boolean enableReadDocxButton,
+    private void updateBotTaskEditorDialog(DialogEnhancementMode dialogEnhancementMode, String embeddedFileName, Boolean enableReadDocxButton,
             Boolean enableDocxMode) {
 
         if (null == dialogEnhancementMode || !dialogEnhancementMode.checkBotDocxTemplateEnhancementMode()) {
@@ -158,7 +158,7 @@ public class InputOutputComposite extends Composite implements DialogEnhancement
         }
 
         DocxModel docxModel = (DocxModel) ((DocxDialogEnhancementMode) dialogEnhancementMode).docxModel;
-        ((DocxDialogEnhancementMode) dialogEnhancementMode).reloadXmlFromModel(docxModel.toString(), embeddedFileName, enableReadDocxButton,
+        ((DocxDialogEnhancementMode) dialogEnhancementMode).reloadBotTaskEditorXmlFromModel(docxModel.toString(), embeddedFileName, enableReadDocxButton,
                 enableDocxMode);
 
     }

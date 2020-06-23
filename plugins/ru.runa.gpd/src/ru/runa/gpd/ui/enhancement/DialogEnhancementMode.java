@@ -15,7 +15,6 @@ public class DialogEnhancementMode {
     public static long DOCX_TEMPLATE_SCRIPT_VIEWMODE = (1L << 61);
 
     // Invoke/updateObserver codes
-    // public static long DOCX_NO_PARAMS = 0L;
     public static long DOCX_CREATE_VARIABLE = (1L << 1);
     public static long DOCX_DELETE_VARIABLE = (1L << 2);
     public static long DOCX_INPUT_VARIABLE_MODE = (1L << 3);
@@ -26,12 +25,13 @@ public class DialogEnhancementMode {
         throw new RuntimeException("Not implemented method!");
     }
 
-    public void updateObserver(long flags) {
+    public void invokeObserver(long flags) {
         if (null != observer) {
             observer.invokeEnhancementObserver(flags);
         }
     }
 
+    // Enhancement modes check functions
     public boolean checkBotDocxTemplateEnhancementMode() {
         return is(DOCX_TEMPLATE_BOT_VIEWMODE) && not(DOCX_TEMPLATE_SCRIPT_VIEWMODE) && not(DEFAULT_VIEWMODE);
     }

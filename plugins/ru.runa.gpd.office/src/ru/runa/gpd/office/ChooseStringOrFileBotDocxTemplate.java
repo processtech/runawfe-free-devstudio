@@ -178,6 +178,7 @@ class ChooseStringOrFileBotDocxTemplate extends ChooseStringOrFile {
             }
             if (ok) {
                 text.setText(variable);
+                setVariable(variable);
             }
         }
         if (!ok) {

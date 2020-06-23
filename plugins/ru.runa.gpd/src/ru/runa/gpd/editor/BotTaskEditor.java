@@ -292,7 +292,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
                 docxModel = provider.showEmbeddedConfigurationDialog(dynaComposite, botTask,
                         docxDialogEnhancementModeInput = new DocxDialogEnhancementMode(DocxDialogEnhancementMode.DOCX_SHOW_INPUT) {
                             @Override
-                            public void reloadXmlFromModel(String newConfiguration, String embeddedFileName, Boolean enableReadDocxButton,
+                            public void reloadBotTaskEditorXmlFromModel(String newConfiguration, String embeddedFileName, Boolean enableReadDocxButton,
                                     Boolean enableDocxMode) {
                                 reloadDialogXmlFromModel(newConfiguration, embeddedFileName, enableReadDocxButton, enableDocxMode);
                             }
@@ -308,10 +308,10 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
                                     }
                                 } else if (DialogEnhancementMode.check(flags, DialogEnhancementMode.DOCX_INPUT_VARIABLE_MODE)) {
                                     if (DialogEnhancementMode.check(flags, DialogEnhancementMode.DOCX_CREATE_VARIABLE)) {
-                                        tryCreateFileParam(ParamDefGroup.NAME_INPUT, DocxDialogEnhancementMode.getInputFileParamName());
-                                        docxDialogEnhancementModeInput.updateObserver(flags);
+                                        createFileParam(ParamDefGroup.NAME_INPUT, DocxDialogEnhancementMode.getInputFileParamName());
+                                        docxDialogEnhancementModeInput.invokeObserver(flags);
                                     } else if (DialogEnhancementMode.check(flags, DialogEnhancementMode.DOCX_DELETE_VARIABLE)) {
-                                        tryDeleteFileParam(ParamDefGroup.NAME_INPUT, DocxDialogEnhancementMode.getInputFileParamName());
+                                        deleteFileParam(ParamDefGroup.NAME_INPUT, DocxDialogEnhancementMode.getInputFileParamName());
                                     }
                                 }
                             }
@@ -326,7 +326,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
                 docxDialogEnhancementModeOutput = new DocxDialogEnhancementMode(DocxDialogEnhancementMode.DOCX_SHOW_OUTPUT) {
 
                     @Override
-                    public void reloadXmlFromModel(String newConfiguration, String embeddedFileName, Boolean enableReadDocxButton,
+                    public void reloadBotTaskEditorXmlFromModel(String newConfiguration, String embeddedFileName, Boolean enableReadDocxButton,
                             Boolean enableDocxMode) {
                         reloadDialogXmlFromModel(newConfiguration, embeddedFileName, enableReadDocxButton, enableDocxMode);
                     }
@@ -335,10 +335,10 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
                     public void invoke(long flags) {
                         if (DialogEnhancementMode.check(flags, DialogEnhancementMode.DOCX_OUTPUT_VARIABLE_MODE)) {
                             if (DialogEnhancementMode.check(flags, DialogEnhancementMode.DOCX_CREATE_VARIABLE)) {
-                                tryCreateFileParam(ParamDefGroup.NAME_OUTPUT, DocxDialogEnhancementMode.getOutputFileParamName());
-                                docxDialogEnhancementModeOutput.updateObserver(flags);
+                                createFileParam(ParamDefGroup.NAME_OUTPUT, DocxDialogEnhancementMode.getOutputFileParamName());
+                                docxDialogEnhancementModeOutput.invokeObserver(flags);
                             } else if (DialogEnhancementMode.check(flags, DialogEnhancementMode.DOCX_DELETE_VARIABLE)) {
-                                tryDeleteFileParam(ParamDefGroup.NAME_OUTPUT, DocxDialogEnhancementMode.getOutputFileParamName());
+                                deleteFileParam(ParamDefGroup.NAME_OUTPUT, DocxDialogEnhancementMode.getOutputFileParamName());
                             }
                         }
                     }
@@ -352,7 +352,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
         }
     }
 
-    private boolean tryDeleteFileParam(String groupName, String fileParamName) {
+    private boolean deleteFileParam(String groupName, String fileParamName) {
         for (ParamDefGroup group : botTask.getParamDefConfig().getGroups()) {
             if (groupName.equals(group.getName())) {
                 List<ParamDef> params = group.getParameters();
@@ -374,7 +374,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
         return false;
     }
 
-    private boolean tryCreateFileParam(String groupName, String fileParamName) {
+    private boolean createFileParam(String groupName, String fileParamName) {
         for (ParamDefGroup group : botTask.getParamDefConfig().getGroups()) {
             if (groupName.equals(group.getName())) {
                 boolean wasFileParam = false;
@@ -477,7 +477,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
                 }
             }
             setTableInput(ParamDefGroup.NAME_INPUT);
-            docxDialogEnhancementModeOutput.updateObserver(DialogEnhancementMode.DOCX_OUTPUT_VARIABLE_MODE);
+            docxDialogEnhancementModeOutput.invokeObserver(DialogEnhancementMode.DOCX_OUTPUT_VARIABLE_MODE);
         }
     }
 
