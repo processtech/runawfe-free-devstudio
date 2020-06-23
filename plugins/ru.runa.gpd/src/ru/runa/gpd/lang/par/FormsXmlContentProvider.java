@@ -12,6 +12,7 @@ import org.eclipse.core.runtime.CoreException;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
+import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.util.XmlUtil;
 
 public class FormsXmlContentProvider extends AuxContentProvider {
@@ -89,7 +90,8 @@ public class FormsXmlContentProvider extends AuxContentProvider {
 
     public static Set<String> getFormFiles(ProcessDefinition definition) throws CoreException {
         Set<String> files = new HashSet<>();
-        IFile file = ((IFolder) definition.getFile().getParent()).getFile(FormsXmlContentProvider.XML_FILE_NAME);
+        IFile file = ((IFolder) definition.getFile().getParent())
+                .getFile((definition instanceof SubprocessDefinition ? definition.getId() + "." : "") + FormsXmlContentProvider.XML_FILE_NAME);
         if (file.exists()) {
             Document document = XmlUtil.parseWithoutValidation(file.getContents(true));
             List<Element> formElementsList = document.getRootElement().elements(FORM_ELEMENT_NAME);
