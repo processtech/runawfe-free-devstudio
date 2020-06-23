@@ -120,7 +120,7 @@ public class DocxHandlerCellEditorProvider extends XmlBasedConstructorProvider<D
                     control.dispose();
                 }
 
-                if (dialogEnhancementMode != null && dialogEnhancementMode.checkDocxEnhancementMode()) {
+                if (dialogEnhancementMode != null && dialogEnhancementMode.checkBotDocxTemplateEnhancementMode()) {
                     ((DocxDialogEnhancementMode) dialogEnhancementMode).docxModel = model;
                 }
 
@@ -134,7 +134,7 @@ public class DocxHandlerCellEditorProvider extends XmlBasedConstructorProvider<D
                         protected void onSelection(SelectionEvent e) throws Exception {
                             model.setStrict(strict.getSelection());
 
-                            if (dialogEnhancementMode != null && dialogEnhancementMode.checkDocxEnhancementMode()) {
+                            if (dialogEnhancementMode != null && dialogEnhancementMode.checkBotDocxTemplateEnhancementMode()) {
                                 ((DocxDialogEnhancementMode) dialogEnhancementMode).reloadXmlFromModel(model.toString(), null, null, null);
                             }
                         }
@@ -142,14 +142,17 @@ public class DocxHandlerCellEditorProvider extends XmlBasedConstructorProvider<D
                     new Label(this, SWT.NONE);
                 }
 
+                FilesSupplierMode filesSupplierMode = FilesSupplierMode.BOTH;
                 if (null == dialogEnhancementMode || (dialogEnhancementMode.isOrDefault(DocxDialogEnhancementMode.DOCX_SHOW_INPUT)
                         && dialogEnhancementMode.isOrDefault(DocxDialogEnhancementMode.DOCX_SHOW_OUTPUT))) {
-                    new InputOutputComposite(this, delegable, model.getInOutModel(), FilesSupplierMode.BOTH, "docx", dialogEnhancementMode);
+                    filesSupplierMode = FilesSupplierMode.BOTH;
                 } else if (dialogEnhancementMode.is(DocxDialogEnhancementMode.DOCX_SHOW_INPUT)) {
-                    new InputOutputComposite(this, delegable, model.getInOutModel(), FilesSupplierMode.IN, "docx", dialogEnhancementMode);
+                    filesSupplierMode = FilesSupplierMode.IN;
                 } else if (dialogEnhancementMode.is(DocxDialogEnhancementMode.DOCX_SHOW_OUTPUT)) {
-                    new InputOutputComposite(this, delegable, model.getInOutModel(), FilesSupplierMode.OUT, "docx", dialogEnhancementMode);
+                    filesSupplierMode = FilesSupplierMode.OUT;
                 }
+
+                new InputOutputComposite(this, delegable, model.getInOutModel(), filesSupplierMode, "docx", dialogEnhancementMode);
 
                 int i = 0;
                 for (DocxTableModel table : model.getTables()) {

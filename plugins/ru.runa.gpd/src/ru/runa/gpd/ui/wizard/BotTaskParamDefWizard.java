@@ -30,7 +30,7 @@ public class BotTaskParamDefWizard extends Wizard implements INewWizard {
 
     @Override
     public boolean performFinish() {
-        if (null != dialogEnhancementMode && dialogEnhancementMode.checkDocxEnhancementMode()) {
+        if (null != dialogEnhancementMode && dialogEnhancementMode.checkBotDocxTemplateEnhancementMode()) {
             List<ParamDef> params = paramDefGroup.getParameters();
             boolean ok = false;
             for (int i = 0, isize = params.size(); i < isize; i++) {

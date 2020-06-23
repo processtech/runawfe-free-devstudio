@@ -6,7 +6,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
-import ru.runa.gpd.editor.graphiti.GraphitiProcessEditor;
+import ru.runa.gpd.editor.BotTaskEditor;
 
 public class BotsPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage, PrefConstants {
     public BotsPreferencePage() {
@@ -28,7 +28,7 @@ public class BotsPreferencePage extends FieldEditorPreferencePage implements IWo
     @Override
     public boolean performOk() {
         super.performOk();
-        GraphitiProcessEditor.refreshAllBotTaskEditors();
+        BotTaskEditor.refreshAllBotTaskEditors();
         return true;
     }
 }

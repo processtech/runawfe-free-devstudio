@@ -160,7 +160,7 @@ public abstract class XmlBasedConstructorProvider<T extends Observable> extends 
         protected Control createDialogArea(Composite parent) {
 
             try {
-                if (dialogEnhancementMode != null && dialogEnhancementMode.checkDocxEnhancementMode()
+                if (dialogEnhancementMode != null && dialogEnhancementMode.checkBotDocxTemplateEnhancementMode()
                         && null != ((DocxDialogEnhancementMode) dialogEnhancementMode).docxModel) {
                     model = (T) ((DocxDialogEnhancementMode) dialogEnhancementMode).docxModel;
                 } else if (initialValue.trim().length() != 0) {
@@ -173,7 +173,7 @@ public abstract class XmlBasedConstructorProvider<T extends Observable> extends 
                 model = createDefault();
             }
 
-            if (null != dialogEnhancementMode && dialogEnhancementMode.checkDocxEnhancementMode()
+            if (null != dialogEnhancementMode && dialogEnhancementMode.checkBotDocxTemplateEnhancementMode()
                     && dialogEnhancementMode.not(DocxDialogEnhancementMode.DOCX_SHOW_XML_VIEW)) {
 
                 Composite composite = new Composite(parent, SWT.NONE);
@@ -214,7 +214,7 @@ public abstract class XmlBasedConstructorProvider<T extends Observable> extends 
                 scrolledComposite.setExpandHorizontal(true);
                 scrolledComposite.setExpandVertical(true);
                 scrolledComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
-                if (null != dialogEnhancementMode && dialogEnhancementMode.checkScriptDocxEnhancementMode()) {
+                if (null != dialogEnhancementMode && dialogEnhancementMode.checkScriptDocxTemplateEnhancementMode()) {
                     constructorView = createConstructorComposite(scrolledComposite, delegable, model, dialogEnhancementMode);
                 } else {
                     constructorView = createConstructorComposite(scrolledComposite, delegable, model);

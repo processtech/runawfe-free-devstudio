@@ -53,7 +53,7 @@ public class BotTaskParamDefWizardPage extends WizardPage {
         composite.setLayout(layout);
         createNameField(composite);
         createVariableTypeField(composite);
-        boolean isDocxMode = null != dialogEnhancementMode && dialogEnhancementMode.checkDocxEnhancementMode()
+        boolean isDocxMode = null != dialogEnhancementMode && dialogEnhancementMode.checkBotDocxTemplateEnhancementMode()
                 && ((DocxDialogEnhancementMode) dialogEnhancementMode).checkDocxMode();
         if (!isDocxMode) {
             createUseVariableCheckbox(composite);
@@ -104,7 +104,7 @@ public class BotTaskParamDefWizardPage extends WizardPage {
             }
         });
         nameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        if (null != dialogEnhancementMode && dialogEnhancementMode.checkDocxEnhancementMode()
+        if (null != dialogEnhancementMode && dialogEnhancementMode.checkBotDocxTemplateEnhancementMode()
                 && ((DocxDialogEnhancementMode) dialogEnhancementMode).checkDocxMode()) {
             nameText.setEnabled(false);
         }
@@ -170,7 +170,7 @@ public class BotTaskParamDefWizardPage extends WizardPage {
     }
 
     public boolean isUseVariable() {
-        if (null != dialogEnhancementMode && dialogEnhancementMode.checkDocxEnhancementMode()) {
+        if (null != dialogEnhancementMode && dialogEnhancementMode.checkBotDocxTemplateEnhancementMode()) {
             return true;
         }
         return useVariableButton.getSelection();

@@ -31,7 +31,7 @@ public abstract class ProcessFileComposite extends Composite {
     public ProcessFileComposite(Composite parent, IFile file, DialogEnhancementMode dialogEnhancementMode) {
         super(parent, SWT.NONE);
 
-        if (null != (this.dialogEnhancementMode = dialogEnhancementMode) && dialogEnhancementMode.checkDocxEnhancementMode()) {
+        if (null != (this.dialogEnhancementMode = dialogEnhancementMode) && dialogEnhancementMode.checkBotDocxTemplateEnhancementMode()) {
             this.defaultFileName = ((DocxDialogEnhancementMode) dialogEnhancementMode).defaultFileName;
             this.showFileAsNewFirstTime = ((DocxDialogEnhancementMode) dialogEnhancementMode).showFileAsNewFirstTime;
         } else {
@@ -52,7 +52,7 @@ public abstract class ProcessFileComposite extends Composite {
 
         if (firstRebuild) {
             firstRebuild = false;
-            forceFileExists = !showFileAsNewFirstTime && null != dialogEnhancementMode && dialogEnhancementMode.checkDocxEnhancementMode()
+            forceFileExists = !showFileAsNewFirstTime && null != dialogEnhancementMode && dialogEnhancementMode.checkBotDocxTemplateEnhancementMode()
                     && null != defaultFileName && !defaultFileName.isEmpty();
 
             boolean fileNotExists = null != file && !file.exists();
@@ -72,7 +72,7 @@ public abstract class ProcessFileComposite extends Composite {
                         IOUtils.copyFile(getTemplateInputStream(), getFile());
                         eventSupport.firePropertyChange(PropertyNames.PROPERTY_VALUE, null, getFile().getName());
 
-                        if (null != dialogEnhancementMode && dialogEnhancementMode.checkDocxEnhancementMode()) {
+                        if (null != dialogEnhancementMode && dialogEnhancementMode.checkBotDocxTemplateEnhancementMode()) {
                             IDE.openEditor(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(), getFile(), true);
                         }
                         rebuild();
@@ -94,7 +94,7 @@ public abstract class ProcessFileComposite extends Composite {
                     IOUtils.copyFile(path, getFile());
                     eventSupport.firePropertyChange(PropertyNames.PROPERTY_VALUE, null, getFile().getName());
                     rebuild();
-                    if (null != dialogEnhancementMode && dialogEnhancementMode.checkDocxEnhancementMode()) {
+                    if (null != dialogEnhancementMode && dialogEnhancementMode.checkBotDocxTemplateEnhancementMode()) {
                         dialogEnhancementMode.invoke(DialogEnhancementMode.DOCX_RELOAD_FROM_TEMPLATE);
                     }
                 }
@@ -141,7 +141,7 @@ public abstract class ProcessFileComposite extends Composite {
     }
 
     private IFile getFile() {
-        if (null == file && dialogEnhancementMode != null && dialogEnhancementMode.checkDocxEnhancementMode()) {
+        if (null == file && dialogEnhancementMode != null && dialogEnhancementMode.checkBotDocxTemplateEnhancementMode()) {
             file = EmbeddedFileUtils.getProcessFile(defaultFileName);
         }
         return file;

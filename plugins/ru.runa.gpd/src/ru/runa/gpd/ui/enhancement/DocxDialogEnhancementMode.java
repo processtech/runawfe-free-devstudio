@@ -16,14 +16,14 @@ import ru.runa.gpd.Localization;
 public class DocxDialogEnhancementMode extends DialogEnhancementMode {
 
     public DocxDialogEnhancementMode(long modeWithFlags) {
-        dialogOptionFlags = DOCX_EMBEDDED_VIEWMODE | DOCX_DONT_USE_VARIABLE_TITLE | modeWithFlags;
+        dialogOptionFlags = DOCX_TEMPLATE_BOT_VIEWMODE | DOCX_DONT_USE_VARIABLE_TITLE | modeWithFlags;
     }
 
     public DocxDialogEnhancementMode(boolean isScriptMode, long modeWithFlags) {
         if (isScriptMode) {
-            dialogOptionFlags = DOCX_SCRIPT_EMBEDDED_VIEWMODE | DOCX_DONT_USE_VARIABLE_TITLE | DOCX_SHOW_INPUT | DOCX_SHOW_OUTPUT | modeWithFlags;
+            dialogOptionFlags = DOCX_TEMPLATE_SCRIPT_VIEWMODE | DOCX_DONT_USE_VARIABLE_TITLE | DOCX_SHOW_INPUT | DOCX_SHOW_OUTPUT | modeWithFlags;
         } else {
-            dialogOptionFlags = DOCX_EMBEDDED_VIEWMODE | DOCX_DONT_USE_VARIABLE_TITLE | modeWithFlags;
+            dialogOptionFlags = DOCX_TEMPLATE_BOT_VIEWMODE | DOCX_DONT_USE_VARIABLE_TITLE | modeWithFlags;
         }
     }
 
