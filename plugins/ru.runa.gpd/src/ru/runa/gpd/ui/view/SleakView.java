@@ -39,7 +39,7 @@ import com.google.common.io.Files;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
-import ru.runa.gpd.ui.custom.SWTUtils;
+import ru.runa.gpd.ui.custom.SwtUtils;
 import ru.runa.gpd.util.UiUtil;
 
 public class SleakView extends ViewPart {
@@ -64,7 +64,7 @@ public class SleakView extends ViewPart {
             info += "\n     org.eclipse.ui/debug=true";
             info += "\n     org.eclipse.ui/trace/graphics=true";
             info += "\nLaunch application with the '-debug' option on the command line.\n\n\n";
-            SWTUtils.createLabel(composite, info);
+            SwtUtils.createLabel(composite, info);
             Text text = new Text(composite, SWT.READ_ONLY);
             text.setText("http://www.eclipse.org/swt/tools.php");
             text = new Text(composite, SWT.READ_ONLY);

@@ -303,7 +303,7 @@ public class IOUtils {
         return ResourcesPlugin.getWorkspace().getRoot().getProjects();
     }
 
-    public static IProject[] getAllBotStationProjects() {
+    public static List<IProject> getAllBotStationProjects() {
         try {
             List<IProject> projects = new ArrayList<IProject>();
             for (IProject project : getWorkspaceProjects()) {
@@ -311,7 +311,7 @@ public class IOUtils {
                     projects.add(project);
                 }
             }
-            return projects.toArray(new IProject[0]);
+            return projects;
         } catch (CoreException e) {
             throw new RuntimeException();
         }
@@ -478,11 +478,7 @@ public class IOUtils {
     public static List<IContainer> getAllProcessContainers() {
         List<IContainer> result = Lists.newArrayList();
         for (IProject project : getAllProcessDefinitionProjects()) {
-            if (isProjectHasProcessNature(project)) {
-                findProcessContainers(project, result);
-            } else {
-                result.add(project.getFolder("src/process"));
-            }
+            findProcessContainers(project, result);
         }
         return result;
     }
@@ -663,6 +659,9 @@ public class IOUtils {
     }
 
     public static void restoreDeletedFiles(IContainer folder) throws CoreException {
+        if (!folder.exists()) {
+            return;
+        }
         for (IResource member : folder.members()) {
             if (member instanceof IFile) {
                 if (((IFile) member).getFileExtension().equals(DELETED_FILE_EXTENSION)) {

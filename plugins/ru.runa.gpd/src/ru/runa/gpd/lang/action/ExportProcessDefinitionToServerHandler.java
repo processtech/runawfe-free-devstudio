@@ -9,19 +9,16 @@ import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.jface.action.IStatusLineManager;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
-import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.settings.PrefConstants;
+import ru.runa.gpd.sync.WfeServerConnector;
 import ru.runa.gpd.ui.custom.Dialogs;
+import ru.runa.gpd.ui.custom.StatusBarUtils;
 import ru.runa.gpd.ui.wizard.ExportParWizardPage.ParDeployOperation;
 import ru.runa.gpd.util.IOUtils;
 
@@ -29,8 +26,9 @@ public class ExportProcessDefinitionToServerHandler extends AbstractHandler impl
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        if (!Activator.getDefault().getPreferenceStore().getBoolean(P_ALLOW_UPDATE_LAST_VERSION_BY_KEYBINDING)) {
-            updateStatusBar(Localization.getString("ExportProcessDefinitionToServerHandler.disabled"));
+        if (!WfeServerConnector.getInstance().getSettings().isAllowUpdateLastVersionByKeyBinding()) {
+            StatusBarUtils.updateStatusBar(Localization.getString("ExportProcessDefinitionToServerHandler.disabled") + " "
+                    + WfeServerConnector.getInstance().getSettings().getUrl());
             return null;
         }
         saveDirtyEditors();
@@ -45,7 +43,6 @@ public class ExportProcessDefinitionToServerHandler extends AbstractHandler impl
                 if (!processDefinition.isInvalid()) {
                     try {
                         export(file);
-                        updateStatusBar(Localization.getString("ExportProcessDefinitionToServerHandler.completed"));
                     } catch (Throwable th) {
                         PluginLogger.logError(Localization.getString("ExportParWizardPage.error.export"), th);
                     }
@@ -73,28 +70,6 @@ public class ExportProcessDefinitionToServerHandler extends AbstractHandler impl
 
     private boolean saveDirtyEditors() {
         return PlatformUI.getWorkbench().saveAllEditors(false);
-    }
-
-    private void updateStatusBar(String message) {
-        IWorkbenchWindow activeWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-        if (activeWindow == null || activeWindow.getActivePage() == null) {
-            return;
-        }
-        IEditorPart editorPart = activeWindow.getActivePage().getActiveEditor();
-        if (editorPart == null) {
-            return;
-        }
-        IEditorSite editorSite = editorPart.getEditorSite();
-        if (editorSite == null) {
-            return;
-        }
-        final IStatusLineManager statusLineManager = editorSite.getActionBars().getStatusLineManager();
-        statusLineManager.setMessage(message);
-        PlatformUI.getWorkbench().getDisplay().timerExec(5000, new Runnable() {
-            public void run() {
-                statusLineManager.setMessage(null);
-            }
-        });
     }
 
 }

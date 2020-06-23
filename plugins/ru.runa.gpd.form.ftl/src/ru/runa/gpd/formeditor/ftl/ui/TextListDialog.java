@@ -17,7 +17,7 @@ import org.eclipse.swt.widgets.Shell;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.formeditor.resources.Messages;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
-import ru.runa.gpd.ui.custom.SWTUtils;
+import ru.runa.gpd.ui.custom.SwtUtils;
 import ru.runa.gpd.ui.dialog.UserInputDialog;
 
 public class TextListDialog extends Dialog {
@@ -49,10 +49,10 @@ public class TextListDialog extends Dialog {
         layout.marginBottom = 5;
         layout.marginTop = 5;
         area.setLayout(layout);
-        addButton = SWTUtils.createButton(area, Localization.getString("button.add"), new AddSelectionListener());
-        removeButton = SWTUtils.createButton(area, Localization.getString("button.delete"), new RemoveSelectionListener());
-        moveUpButton = SWTUtils.createButton(area, Localization.getString("button.up"), new MoveSelectionListener(true));
-        moveDownButton = SWTUtils.createButton(area, Localization.getString("button.down"), new MoveSelectionListener(false));
+        addButton = SwtUtils.createButton(area, Localization.getString("button.add"), new AddSelectionListener());
+        removeButton = SwtUtils.createButton(area, Localization.getString("button.delete"), new RemoveSelectionListener());
+        moveUpButton = SwtUtils.createButton(area, Localization.getString("button.up"), new MoveSelectionListener(true));
+        moveDownButton = SwtUtils.createButton(area, Localization.getString("button.down"), new MoveSelectionListener(false));
         selectedItems = createList(area, selectedValues);
         return area;
     }

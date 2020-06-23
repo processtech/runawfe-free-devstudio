@@ -15,6 +15,7 @@ import ru.runa.gpd.Activator;
 import ru.runa.gpd.formeditor.wysiwyg.FormEditor;
 import ru.runa.gpd.jointformeditor.resources.Messages;
 import ru.runa.gpd.jseditor.JavaScriptEditor;
+import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.par.ProcessDefinitionValidator;
 import ru.runa.gpd.settings.PrefConstants;
 import ru.runa.gpd.ui.control.FieldValidatorsPage;
@@ -84,6 +85,7 @@ public class JointFormEditor extends FormEditor {
             }
         });
         setActivePage(currentPageIndex);
+        formNode.setFormEditorOpened(true);
     }
 
     @Override
@@ -117,6 +119,7 @@ public class JointFormEditor extends FormEditor {
         fieldValidatorsPage.dispose();
         globalValidatorsPage.dispose();
         super.dispose();
+        formNode.setFormEditorOpened(false);
     }
 
 }

@@ -201,12 +201,8 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
         child.setDelegatedListener(delegatedListener);
         firePropertyChange(NODE_ADDED, null, child);
         firePropertyChange(PROPERTY_CHILDREN_CHANGED, null, child);
-        String nodeId = child.getId();
-        if (nodeId == null) {
-            nodeId = getProcessDefinition().getNextNodeId();
-            child.setId(nodeId);
-        } else {
-            getProcessDefinition().setNextNodeIdIfApplicable(nodeId);
+        if (child.getId() == null && !(child instanceof Variable)) {
+            child.setId(getProcessDefinition().getNextNodeId());
         }
     }
 
