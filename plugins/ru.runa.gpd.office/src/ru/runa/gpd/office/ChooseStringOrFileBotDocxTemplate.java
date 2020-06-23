@@ -166,6 +166,7 @@ class ChooseStringOrFileBotDocxTemplate extends ChooseStringOrFile {
         }
         final Text text = new Text(composite, SWT.READ_ONLY | SWT.BORDER);
         text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        text.setEditable(false);
 
         boolean ok = false;
 
