@@ -1248,7 +1248,8 @@
                variableAccess="NONE">
                <paramValue
                   name="%Param.ChooseOne"
-                  value="one">
+                  value="one"
+                  default="true">
                </paramValue>
                <paramValue
                   name="%Param.ChooseSome"
