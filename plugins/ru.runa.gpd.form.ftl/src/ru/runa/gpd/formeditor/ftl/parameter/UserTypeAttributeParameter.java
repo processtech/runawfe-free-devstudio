@@ -12,6 +12,18 @@ import ru.runa.gpd.lang.model.VariableUserType;
 
 public class UserTypeAttributeParameter extends ComboParameter {
 
+    public UserTypeAttributeParameter() {
+        super();
+    }
+
+    public UserTypeAttributeParameter(boolean multiple, boolean autoSelectSingleOption) {
+        super(multiple, autoSelectSingleOption);
+    }
+
+    public UserTypeAttributeParameter(boolean multiple) {
+        super(multiple);
+    }
+
     @Override
     protected List<ComboOption> getOptions(Component component, ComponentParameter parameter) {
         VariableUserType userType = getUserType(component);

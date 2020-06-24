@@ -14,6 +14,11 @@ import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.wfe.var.format.ListFormat;
 
 public class DbUserTypeVariableListComboParameter extends UserTypeAttributeParameter {
+
+    public DbUserTypeVariableListComboParameter() {
+        super(false, true);
+    }
+
     @Override
     protected List<ComboOption> getOptions(Component component, ComponentParameter parameter) {
         final VariableUserType userType = getUserType(component);

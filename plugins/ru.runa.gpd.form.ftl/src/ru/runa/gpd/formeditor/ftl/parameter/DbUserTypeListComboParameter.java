@@ -9,6 +9,10 @@ import ru.runa.gpd.formeditor.wysiwyg.FormEditor;
 import ru.runa.gpd.lang.model.VariableUserType;
 
 public class DbUserTypeListComboParameter extends ComboParameter {
+    public DbUserTypeListComboParameter() {
+        super(false, true);
+    }
+
     @Override
     protected List<ComboOption> getOptions(Component component, ComponentParameter parameter) {
         return FormEditor.getCurrent().getProcessDefinition().getVariableUserTypes().stream().filter(VariableUserType::isStoreInExternalStorage)
