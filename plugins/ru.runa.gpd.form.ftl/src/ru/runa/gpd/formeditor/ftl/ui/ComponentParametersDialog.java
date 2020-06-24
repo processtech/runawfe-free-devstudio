@@ -137,13 +137,13 @@ public class ComponentParametersDialog extends Dialog {
         });
 
         /*
-         * Deffered event handling of dependent parameters which editors are not initialized in stage of initial drawing. This can occur if dependent
+         * Deferred event handling of dependent parameters which editors are not initialized in stage of initial drawing. This can occur if dependent
          * parameter is placed below main parameter and main parameter has default value on configuration screen
          */
-        final Queue<ComponentParameter> defferedDefaultInitializationQueue = new LinkedList<>();
-        drawParameters(parametersComposite, defferedDefaultInitializationQueue::add);
-        while (defferedDefaultInitializationQueue.peek() != null) {
-            final ComponentParameter dependentParameter = defferedDefaultInitializationQueue.poll();
+        final Queue<ComponentParameter> deferredDefaultInitializationQueue = new LinkedList<>();
+        drawParameters(parametersComposite, deferredDefaultInitializationQueue::add);
+        while (deferredDefaultInitializationQueue.peek() != null) {
+            final ComponentParameter dependentParameter = deferredDefaultInitializationQueue.poll();
             final Object parameterEditor = parameterEditors.get(dependentParameter);
             Preconditions.checkState(parameterEditor != null,
                     "Editor for parameter " + dependentParameter.getLabel() + " can not be null at this stage");
@@ -155,7 +155,7 @@ public class ComponentParametersDialog extends Dialog {
         return rootComposite;
     }
 
-    private void drawParameters(Composite parametersComposite, Consumer<ComponentParameter> defferedDefaultValueEventInitializationConsumer) {
+    private void drawParameters(Composite parametersComposite, Consumer<ComponentParameter> deferredDefaultValueEventInitializationConsumer) {
         parameterEditors.clear();
         for (final ComponentParameter componentParameter : component.getType().getParameters()) {
             SwtUtils.createLabel(parametersComposite, componentParameter.getLabel()).setToolTipText(componentParameter.getDescription());
@@ -165,8 +165,8 @@ public class ComponentParametersDialog extends Dialog {
                         for (ComponentParameter dependentParameter : componentParameter.getDependents()) {
                             final Object parameterEditor = parameterEditors.get(dependentParameter);
                             if (parameterEditor == null) {
-                                if (defferedDefaultValueEventInitializationConsumer != null) {
-                                    defferedDefaultValueEventInitializationConsumer.accept(dependentParameter);
+                                if (deferredDefaultValueEventInitializationConsumer != null) {
+                                    deferredDefaultValueEventInitializationConsumer.accept(dependentParameter);
                                 } else {
                                     throw new IllegalStateException(
                                             "Editor for parameter " + dependentParameter.getLabel() + " can not be null at this stage");
