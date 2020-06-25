@@ -19,7 +19,8 @@ public class DialogEnhancementMode {
     public static long DOCX_DELETE_VARIABLE = (1L << 2);
     public static long DOCX_INPUT_VARIABLE_MODE = (1L << 3);
     public static long DOCX_OUTPUT_VARIABLE_MODE = (1L << 4);
-    public static long DOCX_RELOAD_FROM_TEMPLATE = (1L << 5);
+    public static long DOCX_SET_PROCESS_FILEPATH = (1L << 5);
+    public static long DOCX_RELOAD_FROM_TEMPLATE = (1L << 6);
 
     public void invoke(long flags) {
         throw new RuntimeException("Not implemented method!");

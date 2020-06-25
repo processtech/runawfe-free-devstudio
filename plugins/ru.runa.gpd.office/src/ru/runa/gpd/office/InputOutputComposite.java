@@ -60,7 +60,23 @@ public class InputOutputComposite extends Composite implements DialogEnhancement
                     };
                 } else if (dialogEnhancementMode.checkScriptDocxTemplateEnhancementMode()) {
                     chooseStringOrFileInput = new ChooseStringOrFileScriptDocxTemplate(inputGroup, model, delegable, fileExtension,
-                            Messages.getString("label.filePath"), FilesSupplierMode.IN, dialogEnhancementMode);
+                            Messages.getString("label.filePath"), FilesSupplierMode.IN, dialogEnhancementMode) {
+                        @Override
+                        public void setFileName(String fileName, Boolean embeddedMode) {
+                            super.setFileName(fileName, embeddedMode);
+                            ((DocxDialogEnhancementMode) dialogEnhancementMode).defaultFileName = EmbeddedFileUtils.isProcessFile(fileName)
+                                    ? EmbeddedFileUtils.getProcessFileName(fileName)
+                                    : null;
+                            dialogEnhancementMode.invoke(DialogEnhancementMode.DOCX_SET_PROCESS_FILEPATH);
+                        }
+
+                        @Override
+                        public void setVariable(String variable) {
+                            super.setVariable(variable);
+                            ((DocxDialogEnhancementMode) dialogEnhancementMode).defaultFileName = null;
+                            dialogEnhancementMode.invoke(DialogEnhancementMode.DOCX_SET_PROCESS_FILEPATH);
+                        }
+                    };
                 }
             }
             if (null == chooseStringOrFileInput) {
@@ -158,8 +174,8 @@ public class InputOutputComposite extends Composite implements DialogEnhancement
         }
 
         DocxModel docxModel = (DocxModel) ((DocxDialogEnhancementMode) dialogEnhancementMode).docxModel;
-        ((DocxDialogEnhancementMode) dialogEnhancementMode).reloadBotTaskEditorXmlFromModel(docxModel.toString(), embeddedFileName, enableReadDocxButton,
-                enableDocxMode);
+        ((DocxDialogEnhancementMode) dialogEnhancementMode).reloadBotTaskEditorXmlFromModel(docxModel.toString(), embeddedFileName,
+                enableReadDocxButton, enableDocxMode);
 
     }
 

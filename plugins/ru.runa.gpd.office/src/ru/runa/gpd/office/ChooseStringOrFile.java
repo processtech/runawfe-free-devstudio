@@ -65,9 +65,6 @@ class ChooseStringOrFile implements PropertyChangeListener {
     Control control = null;
     Combo variableCombo;
 
-    // boolean docxEnhancementModeInput;
-    // boolean docxEnhancementModeOutput;
-
     protected ChooseStringOrFile(Composite composite, InputOutputModel model, Delegable delegable, String fileExtension, FilesSupplierMode mode,
             DialogEnhancementMode dialogEnhancementMode) {
         this.composite = composite;

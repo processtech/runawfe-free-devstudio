@@ -292,8 +292,8 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
                 docxModel = provider.showEmbeddedConfigurationDialog(dynaComposite, botTask,
                         docxDialogEnhancementModeInput = new DocxDialogEnhancementMode(DocxDialogEnhancementMode.DOCX_SHOW_INPUT) {
                             @Override
-                            public void reloadBotTaskEditorXmlFromModel(String newConfiguration, String embeddedFileName, Boolean enableReadDocxButton,
-                                    Boolean enableDocxMode) {
+                            public void reloadBotTaskEditorXmlFromModel(String newConfiguration, String embeddedFileName,
+                                    Boolean enableReadDocxButton, Boolean enableDocxMode) {
                                 reloadDialogXmlFromModel(newConfiguration, embeddedFileName, enableReadDocxButton, enableDocxMode);
                             }
 
@@ -303,7 +303,6 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
                                     try {
                                         updateFromTemplate();
                                     } catch (IOException | CoreException e) {
-                                        // TODO Auto-generated catch block
                                         e.printStackTrace();
                                     }
                                 } else if (DialogEnhancementMode.check(flags, DialogEnhancementMode.DOCX_INPUT_VARIABLE_MODE)) {

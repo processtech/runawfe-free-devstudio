@@ -2,6 +2,7 @@ package ru.runa.gpd.lang.par;
 
 import com.google.common.collect.Lists;
 import java.util.List;
+import java.util.ListIterator;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
@@ -53,6 +54,19 @@ public class ProcessDefinitionValidator {
         } catch (Throwable e) {
             PluginLogger.logError(e);
             return ERRORS;
+        }
+    }
+
+    public static void logErrors(ProcessDefinition processDefinition, List<String> errors) {
+        try {
+            IFile definitionFile = processDefinition.getFile();
+            definitionFile.deleteMarkers(ValidationErrorsView.ID, true, IResource.DEPTH_INFINITE);
+            ListIterator<String> iterator = errors.listIterator();
+            while (iterator.hasNext()) {
+                addError(definitionFile, processDefinition, ValidationError.createError(processDefinition, iterator.next()));
+            }
+        } catch (Throwable e) {
+            PluginLogger.logError(e);
         }
     }
 

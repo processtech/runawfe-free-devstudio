@@ -3,7 +3,6 @@ package ru.runa.gpd.extension.handler;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.regex.Matcher;
@@ -246,17 +245,6 @@ public abstract class XmlBasedConstructorProvider<T extends Observable> extends 
                 this.result = xmlContentView.getValue();
 
                 if (null != dialogEnhancementMode && dialogEnhancementMode.checkScriptDocxTemplateEnhancementMode()) {
-                    /// !!!
-                    List<String> usedVariableList = delegable.getVariableNames(false);
-                    ListIterator<String> iterator = usedVariableList.listIterator();
-                    while (iterator.hasNext()) {
-                        String variable = iterator.next();
-                        PluginLogger.logInfo("var > " + variable);
-                    }
-
-                    // Map<String, Integer> docxTemplateVariables = DocxDialogEnhancementMode.getVariableNamesFromDocxTemplate(InputStream
-                    // templateInputStream);
-
                     dialogEnhancementMode.invoke(DialogEnhancementMode.DOCX_RELOAD_FROM_TEMPLATE);
                 }
 

@@ -3,6 +3,7 @@ package ru.runa.gpd.office;
 import com.google.common.base.Strings;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
@@ -166,7 +167,7 @@ class ChooseStringOrFileBotDocxTemplate extends ChooseStringOrFile {
         }
         final Text text = new Text(composite, SWT.READ_ONLY | SWT.BORDER);
         text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        text.setEditable(false);
+        text.setBackground(new Color(null, 229, 229, 229));
 
         boolean ok = false;
 
