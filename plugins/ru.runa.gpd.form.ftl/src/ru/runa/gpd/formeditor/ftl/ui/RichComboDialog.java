@@ -1,8 +1,9 @@
 package ru.runa.gpd.formeditor.ftl.ui;
 
+import com.google.common.base.Objects;
+import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.Map;
-
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
@@ -15,27 +16,22 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
-
 import ru.runa.gpd.extension.LocalizationRegistry;
 import ru.runa.gpd.extension.VariableFormatRegistry;
 import ru.runa.gpd.formeditor.ftl.parameter.RichComboParameter;
 import ru.runa.gpd.formeditor.resources.Messages;
-import ru.runa.gpd.settings.WFEConnectionPreferencePage;
+import ru.runa.gpd.sync.WfeServerConnectorComposite;
+import ru.runa.gpd.sync.WfeServerConnectorDataImporter;
+import ru.runa.gpd.sync.WfeServerExecutorImporter;
+import ru.runa.gpd.sync.WfeServerRelationImporter;
 import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
 import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
-import ru.runa.gpd.ui.custom.SWTUtils;
-import ru.runa.gpd.ui.custom.SyncUIHelper;
+import ru.runa.gpd.ui.custom.SwtUtils;
 import ru.runa.gpd.ui.dialog.ChooseItemDialog;
 import ru.runa.gpd.ui.dialog.ChooseVariableNameDialog;
-import ru.runa.gpd.wfe.DataImporter;
-import ru.runa.gpd.wfe.WFEServerExecutorsImporter;
-import ru.runa.gpd.wfe.WFEServerRelationsImporter;
 import ru.runa.wfe.user.Actor;
 import ru.runa.wfe.user.Executor;
 import ru.runa.wfe.user.Group;
-
-import com.google.common.base.Objects;
-import com.google.common.collect.Lists;
 
 public class RichComboDialog extends Dialog {
     private final String variableTypeFilter;
@@ -62,17 +58,19 @@ public class RichComboDialog extends Dialog {
         area.setLayout(new GridLayout(2, false));
         final SyncType syncType = getType();
         if (syncType != null) {
-            final DataImporter dataImporter = getDataImporter(syncType);
-            SyncUIHelper.createHeader(area, dataImporter, WFEConnectionPreferencePage.class, null);
-            SWTUtils.createLink(area, Messages.getString("button.choose.value"), new LoggingHyperlinkAdapter() {
+            final WfeServerConnectorDataImporter wfeServerConnectorDataImporter = getDataImporter(syncType);
+            new WfeServerConnectorComposite(area, wfeServerConnectorDataImporter, null);
+            SwtUtils.createLink(area, Messages.getString("button.choose.value"), new LoggingHyperlinkAdapter() {
 
                 @Override
                 protected void onLinkActivated(HyperlinkEvent e) throws Exception {
                     List<String> items;
-                    Object data = dataImporter.loadCachedData();
+                    Object data = wfeServerConnectorDataImporter.getData();
                     if (data instanceof List) {
                         // relations
                         items = (List<String>) data;
+                    } else if (data == null) {
+                        items = Lists.newArrayList();
                     } else {
                         items = Lists.newArrayList();
                         Map<String, Boolean> executors = (Map<String, Boolean>) data;
@@ -109,7 +107,7 @@ public class RichComboDialog extends Dialog {
                 value = RichComboParameter.VALUE_PREFIX + valueText.getText();
             }
         });
-        SWTUtils.createLink(area, Messages.getString("button.choose.variable"), new LoggingHyperlinkAdapter() {
+        SwtUtils.createLink(area, Messages.getString("button.choose.variable"), new LoggingHyperlinkAdapter() {
 
             @Override
             protected void onLinkActivated(HyperlinkEvent e) throws Exception {
@@ -131,14 +129,14 @@ public class RichComboDialog extends Dialog {
         return null;
     }
 
-    private DataImporter getDataImporter(SyncType syncType) {
+    private WfeServerConnectorDataImporter getDataImporter(SyncType syncType) {
         switch (syncType) {
         case EXECUTOR:
         case GROUP:
         case ACTOR:
-            return WFEServerExecutorsImporter.getInstance();
+            return WfeServerExecutorImporter.getInstance();
         case RELATION:
-            return WFEServerRelationsImporter.getInstance();
+            return WfeServerRelationImporter.getInstance();
         default:
             throw new RuntimeException("" + syncType);
         }

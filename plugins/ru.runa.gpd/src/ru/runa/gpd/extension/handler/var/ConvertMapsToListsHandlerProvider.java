@@ -20,7 +20,7 @@ import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.handler.XmlBasedConstructorProvider;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
-import ru.runa.gpd.ui.custom.SWTUtils;
+import ru.runa.gpd.ui.custom.SwtUtils;
 import ru.runa.wfe.extension.handler.var.ConvertMapToListOperation;
 import ru.runa.wfe.extension.handler.var.ConvertMapsToListsConfig;
 import ru.runa.wfe.extension.handler.var.ConvertMapsToListsConfig.Sorting;
@@ -141,7 +141,7 @@ public class ConvertMapsToListsHandlerProvider extends XmlBasedConstructorProvid
             strokeLabel = new Label(strokeComposite, SWT.SEPARATOR | SWT.HORIZONTAL);
             strokeLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             if (hyperlinkAdapter != null) {
-                SWTUtils.createLink(strokeComposite, Localization.getString("button.add"), hyperlinkAdapter);
+                SwtUtils.createLink(strokeComposite, Localization.getString("button.add"), hyperlinkAdapter);
             }
         }
 
@@ -190,7 +190,7 @@ public class ConvertMapsToListsHandlerProvider extends XmlBasedConstructorProvid
                     }
                 });
             }
-            SWTUtils.createLink(parent, "[X]", new LoggingHyperlinkAdapter() {
+            SwtUtils.createLink(parent, "[X]", new LoggingHyperlinkAdapter() {
 
                 @Override
                 protected void onLinkActivated(HyperlinkEvent e) throws Exception {

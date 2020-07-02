@@ -23,12 +23,6 @@ public class Activator extends AbstractUIPlugin implements PluginConstants {
         }
     }
 
-    @Override
-    public void stop(BundleContext context) throws Exception {
-        // hide underlying exceptions
-        //super.stop(context);
-    }
-
     public static Activator getDefault() {
         return plugin;
     }
@@ -48,6 +42,10 @@ public class Activator extends AbstractUIPlugin implements PluginConstants {
 
     public static boolean getPrefBoolean(String name) {
         return getDefault().getPreferenceStore().getBoolean(name);
+    }
+
+    public static int getPrefInt(String name) {
+        return getDefault().getPreferenceStore().getInt(name);
     }
 
 }
