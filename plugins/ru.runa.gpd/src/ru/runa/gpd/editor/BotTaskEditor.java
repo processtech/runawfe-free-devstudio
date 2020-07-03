@@ -302,6 +302,9 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
                                 if (DialogEnhancementMode.check(flags, DialogEnhancementMode.DOCX_RELOAD_FROM_TEMPLATE)) {
                                     try {
                                         updateFromTemplate();
+                                        if (DialogEnhancementMode.check(flags, DialogEnhancementMode.DOCX_MAKE_DIRTY)) {
+                                            setDirty(true);
+                                        }
                                     } catch (IOException | CoreException e) {
                                         e.printStackTrace();
                                     }
@@ -312,6 +315,8 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
                                     } else if (DialogEnhancementMode.check(flags, DialogEnhancementMode.DOCX_DELETE_VARIABLE)) {
                                         deleteFileParam(ParamDefGroup.NAME_INPUT, DocxDialogEnhancementMode.getInputFileParamName());
                                     }
+                                } else if (DialogEnhancementMode.check(flags, DialogEnhancementMode.DOCX_MAKE_DIRTY)) {
+                                    setDirty(true);
                                 }
                             }
                         });
@@ -359,11 +364,12 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
                 while (paramsIterator.hasNext()) {
                     ParamDef pd = paramsIterator.next();
                     String paramName = pd.getName();
-                    if (paramName == fileParamName) {
+                    if (paramName.compareTo(fileParamName) == 0) {
                         if (pd.getFormatFilters().size() > 0
                                 && pd.getFormatFilters().get(0).compareTo(DocxDialogEnhancementMode.FILE_VARIABLE_FORMAT) == 0) {
                             paramsIterator.remove();
                             setDirty(true);
+                            setTableInput(ParamDefGroup.NAME_INPUT);
                             return true;
                         }
                     }
@@ -382,7 +388,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
                 while (paramsIterator.hasNext()) {
                     ParamDef pd = paramsIterator.next();
                     String paramName = pd.getName();
-                    if (paramName == fileParamName) {
+                    if (paramName.compareTo(fileParamName) == 0) {
                         if (pd.getFormatFilters().size() > 0
                                 && pd.getFormatFilters().get(0).compareTo(DocxDialogEnhancementMode.FILE_VARIABLE_FORMAT) == 0) {
                             wasFileParam = true;
@@ -397,6 +403,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
                     formats.add(DocxDialogEnhancementMode.FILE_VARIABLE_FORMAT);
                     params.add(pd);
                     setDirty(true);
+                    setTableInput(ParamDefGroup.NAME_INPUT);
                     return true;
                 }
                 break;
@@ -422,17 +429,17 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
 
     private void updateFromTemplate() throws IOException, CoreException {
         if (embeddedFileName == null || embeddedFileName.isEmpty() || !EmbeddedFileUtils.isBotTaskFile(embeddedFileName)) {
-            PluginLogger.logInfo(Localization.getString("BotTaskEditor.badEmbeddedDocxFile"));
+            PluginLogger.logInfo(Localization.getString("DialogEnhancement.badEmbeddedDocxFile"));
             return;
         }
         IFile file = EmbeddedFileUtils.getProcessFile(EmbeddedFileUtils.getBotTaskFileName(embeddedFileName));
         if (null == file || !file.exists()) {
-            PluginLogger.logInfo(Localization.getString("BotTaskEditor.cantGetFile"));
+            PluginLogger.logInfo(Localization.getString("DialogEnhancement.cantGetFile"));
             return;
         }
         try (InputStream inputStream = file.getContents()) {
-            if (null == file || !file.exists()) {
-                PluginLogger.logInfo(Localization.getString("BotTaskEditor.cantGetInputStream"));
+            if (null == inputStream) {
+                PluginLogger.logInfo(Localization.getString("DialogEnhancement.cantGetInputStream"));
                 return;
             }
             Map<String, Integer> variablesMap = DocxDialogEnhancementMode.getVariableNamesFromDocxTemplate(inputStream);
@@ -444,7 +451,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
                     while (paramsIterator.hasNext()) {
                         ParamDef pd = paramsIterator.next();
                         String paramName = pd.getName();
-                        if (paramName == inputFileParamName) {
+                        if (paramName.equals(inputFileParamName)) {
                             if (pd.getFormatFilters().size() > 0
                                     && pd.getFormatFilters().get(0).compareTo(DocxDialogEnhancementMode.FILE_VARIABLE_FORMAT) == 0) {
                                 continue;

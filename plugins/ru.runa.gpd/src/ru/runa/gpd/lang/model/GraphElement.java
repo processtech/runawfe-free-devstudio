@@ -1,6 +1,7 @@
 package ru.runa.gpd.lang.model;
 
 import com.google.common.base.Objects;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -33,6 +34,8 @@ import ru.runa.gpd.property.DescribablePropertyDescriptor;
 import ru.runa.gpd.property.DurationPropertyDescriptor;
 import ru.runa.gpd.property.TimerActionPropertyDescriptor;
 import ru.runa.gpd.settings.CommonPreferencePage;
+import ru.runa.gpd.ui.enhancement.DialogEnhancement;
+import ru.runa.gpd.ui.enhancement.DocxDialogEnhancementMode;
 import ru.runa.gpd.util.EventSupport;
 import ru.runa.gpd.util.VariableUtils;
 
@@ -54,8 +57,7 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
     }
 
     /**
-     * @return parent container or <code>null</code> in case of
-     *         {@link ProcessDefinition}
+     * @return parent container or <code>null</code> in case of {@link ProcessDefinition}
      */
     public GraphElement getParentContainer() {
         return parentContainer;
@@ -154,6 +156,20 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
                 PluginLogger.logErrorWithoutDialog("validation error", e);
                 errors.add(ValidationError.createLocalizedWarning(element, "error", e));
             }
+        }
+    }
+
+    public void checkScriptTaskParametersWithDocxTemplate(IFile definitionFile, List<String> errors, String[] errorsDetails) {
+        if (isDelegable() && delegationClassName.equals(DocxDialogEnhancementMode.DocxHandlerID)) {
+            Delegable delegable = (Delegable) this;
+            Object obj = DialogEnhancement.getConfigurationValue(delegable, DocxDialogEnhancementMode.InputPathId);
+            String embeddedDocxTemplateFileName = null != obj && obj instanceof String ? (String) obj : "";
+            if (!Strings.isNullOrEmpty(embeddedDocxTemplateFileName)) {
+                DialogEnhancement.checkScriptTaskParametersWithDocxTemplate(delegable, embeddedDocxTemplateFileName, errors, errorsDetails);
+            }
+        }
+        for (GraphElement element : children) {
+            element.checkScriptTaskParametersWithDocxTemplate(definitionFile, errors, errorsDetails);
         }
     }
 
@@ -376,14 +392,14 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
         if (isDelegable()) {
             Delegable delegable = (Delegable) this;
             descriptors.add(new DelegableClassPropertyDescriptor(PROPERTY_CLASS, Localization.getString("property.delegation.class"), delegable));
-            descriptors.add(new DelegableConfPropertyDescriptor(PROPERTY_CONFIGURATION, (Delegable) this, Localization
-                    .getString("property.delegation.configuration")));
+            descriptors.add(new DelegableConfPropertyDescriptor(PROPERTY_CONFIGURATION, (Delegable) this,
+                    Localization.getString("property.delegation.configuration")));
         }
         if (this instanceof ITimed && getProcessDefinition().getLanguage() == Language.JPDL) {
             Timer timer = ((ITimed) this).getTimer();
             if (timer != null) {
-                descriptors.add(new DurationPropertyDescriptor(PROPERTY_TIMER_DELAY, timer.getProcessDefinition(), timer.getDelay(), Localization
-                        .getString("property.duration")));
+                descriptors.add(new DurationPropertyDescriptor(PROPERTY_TIMER_DELAY, timer.getProcessDefinition(), timer.getDelay(),
+                        Localization.getString("property.duration")));
                 descriptors.add(new TimerActionPropertyDescriptor(PROPERTY_TIMER_ACTION, Localization.getString("Timer.action"), timer));
             }
         }

@@ -3,11 +3,9 @@ package ru.runa.gpd.ui.wizard;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.util.TreeMap;
-
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.viewers.IStructuredSelection;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.bot.BotStationDeployCommand;
 import ru.runa.gpd.bot.BotStationExportCommand;

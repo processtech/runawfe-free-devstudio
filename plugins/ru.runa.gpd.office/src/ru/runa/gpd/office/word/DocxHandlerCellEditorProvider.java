@@ -53,6 +53,15 @@ public class DocxHandlerCellEditorProvider extends XmlBasedConstructorProvider<D
     }
 
     @Override
+    public Object getConfigurationValue(Delegable delegable, String valueId) throws Exception {
+        DocxModel docxModel = fromXml(delegable.getDelegationConfiguration());
+        if (0 == valueId.compareTo(DocxDialogEnhancementMode.InputPathId)) {
+            return docxModel.getInOutModel().inputPath;
+        }
+        return null;
+    }
+
+    @Override
     protected String getTitle() {
         return Messages.getString("DocxActionHandlerConfig.title");
     }

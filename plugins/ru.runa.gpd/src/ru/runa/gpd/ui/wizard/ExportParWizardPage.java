@@ -2,6 +2,7 @@ package ru.runa.gpd.ui.wizard;
 
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
+import com.google.common.collect.Lists;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -56,6 +57,7 @@ import ru.runa.gpd.settings.WFEConnectionPreferencePage;
 import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.custom.SyncUIHelper;
+import ru.runa.gpd.ui.enhancement.DialogEnhancement;
 import ru.runa.gpd.ui.view.ValidationErrorsView;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.wfe.WFEServerProcessDefinitionImporter;
@@ -230,6 +232,23 @@ public class ExportParWizardPage extends WizardArchiveFileResourceExportPage1 {
                         }
                     }
                 }
+                if (DialogEnhancement.isOn()) {
+                    List<String> errors = Lists.newArrayList();
+                    String errorsDetails[] = { "" };
+                    ProcessDefinitionValidator.checkScriptTaskParametersWithDocxTemplate(definition, errors, errorsDetails);
+                    if (errors.size() > 0) {
+                        if (exportToFile) {
+                            if (!Dialogs.confirm(Localization.getString("DialogEnhancement.parametersNotCorrespondingWithDocxQ"), errorsDetails[0])) {
+                                PluginLogger.logErrorWithoutDialog(Localization.getString("DialogEnhancement.exportCanceled"));
+                                return false;
+                            }
+                        } else {
+                            Dialogs.error(Localization.getString("DialogEnhancement.parametersNotCorrespondingWithDocx"), errorsDetails[0]);
+                            PluginLogger.logErrorWithoutDialog(Localization.getString("DialogEnhancement.exportCanceled"));
+                            return false;
+                        }
+                    }
+                }
                 definition.getLanguage().getSerializer().validateProcessDefinitionXML(definitionFile);
                 List<IFile> resourcesToExport = new ArrayList<IFile>();
                 IResource[] members = processFolder.members();
@@ -264,10 +283,12 @@ public class ExportParWizardPage extends WizardArchiveFileResourceExportPage1 {
                                 }
                             }
                             zip(filesToExport, new FileOutputStream(getDestinationValue() + definition.getName() + ".har"));
+                            PluginLogger.logInfo(Localization.getString("DialogEnhancement.exportSuccessful"));
                         }
                     }
                 } else {
                     new ParDeployOperation(resourcesToExport, definition.getName(), updateLatestVersionButton.getSelection()).run(null);
+                    PluginLogger.logInfo(Localization.getString("DialogEnhancement.exportSuccessful"));
                 }
             } catch (Throwable th) {
                 PluginLogger.logErrorWithoutDialog(Localization.getString("ExportParWizardPage.error.export"), th);
@@ -319,7 +340,8 @@ public class ExportParWizardPage extends WizardArchiveFileResourceExportPage1 {
             this.resourcesToExport = resourcesToExport;
         }
 
-        protected void exportResource(IFileExporter exporter, IFile fileResource, IProgressMonitor progressMonitor) throws IOException, CoreException {
+        protected void exportResource(IFileExporter exporter, IFile fileResource, IProgressMonitor progressMonitor)
+                throws IOException, CoreException {
             if (!fileResource.isSynchronized(IResource.DEPTH_ONE)) {
                 fileResource.refreshLocal(IResource.DEPTH_ONE, null);
             }

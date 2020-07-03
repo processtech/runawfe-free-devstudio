@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.InputStream;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -40,6 +41,12 @@ public abstract class ProcessFileComposite extends Composite {
         }
         this.file = file;
         setLayout(new GridLayout(3, false));
+        if (null != dialogEnhancementMode
+                && (dialogEnhancementMode.checkBotDocxTemplateEnhancementMode() || dialogEnhancementMode.checkScriptDocxTemplateEnhancementMode())) {
+            GridData gridData = new GridData();
+            gridData.widthHint = 333;
+            setLayoutData(gridData);
+        }
         rebuild();
     }
 
@@ -95,7 +102,7 @@ public abstract class ProcessFileComposite extends Composite {
                     eventSupport.firePropertyChange(PropertyNames.PROPERTY_VALUE, null, getFile().getName());
                     rebuild();
                     if (null != dialogEnhancementMode && dialogEnhancementMode.checkBotDocxTemplateEnhancementMode()) {
-                        dialogEnhancementMode.invoke(DialogEnhancementMode.DOCX_RELOAD_FROM_TEMPLATE);
+                        dialogEnhancementMode.invoke(DialogEnhancementMode.DOCX_RELOAD_FROM_TEMPLATE | DialogEnhancementMode.DOCX_MAKE_DIRTY);
                     }
                 }
             });
@@ -130,6 +137,9 @@ public abstract class ProcessFileComposite extends Composite {
                     @Override
                     protected void onLinkActivated(HyperlinkEvent e) throws Exception {
                         EmbeddedFileUtils.deleteProcessFile(getFile());
+                        if (null != dialogEnhancementMode && dialogEnhancementMode.checkBotDocxTemplateEnhancementMode()) {
+                            dialogEnhancementMode.invoke(DialogEnhancementMode.DOCX_MAKE_DIRTY);
+                        }
                         rebuild();
                         eventSupport.firePropertyChange(PropertyNames.PROPERTY_VALUE, getFile().getName(), null);
                     }

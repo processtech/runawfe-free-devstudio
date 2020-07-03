@@ -41,6 +41,10 @@ public class DelegableProvider {
         throw new RuntimeException("Embedded dialog is not implemented yet!");
     }
 
+    public Object getConfigurationValue(Delegable delegable, String valueId) throws Exception {
+        throw new RuntimeException("The function is not implemented yet!");
+    }
+
     /**
      * Validates configuration. Implementors can return <code>false</code> to raise default invalid configuration message. Or can invoke
      * delegable.addError.

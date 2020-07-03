@@ -1,9 +1,138 @@
 package ru.runa.gpd.ui.enhancement;
 
+import com.google.common.base.Strings;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.CoreException;
+import ru.runa.gpd.Localization;
+import ru.runa.gpd.PluginLogger;
+import ru.runa.gpd.extension.HandlerRegistry;
+import ru.runa.gpd.extension.handler.ParamDef;
+import ru.runa.gpd.extension.handler.ParamDefGroup;
+import ru.runa.gpd.lang.model.BotTask;
+import ru.runa.gpd.lang.model.Delegable;
+import ru.runa.gpd.util.EmbeddedFileUtils;
+
 public class DialogEnhancement {
 
     public static boolean isOn() {
         return dialogEnhancementMode;
+    }
+
+    public static Object getConfigurationValue(Delegable delegable, String valueId) {
+        Object obj = null;
+        try {
+            obj = HandlerRegistry.getProvider(delegable.getDelegationClassName()).getConfigurationValue(delegable, valueId);
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+        return obj;
+    }
+
+    public static Boolean checkScriptTaskParametersWithDocxTemplate(Delegable delegable, String embeddedDocxTemplateFileName, List<String> errors,
+            String[] errorsDetails) {
+        IFile file = Strings.isNullOrEmpty(embeddedDocxTemplateFileName) ? null : EmbeddedFileUtils.getProcessFile(embeddedDocxTemplateFileName);
+        if (null == file || !file.exists()) {
+            PluginLogger.logInfo(Localization.getString("DialogEnhancement.cantGetFile"));
+            return null;
+        }
+
+        try (InputStream inputStream = file.getContents()) {
+            if (null == inputStream) {
+                PluginLogger.logInfo(Localization.getString("DialogEnhancement.cantGetInputStream"));
+                return null;
+            }
+            Map<String, Integer> variablesMap = DocxDialogEnhancementMode.getVariableNamesFromDocxTemplate(inputStream);
+            List<String> usedVariableList = delegable.getVariableNames(false);
+            boolean ok = true;
+            for (Map.Entry<String, Integer> entry : variablesMap.entrySet()) {
+                String variable = entry.getKey();
+                ListIterator<String> iterator = usedVariableList.listIterator();
+                boolean exists = false;
+                while (iterator.hasNext()) {
+                    if (iterator.next().compareTo(variable) == 0) {
+                        exists = true;
+                        break;
+                    }
+                }
+                if (!exists) {
+                    String error = Localization.getString("DialogEnhancement.noParameterForDocx", variable);
+                    if (null != errorsDetails && errorsDetails.length > 0) {
+                        if (!errorsDetails[0].isEmpty()) {
+                            errorsDetails[0] += "\n";
+                        }
+                        errorsDetails[0] += error;
+                    }
+                    if (null != errors) {
+                        errors.add(error);
+                    }
+                    ok = false;
+                }
+            }
+            return ok;
+        } catch (IOException | CoreException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static Boolean checkBotTaskParametersWithDocxTemplate(BotTask botTask, String embeddedDocxTemplateFileName, List<String> errors,
+            String[] errorsDetails) {
+        IFile file = EmbeddedFileUtils.getProcessFile(EmbeddedFileUtils.getBotTaskFileName(embeddedDocxTemplateFileName));
+        if (null == file || !file.exists()) {
+            PluginLogger.logInfo(Localization.getString("DialogEnhancement.cantGetFile"));
+            return null;
+        }
+
+        boolean ok = true;
+        try (InputStream inputStream = file.getContents()) {
+            if (null == inputStream) {
+                PluginLogger.logInfo(Localization.getString("DialogEnhancement.cantGetInputStream"));
+                return null;
+            }
+            Map<String, Integer> variablesMap = DocxDialogEnhancementMode.getVariableNamesFromDocxTemplate(inputStream);
+            for (Map.Entry<String, Integer> entry : variablesMap.entrySet()) {
+                String variable = entry.getKey();
+                boolean finded = false;
+                for (ParamDefGroup group : botTask.getParamDefConfig().getGroups()) {
+                    if (ParamDefGroup.NAME_INPUT.equals(group.getName())) {
+                        List<ParamDef> params = group.getParameters();
+                        ListIterator<ParamDef> paramsIterator = params.listIterator();
+                        while (paramsIterator.hasNext()) {
+                            ParamDef pd = paramsIterator.next();
+                            String paramName = pd.getName();
+                            if (paramName.equals(variable)) {
+                                finded = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (!finded) {
+                    String error = Localization.getString("DialogEnhancement.noParameterForDocx", variable);
+                    if (null != errorsDetails && errorsDetails.length > 0) {
+                        if (!errorsDetails[0].isEmpty()) {
+                            errorsDetails[0] += "\n";
+                        }
+                        errorsDetails[0] += error;
+                    }
+                    if (null != errors) {
+                        errors.add(error);
+                    }
+                    ok = false;
+                }
+            }
+
+            return ok;
+        } catch (IOException | CoreException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     private static boolean dialogEnhancementMode = true;
