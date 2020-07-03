@@ -594,6 +594,9 @@ public class CopyGraphCommand extends Command {
             }
             addedVariable = (Variable) sourceVariable.makeCopy(targetDefinition);
             copyUserType(sourceVariable);
+            if (sourceVariable.isComplex()) {
+                addedVariable.setUserType(targetDefinition.getVariableUserType(sourceVariable.getUserType().getName()));
+            }
         }
 
         private void copyUserType(Variable srcVar) {
