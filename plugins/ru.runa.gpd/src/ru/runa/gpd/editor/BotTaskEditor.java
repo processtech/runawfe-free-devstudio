@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -124,6 +126,10 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
         setDirty(false);
         getSite().getPage().addSelectionListener(this);
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this, IResourceChangeEvent.POST_CHANGE);
+
+        if (isBotDocxHandlerEnhancement()) {
+            initEmbeddedFileNameTimer();
+        }
     }
 
     @Override
@@ -232,6 +238,22 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
         }
         populateFields();
         composite.layout(true, true);
+    }
+
+    void initEmbeddedFileNameTimer() {
+        TimerTask timerTask = new TimerTask() {
+            @Override
+            public void run() {
+
+            }
+        };
+
+        Timer timer = new Timer(true);
+        timer.scheduleAtFixedRate(timerTask, 0, 300);
+    }
+
+    void killEmbeddedFileNameTimer() {
+        // timer.cancel();
     }
 
     private void createTaskHandlerClassField(final Composite parent) {

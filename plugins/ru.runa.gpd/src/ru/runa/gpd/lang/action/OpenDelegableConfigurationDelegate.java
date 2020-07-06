@@ -1,9 +1,11 @@
 package ru.runa.gpd.lang.action;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import java.util.List;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.ui.PlatformUI;
+import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.editor.graphiti.GraphitiProcessEditor;
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.HandlerRegistry;
@@ -56,7 +58,18 @@ public class OpenDelegableConfigurationDelegate extends BaseModelActionDelegate 
     }
 
     private boolean isScriptDocxHandlerEnhancement(Delegable delegable) {
-        return DialogEnhancement.isOn() && 0 == delegable.getDelegationClassName().compareTo(DocxDialogEnhancementMode.DocxHandlerID);
+        PluginLogger.logInfo("DialogEnhancement.isOn() = " + DialogEnhancement.isOn());
+        if (null != delegable) {
+            PluginLogger.logInfo("delegable = " + (delegable != null ? "X" : "-"));
+        }
+
+        if (null != delegable && !Strings.isNullOrEmpty(delegable.getDelegationClassName())) {
+            PluginLogger.logInfo("delegable.getDelegationClassName() = " + delegable.getDelegationClassName());
+        }
+        PluginLogger.logInfo("res = " + ((DialogEnhancement.isOn() && null != delegable && !Strings.isNullOrEmpty(delegable.getDelegationClassName())
+                && 0 == delegable.getDelegationClassName().compareTo(DocxDialogEnhancementMode.DocxHandlerID)) ? "X" : "-"));
+        return DialogEnhancement.isOn() && null != delegable && !Strings.isNullOrEmpty(delegable.getDelegationClassName())
+                && 0 == delegable.getDelegationClassName().compareTo(DocxDialogEnhancementMode.DocxHandlerID);
     }
 
 }
