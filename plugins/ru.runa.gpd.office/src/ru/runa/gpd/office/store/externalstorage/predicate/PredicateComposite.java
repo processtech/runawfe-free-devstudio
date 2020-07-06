@@ -7,7 +7,6 @@ import java.util.Objects;
 import java.util.Optional;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
@@ -41,13 +40,12 @@ public class PredicateComposite extends Composite {
         this.variableTypeName = variableTypeName;
         this.variableProvider = variableProvider;
 
-        setLayout(new GridLayout(5, false));
-        final GridData data = new GridData(GridData.FILL_HORIZONTAL);
-        data.horizontalSpan = 5;
-        setLayoutData(data);
-        setLayout(new FillLayout(SWT.VERTICAL));
+        setLayout(new GridLayout(1, false));
+        setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+
         group = new Group(this, SWT.None);
         group.setLayout(new GridLayout(5, false));
+        group.setLayoutData(new GridData(GridData.FILL_BOTH));
     }
 
     public void build() {
@@ -96,10 +94,9 @@ public class PredicateComposite extends Composite {
         predicate.applicableOperationTypeNames().forEach(compoundTypeCombo::add);
         compoundTypeCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
             final String text = compoundTypeCombo.getText();
-            if (Strings.isNullOrEmpty(text)) {
-                return;
+            if (!Strings.isNullOrEmpty(text)) {
+                predicate.setType(PredicateOperationType.byCode(text).orElse(null));
             }
-            predicate.setType(PredicateOperationType.byCode(text).orElse(null));
         }));
         if (predicate.getType() != null) {
             compoundTypeCombo.setText(predicate.getType().code);
@@ -114,10 +111,9 @@ public class PredicateComposite extends Composite {
         predicate.applicableOperationTypeNames().forEach(predicateOperationTypeCombo::add);
         predicateOperationTypeCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
             final String text = predicateOperationTypeCombo.getText();
-            if (Strings.isNullOrEmpty(text)) {
-                return;
+            if (!Strings.isNullOrEmpty(text)) {
+                predicate.setType(PredicateOperationType.byCode(text).orElse(null));
             }
-            predicate.setType(PredicateOperationType.byCode(text).orElse(null));
         }));
         if (predicate.getType() != null) {
             predicateOperationTypeCombo.setText(predicate.getType().code);
@@ -144,13 +140,9 @@ public class PredicateComposite extends Composite {
 
         compareWithCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter((e) -> {
             final String text = compareWithCombo.getText();
-            if (Strings.isNullOrEmpty(text)) {
-                return;
+            if (!Strings.isNullOrEmpty(text)) {
+                variableProvider.variableByName(text).ifPresent(predicate::setRight);
             }
-            final Optional<Variable> variable = variableProvider.variableByName(text);
-            variable.ifPresent(var -> {
-                predicate.setRight(var);
-            });
         }));
         if (predicate.getRight() != null) {
             compareWithCombo.setText(predicate.getRight().getName());

@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
@@ -119,6 +120,11 @@ public class InternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
         }
         model.validate(graphElement, errors);
         return super.validateModel(delegable, model, errors);
+    }
+
+    @Override
+    protected Point getDialogInitialSize() {
+        return new Point(800, 600);
     }
 
     private class ConstructorView extends ConstructorComposite {

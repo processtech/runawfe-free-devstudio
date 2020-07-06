@@ -1,11 +1,12 @@
 package ru.runa.gpd.extension.handler;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.window.Window;
@@ -23,7 +24,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.DelegableProvider;
@@ -32,9 +32,6 @@ import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.ui.custom.XmlHighlightTextStyling;
 import ru.runa.gpd.util.XmlUtil;
-
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 
 public abstract class XmlBasedConstructorProvider<T extends Observable> extends DelegableProvider {
 
@@ -92,6 +89,10 @@ public abstract class XmlBasedConstructorProvider<T extends Observable> extends 
         return 0;
     }
 
+    protected Point getDialogInitialSize() {
+        return new Point(600, 400);
+    }
+
     public abstract class ConstructorComposite extends Composite implements Observer {
         protected T model;
         protected final Delegable delegable;
@@ -130,7 +131,7 @@ public abstract class XmlBasedConstructorProvider<T extends Observable> extends 
 
         @Override
         protected Point getInitialSize() {
-            return new Point(600, 400);
+            return getDialogInitialSize();
         }
 
         @Override
