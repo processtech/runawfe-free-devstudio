@@ -26,6 +26,7 @@ import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.gpd.lang.model.VariableUserTypeNameAware;
 import ru.runa.gpd.lang.model.bpmn.ScriptTask;
 import ru.runa.gpd.office.store.InternalStorageOperationHandlerCellEditorProvider;
+import ru.runa.gpd.office.store.externalstorage.InternalStorageDataModel;
 
 public class PredicatesParameter extends ParameterType implements DependsOnDbVariableUserType {
     private PredicatesDelegable delegable;
@@ -72,7 +73,8 @@ public class PredicatesParameter extends ParameterType implements DependsOnDbVar
     @Override
     public void updateEditor(Object ui, Component component, ComponentParameter parameter) {
         super.updateEditor(ui, component, parameter);
-        delegable.setFtlConfiguration("");
+        final Optional<VariableUserType> userType = userType(component, FormEditor.getCurrent().getProcessDefinition());
+        delegable.setFtlConfiguration(userType.map(type -> InternalStorageDataModel.selectWithoutReturnBy(type).toString()).orElse(""));
         component.setParameterValue(parameter, delegable.getFtlConfiguration());
     }
 

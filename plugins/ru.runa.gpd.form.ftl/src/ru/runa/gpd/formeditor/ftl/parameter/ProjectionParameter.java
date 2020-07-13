@@ -14,6 +14,7 @@ import org.eclipse.ui.views.properties.PropertyDescriptor;
 import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.formeditor.ftl.Component;
 import ru.runa.gpd.formeditor.ftl.ComponentParameter;
+import ru.runa.gpd.formeditor.ftl.ui.dialog.projection.ProjectionDataModel;
 import ru.runa.gpd.formeditor.ftl.ui.dialog.projection.ProjectionDialog;
 import ru.runa.gpd.formeditor.ftl.util.CdataWrapUtils;
 import ru.runa.gpd.formeditor.resources.Messages;
@@ -66,7 +67,8 @@ public class ProjectionParameter extends ParameterType implements DependsOnDbVar
     @Override
     public void updateEditor(Object ui, Component component, ComponentParameter parameter) {
         super.updateEditor(ui, component, parameter);
-        delegable.setFtlConfiguration("");
+        final Optional<VariableUserType> userType = userType(component, FormEditor.getCurrent().getProcessDefinition());
+        delegable.setFtlConfiguration(userType.map(type -> ProjectionDataModel.by(type).toString()).orElse(""));
         component.setParameterValue(parameter, delegable.getFtlConfiguration());
     }
 

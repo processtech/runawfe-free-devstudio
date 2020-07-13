@@ -42,6 +42,8 @@ import ru.runa.gpd.ui.custom.SWTUtils;
 import ru.runa.gpd.util.EmbeddedFileUtils;
 
 public class InternalStorageOperationHandlerCellEditorProvider extends XmlBasedConstructorProvider<InternalStorageDataModel> {
+    public static final String INTERNAL_STORAGE_DATASOURCE_PATH = "datasource:InternalStorage";
+
     @Override
     public void onDelete(Delegable delegable) {
         try {
@@ -128,8 +130,6 @@ public class InternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
     }
 
     private class ConstructorView extends ConstructorComposite {
-        private static final String INTERNAL_STORAGE_DATASOURCE_PATH = "datasource:InternalStorage";
-
         private final VariableProvider variableProvider;
 
         private final boolean isUseExternalStorageIn;

@@ -14,9 +14,11 @@ import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.StartState;
 import ru.runa.gpd.lang.model.Variable;
+import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.gpd.office.FilesSupplierMode;
 import ru.runa.gpd.office.Messages;
 import ru.runa.gpd.office.store.DataModel;
+import ru.runa.gpd.office.store.InternalStorageOperationHandlerCellEditorProvider;
 import ru.runa.gpd.office.store.QueryType;
 import ru.runa.gpd.office.store.StorageConstraintsModel;
 import ru.runa.gpd.office.store.externalstorage.predicate.ConstraintsPredicate;
@@ -32,6 +34,18 @@ public class InternalStorageDataModel extends DataModel {
 
     public InternalStorageDataModel(FilesSupplierMode mode, ExternalStorageHandlerInputOutputModel inOutModel) {
         super(mode, inOutModel);
+    }
+
+    public static InternalStorageDataModel selectWithoutReturnBy(VariableUserType userType) {
+        final StorageConstraintsModel constraintsModel = new StorageConstraintsModel(StorageConstraintsModel.ATTR, QueryType.SELECT);
+        constraintsModel.setQueryString("");
+        constraintsModel.setSheetName(userType.getName());
+
+        final ExternalStorageHandlerInputOutputModel inputOutputModel = new ExternalStorageHandlerInputOutputModel();
+        inputOutputModel.inputPath = InternalStorageOperationHandlerCellEditorProvider.INTERNAL_STORAGE_DATASOURCE_PATH;
+        final InternalStorageDataModel model = new InternalStorageDataModel(FilesSupplierMode.IN, inputOutputModel);
+        model.constraints.add(constraintsModel);
+        return model;
     }
 
     @SuppressWarnings("unchecked")
