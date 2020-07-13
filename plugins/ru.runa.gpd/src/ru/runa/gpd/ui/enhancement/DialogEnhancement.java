@@ -48,14 +48,15 @@ public class DialogEnhancement {
                     public void invoke(long flags) {
                         if (DialogEnhancementMode.check(flags, DialogEnhancementMode.DOCX_RELOAD_FROM_TEMPLATE)) {
                             List<String> errors = Lists.newArrayList();
-                            DialogEnhancement.checkScriptTaskParametersWithDocxTemplate(delegable, templateFilePath, errors, null);
+                            List<Delegable> errorSources = Lists.newArrayList();
+                            DialogEnhancement.checkScriptTaskParametersWithDocxTemplate(delegable, templateFilePath, errors, errorSources, null);
 
                             if (delegable instanceof GraphElement && errors.size() > 0) {
                                 ProcessDefinition processDefinition = ((GraphElement) delegable).getProcessDefinition();
                                 ProcessDefinition mainProcessDefinition = null != processDefinition ? processDefinition.getMainProcessDefinition()
                                         : null;
                                 if (null != mainProcessDefinition) {
-                                    ProcessDefinitionValidator.logErrors(mainProcessDefinition, errors);
+                                    ProcessDefinitionValidator.logErrors(mainProcessDefinition, errors, errorSources);
                                 }
                             }
                         } else if (DialogEnhancementMode.check(flags, DialogEnhancementMode.DOCX_SET_PROCESS_FILEPATH)) {
@@ -66,8 +67,12 @@ public class DialogEnhancement {
         return newConfig;
     }
 
+    private static String wrapToScriptName(Delegable delegable, String message) {
+        return message + " (" + Localization.getString("DialogEnhancement.scriptTask") + " \"" + delegable.toString() + "\")";
+    }
+
     public static Boolean checkScriptTaskParametersWithDocxTemplate(Delegable delegable, String embeddedDocxTemplateFileName, List<String> errors,
-            String[] errorsDetails) {
+            List<Delegable> errorSources, String[] errorsDetails) {
         IFile file = Strings.isNullOrEmpty(embeddedDocxTemplateFileName) ? null : EmbeddedFileUtils.getProcessFile(embeddedDocxTemplateFileName);
         if (null == file || !file.exists()) {
             PluginLogger.logInfo(Localization.getString("DialogEnhancement.cantGetFile"));
@@ -93,7 +98,7 @@ public class DialogEnhancement {
                     }
                 }
                 if (!exists) {
-                    String error = Localization.getString("DialogEnhancement.noParameterForDocx", variable);
+                    String error = wrapToScriptName(delegable, Localization.getString("DialogEnhancement.noParameterForDocx", variable));
                     if (null != errorsDetails && errorsDetails.length > 0) {
                         if (!errorsDetails[0].isEmpty()) {
                             errorsDetails[0] += "\n";
@@ -102,6 +107,9 @@ public class DialogEnhancement {
                     }
                     if (null != errors) {
                         errors.add(error);
+                    }
+                    if (null != errorSources) {
+                        errorSources.add(delegable);
                     }
                     ok = false;
                 }

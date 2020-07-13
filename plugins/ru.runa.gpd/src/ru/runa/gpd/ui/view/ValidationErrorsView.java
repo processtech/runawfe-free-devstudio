@@ -95,7 +95,15 @@ public class ValidationErrorsView extends ViewPart implements ISelectionChangedL
         }
         try {
             IFile definitionFile = (IFile) marker.getResource();
-            ProcessEditorBase editor = WorkspaceOperations.openProcessDefinition(definitionFile);
+            ProcessEditorBase editor = null;
+            try {
+                editor = WorkspaceOperations.openProcessDefinition(definitionFile);
+            } catch (Throwable th) {
+                // just for bots tasks
+            }
+            if (null == editor) {
+                return;
+            }
             GraphElement graphElement = null;
             String elementId = marker.getAttribute(PluginConstants.SELECTION_LINK_KEY, null);
             if (elementId != null) {

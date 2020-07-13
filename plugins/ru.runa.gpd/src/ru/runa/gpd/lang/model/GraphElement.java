@@ -159,17 +159,19 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
         }
     }
 
-    public void checkScriptTaskParametersWithDocxTemplate(IFile definitionFile, List<String> errors, String[] errorsDetails) {
+    public void checkScriptTaskParametersWithDocxTemplate(IFile definitionFile, List<String> errors, List<Delegable> errorSources,
+            String[] errorsDetails) {
         if (isDelegable() && delegationClassName.equals(DocxDialogEnhancementMode.DocxHandlerID)) {
             Delegable delegable = (Delegable) this;
             Object obj = DialogEnhancement.getConfigurationValue(delegable, DocxDialogEnhancementMode.InputPathId);
             String embeddedDocxTemplateFileName = null != obj && obj instanceof String ? (String) obj : "";
             if (!Strings.isNullOrEmpty(embeddedDocxTemplateFileName)) {
-                DialogEnhancement.checkScriptTaskParametersWithDocxTemplate(delegable, embeddedDocxTemplateFileName, errors, errorsDetails);
+                DialogEnhancement.checkScriptTaskParametersWithDocxTemplate(delegable, embeddedDocxTemplateFileName, errors, errorSources,
+                        errorsDetails);
             }
         }
         for (GraphElement element : children) {
-            element.checkScriptTaskParametersWithDocxTemplate(definitionFile, errors, errorsDetails);
+            element.checkScriptTaskParametersWithDocxTemplate(definitionFile, errors, errorSources, errorsDetails);
         }
     }
 

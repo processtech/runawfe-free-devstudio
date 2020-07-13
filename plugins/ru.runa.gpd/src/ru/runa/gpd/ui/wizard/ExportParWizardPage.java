@@ -50,6 +50,7 @@ import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.aspects.UserActivity;
 import ru.runa.gpd.editor.ProcessSaveHistory;
+import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.par.ProcessDefinitionValidator;
@@ -234,8 +235,9 @@ public class ExportParWizardPage extends WizardArchiveFileResourceExportPage1 {
                 }
                 if (DialogEnhancement.isOn()) {
                     List<String> errors = Lists.newArrayList();
+                    List<Delegable> errorSources = Lists.newArrayList();
                     String errorsDetails[] = { "" };
-                    ProcessDefinitionValidator.checkScriptTaskParametersWithDocxTemplate(definition, errors, errorsDetails);
+                    ProcessDefinitionValidator.checkScriptTaskParametersWithDocxTemplate(definition, errors, errorSources, errorsDetails);
                     if (errors.size() > 0) {
                         if (exportToFile) {
                             if (!Dialogs.confirm(Localization.getString("DialogEnhancement.parametersNotCorrespondingWithDocxQ"), errorsDetails[0])) {
