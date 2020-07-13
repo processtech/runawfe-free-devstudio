@@ -1,20 +1,19 @@
 package ru.runa.gpd.office.store.externalstorage.predicate;
 
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 public class OnConstructedPredicateDelegate<X, Y> extends ConstraintsPredicate<X, Y> {
-    private final Consumer<String> onConstructed;
+    private final Runnable onConstructed;
     private final ConstraintsPredicate<X, Y> delegate;
 
-    public OnConstructedPredicateDelegate(ConstraintsPredicate<X, Y> delegate, Consumer<String> onConstructed) {
+    public OnConstructedPredicateDelegate(ConstraintsPredicate<X, Y> delegate, Runnable onConstructed) {
         this.delegate = delegate;
         this.onConstructed = onConstructed;
     }
 
     @SuppressWarnings("unchecked")
-    public OnConstructedPredicateDelegate(ExpressionPredicate<?> delegate, Consumer<String> onConstructed) {
+    public OnConstructedPredicateDelegate(ExpressionPredicate<?> delegate, Runnable onConstructed) {
         this.delegate = (ConstraintsPredicate<X, Y>) delegate;
         this.onConstructed = onConstructed;
     }
@@ -64,7 +63,7 @@ public class OnConstructedPredicateDelegate<X, Y> extends ConstraintsPredicate<X
 
     public void produceConstructed() {
         if (getLeft() != null && getType() != null && getRight() != null) {
-            onConstructed.accept(toString());
+            onConstructed.run();
         }
     }
 
@@ -95,6 +94,11 @@ public class OnConstructedPredicateDelegate<X, Y> extends ConstraintsPredicate<X
     @Override
     public void setParent(ConstraintsPredicate<?, ?> parent) {
         delegate.setParent(parent);
+    }
+
+    @Override
+    public boolean isComplete() {
+        return delegate.isComplete();
     }
 
 }

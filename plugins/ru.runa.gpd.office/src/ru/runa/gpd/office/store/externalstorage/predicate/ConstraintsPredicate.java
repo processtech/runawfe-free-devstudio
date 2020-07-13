@@ -3,7 +3,7 @@ package ru.runa.gpd.office.store.externalstorage.predicate;
 import java.util.List;
 import java.util.stream.Stream;
 
-abstract class ConstraintsPredicate<X, Y> {
+public abstract class ConstraintsPredicate<X, Y> {
     protected X left;
     protected PredicateOperationType type;
     protected Y right;
@@ -60,4 +60,6 @@ abstract class ConstraintsPredicate<X, Y> {
     }
 
     public abstract List<PredicateOperationType> getApplicableOperationTypes();
+    
+    public abstract boolean isComplete();
 }

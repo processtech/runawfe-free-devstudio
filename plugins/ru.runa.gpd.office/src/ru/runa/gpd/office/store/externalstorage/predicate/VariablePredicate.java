@@ -6,8 +6,13 @@ import java.util.Objects;
 import ru.runa.gpd.lang.model.Variable;
 
 class VariablePredicate extends ConstraintsPredicate<Variable, Variable> {
+    static final VariablePredicate EMPTY = new VariablePredicate();
 
     public VariablePredicate() {
+    }
+
+    public VariablePredicate(ConstraintsPredicate<?, ?> parent) {
+        this.parent = parent;
     }
 
     public VariablePredicate(Variable left, PredicateOperationType type, Variable right) {
@@ -48,5 +53,10 @@ class VariablePredicate extends ConstraintsPredicate<Variable, Variable> {
     public List<PredicateOperationType> getApplicableOperationTypes() {
         return Arrays.asList(PredicateOperationType.EQUAL, PredicateOperationType.NOT_EQUAL, PredicateOperationType.GREATER_OR_EQUAL,
                 PredicateOperationType.LESS_OR_EQUAL, PredicateOperationType.GREATER, PredicateOperationType.LESS, PredicateOperationType.LIKE);
+    }
+
+    @Override
+    public boolean isComplete() {
+        return left != null && type != null && right != null;
     }
 }

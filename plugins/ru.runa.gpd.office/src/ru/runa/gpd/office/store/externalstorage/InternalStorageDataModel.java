@@ -19,7 +19,9 @@ import ru.runa.gpd.office.Messages;
 import ru.runa.gpd.office.store.DataModel;
 import ru.runa.gpd.office.store.QueryType;
 import ru.runa.gpd.office.store.StorageConstraintsModel;
+import ru.runa.gpd.office.store.externalstorage.predicate.ConstraintsPredicate;
 import ru.runa.gpd.office.store.externalstorage.predicate.PredicateOperationType;
+import ru.runa.gpd.office.store.externalstorage.predicate.PredicateParser;
 import ru.runa.gpd.util.XmlUtil;
 
 public class InternalStorageDataModel extends DataModel {
@@ -74,12 +76,21 @@ public class InternalStorageDataModel extends DataModel {
             inOutModel.validate(graphElement, mode, errors);
         }
 
-        if (!(graphElement instanceof StartState)) {
+        final String queryString = constraintsModel.getQueryString();
+        if (queryString == null || queryString.trim().isEmpty()) {
             return;
         }
 
-        final String queryString = constraintsModel.getQueryString();
-        if (queryString == null || queryString.trim().isEmpty()) {
+        final VariableProvider variableProvider = new ProcessDefinitionVariableProvider(graphElement.getProcessDefinition());
+        final ConstraintsPredicate<?, ?> parsed = new PredicateParser(queryString, variableProvider.getUserType(constraintsModel.sheetName),
+                variableProvider).parse();
+
+        if (parsed == null || !parsed.isComplete()) {
+            errors.add(ValidationError.createError(graphElement, Messages.getString("model.validation.xlsx.constraint.variable.empty")));
+            return;
+        }
+
+        if (!(graphElement instanceof StartState)) {
             return;
         }
 

@@ -25,7 +25,7 @@ class ExpressionPredicate<X extends ConstraintsPredicate<?, ?>> extends Constrai
     @Override
     public String toString() {
         final StringBuilder builder = new StringBuilder();
-        if (left != null) {
+        if (left != null && !VariablePredicate.EMPTY.equals(left)) {
             builder.append(' ');
             builder.append(left.toString());
             builder.append(' ');
@@ -34,7 +34,7 @@ class ExpressionPredicate<X extends ConstraintsPredicate<?, ?>> extends Constrai
             builder.append(type.code);
             builder.append(' ');
         }
-        if (right != null) {
+        if (right != null && !VariablePredicate.EMPTY.equals(left)) {
             builder.append(right.toString());
         }
         return builder.toString();
@@ -43,6 +43,12 @@ class ExpressionPredicate<X extends ConstraintsPredicate<?, ?>> extends Constrai
     @Override
     public List<PredicateOperationType> getApplicableOperationTypes() {
         return Arrays.asList(PredicateOperationType.AND, PredicateOperationType.OR);
+    }
+
+    @Override
+    public boolean isComplete() {
+        return right != null && right.isComplete() && type != null
+                && (left instanceof VariablePredicate && left.isComplete() || left instanceof ExpressionPredicate<?> && left.isComplete());
     }
 
 }
