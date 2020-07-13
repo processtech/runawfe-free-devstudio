@@ -1,6 +1,7 @@
 package ru.runa.gpd.formeditor.ftl.ui.dialog.projection;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
@@ -46,7 +47,9 @@ public class ProjectionDataModel extends Observable {
         }
 
         final Map<String, Projection> nameToProjection = with.getProjections().stream()
-                .collect(Collectors.toMap(Projection::getName, Function.identity()));
+                .collect(Collectors.toMap(Projection::getName, Function.identity(), (u, v) -> {
+                    throw new IllegalStateException(String.format("Duplicate key %s", u));
+                }, LinkedHashMap::new));
         for (Projection projection : projections) {
             final Projection candidate = nameToProjection.get(projection.getName());
             if (candidate != null) {
@@ -55,7 +58,6 @@ public class ProjectionDataModel extends Observable {
         }
 
         final List<Projection> resultProjections = new ArrayList<>(nameToProjection.values());
-        resultProjections.sort((a, b) -> a.getName().compareTo(b.getName()));
         projections = resultProjections;
 
         return this;
