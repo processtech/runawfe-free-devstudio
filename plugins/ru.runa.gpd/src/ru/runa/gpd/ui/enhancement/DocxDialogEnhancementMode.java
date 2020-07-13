@@ -1,5 +1,6 @@
 package ru.runa.gpd.ui.enhancement;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ import org.apache.poi.xwpf.usermodel.XWPFFooter;
 import org.apache.poi.xwpf.usermodel.XWPFHeader;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import ru.runa.gpd.Localization;
+import ru.runa.gpd.lang.model.Delegable;
 
 public class DocxDialogEnhancementMode extends DialogEnhancementMode {
 
@@ -58,6 +60,11 @@ public class DocxDialogEnhancementMode extends DialogEnhancementMode {
 
     public static String getOutputFileParamName() {
         return Localization.getString("MSWordConfig.label.result");
+    }
+
+    public static boolean isScriptDocxHandlerEnhancement(Delegable delegable) {
+        return DialogEnhancement.isOn() && null != delegable && !Strings.isNullOrEmpty(delegable.getDelegationClassName())
+                && 0 == delegable.getDelegationClassName().compareTo(DocxDialogEnhancementMode.DocxHandlerID);
     }
 
     public static Map<String, Integer> getVariableNamesFromDocxTemplate(InputStream templateInputStream) {

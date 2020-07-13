@@ -172,6 +172,7 @@ class ChooseStringOrFile implements PropertyChangeListener {
         final Text text = new Text(composite, SWT.BORDER);
         if (filename != null) {
             text.setText(filename);
+            setFileName(filename, embeddedMode);
         } else if (setEmptyFileName) {
             setFileName("", embeddedMode);
         }

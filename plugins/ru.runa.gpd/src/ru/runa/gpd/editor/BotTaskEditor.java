@@ -107,6 +107,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
     private Button readDocxParametersButton;
     private String embeddedFileName;
     private DocxDialogEnhancementMode docxDialogEnhancementModeInput, docxDialogEnhancementModeOutput;
+    private boolean rebuildingView;
 
     @Override
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
@@ -128,7 +129,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this, IResourceChangeEvent.POST_CHANGE);
 
         if (isBotDocxHandlerEnhancement()) {
-            initEmbeddedFileNameTimer();
+            // initEmbeddedFileNameTimer();
         }
     }
 
@@ -153,6 +154,9 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
             } catch (Exception e) {
                 PluginLogger.logError(e);
             }
+        }
+        if (isBotDocxHandlerEnhancement()) {
+            // killEmbeddedFileNameTimer();
         }
         super.dispose();
     }
@@ -201,6 +205,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
     }
 
     private void rebuildView(Composite composite) {
+        rebuildingView = true;
         configurationText = null;
         addParameterButton = null;
         editParameterButton = null;
@@ -238,22 +243,32 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
         }
         populateFields();
         composite.layout(true, true);
+        rebuildingView = false;
     }
 
+    private Timer timer;
+    private TimerTask timerTask;
+    private static Integer cnt = 0;
+
     void initEmbeddedFileNameTimer() {
-        TimerTask timerTask = new TimerTask() {
+        timerTask = new TimerTask() {
             @Override
             public void run() {
-
+                if (null != botTask && null != embeddedFileName && EmbeddedFileUtils.isBotTaskFile(embeddedFileName)) {
+                    IFile file = EmbeddedFileUtils.getProcessFile(EmbeddedFileUtils.getBotTaskFileName(embeddedFileName));
+                    PluginLogger.logInfo(botTask.getName() + " " + (++cnt).toString() + ": " + embeddedFileName + ", "
+                            + EmbeddedFileUtils.getBotTaskFileName(embeddedFileName) + ": " + EmbeddedFileUtils.getBotTaskFileName(embeddedFileName)
+                            + (null == file || !file.exists() ? " -" : " X"));
+                }
             }
         };
 
-        Timer timer = new Timer(true);
-        timer.scheduleAtFixedRate(timerTask, 0, 300);
+        timer = new Timer(true);
+        timer.scheduleAtFixedRate(timerTask, 0, 3000);
     }
 
     void killEmbeddedFileNameTimer() {
-        // timer.cancel();
+        timer.cancel();
     }
 
     private void createTaskHandlerClassField(final Composite parent) {
@@ -510,10 +525,14 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
     }
 
     private void reloadDialogXmlFromModel(String newConfiguration, String embeddedFileName, Boolean enableReadDocxButton, Boolean enableDocxMode) {
-        if (configurationText != null && newConfiguration != null) {
-            configurationText.setText(newConfiguration);
+        if (newConfiguration != null) {
             botTask.setDelegationConfiguration(newConfiguration);
-            setDirty(true);
+            if (!rebuildingView) {
+                setDirty(true);
+            }
+            if (configurationText != null) {
+                configurationText.setText(newConfiguration);
+            }
         }
         if (embeddedFileName != null) {
             this.embeddedFileName = embeddedFileName;
@@ -638,7 +657,9 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
                 DelegableProvider provider = HandlerRegistry.getProvider(botTask.getDelegationClassName());
                 String newConfiguration = provider.showConfigurationDialog(botTask, null);
                 if (newConfiguration != null) {
-                    configurationText.setText(newConfiguration);
+                    if (null != configurationText) {
+                        configurationText.setText(newConfiguration);
+                    }
                     botTask.setDelegationConfiguration(newConfiguration);
                     setDirty(true);
                 }
@@ -683,7 +704,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
             confTableViewer = outputParamTableViewer;
         }
         GridData gridData = new GridData(GridData.FILL_BOTH);
-        gridData.heightHint = 120;
+        gridData.heightHint = isBotDocxHandlerEnhancement() ? 300 : 120;
         confTableViewer.getControl().setLayoutData(gridData);
         Table table = confTableViewer.getTable();
         table.setHeaderVisible(true);

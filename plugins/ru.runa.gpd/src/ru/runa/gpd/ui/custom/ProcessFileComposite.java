@@ -79,7 +79,8 @@ public abstract class ProcessFileComposite extends Composite {
                         IOUtils.copyFile(getTemplateInputStream(), getFile());
                         eventSupport.firePropertyChange(PropertyNames.PROPERTY_VALUE, null, getFile().getName());
 
-                        if (null != dialogEnhancementMode && dialogEnhancementMode.checkBotDocxTemplateEnhancementMode()) {
+                        if (null != dialogEnhancementMode && (dialogEnhancementMode.checkBotDocxTemplateEnhancementMode()
+                                || dialogEnhancementMode.checkScriptDocxTemplateEnhancementMode())) {
                             IDE.openEditor(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(), getFile(), true);
                         }
                         rebuild();

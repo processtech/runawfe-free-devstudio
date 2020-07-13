@@ -1,5 +1,6 @@
 package ru.runa.gpd.ui.dialog;
 
+import com.google.common.base.Strings;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IconAndMessageDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -14,8 +15,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-
-import com.google.common.base.Strings;
 
 public class InfoWithDetailsDialog extends IconAndMessageDialog {
     private final int dialogType;
@@ -70,7 +69,9 @@ public class InfoWithDetailsDialog extends IconAndMessageDialog {
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
         createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, false);
-        createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, true);
+        if (dialogType != MessageDialog.ERROR) {
+            createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, true);
+        }
         if (!Strings.isNullOrEmpty(details)) {
             createButton(parent, IDialogConstants.DETAILS_ID, IDialogConstants.SHOW_DETAILS_LABEL, false);
         }

@@ -1,16 +1,14 @@
 package ru.runa.gpd.util;
 
+import com.google.common.base.Strings;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.CoreException;
-
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.BotTask;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.wfe.definition.IFileDataProvider;
-
-import com.google.common.base.Strings;
 
 public class EmbeddedFileUtils {
 
@@ -72,7 +70,7 @@ public class EmbeddedFileUtils {
     }
 
     public static boolean isBotTaskFile(String path) {
-        return path != null && path.startsWith(IFileDataProvider.BOT_TASK_FILE_PROTOCOL);
+        return !Strings.isNullOrEmpty(path) && path.startsWith(IFileDataProvider.BOT_TASK_FILE_PROTOCOL);
     }
 
     public static boolean isBotTaskFileName(String fileName, String botTaskName) {

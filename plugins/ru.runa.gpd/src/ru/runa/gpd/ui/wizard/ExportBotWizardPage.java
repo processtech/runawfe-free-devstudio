@@ -44,10 +44,18 @@ public class ExportBotWizardPage extends ExportBotElementWizardPage {
     @Override
     protected void exportToZipFile(IResource exportResource) throws Exception {
         String errorsDetails[] = { "" };
-        if (checkBotTaskParametersWithDocxTemplate(errorsDetails)
+        Boolean docxTestResult = checkBotTaskParametersWithDocxTemplate(errorsDetails);
+        if (null == docxTestResult) {
+            Dialogs.error(Localization.getString("DialogEnhancement.docxCheckError"));
+            PluginLogger.logErrorWithoutDialog(Localization.getString("DialogEnhancement.exportCanceled"));
+        } else if (docxTestResult
                 || Dialogs.confirm(Localization.getString("DialogEnhancement.parametersNotCorrespondingWithDocxQ"), errorsDetails[0])) {
             getContainer().run(true, true, new BotExportCommand(exportResource, new FileOutputStream(getDestinationValue())));
-            PluginLogger.logInfo(Localization.getString("DialogEnhancement.exportSuccessful"));
+            if (docxTestResult) {
+                PluginLogger.logInfo(Localization.getString("DialogEnhancement.exportSuccessful"));
+            } else {
+                PluginLogger.logErrorWithoutDialog(Localization.getString("DialogEnhancement.exportWithDocxErrors"));
+            }
         } else {
             PluginLogger.logErrorWithoutDialog(Localization.getString("DialogEnhancement.exportCanceled"));
         }
@@ -56,21 +64,27 @@ public class ExportBotWizardPage extends ExportBotElementWizardPage {
     @Override
     protected void deployToServer(IResource exportResource) throws Exception {
         String errorsDetails[] = { "" };
-        if (!checkBotTaskParametersWithDocxTemplate(errorsDetails)) {
+        Boolean docxTestResult = checkBotTaskParametersWithDocxTemplate(errorsDetails);
+        if (null == docxTestResult) {
+            Dialogs.error(Localization.getString("DialogEnhancement.docxCheckError"));
+            PluginLogger.logErrorWithoutDialog(Localization.getString("DialogEnhancement.exportCanceled"));
+        } else if (!docxTestResult) {
             Dialogs.error(Localization.getString("DialogEnhancement.parametersNotCorrespondingWithDocx"), errorsDetails[0]);
             PluginLogger.logErrorWithoutDialog(Localization.getString("DialogEnhancement.exportCanceled"));
             return;
+        } else {
+            getContainer().run(true, true, new BotDeployCommand(exportResource, new ByteArrayOutputStream()));
+            PluginLogger.logInfo(Localization.getString("DialogEnhancement.exportSuccessful"));
         }
-        getContainer().run(true, true, new BotDeployCommand(exportResource, new ByteArrayOutputStream()));
-        PluginLogger.logInfo(Localization.getString("DialogEnhancement.exportSuccessful"));
     }
 
-    private boolean checkBotTaskParametersWithDocxTemplate(String errorsDetails[]) {
-        boolean ok = true;
+    private Boolean checkBotTaskParametersWithDocxTemplate(String errorsDetails[]) {
         if (isDialogEnhancementMode() && null != exportResource && exportResource instanceof IFolder) {
             IFolder processDefinitionFolder = (IFolder) exportResource;
             List<BotTask> botTaskList = BotCache.getBotTasks(processDefinitionFolder.getName());
             ListIterator<BotTask> botTaskListIterator = botTaskList.listIterator();
+            boolean wasExceptions = false;
+            boolean wasErrors = false;
             while (botTaskListIterator.hasNext()) {
                 BotTask botTask = botTaskListIterator.next();
                 if (!botTask.getDelegationClassName().equals(DocxDialogEnhancementMode.DocxHandlerID)) {
@@ -84,12 +98,15 @@ public class ExportBotWizardPage extends ExportBotElementWizardPage {
                 if (errors.size() > 0) {
                     BotTask.logErrors(BotCache.getBotTaskFile(botTask), errors);
                 }
-                if (null == result || !result) {
-                    ok = false;
+                if (null == result) {
+                    wasExceptions = true;
+                } else if (!result) {
+                    wasErrors = true;
                 }
             }
+            return wasExceptions ? null : !wasErrors;
         }
-        return ok;
+        return true;
     }
 
     private boolean isDialogEnhancementMode() {

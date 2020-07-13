@@ -1,6 +1,7 @@
 package ru.runa.gpd.ui.enhancement;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -10,11 +11,15 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
+import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.extension.handler.ParamDef;
 import ru.runa.gpd.extension.handler.ParamDefGroup;
 import ru.runa.gpd.lang.model.BotTask;
 import ru.runa.gpd.lang.model.Delegable;
+import ru.runa.gpd.lang.model.GraphElement;
+import ru.runa.gpd.lang.model.ProcessDefinition;
+import ru.runa.gpd.lang.par.ProcessDefinitionValidator;
 import ru.runa.gpd.util.EmbeddedFileUtils;
 
 public class DialogEnhancement {
@@ -31,6 +36,34 @@ public class DialogEnhancement {
             e.printStackTrace();
         }
         return obj;
+    }
+
+    public static String showConfigurationDialog(Delegable delegable) {
+        DelegableProvider provider = HandlerRegistry.getProvider(delegable.getDelegationClassName());
+        String newConfig = provider.showConfigurationDialog(delegable,
+                DocxDialogEnhancementMode.isScriptDocxHandlerEnhancement(delegable) ? new DocxDialogEnhancementMode(true, 0) {
+                    private String templateFilePath;
+
+                    @Override
+                    public void invoke(long flags) {
+                        if (DialogEnhancementMode.check(flags, DialogEnhancementMode.DOCX_RELOAD_FROM_TEMPLATE)) {
+                            List<String> errors = Lists.newArrayList();
+                            DialogEnhancement.checkScriptTaskParametersWithDocxTemplate(delegable, templateFilePath, errors, null);
+
+                            if (delegable instanceof GraphElement && errors.size() > 0) {
+                                ProcessDefinition processDefinition = ((GraphElement) delegable).getProcessDefinition();
+                                ProcessDefinition mainProcessDefinition = null != processDefinition ? processDefinition.getMainProcessDefinition()
+                                        : null;
+                                if (null != mainProcessDefinition) {
+                                    ProcessDefinitionValidator.logErrors(mainProcessDefinition, errors);
+                                }
+                            }
+                        } else if (DialogEnhancementMode.check(flags, DialogEnhancementMode.DOCX_SET_PROCESS_FILEPATH)) {
+                            templateFilePath = this.defaultFileName;
+                        }
+                    }
+                } : null);
+        return newConfig;
     }
 
     public static Boolean checkScriptTaskParametersWithDocxTemplate(Delegable delegable, String embeddedDocxTemplateFileName, List<String> errors,
@@ -80,18 +113,22 @@ public class DialogEnhancement {
         }
     }
 
+    private static String wrapToBotName(BotTask botTask, String message) {
+        return message + " (" + Localization.getString("DialogEnhancement.botTask") + " \"" + botTask.getName() + "\")";
+    }
+
     public static Boolean checkBotTaskParametersWithDocxTemplate(BotTask botTask, String embeddedDocxTemplateFileName, List<String> errors,
             String[] errorsDetails) {
         IFile file = EmbeddedFileUtils.getProcessFile(EmbeddedFileUtils.getBotTaskFileName(embeddedDocxTemplateFileName));
         if (null == file || !file.exists()) {
-            PluginLogger.logInfo(Localization.getString("DialogEnhancement.cantGetFile"));
+            PluginLogger.logInfo(wrapToBotName(botTask, Localization.getString("DialogEnhancement.cantGetFile")));
             return null;
         }
 
         boolean ok = true;
         try (InputStream inputStream = file.getContents()) {
             if (null == inputStream) {
-                PluginLogger.logInfo(Localization.getString("DialogEnhancement.cantGetInputStream"));
+                PluginLogger.logInfo(wrapToBotName(botTask, Localization.getString("DialogEnhancement.cantGetInputStream")));
                 return null;
             }
             Map<String, Integer> variablesMap = DocxDialogEnhancementMode.getVariableNamesFromDocxTemplate(inputStream);
@@ -114,7 +151,7 @@ public class DialogEnhancement {
                 }
 
                 if (!finded) {
-                    String error = Localization.getString("DialogEnhancement.noParameterForDocx", variable);
+                    String error = wrapToBotName(botTask, Localization.getString("DialogEnhancement.noParameterForDocx", variable));
                     if (null != errorsDetails && errorsDetails.length > 0) {
                         if (!errorsDetails[0].isEmpty()) {
                             errorsDetails[0] += "\n";
