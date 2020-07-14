@@ -59,10 +59,9 @@ public class ProcessDefinitionValidator {
         }
     }
 
-    public static Boolean checkScriptTaskParametersWithDocxTemplate(ProcessDefinition processDefinition, List<String> errors,
+    public static void checkScriptTaskParametersWithDocxTemplate(ProcessDefinition processDefinition, List<String> errors,
             List<Delegable> errorSources, String[] errorsDetails) {
         processDefinition.checkScriptTaskParametersWithDocxTemplate(processDefinition.getFile(), errors, errorSources, errorsDetails);
-        return errors.size() > 0;
     }
 
     public static void logErrors(ProcessDefinition processDefinition, List<String> errors, List<Delegable> errorSources) {

@@ -1,5 +1,6 @@
 package ru.runa.gpd.editor;
 
+import com.google.common.collect.Lists;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -139,6 +140,9 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
             WorkspaceOperations.saveBotTask(botTaskFile, botTask);
             setTitleImage(SharedImages.getImage(botTask.getType() == BotTaskType.SIMPLE ? "icons/bot_task.gif" : "icons/bot_task_formal.gif"));
             setDirty(false);
+            if (isBotDocxHandlerEnhancement()) {
+                checkDocxTemplate();
+            }
         } catch (Exception e) {
             PluginLogger.logError(e);
         }
@@ -246,6 +250,20 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
         rebuildingView = false;
     }
 
+    private void checkDocxTemplate() {
+        Object obj = DialogEnhancement.getConfigurationValue(botTask, DocxDialogEnhancementMode.InputPathId);
+        String embeddedDocxTemplateFileName = null != obj && obj instanceof String ? (String) obj : "";
+        List<String> errors = Lists.newArrayList();
+        String errorsDetails[] = null;
+        Boolean result = DialogEnhancement.checkBotTaskParametersWithDocxTemplate(botTask, embeddedDocxTemplateFileName, errors, errorsDetails);
+        if (errors.size() > 0 && (null == result || !result)) {
+            for (int i = 0; i < errors.size(); i++) {
+                PluginLogger.logErrorWithoutDialog(errors.get(i));
+            }
+            Dialogs.error(Localization.getString("DialogEnhancement.docxCheckError"));
+        }
+    }
+
     private Timer timer;
     private TimerTask timerTask;
     private static Integer cnt = 0;
@@ -255,7 +273,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
             @Override
             public void run() {
                 if (null != botTask && null != embeddedFileName && EmbeddedFileUtils.isBotTaskFile(embeddedFileName)) {
-                    IFile file = EmbeddedFileUtils.getProcessFile(EmbeddedFileUtils.getBotTaskFileName(embeddedFileName));
+                    IFile file = EmbeddedFileUtils.getProcessFile(botTask, EmbeddedFileUtils.getBotTaskFileName(embeddedFileName));
                     PluginLogger.logInfo(botTask.getName() + " " + (++cnt).toString() + ": " + embeddedFileName + ", "
                             + EmbeddedFileUtils.getBotTaskFileName(embeddedFileName) + ": " + EmbeddedFileUtils.getBotTaskFileName(embeddedFileName)
                             + (null == file || !file.exists() ? " -" : " X"));

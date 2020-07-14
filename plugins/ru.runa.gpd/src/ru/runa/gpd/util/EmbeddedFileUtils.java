@@ -8,12 +8,22 @@ import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.BotTask;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.GraphElement;
+import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.wfe.definition.IFileDataProvider;
 
 public class EmbeddedFileUtils {
 
+    @Deprecated
     public static IFile getProcessFile(String fileName) {
         return IOUtils.getFile(fileName);
+    }
+
+    public static IFile getProcessFile(BotTask botTask, String fileName) {
+        return IOUtils.getFile(botTask, fileName);
+    }
+
+    public static IFile getProcessFile(ProcessDefinition processDefenition, String fileName) {
+        return IOUtils.getFile(processDefenition, fileName);
     }
 
     public static boolean isProcessFile(String path) {

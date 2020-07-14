@@ -104,6 +104,16 @@ public class ProcessCache {
         return new HashMap<IFile, ProcessDefinition>(CACHE_BY_FILE);
     }
 
+    public static synchronized IFile getProcessDefinitionFile(ProcessDefinition processDefinition) {
+        for (Map.Entry<IFile, ProcessDefinition> entry : CACHE_BY_FILE.entrySet()) {
+            if (entry.getValue() == processDefinition) {
+                return entry.getKey();
+            }
+        }
+
+        throw new RuntimeException("No file exist for script task " + processDefinition.getName());
+    }
+
     public static void invalidateProcessDefinition(IFile file) {
         ProcessDefinition definition = CACHE_BY_FILE.remove(file);
         if (definition != null) {

@@ -73,7 +73,10 @@ public class DialogEnhancement {
 
     public static Boolean checkScriptTaskParametersWithDocxTemplate(Delegable delegable, String embeddedDocxTemplateFileName, List<String> errors,
             List<Delegable> errorSources, String[] errorsDetails) {
-        IFile file = Strings.isNullOrEmpty(embeddedDocxTemplateFileName) ? null : EmbeddedFileUtils.getProcessFile(embeddedDocxTemplateFileName);
+        ProcessDefinition processDefinition = delegable instanceof GraphElement ? ((GraphElement) delegable).getProcessDefinition() : null;
+
+        IFile file = Strings.isNullOrEmpty(embeddedDocxTemplateFileName) || null == processDefinition ? null
+                : EmbeddedFileUtils.getProcessFile(processDefinition, embeddedDocxTemplateFileName);
         if (null == file || !file.exists()) {
             PluginLogger.logInfo(Localization.getString("DialogEnhancement.cantGetFile"));
             return null;
@@ -127,7 +130,7 @@ public class DialogEnhancement {
 
     public static Boolean checkBotTaskParametersWithDocxTemplate(BotTask botTask, String embeddedDocxTemplateFileName, List<String> errors,
             String[] errorsDetails) {
-        IFile file = EmbeddedFileUtils.getProcessFile(EmbeddedFileUtils.getBotTaskFileName(embeddedDocxTemplateFileName));
+        IFile file = EmbeddedFileUtils.getProcessFile(botTask, EmbeddedFileUtils.getBotTaskFileName(embeddedDocxTemplateFileName));
         if (null == file || !file.exists()) {
             PluginLogger.logInfo(wrapToBotName(botTask, Localization.getString("DialogEnhancement.cantGetFile")));
             return null;

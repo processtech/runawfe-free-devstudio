@@ -239,6 +239,10 @@ public class ExportParWizardPage extends WizardArchiveFileResourceExportPage1 {
                     String errorsDetails[] = { "" };
                     ProcessDefinitionValidator.checkScriptTaskParametersWithDocxTemplate(definition, errors, errorSources, errorsDetails);
                     if (errors.size() > 0) {
+                        ProcessDefinition mainProcessDefinition = definition.getMainProcessDefinition();
+                        if (null != mainProcessDefinition) {
+                            ProcessDefinitionValidator.logErrors(mainProcessDefinition, errors, errorSources);
+                        }
                         if (exportToFile) {
                             if (!Dialogs.confirm(Localization.getString("DialogEnhancement.parametersNotCorrespondingWithDocxQ"), errorsDetails[0])) {
                                 PluginLogger.logErrorWithoutDialog(Localization.getString("DialogEnhancement.exportCanceled"));
