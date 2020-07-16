@@ -36,6 +36,7 @@ import ru.runa.gpd.property.TimerActionPropertyDescriptor;
 import ru.runa.gpd.settings.CommonPreferencePage;
 import ru.runa.gpd.ui.enhancement.DialogEnhancement;
 import ru.runa.gpd.ui.enhancement.DocxDialogEnhancementMode;
+import ru.runa.gpd.util.EmbeddedFileUtils;
 import ru.runa.gpd.util.EventSupport;
 import ru.runa.gpd.util.VariableUtils;
 
@@ -161,13 +162,13 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
 
     public void checkScriptTaskParametersWithDocxTemplate(IFile definitionFile, List<String> errors, List<Delegable> errorSources,
             String[] errorsDetails) {
-        if (isDelegable() && delegationClassName.equals(DocxDialogEnhancementMode.DocxHandlerID)) {
+        if (null != delegationClassName && isDelegable() && delegationClassName.equals(DocxDialogEnhancementMode.DocxHandlerID)) {
             Delegable delegable = (Delegable) this;
             Object obj = DialogEnhancement.getConfigurationValue(delegable, DocxDialogEnhancementMode.InputPathId);
             String embeddedDocxTemplateFileName = null != obj && obj instanceof String ? (String) obj : "";
             if (!Strings.isNullOrEmpty(embeddedDocxTemplateFileName)) {
-                DialogEnhancement.checkScriptTaskParametersWithDocxTemplate(delegable, embeddedDocxTemplateFileName, errors, errorSources,
-                        errorsDetails);
+                DialogEnhancement.checkScriptTaskParametersWithDocxTemplate(delegable,
+                        EmbeddedFileUtils.getProcessFileName(embeddedDocxTemplateFileName), errors, errorSources, errorsDetails);
             }
         }
         for (GraphElement element : children) {

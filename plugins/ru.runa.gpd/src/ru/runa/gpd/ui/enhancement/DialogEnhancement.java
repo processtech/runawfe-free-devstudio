@@ -71,12 +71,13 @@ public class DialogEnhancement {
         return message + " (" + Localization.getString("DialogEnhancement.scriptTask") + " \"" + delegable.toString() + "\")";
     }
 
+    // use EmbeddedFileUtils.getProcessFileName(embeddedDocxTemplateFileName) before call that function !!!
     public static Boolean checkScriptTaskParametersWithDocxTemplate(Delegable delegable, String embeddedDocxTemplateFileName, List<String> errors,
             List<Delegable> errorSources, String[] errorsDetails) {
         ProcessDefinition processDefinition = delegable instanceof GraphElement ? ((GraphElement) delegable).getProcessDefinition() : null;
 
         IFile file = Strings.isNullOrEmpty(embeddedDocxTemplateFileName) || null == processDefinition ? null
-                : EmbeddedFileUtils.getProcessFile(processDefinition, EmbeddedFileUtils.getProcessFileName(embeddedDocxTemplateFileName));
+                : EmbeddedFileUtils.getProcessFile(processDefinition, embeddedDocxTemplateFileName);
         if (null == file || !file.exists()) {
             PluginLogger.logInfo(Localization.getString("DialogEnhancement.cantGetFile"));
             return null;
