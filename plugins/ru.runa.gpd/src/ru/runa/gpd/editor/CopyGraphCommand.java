@@ -97,6 +97,9 @@ public class CopyGraphCommand extends Command {
                 }).open();
                 return;
             }
+            targetNodeMap.clear();
+            executedCopyActions.clear();
+            nodeToSwimlaneNameMap.clear();
             Set<ExtraCopyAction> copyActions = new HashSet<ExtraCopyAction>();
             List<NamedGraphElement> sourceNodeList = copyBuffer.getSourceNodes();
             // add nodes

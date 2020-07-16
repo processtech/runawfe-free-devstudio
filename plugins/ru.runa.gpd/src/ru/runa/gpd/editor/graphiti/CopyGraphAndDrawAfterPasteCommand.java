@@ -33,9 +33,7 @@ public class CopyGraphAndDrawAfterPasteCommand extends CopyGraphCommand {
     @Override
     public void execute() {
         super.execute();
-        if (dapc == null) {
-            dapc = new DrawAfterPasteCommand(getFilteredElements(), targetEditor.getDefinition(), targetEditor.getDiagramEditorPage());
-        }
+        dapc = new DrawAfterPasteCommand(getFilteredElements(), targetEditor.getDefinition(), targetEditor.getDiagramEditorPage());
         TransactionalEditingDomain domain = targetEditor.getDiagramEditorPage().getEditingDomain();
         InternalTransactionalEditingDomain ited = (InternalTransactionalEditingDomain) domain;
         if (ited.getActiveTransaction() == null) {

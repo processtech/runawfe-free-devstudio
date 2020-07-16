@@ -7,6 +7,7 @@ import org.eclipse.emf.transaction.TransactionalEditingDomain;
 import org.eclipse.emf.workspace.EMFCommandOperation;
 import org.eclipse.emf.workspace.IWorkspaceCommandStack;
 import org.eclipse.gef.commands.Command;
+import org.eclipse.gef.commands.CommandStack;
 import org.eclipse.graphiti.features.IFeatureHolder;
 import org.eclipse.graphiti.internal.command.CommandContainer;
 import org.eclipse.graphiti.internal.command.GFPreparableCommand2;
@@ -79,9 +80,6 @@ public class CustomCommandStack extends GFCommandStack implements IOperationHist
             case OperationHistoryEvent.UNDONE:
                 command.undo();
                 break;
-            case OperationHistoryEvent.REDONE:
-                command.redo();
-                break;
             }
         }
     }
@@ -92,6 +90,19 @@ public class CustomCommandStack extends GFCommandStack implements IOperationHist
             return ((EmfOnGefCommand) ((GFPreparableCommand2) emfCommand).getCommand()).getGefCommand();
         }
         return null;
+    }
+
+    @Override
+    public void redo() {
+        Command redoCommand = getRedoCommand();
+        if (redoCommand instanceof CopyGraphAndDrawAfterPasteCommand) {
+            redoCommand.redo();
+            flush();
+            // Update the editor actions bars, especially Edit --> Undo, Redo
+            notifyListeners(redoCommand, CommandStack.POST_MASK);
+        } else {
+            super.redo();
+        }
     }
 
 }
