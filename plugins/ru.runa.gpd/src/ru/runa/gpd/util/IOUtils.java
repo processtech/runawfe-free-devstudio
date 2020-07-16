@@ -305,6 +305,7 @@ public class IOUtils {
         return ProcessCache.getProcessDefinitionFile(processDefenition);
     }
 
+    @Deprecated
     public static IFile getFile(String fileName) {
         return IOUtils.getAdjacentFile(getCurrentFile(), fileName);
     }

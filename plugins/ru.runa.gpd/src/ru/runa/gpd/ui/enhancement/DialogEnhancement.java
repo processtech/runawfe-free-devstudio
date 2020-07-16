@@ -76,7 +76,7 @@ public class DialogEnhancement {
         ProcessDefinition processDefinition = delegable instanceof GraphElement ? ((GraphElement) delegable).getProcessDefinition() : null;
 
         IFile file = Strings.isNullOrEmpty(embeddedDocxTemplateFileName) || null == processDefinition ? null
-                : EmbeddedFileUtils.getProcessFile(processDefinition, embeddedDocxTemplateFileName);
+                : EmbeddedFileUtils.getProcessFile(processDefinition, EmbeddedFileUtils.getProcessFileName(embeddedDocxTemplateFileName));
         if (null == file || !file.exists()) {
             PluginLogger.logInfo(Localization.getString("DialogEnhancement.cantGetFile"));
             return null;

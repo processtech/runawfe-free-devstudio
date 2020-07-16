@@ -63,7 +63,7 @@ public class ProcessCache {
         }
     }
 
-    public static ProcessDefinition newProcessDefinitionWasCreated(IFile file) {
+    public static synchronized ProcessDefinition newProcessDefinitionWasCreated(IFile file) {
         try {
             ProcessDefinition definition = NodeRegistry.parseProcessDefinition(file);
             cacheProcessDefinition(file, definition);
@@ -74,7 +74,7 @@ public class ProcessCache {
         }
     }
 
-    public static void processDefinitionWasDeleted(IFile file) {
+    public static synchronized void processDefinitionWasDeleted(IFile file) {
         try {
             ProcessDefinition definition = CACHE_BY_FILE.remove(file);
             if (definition != null) {
@@ -90,17 +90,17 @@ public class ProcessCache {
         }
     }
 
-    public static Set<ProcessDefinition> getAllProcessDefinitions() {
+    public static synchronized Set<ProcessDefinition> getAllProcessDefinitions() {
         return new HashSet<ProcessDefinition>(CACHE_BY_NAME.values());
     }
 
-    public static List<String> getAllProcessDefinitionNames() {
+    public static synchronized List<String> getAllProcessDefinitionNames() {
         List<String> list = new ArrayList<String>(CACHE_BY_NAME.keySet());
         Collections.sort(list);
         return list;
     }
 
-    public static Map<IFile, ProcessDefinition> getAllProcessDefinitionsMap() {
+    public static synchronized Map<IFile, ProcessDefinition> getAllProcessDefinitionsMap() {
         return new HashMap<IFile, ProcessDefinition>(CACHE_BY_FILE);
     }
 
@@ -114,7 +114,7 @@ public class ProcessCache {
         throw new RuntimeException("No file exist for script task " + processDefinition.getName());
     }
 
-    public static void invalidateProcessDefinition(IFile file) {
+    public static synchronized void invalidateProcessDefinition(IFile file) {
         ProcessDefinition definition = CACHE_BY_FILE.remove(file);
         if (definition != null) {
             CACHE_BY_NAME.remove(definition.getName());
@@ -127,7 +127,7 @@ public class ProcessCache {
         }
     }
 
-    public static ProcessDefinition getProcessDefinition(IFile file) {
+    public static synchronized ProcessDefinition getProcessDefinition(IFile file) {
         if (!CACHE_BY_FILE.containsKey(file)) {
             try {
                 ProcessDefinition definition = NodeRegistry.parseProcessDefinition(file);
@@ -139,7 +139,7 @@ public class ProcessCache {
         return CACHE_BY_FILE.get(file);
     }
 
-    public static ProcessDefinition getFirstProcessDefinition(String name, String desirableProjectName) {
+    public static synchronized ProcessDefinition getFirstProcessDefinition(String name, String desirableProjectName) {
         if (!CACHE_BY_NAME.containsKey(name)) {
             try {
                 IFile file = getFirstProcessDefinitionFile(name, desirableProjectName);
@@ -158,7 +158,7 @@ public class ProcessCache {
     /**
      * Get process definition file or <code>null</code>.
      */
-    public static IFile getFirstProcessDefinitionFile(String processName, String desirableProjectName) {
+    public static synchronized IFile getFirstProcessDefinitionFile(String processName, String desirableProjectName) {
         try {
             IFile firstFile = null;
             for (IFile file : IOUtils.getAllProcessDefinitionFiles()) {
