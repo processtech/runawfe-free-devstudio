@@ -178,9 +178,10 @@ public class DialogEnhancement {
             }
 
             return ok;
-        } catch (IOException | CoreException e) {
-            e.printStackTrace();
-            return false;
+        } catch (Throwable exception) {
+            exception.printStackTrace();
+            PluginLogger.logErrorWithoutDialog("Exception occured, see the stack trace!", exception);
+            return null;
         }
     }
 

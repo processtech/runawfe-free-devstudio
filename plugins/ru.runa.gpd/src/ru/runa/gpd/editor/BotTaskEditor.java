@@ -256,11 +256,12 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
         List<String> errors = Lists.newArrayList();
         String errorsDetails[] = null;
         Boolean result = DialogEnhancement.checkBotTaskParametersWithDocxTemplate(botTask, embeddedDocxTemplateFileName, errors, errorsDetails);
-        if (errors.size() > 0 && (null == result || !result)) {
-            for (int i = 0; i < errors.size(); i++) {
-                PluginLogger.logErrorWithoutDialog(errors.get(i));
-            }
+        if (null == result) {
             Dialogs.error(Localization.getString("DialogEnhancement.docxCheckError"));
+        } else if (errors.size() > 0 && !result) {
+            IFile botTaskFile = BotCache.getBotTaskFile(botTask);
+            BotTask.logErrors(botTaskFile, errors);
+            Dialogs.error(Localization.getString("DialogEnhancement.docxCheckErrorTab"));
         }
     }
 

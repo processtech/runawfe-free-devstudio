@@ -15,6 +15,7 @@ import org.eclipse.swt.widgets.Text;
 import ru.runa.gpd.lang.model.BotTask;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.GraphElement;
+import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.enhancement.DialogEnhancementMode;
@@ -305,21 +306,31 @@ class ChooseStringOrFile implements PropertyChangeListener {
             throw new InternalApplicationException("Unexpected classtype " + delegable);
         }
 
-        if (dialogEnhancementMode != null && dialogEnhancementMode.checkBotDocxTemplateEnhancementMode()) {
-            IFile file = EmbeddedFileUtils.getProcessFile(fileName);
-            boolean fileNotExists = null != file && !file.exists();
-            updateEmbeddedFileName(fileNotExists || showFileAsNewFirstTime ? "" : fileName);
-        } else {
-            // http://sourceforge.net/p/runawfe/bugs/628/
-            updateEmbeddedFileName(fileName);
-        }
+        // if (dialogEnhancementMode != null && dialogEnhancementMode.checkBotDocxTemplateEnhancementMode()) {
+        // IFile file = EmbeddedFileUtils.getProcessFile(fileName);
+        // boolean fileNotExists = null != file && !file.exists();
+        // updateEmbeddedFileName(fileNotExists || showFileAsNewFirstTime ? "" : fileName);
+        // } else {
+        // // http://sourceforge.net/p/runawfe/bugs/628/
+        // updateEmbeddedFileName(fileName);
+        // }
 
-        if (null != dialogEnhancementMode && dialogEnhancementMode.checkBotDocxTemplateEnhancementMode()) {
-            ((DocxDialogEnhancementMode) dialogEnhancementMode).defaultFileName = fileName;
-            ((DocxDialogEnhancementMode) dialogEnhancementMode).showFileAsNewFirstTime = showFileAsNewFirstTime;
-        }
+        // http://sourceforge.net/p/runawfe/bugs/628/
+        updateEmbeddedFileName(fileName);
 
-        control = new TemplateFileComposite(composite, fileName, fileExtension, dialogEnhancementMode);
+        // if (null != dialogEnhancementMode && dialogEnhancementMode.checkBotDocxTemplateEnhancementMode()) {
+        // ((DocxDialogEnhancementMode) dialogEnhancementMode).defaultFileName = fileName;
+        // ((DocxDialogEnhancementMode) dialogEnhancementMode).showFileAsNewFirstTime = showFileAsNewFirstTime;
+        // }
+
+        if (delegable instanceof GraphElement) {
+            ProcessDefinition processDefinition = ((GraphElement) delegable).getProcessDefinition();
+            control = new TemplateFileComposite(composite, processDefinition, fileName, fileExtension, dialogEnhancementMode);
+        } else if (delegable instanceof BotTask) {
+            control = new TemplateFileComposite(composite, (BotTask) delegable, fileName, fileExtension, dialogEnhancementMode);
+        }
+        // control = new TemplateFileComposite(composite, fileName, fileExtension, dialogEnhancementMode);
+
         ((TemplateFileComposite) control).getEventSupport().addPropertyChangeListener(this);
         composite.layout(true, true);
 
