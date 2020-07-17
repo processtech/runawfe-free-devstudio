@@ -172,6 +172,18 @@ public abstract class ProcessEditorBase extends MultiPageEditorPart implements I
             }
             sourcePage = addNewPage(new TextEditor(), "DesignerEditor.title.source");
             ProcessDefinitionValidator.validateDefinition(definition);
+            if (DialogEnhancement.isOn()) {
+                List<String> errors = Lists.newArrayList();
+                List<Delegable> errorSources = Lists.newArrayList();
+                String errorsDetails[] = { "" };
+                ProcessDefinitionValidator.checkScriptTaskParametersWithDocxTemplate(definition, errors, errorSources, errorsDetails);
+                if (errors.size() > 0) {
+                    ProcessDefinition mainProcessDefinition = definition.getMainProcessDefinition();
+                    if (null != mainProcessDefinition) {
+                        ProcessDefinitionValidator.logErrors(mainProcessDefinition, errors, errorSources, false);
+                    }
+                }
+            }
         } catch (PartInitException e) {
             PluginLogger.logError(Localization.getString("DesignerEditor.error.can_not_create_graphical_viewer"), e);
             throw new RuntimeException(e);
@@ -305,12 +317,12 @@ public abstract class ProcessEditorBase extends MultiPageEditorPart implements I
             List<String> errors = Lists.newArrayList();
             List<Delegable> errorSources = Lists.newArrayList();
             String errorsDetails[] = { "" };
-            ProcessDefinitionValidator.checkScriptTaskParametersWithDocxTemplate(definition, errors, errorSources, errorsDetails);
-            if (errors.size() > 0) {
-                for (int i = 0; i < errors.size(); i++) {
-                    PluginLogger.logErrorWithoutDialog(errors.get(i));
-                }
-                Dialogs.error(Localization.getString("DialogEnhancement.docxCheckError"), true);
+            Boolean result = ProcessDefinitionValidator.checkScriptTaskParametersWithDocxTemplate(definition, errors, errorSources, errorsDetails);
+            if (null == result) {
+                Dialogs.error(Localization.getString("DialogEnhancement.docxCheckError"));
+            } else if (errors.size() > 0 && !result) {
+                ProcessDefinitionValidator.logErrors(definition, errors, errorSources, false);
+                Dialogs.information(Localization.getString("DialogEnhancement.docxCheckErrorTab"));
             }
         }
     }

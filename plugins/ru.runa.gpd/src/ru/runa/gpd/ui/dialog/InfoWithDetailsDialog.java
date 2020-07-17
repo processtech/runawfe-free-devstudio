@@ -71,7 +71,7 @@ public class InfoWithDetailsDialog extends IconAndMessageDialog {
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
         createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, false);
-        if (dialogType != MessageDialog.ERROR) {
+        if (dialogType != MessageDialog.ERROR && dialogType != MessageDialog.INFORMATION) {
             createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, true);
         }
         if (!Strings.isNullOrEmpty(details)) {
@@ -116,7 +116,7 @@ public class InfoWithDetailsDialog extends IconAndMessageDialog {
 
     protected void createDropDownList(Composite parent) {
         detailsText = new Text(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.MULTI);
-        detailsText.setText(details);
+        detailsText.setText(null == details ? "" : details);
         GridData data = new GridData(GridData.FILL_BOTH);
         data.horizontalSpan = 2;
         detailsText.setLayoutData(data);

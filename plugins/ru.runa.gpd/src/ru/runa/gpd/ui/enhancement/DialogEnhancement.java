@@ -58,7 +58,7 @@ public class DialogEnhancement {
                                 ProcessDefinition mainProcessDefinition = null != processDefinition ? processDefinition.getMainProcessDefinition()
                                         : null;
                                 if (null != mainProcessDefinition) {
-                                    ProcessDefinitionValidator.logErrors(mainProcessDefinition, errors, errorSources);
+                                    ProcessDefinitionValidator.logErrors(mainProcessDefinition, errors, errorSources, true);
                                 }
                             }
                         } else if (DialogEnhancementMode.check(flags, DialogEnhancementMode.DOCX_SET_PROCESS_FILEPATH)) {
@@ -79,16 +79,37 @@ public class DialogEnhancement {
 
         ProcessDefinition processDefinition = delegable instanceof GraphElement ? ((GraphElement) delegable).getProcessDefinition() : null;
 
-        IFile file = Strings.isNullOrEmpty(embeddedDocxTemplateFileName) || null == processDefinition ? null
-                : EmbeddedFileUtils.getProcessFile(processDefinition, embeddedDocxTemplateFileName);
+        IFile file = null;
+        try {
+            file = Strings.isNullOrEmpty(embeddedDocxTemplateFileName) || null == processDefinition ? null
+                    : EmbeddedFileUtils.getProcessFile(processDefinition, embeddedDocxTemplateFileName);
+        } catch (Throwable exception) {
+            exception.printStackTrace();
+        }
+
         if (null == file || !file.exists()) {
-            PluginLogger.logInfo(Localization.getString("DialogEnhancement.cantGetFile"));
-            return null;
+            String error = Localization.getString("DialogEnhancement.cantGetFile",
+                    null == embeddedDocxTemplateFileName ? "NULL" : embeddedDocxTemplateFileName);
+
+            if (null != errorsDetails && errorsDetails.length > 0) {
+                if (!errorsDetails[0].isEmpty()) {
+                    errorsDetails[0] += "\n";
+                }
+                errorsDetails[0] += wrapToScriptName(delegable, error);
+            }
+            if (null != errors) {
+                errors.add(error);
+            }
+            if (null != errorSources) {
+                errorSources.add(delegable);
+            }
+
+            return false;
         }
 
         try (InputStream inputStream = file.getContents()) {
             if (null == inputStream) {
-                PluginLogger.logInfo(Localization.getString("DialogEnhancement.cantGetInputStream"));
+                PluginLogger.logInfo(wrapToScriptName(delegable, Localization.getString("DialogEnhancement.cantGetInputStream")));
                 return null;
             }
             Map<String, Integer> variablesMap = getVariableNamesFromDocxTemplate(inputStream);
@@ -105,12 +126,12 @@ public class DialogEnhancement {
                     }
                 }
                 if (!exists) {
-                    String error = wrapToScriptName(delegable, Localization.getString("DialogEnhancement.noParameterForDocx", variable));
+                    String error = Localization.getString("DialogEnhancement.noParameterForDocx", variable);
                     if (null != errorsDetails && errorsDetails.length > 0) {
                         if (!errorsDetails[0].isEmpty()) {
                             errorsDetails[0] += "\n";
                         }
-                        errorsDetails[0] += error;
+                        errorsDetails[0] += wrapToScriptName(delegable, error);
                     }
                     if (null != errors) {
                         errors.add(error);
@@ -138,14 +159,27 @@ public class DialogEnhancement {
         IFile file = null;
 
         try {
-            file = EmbeddedFileUtils.getProcessFile(botTask, EmbeddedFileUtils.getBotTaskFileName(embeddedDocxTemplateFileName));
+            file = EmbeddedFileUtils.getProcessFile(botTask,
+                    EmbeddedFileUtils.isBotTaskFile(embeddedDocxTemplateFileName) ? EmbeddedFileUtils.getBotTaskFileName(embeddedDocxTemplateFileName)
+                            : null);
         } catch (Throwable exception) {
             exception.printStackTrace();
         }
 
         if (null == file || !file.exists()) {
-            PluginLogger.logInfo(wrapToBotName(botTask, Localization.getString("DialogEnhancement.cantGetFile")));
-            return null;
+            String error = Localization.getString("DialogEnhancement.cantGetFile",
+                    EmbeddedFileUtils.isBotTaskFile(embeddedDocxTemplateFileName) ? EmbeddedFileUtils.getBotTaskFileName(embeddedDocxTemplateFileName)
+                            : embeddedDocxTemplateFileName);
+            if (null != errorsDetails && errorsDetails.length > 0) {
+                if (!errorsDetails[0].isEmpty()) {
+                    errorsDetails[0] += "\n";
+                }
+                errorsDetails[0] += wrapToBotName(botTask, error);
+            }
+            if (null != errors) {
+                errors.add(error);
+            }
+            return false;
         }
 
         boolean ok = true;

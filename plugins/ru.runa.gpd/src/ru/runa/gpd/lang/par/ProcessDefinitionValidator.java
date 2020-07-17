@@ -59,15 +59,17 @@ public class ProcessDefinitionValidator {
         }
     }
 
-    public static void checkScriptTaskParametersWithDocxTemplate(ProcessDefinition processDefinition, List<String> errors,
+    public static Boolean checkScriptTaskParametersWithDocxTemplate(ProcessDefinition processDefinition, List<String> errors,
             List<Delegable> errorSources, String[] errorsDetails) {
-        processDefinition.checkScriptTaskParametersWithDocxTemplate(processDefinition.getFile(), errors, errorSources, errorsDetails);
+        return processDefinition.checkScriptTaskParametersWithDocxTemplate(processDefinition.getFile(), errors, errorSources, errorsDetails);
     }
 
-    public static void logErrors(ProcessDefinition processDefinition, List<String> errors, List<Delegable> errorSources) {
+    public static void logErrors(ProcessDefinition processDefinition, List<String> errors, List<Delegable> errorSources, boolean clearBefore) {
         try {
             IFile definitionFile = processDefinition.getFile();
-            definitionFile.deleteMarkers(ValidationErrorsView.ID, true, IResource.DEPTH_INFINITE);
+            if (clearBefore) {
+                definitionFile.deleteMarkers(ValidationErrorsView.ID, true, IResource.DEPTH_INFINITE);
+            }
             ListIterator<String> iterator = errors.listIterator();
             ListIterator<Delegable> iterator2 = errorSources.listIterator();
             while (iterator.hasNext()) {

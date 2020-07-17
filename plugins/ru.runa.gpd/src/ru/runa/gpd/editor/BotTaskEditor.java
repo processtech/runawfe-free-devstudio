@@ -260,7 +260,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
             Dialogs.error(Localization.getString("DialogEnhancement.docxCheckError"));
         } else if (errors.size() > 0 && !result) {
             botTask.logErrors(errors);
-            Dialogs.error(Localization.getString("DialogEnhancement.docxCheckErrorTab"));
+            Dialogs.information(Localization.getString("DialogEnhancement.docxCheckErrorTab"));
         }
     }
 
@@ -489,7 +489,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
         }
         IFile file = EmbeddedFileUtils.getProcessFile(botTask, EmbeddedFileUtils.getBotTaskFileName(embeddedFileName));
         if (null == file || !file.exists()) {
-            PluginLogger.logInfo(Localization.getString("DialogEnhancement.cantGetFile"));
+            PluginLogger.logInfo(Localization.getString("DialogEnhancement.cantGetFile", EmbeddedFileUtils.getBotTaskFileName(embeddedFileName)));
             return;
         }
         try (InputStream inputStream = file.getContents()) {

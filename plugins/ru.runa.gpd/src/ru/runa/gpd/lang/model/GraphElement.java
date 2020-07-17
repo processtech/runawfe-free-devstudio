@@ -160,20 +160,33 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
         }
     }
 
-    public void checkScriptTaskParametersWithDocxTemplate(IFile definitionFile, List<String> errors, List<Delegable> errorSources,
+    public Boolean checkScriptTaskParametersWithDocxTemplate(IFile definitionFile, List<String> errors, List<Delegable> errorSources,
             String[] errorsDetails) {
+        Boolean ok = true;
+        Boolean result = true;
         if (null != delegationClassName && isDelegable() && delegationClassName.equals(DocxDialogEnhancementMode.DocxHandlerID)) {
             Delegable delegable = (Delegable) this;
             Object obj = DialogEnhancement.getConfigurationValue(delegable, DocxDialogEnhancementMode.InputPathId);
             String embeddedDocxTemplateFileName = null != obj && obj instanceof String ? (String) obj : "";
-            if (!Strings.isNullOrEmpty(embeddedDocxTemplateFileName)) {
-                DialogEnhancement.checkScriptTaskParametersWithDocxTemplate(delegable,
+            if (!Strings.isNullOrEmpty(embeddedDocxTemplateFileName) && EmbeddedFileUtils.isProcessFile(embeddedDocxTemplateFileName)) {
+                ok = DialogEnhancement.checkScriptTaskParametersWithDocxTemplate(delegable,
                         EmbeddedFileUtils.getProcessFileName(embeddedDocxTemplateFileName), errors, errorSources, errorsDetails);
+                if (null == ok) {
+                    result = null;
+                } else if (!ok && null != result) {
+                    result = false;
+                }
             }
         }
         for (GraphElement element : children) {
-            element.checkScriptTaskParametersWithDocxTemplate(definitionFile, errors, errorSources, errorsDetails);
+            ok = element.checkScriptTaskParametersWithDocxTemplate(definitionFile, errors, errorSources, errorsDetails);
+            if (null == ok) {
+                result = null;
+            } else if (!ok && null != result) {
+                result = false;
+            }
         }
+        return result;
     }
 
     public NodeTypeDefinition getTypeDefinition() {

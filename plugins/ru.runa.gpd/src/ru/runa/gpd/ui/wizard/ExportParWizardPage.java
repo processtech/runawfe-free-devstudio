@@ -51,7 +51,6 @@ import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.aspects.UserActivity;
 import ru.runa.gpd.editor.ProcessSaveHistory;
 import ru.runa.gpd.lang.model.Delegable;
-import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.par.ProcessDefinitionValidator;
@@ -242,15 +241,16 @@ public class ExportParWizardPage extends WizardArchiveFileResourceExportPage1 {
                     if (errors.size() > 0) {
                         ProcessDefinition mainProcessDefinition = definition.getMainProcessDefinition();
                         if (null != mainProcessDefinition) {
-                            ProcessDefinitionValidator.logErrors(mainProcessDefinition, errors, errorSources);
+                            ProcessDefinitionValidator.logErrors(mainProcessDefinition, errors, errorSources, false);
                         }
                         if (exportToFile) {
-                            if (!Dialogs.confirm(Localization.getString("DialogEnhancement.parametersNotCorrespondingWithDocxQ"), errorsDetails[0])) {
+                            if (!Dialogs.confirm(Localization.getString("DialogEnhancement.parametersNotCorrespondingWithDocxQ"), errorsDetails[0],
+                                    true)) {
                                 PluginLogger.logErrorWithoutDialog(Localization.getString("DialogEnhancement.exportCanceled"));
                                 return false;
                             }
                         } else {
-                            Dialogs.error(Localization.getString("DialogEnhancement.parametersNotCorrespondingWithDocx"), errorsDetails[0]);
+                            Dialogs.error(Localization.getString("DialogEnhancement.parametersNotCorrespondingWithDocx"), errorsDetails[0], true);
                             PluginLogger.logErrorWithoutDialog(Localization.getString("DialogEnhancement.exportCanceled"));
                             return false;
                         }
