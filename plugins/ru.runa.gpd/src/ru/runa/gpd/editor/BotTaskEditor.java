@@ -259,8 +259,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
         if (null == result) {
             Dialogs.error(Localization.getString("DialogEnhancement.docxCheckError"));
         } else if (errors.size() > 0 && !result) {
-            IFile botTaskFile = BotCache.getBotTaskFile(botTask);
-            BotTask.logErrors(botTaskFile, errors);
+            botTask.logErrors(errors);
             Dialogs.error(Localization.getString("DialogEnhancement.docxCheckErrorTab"));
         }
     }
@@ -488,7 +487,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
             PluginLogger.logInfo(Localization.getString("DialogEnhancement.badEmbeddedDocxFile"));
             return;
         }
-        IFile file = EmbeddedFileUtils.getProcessFile(EmbeddedFileUtils.getBotTaskFileName(embeddedFileName));
+        IFile file = EmbeddedFileUtils.getProcessFile(botTask, EmbeddedFileUtils.getBotTaskFileName(embeddedFileName));
         if (null == file || !file.exists()) {
             PluginLogger.logInfo(Localization.getString("DialogEnhancement.cantGetFile"));
             return;
@@ -498,7 +497,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
                 PluginLogger.logInfo(Localization.getString("DialogEnhancement.cantGetInputStream"));
                 return;
             }
-            Map<String, Integer> variablesMap = DocxDialogEnhancementMode.getVariableNamesFromDocxTemplate(inputStream);
+            Map<String, Integer> variablesMap = DialogEnhancement.getVariableNamesFromDocxTemplate(inputStream);
             for (ParamDefGroup group : botTask.getParamDefConfig().getGroups()) {
                 if (ParamDefGroup.NAME_INPUT.equals(group.getName())) {
                     String inputFileParamName = DocxDialogEnhancementMode.getInputFileParamName();

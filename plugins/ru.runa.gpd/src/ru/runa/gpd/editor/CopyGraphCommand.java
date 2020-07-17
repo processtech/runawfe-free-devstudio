@@ -89,7 +89,8 @@ public class CopyGraphCommand extends Command {
     public void execute() {
         try {
             if (!copyBuffer.getLanguage().equals(targetDefinition.getLanguage())) {
-                (new InfoWithDetailsDialog(MessageDialog.WARNING,  Localization.getString("message.warning"), Localization.getString("CopyBuffer.DifferentVersion.warning"), null) {
+                (new InfoWithDetailsDialog(MessageDialog.WARNING, Localization.getString("message.warning"),
+                        Localization.getString("CopyBuffer.DifferentVersion.warning"), null, false) {
                     @Override
                     protected void createButtonsForButtonBar(Composite parent) {
                         createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, false);
@@ -501,7 +502,7 @@ public class CopyGraphCommand extends Command {
     }
 
     private class CopyVariableAction extends ExtraCopyAction {
-    	private final ProcessDefinition sourceProcessDefinition;
+        private final ProcessDefinition sourceProcessDefinition;
         private final Variable sourceVariable;
         private final Variable oldVariable;
         private Variable addedVariable;

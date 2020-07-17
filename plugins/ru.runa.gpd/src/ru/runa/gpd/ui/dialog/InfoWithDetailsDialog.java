@@ -18,16 +18,18 @@ import org.eclipse.swt.widgets.Text;
 
 public class InfoWithDetailsDialog extends IconAndMessageDialog {
     private final int dialogType;
+    private final boolean showDetails;
     private String title;
     private String details;
     private Text detailsText;
 
-    public InfoWithDetailsDialog(int dialogType, String dialogTitle, String infoMessage, String details) {
+    public InfoWithDetailsDialog(int dialogType, String dialogTitle, String infoMessage, String details, boolean showDetails) {
         super(Display.getCurrent().getActiveShell());
         this.dialogType = dialogType;
         this.title = dialogTitle;
         this.message = infoMessage;
         this.details = details;
+        this.showDetails = showDetails;
         setShellStyle(getShellStyle() | SWT.RESIZE);
     }
 
@@ -105,6 +107,10 @@ public class InfoWithDetailsDialog extends IconAndMessageDialog {
             if (dialogComposite.getChildren().length == 0) {
                 new Label(dialogComposite, SWT.NULL);
             }
+
+            if (showDetails) {
+                toggleDetailsArea(getShell(), parent);
+            }
         }
     }
 
@@ -117,17 +123,21 @@ public class InfoWithDetailsDialog extends IconAndMessageDialog {
     }
 
     private void toggleDetailsArea() {
-        Point windowSize = getShell().getSize();
-        Point oldSize = getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT);
+        toggleDetailsArea(getShell(), (Composite) getContents());
+    }
+
+    private void toggleDetailsArea(Shell shell, Composite composite) {
+        Point windowSize = shell.getSize();
+        Point oldSize = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT);
         if (isDetailsAreaCreated()) {
             detailsText.dispose();
             getButton(IDialogConstants.DETAILS_ID).setText(IDialogConstants.SHOW_DETAILS_LABEL);
         } else {
-            createDropDownList((Composite) getContents());
+            createDropDownList(composite);
             getButton(IDialogConstants.DETAILS_ID).setText(IDialogConstants.HIDE_DETAILS_LABEL);
         }
-        Point newSize = getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT);
-        getShell().setSize(new Point(windowSize.x, windowSize.y + (newSize.y - oldSize.y)));
+        Point newSize = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+        shell.setSize(new Point(windowSize.x, windowSize.y + (newSize.y - oldSize.y)));
     }
 
     private boolean isDetailsAreaCreated() {

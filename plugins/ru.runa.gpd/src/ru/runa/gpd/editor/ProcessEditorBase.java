@@ -310,7 +310,7 @@ public abstract class ProcessEditorBase extends MultiPageEditorPart implements I
                 for (int i = 0; i < errors.size(); i++) {
                     PluginLogger.logErrorWithoutDialog(errors.get(i));
                 }
-                Dialogs.error(Localization.getString("DialogEnhancement.docxCheckError"));
+                Dialogs.error(Localization.getString("DialogEnhancement.docxCheckError"), true);
             }
         }
     }

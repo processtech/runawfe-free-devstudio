@@ -7,6 +7,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import ru.runa.gpd.BotCache;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.PluginLogger;
@@ -151,13 +152,13 @@ public class BotTask implements Delegable, Comparable<BotTask> {
         return Localization.getString("property.botTaskName") + ": " + name;
     }
 
-    public static void logErrors(IResource resource, List<String> errors) {
+    public void logErrors(List<String> errors) {
         try {
-            IFile definitionFile = (IFile) resource;
+            IFile definitionFile = BotCache.getBotTaskFile(this);
             definitionFile.deleteMarkers(ValidationErrorsView.ID, true, IResource.DEPTH_INFINITE);
             ListIterator<String> iterator = errors.listIterator();
             while (iterator.hasNext()) {
-                addError(definitionFile, resource, iterator.next());
+                addError(definitionFile, definitionFile, iterator.next());
             }
         } catch (Throwable e) {
             PluginLogger.logError(e);

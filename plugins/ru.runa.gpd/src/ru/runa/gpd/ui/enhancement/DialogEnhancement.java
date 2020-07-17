@@ -2,13 +2,15 @@ package ru.runa.gpd.ui.enhancement;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFFooter;
+import org.apache.poi.xwpf.usermodel.XWPFHeader;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.CoreException;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.DelegableProvider;
@@ -74,6 +76,7 @@ public class DialogEnhancement {
     // use EmbeddedFileUtils.getProcessFileName(embeddedDocxTemplateFileName) before call that function !!!
     public static Boolean checkScriptTaskParametersWithDocxTemplate(Delegable delegable, String embeddedDocxTemplateFileName, List<String> errors,
             List<Delegable> errorSources, String[] errorsDetails) {
+
         ProcessDefinition processDefinition = delegable instanceof GraphElement ? ((GraphElement) delegable).getProcessDefinition() : null;
 
         IFile file = Strings.isNullOrEmpty(embeddedDocxTemplateFileName) || null == processDefinition ? null
@@ -88,7 +91,7 @@ public class DialogEnhancement {
                 PluginLogger.logInfo(Localization.getString("DialogEnhancement.cantGetInputStream"));
                 return null;
             }
-            Map<String, Integer> variablesMap = DocxDialogEnhancementMode.getVariableNamesFromDocxTemplate(inputStream);
+            Map<String, Integer> variablesMap = getVariableNamesFromDocxTemplate(inputStream);
             List<String> usedVariableList = delegable.getVariableNames(false);
             boolean ok = true;
             for (Map.Entry<String, Integer> entry : variablesMap.entrySet()) {
@@ -119,8 +122,9 @@ public class DialogEnhancement {
                 }
             }
             return ok;
-        } catch (IOException | CoreException e) {
-            e.printStackTrace();
+        } catch (Throwable exception) {
+            exception.printStackTrace();
+            PluginLogger.logErrorWithoutDialog("Exception occured, see the stack trace!", exception);
             return null;
         }
     }
@@ -131,7 +135,14 @@ public class DialogEnhancement {
 
     public static Boolean checkBotTaskParametersWithDocxTemplate(BotTask botTask, String embeddedDocxTemplateFileName, List<String> errors,
             String[] errorsDetails) {
-        IFile file = EmbeddedFileUtils.getProcessFile(botTask, EmbeddedFileUtils.getBotTaskFileName(embeddedDocxTemplateFileName));
+        IFile file = null;
+
+        try {
+            file = EmbeddedFileUtils.getProcessFile(botTask, EmbeddedFileUtils.getBotTaskFileName(embeddedDocxTemplateFileName));
+        } catch (Throwable exception) {
+            exception.printStackTrace();
+        }
+
         if (null == file || !file.exists()) {
             PluginLogger.logInfo(wrapToBotName(botTask, Localization.getString("DialogEnhancement.cantGetFile")));
             return null;
@@ -143,7 +154,7 @@ public class DialogEnhancement {
                 PluginLogger.logInfo(wrapToBotName(botTask, Localization.getString("DialogEnhancement.cantGetInputStream")));
                 return null;
             }
-            Map<String, Integer> variablesMap = DocxDialogEnhancementMode.getVariableNamesFromDocxTemplate(inputStream);
+            Map<String, Integer> variablesMap = getVariableNamesFromDocxTemplate(inputStream);
             for (Map.Entry<String, Integer> entry : variablesMap.entrySet()) {
                 String variable = entry.getKey();
                 boolean finded = false;
@@ -163,12 +174,12 @@ public class DialogEnhancement {
                 }
 
                 if (!finded) {
-                    String error = wrapToBotName(botTask, Localization.getString("DialogEnhancement.noParameterForDocx", variable));
+                    String error = Localization.getString("DialogEnhancement.noParameterForDocx", variable);
                     if (null != errorsDetails && errorsDetails.length > 0) {
                         if (!errorsDetails[0].isEmpty()) {
                             errorsDetails[0] += "\n";
                         }
-                        errorsDetails[0] += error;
+                        errorsDetails[0] += wrapToBotName(botTask, error);
                     }
                     if (null != errors) {
                         errors.add(error);
@@ -183,6 +194,22 @@ public class DialogEnhancement {
             PluginLogger.logErrorWithoutDialog("Exception occured, see the stack trace!", exception);
             return null;
         }
+    }
+
+    public static Map<String, Integer> getVariableNamesFromDocxTemplate(InputStream templateInputStream) {
+        Map<String, Integer> variablesMap = new HashMap<String, Integer>();
+        try (XWPFDocument document = new XWPFDocument(templateInputStream)) {
+            for (XWPFHeader header : document.getHeaderList()) {
+                DocxDialogEnhancementMode.getVariableNamesFromDocxBodyElements(header.getBodyElements(), variablesMap);
+            }
+            DocxDialogEnhancementMode.getVariableNamesFromDocxBodyElements(document.getBodyElements(), variablesMap);
+            for (XWPFFooter footer : document.getFooterList()) {
+                DocxDialogEnhancementMode.getVariableNamesFromDocxBodyElements(footer.getBodyElements(), variablesMap);
+            }
+        } catch (Throwable th) {
+            th.printStackTrace();
+        }
+        return variablesMap;
     }
 
     private static boolean dialogEnhancementMode = true;

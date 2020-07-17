@@ -2,15 +2,10 @@ package ru.runa.gpd.ui.enhancement;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.poi.xwpf.usermodel.IBodyElement;
-import org.apache.poi.xwpf.usermodel.XWPFDocument;
-import org.apache.poi.xwpf.usermodel.XWPFFooter;
-import org.apache.poi.xwpf.usermodel.XWPFHeader;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.model.Delegable;
@@ -67,23 +62,7 @@ public class DocxDialogEnhancementMode extends DialogEnhancementMode {
                 && 0 == delegable.getDelegationClassName().compareTo(DocxDialogEnhancementMode.DocxHandlerID);
     }
 
-    public static Map<String, Integer> getVariableNamesFromDocxTemplate(InputStream templateInputStream) {
-        Map<String, Integer> variablesMap = new HashMap<String, Integer>();
-        try (XWPFDocument document = new XWPFDocument(templateInputStream)) {
-            for (XWPFHeader header : document.getHeaderList()) {
-                getVariableNamesFromDocxBodyElements(header.getBodyElements(), variablesMap);
-            }
-            getVariableNamesFromDocxBodyElements(document.getBodyElements(), variablesMap);
-            for (XWPFFooter footer : document.getFooterList()) {
-                getVariableNamesFromDocxBodyElements(footer.getBodyElements(), variablesMap);
-            }
-        } catch (Throwable th) {
-            th.printStackTrace();
-        }
-        return variablesMap;
-    }
-
-    private static void getVariableNamesFromDocxBodyElements(List<IBodyElement> bodyElements, Map<String, Integer> variablesMap) {
+    static void getVariableNamesFromDocxBodyElements(List<IBodyElement> bodyElements, Map<String, Integer> variablesMap) {
         List<XWPFParagraph> paragraphs = Lists.newArrayList();
         for (IBodyElement bodyElement : new ArrayList<IBodyElement>(bodyElements)) {
             if (bodyElement instanceof XWPFParagraph) {

@@ -50,7 +50,7 @@ public class ExportBotTaskWizardPage extends ExportBotWizardPage {
             Dialogs.error(Localization.getString("DialogEnhancement.docxCheckError"));
             PluginLogger.logErrorWithoutDialog(Localization.getString("DialogEnhancement.exportCanceled"));
         } else if (docxTestResult
-                || Dialogs.confirm(Localization.getString("DialogEnhancement.parametersNotCorrespondingWithDocxQ"), errorsDetails[0])) {
+                || Dialogs.confirm(Localization.getString("DialogEnhancement.parametersNotCorrespondingWithDocxQ"), errorsDetails[0], true)) {
             getContainer().run(true, true, new BotTaskExportCommand(exportResource, new FileOutputStream(getDestinationValue())));
             if (docxTestResult) {
                 PluginLogger.logInfo(Localization.getString("DialogEnhancement.exportSuccessful"));
@@ -70,7 +70,7 @@ public class ExportBotTaskWizardPage extends ExportBotWizardPage {
             Dialogs.error(Localization.getString("DialogEnhancement.docxCheckError"));
             PluginLogger.logErrorWithoutDialog(Localization.getString("DialogEnhancement.exportCanceled"));
         } else if (!docxTestResult) {
-            Dialogs.error(Localization.getString("DialogEnhancement.parametersNotCorrespondingWithDocx"), errorsDetails[0]);
+            Dialogs.error(Localization.getString("DialogEnhancement.parametersNotCorrespondingWithDocx"), errorsDetails[0], true);
             PluginLogger.logErrorWithoutDialog(Localization.getString("DialogEnhancement.exportCanceled"));
             return;
         } else {
@@ -91,7 +91,7 @@ public class ExportBotTaskWizardPage extends ExportBotWizardPage {
                     Boolean result = DialogEnhancement.checkBotTaskParametersWithDocxTemplate(botTask, embeddedDocxTemplateFileName, errors,
                             errorsDetails);
                     if (errors.size() > 0) {
-                        BotTask.logErrors(exportResource, errors);
+                        botTask.logErrors(errors);
                     }
                     return result;
                 }
