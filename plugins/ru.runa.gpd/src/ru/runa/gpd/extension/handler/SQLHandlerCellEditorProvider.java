@@ -29,8 +29,8 @@ import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
 import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
-import ru.runa.gpd.ui.custom.SwtUtils;
 import ru.runa.gpd.ui.custom.SqlHighlightTextStyling;
+import ru.runa.gpd.ui.custom.SwtUtils;
 import ru.runa.gpd.util.DataSourceUtils;
 import ru.runa.wfe.datasource.DataSourceStuff;
 import ru.runa.wfe.datasource.DataSourceType;
@@ -98,6 +98,7 @@ public class SQLHandlerCellEditorProvider extends XmlBasedConstructorProvider<SQ
 
             final Composite values = new Composite(this, SWT.FILL);
             GridData gdValues = new GridData(GridData.FILL_HORIZONTAL);
+            gdValues.widthHint = 230;
             values.setLayoutData(gdValues);
             final StackLayout stackLayout = new StackLayout();
             values.setLayout(stackLayout);
