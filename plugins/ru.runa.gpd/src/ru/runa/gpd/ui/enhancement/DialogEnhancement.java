@@ -156,12 +156,15 @@ public class DialogEnhancement {
 
     public static Boolean checkBotTaskParametersWithDocxTemplate(BotTask botTask, String embeddedDocxTemplateFileName, List<String> errors,
             String[] errorsDetails) {
+
+        if (!EmbeddedFileUtils.isBotTaskFile(embeddedDocxTemplateFileName)) {
+            return true;
+        }
+
         IFile file = null;
 
         try {
-            file = EmbeddedFileUtils.getProcessFile(botTask,
-                    EmbeddedFileUtils.isBotTaskFile(embeddedDocxTemplateFileName) ? EmbeddedFileUtils.getBotTaskFileName(embeddedDocxTemplateFileName)
-                            : null);
+            file = EmbeddedFileUtils.getProcessFile(botTask, EmbeddedFileUtils.getBotTaskFileName(embeddedDocxTemplateFileName));
         } catch (Throwable exception) {
             exception.printStackTrace();
         }
