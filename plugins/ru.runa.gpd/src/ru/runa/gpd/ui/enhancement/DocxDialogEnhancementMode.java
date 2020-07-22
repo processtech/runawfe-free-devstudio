@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Map;
 import org.apache.poi.xwpf.usermodel.IBodyElement;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+import org.apache.poi.xwpf.usermodel.XWPFTable;
+import org.apache.poi.xwpf.usermodel.XWPFTableCell;
+import org.apache.poi.xwpf.usermodel.XWPFTableRow;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.model.Delegable;
 
@@ -69,11 +72,28 @@ public class DocxDialogEnhancementMode extends DialogEnhancementMode {
                 paragraphs.add((XWPFParagraph) bodyElement);
                 continue;
             }
+            if (!paragraphs.isEmpty()) {
+                getVariableNamesFromDocxParagraphs(paragraphs, variablesMap);
+                paragraphs.clear();
+            }
+
+            if (bodyElement instanceof XWPFTable) {
+                XWPFTable table = (XWPFTable) bodyElement;
+                List<XWPFTableRow> rows = table.getRows();
+                for (XWPFTableRow row : Lists.newArrayList(rows)) {
+                    List<XWPFTableCell> cells = row.getTableCells();
+                    for (XWPFTableCell cell : cells) {
+                        getVariableNamesFromDocxParagraphs(cell.getParagraphs(), variablesMap);
+                    }
+                }
+            }
+
         }
         if (!paragraphs.isEmpty()) {
             getVariableNamesFromDocxParagraphs(paragraphs, variablesMap);
             paragraphs.clear();
         }
+
     }
 
     private static void getVariableNamesFromDocxParagraphs(List<XWPFParagraph> paragraphs, Map<String, Integer> variablesMap) {
