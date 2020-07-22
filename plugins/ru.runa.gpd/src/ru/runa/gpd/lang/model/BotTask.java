@@ -172,7 +172,8 @@ public class BotTask implements Delegable, Comparable<BotTask> {
                 marker.setAttribute(IMarker.MESSAGE, errorMessage);
                 marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
                 marker.setAttribute(IMarker.LOCATION, resource.getName());
-                marker.setAttribute(PluginConstants.PROCESS_NAME_KEY, Localization.getString("property.botTaskName") + ": " + resource.getName());
+                marker.setAttribute(PluginConstants.PROCESS_NAME_KEY,
+                        /* Localization.getString("property.botTaskName") + ": " + */ resource.getName());
             }
         } catch (CoreException e) {
             PluginLogger.logError(e);
