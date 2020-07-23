@@ -133,15 +133,20 @@ public class DocxHandlerCellEditorProvider extends XmlBasedConstructorProvider<D
                     ((DocxDialogEnhancementMode) dialogEnhancementMode).docxModel = model;
                 }
 
-                if (null == dialogEnhancementMode) {
+                if (null == dialogEnhancementMode || dialogEnhancementMode.isOrDefault(DocxDialogEnhancementMode.DOCX_SHOW_OUTPUT)) {
                     final Button strict = new Button(this, SWT.CHECK);
-                    strict.setText(Messages.getString("label.strict"));
+                    strict.setText(Messages.getString(null != dialogEnhancementMode ? "label.strict.dialogEnhancementMode" : "label.strict"));
                     strict.setSelection(model.isStrict());
                     strict.addSelectionListener(new LoggingSelectionAdapter() {
 
                         @Override
                         protected void onSelection(SelectionEvent e) throws Exception {
                             model.setStrict(strict.getSelection());
+
+                            if (dialogEnhancementMode != null && dialogEnhancementMode.checkBotDocxTemplateEnhancementMode()) {
+                                ((DocxDialogEnhancementMode) dialogEnhancementMode).reloadBotTaskEditorXmlFromModel(model.toString(), null, null,
+                                        null);
+                            }
                         }
                     });
                     new Label(this, SWT.NONE);
