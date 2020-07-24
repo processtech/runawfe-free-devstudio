@@ -5,6 +5,7 @@ import java.io.StringWriter;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
 import ru.runa.gpd.Localization;
+import ru.runa.gpd.ui.dialog.InfoWithDetailsActionDialog;
 import ru.runa.gpd.ui.dialog.InfoWithDetailsDialog;
 import ru.runa.gpd.util.ThrowableCauseExtractor;
 
@@ -12,6 +13,11 @@ public class Dialogs {
 
     private static int open(int dialogType, String title, String message, String details, boolean showDetails) {
         InfoWithDetailsDialog dialog = new InfoWithDetailsDialog(dialogType, title, message, details, showDetails);
+        return dialog.open();
+    }
+
+    private static int openWithAction(int dialogType, String title, String message, String actionTitle, String details, boolean showDetails) {
+        InfoWithDetailsActionDialog dialog = new InfoWithDetailsActionDialog(dialogType, title, message, actionTitle, details, showDetails);
         return dialog.open();
     }
 
@@ -29,6 +35,10 @@ public class Dialogs {
 
     public static void error(String message, String details, boolean showDetails) {
         open(MessageDialog.ERROR, Localization.getString("error"), message, details, showDetails);
+    }
+
+    public static int errorWithAction(String message, String actionTitle, String details, boolean showDetails) {
+        return openWithAction(MessageDialog.ERROR, Localization.getString("error"), message, actionTitle, details, showDetails);
     }
 
     public static void error(String message) {
@@ -61,6 +71,10 @@ public class Dialogs {
 
     public static boolean confirm(String message, String details, boolean showDetails) {
         return open(MessageDialog.CONFIRM, Localization.getString("message.confirm"), message, details, showDetails) == Window.OK;
+    }
+
+    public static int confirmWithAction(String message, String actionTitle, String details, boolean showDetails) {
+        return openWithAction(MessageDialog.CONFIRM, Localization.getString("message.confirm"), message, actionTitle, details, showDetails);
     }
 
     public static boolean confirm(String message, String details) {

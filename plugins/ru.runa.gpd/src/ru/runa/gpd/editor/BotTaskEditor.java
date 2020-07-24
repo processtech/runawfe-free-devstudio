@@ -4,12 +4,10 @@ import com.google.common.collect.Lists;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import org.eclipse.core.resources.IFile;
@@ -483,60 +481,8 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
     }
 
     private void updateFromTemplate() throws IOException, CoreException {
-        if (embeddedFileName == null || embeddedFileName.isEmpty() || !EmbeddedFileUtils.isBotTaskFile(embeddedFileName)) {
-            PluginLogger.logInfo(Localization.getString("DialogEnhancement.badEmbeddedDocxFile"));
-            return;
-        }
-        IFile file = EmbeddedFileUtils.getProcessFile(botTask, EmbeddedFileUtils.getBotTaskFileName(embeddedFileName));
-        if (null == file || !file.exists()) {
-            PluginLogger.logInfo(Localization.getString("DialogEnhancement.cantGetFile", EmbeddedFileUtils.getBotTaskFileName(embeddedFileName)));
-            return;
-        }
-        try (InputStream inputStream = file.getContents()) {
-            if (null == inputStream) {
-                PluginLogger.logInfo(Localization.getString("DialogEnhancement.cantGetInputStream"));
-                return;
-            }
-            Map<String, Integer> variablesMap = DialogEnhancement.getVariableNamesFromDocxTemplate(inputStream);
-            for (ParamDefGroup group : botTask.getParamDefConfig().getGroups()) {
-                if (ParamDefGroup.NAME_INPUT.equals(group.getName())) {
-                    String inputFileParamName = DocxDialogEnhancementMode.getInputFileParamName();
-                    List<ParamDef> params = group.getParameters();
-                    ListIterator<ParamDef> paramsIterator = params.listIterator();
-                    while (paramsIterator.hasNext()) {
-                        ParamDef pd = paramsIterator.next();
-                        String paramName = pd.getName();
-                        if (paramName.equals(inputFileParamName)) {
-                            if (pd.getFormatFilters().size() > 0
-                                    && pd.getFormatFilters().get(0).compareTo(DocxDialogEnhancementMode.FILE_VARIABLE_FORMAT) == 0) {
-                                continue;
-                            }
-                        }
-                        if (!variablesMap.containsKey(paramName)) {
-                            paramsIterator.remove();
-                            setDirty(true);
-                        }
-                    }
-                    for (Map.Entry<String, Integer> entry : variablesMap.entrySet()) {
-                        ListIterator<ParamDef> paramsIter = params.listIterator();
-                        boolean exists = false;
-                        while (paramsIter.hasNext()) {
-                            if (paramsIter.next().getName().compareTo(entry.getKey()) == 0) {
-                                exists = true;
-                                break;
-                            }
-                        }
-                        if (!exists) {
-                            ParamDef pd = new ParamDef(entry.getKey(), entry.getKey());
-                            List<String> formats = pd.getFormatFilters();
-                            formats.add("java.lang.Object");
-                            params.add(pd);
-                            setDirty(true);
-                        }
-                    }
-                    break;
-                }
-            }
+        if (DialogEnhancement.updateBotTaskFromTemplate(botTask, embeddedFileName)) {
+            setDirty(true);
             setTableInput(ParamDefGroup.NAME_INPUT);
             docxDialogEnhancementModeOutput.invokeObserver(DialogEnhancementMode.DOCX_OUTPUT_VARIABLE_MODE);
         }
@@ -857,7 +803,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
         });
     }
 
-    private void setTableInput(String groupType) {
+    public void setTableInput(String groupType) {
         TableViewer confTableViewer = getParamTableViewer(groupType);
         List<ParamDef> paramDefs = new ArrayList<ParamDef>();
         for (ParamDefGroup group : botTask.getParamDefConfig().getGroups()) {
