@@ -110,6 +110,10 @@ public class DocxDialogEnhancementMode extends DialogEnhancementMode {
                 }
                 String var = paragraphText.substring(0, paragraphText.indexOf(DocxDialogEnhancementMode.PLACEHOLDER_END));
 
+                if (var.startsWith("items:")) {
+                    var = var.substring(6);
+                }
+
                 if (!variablesMap.containsKey(var)) {
                     variablesMap.put(var, 1);
                 }
