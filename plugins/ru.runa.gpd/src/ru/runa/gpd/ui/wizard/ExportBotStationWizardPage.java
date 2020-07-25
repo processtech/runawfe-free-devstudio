@@ -12,8 +12,9 @@ import ru.runa.gpd.bot.BotStationExportCommand;
 import ru.runa.gpd.util.IOUtils;
 
 public class ExportBotStationWizardPage extends ExportBotElementWizardPage {
+
     public ExportBotStationWizardPage(IStructuredSelection selection) {
-        super(selection);
+        super(ExportBotElementWizardPage.class, selection);
         setTitle(Localization.getString("ExportBotStationWizardPage.page.title"));
         setDescription(Localization.getString("ExportBotStationWizardPage.page.description"));
         this.exportObjectNameFileMap = new TreeMap<String, IResource>();

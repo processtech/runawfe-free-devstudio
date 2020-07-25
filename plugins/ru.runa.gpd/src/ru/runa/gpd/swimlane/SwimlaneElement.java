@@ -23,7 +23,7 @@ public abstract class SwimlaneElement<T extends SwimlaneInitializer> {
     private String description = "";
     private SwimlaneElement parent;
     private final List<SwimlaneElement> children = Lists.newArrayList();
-    protected List<ISwimlaneElementListener> listeners = new ArrayList<ISwimlaneElementListener>();
+    protected List<SwimlaneElementListener> listeners = new ArrayList<SwimlaneElementListener>();
     protected Section section;
     protected Composite clientArea;
     protected String swimlaneName;
@@ -127,14 +127,14 @@ public abstract class SwimlaneElement<T extends SwimlaneInitializer> {
         swimlaneElement.setParent(this);
     }
 
-    public void addElementListener(ISwimlaneElementListener listener) {
+    public void addElementListener(SwimlaneElementListener listener) {
         listeners.add(listener);
         for (SwimlaneElement element : children) {
             element.addElementListener(listener);
         }
     }
 
-    public void removeElementListener(ISwimlaneElementListener listener) {
+    public void removeElementListener(SwimlaneElementListener listener) {
         listeners.remove(listener);
         for (SwimlaneElement element : children) {
             element.removeElementListener(listener);
@@ -168,7 +168,7 @@ public abstract class SwimlaneElement<T extends SwimlaneInitializer> {
             @Override
             public void expansionStateChanged(ExpansionEvent e) {
                 if (e.getState()) {
-                    for (ISwimlaneElementListener listener : listeners) {
+                    for (SwimlaneElementListener listener : listeners) {
                         listener.opened(calculatePath(), true);
                     }
                 }
@@ -198,7 +198,7 @@ public abstract class SwimlaneElement<T extends SwimlaneInitializer> {
     }
 
     protected void fireCompletedEvent() {
-        for (ISwimlaneElementListener listener : listeners) {
+        for (SwimlaneElementListener listener : listeners) {
             listener.completed(calculatePath(), swimlaneInitializer);
         }
     }

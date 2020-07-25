@@ -29,7 +29,7 @@ import ru.runa.gpd.office.TemplateFileComposite;
 import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
 import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
-import ru.runa.gpd.ui.custom.SWTUtils;
+import ru.runa.gpd.ui.custom.SwtUtils;
 import ru.runa.gpd.util.EmbeddedFileUtils;
 import ru.runa.wfe.InternalApplicationException;
 import ru.runa.wfe.var.file.FileVariable;
@@ -75,7 +75,7 @@ public class MergeInputOutputComposite extends Composite {
     }
 
     private Hyperlink initAddLink(final MergeInputOutputModel model) {
-        return SWTUtils.createLink(inputGroup, Localization.getString("button.create"), new LoggingHyperlinkAdapter() {
+        return SwtUtils.createLink(inputGroup, Localization.getString("button.create"), new LoggingHyperlinkAdapter() {
             @Override
             protected void onLinkActivated(HyperlinkEvent e) throws Exception {
                 model.getInputPathList().add(null);
