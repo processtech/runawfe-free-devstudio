@@ -25,6 +25,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -237,24 +238,42 @@ public class ExportParWizardPage extends WizardArchiveFileResourceExportPage1 {
                     List<String> errors = Lists.newArrayList();
                     List<Delegable> errorSources = Lists.newArrayList();
                     String errorsDetails[] = { "" };
-                    ProcessDefinitionValidator.checkScriptTaskParametersWithDocxTemplate(definition, errors, errorSources, errorsDetails);
-                    if (errors.size() > 0) {
+                    Boolean docxTestResult = ProcessDefinitionValidator.checkScriptTaskParametersWithDocxTemplate(definition, errors, errorSources,
+                            errorsDetails);
+                    if (null == docxTestResult) {
+                        Dialogs.error(Localization.getString("DialogEnhancement.docxCheckError"));
+                        PluginLogger.logErrorWithoutDialog(Localization.getString("DialogEnhancement.exportCanceled"));
+                    } else if (!docxTestResult && errors.size() > 0) {
                         ProcessDefinition mainProcessDefinition = definition.getMainProcessDefinition();
                         if (null != mainProcessDefinition) {
                             ProcessDefinitionValidator.logErrors(mainProcessDefinition, errors, errorSources, false);
                         }
+
                         if (exportToFile) {
-                            if (!Dialogs.confirm(Localization.getString("DialogEnhancement.parametersNotCorrespondingWithDocxQ"), errorsDetails[0],
-                                    true)) {
+
+                            switch (Dialogs.confirmWithAction(Localization.getString("DialogEnhancement.parametersNotCorrespondingWithDocxQ"),
+                                    Localization.getString("Update.from.docx.template"), errorsDetails[0], true)) {
+                            case IDialogConstants.PROCEED_ID:
+                                // DialogEnhancement.updateScriptTaskFromDocxTemplate(definition);
                                 PluginLogger.logErrorWithoutDialog(Localization.getString("DialogEnhancement.exportCanceled"));
-                                return false;
+                                return true; // close export dialog
+                            case IDialogConstants.OK_ID:
+                                break;
+                            default:
+                                PluginLogger.logErrorWithoutDialog(Localization.getString("DialogEnhancement.exportCanceled"));
+                                return true; // close export dialog
                             }
                         } else {
-                            Dialogs.error(Localization.getString("DialogEnhancement.parametersNotCorrespondingWithDocx"), errorsDetails[0], true);
+                            if (IDialogConstants.PROCEED_ID == Dialogs.errorWithAction(
+                                    Localization.getString("DialogEnhancement.parametersNotCorrespondingWithDocx"),
+                                    Localization.getString("Update.from.docx.template"), errorsDetails[0], true)) {
+                                // DialogEnhancement.updateScriptTaskFromDocxTemplate(definition);
+                            }
                             PluginLogger.logErrorWithoutDialog(Localization.getString("DialogEnhancement.exportCanceled"));
-                            return false;
+                            return true; // close export dialog
                         }
                     }
+
                 }
                 definition.getLanguage().getSerializer().validateProcessDefinitionXML(definitionFile);
                 List<IFile> resourcesToExport = new ArrayList<IFile>();

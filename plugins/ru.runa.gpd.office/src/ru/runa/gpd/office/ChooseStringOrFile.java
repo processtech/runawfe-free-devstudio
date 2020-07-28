@@ -28,6 +28,16 @@ import ru.runa.wfe.var.file.FileVariable;
 
 class ChooseStringOrFile implements PropertyChangeListener {
 
+    protected final Composite composite;
+    private final InputOutputModel model;
+    protected final Delegable delegable;
+    private final String fileExtension;
+    private final FilesSupplierMode mode;
+    protected final DialogEnhancementMode dialogEnhancementMode;
+
+    Control control = null;
+    Combo variableCombo;
+
     public void setFileName(String fileName, Boolean embeddedMode) {
         switch (this.mode) {
         case IN:
@@ -55,16 +65,6 @@ class ChooseStringOrFile implements PropertyChangeListener {
         default:
         }
     }
-
-    protected final Composite composite;
-    private final InputOutputModel model;
-    protected final Delegable delegable;
-    private final String fileExtension;
-    private final FilesSupplierMode mode;
-    protected final DialogEnhancementMode dialogEnhancementMode;
-
-    Control control = null;
-    Combo variableCombo;
 
     protected ChooseStringOrFile(Composite composite, InputOutputModel model, Delegable delegable, String fileExtension, FilesSupplierMode mode,
             DialogEnhancementMode dialogEnhancementMode) {
@@ -306,22 +306,8 @@ class ChooseStringOrFile implements PropertyChangeListener {
             throw new InternalApplicationException("Unexpected classtype " + delegable);
         }
 
-        // if (dialogEnhancementMode != null && dialogEnhancementMode.checkBotDocxTemplateEnhancementMode()) {
-        // IFile file = EmbeddedFileUtils.getProcessFile(fileName);
-        // boolean fileNotExists = null != file && !file.exists();
-        // updateEmbeddedFileName(fileNotExists || showFileAsNewFirstTime ? "" : fileName);
-        // } else {
-        // // http://sourceforge.net/p/runawfe/bugs/628/
-        // updateEmbeddedFileName(fileName);
-        // }
-
         // http://sourceforge.net/p/runawfe/bugs/628/
         updateEmbeddedFileName(fileName);
-
-        // if (null != dialogEnhancementMode && dialogEnhancementMode.checkBotDocxTemplateEnhancementMode()) {
-        // ((DocxDialogEnhancementMode) dialogEnhancementMode).defaultFileName = fileName;
-        // ((DocxDialogEnhancementMode) dialogEnhancementMode).showFileAsNewFirstTime = showFileAsNewFirstTime;
-        // }
 
         if (delegable instanceof GraphElement) {
             ProcessDefinition processDefinition = ((GraphElement) delegable).getProcessDefinition();
@@ -329,7 +315,6 @@ class ChooseStringOrFile implements PropertyChangeListener {
         } else if (delegable instanceof BotTask) {
             control = new TemplateFileComposite(composite, (BotTask) delegable, fileName, fileExtension, dialogEnhancementMode);
         }
-        // control = new TemplateFileComposite(composite, fileName, fileExtension, dialogEnhancementMode);
 
         ((TemplateFileComposite) control).getEventSupport().addPropertyChangeListener(this);
         composite.layout(true, true);

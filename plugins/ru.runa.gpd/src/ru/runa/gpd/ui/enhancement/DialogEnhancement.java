@@ -82,6 +82,87 @@ public class DialogEnhancement {
         return message + " (" + Localization.getString("DialogEnhancement.scriptTask") + " \"" + delegable.toString() + "\")";
     }
 
+    // public static boolean updateScriptTaskFromDocxTemplate(Delegable delegable) {
+    //
+    // ProcessDefinition processDefinition = delegable instanceof GraphElement ? ((GraphElement) delegable).getProcessDefinition() : null;
+    //
+    // if (null != definition && 0 == definition.getDelegationClassName().compareTo(DocxDialogEnhancementMode.DocxHandlerID)) {
+    // Object obj = DialogEnhancement.getConfigurationValue(definition, DocxDialogEnhancementMode.InputPathId);
+    // String embeddedDocxTemplateFileName = null != obj && obj instanceof String ? (String) obj : "";
+    // if (!Strings.isNullOrEmpty(embeddedDocxTemplateFileName)) {
+    //
+    // }
+    // IFile file = null;
+    // try {
+    // file = Strings.isNullOrEmpty(embeddedDocxTemplateFileName) || null == processDefinition ? null
+    // : EmbeddedFileUtils.getProcessFile(processDefinition, embeddedDocxTemplateFileName);
+    // } catch (Throwable exception) {
+    // exception.printStackTrace();
+    // }
+    //
+    // if (null == file || !file.exists()) {
+    // String error = Localization.getString("DialogEnhancement.cantGetFile",
+    // null == embeddedDocxTemplateFileName ? "NULL" : embeddedDocxTemplateFileName);
+    //
+    // if (null != errorsDetails && errorsDetails.length > 0) {
+    // if (!errorsDetails[0].isEmpty()) {
+    // errorsDetails[0] += "\n";
+    // }
+    // errorsDetails[0] += wrapToScriptName(delegable, error);
+    // }
+    // if (null != errors) {
+    // errors.add(error);
+    // }
+    // if (null != errorSources) {
+    // errorSources.add(delegable);
+    // }
+    //
+    // return false;
+    // }
+    //
+    // try (InputStream inputStream = file.getContents()) {
+    // if (null == inputStream) {
+    // PluginLogger.logInfo(wrapToScriptName(delegable, Localization.getString("DialogEnhancement.cantGetInputStream")));
+    // return null;
+    // }
+    // Map<String, Integer> variablesMap = getVariableNamesFromDocxTemplate(inputStream);
+    // List<String> usedVariableList = delegable.getVariableNames(false);
+    // boolean ok = true;
+    // for (Map.Entry<String, Integer> entry : variablesMap.entrySet()) {
+    // String variable = entry.getKey();
+    // ListIterator<String> iterator = usedVariableList.listIterator();
+    // boolean exists = false;
+    // while (iterator.hasNext()) {
+    // if (iterator.next().compareTo(variable) == 0) {
+    // exists = true;
+    // break;
+    // }
+    // }
+    // if (!exists) {
+    // String error = Localization.getString("DialogEnhancement.noParameterForDocx", variable);
+    // if (null != errorsDetails && errorsDetails.length > 0) {
+    // if (!errorsDetails[0].isEmpty()) {
+    // errorsDetails[0] += "\n";
+    // }
+    // errorsDetails[0] += wrapToScriptName(delegable, error);
+    // }
+    // if (null != errors) {
+    // errors.add(error);
+    // }
+    // if (null != errorSources) {
+    // errorSources.add(delegable);
+    // }
+    // ok = false;
+    // }
+    // }
+    // return ok;
+    // } catch (Throwable exception) {
+    // exception.printStackTrace();
+    // PluginLogger.logErrorWithoutDialog("Exception occured, see the stack trace!", exception);
+    // return null;
+    // }
+    // }
+
     public static boolean updateBotFromDocxTemplate(IResource exportResource) throws Exception {
         boolean result = false;
         if (null != exportResource && exportResource instanceof IFolder) {

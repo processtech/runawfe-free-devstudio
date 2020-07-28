@@ -23,21 +23,11 @@ import ru.runa.gpd.util.IOUtils;
 public abstract class ProcessFileComposite extends Composite {
     private final EventSupport eventSupport = new EventSupport(this);
     protected IFile file;
-    // private final String defaultFileName;
-    // private boolean showFileAsNewFirstTime;
-    // private boolean firstRebuild = true;
     private final DialogEnhancementMode dialogEnhancementMode;
 
     public ProcessFileComposite(Composite parent, IFile file, DialogEnhancementMode dialogEnhancementMode) {
         super(parent, SWT.NONE);
 
-        // if (null != (this.dialogEnhancementMode = dialogEnhancementMode) && dialogEnhancementMode.checkBotDocxTemplateEnhancementMode()) {
-        // this.defaultFileName = ((DocxDialogEnhancementMode) dialogEnhancementMode).defaultFileName;
-        // this.showFileAsNewFirstTime = ((DocxDialogEnhancementMode) dialogEnhancementMode).showFileAsNewFirstTime;
-        // } else {
-        // this.defaultFileName = "";
-        // this.showFileAsNewFirstTime = false;
-        // }
         this.dialogEnhancementMode = dialogEnhancementMode;
         this.file = file;
         setLayout(new GridLayout(3, false));
@@ -54,21 +44,6 @@ public abstract class ProcessFileComposite extends Composite {
         for (Control control : getChildren()) {
             control.dispose();
         }
-
-        // boolean forceFileExists = false;
-        //
-        // if (firstRebuild) {
-        // firstRebuild = false;
-        // forceFileExists = !showFileAsNewFirstTime && null != dialogEnhancementMode && dialogEnhancementMode.checkBotDocxTemplateEnhancementMode()
-        // && null != defaultFileName && !defaultFileName.isEmpty();
-        //
-        // boolean fileNotExists = null != file && !file.exists();
-        // if (fileNotExists) {
-        // forceFileExists = false;
-        // }
-        // }
-        //
-        // showFileAsNewFirstTime = false;
 
         if (/* !forceFileExists && */ (null == file || !file.exists())) {
             if (hasTemplate()) {
@@ -152,9 +127,6 @@ public abstract class ProcessFileComposite extends Composite {
     }
 
     private IFile getFile() {
-        // if (null == file && dialogEnhancementMode != null && dialogEnhancementMode.checkBotDocxTemplateEnhancementMode()) {
-        // file = EmbeddedFileUtils.getProcessFile(defaultFileName);
-        // }
         return file;
     }
 
