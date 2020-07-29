@@ -28,7 +28,7 @@ import ru.runa.gpd.office.Messages;
 import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
 import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
-import ru.runa.gpd.ui.custom.SWTUtils;
+import ru.runa.gpd.ui.custom.SwtUtils;
 import ru.runa.gpd.util.EmbeddedFileUtils;
 
 public abstract class BaseExcelHandlerCellEditorProvider extends XmlBasedConstructorProvider<ExcelModel> {
@@ -80,7 +80,7 @@ public abstract class BaseExcelHandlerCellEditorProvider extends XmlBasedConstru
                 for (Control control : getChildren()) {
                     control.dispose();
                 }
-                SWTUtils.createLink(this, Messages.getString("label.AddCell"), new LoggingHyperlinkAdapter() {
+                SwtUtils.createLink(this, Messages.getString("label.AddCell"), new LoggingHyperlinkAdapter() {
 
                     @Override
                     protected void onLinkActivated(HyperlinkEvent e) throws Exception {
@@ -88,7 +88,7 @@ public abstract class BaseExcelHandlerCellEditorProvider extends XmlBasedConstru
                         buildFromModel();
                     }
                 }).setLayoutData(new GridData(GridData.GRAB_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
-                SWTUtils.createLink(this, Messages.getString("label.AddRow"), new LoggingHyperlinkAdapter() {
+                SwtUtils.createLink(this, Messages.getString("label.AddRow"), new LoggingHyperlinkAdapter() {
 
                     @Override
                     protected void onLinkActivated(HyperlinkEvent e) throws Exception {
@@ -96,7 +96,7 @@ public abstract class BaseExcelHandlerCellEditorProvider extends XmlBasedConstru
                         buildFromModel();
                     }
                 }).setLayoutData(new GridData(GridData.GRAB_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
-                SWTUtils.createLink(this, Messages.getString("label.AddColumn"), new LoggingHyperlinkAdapter() {
+                SwtUtils.createLink(this, Messages.getString("label.AddColumn"), new LoggingHyperlinkAdapter() {
 
                     @Override
                     protected void onLinkActivated(HyperlinkEvent e) throws Exception {
@@ -153,7 +153,7 @@ public abstract class BaseExcelHandlerCellEditorProvider extends XmlBasedConstru
                         cmodel.variableName = combo.getText();
                     }
                 });
-                SWTUtils.createLink(group, "[X]", new LoggingHyperlinkAdapter() {
+                SwtUtils.createLink(group, "[X]", new LoggingHyperlinkAdapter() {
 
                     @Override
                     protected void onLinkActivated(HyperlinkEvent e) throws Exception {

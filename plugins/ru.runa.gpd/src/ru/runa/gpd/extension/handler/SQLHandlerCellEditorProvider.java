@@ -29,7 +29,7 @@ import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
 import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
-import ru.runa.gpd.ui.custom.SWTUtils;
+import ru.runa.gpd.ui.custom.SwtUtils;
 import ru.runa.gpd.ui.custom.SqlHighlightTextStyling;
 import ru.runa.gpd.util.DataSourceUtils;
 import ru.runa.wfe.datasource.DataSourceStuff;
@@ -164,7 +164,7 @@ public class SQLHandlerCellEditorProvider extends XmlBasedConstructorProvider<SQ
 
             });
 
-            SWTUtils.createLink(this, Localization.getString("button.add") + " " + Localization.getString("label.SQLQuery"),
+            SwtUtils.createLink(this, Localization.getString("button.add") + " " + Localization.getString("label.SQLQuery"),
                     new LoggingHyperlinkAdapter() {
 
                         @Override
@@ -248,7 +248,7 @@ public class SQLHandlerCellEditorProvider extends XmlBasedConstructorProvider<SQ
 
             new Label(rightPane, SWT.NULL).setLayoutData(new GridData(SWT.NULL, SWT.NULL, false, true));
 
-            SWTUtils.createLink(rightPane, "[X]", new LoggingHyperlinkAdapter() {
+            SwtUtils.createLink(rightPane, "[X]", new LoggingHyperlinkAdapter() {
 
                 @Override
                 protected void onLinkActivated(HyperlinkEvent e) throws Exception {
@@ -299,7 +299,7 @@ public class SQLHandlerCellEditorProvider extends XmlBasedConstructorProvider<SQ
             headerLabel.setText(Localization.getString(labelKey));
             strokeLabel = new Label(strokeComposite, SWT.SEPARATOR | SWT.HORIZONTAL);
             strokeLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            SWTUtils.createLink(strokeComposite, Localization.getString("button.add"), new LoggingHyperlinkAdapter() {
+            SwtUtils.createLink(strokeComposite, Localization.getString("button.add"), new LoggingHyperlinkAdapter() {
 
                 @Override
                 protected void onLinkActivated(HyperlinkEvent e) throws Exception {
@@ -325,7 +325,7 @@ public class SQLHandlerCellEditorProvider extends XmlBasedConstructorProvider<SQ
                 }
             });
             if (paramIndex != 0) {
-                SWTUtils.createLink(parent, Localization.getString("button.up"), new LoggingHyperlinkAdapter() {
+                SwtUtils.createLink(parent, Localization.getString("button.up"), new LoggingHyperlinkAdapter() {
 
                     @Override
                     protected void onLinkActivated(HyperlinkEvent e) throws Exception {
@@ -335,7 +335,7 @@ public class SQLHandlerCellEditorProvider extends XmlBasedConstructorProvider<SQ
             } else {
                 new Label(parent, SWT.NONE);
             }
-            SWTUtils.createLink(parent, "[X]", new LoggingHyperlinkAdapter() {
+            SwtUtils.createLink(parent, "[X]", new LoggingHyperlinkAdapter() {
 
                 @Override
                 protected void onLinkActivated(HyperlinkEvent e) throws Exception {

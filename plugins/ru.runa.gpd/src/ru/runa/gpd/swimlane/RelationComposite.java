@@ -1,7 +1,6 @@
 package ru.runa.gpd.swimlane;
 
 import java.util.List;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.SelectionEvent;
@@ -13,17 +12,15 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.model.ProcessDefinition;
-import ru.runa.gpd.settings.WFEConnectionPreferencePage;
+import ru.runa.gpd.sync.WfeServerConnectorComposite;
+import ru.runa.gpd.sync.WfeServerRelationImporter;
 import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
 import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
-import ru.runa.gpd.ui.custom.SWTUtils;
-import ru.runa.gpd.ui.custom.SyncUIHelper;
+import ru.runa.gpd.ui.custom.SwtUtils;
 import ru.runa.gpd.ui.dialog.ChooseItemDialog;
-import ru.runa.gpd.wfe.WFEServerRelationsImporter;
 import ru.runa.wfe.user.Executor;
 
 public class RelationComposite extends Composite {
@@ -36,7 +33,7 @@ public class RelationComposite extends Composite {
         super(parent, SWT.NONE);
         setLayout(new GridLayout());
         setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING & GridData.FILL_HORIZONTAL));
-        SyncUIHelper.createHeader(this, WFEServerRelationsImporter.getInstance(), WFEConnectionPreferencePage.class, null);
+        new WfeServerConnectorComposite(this, WfeServerRelationImporter.getInstance(), null);
         Composite composite = new Composite(this, SWT.NONE);
         composite.setLayout(new GridLayout(3, false));
         Label relationNameLabel = new Label(composite, SWT.NONE);
@@ -49,10 +46,10 @@ public class RelationComposite extends Composite {
                 swimlaneInitializer.setRelationName(relationNameText.getText());
             }
         });
-        SWTUtils.createLink(composite, Localization.getString("button.choose"), new LoggingHyperlinkAdapter() {
+        SwtUtils.createLink(composite, Localization.getString("button.choose"), new LoggingHyperlinkAdapter() {
             @Override
             protected void onLinkActivated(HyperlinkEvent e) throws Exception {
-                List<String> relations = WFEServerRelationsImporter.getInstance().loadCachedData();
+                List<String> relations = WfeServerRelationImporter.getInstance().loadCachedData();
                 ChooseItemDialog<String> dialog = new ChooseItemDialog<String>(Localization.getString("Relations"), relations);
                 String result = dialog.openDialog();
                 if (result != null) {

@@ -17,7 +17,7 @@ public abstract class MessageNode extends Node {
     protected final List<VariableMapping> variableMappings = new ArrayList<VariableMapping>();
     private static final List<String> SELECTOR_SPECIAL_NAMES = Lists.newArrayList(VariableUtils.CURRENT_PROCESS_ID,
             VariableUtils.CURRENT_PROCESS_DEFINITION_NAME, VariableUtils.CURRENT_NODE_NAME, VariableUtils.CURRENT_NODE_ID);
-    private Duration ttlDuration = new Duration("1 days");
+    private Duration ttlDuration = new Duration("0 minutes");
 
     public List<VariableMapping> getVariableMappings() {
         return variableMappings;

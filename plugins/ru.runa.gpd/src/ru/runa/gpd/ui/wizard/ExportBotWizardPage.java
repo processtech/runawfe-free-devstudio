@@ -22,8 +22,9 @@ import ru.runa.gpd.ui.enhancement.DocxDialogEnhancementMode;
 import ru.runa.gpd.util.IOUtils;
 
 public class ExportBotWizardPage extends ExportBotElementWizardPage {
+
     public ExportBotWizardPage(IStructuredSelection selection) {
-        super(selection);
+        super(ExportBotWizardPage.class, selection);
         setTitle(Localization.getString("ExportBotWizardPage.page.title"));
         setDescription(Localization.getString("ExportBotWizardPage.page.description"));
         this.exportObjectNameFileMap = new TreeMap<String, IResource>();
