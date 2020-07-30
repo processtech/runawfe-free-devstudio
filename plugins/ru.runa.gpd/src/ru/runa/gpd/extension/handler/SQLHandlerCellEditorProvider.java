@@ -18,6 +18,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
+import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.springframework.util.StringUtils;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
@@ -165,14 +166,17 @@ public class SQLHandlerCellEditorProvider extends XmlBasedConstructorProvider<SQ
 
             });
 
-            SwtUtils.createLink(this, Localization.getString("button.add") + " " + Localization.getString("label.SQLQuery"),
+            Hyperlink link = SwtUtils.createLink(this, Localization.getString("button.add") + " " + Localization.getString("label.SQLQuery"),
                     new LoggingHyperlinkAdapter() {
 
                         @Override
                         protected void onLinkActivated(HyperlinkEvent e) throws Exception {
                             model.getFirstTask().addQuery();
                         }
-                    }).setLayoutData(new GridData(GridData.GRAB_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
+                    });
+            GridData gd = new GridData(GridData.GRAB_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END);
+            gd.minimumWidth = link.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
+            link.setLayoutData(gd);
             for (SQLQueryModel queryModel : taskModel.queries) {
                 addQuerySection(queryModel, taskModel.queries.indexOf(queryModel));
             }
