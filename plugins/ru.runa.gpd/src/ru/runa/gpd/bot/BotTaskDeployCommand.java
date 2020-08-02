@@ -3,12 +3,13 @@ package ru.runa.gpd.bot;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
-
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.widgets.Display;
-
-import ru.runa.gpd.wfe.WFEServerBotElementImporter;
+import ru.runa.gpd.Localization;
+import ru.runa.gpd.sync.WfeServerConnector;
+import ru.runa.gpd.ui.custom.Dialogs;
+import ru.runa.wfe.bot.BotStationDoesNotExistException;
 
 public class BotTaskDeployCommand extends BotTaskExportCommand {
     public BotTaskDeployCommand(IResource exportResource, OutputStream outputStream) {
@@ -24,7 +25,11 @@ public class BotTaskDeployCommand extends BotTaskExportCommand {
                 Display.getDefault().syncExec(new Runnable() {
                     @Override
                     public void run() {
-                        WFEServerBotElementImporter.getInstance().deployBot(exportResource.getProject().getName(), baos.toByteArray());
+                        try {
+                            WfeServerConnector.getInstance().deployBot(exportResource.getProject().getName(), baos.toByteArray());
+                        } catch (BotStationDoesNotExistException e) {
+                            Dialogs.error(Localization.getString("ExportBotWizardPage.page.notExistWarning"));
+                        }
                     }
                 });
             } catch (Exception e) {

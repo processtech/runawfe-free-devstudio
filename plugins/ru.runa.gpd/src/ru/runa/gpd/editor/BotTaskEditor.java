@@ -64,7 +64,7 @@ import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionChangedAdapter;
-import ru.runa.gpd.ui.custom.SWTUtils;
+import ru.runa.gpd.ui.custom.SwtUtils;
 import ru.runa.gpd.ui.custom.XmlHighlightTextStyling;
 import ru.runa.gpd.ui.dialog.ChooseHandlerClassDialog;
 import ru.runa.gpd.ui.wizard.BotTaskParamDefWizard;
@@ -276,7 +276,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
                 Label help = new Label(shell, SWT.WRAP);
                 help.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
                 help.setText(Localization.getString("BotTaskEditor.formalParams"));
-                SWTUtils.createLink(shell, Localization.getString("label.menu.moreDetails"), new LoggingHyperlinkAdapter() {
+                SwtUtils.createLink(shell, Localization.getString("label.menu.moreDetails"), new LoggingHyperlinkAdapter() {
 
                     @Override
                     protected void onLinkActivated(HyperlinkEvent e) throws Exception {

@@ -14,9 +14,12 @@ import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.NodeRegistry;
 import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.settings.LanguageElementPreferenceNode;
+import ru.runa.gpd.settings.PrefConstants;
+import ru.runa.gpd.settings.WfeServerConnectorPreferenceNode;
+import ru.runa.gpd.settings.WfeServerConnectorsPreferenceNode;
 import ru.runa.gpd.ui.view.PropertiesView;
 
-public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
+public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor implements PrefConstants {
     private static final String PERSPECTIVE_ID = "ru.runa.gpd.perspective";
 
     @Override
@@ -33,6 +36,16 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
     public void preStartup() {
         getWorkbenchConfigurer().setSaveAndRestore(true);
         super.preStartup();
+        // support for dynamic connections
+        PreferenceManager preferenceManager = PlatformUI.getWorkbench().getPreferenceManager();
+        IPreferenceNode connectorNode = preferenceManager.find("gpd.pref.connector");
+        IPreferenceNode wfeServerConnectorsNode = new WfeServerConnectorsPreferenceNode();
+        connectorNode.add(wfeServerConnectorsNode);
+        int[] indices = WfeServerConnectorsPreferenceNode.getIndices();
+        for (int index : indices) {
+            PreferenceNode node = new WfeServerConnectorPreferenceNode(index);
+            wfeServerConnectorsNode.add(node);
+        }
     }
 
     @Override

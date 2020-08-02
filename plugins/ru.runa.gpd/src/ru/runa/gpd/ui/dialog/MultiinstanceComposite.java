@@ -28,7 +28,7 @@ import ru.runa.gpd.ui.custom.JavaHighlightTextStyling;
 import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
 import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
-import ru.runa.gpd.ui.custom.SWTUtils;
+import ru.runa.gpd.ui.custom.SwtUtils;
 import ru.runa.gpd.ui.custom.TypedUserInputCombo;
 import ru.runa.gpd.util.MultiinstanceParameters;
 import ru.runa.gpd.util.VariableMapping;
@@ -82,7 +82,7 @@ public class MultiinstanceComposite extends Composite {
         Composite createTasksByExecutorsComposite = new Composite(parent, SWT.NONE);
         createTasksByExecutorsComposite.setLayout(new GridLayout(2, false));
         createTasksByExecutorsComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        SWTUtils.createLabel(createTasksByExecutorsComposite, Localization.getString("MultiTask.property.creationMode"));
+        SwtUtils.createLabel(createTasksByExecutorsComposite, Localization.getString("MultiTask.property.creationMode"));
         final Combo creationCombo = new Combo(createTasksByExecutorsComposite, SWT.READ_ONLY);
         for (MultiTaskCreationMode creationMode : MultiTaskCreationMode.values()) {
             creationCombo.add(Localization.getString("MultiTask.property.creationMode." + creationMode));
@@ -103,7 +103,7 @@ public class MultiinstanceComposite extends Composite {
         createSubprocessesByDiscriminatorComposite = new Composite(parent, SWT.NONE);
         createSubprocessesByDiscriminatorComposite.setLayout(new GridLayout(2, false));
         createSubprocessesByDiscriminatorComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
-        SWTUtils.createLabel(createSubprocessesByDiscriminatorComposite, Localization.getString("SwimlanedNode.property.swimlane"));
+        SwtUtils.createLabel(createSubprocessesByDiscriminatorComposite, Localization.getString("SwimlanedNode.property.swimlane"));
         swimlaneCombo = new Combo(createSubprocessesByDiscriminatorComposite, SWT.READ_ONLY);
         for (Swimlane swimlane : processDefinition.getSwimlanes()) {
             swimlaneCombo.add(swimlane.getName());
@@ -116,8 +116,8 @@ public class MultiinstanceComposite extends Composite {
             }
         });
 
-        SWTUtils.createLabel(createSubprocessesByDiscriminatorComposite, Localization.getString("MultiTask.property.discriminatorCondition"));
-        SWTUtils.createLink(createSubprocessesByDiscriminatorComposite, Localization.getString("button.insert_variable"),
+        SwtUtils.createLabel(createSubprocessesByDiscriminatorComposite, Localization.getString("MultiTask.property.discriminatorCondition"));
+        SwtUtils.createLink(createSubprocessesByDiscriminatorComposite, Localization.getString("button.insert_variable"),
                 new LoggingHyperlinkAdapter() {
 
                     @Override
@@ -151,8 +151,8 @@ public class MultiinstanceComposite extends Composite {
         createSubprocessesByDiscriminatorComposite = new Composite(parent, SWT.NONE);
         createSubprocessesByDiscriminatorComposite.setLayout(new GridLayout(2, false));
         createSubprocessesByDiscriminatorComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
-        SWTUtils.createLabel(createSubprocessesByDiscriminatorComposite, Localization.getString("MultiSubprocess.property.discriminatorCondition"));
-        SWTUtils.createLink(createSubprocessesByDiscriminatorComposite, Localization.getString("button.insert_variable"),
+        SwtUtils.createLabel(createSubprocessesByDiscriminatorComposite, Localization.getString("MultiSubprocess.property.discriminatorCondition"));
+        SwtUtils.createLink(createSubprocessesByDiscriminatorComposite, Localization.getString("button.insert_variable"),
                 new LoggingHyperlinkAdapter() {
                     @Override
                     protected void onLinkActivated(HyperlinkEvent e) throws Exception {

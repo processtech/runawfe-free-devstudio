@@ -28,6 +28,7 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
     private boolean embedded;
     private boolean async;
     private boolean transactional;
+    protected boolean validateAtStart;
     private AsyncCompletionMode asyncCompletionMode = AsyncCompletionMode.ON_MAIN_PROCESS_END;
     public static List<String> PLACEHOLDERS = Lists.newArrayList(VariableUtils.CURRENT_PROCESS_ID, VariableUtils.CURRENT_PROCESS_DEFINITION_NAME,
             VariableUtils.CURRENT_NODE_ID, VariableUtils.CURRENT_NODE_NAME);
@@ -143,6 +144,8 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
             descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_TRANSACTIONAL, Localization.getString("Subprocess.Transactional"),
                     YesNoComboBoxTransformer.LABELS));
         }
+        descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_VALIDATE_AT_START, Localization.getString("Subprocess.ValidateAtStart"),
+                YesNoComboBoxTransformer.LABELS));
     }
 
     @Override
@@ -152,6 +155,13 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
         }
         if (PROPERTY_TRANSACTIONAL.equals(id)) {
             if (transactional) {
+                return Integer.valueOf(0);
+            } else {
+                return Integer.valueOf(1);
+            }
+        }
+        else if (PROPERTY_VALIDATE_AT_START.equals(id)) {
+            if (validateAtStart) {
                 return Integer.valueOf(0);
             } else {
                 return Integer.valueOf(1);
@@ -237,6 +247,8 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
             setSubProcessName((String) value);
         } else if (PROPERTY_TRANSACTIONAL.equals(id)) {
             setTransactional(YesNoComboBoxTransformer.setPropertyValue(value));
+        } else if (PROPERTY_VALIDATE_AT_START.equals(id)) {
+            setValidateAtStart(YesNoComboBoxTransformer.setPropertyValue(value));
         } else {
             super.setPropertyValue(id, value);
         }
@@ -244,6 +256,16 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
 
     public String getQualifiedId() {
         return getProcessDefinition().getFile().getParent().getFullPath() + "." + getId();
+    }
+
+    public boolean isValidateAtStart() {
+        return validateAtStart;
+    }
+
+    public void setValidateAtStart(boolean validateAtStart) {
+        boolean old = this.validateAtStart;
+        this.validateAtStart = validateAtStart;
+        firePropertyChange(PROPERTY_VALIDATE_AT_START, old, this.validateAtStart);
     }
 
 }

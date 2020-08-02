@@ -3,51 +3,76 @@ package ru.runa.gpd.ui.wizard;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
-
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
+import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.Viewer;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.bot.BotImportCommand;
+import ru.runa.gpd.sync.WfeServerBotImporter;
+import ru.runa.gpd.sync.WfeServerConnectorDataImporter;
 import ru.runa.gpd.util.IOUtils;
-import ru.runa.gpd.wfe.WFEServerBotElementImporter;
 import ru.runa.wfe.bot.Bot;
 import ru.runa.wfe.bot.BotTask;
 
-public class ImportBotTaskWizardPage extends ImportBotWizardPage {
-    public ImportBotTaskWizardPage(String pageName, IStructuredSelection selection) {
-        super(pageName, selection);
+public class ImportBotTaskWizardPage extends ImportBotElementWizardPage {
+
+    public ImportBotTaskWizardPage(IStructuredSelection selection) {
+        super(ImportBotTaskWizardPage.class, selection);
         setTitle(Localization.getString("ImportBotTaskWizardPage.page.title"));
         setDescription(Localization.getString("ImportBotTaskWizardPage.page.description"));
-        for (IFolder resource : IOUtils.getAllBotFolders()) {
-            importObjectNameFileMap.put(getKey(resource.getProject(), resource), resource);
-        }
+    }
+
+    @Override
+    protected List<? extends IContainer> getProjectDataViewerInput() {
+        return IOUtils.getAllBotFolders();
+    }
+
+    @Override
+    protected LabelProvider getProjectDataViewerLabelProvider() {
+        return new LabelProvider() {
+            @Override
+            public String getText(Object element) {
+                IContainer container = (IContainer) element;
+                return container.getProject().getName() + "/" + container.getName();
+            }
+        };
+    }
+
+    @Override
+    protected String getFilterExtension() {
+        return "*.bot";
     }
 
     @Override
     public void runImport(InputStream parInputStream, String botName) throws InvocationTargetException, InterruptedException {
-        String selectedDefinitionName = getBotElementSelection();
-        IResource importToResource = importObjectNameFileMap.get(selectedDefinitionName);
-        getContainer().run(true, true, new BotImportCommand(parInputStream, importToResource.getName(), importToResource.getProject().getName()));
+        IContainer selectedProject = getSelectedProject();
+        if (selectedProject == null) {
+            return;
+        }
+        getContainer().run(true, true, new BotImportCommand(parInputStream, selectedProject.getName(), selectedProject.getProject().getName()));
     }
 
     @Override
-    protected ITreeContentProvider getContentProvider() {
+    protected Object getServerDataViewerInput() {
+        return WfeServerBotImporter.getInstance().getBots();
+    }
+
+    @Override
+    protected WfeServerConnectorDataImporter<?> getDataImporter() {
+        return WfeServerBotImporter.getInstance();
+    }
+
+    @Override
+    protected ITreeContentProvider getServerDataViewerContentProvider() {
         return new BotTreeContentProvider();
-    }
-
-    @Override
-    protected String getSelectionResourceKey(IResource resource) {
-        return getKey(resource.getProject(), resource);
     }
 
     public static class BotTreeContentProvider implements ITreeContentProvider {
         @Override
         public Object[] getChildren(Object parentElement) {
-            return WFEServerBotElementImporter.getInstance().getBotTasks((Bot) parentElement).toArray(new Object[0]);
+            return WfeServerBotImporter.getInstance().getBotTasks((Bot) parentElement).toArray(new Object[0]);
         }
 
         @Override
@@ -58,13 +83,13 @@ public class ImportBotTaskWizardPage extends ImportBotWizardPage {
         @Override
         public boolean hasChildren(Object element) {
             if (element instanceof Bot) {
-                List<BotTask> result = WFEServerBotElementImporter.getInstance().getBotTasks((Bot) element);
+                List<BotTask> result = WfeServerBotImporter.getInstance().getBotTasks((Bot) element);
                 return result != null && result.size() > 0;
             }
             return false;
         }
 
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings({ "unchecked", "rawtypes" })
         @Override
         public Object[] getElements(Object inputElement) {
             if (inputElement instanceof List) {

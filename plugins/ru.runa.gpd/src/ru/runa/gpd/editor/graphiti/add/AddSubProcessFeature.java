@@ -2,12 +2,14 @@ package ru.runa.gpd.editor.graphiti.add;
 
 import org.eclipse.graphiti.features.context.IAddContext;
 import org.eclipse.graphiti.mm.GraphicsAlgorithmContainer;
+import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
 import org.eclipse.graphiti.mm.algorithms.Image;
 import org.eclipse.graphiti.mm.algorithms.RoundedRectangle;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.services.Graphiti;
 
 import ru.runa.gpd.editor.graphiti.GaProperty;
+import ru.runa.gpd.editor.graphiti.PropertyUtil;
 import ru.runa.gpd.editor.graphiti.StyleUtil;
 import ru.runa.gpd.editor.graphiti.layout.LayoutSubprocessNodeFeature;
 import ru.runa.gpd.lang.model.Node;
@@ -29,6 +31,15 @@ public class AddSubProcessFeature extends AddStateNodeFeature {
         } else {
             containerShape.getProperties().add(new GaProperty(GaProperty.TRANSACTIONAL, GaProperty.FALSE));
             secondBorder.setLineVisible(false);
+        }
+
+        GraphicsAlgorithm borderRect = PropertyUtil.findGaRecursiveByName(containerShape.getGraphicsAlgorithm(),
+                LayoutSubprocessNodeFeature.BORDER_RECT);
+        if (((Subprocess) node).isEmbedded()) {
+            containerShape.getProperties().add(new GaProperty(GaProperty.EMBEDDED, GaProperty.TRUE));
+        } else {
+            containerShape.getProperties().add(new GaProperty(GaProperty.EMBEDDED, GaProperty.FALSE));
+            borderRect.setLineWidth(borderRect.getStyle().getLineWidth() + 1);
         }
 
         Graphiti.getGaService().setLocation(image, node.getConstraint().width / 2 - 7, node.getConstraint().height - 3 * GRID_SIZE);

@@ -33,7 +33,7 @@ import ru.runa.gpd.formeditor.ftl.ComponentType;
 import ru.runa.gpd.formeditor.ftl.ComponentTypeRegistry;
 import ru.runa.gpd.formeditor.resources.Messages;
 import ru.runa.gpd.formeditor.settings.PreferencePage;
-import ru.runa.gpd.ui.custom.SWTUtils;
+import ru.runa.gpd.ui.custom.SwtUtils;
 import ru.runa.gpd.ui.dialog.ChooseComponentLabelDialog;
 
 public class ComponentParametersDialog extends Dialog {
@@ -80,7 +80,7 @@ public class ComponentParametersDialog extends Dialog {
         final Composite parametersComposite = (Composite) super.createDialogArea(scrolledComposite);
         parametersComposite.setLayout(new GridLayout());
 
-        SWTUtils.createLabel(parametersComposite, Messages.getString("ComponentParametersDialog.component"));
+        SwtUtils.createLabel(parametersComposite, Messages.getString("ComponentParametersDialog.component"));
         Composite compComposite = new Composite(parametersComposite, SWT.NONE);
         compComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         compComposite.setLayout(new GridLayout(2, false));
@@ -144,7 +144,7 @@ public class ComponentParametersDialog extends Dialog {
     private void drawParameters(Composite parametersComposite) {
         parameterEditors.clear();
         for (final ComponentParameter componentParameter : component.getType().getParameters()) {
-            SWTUtils.createLabel(parametersComposite, componentParameter.getLabel()).setToolTipText(componentParameter.getDescription());
+            SwtUtils.createLabel(parametersComposite, componentParameter.getLabel()).setToolTipText(componentParameter.getDescription());
             Object editor = componentParameter.getType().createEditor(parametersComposite, component, componentParameter,
                     component.getParameterValue(componentParameter), new PropertyChangeListener() {
 
