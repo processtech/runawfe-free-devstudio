@@ -2,7 +2,6 @@ package ru.runa.gpd.ui.wizard;
 
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,7 +23,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -47,7 +45,6 @@ import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.aspects.UserActivity;
 import ru.runa.gpd.editor.ProcessSaveHistory;
-import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.par.ProcessDefinitionValidator;
@@ -57,7 +54,6 @@ import ru.runa.gpd.sync.WfeServerProcessDefinitionImporter;
 import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.custom.StatusBarUtils;
-import ru.runa.gpd.ui.enhancement.DialogEnhancement;
 import ru.runa.gpd.ui.view.ValidationErrorsView;
 import ru.runa.gpd.util.IOUtils;
 
@@ -214,47 +210,6 @@ public class ExportParWizardPage extends ExportWizardPage {
                             return false;
                         }
                     }
-                }
-                if (DialogEnhancement.isOn()) {
-                    List<String> errors = Lists.newArrayList();
-                    List<Delegable> errorSources = Lists.newArrayList();
-                    String errorsDetails[] = { "" };
-                    Boolean docxTestResult = ProcessDefinitionValidator.checkScriptTaskParametersWithDocxTemplate(definition, errors, errorSources,
-                            errorsDetails);
-                    if (null == docxTestResult) {
-                        Dialogs.error(Localization.getString("DialogEnhancement.docxCheckError"));
-                        PluginLogger.logErrorWithoutDialog(Localization.getString("DialogEnhancement.exportCanceled"));
-                    } else if (!docxTestResult && errors.size() > 0) {
-                        ProcessDefinition mainProcessDefinition = definition.getMainProcessDefinition();
-                        if (null != mainProcessDefinition) {
-                            ProcessDefinitionValidator.logErrors(mainProcessDefinition, errors, errorSources, false);
-                        }
-
-                        if (exportToFile) {
-
-                            switch (Dialogs.confirmWithAction(Localization.getString("DialogEnhancement.parametersNotCorrespondingWithDocxQ"),
-                                    Localization.getString("Update.from.docx.template"), errorsDetails[0], true)) {
-                            case IDialogConstants.PROCEED_ID:
-                                // DialogEnhancement.updateScriptTaskFromDocxTemplate(definition);
-                                PluginLogger.logErrorWithoutDialog(Localization.getString("DialogEnhancement.exportCanceled"));
-                                return true; // close export dialog
-                            case IDialogConstants.OK_ID:
-                                break;
-                            default:
-                                PluginLogger.logErrorWithoutDialog(Localization.getString("DialogEnhancement.exportCanceled"));
-                                return true; // close export dialog
-                            }
-                        } else {
-                            if (IDialogConstants.PROCEED_ID == Dialogs.errorWithAction(
-                                    Localization.getString("DialogEnhancement.parametersNotCorrespondingWithDocx"),
-                                    Localization.getString("Update.from.docx.template"), errorsDetails[0], true)) {
-                                // DialogEnhancement.updateScriptTaskFromDocxTemplate(definition);
-                            }
-                            PluginLogger.logErrorWithoutDialog(Localization.getString("DialogEnhancement.exportCanceled"));
-                            return true; // close export dialog
-                        }
-                    }
-
                 }
                 definition.getLanguage().getSerializer().validateProcessDefinitionXML(definitionFile);
                 List<IFile> resourcesToExport = new ArrayList<IFile>();

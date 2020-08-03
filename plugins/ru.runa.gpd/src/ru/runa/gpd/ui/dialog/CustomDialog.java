@@ -15,28 +15,38 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import ru.runa.gpd.Localization;
 
-public class InfoWithDetailsDialog extends IconAndMessageDialog {
+public class CustomDialog extends IconAndMessageDialog {
+
     private final int dialogType;
-    // private final boolean showDetails;
-    private String title;
-    private String details;
-    private Text detailsText;
+    private String title = "";
+    private boolean isOkButton = true;
+    private boolean isCancelButton = false;
+    private int defaultButton = IDialogConstants.OK_ID;
 
-    public InfoWithDetailsDialog(int dialogType, String dialogTitle, String infoMessage, String details/* , boolean showDetails */) {
+    private boolean detailsMode = false;
+    private String detailsText;
+    private boolean openedByDefaultDetailsArea;
+    private Text detailsTextComponent;
+
+    private boolean actionMode = false;
+    private int actionId;
+    private String actionButtonTitle;
+
+    public CustomDialog(int dialogType, String message) {
         super(Display.getCurrent().getActiveShell());
         this.dialogType = dialogType;
-        this.title = dialogTitle;
-        this.message = infoMessage;
-        this.details = details;
-        // this.showDetails = showDetails;
+        this.message = message;
         setShellStyle(getShellStyle() | SWT.RESIZE);
     }
 
     @Override
     protected void buttonPressed(int id) {
-        if (id == IDialogConstants.DETAILS_ID) {
-            // was the details button pressed?
+        if (id == actionId) {
+            setReturnCode(IDialogConstants.PROCEED_ID);
+            close();
+        } else if (id == IDialogConstants.DETAILS_ID) {
             toggleDetailsArea();
         } else {
             super.buttonPressed(id);
@@ -46,36 +56,37 @@ public class InfoWithDetailsDialog extends IconAndMessageDialog {
     @Override
     protected void configureShell(Shell shell) {
         super.configureShell(shell);
-        shell.setText(title);
+        shell.setText(getTitle());
     }
 
     @Override
     protected Image getImage() {
         switch (dialogType) {
-        case MessageDialog.ERROR: {
+        case MessageDialog.ERROR:
             return getErrorImage();
-        }
-        case MessageDialog.INFORMATION: {
+        case MessageDialog.INFORMATION:
             return getInfoImage();
-        }
-        case MessageDialog.CONFIRM: {
+        case MessageDialog.CONFIRM:
             return getQuestionImage();
-        }
-        case MessageDialog.WARNING: {
+        case MessageDialog.WARNING:
             return getWarningImage();
-        }
         }
         return getQuestionImage();
     }
 
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
-        createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, false);
-        if (dialogType != MessageDialog.ERROR && dialogType != MessageDialog.INFORMATION) {
-            createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, true);
+        if (actionMode) {
+            createButton(parent, actionId, actionButtonTitle, actionId == defaultButton);
         }
-        if (!Strings.isNullOrEmpty(details)) {
-            createButton(parent, IDialogConstants.DETAILS_ID, IDialogConstants.SHOW_DETAILS_LABEL, false);
+        if (isOkButton) {
+            createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, IDialogConstants.OK_ID == defaultButton);
+        }
+        if (isCancelButton) {
+            createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, IDialogConstants.CANCEL_ID == defaultButton);
+        }
+        if (detailsMode && !Strings.isNullOrEmpty(detailsText)) {
+            createButton(parent, IDialogConstants.DETAILS_ID, IDialogConstants.SHOW_DETAILS_LABEL, IDialogConstants.DETAILS_ID == defaultButton);
         }
     }
 
@@ -108,18 +119,18 @@ public class InfoWithDetailsDialog extends IconAndMessageDialog {
                 new Label(dialogComposite, SWT.NULL);
             }
 
-            // if (showDetails) {
-            // toggleDetailsArea(getShell(), parent);
-            // }
+            if (openedByDefaultDetailsArea) {
+                toggleDetailsArea(getShell(), parent);
+            }
         }
     }
 
     protected void createDropDownList(Composite parent) {
-        detailsText = new Text(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.MULTI);
-        detailsText.setText(null == details ? "" : details);
+        detailsTextComponent = new Text(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.MULTI);
+        detailsTextComponent.setText(null == detailsText ? "" : detailsText);
         GridData data = new GridData(GridData.FILL_BOTH);
         data.horizontalSpan = 2;
-        detailsText.setLayoutData(data);
+        detailsTextComponent.setLayoutData(data);
     }
 
     private void toggleDetailsArea() {
@@ -130,7 +141,7 @@ public class InfoWithDetailsDialog extends IconAndMessageDialog {
         Point windowSize = shell.getSize();
         Point oldSize = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT);
         if (isDetailsAreaCreated()) {
-            detailsText.dispose();
+            detailsTextComponent.dispose();
             getButton(IDialogConstants.DETAILS_ID).setText(IDialogConstants.SHOW_DETAILS_LABEL);
         } else {
             createDropDownList(composite);
@@ -141,7 +152,54 @@ public class InfoWithDetailsDialog extends IconAndMessageDialog {
     }
 
     private boolean isDetailsAreaCreated() {
-        return (detailsText != null && !detailsText.isDisposed());
+        return (detailsTextComponent != null && !detailsTextComponent.isDisposed());
     }
 
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getTitle() {
+        if (Strings.isNullOrEmpty(title)) {
+            switch (dialogType) {
+            case MessageDialog.CONFIRM:
+                title = Localization.getString("message.confirm");
+                break;
+            case MessageDialog.ERROR:
+                title = Localization.getString("message.error");
+                break;
+            case MessageDialog.INFORMATION:
+                title = Localization.getString("message.information");
+                break;
+            case MessageDialog.WARNING:
+                title = Localization.getString("message.warning");
+                break;
+            }
+        }
+        return title;
+    }
+
+    public void setDetailArea(String detailsText, boolean openedByDefaultDetailsArea) {
+        detailsMode = true;
+        this.detailsText = detailsText;
+        this.openedByDefaultDetailsArea = openedByDefaultDetailsArea;
+    }
+
+    public void setActionMode(int actionId, String actionButtonTitle) {
+        actionMode = true;
+        this.actionId = actionId;
+        this.actionButtonTitle = actionButtonTitle;
+    }
+
+    public void setOkButton(boolean isOkButton) {
+        this.isOkButton = isOkButton;
+    }
+
+    public void setCancelButton(boolean isCancelButton) {
+        this.isCancelButton = isCancelButton;
+    }
+
+    public void setDefaultButton(int defaultButton) {
+        this.defaultButton = defaultButton;
+    }
 }

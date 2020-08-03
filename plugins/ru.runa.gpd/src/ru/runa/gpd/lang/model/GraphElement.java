@@ -7,6 +7,7 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.ListIterator;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.draw2d.geometry.Rectangle;
@@ -148,6 +149,26 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
                     errors.add(ValidationError.createLocalizedError(this, "delegable.invalidConfigurationWithError", e));
                     PluginLogger.logErrorWithoutDialog("Script configuration '" + getDelegationConfiguration() + "' error: " + e);
                 }
+
+                if (delegationClassName.equals(DocxDialogEnhancementMode.DocxHandlerID)) {
+                    Object obj = DialogEnhancement.getConfigurationValue(delegable, DocxDialogEnhancementMode.InputPathId);
+                    String embeddedDocxTemplateFileName = null != obj && obj instanceof String ? (String) obj : "";
+                    if (!Strings.isNullOrEmpty(embeddedDocxTemplateFileName) && EmbeddedFileUtils.isProcessFile(embeddedDocxTemplateFileName)) {
+                        List<String> docxErrors = Lists.newArrayList();
+                        List<Delegable> docxErrorSources = Lists.newArrayList();
+                        DialogEnhancement.checkScriptTaskParametersWithDocxTemplate(delegable,
+                                EmbeddedFileUtils.getProcessFileName(embeddedDocxTemplateFileName), docxErrors, docxErrorSources, null);
+                        if (docxErrors.size() > 0 && docxErrors.size() == docxErrorSources.size()) {
+                            ListIterator<String> iterator = docxErrors.listIterator();
+                            ListIterator<Delegable> iterator2 = docxErrorSources.listIterator();
+                            while (iterator.hasNext()) {
+                                Delegable delegable2 = iterator2.next();
+                                errors.add(ValidationError.createError(delegable2 instanceof GraphElement ? (GraphElement) delegable2 : this,
+                                        iterator.next()));
+                            }
+                        }
+                    }
+                }
             }
         }
         for (GraphElement element : children) {
@@ -158,35 +179,6 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
                 errors.add(ValidationError.createLocalizedWarning(element, "error", e));
             }
         }
-    }
-
-    public Boolean checkScriptTaskParametersWithDocxTemplate(IFile definitionFile, List<String> errors, List<Delegable> errorSources,
-            String[] errorsDetails) {
-        Boolean ok = true;
-        Boolean result = true;
-        if (null != delegationClassName && isDelegable() && delegationClassName.equals(DocxDialogEnhancementMode.DocxHandlerID)) {
-            Delegable delegable = (Delegable) this;
-            Object obj = DialogEnhancement.getConfigurationValue(delegable, DocxDialogEnhancementMode.InputPathId);
-            String embeddedDocxTemplateFileName = null != obj && obj instanceof String ? (String) obj : "";
-            if (!Strings.isNullOrEmpty(embeddedDocxTemplateFileName) && EmbeddedFileUtils.isProcessFile(embeddedDocxTemplateFileName)) {
-                ok = DialogEnhancement.checkScriptTaskParametersWithDocxTemplate(delegable,
-                        EmbeddedFileUtils.getProcessFileName(embeddedDocxTemplateFileName), errors, errorSources, errorsDetails);
-                if (null == ok) {
-                    result = null;
-                } else if (!ok && null != result) {
-                    result = false;
-                }
-            }
-        }
-        for (GraphElement element : children) {
-            ok = element.checkScriptTaskParametersWithDocxTemplate(definitionFile, errors, errorSources, errorsDetails);
-            if (null == ok) {
-                result = null;
-            } else if (!ok && null != result) {
-                result = false;
-            }
-        }
-        return result;
     }
 
     public NodeTypeDefinition getTypeDefinition() {

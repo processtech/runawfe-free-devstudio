@@ -1,6 +1,5 @@
 package ru.runa.gpd.editor;
 
-import com.google.common.collect.Lists;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashSet;
@@ -47,7 +46,6 @@ import ru.runa.gpd.editor.gef.part.graph.ElementGraphicalEditPart;
 import ru.runa.gpd.editor.graphiti.DiagramEditorPage;
 import ru.runa.gpd.extension.regulations.ui.RegulationsNotesView;
 import ru.runa.gpd.extension.regulations.ui.RegulationsSequenceView;
-import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.ProcessDefinition;
@@ -56,8 +54,6 @@ import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.lang.par.ProcessDefinitionValidator;
-import ru.runa.gpd.ui.custom.Dialogs;
-import ru.runa.gpd.ui.enhancement.DialogEnhancement;
 import ru.runa.gpd.ui.view.ValidationErrorsView;
 import ru.runa.gpd.util.EditorUtils;
 import ru.runa.gpd.util.IOUtils;
@@ -172,18 +168,6 @@ public abstract class ProcessEditorBase extends MultiPageEditorPart implements I
             }
             sourcePage = addNewPage(new TextEditor(), "DesignerEditor.title.source");
             ProcessDefinitionValidator.validateDefinition(definition);
-            if (DialogEnhancement.isOn()) {
-                List<String> errors = Lists.newArrayList();
-                List<Delegable> errorSources = Lists.newArrayList();
-                String errorsDetails[] = { "" };
-                ProcessDefinitionValidator.checkScriptTaskParametersWithDocxTemplate(definition, errors, errorSources, errorsDetails);
-                if (errors.size() > 0) {
-                    ProcessDefinition mainProcessDefinition = definition.getMainProcessDefinition();
-                    if (null != mainProcessDefinition) {
-                        ProcessDefinitionValidator.logErrors(mainProcessDefinition, errors, errorSources, false);
-                    }
-                }
-            }
         } catch (PartInitException e) {
             PluginLogger.logError(Localization.getString("DesignerEditor.error.can_not_create_graphical_viewer"), e);
             throw new RuntimeException(e);
@@ -275,7 +259,6 @@ public abstract class ProcessEditorBase extends MultiPageEditorPart implements I
             getCommandStack().markSaveLocation();
             definition.setDirty(false);
             ProcessSaveHistory.addSavepoint(definitionFile);
-            checkDocxTemplate();
         } catch (Exception e) {
             PluginLogger.logError(e);
         }
@@ -309,21 +292,6 @@ public abstract class ProcessEditorBase extends MultiPageEditorPart implements I
             IOUtils.eraseDeletedFiles(folder);
         } catch (CoreException e) {
             PluginLogger.logErrorWithoutDialog("Cleaning unused form files", e);
-        }
-    }
-
-    private void checkDocxTemplate() {
-        if (DialogEnhancement.isOn()) {
-            List<String> errors = Lists.newArrayList();
-            List<Delegable> errorSources = Lists.newArrayList();
-            String errorsDetails[] = { "" };
-            Boolean result = ProcessDefinitionValidator.checkScriptTaskParametersWithDocxTemplate(definition, errors, errorSources, errorsDetails);
-            if (null == result) {
-                Dialogs.error(Localization.getString("DialogEnhancement.docxCheckError"));
-            } else if (errors.size() > 0 && !result) {
-                ProcessDefinitionValidator.logErrors(definition, errors, errorSources, false);
-                Dialogs.information(Localization.getString("DialogEnhancement.docxCheckErrorTab"));
-            }
         }
     }
 

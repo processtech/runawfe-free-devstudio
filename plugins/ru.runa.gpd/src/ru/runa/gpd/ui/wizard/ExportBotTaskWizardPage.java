@@ -9,6 +9,7 @@ import java.util.TreeMap;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import ru.runa.gpd.BotCache;
 import ru.runa.gpd.Localization;
@@ -45,48 +46,49 @@ public class ExportBotTaskWizardPage extends ExportBotWizardPage {
 
     @Override
     protected void exportToZipFile(IResource exportResource) throws Exception {
+        exportBot(exportResource, true);
+    }
+
+    @Override
+    protected void deployToServer(IResource exportResource) throws Exception {
+        exportBot(exportResource, false);
+    }
+
+    private void exportBot(IResource exportResource, boolean toFile) throws Exception {
         String errorsDetails[] = { "" };
         Boolean docxTestResult = checkBotTaskParametersWithDocxTemplate(errorsDetails);
         if (null == docxTestResult) {
             Dialogs.error(Localization.getString("DialogEnhancement.docxCheckError"));
             PluginLogger.logErrorWithoutDialog(Localization.getString("DialogEnhancement.exportCanceled"));
         } else if (docxTestResult) {
-            getContainer().run(true, true, new BotTaskExportCommand(exportResource, new FileOutputStream(getDestinationValue())));
-            PluginLogger.logInfo(Localization.getString("DialogEnhancement.exportSuccessful"));
-        } else {
-            switch (Dialogs.confirmWithAction(Localization.getString("DialogEnhancement.parametersNotCorrespondingWithDocxQ"),
-                    Localization.getString("Update.from.docx.template"), errorsDetails[0], true)) {
-            case IDialogConstants.PROCEED_ID:
-                DialogEnhancement.updateBotTaskFromDocxTemplate(exportResource);
-                PluginLogger.logErrorWithoutDialog(Localization.getString("DialogEnhancement.exportCanceled"));
-                break;
-            case IDialogConstants.OK_ID:
+            if (toFile) {
                 getContainer().run(true, true, new BotTaskExportCommand(exportResource, new FileOutputStream(getDestinationValue())));
-                PluginLogger.logInfo(Localization.getString("DialogEnhancement.exportWithDocxErrors"));
-                break;
-            default:
-                PluginLogger.logErrorWithoutDialog(Localization.getString("DialogEnhancement.exportCanceled"));
+            } else {
+                getContainer().run(true, true, new BotTaskDeployCommand(exportResource, new ByteArrayOutputStream()));
             }
-
-        }
-    }
-
-    @Override
-    protected void deployToServer(IResource exportResource) throws Exception {
-        String errorsDetails[] = { "" };
-        Boolean docxTestResult = checkBotTaskParametersWithDocxTemplate(errorsDetails);
-        if (null == docxTestResult) {
-            Dialogs.error(Localization.getString("DialogEnhancement.docxCheckError"));
-            PluginLogger.logErrorWithoutDialog(Localization.getString("DialogEnhancement.exportCanceled"));
-        } else if (!docxTestResult) {
-            if (IDialogConstants.PROCEED_ID == Dialogs.errorWithAction(Localization.getString("DialogEnhancement.parametersNotCorrespondingWithDocx"),
-                    Localization.getString("Update.from.docx.template"), errorsDetails[0], true)) {
-                DialogEnhancement.updateBotTaskFromDocxTemplate(exportResource);
-            }
-            PluginLogger.logErrorWithoutDialog(Localization.getString("DialogEnhancement.exportCanceled"));
-        } else {
-            getContainer().run(true, true, new BotTaskDeployCommand(exportResource, new ByteArrayOutputStream()));
             PluginLogger.logInfo(Localization.getString("DialogEnhancement.exportSuccessful"));
+        } else if (IDialogConstants.PROCEED_ID == Dialogs
+                .create(MessageDialog.CONFIRM, Localization.getString("DialogEnhancement.parametersNotCorrespondingWithDocxQ"))
+                .withOpenedDetailsArea(errorsDetails[0]).withCancelButton().withoutOkButton().withDefaultButton(IDialogConstants.PROCEED_ID)
+                .withActionButton(IDialogConstants.PROCEED_ID, Localization.getString("Update.from.docx.template")).andExecute()) {
+            Boolean changed = DialogEnhancement.updateBotTaskFromDocxTemplate(exportResource, true);
+            if (toFile) {
+                getContainer().run(true, true, new BotTaskExportCommand(exportResource, new FileOutputStream(getDestinationValue())));
+                if (null == changed) {
+                    PluginLogger.logErrorWithoutDialog(Localization.getString("DialogEnhancement.exportWithDocxErrors"));
+                    return;
+                }
+            } else {
+                if (null == changed) {
+                    PluginLogger.logErrorWithoutDialog(Localization.getString("DialogEnhancement.exportCanceled"));
+                    return;
+                } else {
+                    getContainer().run(true, true, new BotTaskDeployCommand(exportResource, new ByteArrayOutputStream()));
+                }
+            }
+            PluginLogger.logInfo(Localization.getString("DialogEnhancement.exportSuccessful"));
+        } else {
+            PluginLogger.logErrorWithoutDialog(Localization.getString("DialogEnhancement.exportCanceled"));
         }
     }
 

@@ -90,7 +90,7 @@ public class CopyGraphCommand extends Command {
         try {
             if (!copyBuffer.getLanguage().equals(targetDefinition.getLanguage())) {
                 (new InfoWithDetailsDialog(MessageDialog.WARNING, Localization.getString("message.warning"),
-                        Localization.getString("CopyBuffer.DifferentVersion.warning"), null, false) {
+                        Localization.getString("CopyBuffer.DifferentVersion.warning"), null) {
                     @Override
                     protected void createButtonsForButtonBar(Composite parent) {
                         createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, false);

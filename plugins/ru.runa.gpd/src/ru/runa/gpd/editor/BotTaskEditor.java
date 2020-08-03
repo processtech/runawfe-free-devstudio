@@ -134,16 +134,22 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
 
     @Override
     public void doSave(IProgressMonitor monitor) {
+        verySave(true);
+    }
+
+    public boolean verySave(boolean showCheckErrorMessage) {
         try {
             WorkspaceOperations.saveBotTask(botTaskFile, botTask);
             setTitleImage(SharedImages.getImage(botTask.getType() == BotTaskType.SIMPLE ? "icons/bot_task.gif" : "icons/bot_task_formal.gif"));
             setDirty(false);
             if (isBotDocxHandlerEnhancement()) {
-                checkDocxTemplate();
+                return checkDocxTemplate(showCheckErrorMessage);
             }
+            return true;
         } catch (Exception e) {
             PluginLogger.logError(e);
         }
+        return false;
     }
 
     @Override
@@ -248,18 +254,25 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
         rebuildingView = false;
     }
 
-    private void checkDocxTemplate() {
+    private boolean checkDocxTemplate(boolean showCheckErrorMessage) {
         Object obj = DialogEnhancement.getConfigurationValue(botTask, DocxDialogEnhancementMode.InputPathId);
         String embeddedDocxTemplateFileName = null != obj && obj instanceof String ? (String) obj : "";
         List<String> errors = Lists.newArrayList();
         String errorsDetails[] = null;
         Boolean result = DialogEnhancement.checkBotTaskParametersWithDocxTemplate(botTask, embeddedDocxTemplateFileName, errors, errorsDetails);
         if (null == result) {
-            Dialogs.error(Localization.getString("DialogEnhancement.docxCheckError"));
+            if (showCheckErrorMessage) {
+                Dialogs.error(Localization.getString("DialogEnhancement.docxCheckError"));
+            }
+            return false;
         } else if (errors.size() > 0 && !result) {
             botTask.logErrors(errors);
-            Dialogs.information(Localization.getString("DialogEnhancement.docxCheckErrorTab"));
+            if (showCheckErrorMessage) {
+                Dialogs.information(Localization.getString("DialogEnhancement.docxCheckErrorTab"));
+            }
+            return false;
         }
+        return true;
     }
 
     private Timer timer;
@@ -359,7 +372,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
                                             setDirty(true);
                                         }
                                     } catch (IOException | CoreException e) {
-                                        e.printStackTrace();
+                                        PluginLogger.logErrorWithoutDialog(e.getMessage(), e.getCause());
                                     }
                                 } else if (DialogEnhancementMode.check(flags, DialogEnhancementMode.DOCX_INPUT_VARIABLE_MODE)) {
                                     if (DialogEnhancementMode.check(flags, DialogEnhancementMode.DOCX_CREATE_VARIABLE)) {
@@ -481,7 +494,10 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
     }
 
     private void updateFromTemplate() throws IOException, CoreException {
-        if (DialogEnhancement.updateBotTaskFromTemplate(botTask, embeddedFileName)) {
+        Boolean changed = DialogEnhancement.updateBotTaskFromTemplate(botTask, embeddedFileName);
+        if (null == changed) {
+            Dialogs.showErrorMessage(Localization.getString("DialogEnhancement.docxCheckError"));
+        } else if (changed) {
             setDirty(true);
             setTableInput(ParamDefGroup.NAME_INPUT);
             docxDialogEnhancementModeOutput.invokeObserver(DialogEnhancementMode.DOCX_OUTPUT_VARIABLE_MODE);

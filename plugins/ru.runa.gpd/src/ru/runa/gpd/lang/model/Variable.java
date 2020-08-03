@@ -1,7 +1,7 @@
 package ru.runa.gpd.lang.model;
 
-import com.google.common.base.Objects;
-import com.google.common.base.Objects.ToStringHelper;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.MoreObjects.ToStringHelper;
 import java.util.List;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
@@ -210,7 +210,7 @@ public class Variable extends NamedGraphElement implements Describable {
 
     @Override
     public String toString() {
-        ToStringHelper helper = Objects.toStringHelper(getClass()).add("name", getName());
+        ToStringHelper helper = MoreObjects.toStringHelper(getClass()).add("name", getName());
         if (isComplex()) {
             helper.add("type", userType);
         } else {

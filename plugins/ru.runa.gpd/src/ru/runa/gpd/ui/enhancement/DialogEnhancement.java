@@ -1,7 +1,6 @@
 package ru.runa.gpd.ui.enhancement;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -53,25 +52,11 @@ public class DialogEnhancement {
         DelegableProvider provider = HandlerRegistry.getProvider(delegable.getDelegationClassName());
         String newConfig = provider.showConfigurationDialog(delegable,
                 DocxDialogEnhancementMode.isScriptDocxHandlerEnhancement(delegable) ? new DocxDialogEnhancementMode(true, 0) {
-                    private String templateFilePath;
-
                     @Override
                     public void invoke(long flags) {
                         if (DialogEnhancementMode.check(flags, DialogEnhancementMode.DOCX_RELOAD_FROM_TEMPLATE)) {
-                            List<String> errors = Lists.newArrayList();
-                            List<Delegable> errorSources = Lists.newArrayList();
-                            DialogEnhancement.checkScriptTaskParametersWithDocxTemplate(delegable, templateFilePath, errors, errorSources, null);
-
-                            if (delegable instanceof GraphElement && errors.size() > 0) {
-                                ProcessDefinition processDefinition = ((GraphElement) delegable).getProcessDefinition();
-                                ProcessDefinition mainProcessDefinition = null != processDefinition ? processDefinition.getMainProcessDefinition()
-                                        : null;
-                                if (null != mainProcessDefinition) {
-                                    ProcessDefinitionValidator.logErrors(mainProcessDefinition, errors, errorSources, true);
-                                }
-                            }
-                        } else if (DialogEnhancementMode.check(flags, DialogEnhancementMode.DOCX_SET_PROCESS_FILEPATH)) {
-                            templateFilePath = this.defaultFileName;
+                            ProcessDefinition processDefinition = ((GraphElement) delegable).getProcessDefinition();
+                            ProcessDefinitionValidator.validateDefinition(processDefinition);
                         }
                     }
                 } : null);
@@ -82,89 +67,8 @@ public class DialogEnhancement {
         return message + " (" + Localization.getString("DialogEnhancement.scriptTask") + " \"" + delegable.toString() + "\")";
     }
 
-    // public static boolean updateScriptTaskFromDocxTemplate(Delegable delegable) {
-    //
-    // ProcessDefinition processDefinition = delegable instanceof GraphElement ? ((GraphElement) delegable).getProcessDefinition() : null;
-    //
-    // if (null != definition && 0 == definition.getDelegationClassName().compareTo(DocxDialogEnhancementMode.DocxHandlerID)) {
-    // Object obj = DialogEnhancement.getConfigurationValue(definition, DocxDialogEnhancementMode.InputPathId);
-    // String embeddedDocxTemplateFileName = null != obj && obj instanceof String ? (String) obj : "";
-    // if (!Strings.isNullOrEmpty(embeddedDocxTemplateFileName)) {
-    //
-    // }
-    // IFile file = null;
-    // try {
-    // file = Strings.isNullOrEmpty(embeddedDocxTemplateFileName) || null == processDefinition ? null
-    // : EmbeddedFileUtils.getProcessFile(processDefinition, embeddedDocxTemplateFileName);
-    // } catch (Throwable exception) {
-    // exception.printStackTrace();
-    // }
-    //
-    // if (null == file || !file.exists()) {
-    // String error = Localization.getString("DialogEnhancement.cantGetFile",
-    // null == embeddedDocxTemplateFileName ? "NULL" : embeddedDocxTemplateFileName);
-    //
-    // if (null != errorsDetails && errorsDetails.length > 0) {
-    // if (!errorsDetails[0].isEmpty()) {
-    // errorsDetails[0] += "\n";
-    // }
-    // errorsDetails[0] += wrapToScriptName(delegable, error);
-    // }
-    // if (null != errors) {
-    // errors.add(error);
-    // }
-    // if (null != errorSources) {
-    // errorSources.add(delegable);
-    // }
-    //
-    // return false;
-    // }
-    //
-    // try (InputStream inputStream = file.getContents()) {
-    // if (null == inputStream) {
-    // PluginLogger.logInfo(wrapToScriptName(delegable, Localization.getString("DialogEnhancement.cantGetInputStream")));
-    // return null;
-    // }
-    // Map<String, Integer> variablesMap = getVariableNamesFromDocxTemplate(inputStream);
-    // List<String> usedVariableList = delegable.getVariableNames(false);
-    // boolean ok = true;
-    // for (Map.Entry<String, Integer> entry : variablesMap.entrySet()) {
-    // String variable = entry.getKey();
-    // ListIterator<String> iterator = usedVariableList.listIterator();
-    // boolean exists = false;
-    // while (iterator.hasNext()) {
-    // if (iterator.next().compareTo(variable) == 0) {
-    // exists = true;
-    // break;
-    // }
-    // }
-    // if (!exists) {
-    // String error = Localization.getString("DialogEnhancement.noParameterForDocx", variable);
-    // if (null != errorsDetails && errorsDetails.length > 0) {
-    // if (!errorsDetails[0].isEmpty()) {
-    // errorsDetails[0] += "\n";
-    // }
-    // errorsDetails[0] += wrapToScriptName(delegable, error);
-    // }
-    // if (null != errors) {
-    // errors.add(error);
-    // }
-    // if (null != errorSources) {
-    // errorSources.add(delegable);
-    // }
-    // ok = false;
-    // }
-    // }
-    // return ok;
-    // } catch (Throwable exception) {
-    // exception.printStackTrace();
-    // PluginLogger.logErrorWithoutDialog("Exception occured, see the stack trace!", exception);
-    // return null;
-    // }
-    // }
-
-    public static boolean updateBotFromDocxTemplate(IResource exportResource) throws Exception {
-        boolean result = false;
+    public static Boolean updateBotFromDocxTemplate(IResource exportResource, boolean saveBotTaskEditor) throws Exception {
+        Boolean changedResult = false;
         if (null != exportResource && exportResource instanceof IFolder) {
             IFolder processDefinitionFolder = (IFolder) exportResource;
             List<BotTask> botTaskList = BotCache.getBotTasks(processDefinitionFolder.getName());
@@ -175,15 +79,21 @@ public class DialogEnhancement {
                     continue;
                 }
                 IFile botTaskFile = BotCache.getBotTaskFile(botTask);
-                if (null != botTaskFile && DialogEnhancement.updateBotTaskFromDocxTemplate(botTaskFile)) {
-                    result = true;
+                if (null != botTaskFile) {
+                    Boolean changed = DialogEnhancement.updateBotTaskFromDocxTemplate(botTaskFile, saveBotTaskEditor);
+                    if (null == changed) {
+                        changedResult = null;
+                    } else if (changed && null != changedResult) {
+                        changedResult = true;
+                    }
                 }
             }
         }
-        return result;
+        return changedResult;
     }
 
-    public static boolean updateBotTaskFromDocxTemplate(IResource exportResource) throws Exception {
+    public static Boolean updateBotTaskFromDocxTemplate(IResource exportResource, boolean saveBotTaskEditor) throws Exception {
+        Boolean changedResult = false;
         IFile botTaskFile = (IFile) exportResource;
         BotTask botTask = null != botTaskFile ? BotCache.getBotTaskNotNull(botTaskFile) : null;
         if (null != botTask && 0 == botTask.getDelegationClassName().compareTo(DocxDialogEnhancementMode.DocxHandlerID)) {
@@ -191,19 +101,29 @@ public class DialogEnhancement {
             String embeddedDocxTemplateFileName = null != obj && obj instanceof String ? (String) obj : "";
             if (!Strings.isNullOrEmpty(embeddedDocxTemplateFileName)) {
 
-                if (DialogEnhancement.updateBotTaskFromTemplate(botTask, embeddedDocxTemplateFileName)) {
+                Boolean changed = DialogEnhancement.updateBotTaskFromTemplate(botTask, embeddedDocxTemplateFileName);
+                if (null == changed) {
+                    changedResult = null;
+                } else if (changed) {
                     IEditorPart editorPart = IDE.openEditor(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(), botTaskFile,
                             BotTaskEditor.ID, true);
                     if (null != editorPart && editorPart instanceof BotTaskEditor) {
                         BotTaskEditor botTaskEditor = (BotTaskEditor) editorPart;
                         botTaskEditor.setDirty(true);
                         botTaskEditor.setTableInput(ParamDefGroup.NAME_INPUT);
-                        return true;
+                        if (saveBotTaskEditor) {
+                            if (!botTaskEditor.verySave(false)) {
+                                changedResult = null;
+                            }
+                        }
+                        if (null != changedResult) {
+                            changedResult = true;
+                        }
                     }
                 }
             }
         }
-        return false;
+        return changedResult;
     }
 
     // use EmbeddedFileUtils.getProcessFileName(embeddedDocxTemplateFileName) before call that function !!!
@@ -211,15 +131,8 @@ public class DialogEnhancement {
             List<Delegable> errorSources, String[] errorsDetails) {
 
         ProcessDefinition processDefinition = delegable instanceof GraphElement ? ((GraphElement) delegable).getProcessDefinition() : null;
-
-        IFile file = null;
-        try {
-            file = Strings.isNullOrEmpty(embeddedDocxTemplateFileName) || null == processDefinition ? null
-                    : EmbeddedFileUtils.getProcessFile(processDefinition, embeddedDocxTemplateFileName);
-        } catch (Throwable exception) {
-            exception.printStackTrace();
-        }
-
+        IFile file = Strings.isNullOrEmpty(embeddedDocxTemplateFileName) || null == processDefinition ? null
+                : EmbeddedFileUtils.getProcessFile(processDefinition, embeddedDocxTemplateFileName);
         if (null == file || !file.exists()) {
             String error = Localization.getString("DialogEnhancement.cantGetFile",
                     null == embeddedDocxTemplateFileName ? "NULL" : embeddedDocxTemplateFileName);
@@ -287,21 +200,21 @@ public class DialogEnhancement {
         return message + " (" + Localization.getString("DialogEnhancement.botTask") + " \"" + botTask.getName() + "\")";
     }
 
-    public static boolean updateBotTaskFromTemplate(BotTask botTask, String embeddedFileName) throws IOException, CoreException {
+    public static Boolean updateBotTaskFromTemplate(BotTask botTask, String embeddedFileName) throws IOException, CoreException {
         boolean changed = false;
         if (embeddedFileName == null || embeddedFileName.isEmpty() || !EmbeddedFileUtils.isBotTaskFile(embeddedFileName)) {
             PluginLogger.logInfo(Localization.getString("DialogEnhancement.badEmbeddedDocxFile"));
-            return false;
+            return null;
         }
         IFile file = EmbeddedFileUtils.getProcessFile(botTask, EmbeddedFileUtils.getBotTaskFileName(embeddedFileName));
         if (null == file || !file.exists()) {
             PluginLogger.logInfo(Localization.getString("DialogEnhancement.cantGetFile", EmbeddedFileUtils.getBotTaskFileName(embeddedFileName)));
-            return false;
+            return null;
         }
         try (InputStream inputStream = file.getContents()) {
             if (null == inputStream) {
                 PluginLogger.logInfo(Localization.getString("DialogEnhancement.cantGetInputStream"));
-                return false;
+                return null;
             }
             Map<String, Integer> variablesMap = DialogEnhancement.getVariableNamesFromDocxTemplate(inputStream);
             for (ParamDefGroup group : botTask.getParamDefConfig().getGroups()) {
@@ -355,13 +268,7 @@ public class DialogEnhancement {
             return true;
         }
 
-        IFile file = null;
-
-        try {
-            file = EmbeddedFileUtils.getProcessFile(botTask, EmbeddedFileUtils.getBotTaskFileName(embeddedDocxTemplateFileName));
-        } catch (Throwable exception) {
-            exception.printStackTrace();
-        }
+        IFile file = EmbeddedFileUtils.getProcessFile(botTask, EmbeddedFileUtils.getBotTaskFileName(embeddedDocxTemplateFileName));
 
         if (null == file || !file.exists()) {
             String error = Localization.getString("DialogEnhancement.cantGetFile",
@@ -428,6 +335,7 @@ public class DialogEnhancement {
     }
 
     public static Map<String, Integer> getVariableNamesFromDocxTemplate(InputStream templateInputStream) {
+
         Map<String, Integer> variablesMap = new HashMap<String, Integer>();
         try (XWPFDocument document = new XWPFDocument(templateInputStream)) {
             for (XWPFHeader header : document.getHeaderList()) {
@@ -441,6 +349,8 @@ public class DialogEnhancement {
             th.printStackTrace();
         }
         return variablesMap;
+
+        // return DocxVariableParser.getVariableNamesFromDocxTemplate(templateInputStream);
     }
 
     private static boolean dialogEnhancementMode = true;
