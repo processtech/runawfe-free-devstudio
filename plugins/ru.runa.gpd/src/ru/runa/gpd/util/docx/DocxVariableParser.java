@@ -16,12 +16,13 @@ import org.apache.poi.xwpf.usermodel.XWPFTableCell;
 import org.apache.poi.xwpf.usermodel.XWPFTableRow;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTcPr;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.STMerge;
+import ru.runa.gpd.ui.enhancement.DocxDialogEnhancementMode;
 
 public class DocxVariableParser {
 
     public static Map<String, Integer> getVariableNamesFromDocxTemplate(InputStream templateInputStream) {
         Map<String, Integer> variablesMap = new HashMap<String, Integer>();
-        VariableProvider variableProvider = new VariableProvider();
+        VariableProvider variableProvider = new VariableProvider(variablesMap);
         DocxConfig config = new DocxConfig();
 
         try (XWPFDocument document = new XWPFDocument(templateInputStream)) {
@@ -56,6 +57,7 @@ public class DocxVariableParser {
                     List<XWPFTableCell> cells = row.getTableCells();
                     // try to expand cells by column
                     TableExpansionOperation tableExpansionOperation = new TableExpansionOperation(row);
+                    boolean wasCycle = false;
                     for (int columnIndex = 0; columnIndex < cells.size(); columnIndex++) {
                         final XWPFTableCell cell = cells.get(columnIndex);
                         ColumnExpansionOperation operation = DocxUtils.parseIterationOperation(config, variableProvider, cell.getText(),
@@ -68,13 +70,18 @@ public class DocxVariableParser {
                             tableExpansionOperation.addOperation(columnIndex, operation);
                         }
                         String text0 = tableExpansionOperation.getStringValue(config, variableProvider, columnIndex, 0);
-                        if (!java.util.Objects.equals(text0, cell.getText())) {
-                            DocxUtils.setCellText(cell, text0);
+                        // modify original algorithm
+                        if (text0.compareTo(DocxDialogEnhancementMode.DETECT_STRING_CONST) == 0) {
+                            // if (!java.util.Objects.equals(text0, cell.getText())) {
+                            // DocxUtils.setCellText(cell, text0);
+                            wasCycle = true;
                         }
                     }
                     if (tableExpansionOperation.getRows() == 0) {
-                        for (XWPFTableCell cell : cells) {
-                            DocxUtils.replaceInParagraphs(config, variableProvider, paragraphs);
+                        if (!wasCycle) {
+                            for (XWPFTableCell cell : cells) {
+                                DocxUtils.replaceInParagraphs(config, variableProvider, cell.getParagraphs());
+                            }
                         }
                     } else {
                         int templateRowIndex = table.getRows().indexOf(tableExpansionOperation.getTemplateRow());

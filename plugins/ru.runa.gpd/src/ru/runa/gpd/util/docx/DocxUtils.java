@@ -326,7 +326,7 @@ public class DocxUtils {
         }
     }
 
-    static <T extends AbstractIteratorOperation> T parseIterationOperation(DocxConfig config, IVariableProvider variableProvider, String string,
+    static <T extends AbstractIteratorOperation> T parseIterationOperation(DocxConfig config, VariableProvider variableProvider, String string,
             T operation) {
         if (Strings.isNullOrEmpty(string)) {
             return null;
@@ -369,7 +369,7 @@ public class DocxUtils {
             if (operation.getContainerVariableName().startsWith(GROOVY)) {
                 operation.setContainerValue(executeGroovy(variableProvider, operation.getContainerVariableName()));
             } else {
-                WfVariable variable = variableProvider.getVariable(operation.getContainerVariableName());
+                WfVariable variable = variableProvider.getVariable(operation.getContainerVariableName(), true);
                 if (variable != null) {
                     operation.setContainerVariable(variable);
                 } else {

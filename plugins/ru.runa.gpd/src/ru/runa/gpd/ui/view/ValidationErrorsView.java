@@ -31,6 +31,7 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.ViewPart;
+import ru.runa.gpd.BotCache;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.PluginLogger;
@@ -99,10 +100,9 @@ public class ValidationErrorsView extends ViewPart implements ISelectionChangedL
         try {
             IFile definitionFile = (IFile) marker.getResource();
             ProcessEditorBase editor = null;
-            try {
+            if (null == BotCache.getBotTask(definitionFile)) {
                 editor = WorkspaceOperations.openProcessDefinition(definitionFile);
-            } catch (Throwable th) {
-                // just for BotTasks
+            } else {
                 IDE.openEditor(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(), definitionFile, BotTaskEditor.ID, true);
                 return;
             }

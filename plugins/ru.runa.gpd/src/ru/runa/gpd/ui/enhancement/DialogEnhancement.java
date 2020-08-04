@@ -3,13 +3,9 @@ package ru.runa.gpd.ui.enhancement;
 import com.google.common.base.Strings;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import org.apache.poi.xwpf.usermodel.XWPFDocument;
-import org.apache.poi.xwpf.usermodel.XWPFFooter;
-import org.apache.poi.xwpf.usermodel.XWPFHeader;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
@@ -31,6 +27,7 @@ import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.par.ProcessDefinitionValidator;
 import ru.runa.gpd.util.EmbeddedFileUtils;
+import ru.runa.gpd.util.docx.DocxVariableParser;
 
 public class DialogEnhancement {
 
@@ -43,7 +40,7 @@ public class DialogEnhancement {
         try {
             obj = HandlerRegistry.getProvider(delegable.getDelegationClassName()).getConfigurationValue(delegable, valueId);
         } catch (Throwable e) {
-            e.printStackTrace();
+            PluginLogger.logErrorWithoutDialog(e.getMessage());
         }
         return obj;
     }
@@ -190,8 +187,7 @@ public class DialogEnhancement {
             }
             return ok;
         } catch (Throwable exception) {
-            exception.printStackTrace();
-            PluginLogger.logErrorWithoutDialog("Exception occured, see the stack trace!", exception);
+            PluginLogger.logErrorWithoutDialog(exception.getMessage(), exception);
             return null;
         }
     }
@@ -328,29 +324,13 @@ public class DialogEnhancement {
 
             return ok;
         } catch (Throwable exception) {
-            exception.printStackTrace();
             PluginLogger.logErrorWithoutDialog("Exception occured, see the stack trace!", exception);
             return null;
         }
     }
 
     public static Map<String, Integer> getVariableNamesFromDocxTemplate(InputStream templateInputStream) {
-
-        Map<String, Integer> variablesMap = new HashMap<String, Integer>();
-        try (XWPFDocument document = new XWPFDocument(templateInputStream)) {
-            for (XWPFHeader header : document.getHeaderList()) {
-                DocxDialogEnhancementMode.getVariableNamesFromDocxBodyElements(header.getBodyElements(), variablesMap);
-            }
-            DocxDialogEnhancementMode.getVariableNamesFromDocxBodyElements(document.getBodyElements(), variablesMap);
-            for (XWPFFooter footer : document.getFooterList()) {
-                DocxDialogEnhancementMode.getVariableNamesFromDocxBodyElements(footer.getBodyElements(), variablesMap);
-            }
-        } catch (Throwable th) {
-            th.printStackTrace();
-        }
-        return variablesMap;
-
-        // return DocxVariableParser.getVariableNamesFromDocxTemplate(templateInputStream);
+        return DocxVariableParser.getVariableNamesFromDocxTemplate(templateInputStream);
     }
 
     private static boolean dialogEnhancementMode = true;

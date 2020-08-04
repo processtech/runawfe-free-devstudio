@@ -1,5 +1,8 @@
 package ru.runa.gpd.util.docx;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import ru.runa.wfe.lang.ProcessDefinition;
 import ru.runa.wfe.var.IVariableProvider;
 import ru.runa.wfe.var.UserType;
@@ -7,6 +10,13 @@ import ru.runa.wfe.var.VariableDoesNotExistException;
 import ru.runa.wfe.var.dto.WfVariable;
 
 public class VariableProvider implements IVariableProvider {
+
+    private Map<String, Integer> variablesMap;
+    private Map<String, Integer> excludeVariablesMap = new HashMap<String, Integer>();
+
+    VariableProvider(Map<String, Integer> variablesMap) {
+        this.variablesMap = variablesMap;
+    }
 
     @Override
     public ProcessDefinition getProcessDefinition() {
@@ -41,7 +51,7 @@ public class VariableProvider implements IVariableProvider {
     @Override
     public Object getValue(String arg0) {
         // TODO Auto-generated method stub
-        return null;
+        return "";
     }
 
     @Override
@@ -63,9 +73,22 @@ public class VariableProvider implements IVariableProvider {
     }
 
     @Override
-    public WfVariable getVariable(String arg0) {
-        // TODO Auto-generated method stub
+    public WfVariable getVariable(String variableName) {
+        int dotIndex = variableName.indexOf(UserType.DELIM);
+        if (dotIndex != -1) {
+            variableName = variableName.substring(0, dotIndex);
+        }
+        variablesMap.put(variableName, 1);
         return null;
+    }
+
+    public WfVariable getVariable(String variableName, boolean notNull) {
+        int dotIndex = variableName.indexOf(UserType.DELIM);
+        if (dotIndex != -1) {
+            variableName = variableName.substring(0, dotIndex);
+        }
+        variablesMap.put(variableName, 1);
+        return notNull ? new WfVariable(variableName, new ArrayList()) : null;
     }
 
     @Override

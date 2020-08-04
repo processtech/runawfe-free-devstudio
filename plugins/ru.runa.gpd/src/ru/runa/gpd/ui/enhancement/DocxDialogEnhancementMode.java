@@ -1,15 +1,6 @@
 package ru.runa.gpd.ui.enhancement;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import org.apache.poi.xwpf.usermodel.IBodyElement;
-import org.apache.poi.xwpf.usermodel.XWPFParagraph;
-import org.apache.poi.xwpf.usermodel.XWPFTable;
-import org.apache.poi.xwpf.usermodel.XWPFTableCell;
-import org.apache.poi.xwpf.usermodel.XWPFTableRow;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.model.Delegable;
 
@@ -51,6 +42,7 @@ public class DocxDialogEnhancementMode extends DialogEnhancementMode {
     public final static String FILE_VARIABLE_FORMAT = "ru.runa.wfe.var.file.FileVariable";
     public static final String DocxHandlerID = "ru.runa.wfe.office.doc.DocxHandler";
     public static final String InputPathId = "inputPath";
+    public static final String DETECT_STRING_CONST = "@_detect_^^^_cycle_@";
 
     public static String getInputFileParamName() {
         return Localization.getString("MSWordConfig.label.template");
@@ -63,64 +55,5 @@ public class DocxDialogEnhancementMode extends DialogEnhancementMode {
     public static boolean isScriptDocxHandlerEnhancement(Delegable delegable) {
         return DialogEnhancement.isOn() && null != delegable && !Strings.isNullOrEmpty(delegable.getDelegationClassName())
                 && 0 == delegable.getDelegationClassName().compareTo(DocxDialogEnhancementMode.DocxHandlerID);
-    }
-
-    static void getVariableNamesFromDocxBodyElements(List<IBodyElement> bodyElements, Map<String, Integer> variablesMap) {
-        List<XWPFParagraph> paragraphs = Lists.newArrayList();
-        for (IBodyElement bodyElement : new ArrayList<IBodyElement>(bodyElements)) {
-            if (bodyElement instanceof XWPFParagraph) {
-                paragraphs.add((XWPFParagraph) bodyElement);
-                continue;
-            }
-            if (!paragraphs.isEmpty()) {
-                getVariableNamesFromDocxParagraphs(paragraphs, variablesMap);
-                paragraphs.clear();
-            }
-
-            if (bodyElement instanceof XWPFTable) {
-                XWPFTable table = (XWPFTable) bodyElement;
-                List<XWPFTableRow> rows = table.getRows();
-                for (XWPFTableRow row : Lists.newArrayList(rows)) {
-                    List<XWPFTableCell> cells = row.getTableCells();
-                    for (XWPFTableCell cell : cells) {
-                        getVariableNamesFromDocxParagraphs(cell.getParagraphs(), variablesMap);
-                    }
-                }
-            }
-
-        }
-        if (!paragraphs.isEmpty()) {
-            getVariableNamesFromDocxParagraphs(paragraphs, variablesMap);
-            paragraphs.clear();
-        }
-
-    }
-
-    private static void getVariableNamesFromDocxParagraphs(List<XWPFParagraph> paragraphs, Map<String, Integer> variablesMap) {
-        for (XWPFParagraph paragraph : Lists.newArrayList(paragraphs)) {
-            String paragraphText = paragraph.getText();
-            while (true) {
-                if (!paragraphText.contains(DocxDialogEnhancementMode.PLACEHOLDER_START)) {
-                    break;
-                }
-                paragraphText = paragraphText.substring(
-                        paragraphText.indexOf(DocxDialogEnhancementMode.PLACEHOLDER_START) + DocxDialogEnhancementMode.PLACEHOLDER_START.length());
-                if (!paragraphText.contains(DocxDialogEnhancementMode.PLACEHOLDER_END)) {
-                    break;
-                }
-                String var = paragraphText.substring(0, paragraphText.indexOf(DocxDialogEnhancementMode.PLACEHOLDER_END));
-
-                if (var.startsWith("items:")) {
-                    var = var.substring(6);
-                }
-
-                if (!variablesMap.containsKey(var)) {
-                    variablesMap.put(var, 1);
-                }
-
-                paragraphText = paragraphText.substring(
-                        paragraphText.indexOf(DocxDialogEnhancementMode.PLACEHOLDER_END) + DocxDialogEnhancementMode.PLACEHOLDER_END.length());
-            }
-        }
     }
 }
