@@ -3,6 +3,8 @@ package ru.runa.gpd.ui.custom;
 import java.io.File;
 import java.io.InputStream;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -45,7 +47,7 @@ public abstract class ProcessFileComposite extends Composite {
             control.dispose();
         }
 
-        if (/* !forceFileExists && */ (null == file || !file.exists())) {
+        if (null == file || !file.exists()) {
             if (hasTemplate()) {
                 SwtUtils.createLink(this, Localization.getString("button.create"), new LoggingHyperlinkAdapter() {
 
@@ -112,6 +114,10 @@ public abstract class ProcessFileComposite extends Composite {
 
                     @Override
                     protected void onLinkActivated(HyperlinkEvent e) throws Exception {
+                        if (IDialogConstants.OK_ID != Dialogs.create(MessageDialog.CONFIRM, Localization.getString("confirm.delete"))
+                                .withCancelButton().andExecute()) {
+                            return;
+                        }
                         EmbeddedFileUtils.deleteProcessFile(getFile());
                         if (null != dialogEnhancementMode && dialogEnhancementMode.checkBotDocxTemplateEnhancementMode()) {
                             dialogEnhancementMode.invoke(DialogEnhancementMode.DOCX_MAKE_DIRTY);

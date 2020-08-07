@@ -265,12 +265,12 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
                 Dialogs.error(Localization.getString("DialogEnhancement.docxCheckError"));
             }
             return false;
-        } else if (errors.size() > 0 && !result) {
+        } else {
             botTask.logErrors(errors);
-            if (showCheckErrorMessage) {
+            if (errors.size() > 0 && !result && showCheckErrorMessage) {
                 Dialogs.information(Localization.getString("DialogEnhancement.docxCheckErrorTab"));
+                return false;
             }
-            return false;
         }
         return true;
     }
@@ -502,6 +502,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
             setTableInput(ParamDefGroup.NAME_INPUT);
             docxDialogEnhancementModeOutput.invokeObserver(DialogEnhancementMode.DOCX_OUTPUT_VARIABLE_MODE);
         }
+        checkDocxTemplate(true);
     }
 
     private void reloadDialogXmlFromModel(String newConfiguration, String embeddedFileName, Boolean enableReadDocxButton, Boolean enableDocxMode) {

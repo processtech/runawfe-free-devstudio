@@ -31,7 +31,7 @@ public class CustomDialog extends IconAndMessageDialog {
     private Text detailsTextComponent;
 
     private boolean actionMode = false;
-    private int actionId;
+    private int actionId = Integer.MAX_VALUE;
     private String actionButtonTitle;
 
     public CustomDialog(int dialogType, String message) {
@@ -120,7 +120,7 @@ public class CustomDialog extends IconAndMessageDialog {
             }
 
             if (openedByDefaultDetailsArea) {
-                toggleDetailsArea(getShell(), parent);
+                toggleDetailsArea(getShell(), parent, true);
             }
         }
     }
@@ -134,10 +134,10 @@ public class CustomDialog extends IconAndMessageDialog {
     }
 
     private void toggleDetailsArea() {
-        toggleDetailsArea(getShell(), (Composite) getContents());
+        toggleDetailsArea(getShell(), (Composite) getContents(), false);
     }
 
-    private void toggleDetailsArea(Shell shell, Composite composite) {
+    private void toggleDetailsArea(Shell shell, Composite composite, boolean creating) {
         Point windowSize = shell.getSize();
         Point oldSize = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT);
         if (isDetailsAreaCreated()) {
@@ -148,7 +148,9 @@ public class CustomDialog extends IconAndMessageDialog {
             getButton(IDialogConstants.DETAILS_ID).setText(IDialogConstants.HIDE_DETAILS_LABEL);
         }
         Point newSize = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-        shell.setSize(new Point(windowSize.x, windowSize.y + (newSize.y - oldSize.y)));
+        if (!creating) {
+            shell.setSize(new Point(windowSize.x, windowSize.y + (newSize.y - oldSize.y)));
+        }
     }
 
     private boolean isDetailsAreaCreated() {
