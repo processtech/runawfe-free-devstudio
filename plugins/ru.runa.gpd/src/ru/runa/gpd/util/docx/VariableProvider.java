@@ -74,19 +74,19 @@ public class VariableProvider implements IVariableProvider {
 
     @Override
     public WfVariable getVariable(String variableName) {
-        int dotIndex = variableName.indexOf(UserType.DELIM);
-        if (dotIndex != -1) {
-            variableName = variableName.substring(0, dotIndex);
-        }
+        // int dotIndex = variableName.indexOf(UserType.DELIM);
+        // if (dotIndex != -1) {
+        // variableName = variableName.substring(0, dotIndex);
+        // }
         variablesMap.put(variableName, 1);
         return null;
     }
 
     public WfVariable getVariable(String variableName, boolean notNull) {
-        int dotIndex = variableName.indexOf(UserType.DELIM);
-        if (dotIndex != -1) {
-            variableName = variableName.substring(0, dotIndex);
-        }
+        // int dotIndex = variableName.indexOf(UserType.DELIM);
+        // if (dotIndex != -1) {
+        // variableName = variableName.substring(0, dotIndex);
+        // }
         variablesMap.put(variableName, 1);
         return notNull ? new WfVariable(variableName, new ArrayList()) : null;
     }
