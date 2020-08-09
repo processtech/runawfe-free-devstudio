@@ -18,7 +18,6 @@ import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.custom.SwtUtils;
-import ru.runa.wfe.commons.CollectionUtil;
 
 public class ProjectionDialog extends XmlBasedConstructorProvider<ProjectionDataModel> {
     private final VariableUserType userType;
@@ -63,12 +62,13 @@ public class ProjectionDialog extends XmlBasedConstructorProvider<ProjectionData
         final List<Projection> projections = model.getProjections();
         final List<Projection> actualProjections = createDefault().getProjections();
 
-        if (projections.size() > actualProjections.size() && !CollectionUtil.diffSet(projections, actualProjections).isEmpty()
+        // TODO #1766 CollectionUtil cannot be resolved
+        /*if (projections.size() > actualProjections.size() && !CollectionUtil.diffSet(projections, actualProjections).isEmpty()
                 || projections.size() < actualProjections.size() && !CollectionUtil.diffSet(actualProjections, projections).isEmpty()) {
             errors.add(ValidationError.createError(graphElement,
                     MessageFormat.format(Messages.getString("validation.projection.usertype.changed"), userType.getName())));
             return false;
-        }
+        }*/
         return super.validateModel(delegable, model, errors);
     }
 
