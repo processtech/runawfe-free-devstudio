@@ -8,7 +8,7 @@ import ru.runa.gpd.office.Messages;
 import ru.runa.gpd.office.store.StorageConstraintsModel;
 import ru.runa.gpd.office.store.externalstorage.predicate.PredicateComposite;
 import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
-import ru.runa.gpd.ui.custom.SWTUtils;
+import ru.runa.gpd.ui.custom.SwtUtils;
 
 public class PredicateCompositeDelegateBuilder implements ConstraintsCompositeBuilder {
     private final Composite parent;
@@ -35,7 +35,7 @@ public class PredicateCompositeDelegateBuilder implements ConstraintsCompositeBu
         delegate.build();
 
         if (!Strings.isNullOrEmpty(variableTypeName)) {
-            SWTUtils.createLink(parent, Messages.getString("label.AddPredicate"), new LoggingHyperlinkAdapter() {
+            SwtUtils.createLink(parent, Messages.getString("label.AddPredicate"), new LoggingHyperlinkAdapter() {
                 @Override
                 protected void onLinkActivated(HyperlinkEvent e) throws Exception {
                     if (predicateComposite == null) {

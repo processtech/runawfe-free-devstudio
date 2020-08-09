@@ -22,7 +22,7 @@ import ru.runa.gpd.office.Messages;
 import ru.runa.gpd.office.store.StorageConstraintsModel;
 import ru.runa.gpd.office.store.externalstorage.VariableProvider;
 import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
-import ru.runa.gpd.ui.custom.SWTUtils;
+import ru.runa.gpd.ui.custom.SwtUtils;
 
 public class PredicateComposite extends Composite {
     private final StorageConstraintsModel constraintsModel;
@@ -156,7 +156,7 @@ public class PredicateComposite extends Composite {
             compareWithCombo.setText(predicate.getRight().getName());
         }
 
-        SWTUtils.createLink(group, "[X]", new LoggingHyperlinkAdapter() {
+        SwtUtils.createLink(group, "[X]", new LoggingHyperlinkAdapter() {
             @Override
             protected void onLinkActivated(HyperlinkEvent e) throws Exception {
                 onDeletePredicate((VariablePredicate) predicate.getDelegate());
@@ -205,11 +205,11 @@ public class PredicateComposite extends Composite {
             }
             return;
         } else {
-            labels.add(SWTUtils.createLabel(group, Messages.getString("label.DBTableField")));
-            labels.add(SWTUtils.createLabel(group, Messages.getString("label.ComparisonOperation")));
-            labels.add(SWTUtils.createLabel(group, Messages.getString("label.variable")));
-            labels.add(SWTUtils.createLabel(group, ""));
-            labels.add(SWTUtils.createLabel(group,
+            labels.add(SwtUtils.createLabel(group, Messages.getString("label.DBTableField")));
+            labels.add(SwtUtils.createLabel(group, Messages.getString("label.ComparisonOperation")));
+            labels.add(SwtUtils.createLabel(group, Messages.getString("label.variable")));
+            labels.add(SwtUtils.createLabel(group, ""));
+            labels.add(SwtUtils.createLabel(group,
                     (constraintsPredicate instanceof ExpressionPredicate<?>) ? Messages.getString("label.LogicOperation") : ""));
         }
         getParent().layout(true, true);
