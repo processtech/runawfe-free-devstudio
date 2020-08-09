@@ -35,7 +35,7 @@ public class PredicateCompositeDelegateBuilder implements ConstraintsCompositeBu
         delegate.build();
 
         if (!Strings.isNullOrEmpty(variableTypeName)) {
-            SWTUtils.createLabel(parent, "");
+            SwtUtils.createLabel(parent, "");
             SwtUtils.createLink(parent, Messages.getString("label.AddPredicate"), new LoggingHyperlinkAdapter() {
                 @Override
                 protected void onLinkActivated(HyperlinkEvent e) throws Exception {

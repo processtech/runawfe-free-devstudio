@@ -17,7 +17,7 @@ import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
-import ru.runa.gpd.ui.custom.SWTUtils;
+import ru.runa.gpd.ui.custom.SwtUtils;
 import ru.runa.wfe.commons.CollectionUtil;
 
 public class ProjectionDialog extends XmlBasedConstructorProvider<ProjectionDataModel> {
@@ -90,9 +90,9 @@ public class ProjectionDialog extends XmlBasedConstructorProvider<ProjectionData
                 control.dispose();
             }
 
-            SWTUtils.createLabel(this, Messages.getString("ProjectionDialog.label.attributes"));
-            SWTUtils.createLabel(this, Messages.getString("ProjectionDialog.label.visible"));
-            SWTUtils.createLabel(this, Messages.getString("ProjectionDialog.label.sort"));
+            SwtUtils.createLabel(this, Messages.getString("ProjectionDialog.label.attributes"));
+            SwtUtils.createLabel(this, Messages.getString("ProjectionDialog.label.visible"));
+            SwtUtils.createLabel(this, Messages.getString("ProjectionDialog.label.sort"));
 
             for (Projection projection : model.getProjections()) {
                 buildProjectionView(projection);
@@ -103,7 +103,7 @@ public class ProjectionDialog extends XmlBasedConstructorProvider<ProjectionData
         }
 
         private void buildProjectionView(Projection projection) {
-            SWTUtils.createLabel(this, projection.getName());
+            SwtUtils.createLabel(this, projection.getName());
 
             final Button button = new Button(this, SWT.CHECK);
             button.setSelection(projection.getVisibility() == Visibility.VISIBLE);

@@ -38,7 +38,7 @@ import ru.runa.gpd.office.store.externalstorage.ProcessDefinitionVariableProvide
 import ru.runa.gpd.office.store.externalstorage.SelectConstraintsComposite;
 import ru.runa.gpd.office.store.externalstorage.UpdateConstraintsComposite;
 import ru.runa.gpd.office.store.externalstorage.VariableProvider;
-import ru.runa.gpd.ui.custom.SWTUtils;
+import ru.runa.gpd.ui.custom.SwtUtils;
 import ru.runa.gpd.util.EmbeddedFileUtils;
 
 public class InternalStorageOperationHandlerCellEditorProvider extends XmlBasedConstructorProvider<InternalStorageDataModel> {
@@ -179,7 +179,7 @@ public class InternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
 
             new Label(this, SWT.NONE).setText(Messages.getString("label.ExecutionAction"));
             if (isUseExternalStorageIn) {
-                SWTUtils.createLabel(this, QueryType.SELECT.name());
+                SwtUtils.createLabel(this, QueryType.SELECT.name());
                 constraintsModel.setQueryType(QueryType.SELECT);
                 model.setMode(FilesSupplierMode.BOTH);
             } else {
@@ -188,7 +188,7 @@ public class InternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
 
             new Label(this, SWT.NONE).setText(Messages.getString("label.DataType"));
             if (variableUserTypeInfo.isImmutable()) {
-                SWTUtils.createLabel(this, variableUserTypeInfo.getVariableTypeName());
+                SwtUtils.createLabel(this, variableUserTypeInfo.getVariableTypeName());
                 constraintsModel.setSheetName(variableUserTypeInfo.getVariableTypeName());
                 constraintsModel.setVariableName(null);
                 model.setMode(FilesSupplierMode.IN);
