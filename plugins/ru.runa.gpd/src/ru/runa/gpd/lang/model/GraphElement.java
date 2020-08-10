@@ -201,7 +201,7 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
         child.setDelegatedListener(delegatedListener);
         firePropertyChange(NODE_ADDED, null, child);
         firePropertyChange(PROPERTY_CHILDREN_CHANGED, null, child);
-        if (child.getId() == null && !(child instanceof Variable)) {
+        if (child.getId() == null && !Variable.class.equals(child.getClass())) {
             child.setId(getProcessDefinition().getNextNodeId());
         }
     }
@@ -430,7 +430,9 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
 
     public GraphElement makeCopy(GraphElement parent) {
         GraphElement copy = getTypeDefinition().createElement(parent, false);
-        copy.setId(parent.getProcessDefinition().getNextNodeId());
+        if (!Variable.class.equals(copy.getClass())) {
+            copy.setId(parent.getProcessDefinition().getNextNodeId());
+        }
         if (this instanceof Describable) {
             copy.setDescription(getDescription());
         }
