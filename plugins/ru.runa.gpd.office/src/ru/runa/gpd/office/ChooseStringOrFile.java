@@ -30,10 +30,10 @@ class ChooseStringOrFile implements PropertyChangeListener {
 
     protected final Composite composite;
     private final InputOutputModel model;
-    protected final Delegable delegable;
     private final String fileExtension;
     private final FilesSupplierMode mode;
     protected final DialogEnhancementMode dialogEnhancementMode;
+    private Delegable delegable;
 
     Control control = null;
     Combo variableCombo;
@@ -188,10 +188,21 @@ class ChooseStringOrFile implements PropertyChangeListener {
         composite.layout(true, true);
     }
 
+    private void updateDelegable() {
+        if (null != dialogEnhancementMode && dialogEnhancementMode.checkBotDocxTemplateEnhancementMode()) {
+            DocxDialogEnhancementMode docxDialogEnhancementMode = (DocxDialogEnhancementMode) dialogEnhancementMode;
+            delegable = docxDialogEnhancementMode.getBotTask();
+        }
+
+    }
+
     protected void showVariable(String variable) {
         if (control != null) {
             control.dispose();
         }
+
+        updateDelegable();
+
         final Combo combo = variableCombo = new Combo(composite, SWT.READ_ONLY);
         combo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         for (String variableName : delegable.getVariableNames(false, FileVariable.class.getName())) {
@@ -255,6 +266,9 @@ class ChooseStringOrFile implements PropertyChangeListener {
         }
         final Combo combo = new Combo(composite, SWT.READ_ONLY);
         combo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        updateDelegable();
+
         for (String variableName : delegable.getVariableNames(false, String.class.getName())) {
             combo.add(variableName);
         }
@@ -289,6 +303,8 @@ class ChooseStringOrFile implements PropertyChangeListener {
         }
 
         String fileName;
+
+        updateDelegable();
 
         if (delegable instanceof GraphElement) {
             if (EmbeddedFileUtils.isProcessFile(path)) {
@@ -327,6 +343,7 @@ class ChooseStringOrFile implements PropertyChangeListener {
     }
 
     private void updateEmbeddedFileName(String fileName) {
+        updateDelegable();
         if (delegable instanceof GraphElement) {
             setFileName(EmbeddedFileUtils.getProcessFilePath(fileName), null);
         } else if (delegable instanceof BotTask) {

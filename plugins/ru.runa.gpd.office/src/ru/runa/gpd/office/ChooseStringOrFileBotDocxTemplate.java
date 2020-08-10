@@ -171,6 +171,13 @@ class ChooseStringOrFileBotDocxTemplate extends ChooseStringOrFile {
 
         boolean ok = false;
 
+        Delegable delegable = null;
+
+        if (null != dialogEnhancementMode && dialogEnhancementMode.checkBotDocxTemplateEnhancementMode()) {
+            DocxDialogEnhancementMode docxDialogEnhancementMode = (DocxDialogEnhancementMode) dialogEnhancementMode;
+            delegable = docxDialogEnhancementMode.getBotTask();
+        }
+
         boolean needInvokeParent = false;
         if (!Strings.isNullOrEmpty(variable)) {
             for (String variableName : delegable.getVariableNames(false, FileVariable.class.getName())) {

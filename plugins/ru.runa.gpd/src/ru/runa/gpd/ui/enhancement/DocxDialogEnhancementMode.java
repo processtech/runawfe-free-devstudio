@@ -26,7 +26,11 @@ public class DocxDialogEnhancementMode extends DialogEnhancementMode {
 
     public void reloadBotTaskEditorXmlFromModel(String xml, String embeddedFileName, Boolean enableReadDocxButton, Boolean enableDocxMode) {
         throw new RuntimeException("Not implemented method!");
-    };
+    }
+
+    public Delegable getBotTask() {
+        throw new RuntimeException("Not implemented method!");
+    }
 
     public boolean checkDocxMode() {
         return null != enableDocxMode && enableDocxMode;

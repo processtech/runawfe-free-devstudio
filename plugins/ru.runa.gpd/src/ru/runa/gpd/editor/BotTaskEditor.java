@@ -67,6 +67,7 @@ import ru.runa.gpd.extension.handler.ParamDefConfig;
 import ru.runa.gpd.extension.handler.ParamDefGroup;
 import ru.runa.gpd.lang.model.BotTask;
 import ru.runa.gpd.lang.model.BotTaskType;
+import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.settings.PrefConstants;
 import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
@@ -140,6 +141,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
     public boolean verySave(boolean showCheckErrorMessage) {
         try {
             WorkspaceOperations.saveBotTask(botTaskFile, botTask);
+            botTask = BotCache.getBotTaskNotNull(botTaskFile);
             setTitleImage(SharedImages.getImage(botTask.getType() == BotTaskType.SIMPLE ? "icons/bot_task.gif" : "icons/bot_task_formal.gif"));
             setDirty(false);
             if (isBotDocxHandlerEnhancement()) {
@@ -361,6 +363,12 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
                             public void reloadBotTaskEditorXmlFromModel(String newConfiguration, String embeddedFileName,
                                     Boolean enableReadDocxButton, Boolean enableDocxMode) {
                                 reloadDialogXmlFromModel(newConfiguration, embeddedFileName, enableReadDocxButton, enableDocxMode);
+                            }
+
+                            @Override
+                            public Delegable getBotTask() {
+                                BotTask botTask = BotCache.getBotTaskNotNull(botTaskFile);
+                                return botTask;
                             }
 
                             @Override
@@ -840,7 +848,6 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
             input.add(new String[] { paramDef.getName(), typeLabel, required, useVariable });
         }
         confTableViewer.setInput(input);
-        // confTableViewer.refresh(); // important because of save and export problems!!!
     }
 
     private TableViewer getParamTableViewer(String parameterType) {
