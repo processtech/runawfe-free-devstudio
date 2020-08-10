@@ -5,10 +5,12 @@ import java.util.List;
 import org.eclipse.gef.commands.Command;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.Language;
+import ru.runa.gpd.lang.model.AbstractTransition;
 import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.Transition;
+import ru.runa.gpd.lang.model.bpmn.DottedTransition;
 import ru.runa.gpd.util.SwimlaneDisplayMode;
 
 /**
@@ -37,9 +39,10 @@ public class DrawAfterPasteCommand extends Command {
 			removeSwimlanes(elementList);
 		}
         diagramPage.drawElements(diagramPage.getDiagramTypeProvider().getDiagram(), elementList);
-		List<Transition> transitions = new ArrayList<Transition>();
+        List<AbstractTransition> transitions = new ArrayList<>();
 		for (NamedGraphElement element : elementList) {
 			transitions.addAll(element.getChildrenRecursive(Transition.class));
+            transitions.addAll(element.getChildrenRecursive(DottedTransition.class));
 		}
         diagramPage.drawTransitions(transitions);
 	}

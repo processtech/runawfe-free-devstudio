@@ -7,6 +7,7 @@ import org.eclipse.graphiti.features.context.IRemoveBendpointContext;
 import org.eclipse.graphiti.features.impl.DefaultRemoveBendpointFeature;
 import org.eclipse.graphiti.mm.pictograms.FreeFormConnection;
 import ru.runa.gpd.editor.graphiti.CustomUndoRedoFeature;
+import ru.runa.gpd.lang.model.AbstractTransition;
 import ru.runa.gpd.lang.model.Transition;
 
 public class RemoveTransitionBendpointFeature extends DefaultRemoveBendpointFeature implements CustomUndoRedoFeature {
@@ -23,7 +24,7 @@ public class RemoveTransitionBendpointFeature extends DefaultRemoveBendpointFeat
         super.removeBendpoint(context);
         int index = context.getBendpointIndex();
         FreeFormConnection connection = context.getConnection();
-        Transition transition = (Transition) getFeatureProvider().getBusinessObjectForPictogramElement(connection);
+        AbstractTransition transition = (AbstractTransition) getFeatureProvider().getBusinessObjectForPictogramElement(connection);
         undoBendpoint = transition.getBendpoints().get(index).getCopy();
         transition.removeBendpoint(index);
     }

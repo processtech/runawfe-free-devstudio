@@ -31,5 +31,7 @@ CKEDITOR.editorConfig = function( config ) {
 		['Styles','Format','Font','FontSize'],
 		['TextColor','BGColor'],['Maximize','ShowBlocks','-','About']
 	];
+
+	config.protectedSource.push( /&lt;!\[CDATA\[[\s\S]*?\]\]&gt;/g );
 	
 };

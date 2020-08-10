@@ -18,6 +18,7 @@ import org.eclipse.graphiti.services.Graphiti;
 import ru.runa.gpd.editor.graphiti.CustomUndoRedoFeature;
 import ru.runa.gpd.editor.graphiti.HasTextDecorator;
 import ru.runa.gpd.editor.graphiti.TextDecoratorEmulation;
+import ru.runa.gpd.lang.model.AbstractTransition;
 import ru.runa.gpd.lang.model.Action;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.ITimed;
@@ -26,7 +27,6 @@ import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.SwimlanedNode;
 import ru.runa.gpd.lang.model.Timer;
-import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
@@ -89,7 +89,7 @@ public class MoveElementFeature extends DefaultMoveShapeFeature implements Custo
             undoBendpointsList = new ArrayList<List<org.eclipse.draw2d.geometry.Point>>();
             redoBendpointsList = new ArrayList<List<org.eclipse.draw2d.geometry.Point>>();
             for (FreeFormConnection connection : connections) {
-                Transition transition = (Transition) getFeatureProvider().getBusinessObjectForPictogramElement(connection);
+                AbstractTransition transition = (AbstractTransition) getFeatureProvider().getBusinessObjectForPictogramElement(connection);
                 List<Point> points = connection.getBendpoints();
                 if (points.size() != transition.getBendpoints().size()) {
                     throw new RuntimeException("connection.getBendpoints().size() != transition.getBendpoints().size() for " + transition);
@@ -191,7 +191,7 @@ public class MoveElementFeature extends DefaultMoveShapeFeature implements Custo
                 }
             }
             for (int c = 0; c < connections.size(); c++) {
-                Transition transition = (Transition) getFeatureProvider().getBusinessObjectForPictogramElement(connections.get(c));
+                AbstractTransition transition = (AbstractTransition) getFeatureProvider().getBusinessObjectForPictogramElement(connections.get(c));
                 List<Point> points = connections.get(c).getBendpoints();
                 for (int i = 0; i < points.size(); i++) {
                     Point diagramPoint = points.get(i);

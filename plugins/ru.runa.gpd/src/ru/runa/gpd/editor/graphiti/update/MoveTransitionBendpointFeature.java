@@ -7,6 +7,7 @@ import org.eclipse.graphiti.features.impl.DefaultMoveBendpointFeature;
 import org.eclipse.graphiti.mm.algorithms.styles.Point;
 import org.eclipse.graphiti.mm.pictograms.FreeFormConnection;
 import ru.runa.gpd.editor.graphiti.CustomUndoRedoFeature;
+import ru.runa.gpd.lang.model.AbstractTransition;
 import ru.runa.gpd.lang.model.Transition;
 
 public class MoveTransitionBendpointFeature extends DefaultMoveBendpointFeature implements CustomUndoRedoFeature {
@@ -24,7 +25,7 @@ public class MoveTransitionBendpointFeature extends DefaultMoveBendpointFeature 
             int index = context.getBendpointIndex();
             FreeFormConnection connection = context.getConnection();
             Point point = connection.getBendpoints().get(index);
-            Transition transition = (Transition) getFeatureProvider().getBusinessObjectForPictogramElement(connection);
+            AbstractTransition transition = (AbstractTransition) getFeatureProvider().getBusinessObjectForPictogramElement(connection);
             undoPoint = transition.getBendpoints().get(index).getCopy();
             transition.setBendpoint(index, new org.eclipse.draw2d.geometry.Point(point.getX(), point.getY()));
             return true;

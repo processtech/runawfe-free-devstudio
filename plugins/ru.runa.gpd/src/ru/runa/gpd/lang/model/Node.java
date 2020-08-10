@@ -16,6 +16,7 @@ import ru.runa.gpd.extension.regulations.NodeRegulationsPropertyDescriptor;
 import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
+import ru.runa.gpd.lang.model.bpmn.DataStore;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEvent;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 import ru.runa.gpd.settings.CommonPreferencePage;
@@ -173,12 +174,12 @@ public abstract class Node extends NamedGraphElement implements Describable {
     public void validate(List<ValidationError> errors, IFile definitionFile) {
         super.validate(errors, definitionFile);
         if (!(this instanceof StartState) && !(this instanceof Timer && getParent() instanceof ITimed)
-                && !(this instanceof IBoundaryEvent && getParent() instanceof IBoundaryEventContainer)) {
+                && !(this instanceof IBoundaryEvent && getParent() instanceof IBoundaryEventContainer) && !(this instanceof DataStore)) {
             if (getArrivingTransitions().size() == 0) {
                 errors.add(ValidationError.createLocalizedError(this, "noInputTransitions"));
             }
         }
-        if (!(this instanceof EndState) && !(this instanceof EndTokenState)) {
+        if (!(this instanceof EndState) && !(this instanceof EndTokenState) && !(this instanceof DataStore)) {
             if (getLeavingTransitions().size() == 0) {
                 if (this instanceof Timer) {
                     // for jpdl

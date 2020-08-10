@@ -3,6 +3,7 @@ package ru.runa.gpd.editor.graphiti;
 import com.google.common.base.Objects;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.draw2d.IFigure;
@@ -42,6 +43,7 @@ import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.ProcessEditorBase;
 import ru.runa.gpd.editor.gef.GEFActionBarContributor;
 import ru.runa.gpd.editor.graphiti.update.BOUpdateContext;
+import ru.runa.gpd.lang.model.AbstractTransition;
 import ru.runa.gpd.lang.model.Action;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Node;
@@ -50,6 +52,8 @@ import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.SwimlanedNode;
 import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Transition;
+import ru.runa.gpd.lang.model.bpmn.ConnectableViaDottedTransition;
+import ru.runa.gpd.lang.model.bpmn.DottedTransition;
 import ru.runa.gpd.lang.model.bpmn.ExclusiveGateway;
 
 public class DiagramEditorPage extends DiagramEditor implements PropertyChangeListener {
@@ -108,7 +112,11 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
 
     private void updateLeavingTransitions(Node node) {
         Display.getDefault().asyncExec(() -> {
-            for (Transition transition : node.getLeavingTransitions()) {
+            final List<AbstractTransition> transitions = new ArrayList<>(node.getLeavingTransitions());
+            if (node instanceof ConnectableViaDottedTransition) {
+                transitions.addAll(((ConnectableViaDottedTransition) node).getLeavingDottedTransitions());
+            }
+            for (AbstractTransition transition : transitions) {
                 PictogramElement pe = getDiagramTypeProvider().getFeatureProvider().getPictogramElementForBusinessObject(transition);
                 if (pe != null) {
                     BOUpdateContext context = new BOUpdateContext(pe, transition);
@@ -173,7 +181,10 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
             protected void doExecute() {
                 getDiagramTypeProvider().getFeatureProvider().link(diagram, editor.getDefinition());
                 drawElements(diagram);
-                drawTransitions(editor.getDefinition().getChildrenRecursive(Transition.class));
+
+                final List<AbstractTransition> transitions = new ArrayList<>(editor.getDefinition().getChildrenRecursive(Transition.class));
+                transitions.addAll(editor.getDefinition().getChildrenRecursive(DottedTransition.class));
+                drawTransitions(transitions);
                 getDefinition().setDirty(false);
             }
 
@@ -336,8 +347,8 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
         }
     }
 
-    public void drawTransitions(List<Transition> transitions) {
-        for (Transition transition : transitions) {
+    public void drawTransitions(List<AbstractTransition> transitions) {
+        for (AbstractTransition transition : transitions) {
             Anchor sourceAnchor = null;
             Anchor targetAnchor = null;
             AnchorContainer sourceShape = (AnchorContainer) getDiagramTypeProvider().getFeatureProvider()

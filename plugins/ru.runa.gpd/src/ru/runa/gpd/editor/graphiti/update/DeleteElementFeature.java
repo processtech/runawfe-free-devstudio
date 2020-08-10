@@ -42,6 +42,8 @@ import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.Transition;
+import ru.runa.gpd.lang.model.bpmn.ConnectableViaDottedTransition;
+import ru.runa.gpd.lang.model.bpmn.DottedTransition;
 import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
 import ru.runa.gpd.settings.PrefConstants;
 import ru.runa.gpd.util.EmbeddedFileUtils;
@@ -56,6 +58,9 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements Custom
     private GraphElement element;
     private List<Transition> transitions;
     private Map<Transition, Integer> transitionIndexes;
+    private IPath formFilePath;
+    private IPath scriptFilePath;
+    private IPath validationFilePath;
 
     public DeleteElementFeature(IFeatureProvider provider) {
         super(provider);
@@ -135,6 +140,9 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements Custom
             Transition transition = (Transition) element;
             transition.getSource().removeLeavingTransition(transition);
             return;
+        } else if (element instanceof DottedTransition) {
+            removeDottedTransition((DottedTransition) element);
+            return;
         }
         if (element instanceof Node) {
             if (element instanceof FormNode) {
@@ -196,6 +204,10 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements Custom
             transitionIndexes.put(transition, source.getElements().indexOf(transition));
             source.removeLeavingTransition(transition);
         });
+        if (node instanceof ConnectableViaDottedTransition) {
+            ((ConnectableViaDottedTransition) node).getArrivingDottedTransitions().forEach(this::removeDottedTransition);
+            ((ConnectableViaDottedTransition) node).getLeavingDottedTransitions().forEach(this::removeDottedTransition);
+        }
         getDiagramBehavior().refresh();
     }
 
@@ -226,10 +238,6 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements Custom
             layoutPictogramElement((PictogramElement) context.getProperty("action-container"));
         }
     }
-
-    private IPath formFilePath;
-    private IPath scriptFilePath;
-    private IPath validationFilePath;
 
     private void removeFormFiles(FormNode formNode) {
         IFile processDefinitionFile = formNode.getProcessDefinition().getFile();
@@ -301,6 +309,11 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements Custom
 
     private void restoreProcessFiles() {
         processFilePaths.stream().forEach(path -> restoreFile(path));
+    }
+
+    private void removeDottedTransition(DottedTransition transition) {
+        ((ConnectableViaDottedTransition) transition.getSource()).removeLeavingDottedTransition(transition);
+        ((ConnectableViaDottedTransition) transition.getTarget()).removeArrivingDottedTransition(transition);
     }
 
 }
