@@ -108,8 +108,6 @@ public class DialogEnhancement {
                         BotTaskEditor botTaskEditor = (BotTaskEditor) editorPart;
                         botTaskEditor.setDirty(true);
                         botTaskEditor.setTableInput(ParamDefGroup.NAME_INPUT);
-                        // botTaskEditor.setFocus(); // important because of save and export problems!!!
-                        botTaskEditor.update();
                         if (saveBotTaskEditor) {
                             if (!botTaskEditor.verySave(false)) {
                                 changedResult = null;

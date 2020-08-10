@@ -840,6 +840,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
             input.add(new String[] { paramDef.getName(), typeLabel, required, useVariable });
         }
         confTableViewer.setInput(input);
+        confTableViewer.refresh(); // important because of save and export problems!!!
     }
 
     private TableViewer getParamTableViewer(String parameterType) {
