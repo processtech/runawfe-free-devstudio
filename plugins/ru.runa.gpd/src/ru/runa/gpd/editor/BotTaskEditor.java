@@ -410,6 +410,12 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
                     }
 
                     @Override
+                    public Delegable getBotTask() {
+                        BotTask botTask = BotCache.getBotTaskNotNull(botTaskFile);
+                        return botTask;
+                    }
+
+                    @Override
                     public void invoke(long flags) {
                         if (DialogEnhancementMode.check(flags, DialogEnhancementMode.DOCX_OUTPUT_VARIABLE_MODE)) {
                             if (DialogEnhancementMode.check(flags, DialogEnhancementMode.DOCX_CREATE_VARIABLE)) {
@@ -505,6 +511,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
         Boolean changed = DialogEnhancement.updateBotTaskFromTemplate(botTask, embeddedFileName);
         if (null == changed) {
             Dialogs.showErrorMessage(Localization.getString("DialogEnhancement.docxCheckError"));
+            return;
         } else if (changed) {
             setDirty(true);
             setTableInput(ParamDefGroup.NAME_INPUT);

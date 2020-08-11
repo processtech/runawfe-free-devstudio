@@ -78,17 +78,27 @@ public class VariableProvider implements IVariableProvider {
         // if (dotIndex != -1) {
         // variableName = variableName.substring(0, dotIndex);
         // }
+
+        if (null != IterateBy.identifyByString(null, variableName)) {
+            return null;
+        }
+
         variablesMap.put(variableName, 1);
         return null;
     }
 
-    public WfVariable getVariable(String variableName, boolean notNull) {
+    public WfVariable getVariable(String variableName, boolean loopVarable) {
         // int dotIndex = variableName.indexOf(UserType.DELIM);
         // if (dotIndex != -1) {
         // variableName = variableName.substring(0, dotIndex);
         // }
+
+        if (null != IterateBy.identifyByString(null, variableName)) {
+            return null;
+        }
+
         variablesMap.put(variableName, 1);
-        return notNull ? new WfVariable(variableName, new ArrayList()) : null;
+        return loopVarable ? new WfVariable(variableName, new ArrayList()) : null;
     }
 
     @Override

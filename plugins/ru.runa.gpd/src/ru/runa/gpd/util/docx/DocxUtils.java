@@ -5,7 +5,6 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -26,7 +25,6 @@ import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.apache.poi.xwpf.usermodel.XWPFTableCell;
-import org.apache.xmlbeans.XmlCursor;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTBorder;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTHighlight;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTR;
@@ -103,38 +101,38 @@ public class DocxUtils {
                         XWPFDocument document = paragraph.getDocument();
                         int insertPosition = document.getParagraphPos(document.getPosOfParagraph(paragraph));
                         loopOperation = (LoopOperation) operations.pop();
-                        Iterator<? extends Object> iterator = loopOperation.createIterator();
-                        Object iteratorValue0 = null;
-                        if (iterator.hasNext()) {
-                            iteratorValue0 = iterator.next();
-                        }
-                        while (iterator.hasNext()) {
-                            Object iteratorValue = iterator.next();
-                            variableProvider.add(loopOperation.getIteratorVariable(iteratorValue));
-                            for (XWPFParagraph templateParagraph : loopOperation.getBodyParagraphs()) {
-                                XmlCursor cursor = document.getDocument().getBody().getPArray(insertPosition).newCursor();
-                                XWPFParagraph newParagraph = document.insertNewParagraph(cursor);
-                                copyStyles(newParagraph, templateParagraph);
-                                insertPosition++;
-                                for (XWPFRun templateRun : templateParagraph.getRuns()) {
-                                    XWPFRun newRun = newParagraph.createRun();
-                                    copyStyles(newRun, templateRun);
-                                    String text = templateRun.getText(0);
-                                    if (text != null) {
-                                        newRun.setText(text);
-                                    }
-                                }
-                                replaceInParagraph(config, variableProvider, newParagraph);
-                            }
-                        }
-                        if (iteratorValue0 != null) {
-                            variableProvider.add(loopOperation.getIteratorVariable(iteratorValue0));
-                            for (XWPFParagraph templateParagraph : loopOperation.getBodyParagraphs()) {
-                                replaceInParagraph(config, variableProvider, templateParagraph);
-                            }
-                        }
-                        document.removeBodyElement(document.getPosOfParagraph(loopOperation.getHeaderParagraph()));
-                        document.removeBodyElement(document.getPosOfParagraph(paragraph));
+                        // Iterator<? extends Object> iterator = loopOperation.createIterator();
+                        // Object iteratorValue0 = null;
+                        // if (iterator.hasNext()) {
+                        // iteratorValue0 = iterator.next();
+                        // }
+                        // while (iterator.hasNext()) {
+                        // Object iteratorValue = iterator.next();
+                        // variableProvider.add(loopOperation.getIteratorVariable(iteratorValue));
+                        // for (XWPFParagraph templateParagraph : loopOperation.getBodyParagraphs()) {
+                        // XmlCursor cursor = document.getDocument().getBody().getPArray(insertPosition).newCursor();
+                        // XWPFParagraph newParagraph = document.insertNewParagraph(cursor);
+                        // copyStyles(newParagraph, templateParagraph);
+                        // insertPosition++;
+                        // for (XWPFRun templateRun : templateParagraph.getRuns()) {
+                        // XWPFRun newRun = newParagraph.createRun();
+                        // copyStyles(newRun, templateRun);
+                        // String text = templateRun.getText(0);
+                        // if (text != null) {
+                        // newRun.setText(text);
+                        // }
+                        // }
+                        // replaceInParagraph(config, variableProvider, newParagraph);
+                        // }
+                        // }
+                        // if (iteratorValue0 != null) {
+                        // variableProvider.add(loopOperation.getIteratorVariable(iteratorValue0));
+                        // for (XWPFParagraph templateParagraph : loopOperation.getBodyParagraphs()) {
+                        // replaceInParagraph(config, variableProvider, templateParagraph);
+                        // }
+                        // }
+                        // document.removeBodyElement(document.getPosOfParagraph(loopOperation.getHeaderParagraph()));
+                        // document.removeBodyElement(document.getPosOfParagraph(paragraph));
                         variableProvider.remove(loopOperation.getIteratorVariableName());
                         continue;
                     }

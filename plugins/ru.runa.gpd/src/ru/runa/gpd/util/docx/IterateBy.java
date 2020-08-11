@@ -13,7 +13,9 @@ public enum IterateBy {
                 return iterateBy;
             }
         }
-        config.reportProblem("Invalid iterator found in '" + string + "'");
+        if (null != config) {
+            config.reportProblem("Invalid iterator found in '" + string + "'");
+        }
         return null;
     }
 }

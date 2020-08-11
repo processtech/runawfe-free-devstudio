@@ -38,7 +38,6 @@ public class DocxDialogEnhancementMode extends DialogEnhancementMode {
 
     public Object docxModel = null;
     public String defaultFileName;
-    // public boolean showFileAsNewFirstTime;
     public Boolean enableDocxMode;
 
     public static final String PLACEHOLDER_START = "${";

@@ -156,6 +156,10 @@ public class DialogEnhancement {
                 return null;
             }
             Map<String, Integer> variablesMap = getVariableNamesFromDocxTemplate(inputStream);
+            if (null == variablesMap) {
+                PluginLogger.logInfo(wrapToScriptName(delegable, Localization.getString("DialogEnhancement.cantParseDocxTemplate")));
+                return null;
+            }
             List<String> usedVariableList = delegable.getVariableNames(false);
             boolean ok = true;
             for (Map.Entry<String, Integer> entry : variablesMap.entrySet()) {
@@ -213,6 +217,10 @@ public class DialogEnhancement {
                 return null;
             }
             Map<String, Integer> variablesMap = DialogEnhancement.getVariableNamesFromDocxTemplate(inputStream);
+            if (null == variablesMap) {
+                PluginLogger.logInfo(Localization.getString("DialogEnhancement.cantParseDocxTemplate"));
+                return null;
+            }
             for (ParamDefGroup group : botTask.getParamDefConfig().getGroups()) {
                 if (ParamDefGroup.NAME_INPUT.equals(group.getName())) {
                     String inputFileParamName = DocxDialogEnhancementMode.getInputFileParamName();
@@ -289,6 +297,10 @@ public class DialogEnhancement {
                 return null;
             }
             Map<String, Integer> variablesMap = getVariableNamesFromDocxTemplate(inputStream);
+            if (null == variablesMap) {
+                PluginLogger.logInfo(wrapToBotName(botTask, Localization.getString("DialogEnhancement.cantParseDocxTemplate")));
+                return null;
+            }
             for (Map.Entry<String, Integer> entry : variablesMap.entrySet()) {
                 String variable = entry.getKey();
                 boolean finded = false;
