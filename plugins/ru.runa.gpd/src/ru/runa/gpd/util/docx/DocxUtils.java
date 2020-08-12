@@ -335,10 +335,15 @@ public class DocxUtils {
         }
         if (string.startsWith(PLACEHOLDER_START) && string.endsWith(PLACEHOLDER_END)) {
             String placeholder = string.substring(PLACEHOLDER_START.length(), string.length() - PLACEHOLDER_END.length());
+            if (placeholder.startsWith(GROOVY)) {
+                return null;
+            }
             int iteratorNameIndex = placeholder.lastIndexOf(ITERATOR_NAME_DELIMITER);
             String iteratorWithContainerVariable = placeholder;
             if (iteratorNameIndex != -1) {
                 iteratorWithContainerVariable = iteratorWithContainerVariable.substring(0, iteratorNameIndex).trim();
+            } else {
+                return null;
             }
             int colonIndex = iteratorWithContainerVariable.indexOf(":");
             if (colonIndex > 0) {
