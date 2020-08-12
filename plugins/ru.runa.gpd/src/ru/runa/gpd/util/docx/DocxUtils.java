@@ -660,7 +660,10 @@ public class DocxUtils {
     public static Object getValue(DocxConfig config, VariableProvider variableProvider, Object value, String selector) {
         if (value == null) {
             if (selector.startsWith(GROOVY)) {
-                return executeGroovy(variableProvider, selector);
+                String script = selector.substring(GROOVY.length());
+                variableProvider.parseGroovy(script.trim());
+                // return executeGroovy(variableProvider, selector);
+                return "";
             }
             if (!Strings.isNullOrEmpty(selector)) {
                 value = variableProvider.getValue(selector);

@@ -48,6 +48,18 @@ public class VariableProvider implements IVariableProvider {
         return null;
     }
 
+    public void parseGroovy(String script) {
+        int firstIndex = script.indexOf("(");
+        if (firstIndex > 0 && script.endsWith(")")) {
+            String variables = script.substring(firstIndex + 1, script.length() - 1);
+            String[] variablesArray = variables.split(",");
+            for (String variable : variablesArray) {
+                getVariable(variable.trim());
+            }
+        }
+
+    }
+
     @Override
     public Object getValue(String arg0) {
         // TODO Auto-generated method stub
