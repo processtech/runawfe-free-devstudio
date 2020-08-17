@@ -20,8 +20,11 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
@@ -51,6 +54,8 @@ import com.google.common.base.Objects;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 
+import antlr.StringUtils;
+
 public class ImportParWizardPage extends ImportWizardPage {
     private Button importFromFileButton;
     private Composite fileSelectionArea;
@@ -58,6 +63,7 @@ public class ImportParWizardPage extends ImportWizardPage {
     private Button selectParsButton;
     private Button importFromServerButton;
     private TreeViewer serverDefinitionViewer;
+    private Text serverDefinitionFilter;
     private String selectedDirFileName;
     private String[] selectedFileNames;
 
@@ -165,6 +171,8 @@ public class ImportParWizardPage extends ImportWizardPage {
     }
 
     private void createServerDefinitionsGroup(Composite parent) {
+        serverDefinitionFilter = new Text(parent, SWT.SINGLE);       
+        
         serverDefinitionViewer = new TreeViewer(parent);
         GridData gridData = new GridData(GridData.FILL_BOTH);
         gridData.heightHint = 100;
@@ -172,6 +180,23 @@ public class ImportParWizardPage extends ImportWizardPage {
         serverDefinitionViewer.setContentProvider(new ViewContentProvider());
         serverDefinitionViewer.setLabelProvider(new ViewLabelProvider());
         serverDefinitionViewer.setInput(new Object());
+        serverDefinitionViewer.addFilter(new ViewerFilter() {
+
+            @Override
+            public boolean select(Viewer viewer, Object parentElement, Object element) {  
+                String searchText = serverDefinitionFilter.getText();
+                if (searchText == null || searchText.trim().length() == 0) {
+                    return true;
+                }
+                
+                if ((element instanceof DefinitionTreeNode) ) {
+                    String name = ((DefinitionTreeNode) element).getName();
+                    if (name.toLowerCase().contains(searchText.trim().toLowerCase())) {
+                        return true;
+                    }
+                }
+                return false;
+            }});
     }
 
     public boolean performFinish() {
