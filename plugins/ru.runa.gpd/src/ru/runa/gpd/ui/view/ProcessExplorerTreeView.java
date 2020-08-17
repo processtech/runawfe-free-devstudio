@@ -274,7 +274,7 @@ public class ProcessExplorerTreeView extends ViewPart implements ISelectionListe
                 }
             });
         }
-        if (menuOnProcess && ProcessSaveHistory.isActive()) {
+        if (menuOnProcess && ProcessSaveHistory.isActive() && !menuOnSubprocess) {
             manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.showSaveHistory"),
                     SharedImages.getImageDescriptor("icons/saveall_edit.gif")) {
                 @Override

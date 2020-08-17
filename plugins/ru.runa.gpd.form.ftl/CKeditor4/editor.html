@@ -11,6 +11,7 @@
 		var displayedErrors = new Object();
 		var modificationFlagSent = true;
 		var ignoreErrors = false;
+		var selectionChangeListenerIsEmpty = false;
 		function setIgnoreErrors(ignore) {
 			ignoreErrors = ignore;
 		}
@@ -37,7 +38,20 @@
 		}
 		function setHTML(html) {
 			try {
-				var editor = CKEDITOR.instances.editor;        	  
+				var editor = CKEDITOR.instances.editor;
+				if (selectionChangeListenerIsEmpty) {
+					editor.selectionChangeCleaner.removeListener();
+					editor.selectionChangeCleaner = editor.on("selectionChange", function () {
+						var selection = editor.getSelection();
+						var selectedElement = selection.getSelectedElement();
+						if (!selectedElement || selectedElement.$.className.indexOf("cke_ftl_component") == -1) {
+							FtlComponents.ComponentDeselected();
+						} else {
+							FtlComponents.ComponentSelected(selectedElement.$.id);
+						}
+					});
+					selectionChangeListenerIsEmpty = false;
+				}
 				editor.setData(html, function() {
 					markContent(editor);
 				});	
@@ -62,6 +76,27 @@
 			if (!modificationFlagSent) {
 				markEditorDirtyCallback();
 				modificationFlagSent = true;
+			}
+		}
+		function selectFormComponent(componentNumber) {
+			var components = $("[cke-real-element-type='ftl_component']");
+			if (components.length > componentNumber) {
+				var component = components.get(componentNumber);
+				var tabs = $("[id^='tabs-']");
+				if (tabs.length > 0) {
+					tabs.css("display", "none");
+					var parents = $(component).parents().filter("[id^='tabs-']");
+					if (parents.length > 0) {
+						var parent = parents.get(0);
+						$("a[href='#" + parent.id +"']").get(0).click();
+						tabs.filter("[id='" + parent.id + "']").css("display", "block");
+					}
+				}
+				var editor = CKEDITOR.instances.editor;
+				editor.selectionChangeCleaner.removeListener();
+				editor.getSelection().selectElement(editor.document.getById(component.id));
+				editor.selectionChangeCleaner = editor.on("selectionChange", null);
+				selectionChangeListenerIsEmpty = true;
 			}
 		}
 		</script>

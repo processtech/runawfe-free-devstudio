@@ -3,6 +3,7 @@ package ru.runa.gpd.lang.model;
 import java.util.List;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.extension.HandlerArtifact;
 import ru.runa.gpd.extension.orgfunction.OrgFunctionDefinition;
@@ -76,6 +77,10 @@ public class Swimlane extends Variable implements Delegable {
         super.fillCopyCustomFields(copy);
         copy.setDelegationClassName(getDelegationClassName());
         copy.setDelegationConfiguration(getDelegationConfiguration());
+    }
+
+    @Override
+    protected void fillCustomPropertyDescriptors(List<IPropertyDescriptor> descriptors) {
     }
 
 }

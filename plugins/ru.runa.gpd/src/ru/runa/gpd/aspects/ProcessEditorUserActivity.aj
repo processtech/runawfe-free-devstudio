@@ -116,7 +116,8 @@ public aspect ProcessEditorUserActivity extends UserActivity {
 
     pointcut graphElementProperyChange(String propertyName, Object oldValue, Object newValue) : 
         call(public void firePropertyChange(..)) && target(ru.runa.gpd.lang.model.GraphElement) && args(propertyName, oldValue, newValue) 
-        && !cflow(call(public static ProcessDefinition ru.runa.gpd.ProcessCache.getProcessDefinition(..)));
+        && !cflow(call(public static ProcessDefinition ru.runa.gpd.ProcessCache.getProcessDefinition(..)))
+        && !cflow(call(public static int ru.runa.gpd.lang.par.ProcessDefinitionValidator.validateDefinition(..)));
 
     after(String propertyName, Object oldValue, Object newValue) : graphElementProperyChange(propertyName, oldValue, newValue) {
         if (isStarted()) {
