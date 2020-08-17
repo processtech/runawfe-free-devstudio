@@ -38,6 +38,9 @@ public class FormPreferencePage extends FieldEditorPreferencePage implements IWo
         addField(new StringFieldEditor(P_FORM_WEB_SERVER_PORT, Localization.getString("pref.connection.wfe.port"), getFieldEditorParent()));
         addField(new BooleanFieldEditor(P_FORM_IGNORE_ERRORS_FROM_WEBPAGE, Localization.getString("pref.form.ignoreErrorsFromWebPage"),
                 getFieldEditorParent()));
+        addField(new BooleanFieldEditor(P_KEEP_VARIABLE_VALIDATION_ON_COMPONENT_REMOVAL,
+                Localization.getString("pref.commons.keepVariableValidationOnComponentRemoval"),
+                getFieldEditorParent()));
     }
 
     @Override

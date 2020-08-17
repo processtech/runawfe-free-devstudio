@@ -22,7 +22,7 @@ import ru.runa.gpd.Localization;
 import ru.runa.gpd.extension.handler.ParamDef.Presentation;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.ui.custom.InsertVariableTextMenuDetectListener;
-import ru.runa.gpd.ui.custom.SWTUtils;
+import ru.runa.gpd.ui.custom.SwtUtils;
 import ru.runa.gpd.ui.custom.TypedUserInputCombo;
 import ru.runa.gpd.ui.dialog.FilterBox;
 import ru.runa.gpd.util.VariableUtils;
@@ -55,7 +55,7 @@ public class ParamDefComposite extends Composite {
         for (ParamDefGroup group : config.getGroups()) {
             GridData strokeData = new GridData(GridData.FILL_HORIZONTAL);
             strokeData.horizontalSpan = 2;
-            SWTUtils.createStrokeComposite(this, strokeData, Localization.getString("ParamDefGroup.group." + group.getLabel()), 3);
+            SwtUtils.createStrokeComposite(this, strokeData, Localization.getString("ParamDefGroup.group." + group.getLabel()), 3);
             for (ParamDef param : group.getParameters()) {
                 if (helpInlined) {
                     Label helpLabel = new Label(this, SWT.WRAP);

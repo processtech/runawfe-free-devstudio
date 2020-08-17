@@ -27,7 +27,7 @@ import org.eclipse.swt.widgets.TableColumn;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
-import ru.runa.gpd.ui.custom.SWTUtils;
+import ru.runa.gpd.ui.custom.SwtUtils;
 import ru.runa.gpd.ui.dialog.EditPropertyDialog;
 
 public class ParamDefDynaComposite extends ParamDefComposite {
@@ -76,11 +76,11 @@ public class ParamDefDynaComposite extends ParamDefComposite {
         data = new GridData(GridData.FILL_VERTICAL);
         buttonsBar.setLayoutData(data);
         buttonsBar.setLayout(new GridLayout(1, false));
-        SWTUtils.createButton(buttonsBar, Localization.getString("button.add"), new AddSelectionAdapter()).setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING));
-        final Button editButton = SWTUtils.createButton(buttonsBar, Localization.getString("button.edit"), new EditSelectionAdapter());
+        SwtUtils.createButton(buttonsBar, Localization.getString("button.add"), new AddSelectionAdapter()).setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING));
+        final Button editButton = SwtUtils.createButton(buttonsBar, Localization.getString("button.edit"), new EditSelectionAdapter());
         editButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING));
         editButton.setEnabled(false);
-        final Button deleteButton = SWTUtils.createButton(buttonsBar, Localization.getString("button.delete"), new DeleteSelectionAdapter());
+        final Button deleteButton = SwtUtils.createButton(buttonsBar, Localization.getString("button.delete"), new DeleteSelectionAdapter());
         deleteButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING));
         deleteButton.setEnabled(false);
         tableViewer.addSelectionChangedListener(new ISelectionChangedListener() {

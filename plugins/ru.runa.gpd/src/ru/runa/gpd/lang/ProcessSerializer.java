@@ -1,11 +1,9 @@
 package ru.runa.gpd.lang;
 
 import java.util.Map;
-
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.eclipse.core.resources.IFile;
-
 import ru.runa.gpd.lang.model.ProcessDefinition;
 
 public abstract class ProcessSerializer {
@@ -28,6 +26,7 @@ public abstract class ProcessSerializer {
     public static final String BEHAVIOR = "behavior";
     protected static final String USE_GLOBALS = "useGlobals";
     protected static final String GLOBAL = "global";
+    protected static final String VALIDATE_AT_START = "validateAtStart";
 
     public abstract boolean isSupported(Document document);
 

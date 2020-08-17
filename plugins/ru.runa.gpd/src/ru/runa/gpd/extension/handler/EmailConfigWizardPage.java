@@ -40,7 +40,7 @@ import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionChangedAdapter;
-import ru.runa.gpd.ui.custom.SWTUtils;
+import ru.runa.gpd.ui.custom.SwtUtils;
 import ru.runa.gpd.ui.custom.XmlHighlightTextStyling;
 import ru.runa.gpd.ui.dialog.ChooseVariableDialog;
 import ru.runa.gpd.ui.dialog.ChooseVariableNameDialog;
@@ -243,7 +243,7 @@ public class EmailConfigWizardPage extends WizardPage implements MessageDisplay 
                 }
             });
 
-            SWTUtils.createLink(this, Localization.getString("button.insert_context_variable"), new LoggingHyperlinkAdapter() {
+            SwtUtils.createLink(this, Localization.getString("button.insert_context_variable"), new LoggingHyperlinkAdapter() {
                 @Override
                 protected void onLinkActivated(HyperlinkEvent e) throws Exception {
                     ChooseVariableDialog dialog = new ChooseVariableDialog(syntaxVariables);
@@ -257,7 +257,7 @@ public class EmailConfigWizardPage extends WizardPage implements MessageDisplay 
                 }
             }).setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
-            SWTUtils.createLink(this, Localization.getString("button.insert_variable"), new LoggingHyperlinkAdapter() {
+            SwtUtils.createLink(this, Localization.getString("button.insert_variable"), new LoggingHyperlinkAdapter() {
                 @Override
                 protected void onLinkActivated(HyperlinkEvent e) throws Exception {
                     List<String> variableNames = VariableUtils.getVariableNamesForScripting(delegable);

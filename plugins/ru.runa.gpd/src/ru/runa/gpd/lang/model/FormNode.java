@@ -33,6 +33,7 @@ public abstract class FormNode extends SwimlanedNode {
     private String formType;
     private boolean useJSValidation;
     private String templateFileName;
+    private boolean formEditorOpened;
 
     @Override
     public boolean testAttribute(Object target, String name, String value) {
@@ -58,7 +59,11 @@ public abstract class FormNode extends SwimlanedNode {
     }
 
     public boolean hasFormValidation() {
-        return IOUtils.getAdjacentFile(getProcessDefinition().getFile(), getValidationFileName()).exists();
+        return getFormValidationFile().exists();
+    }
+    
+    public IFile getFormValidationFile() {
+    	return IOUtils.getAdjacentFile(getProcessDefinition().getFile(), getValidationFileName());
     }
 
     public boolean hasFormScript() {
@@ -106,7 +111,15 @@ public abstract class FormNode extends SwimlanedNode {
     public boolean hasFormTemplate() {
         return templateFileName != null && templateFileName.length() > 0;
     }
-
+    
+    public boolean isFormEditorOpened() {
+        return formEditorOpened;
+    }
+    
+    public void setFormEditorOpened(boolean formEditorOpened) { 
+        this.formEditorOpened = formEditorOpened; 
+    }
+     
     @Override
     protected void populateCustomPropertyDescriptors(List<IPropertyDescriptor> descriptors) {
         super.populateCustomPropertyDescriptors(descriptors);
