@@ -18,7 +18,7 @@ import org.eclipse.swt.widgets.Text;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
-import ru.runa.gpd.ui.custom.SWTUtils;
+import ru.runa.gpd.ui.custom.SwtUtils;
 import ru.runa.gpd.util.Duration;
 import ru.runa.gpd.util.Duration.Unit;
 
@@ -63,7 +63,7 @@ public class DurationEditDialog extends Dialog {
             GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
             gridData.minimumWidth = 200;
             baseDateField.setLayoutData(gridData);
-            SWTUtils.createButton(area, "...", new LoggingSelectionAdapter() {
+            SwtUtils.createButton(area, "...", new LoggingSelectionAdapter() {
 
                 @Override
                 protected void onSelection(SelectionEvent e) throws Exception {

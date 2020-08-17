@@ -33,7 +33,7 @@ public abstract aspect UserActivity {
         return started;
     }
 
-    static void startLogging() {
+    public static void startLogging() {
         File historyFolder = new File(Activator.getPreferencesFolder() + File.separator + USER_ACTIVITY_FOLDER_NAME + File.separator + WORKBENCH_FOLDER_NAME);
         if (!historyFolder.exists()) {
             historyFolder.mkdirs();
@@ -42,7 +42,7 @@ public abstract aspect UserActivity {
         startEditingSession(null); // workbench started
     }
     
-    static void stopLogging() {
+    public static void stopLogging() {
         for (Object owner : logRepository.keySet()) {
             stopEditingSession(owner);
         }
@@ -50,28 +50,31 @@ public abstract aspect UserActivity {
     }
     
     static void startEditingSession(Object owner) {
-        PrintWriter pw = null;
-        try {
-            if (owner == null) { // workbench
-                pw = new PrintWriter(new File(Activator.getPreferencesFolder() + File.separator + USER_ACTIVITY_FOLDER_NAME + File.separator
-                        + WORKBENCH_FOLDER_NAME + File.separator + USER_ACTIVITY_LOG_NAME_FORMAT.format(new Date()) + USER_ACTIVITY_LOG_EXTENSION));
-            } else { // ProcessEditorBase
-                IFile definitionFile = ((ProcessEditorBase) owner).getDefinitionFile();
-                File historyFolder = new File(Activator.getPreferencesFolder() + File.separator + USER_ACTIVITY_FOLDER_NAME + File.separator
-                        + definitionFile.getParent().getFullPath());
-                if (!historyFolder.exists()) {
-                    historyFolder.mkdirs();
+        if (started) {
+            PrintWriter pw = null;
+            try {
+                if (owner == null) { // workbench
+                    pw = new PrintWriter(new File(
+                            Activator.getPreferencesFolder() + File.separator + USER_ACTIVITY_FOLDER_NAME + File.separator + WORKBENCH_FOLDER_NAME
+                                    + File.separator + USER_ACTIVITY_LOG_NAME_FORMAT.format(new Date()) + USER_ACTIVITY_LOG_EXTENSION));
+                } else { // ProcessEditorBase
+                    IFile definitionFile = ((ProcessEditorBase) owner).getDefinitionFile();
+                    File historyFolder = new File(Activator.getPreferencesFolder() + File.separator + USER_ACTIVITY_FOLDER_NAME + File.separator
+                            + definitionFile.getParent().getFullPath());
+                    if (!historyFolder.exists()) {
+                        historyFolder.mkdirs();
+                    }
+                    pw = new PrintWriter(new File(
+                            historyFolder + File.separator + USER_ACTIVITY_LOG_NAME_FORMAT.format(new Date()) + USER_ACTIVITY_LOG_EXTENSION));
+                    owner = ((ProcessEditorBase) owner).getDefinition();
                 }
-                pw = new PrintWriter(
-                        new File(historyFolder + File.separator + USER_ACTIVITY_LOG_NAME_FORMAT.format(new Date()) + USER_ACTIVITY_LOG_EXTENSION));
-                owner = ((ProcessEditorBase) owner).getDefinition();
+            } catch (FileNotFoundException e) {
+                PluginLogger.logError(e);
             }
-        } catch (FileNotFoundException e) {
-            PluginLogger.logError(e);
+            stopEditingSession(owner);
+            logRepository.put(owner, pw);
+            log(owner, owner == null ? UserAction.WS_Open.asString() : UserAction.ES_Open.asString());
         }
-        stopEditingSession(owner);
-        logRepository.put(owner, pw);
-        log(owner, owner == null ? UserAction.WS_Open.asString() : UserAction.ES_Open.asString());
     }
 
     static void stopEditingSession(Object owner) {

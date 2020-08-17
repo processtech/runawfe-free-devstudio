@@ -84,6 +84,7 @@ public class JointFormEditor extends FormEditor {
             }
         });
         setActivePage(currentPageIndex);
+        formNode.setFormEditorOpened(true);
     }
 
     @Override
@@ -105,7 +106,9 @@ public class JointFormEditor extends FormEditor {
 
     @Override
     public boolean isDirty() {
-        return super.isDirty() || jsEditor.isDirty() || fieldValidatorsPage.isDirty() || globalValidatorsPage.isDirty();
+        // rm1721, occasional NPE
+        return super.isDirty() || (jsEditor != null && jsEditor.isDirty()) || (fieldValidatorsPage != null && fieldValidatorsPage.isDirty())
+                || (globalValidatorsPage != null && globalValidatorsPage.isDirty());
     }
 
     private void setDirty(boolean dirty) {
@@ -117,6 +120,7 @@ public class JointFormEditor extends FormEditor {
         fieldValidatorsPage.dispose();
         globalValidatorsPage.dispose();
         super.dispose();
+        formNode.setFormEditorOpened(false);
     }
 
 }

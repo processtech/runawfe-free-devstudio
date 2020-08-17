@@ -439,7 +439,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
                 return;
             }
 
-            List<Variable> variables = editor.getDefinition().getVariables(false, false, newType.getName());
+            List<Variable> variables = editor.getDefinition().getVariables(true, false, newType.getName());
             if (variables.size() == 0) {
                 ErrorDialog.open(Localization.getString("VariableTypeEditorPage.error.variable.move.without.substitution.variable"));
                 return;

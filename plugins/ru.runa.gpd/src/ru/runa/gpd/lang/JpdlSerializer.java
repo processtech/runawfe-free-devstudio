@@ -246,6 +246,9 @@ public class JpdlSerializer extends ProcessSerializer {
             if (subprocess instanceof MultiSubprocess) {
                 setAttribute(processStateElement, EXECUTION_CONDITION, ((MultiSubprocess) subprocess).getDiscriminatorCondition());
             }
+            if (subprocess.isValidateAtStart()) {
+                setAttribute(processStateElement, VALIDATE_AT_START, Boolean.TRUE.toString());
+            }
         }
         List<SendMessageNode> sendMessageNodes = definition.getChildren(SendMessageNode.class);
         for (SendMessageNode messageNode : sendMessageNodes) {
@@ -736,6 +739,7 @@ public class JpdlSerializer extends ProcessSerializer {
                 if (SUB_PROCESS.equals(childNode.getName())) {
                     subprocess.setSubProcessName(childNode.attributeValue(NAME));
                     subprocess.setEmbedded(Boolean.parseBoolean(childNode.attributeValue(EMBEDDED, "false")));
+                    subprocess.setValidateAtStart(Boolean.parseBoolean(childNode.attributeValue(VALIDATE_AT_START, "false")));
                 }
                 if (VARIABLE.equals(childNode.getName())) {
                     VariableMapping variable = new VariableMapping();
@@ -838,5 +842,6 @@ public class JpdlSerializer extends ProcessSerializer {
                 throw new RuntimeException("Problem with " + transition.getId() + ": " + transition.getParent() + " -> " + targetNodeId);
             }
         }
+        definition.onLoadingCompleted();
     }
 }

@@ -19,7 +19,7 @@ import ru.runa.gpd.lang.model.VariableContainer;
 import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.gpd.ui.custom.DynaContentWizardPage;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
-import ru.runa.gpd.ui.custom.SWTUtils;
+import ru.runa.gpd.ui.custom.SwtUtils;
 import ru.runa.wfe.var.format.ListFormat;
 import ru.runa.wfe.var.format.MapFormat;
 import ru.runa.wfe.var.format.StringFormat;
@@ -130,7 +130,7 @@ public class VariableFormatPage extends DynaContentWizardPage {
         if (labels != null) {
             GridData strokeData = new GridData(GridData.FILL_HORIZONTAL);
             strokeData.horizontalSpan = 2;
-            SWTUtils.createStrokeComposite(dynaComposite, strokeData, Localization.getString("VariableFormatPage.components.label"), 3);
+            SwtUtils.createStrokeComposite(dynaComposite, strokeData, Localization.getString("VariableFormatPage.components.label"), 3);
             for (int i = 0; i < labels.length; i++) {
                 Label label = new Label(dynaComposite, SWT.NONE);
                 label.setText(labels[i]);
