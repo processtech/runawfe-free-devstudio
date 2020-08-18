@@ -158,6 +158,9 @@ public class DocxDialogEnhancement {
                         actorFieldsMap.put(field.getName(), 0);
                     }
                 }
+                actorFieldsMap.put("firstName", 0);
+                actorFieldsMap.put("middleName", 0);
+                actorFieldsMap.put("lastName", 0);
                 objectClass = Class.forName("ru.runa.wfe.user.Group");
                 fieldsList = null != objectClass ? objectClass.getDeclaredFields() : null;
                 if (null != fieldsList) {
