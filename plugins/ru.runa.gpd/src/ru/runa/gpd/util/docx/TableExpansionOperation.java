@@ -57,7 +57,7 @@ public class TableExpansionOperation extends Operation {
         }
     }
 
-    public String getStringValue(DocxConfig config, VariableProvider variableProvider, int columnIndex, int rowIndex) {
+    public String getStringValue(DocxConfig config, VariableConsumer variableProvider, int columnIndex, int rowIndex) {
         ColumnExpansionOperation operation = operations.get(columnIndex);
         if (operation != null) {
             Object key;

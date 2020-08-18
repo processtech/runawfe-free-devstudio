@@ -36,6 +36,7 @@ import ru.runa.gpd.property.DurationPropertyDescriptor;
 import ru.runa.gpd.property.TimerActionPropertyDescriptor;
 import ru.runa.gpd.settings.CommonPreferencePage;
 import ru.runa.gpd.ui.enhancement.DialogEnhancement;
+import ru.runa.gpd.ui.enhancement.DocxDialogEnhancement;
 import ru.runa.gpd.ui.enhancement.DocxDialogEnhancementMode;
 import ru.runa.gpd.util.EmbeddedFileUtils;
 import ru.runa.gpd.util.EventSupport;
@@ -156,7 +157,7 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
                     if (!Strings.isNullOrEmpty(embeddedDocxTemplateFileName) && EmbeddedFileUtils.isProcessFile(embeddedDocxTemplateFileName)) {
                         List<String> docxErrors = Lists.newArrayList();
                         List<Delegable> docxErrorSources = Lists.newArrayList();
-                        DialogEnhancement.checkScriptTaskParametersWithDocxTemplate(delegable,
+                        DocxDialogEnhancement.checkScriptTaskParametersWithDocxTemplate(delegable,
                                 EmbeddedFileUtils.getProcessFileName(embeddedDocxTemplateFileName), docxErrors, docxErrorSources, null);
                         if (docxErrors.size() > 0 && docxErrors.size() == docxErrorSources.size()) {
                             ListIterator<String> iterator = docxErrors.listIterator();

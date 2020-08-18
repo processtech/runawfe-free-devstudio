@@ -1,7 +1,6 @@
 package ru.runa.gpd.util.docx;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 import ru.runa.wfe.lang.ProcessDefinition;
 import ru.runa.wfe.var.IVariableProvider;
@@ -9,12 +8,11 @@ import ru.runa.wfe.var.UserType;
 import ru.runa.wfe.var.VariableDoesNotExistException;
 import ru.runa.wfe.var.dto.WfVariable;
 
-public class VariableProvider implements IVariableProvider {
+public class VariableConsumer implements IVariableProvider {
 
     private Map<String, Integer> variablesMap;
-    private Map<String, Integer> excludeVariablesMap = new HashMap<String, Integer>();
 
-    VariableProvider(Map<String, Integer> variablesMap) {
+    VariableConsumer(Map<String, Integer> variablesMap) {
         this.variablesMap = variablesMap;
     }
 

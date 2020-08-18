@@ -15,22 +15,11 @@ import javax.imageio.ImageIO;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.poi.util.Units;
-import org.apache.poi.xwpf.usermodel.Borders;
-import org.apache.poi.xwpf.usermodel.LineSpacingRule;
-import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
-import org.apache.poi.xwpf.usermodel.TextAlignment;
-import org.apache.poi.xwpf.usermodel.UnderlinePatterns;
-import org.apache.poi.xwpf.usermodel.VerticalAlign;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.apache.poi.xwpf.usermodel.XWPFTableCell;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTBorder;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTHighlight;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTR;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTRPr;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTShd;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.STHighlightColor;
 import ru.runa.wfe.commons.ClassLoaderUtil;
 import ru.runa.wfe.commons.GroovyScriptExecutor;
 import ru.runa.wfe.commons.TypeConversionUtil;
@@ -81,16 +70,12 @@ public class DocxUtils {
         return -1;
     }
 
-    /*
-     * public static void getVariableNamesFromDocxParagraphs(DocxConfig config, List<XWPFParagraph> paragraphs, Map<String, Integer> variablesMap) {
-     * VariableProvider variableProvider = new VariableProvider(); replaceInParagraphs(config, variableProvider, paragraphs); }
-     */
-
-    public static void replaceInParagraphs(DocxConfig config, VariableProvider variableProvider, List<XWPFParagraph> paragraphs) {
+    public static void replaceInParagraphs(DocxConfig config, VariableConsumer variableProvider, List<XWPFParagraph> paragraphs,
+            boolean scriptParseMode) {
         Stack<Operation> operations = new Stack<Operation>();
         for (XWPFParagraph paragraph : Lists.newArrayList(paragraphs)) {
             String paragraphText = paragraph.getText();
-            LoopOperation loopOperation = parseIterationOperation(config, variableProvider, paragraphText, new LoopOperation());
+            LoopOperation loopOperation = parseIterationOperation(config, variableProvider, paragraphText, new LoopOperation(), scriptParseMode);
             if (loopOperation != null && loopOperation.isValid()) {
                 loopOperation.setHeaderParagraph(paragraph);
                 operations.push(loopOperation);
@@ -101,38 +86,6 @@ public class DocxUtils {
                         XWPFDocument document = paragraph.getDocument();
                         int insertPosition = document.getParagraphPos(document.getPosOfParagraph(paragraph));
                         loopOperation = (LoopOperation) operations.pop();
-                        // Iterator<? extends Object> iterator = loopOperation.createIterator();
-                        // Object iteratorValue0 = null;
-                        // if (iterator.hasNext()) {
-                        // iteratorValue0 = iterator.next();
-                        // }
-                        // while (iterator.hasNext()) {
-                        // Object iteratorValue = iterator.next();
-                        // variableProvider.add(loopOperation.getIteratorVariable(iteratorValue));
-                        // for (XWPFParagraph templateParagraph : loopOperation.getBodyParagraphs()) {
-                        // XmlCursor cursor = document.getDocument().getBody().getPArray(insertPosition).newCursor();
-                        // XWPFParagraph newParagraph = document.insertNewParagraph(cursor);
-                        // copyStyles(newParagraph, templateParagraph);
-                        // insertPosition++;
-                        // for (XWPFRun templateRun : templateParagraph.getRuns()) {
-                        // XWPFRun newRun = newParagraph.createRun();
-                        // copyStyles(newRun, templateRun);
-                        // String text = templateRun.getText(0);
-                        // if (text != null) {
-                        // newRun.setText(text);
-                        // }
-                        // }
-                        // replaceInParagraph(config, variableProvider, newParagraph);
-                        // }
-                        // }
-                        // if (iteratorValue0 != null) {
-                        // variableProvider.add(loopOperation.getIteratorVariable(iteratorValue0));
-                        // for (XWPFParagraph templateParagraph : loopOperation.getBodyParagraphs()) {
-                        // replaceInParagraph(config, variableProvider, templateParagraph);
-                        // }
-                        // }
-                        // document.removeBodyElement(document.getPosOfParagraph(loopOperation.getHeaderParagraph()));
-                        // document.removeBodyElement(document.getPosOfParagraph(paragraph));
                         variableProvider.remove(loopOperation.getIteratorVariableName());
                         continue;
                     }
@@ -143,189 +96,10 @@ public class DocxUtils {
                 replaceInParagraph(config, variableProvider, paragraph);
             }
         }
-        if (!operations.isEmpty()) {
-            config.reportProblem("Found unconsistency for operations: not ended " + operations);
-        }
     }
 
-    private static void copyStyles(XWPFRun run, XWPFRun templateRun) {
-        if (templateRun.isBold()) {
-            run.setBold(templateRun.isBold());
-        }
-        if (templateRun.isCapitalized()) {
-            run.setCapitalized(templateRun.isCapitalized());
-        }
-        if (templateRun.getCharacterSpacing() != 0) {
-            run.setCharacterSpacing(templateRun.getCharacterSpacing());
-        }
-        if (templateRun.getColor() != null) {
-            run.setColor(templateRun.getColor());
-        }
-        if (templateRun.isDoubleStrikeThrough()) {
-            run.setDoubleStrikethrough(templateRun.isDoubleStrikeThrough());
-        }
-        if (templateRun.isEmbossed()) {
-            run.setEmbossed(templateRun.isEmbossed());
-        }
-        if (templateRun.getFontFamily() != null) {
-            run.setFontFamily(templateRun.getFontFamily());
-        }
-        if (templateRun.getFontSize() != -1) {
-            run.setFontSize(templateRun.getFontSize());
-        }
-        if (templateRun.isImprinted()) {
-            run.setImprinted(templateRun.isImprinted());
-        }
-        if (templateRun.isItalic()) {
-            run.setItalic(templateRun.isItalic());
-        }
-        if (templateRun.getKerning() != 0) {
-            run.setKerning(templateRun.getKerning());
-        }
-        if (templateRun.isShadowed()) {
-            run.setShadow(templateRun.isShadowed());
-        }
-        if (templateRun.isSmallCaps()) {
-            run.setSmallCaps(templateRun.isSmallCaps());
-        }
-        if (templateRun.isStrikeThrough()) {
-            run.setStrikeThrough(templateRun.isStrikeThrough());
-        }
-        if (templateRun.getSubscript() != VerticalAlign.BASELINE) {
-            run.setSubscript(templateRun.getSubscript());
-        }
-        if (templateRun.getUnderline() != UnderlinePatterns.NONE) {
-            run.setUnderline(templateRun.getUnderline());
-        }
-        if (templateRun.getCTR().getRPr() != null && templateRun.getCTR().getRPr().getShd() != null) {
-            Object fill = templateRun.getCTR().getRPr().getShd().getFill();
-            if (fill != null) {
-                CTRPr ctrPr = run.getCTR().getRPr();
-                if (ctrPr == null) {
-                    ctrPr = run.getCTR().addNewRPr();
-                }
-                CTShd ctShd = ctrPr.getShd();
-                if (ctShd == null) {
-                    ctShd = ctrPr.addNewShd();
-                }
-                ctShd.setFill(fill);
-            }
-        }
-        if (templateRun.getCTR().getRPr() != null && templateRun.getCTR().getRPr().getHighlight() != null) {
-            STHighlightColor.Enum highlight = templateRun.getCTR().getRPr().getHighlight().getVal();
-            if (highlight != null) {
-                CTRPr ctrPr = run.getCTR().getRPr();
-                if (ctrPr == null) {
-                    ctrPr = run.getCTR().addNewRPr();
-                }
-                CTHighlight ctHighlight = ctrPr.getHighlight();
-                if (ctHighlight == null) {
-                    ctHighlight = ctrPr.addNewHighlight();
-                }
-                ctHighlight.setVal(highlight);
-            }
-        }
-    }
-
-    private static void copyBorderStyles(CTBorder border, CTBorder templateBorder) {
-        if (templateBorder.isSetColor()) {
-            border.setColor(templateBorder.getColor());
-        }
-        if (templateBorder.isSetFrame()) {
-            border.setFrame(templateBorder.getFrame());
-        }
-        if (templateBorder.isSetShadow()) {
-            border.setShadow(templateBorder.getShadow());
-        }
-        if (templateBorder.isSetSpace()) {
-            border.setSpace(templateBorder.getSpace());
-        }
-        if (templateBorder.isSetSz()) {
-            border.setSz(templateBorder.getSz());
-        }
-        if (templateBorder.isSetThemeColor()) {
-            // !!! BUG border.setThemeColor(templateBorder.getThemeColor());
-        }
-        if (templateBorder.isSetThemeShade()) {
-            border.setThemeShade(templateBorder.getThemeShade());
-        }
-        if (templateBorder.isSetThemeTint()) {
-            border.setThemeTint(templateBorder.getThemeTint());
-        }
-    }
-
-    private static void copyStyles(XWPFParagraph paragraph, XWPFParagraph templateParagraph) {
-        if (templateParagraph.getAlignment() != ParagraphAlignment.LEFT) {
-            paragraph.setAlignment(templateParagraph.getAlignment());
-        }
-        if (templateParagraph.getBorderBetween() != Borders.NONE) {
-            paragraph.setBorderBetween(templateParagraph.getBorderBetween());
-            copyBorderStyles(paragraph.getCTP().getPPr().getPBdr().getBetween(), templateParagraph.getCTP().getPPr().getPBdr().getBetween());
-        }
-        if (templateParagraph.getBorderBottom() != Borders.NONE) {
-            paragraph.setBorderBottom(templateParagraph.getBorderBottom());
-            copyBorderStyles(paragraph.getCTP().getPPr().getPBdr().getBottom(), templateParagraph.getCTP().getPPr().getPBdr().getBottom());
-        }
-        if (templateParagraph.getBorderLeft() != Borders.NONE) {
-            paragraph.setBorderLeft(templateParagraph.getBorderLeft());
-            copyBorderStyles(paragraph.getCTP().getPPr().getPBdr().getLeft(), templateParagraph.getCTP().getPPr().getPBdr().getLeft());
-        }
-        if (templateParagraph.getBorderRight() != Borders.NONE) {
-            paragraph.setBorderRight(templateParagraph.getBorderRight());
-            copyBorderStyles(paragraph.getCTP().getPPr().getPBdr().getRight(), templateParagraph.getCTP().getPPr().getPBdr().getRight());
-        }
-        if (templateParagraph.getBorderTop() != Borders.NONE) {
-            paragraph.setBorderTop(templateParagraph.getBorderTop());
-        }
-        if (templateParagraph.getIndentationFirstLine() != -1) {
-            paragraph.setIndentationFirstLine(templateParagraph.getIndentationFirstLine());
-        }
-        if (templateParagraph.getIndentationHanging() != -1) {
-            paragraph.setIndentationHanging(templateParagraph.getIndentationHanging());
-        }
-        if (templateParagraph.getIndentationLeft() != -1) {
-            paragraph.setIndentationLeft(templateParagraph.getIndentationLeft());
-        }
-        if (templateParagraph.getIndentationRight() != -1) {
-            paragraph.setIndentationRight(templateParagraph.getIndentationRight());
-        }
-        if (templateParagraph.getNumID() != null) {
-            paragraph.setNumID(templateParagraph.getNumID());
-        }
-        if (templateParagraph.isPageBreak()) {
-            paragraph.setPageBreak(templateParagraph.isPageBreak());
-        }
-        if (templateParagraph.getSpacingAfter() != -1) {
-            paragraph.setSpacingAfter(templateParagraph.getSpacingAfter());
-        }
-        if (templateParagraph.getSpacingAfterLines() != -1) {
-            paragraph.setSpacingAfterLines(templateParagraph.getSpacingAfterLines());
-        }
-        if (templateParagraph.getSpacingBefore() != -1) {
-            paragraph.setSpacingBefore(templateParagraph.getSpacingBefore());
-        }
-        if (templateParagraph.getSpacingBeforeLines() != -1) {
-            paragraph.setSpacingBeforeLines(templateParagraph.getSpacingBeforeLines());
-        }
-        if (templateParagraph.getSpacingBetween() != -1) {
-            paragraph.setSpacingBetween(templateParagraph.getSpacingBetween(), templateParagraph.getSpacingLineRule());
-        }
-        if (templateParagraph.getSpacingLineRule() != LineSpacingRule.AUTO) {
-            paragraph.setSpacingLineRule(templateParagraph.getSpacingLineRule());
-        }
-        if (templateParagraph.getStyle() != null) {
-            paragraph.setStyle(templateParagraph.getStyle());
-        }
-        if (templateParagraph.getVerticalAlignment() != TextAlignment.AUTO) {
-            paragraph.setVerticalAlignment(templateParagraph.getVerticalAlignment());
-        }
-        if (templateParagraph.isWordWrapped()) {
-            paragraph.setWordWrapped(templateParagraph.isWordWrapped());
-        }
-    }
-
-    static <T extends AbstractIteratorOperation> T parseIterationOperation(DocxConfig config, VariableProvider variableProvider, String string,
-            T operation) {
+    static <T extends AbstractIteratorOperation> T parseIterationOperation(DocxConfig config, VariableConsumer variableProvider, String string,
+            T operation, boolean scriptParseMode) {
         if (Strings.isNullOrEmpty(string)) {
             return null;
         }
@@ -343,7 +117,7 @@ public class DocxUtils {
             if (iteratorNameIndex != -1) {
                 iteratorWithContainerVariable = iteratorWithContainerVariable.substring(0, iteratorNameIndex).trim();
             } else {
-                return null;
+                iteratorWithContainerVariable = placeholder;
             }
             int colonIndex = iteratorWithContainerVariable.indexOf(":");
             if (colonIndex > 0) {
@@ -363,6 +137,11 @@ public class DocxUtils {
                 }
                 if (operation instanceof LoopOperation) {
                     ((LoopOperation) operation).setIteratorVariableName(lexem);
+                }
+
+                if (scriptParseMode) {
+                    String variableName = operation.getContainerVariableName() + "." + lexem;
+                    variableProvider.getVariable(variableName);
                 }
             }
             if (operation.getContainerVariableName().contains(PLACEHOLDER_START)) {
@@ -390,7 +169,7 @@ public class DocxUtils {
         return null;
     }
 
-    public static void replaceInParagraph(DocxConfig config, VariableProvider variableProvider, XWPFParagraph paragraph) {
+    public static void replaceInParagraph(DocxConfig config, VariableConsumer variableProvider, XWPFParagraph paragraph) {
         String paragraphText = paragraph.getParagraphText();
         if (!paragraphText.contains(PLACEHOLDER_START)) {
             return;
@@ -485,7 +264,7 @@ public class DocxUtils {
     }
 
     private static void fixRunsToStateInWhichSingleRunContainsPlaceholder(DocxConfig config, XWPFParagraph paragraph, String placeholder) {
-        config.warn("Restructuring runs for '" + placeholder + "' in '" + paragraph.getParagraphText() + "'");
+        // config.warn("Restructuring runs for '" + placeholder + "' in '" + paragraph.getParagraphText() + "'");
         try {
             List<XWPFRun> runs = paragraph.getRuns();
             for (int i = 0; i < runs.size() - 1; i++) {
@@ -567,7 +346,7 @@ public class DocxUtils {
         }
     }
 
-    private static String replaceText(DocxConfig config, VariableProvider variableProvider, List<ReplaceOperation> operations, String text) {
+    private static String replaceText(DocxConfig config, VariableConsumer variableProvider, List<ReplaceOperation> operations, String text) {
         ReplaceOperation operation;
         if (operations.size() > 0 && !operations.get(operations.size() - 1).isPlaceholderRead()) {
             operation = operations.get(operations.size() - 1);
@@ -662,7 +441,7 @@ public class DocxUtils {
         }
     }
 
-    public static Object getValue(DocxConfig config, VariableProvider variableProvider, Object value, String selector) {
+    public static Object getValue(DocxConfig config, VariableConsumer variableProvider, Object value, String selector) {
         if (value == null) {
             if (selector.startsWith(GROOVY)) {
                 String script = selector.substring(GROOVY.length());
@@ -695,7 +474,6 @@ public class DocxUtils {
                         value = ((Map<?, ?>) value).get(variableName);
                     } else {
                         try {
-                            // !!! BUG value = PropertyUtils.getProperty(value, variableName);
                             value = variableProvider.getProperty(value, variableName);
                         } catch (Exception e) {
                             config.reportProblem(e);

@@ -19,6 +19,7 @@ import ru.runa.gpd.bot.BotTaskExportCommand;
 import ru.runa.gpd.lang.model.BotTask;
 import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.ui.enhancement.DialogEnhancement;
+import ru.runa.gpd.ui.enhancement.DocxDialogEnhancement;
 import ru.runa.gpd.ui.enhancement.DocxDialogEnhancementMode;
 import ru.runa.gpd.util.IOUtils;
 
@@ -71,7 +72,7 @@ public class ExportBotTaskWizardPage extends ExportBotWizardPage {
                 .create(MessageDialog.CONFIRM, Localization.getString("DialogEnhancement.parametersNotCorrespondingWithDocxQ"))
                 .withOpenedDetailsArea(errorsDetails[0]).withCancelButton().withoutOkButton().withDefaultButton(IDialogConstants.PROCEED_ID)
                 .withActionButton(IDialogConstants.PROCEED_ID, Localization.getString("Update.from.docx.template")).andExecute()) {
-            Boolean changed = DialogEnhancement.updateBotTaskFromDocxTemplate(exportResource, true);
+            Boolean changed = DocxDialogEnhancement.updateBotTaskFromDocxTemplate(exportResource, true);
             if (toFile) {
                 getContainer().run(true, true, new BotTaskExportCommand(exportResource, new FileOutputStream(getDestinationValue())));
                 if (null == changed) {
@@ -101,7 +102,7 @@ public class ExportBotTaskWizardPage extends ExportBotWizardPage {
                 String embeddedDocxTemplateFileName = null != obj && obj instanceof String ? (String) obj : "";
                 if (!Strings.isNullOrEmpty(embeddedDocxTemplateFileName)) {
                     List<String> errors = Lists.newArrayList();
-                    Boolean result = DialogEnhancement.checkBotTaskParametersWithDocxTemplate(botTask, embeddedDocxTemplateFileName, errors,
+                    Boolean result = DocxDialogEnhancement.checkBotTaskParametersWithDocxTemplate(botTask, embeddedDocxTemplateFileName, errors,
                             errorsDetails);
                     if (errors.size() > 0) {
                         botTask.logErrors(errors);

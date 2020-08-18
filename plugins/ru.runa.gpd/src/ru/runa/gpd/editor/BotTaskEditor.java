@@ -78,6 +78,7 @@ import ru.runa.gpd.ui.custom.XmlHighlightTextStyling;
 import ru.runa.gpd.ui.dialog.ChooseHandlerClassDialog;
 import ru.runa.gpd.ui.enhancement.DialogEnhancement;
 import ru.runa.gpd.ui.enhancement.DialogEnhancementMode;
+import ru.runa.gpd.ui.enhancement.DocxDialogEnhancement;
 import ru.runa.gpd.ui.enhancement.DocxDialogEnhancementMode;
 import ru.runa.gpd.ui.wizard.BotTaskParamDefWizard;
 import ru.runa.gpd.ui.wizard.CompactWizardDialog;
@@ -261,7 +262,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
         String embeddedDocxTemplateFileName = null != obj && obj instanceof String ? (String) obj : "";
         List<String> errors = Lists.newArrayList();
         String errorsDetails[] = null;
-        Boolean result = DialogEnhancement.checkBotTaskParametersWithDocxTemplate(botTask, embeddedDocxTemplateFileName, errors, errorsDetails);
+        Boolean result = DocxDialogEnhancement.checkBotTaskParametersWithDocxTemplate(botTask, embeddedDocxTemplateFileName, errors, errorsDetails);
         if (null == result) {
             if (showCheckErrorMessage) {
                 Dialogs.error(Localization.getString("DialogEnhancement.docxCheckError"));
@@ -508,7 +509,7 @@ public class BotTaskEditor extends EditorPart implements ISelectionListener, IRe
     }
 
     private void updateFromTemplate() throws IOException, CoreException {
-        Boolean changed = DialogEnhancement.updateBotTaskFromTemplate(botTask, embeddedFileName);
+        Boolean changed = DocxDialogEnhancement.updateBotTaskFromTemplate(botTask, embeddedFileName);
         if (null == changed) {
             Dialogs.showErrorMessage(Localization.getString("DialogEnhancement.docxCheckError"));
             return;

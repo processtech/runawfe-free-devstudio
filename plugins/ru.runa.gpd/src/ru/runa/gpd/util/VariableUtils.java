@@ -1,12 +1,16 @@
 package ru.runa.gpd.util;
 
+import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import java.text.MessageFormat;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
-
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.GraphElement;
@@ -17,12 +21,6 @@ import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.wfe.var.UserType;
 import ru.runa.wfe.var.format.ListFormat;
 import ru.runa.wfe.var.format.MapFormat;
-
-import com.google.common.base.Objects;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 public class VariableUtils {
     public static final String CURRENT_PROCESS_ID = "${currentProcessId}";
@@ -133,6 +131,9 @@ public class VariableUtils {
      * @return variable or <code>null</code>
      */
     public static Variable getVariableByName(VariableContainer variableContainer, String name) {
+        if (null == variableContainer) {
+            return null;
+        }
         List<Variable> variables = variableContainer.getVariables(false, true);
         for (Variable variable : variables) {
             if (Objects.equal(variable.getName(), name)) {
@@ -192,8 +193,8 @@ public class VariableUtils {
             String syntheticScriptingName = (parent != null ? (parent.getScriptingName() + VariableUserType.DELIM) : "")
                     + variable.getScriptingName();
             if (Objects.equal(variable.getUserType(), searchType)) {
-                Variable syntheticVariable = new Variable(syntheticName + VariableUserType.DELIM + searchAttribute.getName(), syntheticScriptingName
-                        + VariableUserType.DELIM + searchAttribute.getScriptingName(), searchAttribute);
+                Variable syntheticVariable = new Variable(syntheticName + VariableUserType.DELIM + searchAttribute.getName(),
+                        syntheticScriptingName + VariableUserType.DELIM + searchAttribute.getScriptingName(), searchAttribute);
                 result.add(syntheticVariable);
             } else {
                 Variable syntheticVariable = new Variable(syntheticName, syntheticScriptingName, variable);

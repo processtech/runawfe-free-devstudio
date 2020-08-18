@@ -55,14 +55,16 @@ public class CommonPreferencePage extends FieldEditorPreferencePage implements I
                 getFieldEditorParent()));
         addField(new BooleanFieldEditor(P_CONFIRM_DELETION, Localization.getString("pref.commons.confirmDeletion"), getFieldEditorParent()));
         addField(new BooleanFieldEditor(P_PROCESS_SAVE_HISTORY, Localization.getString("pref.commons.processSaveHistory"), getFieldEditorParent()));
-        savepointNumberEditor = new IntegerFieldEditor(P_PROCESS_SAVEPOINT_NUMBER,
-                Localization.getString("pref.commons.processSavepointNumber"), getFieldEditorParent(), 2);
+        savepointNumberEditor = new IntegerFieldEditor(P_PROCESS_SAVEPOINT_NUMBER, Localization.getString("pref.commons.processSavepointNumber"),
+                getFieldEditorParent(), 2);
         savepointNumberEditor.setValidRange(1, 99);
         savepointNumberEditor.setEnabled(Activator.getPrefBoolean(P_PROCESS_SAVE_HISTORY), getFieldEditorParent());
         addField(savepointNumberEditor);
         enableUserActivityLogging = new BooleanFieldEditor(P_ENABLE_USER_ACTIVITY_LOGGING,
                 Localization.getString("pref.commons.enableUserActivityLogging"), getFieldEditorParent());
         addField(enableUserActivityLogging);
+        addField(new BooleanFieldEditor(P_DISABLE_DOCX_TEMPLATE_VALIDATION, Localization.getString("pref.commons.disableDocxTemplateValidation"),
+                getFieldEditorParent()));
     }
 
     @Override

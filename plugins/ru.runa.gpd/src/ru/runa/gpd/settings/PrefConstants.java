@@ -62,4 +62,5 @@ public interface PrefConstants {
     public static final String P_ENABLE_USER_ACTIVITY_LOGGING = "enableUserActivityLogging";
     public static final String P_ENABLE_USE_BOT_CONFIG_WITHOUT_PARAMETERS_OPTION = "useBotConfigurationWithoutParametersOption";
     public static final String P_SHOW_XML_BOT_CONFIG = "showXmlBotConfig";
+    public static final String P_DISABLE_DOCX_TEMPLATE_VALIDATION = "disableDocxTemplateValidation";
 }

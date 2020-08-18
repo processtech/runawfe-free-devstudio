@@ -48,7 +48,7 @@ public class ReplaceOperation extends Operation {
         this.value = value;
     }
 
-    public void execute(DocxConfig config, VariableProvider variableProvider) {
+    public void execute(DocxConfig config, VariableConsumer variableProvider) {
     }
 
     @Override
