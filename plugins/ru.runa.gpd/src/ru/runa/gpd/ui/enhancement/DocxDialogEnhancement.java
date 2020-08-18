@@ -34,6 +34,39 @@ import ru.runa.gpd.util.docx.DocxVariableParser;
 
 public class DocxDialogEnhancement {
 
+    private static Map<String, Integer> actorFieldsMap;
+    private static Map<String, Integer> groupFieldsMap;
+    static {
+        actorFieldsMap = new HashMap<String, Integer>();
+        groupFieldsMap = new HashMap<String, Integer>();
+
+        Class<?> objectClass = ru.runa.wfe.user.Executor.class;
+        Field[] fieldsList = null != objectClass ? objectClass.getDeclaredFields() : null;
+        if (null != fieldsList) {
+            for (Field field : fieldsList) {
+                actorFieldsMap.put(field.getName(), 0);
+                groupFieldsMap.put(field.getName(), 0);
+            }
+        }
+        objectClass = ru.runa.wfe.user.Actor.class;
+        fieldsList = null != objectClass ? objectClass.getDeclaredFields() : null;
+        if (null != fieldsList) {
+            for (Field field : fieldsList) {
+                actorFieldsMap.put(field.getName(), 0);
+            }
+        }
+        actorFieldsMap.put("firstName", 0);
+        actorFieldsMap.put("middleName", 0);
+        actorFieldsMap.put("lastName", 0);
+        objectClass = ru.runa.wfe.user.Group.class;
+        fieldsList = null != objectClass ? objectClass.getDeclaredFields() : null;
+        if (null != fieldsList) {
+            for (Field field : fieldsList) {
+                groupFieldsMap.put(field.getName(), 0);
+            }
+        }
+    }
+
     private static String wrapToScriptName(Delegable delegable, String message) {
         return message + " (" + Localization.getString("DialogEnhancement.scriptTask") + " \"" + delegable.toString() + "\")";
     }
@@ -136,42 +169,11 @@ public class DocxDialogEnhancement {
                 PluginLogger.logInfo(wrapToScriptName(delegable, Localization.getString("DialogEnhancement.cantParseDocxTemplate")));
                 return null;
             }
+
             List<String> usedVariableList = delegable.getVariableNames(false);
             Map<String, Integer> variablesToCheck = new TreeMap<String, Integer>();
             boolean ok = true;
             List<Variable> processVaribles = processDefinition.getVariables(true, true);
-            Map<String, Integer> actorFieldsMap = new HashMap<String, Integer>();
-            Map<String, Integer> groupFieldsMap = new HashMap<String, Integer>();
-            try {
-                Class<?> objectClass = Class.forName("ru.runa.wfe.user.Executor");
-                Field[] fieldsList = null != objectClass ? objectClass.getDeclaredFields() : null;
-                if (null != fieldsList) {
-                    for (Field field : fieldsList) {
-                        actorFieldsMap.put(field.getName(), 0);
-                        groupFieldsMap.put(field.getName(), 0);
-                    }
-                }
-                objectClass = Class.forName("ru.runa.wfe.user.Actor");
-                fieldsList = null != objectClass ? objectClass.getDeclaredFields() : null;
-                if (null != fieldsList) {
-                    for (Field field : fieldsList) {
-                        actorFieldsMap.put(field.getName(), 0);
-                    }
-                }
-                actorFieldsMap.put("firstName", 0);
-                actorFieldsMap.put("middleName", 0);
-                actorFieldsMap.put("lastName", 0);
-                objectClass = Class.forName("ru.runa.wfe.user.Group");
-                fieldsList = null != objectClass ? objectClass.getDeclaredFields() : null;
-                if (null != fieldsList) {
-                    for (Field field : fieldsList) {
-                        groupFieldsMap.put(field.getName(), 0);
-                    }
-                }
-            } catch (ClassNotFoundException e) {
-                PluginLogger.logErrorWithoutDialog("Can't access to Actor, Executor or Group class!", e);
-                return null;
-            }
 
             for (Map.Entry<String, Integer> entry : variablesMap.entrySet()) {
                 String variable = entry.getKey();
@@ -190,10 +192,7 @@ public class DocxDialogEnhancement {
                             Map<String, Integer> fieldsMap = (baseVar.getFormat().compareTo("ru.runa.wfe.var.format.ExecutorFormat") == 0
                                     || baseVar.getFormat().compareTo("ru.runa.wfe.var.format.ActorFormat") == 0) ? actorFieldsMap
                                             : (baseVar.getFormat().compareTo("ru.runa.wfe.var.format.GroupFormat") == 0 ? groupFieldsMap : null);
-
-                            if (null != fieldsMap) {
-                                check = !fieldsMap.containsKey(attrName);
-                            }
+                            check = null != fieldsMap && !fieldsMap.containsKey(attrName);
                         }
                     }
 
