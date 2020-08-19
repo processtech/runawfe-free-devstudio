@@ -187,12 +187,29 @@ public class DocxDialogEnhancement {
                     if (dotIndex > 0) {
                         String baseVarName = variable.substring(0, dotIndex);
                         String attrName = variable.substring(dotIndex + 1, variable.length());
-                        Variable baseVar = ru.runa.gpd.util.VariableUtils.getVariableByScriptingName(processVaribles, baseVarName);
+                        Variable baseVar = ru.runa.gpd.util.VariableUtils.getVariableByName(processDefinition, baseVarName);
+                        if (null == baseVar) {
+                            baseVar = ru.runa.gpd.util.VariableUtils.getVariableByScriptingName(processVaribles, baseVarName);
+                        }
                         if (null != baseVar && attrName.length() > 0) {
+                            // for Actor/Role/Group/Executor
                             Map<String, Integer> fieldsMap = (baseVar.getFormat().compareTo("ru.runa.wfe.var.format.ExecutorFormat") == 0
                                     || baseVar.getFormat().compareTo("ru.runa.wfe.var.format.ActorFormat") == 0) ? actorFieldsMap
                                             : (baseVar.getFormat().compareTo("ru.runa.wfe.var.format.GroupFormat") == 0 ? groupFieldsMap : null);
-                            check = null != fieldsMap && !fieldsMap.containsKey(attrName);
+
+                            // for Lists
+                            if (null == fieldsMap) {
+                                if (baseVar.getFormat().startsWith("ru.runa.wfe.var.format.ListFormat")) {
+                                    // String TypeName = ru.runa.gpd.util.VariableUtils.getListVariableComponentFormat(baseVar);
+                                    // checkTypeAttributes(TypeName, attrName);
+                                    check = false;
+                                }
+
+                            }
+
+                            if (check) {
+                                check = null == fieldsMap || !fieldsMap.containsKey(attrName);
+                            }
                         }
                     }
 
@@ -207,6 +224,7 @@ public class DocxDialogEnhancement {
                         variablesToCheck.put(baseVarName, 1);
                     }
                 }
+
             }
 
             for (Map.Entry<String, Integer> entry : variablesToCheck.entrySet()) {

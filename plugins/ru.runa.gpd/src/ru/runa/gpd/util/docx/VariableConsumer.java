@@ -52,7 +52,10 @@ public class VariableConsumer implements IVariableProvider {
             String variables = script.substring(firstIndex + 1, script.length() - 1);
             String[] variablesArray = variables.split(",");
             for (String variable : variablesArray) {
-                getVariable(variable.trim());
+                variable = variable.trim();
+                if (!variable.isEmpty()) {
+                    getVariable(variable);
+                }
             }
         }
 
@@ -82,6 +85,10 @@ public class VariableConsumer implements IVariableProvider {
         return null;
     }
 
+    private String unarrayVariableName(String variable) {
+        return variable.replaceAll("\\[.*?\\]", "");
+    }
+
     @Override
     public WfVariable getVariable(String variableName) {
         // int dotIndex = variableName.indexOf(UserType.DELIM);
@@ -92,6 +99,8 @@ public class VariableConsumer implements IVariableProvider {
         if (null != IterateBy.identifyByString(null, variableName)) {
             return null;
         }
+
+        variableName = unarrayVariableName(variableName);
 
         variablesMap.put(variableName, 1);
         return null;
@@ -106,6 +115,8 @@ public class VariableConsumer implements IVariableProvider {
         if (null != IterateBy.identifyByString(null, variableName)) {
             return null;
         }
+
+        variableName = unarrayVariableName(variableName);
 
         variablesMap.put(variableName, 1);
         return loopVarable ? new WfVariable(variableName, new ArrayList()) : null;
