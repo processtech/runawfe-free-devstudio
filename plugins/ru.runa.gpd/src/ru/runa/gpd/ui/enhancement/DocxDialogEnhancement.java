@@ -249,7 +249,20 @@ public class DocxDialogEnhancement {
             }
 
             for (Map.Entry<String, Integer> entry : variablesChainsToCheck.entrySet()) {
-                String variable = entry.getKey();
+                String error = Localization.getString("DialogEnhancement.noBadAttributeSeqForDocx", entry.getKey());
+                if (null != errorsDetails && errorsDetails.length > 0) {
+                    if (!errorsDetails[0].isEmpty()) {
+                        errorsDetails[0] += "\n";
+                    }
+                    errorsDetails[0] += wrapToScriptName(delegable, error);
+                }
+                if (null != errors) {
+                    errors.add(error);
+                }
+                if (null != errorSources) {
+                    errorSources.add(delegable);
+                }
+                ok = false;
             }
 
             for (Map.Entry<String, Integer> entry : variablesToCheck.entrySet()) {
