@@ -28,6 +28,7 @@ import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Variable;
+import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.gpd.settings.PrefConstants;
 import ru.runa.gpd.util.EmbeddedFileUtils;
 import ru.runa.gpd.util.docx.DocxVariableParser;
@@ -172,6 +173,7 @@ public class DocxDialogEnhancement {
 
             List<String> usedVariableList = delegable.getVariableNames(false);
             Map<String, Integer> variablesToCheck = new TreeMap<String, Integer>();
+            Map<String, Integer> variablesChainsToCheck = new TreeMap<String, Integer>();
             boolean ok = true;
             List<Variable> processVaribles = processDefinition.getVariables(true, true);
 
@@ -200,11 +202,30 @@ public class DocxDialogEnhancement {
                             // for Lists
                             if (null == fieldsMap) {
                                 if (baseVar.getFormat().startsWith("ru.runa.wfe.var.format.ListFormat")) {
-                                    // String TypeName = ru.runa.gpd.util.VariableUtils.getListVariableComponentFormat(baseVar);
-                                    // checkTypeAttributes(TypeName, attrName);
+                                    String embeddedTypeName = ru.runa.gpd.util.VariableUtils.getListVariableComponentFormat(baseVar);
+                                    VariableUserType userType = processDefinition.getVariableUserType(embeddedTypeName);
+                                    String[] attrs = attrName.split("[.]");
+                                    for (int index = 0; index < attrs.length; index++) {
+                                        boolean finded = false;
+                                        String attr = attrs[index];
+                                        List<Variable> vars = null != userType ? userType.getAttributes() : null;
+
+                                        if (null != vars) {
+                                            for (Variable v : vars) {
+                                                if (v.getName().compareTo(attr) == 0) {
+                                                    finded = true;
+                                                    userType = v.getUserType();
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                        if (!finded) {
+                                            variablesChainsToCheck.put(variable, 1);
+                                            break;
+                                        }
+                                    }
                                     check = false;
                                 }
-
                             }
 
                             if (check) {
@@ -225,6 +246,10 @@ public class DocxDialogEnhancement {
                     }
                 }
 
+            }
+
+            for (Map.Entry<String, Integer> entry : variablesChainsToCheck.entrySet()) {
+                String variable = entry.getKey();
             }
 
             for (Map.Entry<String, Integer> entry : variablesToCheck.entrySet()) {
@@ -260,6 +285,31 @@ public class DocxDialogEnhancement {
             return null;
         }
     }
+
+    // private static boolean checkTypeAttributes(String variable, String attributes) {
+    // if (baseVar.getFormat().startsWith("ru.runa.wfe.var.format.ListFormat")) {
+    //
+    // }
+    //
+    //
+    // int dotIndex = attributes.indexOf(".");
+    // if (dotIndex > 0) {
+    // String baseVarName = attributes.substring(0, dotIndex);
+    // String attrName = variable.substring(dotIndex + 1, variable.length());
+    // Variable baseVar = ru.runa.gpd.util.VariableUtils.getVariableByName(processDefinition, baseVarName);
+    // }
+    //
+    //
+    //
+    // if (baseVar.getFormat().startsWith("ru.runa.wfe.var.format.ListFormat")) {
+    // String TypeName = ru.runa.gpd.util.VariableUtils.getListVariableComponentFormat(baseVar);
+    // VariableUserType userType = processDefinition.getVariableUserType(TypeName);
+    // if (!checkTypeAttributes(userType, attrName)) {
+    // variablesChainsToCheck.put(variable, 1);
+    // }
+    // check = false;
+    // }
+    // }
 
     private static String wrapToBotName(BotTask botTask, String message) {
         return message + " (" + Localization.getString("DialogEnhancement.botTask") + " \"" + botTask.getName() + "\")";
