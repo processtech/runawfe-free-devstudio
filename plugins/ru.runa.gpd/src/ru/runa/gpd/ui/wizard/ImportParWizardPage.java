@@ -179,7 +179,9 @@ public class ImportParWizardPage extends ImportWizardPage {
     }
 
     private void createServerDefinitionsGroup(Composite parent) {
-    	serverDefinitionFilter = new Text(parent, SWT.SINGLE);   
+    	serverDefinitionFilter = new Text(parent, SWT.SINGLE | SWT.BORDER);   
+        GridData gridDataText = new GridData(SWT.FILL,SWT.BEGINNING, true, false);
+        serverDefinitionFilter.setLayoutData(gridDataText);   
         serverDefinitionFilter.addModifyListener(new ModifyListener( ) {
 
             @Override
