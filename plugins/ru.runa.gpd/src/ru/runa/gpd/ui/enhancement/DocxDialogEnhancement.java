@@ -66,6 +66,7 @@ public class DocxDialogEnhancement {
                 groupFieldsMap.put(field.getName(), 0);
             }
         }
+        groupFieldsMap.remove("fullName");
     }
 
     private static String wrapToScriptName(Delegable delegable, String message) {
@@ -215,6 +216,13 @@ public class DocxDialogEnhancement {
                                                 if (v.getName().compareTo(attr) == 0) {
                                                     finded = true;
                                                     userType = v.getUserType();
+                                                    if (null == userType) {
+                                                        // for List in List
+                                                        if (v.getFormat().startsWith("ru.runa.wfe.var.format.ListFormat")) {
+                                                            embeddedTypeName = ru.runa.gpd.util.VariableUtils.getListVariableComponentFormat(v);
+                                                            userType = processDefinition.getVariableUserType(embeddedTypeName);
+                                                        }
+                                                    }
                                                     break;
                                                 }
                                             }
@@ -298,31 +306,6 @@ public class DocxDialogEnhancement {
             return null;
         }
     }
-
-    // private static boolean checkTypeAttributes(String variable, String attributes) {
-    // if (baseVar.getFormat().startsWith("ru.runa.wfe.var.format.ListFormat")) {
-    //
-    // }
-    //
-    //
-    // int dotIndex = attributes.indexOf(".");
-    // if (dotIndex > 0) {
-    // String baseVarName = attributes.substring(0, dotIndex);
-    // String attrName = variable.substring(dotIndex + 1, variable.length());
-    // Variable baseVar = ru.runa.gpd.util.VariableUtils.getVariableByName(processDefinition, baseVarName);
-    // }
-    //
-    //
-    //
-    // if (baseVar.getFormat().startsWith("ru.runa.wfe.var.format.ListFormat")) {
-    // String TypeName = ru.runa.gpd.util.VariableUtils.getListVariableComponentFormat(baseVar);
-    // VariableUserType userType = processDefinition.getVariableUserType(TypeName);
-    // if (!checkTypeAttributes(userType, attrName)) {
-    // variablesChainsToCheck.put(variable, 1);
-    // }
-    // check = false;
-    // }
-    // }
 
     private static String wrapToBotName(BotTask botTask, String message) {
         return message + " (" + Localization.getString("DialogEnhancement.botTask") + " \"" + botTask.getName() + "\")";

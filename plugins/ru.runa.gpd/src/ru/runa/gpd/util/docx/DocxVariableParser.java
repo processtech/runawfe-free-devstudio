@@ -20,7 +20,7 @@ public class DocxVariableParser {
 
     public static Map<String, Integer> getVariableNamesFromDocxTemplate(InputStream templateInputStream, boolean scriptParseMode) {
         Map<String, Integer> variablesMap = new TreeMap<String, Integer>();
-        VariableConsumer variableProvider = new VariableConsumer(variablesMap);
+        VariableConsumer variableProvider = new VariableConsumer(variablesMap, scriptParseMode);
         DocxConfig config = new DocxConfig();
 
         try (XWPFDocument document = new XWPFDocument(templateInputStream)) {

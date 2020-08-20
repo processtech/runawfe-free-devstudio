@@ -11,9 +11,11 @@ import ru.runa.wfe.var.dto.WfVariable;
 public class VariableConsumer implements IVariableProvider {
 
     private Map<String, Integer> variablesMap;
+    private boolean scriptParseMode;
 
-    VariableConsumer(Map<String, Integer> variablesMap) {
+    VariableConsumer(Map<String, Integer> variablesMap, boolean scriptParseMode) {
         this.variablesMap = variablesMap;
+        this.scriptParseMode = scriptParseMode;
     }
 
     @Override
@@ -86,6 +88,15 @@ public class VariableConsumer implements IVariableProvider {
     }
 
     private String unarrayVariableName(String variable) {
+        if (!scriptParseMode) {
+            int i1 = variable.indexOf("[");
+            int i2 = variable.indexOf("]");
+
+            if (i1 > 0 && i2 > i1) {
+                variable = variable.substring(0, i1);
+            }
+        }
+
         return variable.replaceAll("\\[.*?\\]", "");
     }
 
