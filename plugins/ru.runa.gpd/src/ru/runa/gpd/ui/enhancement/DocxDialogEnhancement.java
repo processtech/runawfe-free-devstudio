@@ -180,7 +180,7 @@ public class DocxDialogEnhancement {
 
             List<String> usedVariableList = delegable.getVariableNames(false);
             Map<String, Integer> variablesToCheck = new TreeMap<String, Integer>();
-            Map<String, Integer> variablesChainsToCheck = new TreeMap<String, Integer>();
+            Map<String, Integer> variablesChainsToError = new TreeMap<String, Integer>();
             boolean ok = true;
             List<Variable> processVaribles = processDefinition.getVariables(true, true);
 
@@ -194,6 +194,7 @@ public class DocxDialogEnhancement {
                     int dotIndex = variable.indexOf(".");
                     boolean check = true;
                     if (dotIndex > 0) {
+                        String embeddedTypeName;
                         String baseVarName = variable.substring(0, dotIndex);
                         String attrName = variable.substring(dotIndex + 1, variable.length());
                         Variable baseVar = ru.runa.gpd.util.VariableUtils.getVariableByName(processDefinition, baseVarName);
@@ -206,11 +207,14 @@ public class DocxDialogEnhancement {
                                     || baseVar.getFormat().compareTo("ru.runa.wfe.var.format.ActorFormat") == 0) ? actorFieldsMap
                                             : (baseVar.getFormat().compareTo("ru.runa.wfe.var.format.GroupFormat") == 0 ? groupFieldsMap : null);
 
-                            // for Lists
+                            // for Lists and UserTypes
                             if (null == fieldsMap) {
-                                if (baseVar.getFormat().startsWith("ru.runa.wfe.var.format.ListFormat")) {
-                                    String embeddedTypeName = ru.runa.gpd.util.VariableUtils.getListVariableComponentFormat(baseVar);
-                                    VariableUserType userType = processDefinition.getVariableUserType(embeddedTypeName);
+                                VariableUserType userType = baseVar.getUserType();
+                                if (null == userType && baseVar.getFormat().startsWith("ru.runa.wfe.var.format.ListFormat")) {
+                                    embeddedTypeName = ru.runa.gpd.util.VariableUtils.getListVariableComponentFormat(baseVar);
+                                    userType = processDefinition.getVariableUserType(embeddedTypeName);
+                                }
+                                if (null != userType) {
                                     String[] attrs = attrName.split("[.]");
                                     for (int index = 0; index < attrs.length; index++) {
                                         boolean finded = false;
@@ -222,19 +226,16 @@ public class DocxDialogEnhancement {
                                                 if (v.getName().compareTo(attr) == 0) {
                                                     finded = true;
                                                     userType = v.getUserType();
-                                                    if (null == userType) {
-                                                        // for List in List
-                                                        if (v.getFormat().startsWith("ru.runa.wfe.var.format.ListFormat")) {
-                                                            embeddedTypeName = ru.runa.gpd.util.VariableUtils.getListVariableComponentFormat(v);
-                                                            userType = processDefinition.getVariableUserType(embeddedTypeName);
-                                                        }
+                                                    if (null == userType && v.getFormat().startsWith("ru.runa.wfe.var.format.ListFormat")) {
+                                                        embeddedTypeName = ru.runa.gpd.util.VariableUtils.getListVariableComponentFormat(v);
+                                                        userType = processDefinition.getVariableUserType(embeddedTypeName);
                                                     }
                                                     break;
                                                 }
                                             }
                                         }
                                         if (!finded) {
-                                            variablesChainsToCheck.put(variable, 1);
+                                            variablesChainsToError.put(variable, 1);
                                             break;
                                         }
                                     }
@@ -262,7 +263,7 @@ public class DocxDialogEnhancement {
 
             }
 
-            for (Map.Entry<String, Integer> entry : variablesChainsToCheck.entrySet()) {
+            for (Map.Entry<String, Integer> entry : variablesChainsToError.entrySet()) {
                 String error = Localization.getString("DialogEnhancement.noBadAttributeSeqForDocx", entry.getKey());
                 if (null != errorsDetails && errorsDetails.length > 0) {
                     if (!errorsDetails[0].isEmpty()) {
