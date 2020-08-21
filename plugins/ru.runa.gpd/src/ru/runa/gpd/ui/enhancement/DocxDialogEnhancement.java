@@ -45,15 +45,19 @@ public class DocxDialogEnhancement {
         Field[] fieldsList = null != objectClass ? objectClass.getDeclaredFields() : null;
         if (null != fieldsList) {
             for (Field field : fieldsList) {
-                actorFieldsMap.put(field.getName(), 0);
-                groupFieldsMap.put(field.getName(), 0);
+                if (!java.lang.reflect.Modifier.isStatic(field.getModifiers())) {
+                    actorFieldsMap.put(field.getName(), 0);
+                    groupFieldsMap.put(field.getName(), 0);
+                }
             }
         }
         objectClass = ru.runa.wfe.user.Actor.class;
         fieldsList = null != objectClass ? objectClass.getDeclaredFields() : null;
         if (null != fieldsList) {
             for (Field field : fieldsList) {
-                actorFieldsMap.put(field.getName(), 0);
+                if (!java.lang.reflect.Modifier.isStatic(field.getModifiers())) {
+                    actorFieldsMap.put(field.getName(), 0);
+                }
             }
         }
         actorFieldsMap.put("firstName", 0);
@@ -63,7 +67,9 @@ public class DocxDialogEnhancement {
         fieldsList = null != objectClass ? objectClass.getDeclaredFields() : null;
         if (null != fieldsList) {
             for (Field field : fieldsList) {
-                groupFieldsMap.put(field.getName(), 0);
+                if (!java.lang.reflect.Modifier.isStatic(field.getModifiers())) {
+                    groupFieldsMap.put(field.getName(), 0);
+                }
             }
         }
         groupFieldsMap.remove("fullName");
