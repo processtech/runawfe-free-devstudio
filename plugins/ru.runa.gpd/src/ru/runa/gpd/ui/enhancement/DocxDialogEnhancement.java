@@ -223,7 +223,7 @@ public class DocxDialogEnhancement {
 
                                         if (null != vars) {
                                             for (Variable v : vars) {
-                                                if (v.getName().compareTo(attr) == 0) {
+                                                if (v.getName().compareTo(attr) == 0 || v.getScriptingName().compareTo(attr) == 0) {
                                                     finded = true;
                                                     userType = v.getUserType();
                                                     if (null == userType && v.getFormat().startsWith("ru.runa.wfe.var.format.ListFormat")) {
