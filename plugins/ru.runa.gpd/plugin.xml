@@ -460,7 +460,7 @@
           id="delegable.configuration"
           objectClass="ru.runa.gpd.lang.model.Delegable">
        <filter
-             name="delegable"
+             name="delegableEditHandler"
              value="true">
        </filter>
        <action
@@ -468,6 +468,15 @@
              id="delegable.1editHandler"
              label="%label.action.editHandler">
        </action>
+    </objectContribution>
+    <objectContribution
+          adaptable="false"
+          id="delegable.configuration"
+          objectClass="ru.runa.gpd.lang.model.Delegable">
+       <filter
+             name="delegableEditConfiguration"
+             value="true">
+       </filter>
        <action
              class="ru.runa.gpd.lang.action.OpenDelegableConfigurationDelegate"
              id="delegable.2editConfiguration"
@@ -840,6 +849,22 @@
          </graphiti>
       </element>
       <element
+            type="connection"
+            model="ru.runa.gpd.lang.model.bpmn.DottedTransition"
+            bpmn="dataStoreReference"
+            icon="transitiondotted.png"
+            label="%label.element.dottedTransition">
+         <graphiti
+               add="ru.runa.gpd.editor.graphiti.add.AddDottedTransitionFeature"
+               create="ru.runa.gpd.editor.graphiti.create.CreateDottedTransitionFeature"
+               fixedSize="false"
+               height="1"
+               layout="ru.runa.gpd.editor.graphiti.layout.LayoutTransitionFeature"
+               update="ru.runa.gpd.editor.graphiti.update.UpdateDottedTransitionFeature"
+               width="1">
+         </graphiti>
+      </element>
+      <element
             bpmn="textAnnotation"
             label="%label.element.textAnnotation"
             icon="textAnnotation.png"
@@ -963,8 +988,24 @@
                height="10"
                layout="ru.runa.gpd.editor.graphiti.layout.LayoutStateNodeFeature"
                update="ru.runa.gpd.editor.graphiti.update.UpdateStateNodeFeature"
-               doubleClick="ru.runa.gpd.editor.graphiti.update.DoubleClickDelegableFeature"
+               doubleClick="ru.runa.gpd.editor.graphiti.update.ScriptTaskDoubleClickDelegableFeature"
                width="15">
+         </graphiti>
+      </element>
+      <element
+            bpmn="dataStore"
+            icon="datastore.png"
+            enabledInRegulationsByDefault="false"
+            label="%label.element.datastore"
+            model="ru.runa.gpd.lang.model.bpmn.DataStore"
+            type="node">
+         <graphiti
+               add="ru.runa.gpd.editor.graphiti.add.AddDataStoreNodeFeature"
+               create="ru.runa.gpd.editor.graphiti.create.CreateDataStoreFeature"
+               fixedSize="true"
+               height="4"
+               update="ru.runa.gpd.editor.graphiti.update.UpdateStateNodeFeature"
+               width="4">
          </graphiti>
       </element>
       <element

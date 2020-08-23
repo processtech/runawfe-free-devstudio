@@ -4,13 +4,19 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.widgets.Display;
-
 import ru.runa.gpd.ui.custom.Dialogs;
 
 public class PluginLogger {
 
     public static void logInfo(String message) {
         log(createStatus(IStatus.INFO, IStatus.OK, message, null));
+    }
+
+    public static void logWarnWithDialog(String message) {
+        log(createStatus(IStatus.WARNING, IStatus.OK, message, null));
+        if (Display.getCurrent() != null) {
+            Dialogs.warning(message);
+        }
     }
 
     public static void logError(Throwable exception) {

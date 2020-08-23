@@ -1,11 +1,13 @@
 package ru.runa.gpd.formeditor.ftl.ui;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Queue;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -121,7 +123,7 @@ public class ComponentParametersDialog extends Dialog {
                         for (int i = 2; i < children.length; i++) {
                             children[i].dispose();
                         }
-                        drawParameters(parametersComposite);
+                        drawParameters(parametersComposite, null);
                         parametersComposite.layout(true, true);
 
                         final int initialY = component.getType().getParameters().size() < 7 ? (component.getType().getParameters().size() + 1) * 64
@@ -134,25 +136,43 @@ public class ComponentParametersDialog extends Dialog {
             }
         });
 
-        drawParameters(parametersComposite);
+        /*
+         * Deferred event handling of dependent parameters which editors are not initialized in stage of initial drawing. This can occur if dependent
+         * parameter is placed below main parameter and main parameter has default value on configuration screen
+         */
+        final Queue<ComponentParameter> deferredDefaultInitializationQueue = new LinkedList<>();
+        drawParameters(parametersComposite, deferredDefaultInitializationQueue::add);
+        while (deferredDefaultInitializationQueue.peek() != null) {
+            final ComponentParameter dependentParameter = deferredDefaultInitializationQueue.poll();
+            final Object parameterEditor = parameterEditors.get(dependentParameter);
+            Preconditions.checkState(parameterEditor != null,
+                    "Editor for parameter " + dependentParameter.getLabel() + " can not be null at this stage");
+            updateDependentParameter(dependentParameter, parameterEditor);
+        }
 
         scrolledComposite.setContent(parametersComposite);
         scrolledComposite.setMinSize(parametersComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT));
         return rootComposite;
     }
 
-    private void drawParameters(Composite parametersComposite) {
+    private void drawParameters(Composite parametersComposite, Consumer<ComponentParameter> deferredDefaultValueEventInitializationConsumer) {
         parameterEditors.clear();
         for (final ComponentParameter componentParameter : component.getType().getParameters()) {
             SwtUtils.createLabel(parametersComposite, componentParameter.getLabel()).setToolTipText(componentParameter.getDescription());
             Object editor = componentParameter.getType().createEditor(parametersComposite, component, componentParameter,
-                    component.getParameterValue(componentParameter), new PropertyChangeListener() {
-
-                        @Override
-                        public void propertyChange(PropertyChangeEvent event) {
-                            component.setParameterValue(componentParameter, event.getNewValue());
-                            for (ComponentParameter dependentParameter : componentParameter.getDependents()) {
-                                dependentParameter.getType().updateEditor(parameterEditors.get(dependentParameter), component, dependentParameter);
+                    component.getParameterValue(componentParameter), event -> {
+                        component.setParameterValue(componentParameter, event.getNewValue());
+                        for (ComponentParameter dependentParameter : componentParameter.getDependents()) {
+                            final Object parameterEditor = parameterEditors.get(dependentParameter);
+                            if (parameterEditor == null) {
+                                if (deferredDefaultValueEventInitializationConsumer != null) {
+                                    deferredDefaultValueEventInitializationConsumer.accept(dependentParameter);
+                                } else {
+                                    throw new IllegalStateException(
+                                            "Editor for parameter " + dependentParameter.getLabel() + " can not be null at this stage");
+                                }
+                            } else {
+                                updateDependentParameter(dependentParameter, parameterEditor);
                             }
                         }
                     });
@@ -166,6 +186,10 @@ public class ComponentParametersDialog extends Dialog {
         }
     }
 
+    private void updateDependentParameter(ComponentParameter dependentParameter, Object parameterEditor) {
+        dependentParameter.getType().updateEditor(parameterEditor, component, dependentParameter);
+    }
+
     private void setDefaultDisplayFormat(ComboViewer comboViewer) {
         String defaultValue = EditorsPlugin.getDefault().getPreferenceStore().getString(PreferencePage.P_FORM_DEFAULT_DISPLAY_FORMAT);
         for (ComboOption option : (List<ComboOption>) comboViewer.getInput()) {
@@ -175,5 +199,4 @@ public class ComponentParametersDialog extends Dialog {
             }
         }
     }
-
 }

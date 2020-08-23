@@ -1,12 +1,11 @@
 package ru.runa.gpd.office.store;
 
+import com.google.common.base.Strings;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
-
 import org.dom4j.Document;
 import org.dom4j.Element;
-
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.office.FilesSupplierMode;
@@ -14,11 +13,9 @@ import ru.runa.gpd.office.InputOutputModel;
 import ru.runa.gpd.office.Messages;
 import ru.runa.gpd.util.XmlUtil;
 
-import com.google.common.base.Strings;
-
 public class DataModel extends Observable {
-    private final FilesSupplierMode mode;
-    private final InputOutputModel inOutModel;
+    protected FilesSupplierMode mode;
+    protected final InputOutputModel inOutModel;
     public final List<StorageConstraintsModel> constraints = new ArrayList<StorageConstraintsModel>();
 
     public DataModel(FilesSupplierMode mode) {
