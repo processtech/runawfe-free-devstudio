@@ -159,7 +159,9 @@ public class PropertiesView extends ViewPart implements ISelectionListener, Prop
         } else {
             final IPropertySource newSrc = newSource;
             Display.getDefault().asyncExec(() -> {
-                if (getSite().getWorkbenchWindow().getActivePage().getEditorReferences().length == 0) {
+                if (null != getSite() && null != getSite().getWorkbenchWindow() && null != getSite().getWorkbenchWindow().getActivePage()
+                        && null != getSite().getWorkbenchWindow().getActivePage().getEditorReferences()
+                        && getSite().getWorkbenchWindow().getActivePage().getEditorReferences().length == 0) {
                     changeSource(newSrc);
                 }
             });

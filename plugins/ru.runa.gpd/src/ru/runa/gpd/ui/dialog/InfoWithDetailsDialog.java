@@ -1,5 +1,6 @@
 package ru.runa.gpd.ui.dialog;
 
+import com.google.common.base.Strings;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IconAndMessageDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -15,20 +16,20 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import com.google.common.base.Strings;
-
 public class InfoWithDetailsDialog extends IconAndMessageDialog {
     private final int dialogType;
+    // private final boolean showDetails;
     private String title;
     private String details;
     private Text detailsText;
 
-    public InfoWithDetailsDialog(int dialogType, String dialogTitle, String infoMessage, String details) {
+    public InfoWithDetailsDialog(int dialogType, String dialogTitle, String infoMessage, String details/* , boolean showDetails */) {
         super(Display.getCurrent().getActiveShell());
         this.dialogType = dialogType;
         this.title = dialogTitle;
         this.message = infoMessage;
         this.details = details;
+        // this.showDetails = showDetails;
         setShellStyle(getShellStyle() | SWT.RESIZE);
     }
 
@@ -70,7 +71,9 @@ public class InfoWithDetailsDialog extends IconAndMessageDialog {
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
         createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, false);
-        createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, true);
+        if (dialogType != MessageDialog.ERROR && dialogType != MessageDialog.INFORMATION) {
+            createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, true);
+        }
         if (!Strings.isNullOrEmpty(details)) {
             createButton(parent, IDialogConstants.DETAILS_ID, IDialogConstants.SHOW_DETAILS_LABEL, false);
         }
@@ -104,29 +107,37 @@ public class InfoWithDetailsDialog extends IconAndMessageDialog {
             if (dialogComposite.getChildren().length == 0) {
                 new Label(dialogComposite, SWT.NULL);
             }
+
+            // if (showDetails) {
+            // toggleDetailsArea(getShell(), parent);
+            // }
         }
     }
 
     protected void createDropDownList(Composite parent) {
         detailsText = new Text(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.MULTI);
-        detailsText.setText(details);
+        detailsText.setText(null == details ? "" : details);
         GridData data = new GridData(GridData.FILL_BOTH);
         data.horizontalSpan = 2;
         detailsText.setLayoutData(data);
     }
 
     private void toggleDetailsArea() {
-        Point windowSize = getShell().getSize();
-        Point oldSize = getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT);
+        toggleDetailsArea(getShell(), (Composite) getContents());
+    }
+
+    private void toggleDetailsArea(Shell shell, Composite composite) {
+        Point windowSize = shell.getSize();
+        Point oldSize = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT);
         if (isDetailsAreaCreated()) {
             detailsText.dispose();
             getButton(IDialogConstants.DETAILS_ID).setText(IDialogConstants.SHOW_DETAILS_LABEL);
         } else {
-            createDropDownList((Composite) getContents());
+            createDropDownList(composite);
             getButton(IDialogConstants.DETAILS_ID).setText(IDialogConstants.HIDE_DETAILS_LABEL);
         }
-        Point newSize = getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT);
-        getShell().setSize(new Point(windowSize.x, windowSize.y + (newSize.y - oldSize.y)));
+        Point newSize = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+        shell.setSize(new Point(windowSize.x, windowSize.y + (newSize.y - oldSize.y)));
     }
 
     private boolean isDetailsAreaCreated() {

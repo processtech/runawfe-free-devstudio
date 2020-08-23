@@ -1,11 +1,13 @@
 package ru.runa.gpd.lang.model;
 
 import com.google.common.base.Objects;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.ListIterator;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.draw2d.geometry.Rectangle;
@@ -33,6 +35,10 @@ import ru.runa.gpd.property.DescribablePropertyDescriptor;
 import ru.runa.gpd.property.DurationPropertyDescriptor;
 import ru.runa.gpd.property.TimerActionPropertyDescriptor;
 import ru.runa.gpd.settings.CommonPreferencePage;
+import ru.runa.gpd.ui.enhancement.DialogEnhancement;
+import ru.runa.gpd.ui.enhancement.DocxDialogEnhancement;
+import ru.runa.gpd.ui.enhancement.DocxDialogEnhancementMode;
+import ru.runa.gpd.util.EmbeddedFileUtils;
 import ru.runa.gpd.util.EventSupport;
 import ru.runa.gpd.util.VariableUtils;
 
@@ -145,6 +151,26 @@ public abstract class GraphElement extends EventSupport
                 } catch (Exception e) {
                     errors.add(ValidationError.createLocalizedError(this, "delegable.invalidConfigurationWithError", e));
                     PluginLogger.logErrorWithoutDialog("Script configuration '" + getDelegationConfiguration() + "' error: " + e);
+                }
+
+                if (delegationClassName.equals(DocxDialogEnhancementMode.DocxHandlerID)) {
+                    Object obj = DialogEnhancement.getConfigurationValue(delegable, DocxDialogEnhancementMode.InputPathId);
+                    String embeddedDocxTemplateFileName = null != obj && obj instanceof String ? (String) obj : "";
+                    if (!Strings.isNullOrEmpty(embeddedDocxTemplateFileName) && EmbeddedFileUtils.isProcessFile(embeddedDocxTemplateFileName)) {
+                        List<String> docxErrors = Lists.newArrayList();
+                        List<Delegable> docxErrorSources = Lists.newArrayList();
+                        DocxDialogEnhancement.checkScriptTaskParametersWithDocxTemplate(delegable,
+                                EmbeddedFileUtils.getProcessFileName(embeddedDocxTemplateFileName), docxErrors, docxErrorSources, null);
+                        if (docxErrors.size() > 0 && docxErrors.size() == docxErrorSources.size()) {
+                            ListIterator<String> iterator = docxErrors.listIterator();
+                            ListIterator<Delegable> iterator2 = docxErrorSources.listIterator();
+                            while (iterator.hasNext()) {
+                                Delegable delegable2 = iterator2.next();
+                                errors.add(ValidationError.createError(delegable2 instanceof GraphElement ? (GraphElement) delegable2 : this,
+                                        iterator.next()));
+                            }
+                        }
+                    }
                 }
             }
         }

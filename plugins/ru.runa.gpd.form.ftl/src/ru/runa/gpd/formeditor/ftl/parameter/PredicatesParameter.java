@@ -27,6 +27,7 @@ import ru.runa.gpd.lang.model.VariableUserTypeNameAware;
 import ru.runa.gpd.lang.model.bpmn.ScriptTask;
 import ru.runa.gpd.office.store.InternalStorageOperationHandlerCellEditorProvider;
 import ru.runa.gpd.office.store.externalstorage.InternalStorageDataModel;
+import ru.runa.gpd.ui.enhancement.DialogEnhancement;
 
 public class PredicatesParameter extends ParameterType implements DependsOnDbVariableUserType {
     private PredicatesDelegable delegable;
@@ -57,7 +58,7 @@ public class PredicatesParameter extends ParameterType implements DependsOnDbVar
 
             delegable.setVariableUserType(userType.get().getName());
             final InternalStorageOperationHandlerCellEditorProvider provider = new InternalStorageOperationHandlerCellEditorProvider();
-            final String xml = provider.showConfigurationDialog(delegable);
+            final String xml = DialogEnhancement.showConfigurationDialog(delegable);
             if (xml == null) {
                 return;
             }

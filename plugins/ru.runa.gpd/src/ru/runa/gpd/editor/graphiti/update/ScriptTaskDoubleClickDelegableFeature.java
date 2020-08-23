@@ -1,9 +1,8 @@
 package ru.runa.gpd.editor.graphiti.update;
 
 import org.eclipse.graphiti.features.context.ICustomContext;
-import ru.runa.gpd.extension.DelegableProvider;
-import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.lang.model.bpmn.ScriptTask;
+import ru.runa.gpd.ui.enhancement.DialogEnhancement;
 
 public class ScriptTaskDoubleClickDelegableFeature extends DoubleClickDelegableFeature {
 
@@ -14,10 +13,7 @@ public class ScriptTaskDoubleClickDelegableFeature extends DoubleClickDelegableF
             super.execute(context);
             return;
         }
-
-        final DelegableProvider provider = HandlerRegistry.getProvider(scriptTask.getDelegationClassName());
-        final String newConfig = provider.showConfigurationDialog(scriptTask);
-
+        final String newConfig = DialogEnhancement.showConfigurationDialog(scriptTask);
         if (newConfig != null) {
             scriptTask.setDelegationConfiguration(newConfig);
         }

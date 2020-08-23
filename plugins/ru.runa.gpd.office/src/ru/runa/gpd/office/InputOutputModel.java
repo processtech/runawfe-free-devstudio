@@ -1,16 +1,13 @@
 package ru.runa.gpd.office;
 
+import com.google.common.base.Strings;
 import java.text.MessageFormat;
 import java.util.List;
-
 import org.dom4j.Document;
 import org.dom4j.Element;
-
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.util.VariableUtils;
-
-import com.google.common.base.Strings;
 
 public class InputOutputModel {
     public String inputPath;
@@ -71,10 +68,12 @@ public class InputOutputModel {
             }
         }
         if (!Strings.isNullOrEmpty(inputVariable) && !VariableUtils.variableExists(inputVariable, graphElement.getProcessDefinition())) {
-            errors.add(ValidationError.createError(graphElement, MessageFormat.format(Messages.getString("model.validation.in.file.variable.dontexist"), inputVariable)));
+            errors.add(ValidationError.createError(graphElement,
+                    MessageFormat.format(Messages.getString("model.validation.in.file.variable.dontexist"), inputVariable)));
         }
         if (!Strings.isNullOrEmpty(outputVariable) && !VariableUtils.variableExists(outputVariable, graphElement.getProcessDefinition())) {
-            errors.add(ValidationError.createError(graphElement, MessageFormat.format(Messages.getString("model.validation.out.file.variable.dontexist"), outputVariable)));
+            errors.add(ValidationError.createError(graphElement,
+                    MessageFormat.format(Messages.getString("model.validation.out.file.variable.dontexist"), outputVariable)));
         }
     }
 

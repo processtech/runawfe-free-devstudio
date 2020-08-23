@@ -1,12 +1,11 @@
 package ru.runa.gpd.office.word;
 
+import com.google.common.base.Strings;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
-
 import org.dom4j.Document;
 import org.dom4j.Element;
-
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.office.FilesSupplierMode;
@@ -14,10 +13,8 @@ import ru.runa.gpd.office.InputOutputModel;
 import ru.runa.gpd.office.Messages;
 import ru.runa.gpd.util.XmlUtil;
 
-import com.google.common.base.Strings;
-
 public class DocxModel extends Observable {
-    private boolean strict = true;
+    private boolean strict = false;
     private InputOutputModel inOutModel = new InputOutputModel();
     private List<DocxTableModel> tables = new ArrayList<DocxTableModel>();
 

@@ -161,7 +161,7 @@ public abstract class BaseCommonStorageHandlerCellEditorProvider extends XmlBase
                 warning.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
                 validateCondition();
                 model.getInOutModel().canWorkWithDataSource = true;
-                new InputOutputComposite(this, delegable, model.getInOutModel(), getMode(), "xlsx");
+                new InputOutputComposite(this, delegable, model.getInOutModel(), getMode(), "xlsx", null);
                 for (StorageConstraintsModel c : model.constraints) {
                     new ArrtibuteComposite(c);
                 }

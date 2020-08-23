@@ -22,6 +22,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import ru.runa.gpd.Localization;
@@ -31,17 +32,26 @@ import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.ui.custom.XmlHighlightTextStyling;
+import ru.runa.gpd.ui.enhancement.DialogEnhancementMode;
+import ru.runa.gpd.ui.enhancement.DocxDialogEnhancementMode;
 import ru.runa.gpd.util.XmlUtil;
 
 public abstract class XmlBasedConstructorProvider<T extends Observable> extends DelegableProvider {
 
     @Override
-    public String showConfigurationDialog(Delegable delegable) {
+    public String showConfigurationDialog(Delegable delegable, DialogEnhancementMode dialogEnhancementMode) {
         XmlBasedConstructorDialog dialog = new XmlBasedConstructorDialog(delegable);
+        dialog.setDialogEnhancementMode(dialogEnhancementMode);
         if (dialog.open() == Window.OK) {
             return dialog.getResult();
         }
         return null;
+    }
+
+    @Override
+    public Object showEmbeddedConfigurationDialog(final Composite mainComposite, Delegable delegable, DialogEnhancementMode dialogEnhancementMode) {
+        XmlBasedConstructorDialog dialog = new XmlBasedConstructorDialog(delegable);
+        return dialog.createEmbeddedWindow(mainComposite, dialogEnhancementMode);
     }
 
     @Override
@@ -78,6 +88,10 @@ public abstract class XmlBasedConstructorProvider<T extends Observable> extends 
     }
 
     protected abstract String getTitle();
+
+    protected Composite createConstructorComposite(Composite parent, Delegable delegable, T model, DialogEnhancementMode dialogEnhancementMode) {
+        throw new RuntimeException("Not implemented behavior for provided 'DialogEnhancementMode' argument");
+    }
 
     protected abstract Composite createConstructorComposite(Composite parent, Delegable delegable, T model);
 
@@ -121,6 +135,7 @@ public abstract class XmlBasedConstructorProvider<T extends Observable> extends 
         private final String initialValue;
         private String result;
         protected final Delegable delegable;
+        private DialogEnhancementMode dialogEnhancementMode = null;
 
         public XmlBasedConstructorDialog(Delegable delegable) {
             super(Display.getCurrent().getActiveShell());
@@ -129,27 +144,30 @@ public abstract class XmlBasedConstructorProvider<T extends Observable> extends 
             this.initialValue = delegable.getDelegationConfiguration();
         }
 
+        void setDialogEnhancementMode(DialogEnhancementMode dialogEnhancementMode) {
+            this.dialogEnhancementMode = dialogEnhancementMode;
+        }
+
         @Override
         protected Point getInitialSize() {
             return getDialogInitialSize();
         }
 
+        public T createEmbeddedWindow(Composite mainComposite, DialogEnhancementMode dialogEnhancementMode) {
+            this.dialogEnhancementMode = dialogEnhancementMode;
+            createDialogArea(mainComposite);
+            return model;
+        }
+
+        @SuppressWarnings("unchecked")
         @Override
         protected Control createDialogArea(Composite parent) {
-            getShell().setText(getTitle());
-            tabFolder = new TabFolder(parent, SWT.BORDER);
-            tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
-            Composite composite = new Composite(tabFolder, SWT.NONE);
-            composite.setLayout(new GridLayout());
-            TabItem tabItem1 = new TabItem(tabFolder, SWT.NONE);
-            tabItem1.setText(Localization.getString("SQLActionHandlerConfig.title.configuration"));
-            tabItem1.setControl(composite);
-            ScrolledComposite scrolledComposite = new ScrolledComposite(composite, SWT.V_SCROLL | SWT.BORDER);
-            scrolledComposite.setExpandHorizontal(true);
-            scrolledComposite.setExpandVertical(true);
-            scrolledComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
+
             try {
-                if (initialValue.trim().length() != 0) {
+                if (dialogEnhancementMode != null && dialogEnhancementMode.checkBotDocxTemplateEnhancementMode()
+                        && null != ((DocxDialogEnhancementMode) dialogEnhancementMode).docxModel) {
+                    model = (T) ((DocxDialogEnhancementMode) dialogEnhancementMode).docxModel;
+                } else if (initialValue.trim().length() != 0) {
                     model = fromXml(initialValue);
                 } else {
                     model = createDefault();
@@ -158,21 +176,68 @@ public abstract class XmlBasedConstructorProvider<T extends Observable> extends 
                 PluginLogger.logError(Localization.getString("config.error.parse"), ex);
                 model = createDefault();
             }
-            constructorView = createConstructorComposite(scrolledComposite, delegable, model);
-            constructorView.setLayoutData(new GridData(GridData.FILL_BOTH));
-            if (constructorView instanceof Observer) {
-                model.addObserver((Observer) constructorView);
+
+            if (null != dialogEnhancementMode && dialogEnhancementMode.checkBotDocxTemplateEnhancementMode()
+                    && dialogEnhancementMode.not(DocxDialogEnhancementMode.DOCX_SHOW_XML_VIEW)) {
+
+                Composite composite = new Composite(parent, SWT.NONE);
+                composite.setLayout(new GridLayout());
+                GridData gridData = new GridData();
+                gridData.widthHint = 700;
+                composite.setLayoutData(gridData);
+
+                ScrolledComposite scrolledComposite = new ScrolledComposite(composite, SWT.V_SCROLL);
+                scrolledComposite.setExpandHorizontal(true);
+                scrolledComposite.setExpandVertical(true);
+                scrolledComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+                constructorView = createConstructorComposite(scrolledComposite, delegable, model, dialogEnhancementMode);
+                constructorView.setLayoutData(new GridData(GridData.FILL_BOTH));
+                if (constructorView instanceof Observer) {
+                    model.addObserver((Observer) constructorView);
+                }
+
+                scrolledComposite.setContent(constructorView);
+
+                return constructorView;
+
+            } else {
+
+                Shell shell = getShell();
+                if (null != shell) {
+                    shell.setText(getTitle());
+                }
+                tabFolder = new TabFolder(parent, SWT.BORDER);
+                tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
+                Composite composite = new Composite(tabFolder, SWT.NONE);
+                composite.setLayout(new GridLayout());
+                TabItem tabItem1 = new TabItem(tabFolder, SWT.NONE);
+                tabItem1.setText(Localization.getString("SQLActionHandlerConfig.title.configuration"));
+                tabItem1.setControl(composite);
+                ScrolledComposite scrolledComposite = new ScrolledComposite(composite, SWT.V_SCROLL | SWT.BORDER);
+                scrolledComposite.setExpandHorizontal(true);
+                scrolledComposite.setExpandVertical(true);
+                scrolledComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
+                if (null != dialogEnhancementMode && dialogEnhancementMode.checkScriptDocxTemplateEnhancementMode()) {
+                    constructorView = createConstructorComposite(scrolledComposite, delegable, model, dialogEnhancementMode);
+                } else {
+                    constructorView = createConstructorComposite(scrolledComposite, delegable, model);
+                }
+                constructorView.setLayoutData(new GridData(GridData.FILL_BOTH));
+                if (constructorView instanceof Observer) {
+                    model.addObserver((Observer) constructorView);
+                }
+                scrolledComposite.setContent(constructorView);
+                xmlContentView = new XmlContentView(tabFolder, SWT.NONE);
+                xmlContentView.setLayoutData(new GridData(GridData.FILL_BOTH));
+                xmlContentView.setValue(initialValue);
+                TabItem tabItem2 = new TabItem(tabFolder, SWT.NONE);
+                tabItem2.setText(" XML ");
+                tabItem2.setControl(xmlContentView);
+                tabFolder.setSelection(getSelectedTabIndex(delegable, model));
+                tabFolder.addSelectionListener(new TabSelectionHandler());
+                return tabFolder;
             }
-            scrolledComposite.setContent(constructorView);
-            xmlContentView = new XmlContentView(tabFolder, SWT.NONE);
-            xmlContentView.setLayoutData(new GridData(GridData.FILL_BOTH));
-            xmlContentView.setValue(initialValue);
-            TabItem tabItem2 = new TabItem(tabFolder, SWT.NONE);
-            tabItem2.setText(" XML ");
-            tabItem2.setControl(xmlContentView);
-            tabFolder.setSelection(getSelectedTabIndex(delegable, model));
-            tabFolder.addSelectionListener(new TabSelectionHandler());
-            return tabFolder;
         }
 
         @Override
@@ -182,6 +247,11 @@ public abstract class XmlBasedConstructorProvider<T extends Observable> extends 
             }
             if (xmlContentView.validate()) {
                 this.result = xmlContentView.getValue();
+
+                if (null != dialogEnhancementMode && dialogEnhancementMode.checkScriptDocxTemplateEnhancementMode()) {
+                    dialogEnhancementMode.invoke(DialogEnhancementMode.DOCX_RELOAD_FROM_TEMPLATE);
+                }
+
                 super.okPressed();
             }
         }

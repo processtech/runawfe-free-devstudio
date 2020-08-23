@@ -28,11 +28,15 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.ViewPart;
+import ru.runa.gpd.BotCache;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.SharedImages;
+import ru.runa.gpd.editor.BotTaskEditor;
 import ru.runa.gpd.editor.ProcessEditorBase;
 import ru.runa.gpd.lang.ValidationErrorDetails;
 import ru.runa.gpd.lang.model.Action;
@@ -48,7 +52,7 @@ import ru.runa.gpd.util.WorkspaceOperations;
 public class ValidationErrorsView extends ViewPart implements ISelectionChangedListener {
     public static final String ID = "ru.runa.gpd.validationErrors";
     static final String[] COLUMN_NAMES = { Localization.getString("ValidationErrorsView.Source"),
-            Localization.getString("ValidationErrorsView.Message"), Localization.getString("ValidationErrorsView.ProcessName") };
+            Localization.getString("ValidationErrorsView.Message"), Localization.getString("ValidationErrorsView.ProcessBotTaskName") };
     private TableViewer viewer;
 
     @Override
@@ -95,7 +99,16 @@ public class ValidationErrorsView extends ViewPart implements ISelectionChangedL
         }
         try {
             IFile definitionFile = (IFile) marker.getResource();
-            ProcessEditorBase editor = WorkspaceOperations.openProcessDefinition(definitionFile);
+            ProcessEditorBase editor = null;
+            if (null == BotCache.getBotTask(definitionFile)) {
+                editor = WorkspaceOperations.openProcessDefinition(definitionFile);
+            } else {
+                IDE.openEditor(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(), definitionFile, BotTaskEditor.ID, true);
+                return;
+            }
+            if (null == editor) {
+                return;
+            }
             GraphElement graphElement = null;
             String elementId = marker.getAttribute(PluginConstants.SELECTION_LINK_KEY, null);
             if (elementId != null) {

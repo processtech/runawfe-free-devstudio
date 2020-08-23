@@ -5,7 +5,6 @@ import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.editor.gef.command.AddActionCommand;
 import ru.runa.gpd.extension.DelegableProvider;
@@ -41,7 +40,7 @@ public class ActionContainerDelegate extends BaseModelDropDownActionDelegate {
 
     public class AddActionAction extends Action {
         private final ActionContainer actionContainer;
-        
+
         public AddActionAction(ActionContainer actionContainer) {
             this.actionContainer = actionContainer;
             setText(Localization.getString("button.create"));
@@ -71,7 +70,7 @@ public class ActionContainerDelegate extends BaseModelDropDownActionDelegate {
         public void run() {
             setFocus(action);
             DelegableProvider provider = HandlerRegistry.getProvider(action.getDelegationClassName());
-            String newConfig = provider.showConfigurationDialog(action);
+            String newConfig = provider.showConfigurationDialog(action, null);
             if (newConfig != null) {
                 action.setDelegationConfiguration(newConfig);
             }

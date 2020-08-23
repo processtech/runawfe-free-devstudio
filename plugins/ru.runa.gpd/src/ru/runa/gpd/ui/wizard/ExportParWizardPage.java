@@ -244,10 +244,12 @@ public class ExportParWizardPage extends ExportWizardPage {
                                 }
                             }
                             zip(filesToExport, new FileOutputStream(getDestinationValue() + definition.getName() + ".har"));
+                            PluginLogger.logInfo(Localization.getString("DialogEnhancement.exportSuccessful"));
                         }
                     }
                 } else {
                     new ParDeployOperation(resourcesToExport, definition.getName(), updateLatestVersionButton.getSelection()).run(null);
+                    PluginLogger.logInfo(Localization.getString("DialogEnhancement.exportSuccessful"));
                 }
             } catch (Throwable th) {
                 PluginLogger.logErrorWithoutDialog(Localization.getString("ExportParWizardPage.error.export"), th);

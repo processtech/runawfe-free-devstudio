@@ -7,11 +7,10 @@ import ru.runa.gpd.editor.graphiti.ChangeDelegationClassNameFeature;
 import ru.runa.gpd.editor.graphiti.ChangeDelegationConfigurationFeature;
 import ru.runa.gpd.editor.graphiti.GraphitiProcessEditor;
 import ru.runa.gpd.editor.graphiti.UndoRedoUtil;
-import ru.runa.gpd.extension.DelegableProvider;
-import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.bpmn.ExclusiveGateway;
 import ru.runa.gpd.ui.dialog.ChooseHandlerClassDialog;
+import ru.runa.gpd.ui.enhancement.DialogEnhancement;
 
 public class DoubleClickDelegableFeature extends DoubleClickElementFeature {
 
@@ -35,8 +34,7 @@ public class DoubleClickDelegableFeature extends DoubleClickElementFeature {
                 });
             }
         } else {
-            DelegableProvider provider = HandlerRegistry.getProvider(delegable.getDelegationClassName());
-            String newConfig = provider.showConfigurationDialog(delegable);
+            String newConfig = DialogEnhancement.showConfigurationDialog(delegable);
             if (newConfig != null) {
                 if (delegable instanceof ExclusiveGateway) {
                     getDiagramBehavior().refreshContent();

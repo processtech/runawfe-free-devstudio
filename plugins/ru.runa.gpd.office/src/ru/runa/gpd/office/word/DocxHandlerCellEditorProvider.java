@@ -1,7 +1,7 @@
 package ru.runa.gpd.office.word;
 
+import com.google.common.base.Strings;
 import java.util.List;
-
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.eclipse.core.resources.IFolder;
@@ -19,7 +19,6 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.bot.IBotFileSupportProvider;
@@ -35,16 +34,31 @@ import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
 import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.custom.SwtUtils;
+import ru.runa.gpd.ui.enhancement.DialogEnhancementMode;
+import ru.runa.gpd.ui.enhancement.DocxDialogEnhancementMode;
 import ru.runa.gpd.util.EmbeddedFileUtils;
 import ru.runa.gpd.util.XmlUtil;
-
-import com.google.common.base.Strings;
 
 public class DocxHandlerCellEditorProvider extends XmlBasedConstructorProvider<DocxModel> implements IBotFileSupportProvider {
 
     @Override
     protected Composite createConstructorComposite(Composite parent, Delegable delegable, DocxModel model) {
-        return new ConstructorView(parent, delegable, model);
+        return new ConstructorView(parent, delegable, model, null);
+    }
+
+    @Override
+    protected Composite createConstructorComposite(Composite parent, Delegable delegable, DocxModel model,
+            DialogEnhancementMode dialogEnhancementMode) {
+        return new ConstructorView(parent, delegable, model, dialogEnhancementMode);
+    }
+
+    @Override
+    public Object getConfigurationValue(Delegable delegable, String valueId) throws Exception {
+        DocxModel docxModel = fromXml(delegable.getDelegationConfiguration());
+        if (0 == valueId.compareTo(DocxDialogEnhancementMode.InputPathId)) {
+            return docxModel.getInOutModel().inputPath;
+        }
+        return null;
     }
 
     @Override
@@ -99,9 +113,12 @@ public class DocxHandlerCellEditorProvider extends XmlBasedConstructorProvider<D
 
     private class ConstructorView extends ConstructorComposite {
 
-        public ConstructorView(Composite parent, Delegable delegable, DocxModel model) {
+        final private DialogEnhancementMode dialogEnhancementMode;
+
+        public ConstructorView(Composite parent, Delegable delegable, DocxModel model, DialogEnhancementMode dialogEnhancementMode) {
             super(parent, delegable, model);
             setLayout(new GridLayout(2, false));
+            this.dialogEnhancementMode = dialogEnhancementMode;
             buildFromModel();
         }
 
@@ -111,23 +128,53 @@ public class DocxHandlerCellEditorProvider extends XmlBasedConstructorProvider<D
                 for (Control control : getChildren()) {
                     control.dispose();
                 }
-                final Button strict = new Button(this, SWT.CHECK);
-                strict.setText(Messages.getString("label.strict"));
-                strict.setSelection(model.isStrict());
-                strict.addSelectionListener(new LoggingSelectionAdapter() {
 
-                    @Override
-                    protected void onSelection(SelectionEvent e) throws Exception {
-                        model.setStrict(strict.getSelection());
-                    }
-                });
-                new Label(this, SWT.NONE);
-                new InputOutputComposite(this, delegable, model.getInOutModel(), FilesSupplierMode.BOTH, "docx");
+                if (dialogEnhancementMode != null && dialogEnhancementMode.checkBotDocxTemplateEnhancementMode()) {
+                    ((DocxDialogEnhancementMode) dialogEnhancementMode).docxModel = model;
+                }
+
+                if (null == dialogEnhancementMode || dialogEnhancementMode.isOrDefault(DocxDialogEnhancementMode.DOCX_SHOW_OUTPUT)) {
+                    final Button strict = new Button(this, SWT.CHECK);
+                    strict.setText(Messages.getString(null != dialogEnhancementMode ? "label.strict.dialogEnhancementMode" : "label.strict"));
+                    strict.setSelection(model.isStrict());
+                    strict.addSelectionListener(new LoggingSelectionAdapter() {
+
+                        @Override
+                        protected void onSelection(SelectionEvent e) throws Exception {
+                            model.setStrict(strict.getSelection());
+
+                            if (dialogEnhancementMode != null && dialogEnhancementMode.checkBotDocxTemplateEnhancementMode()) {
+                                ((DocxDialogEnhancementMode) dialogEnhancementMode).reloadBotTaskEditorXmlFromModel(model.toString(), null, null,
+                                        null);
+                            }
+                        }
+                    });
+                    new Label(this, SWT.NONE);
+                }
+
+                FilesSupplierMode filesSupplierMode = FilesSupplierMode.BOTH;
+                if (null == dialogEnhancementMode || (dialogEnhancementMode.isOrDefault(DocxDialogEnhancementMode.DOCX_SHOW_INPUT)
+                        && dialogEnhancementMode.isOrDefault(DocxDialogEnhancementMode.DOCX_SHOW_OUTPUT))) {
+                    filesSupplierMode = FilesSupplierMode.BOTH;
+                } else if (dialogEnhancementMode.is(DocxDialogEnhancementMode.DOCX_SHOW_INPUT)) {
+                    filesSupplierMode = FilesSupplierMode.IN;
+                } else if (dialogEnhancementMode.is(DocxDialogEnhancementMode.DOCX_SHOW_OUTPUT)) {
+                    filesSupplierMode = FilesSupplierMode.OUT;
+                }
+
+                new InputOutputComposite(this, delegable, model.getInOutModel(), filesSupplierMode, "docx", dialogEnhancementMode);
+
                 int i = 0;
                 for (DocxTableModel table : model.getTables()) {
                     addTableSection(table, i++);
                 }
-                ((ScrolledComposite) getParent()).setMinSize(computeSize(getSize().x, SWT.DEFAULT));
+
+                Composite composite = getParent();
+
+                if (composite instanceof ScrolledComposite) {
+                    ((ScrolledComposite) getParent()).setMinSize(computeSize(getSize().x, SWT.DEFAULT));
+                }
+
                 this.layout(true, true);
             } catch (Throwable e) {
                 PluginLogger.logErrorWithoutDialog("Cannot build model", e);

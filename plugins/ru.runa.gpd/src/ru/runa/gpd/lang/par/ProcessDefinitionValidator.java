@@ -2,6 +2,7 @@ package ru.runa.gpd.lang.par;
 
 import com.google.common.collect.Lists;
 import java.util.List;
+import java.util.ListIterator;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
@@ -10,6 +11,8 @@ import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.Action;
+import ru.runa.gpd.lang.model.Delegable;
+import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
@@ -53,6 +56,24 @@ public class ProcessDefinitionValidator {
         } catch (Throwable e) {
             PluginLogger.logError(e);
             return ERRORS;
+        }
+    }
+
+    public static void logErrors(ProcessDefinition processDefinition, List<String> errors, List<Delegable> errorSources, boolean clearBefore) {
+        try {
+            IFile definitionFile = processDefinition.getFile();
+            if (clearBefore) {
+                definitionFile.deleteMarkers(ValidationErrorsView.ID, true, IResource.DEPTH_INFINITE);
+            }
+            ListIterator<String> iterator = errors.listIterator();
+            ListIterator<Delegable> iterator2 = errorSources.listIterator();
+            while (iterator.hasNext()) {
+                Delegable delegable = iterator2.next();
+                addError(definitionFile, processDefinition, ValidationError
+                        .createError(delegable instanceof GraphElement ? (GraphElement) delegable : processDefinition, iterator.next()));
+            }
+        } catch (Throwable e) {
+            PluginLogger.logError(e);
         }
     }
 

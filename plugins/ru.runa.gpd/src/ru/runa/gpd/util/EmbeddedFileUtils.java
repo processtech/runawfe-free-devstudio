@@ -1,21 +1,29 @@
 package ru.runa.gpd.util;
 
+import com.google.common.base.Strings;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.CoreException;
-
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.BotTask;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.GraphElement;
+import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.wfe.definition.IFileDataProvider;
-
-import com.google.common.base.Strings;
 
 public class EmbeddedFileUtils {
 
+    @Deprecated
     public static IFile getProcessFile(String fileName) {
         return IOUtils.getFile(fileName);
+    }
+
+    public static IFile getProcessFile(BotTask botTask, String fileName) {
+        return IOUtils.getFile(botTask, fileName);
+    }
+
+    public static IFile getProcessFile(ProcessDefinition processDefenition, String fileName) {
+        return IOUtils.getFile(processDefenition, fileName);
     }
 
     public static boolean isProcessFile(String path) {
@@ -72,7 +80,7 @@ public class EmbeddedFileUtils {
     }
 
     public static boolean isBotTaskFile(String path) {
-        return path != null && path.startsWith(IFileDataProvider.BOT_TASK_FILE_PROTOCOL);
+        return !Strings.isNullOrEmpty(path) && path.startsWith(IFileDataProvider.BOT_TASK_FILE_PROTOCOL);
     }
 
     public static boolean isBotTaskFileName(String fileName, String botTaskName) {

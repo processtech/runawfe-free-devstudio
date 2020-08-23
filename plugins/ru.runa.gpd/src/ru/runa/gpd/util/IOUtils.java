@@ -45,10 +45,13 @@ import org.eclipse.ui.PlatformUI;
 import ru.runa.gpd.BotCache;
 import ru.runa.gpd.BotStationNature;
 import ru.runa.gpd.PluginLogger;
+import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.ProcessProjectNature;
 import ru.runa.gpd.form.FormType;
 import ru.runa.gpd.form.FormTypeProvider;
+import ru.runa.gpd.lang.model.BotTask;
 import ru.runa.gpd.lang.model.FormNode;
+import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.par.ParContentProvider;
 
@@ -295,8 +298,25 @@ public class IOUtils {
         return null;
     }
 
+    public static IFile getCurrentFile(BotTask botTask) {
+        return BotCache.getBotTaskFile(botTask);
+    }
+
+    public static IFile getCurrentFile(ProcessDefinition processDefenition) {
+        return ProcessCache.getProcessDefinitionFile(processDefenition);
+    }
+
+    @Deprecated
     public static IFile getFile(String fileName) {
         return IOUtils.getAdjacentFile(getCurrentFile(), fileName);
+    }
+
+    public static IFile getFile(BotTask botTask, String fileName) {
+        return IOUtils.getAdjacentFile(getCurrentFile(botTask), fileName);
+    }
+
+    public static IFile getFile(ProcessDefinition processDefenition, String fileName) {
+        return IOUtils.getAdjacentFile(getCurrentFile(processDefenition), fileName);
     }
 
     private static IProject[] getWorkspaceProjects() {

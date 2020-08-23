@@ -457,7 +457,7 @@ public class CopyGraphCommand extends Command {
     }
 
     private class CopyVariableAction extends ExtraCopyAction {
-    	private final ProcessDefinition sourceProcessDefinition;
+        private final ProcessDefinition sourceProcessDefinition;
         private final Variable sourceVariable;
         private final Variable oldVariable;
         private Variable addedVariable;

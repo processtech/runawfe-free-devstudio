@@ -1,19 +1,18 @@
 package ru.runa.gpd.extension;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.jface.window.Window;
+import org.eclipse.swt.widgets.Composite;
 import org.osgi.framework.Bundle;
-
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.Variable;
-
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
+import ru.runa.gpd.ui.enhancement.DialogEnhancementMode;
 
 public class DelegableProvider {
     protected Bundle bundle;
@@ -30,12 +29,20 @@ public class DelegableProvider {
         return new DelegableConfigurationDialog(delegable.getDelegationConfiguration());
     }
 
-    public String showConfigurationDialog(Delegable delegable) {
+    public String showConfigurationDialog(Delegable delegable, DialogEnhancementMode dialogEnhancementMode) {
         DelegableConfigurationDialog dialog = createConfigurationDialog(delegable);
         if (dialog.open() == Window.OK) {
             return dialog.getResult();
         }
         return null;
+    }
+
+    public Object showEmbeddedConfigurationDialog(final Composite mainComposite, Delegable delegable, DialogEnhancementMode dialogEnhancementMode) {
+        throw new RuntimeException("Embedded dialog is not implemented yet!");
+    }
+
+    public Object getConfigurationValue(Delegable delegable, String valueId) throws Exception {
+        throw new RuntimeException("The function is not implemented yet!");
     }
 
     /**

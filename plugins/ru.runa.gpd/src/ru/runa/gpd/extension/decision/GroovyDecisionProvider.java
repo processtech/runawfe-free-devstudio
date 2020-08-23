@@ -1,16 +1,14 @@
 package ru.runa.gpd.extension.decision;
 
+import com.google.common.collect.Lists;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.eclipse.jface.window.Window;
-
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.HandlerArtifact;
@@ -22,14 +20,11 @@ import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.Variable;
-
-import com.google.common.base.Objects;
-import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
+import ru.runa.gpd.ui.enhancement.DialogEnhancementMode;
 
 public class GroovyDecisionProvider extends DelegableProvider implements IDecisionProvider {
     @Override
-    public String showConfigurationDialog(Delegable delegable) {
+    public String showConfigurationDialog(Delegable delegable, DialogEnhancementMode dialogEnhancementMode) {
         if (!HandlerArtifact.DECISION.equals(delegable.getDelegationType())) {
             throw new IllegalArgumentException("For decision handler only");
         }
