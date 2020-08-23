@@ -107,6 +107,17 @@
             id="usertypevarlistcombo">
       </type>
       <type
+            class="ru.runa.gpd.formeditor.ftl.parameter.DbUserTypeListComboParameter"
+            validator="ru.runa.gpd.formeditor.ftl.validation.DefaultParameterTypeValidator"
+            id="dbusertypelistcombo">
+      </type>
+      <type
+            class="ru.runa.gpd.formeditor.ftl.parameter.DbUserTypeVariableListComboParameter"
+            validator="ru.runa.gpd.formeditor.ftl.validation.DefaultParameterTypeValidator"
+            depends="dbusertypelistcombo,combo"
+            id="dbusertypevarlistcombo">
+      </type>
+      <type
             class="ru.runa.gpd.formeditor.ftl.parameter.UserTypeAttributeParameter"
             depends="usertypevarlistcombo,varcombo,varfinder"
             validator="ru.runa.gpd.formeditor.ftl.validation.UserTypeAttributeValidator"
@@ -122,6 +133,18 @@
             class="ru.runa.gpd.formeditor.ftl.parameter.SwimlaneComboParameter"
             validator="ru.runa.gpd.formeditor.ftl.validation.SwimlaneParameterValidator"
             id="swimlanecombo">
+      </type>
+      <type
+            class="ru.runa.gpd.formeditor.ftl.parameter.PredicatesParameter"
+            validator="ru.runa.gpd.formeditor.ftl.validation.PredicatesComponentValidator"
+            depends="dbusertypelistcombo"
+            id="predicates">
+      </type>
+      <type
+            class="ru.runa.gpd.formeditor.ftl.parameter.ProjectionParameter"
+            validator="ru.runa.gpd.formeditor.ftl.validation.ProjectionComponentValidator"
+            depends="dbusertypelistcombo"
+            id="projections">
       </type>
    </extension>
    
@@ -1204,6 +1227,52 @@
                optional="true"
                type="usertypeattributelist"
                variableAccess="NONE">
+         </param>
+      </component>
+      <component
+            enabled="false"
+            id="SelectFromInternalStorage"
+            imageProvider="ru.runa.gpd.formeditor.ftl.image.VariableComponentImageProvider"
+            name="%Method.SelectFromInternalStorage"
+            order="-80">
+         <param
+               name="%Param.UserType"
+               optional="false"
+               type="dbusertypelistcombo"
+               variableAccess="NONE">
+         </param>
+         <param
+               name="%Param.Multiplicity"
+               optional="false"
+               type="combo"
+               variableAccess="NONE">
+               <paramValue
+                  name="%Param.ChooseOne"
+                  value="one"
+                  default="true">
+               </paramValue>
+               <paramValue
+                  name="%Param.ChooseSome"
+                  value="many">
+               </paramValue>
+         </param>
+         <param
+               name=""
+               optional="true"
+               type="predicates"
+               variableAccess="NONE">
+         </param>
+         <param
+               name=""
+               optional="true"
+               type="projections"
+               variableAccess="NONE">
+         </param>
+         <param
+               name="%Param.WriteTo"
+               optional="false"
+               type="dbusertypevarlistcombo"
+               variableAccess="WRITE">
          </param>
       </component>
    </extension>

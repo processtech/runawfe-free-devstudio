@@ -43,7 +43,8 @@ import ru.runa.gpd.util.EventSupport;
 import ru.runa.gpd.util.VariableUtils;
 
 @SuppressWarnings("unchecked")
-public abstract class GraphElement extends EventSupport implements IPropertySource, PropertyNames, IActionFilter, VariableContainer {
+public abstract class GraphElement extends EventSupport
+        implements IPropertySource, PropertyNames, IActionFilter, VariableContainer, ProcessDefinitionAware {
     private PropertyChangeListener delegatedListener;
     private GraphElement parent;
     private GraphElement parentContainer;
@@ -75,7 +76,7 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
         if ("language".equals(name)) {
             return Objects.equal(value, getProcessDefinition().getLanguage().name().toLowerCase());
         }
-        if ("delegable".equals(name)) {
+        if ("delegableEditHandler".equals(name) || "delegableEditConfiguration".equals(name)) {
             return Objects.equal(value, String.valueOf(isDelegable()));
         }
         if ("regulationsEnabled".equals(name)) {
@@ -123,6 +124,7 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
         }
     }
 
+    @Override
     public ProcessDefinition getProcessDefinition() {
         if (this instanceof ProcessDefinition) {
             return (ProcessDefinition) this;

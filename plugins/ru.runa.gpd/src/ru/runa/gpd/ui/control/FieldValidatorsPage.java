@@ -45,6 +45,7 @@ import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
+import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.PropertyNames;
@@ -57,6 +58,7 @@ import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.Variable;
+import ru.runa.gpd.settings.PrefConstants;
 import ru.runa.gpd.ui.control.ValidatorInfoControl.ParametersComposite;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.custom.TypedUserInputCombo;
@@ -167,7 +169,8 @@ public class FieldValidatorsPage extends Composite implements PropertyChangeList
             for (Iterator<Entry<String, Map<String, ValidatorConfig>>> i = fieldConfigs.entrySet().iterator(); i.hasNext();) {
                 Entry<String, Map<String, ValidatorConfig>> e = i.next();
                 FormVariableAccess access = formVariables.get(e.getKey());
-                if ((access == null || access == FormVariableAccess.READ) && e.getValue().isEmpty()) {
+                if ((access == null || access == FormVariableAccess.READ) && (e.getValue().isEmpty()
+                        || !Activator.getPrefBoolean(PrefConstants.P_KEEP_VARIABLE_VALIDATION_ON_COMPONENT_REMOVAL))) {
                     i.remove();
                     configsChanged = true;
                 }

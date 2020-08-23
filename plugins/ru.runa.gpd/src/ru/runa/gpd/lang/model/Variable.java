@@ -224,7 +224,7 @@ public class Variable extends NamedGraphElement implements Describable {
         Variable copyVariable = (Variable) copy;
         copyVariable.setFormat(getFormat());
         if (getUserType() != null) {
-            copyVariable.setUserType(getUserType().getCopy());
+            copyVariable.setUserType(copyVariable.getProcessDefinition().getVariableUserType(getUserType().getName()));
         }
         copyVariable.setScriptingName(getScriptingName());
         copyVariable.setDefaultValue(getDefaultValue());

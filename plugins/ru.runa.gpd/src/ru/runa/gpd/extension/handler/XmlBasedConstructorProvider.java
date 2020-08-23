@@ -103,6 +103,10 @@ public abstract class XmlBasedConstructorProvider<T extends Observable> extends 
         return 0;
     }
 
+    protected Point getDialogInitialSize() {
+        return new Point(600, 400);
+    }
+
     public abstract class ConstructorComposite extends Composite implements Observer {
         protected T model;
         protected final Delegable delegable;
@@ -146,7 +150,7 @@ public abstract class XmlBasedConstructorProvider<T extends Observable> extends 
 
         @Override
         protected Point getInitialSize() {
-            return new Point(600, 400);
+            return getDialogInitialSize();
         }
 
         public T createEmbeddedWindow(Composite mainComposite, DialogEnhancementMode dialogEnhancementMode) {

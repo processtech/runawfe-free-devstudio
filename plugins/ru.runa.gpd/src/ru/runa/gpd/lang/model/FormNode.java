@@ -59,7 +59,11 @@ public abstract class FormNode extends SwimlanedNode {
     }
 
     public boolean hasFormValidation() {
-        return IOUtils.getAdjacentFile(getProcessDefinition().getFile(), getValidationFileName()).exists();
+        return getFormValidationFile().exists();
+    }
+    
+    public IFile getFormValidationFile() {
+    	return IOUtils.getAdjacentFile(getProcessDefinition().getFile(), getValidationFileName());
     }
 
     public boolean hasFormScript() {
