@@ -25,6 +25,7 @@ import java.util.zip.ZipInputStream;
 import org.eclipse.core.internal.resources.Workspace;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFileState;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -618,13 +619,33 @@ public class IOUtils {
 
     private static final String DELETED_FILE_EXTENSION = "deleted";
 
-    public static void markAsDeleted(IFile file) throws CoreException {
+    public static IPath markAsDeleted(IFile file, boolean keepHistory) throws CoreException {
         IPath deleted = file.getFullPath().addFileExtension(DELETED_FILE_EXTENSION);
         Workspace ws = (Workspace) file.getWorkspace();
         if (ws.getResourceInfo(deleted, false, false) != null) {
-            ws.newResource(deleted, IResource.FILE).delete(true, null);
+            ws.newResource(deleted, IResource.FILE).delete(true, keepHistory, null);
         }
-        file.move(deleted, true, null);
+        file.move(deleted, true, keepHistory, null);
+        return deleted;
+    }
+
+    public static void unmarkAsDeleted(IFile file) throws CoreException {
+        if (DELETED_FILE_EXTENSION.equals(file.getFileExtension())) {
+            IPath undeleted = file.getFullPath().removeFileExtension();
+            Workspace ws = (Workspace) file.getWorkspace();
+            if (ws.getResourceInfo(undeleted, false, false) != null) {
+                ws.newResource(undeleted, IResource.FILE).delete(true, null);
+            }
+            if (file.exists()) {
+                file.move(undeleted, true, true, null);
+            } else {
+                IFileState[] fileStates = file.getHistory(null);
+                if (fileStates.length > 0) {
+                    file.create(fileStates[0].getContents(), true, null);
+                    unmarkAsDeleted(file);
+                }
+            }
+        }
     }
 
     public static void eraseDeletedFiles(IContainer folder) throws CoreException {

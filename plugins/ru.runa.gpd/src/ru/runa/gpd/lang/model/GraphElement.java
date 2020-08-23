@@ -299,8 +299,10 @@ public abstract class GraphElement extends EventSupport
 
     public void setDelegationClassName(String delegationClassName) {
         String old = getDelegationClassName();
-        this.delegationClassName = delegationClassName;
-        firePropertyChange(PropertyNames.PROPERTY_CLASS, old, this.delegationClassName);
+        if (!Objects.equal(old, delegationClassName)) {
+            this.delegationClassName = delegationClassName;
+            firePropertyChange(PropertyNames.PROPERTY_CLASS, old, this.delegationClassName);
+        }
     }
 
     public String getDelegationConfiguration() {

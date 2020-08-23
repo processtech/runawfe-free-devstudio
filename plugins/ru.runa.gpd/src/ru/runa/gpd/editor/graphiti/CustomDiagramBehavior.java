@@ -11,6 +11,7 @@ import org.eclipse.gef.editparts.GridLayer;
 import org.eclipse.gef.editparts.ZoomManager;
 import org.eclipse.gef.ui.parts.GraphicalViewerKeyHandler;
 import org.eclipse.gef.ui.parts.ScrollingGraphicalViewer;
+import org.eclipse.graphiti.dt.IDiagramTypeProvider;
 import org.eclipse.graphiti.mm.pictograms.Diagram;
 import org.eclipse.graphiti.tb.IToolBehaviorProvider;
 import org.eclipse.graphiti.ui.CustomContextButtonManagerForPad;
@@ -106,6 +107,12 @@ public class CustomDiagramBehavior extends DiagramBehavior {
         // context button manager
         IConfigurationProviderInternal configurationProvider = (IConfigurationProviderInternal) this.getConfigurationProvider();
         configurationProvider.setContextButtonManager(new CustomContextButtonManagerForPad(this, configurationProvider.getResourceRegistry()));
+    }
+
+    @Override
+    protected void initConfigurationProvider(IDiagramTypeProvider diagramTypeProvider) {
+        super.initConfigurationProvider(diagramTypeProvider);
+        getEditDomain().setCommandStack(new CustomCommandStack(getConfigurationProvider(), getEditingDomain()));
     }
 
 }

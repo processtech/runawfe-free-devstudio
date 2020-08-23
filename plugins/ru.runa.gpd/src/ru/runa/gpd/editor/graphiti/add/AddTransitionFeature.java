@@ -46,6 +46,11 @@ public class AddTransitionFeature extends AbstractAddFeature {
     }
 
     @Override
+    public boolean hasDoneChanges() {
+        return false;
+    }
+
+    @Override
     public boolean canAdd(IAddContext context) {
         return (context instanceof IAddConnectionContext && context.getNewObject() instanceof Transition);
     }

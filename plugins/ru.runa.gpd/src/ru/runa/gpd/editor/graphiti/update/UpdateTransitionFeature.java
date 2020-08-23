@@ -9,7 +9,10 @@ import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
 import org.eclipse.graphiti.mm.algorithms.Text;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.ui.services.GraphitiUi;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
 import ru.runa.gpd.editor.graphiti.GaProperty;
+import ru.runa.gpd.editor.graphiti.GraphitiProcessEditor;
 import ru.runa.gpd.editor.graphiti.PropertyUtil;
 import ru.runa.gpd.editor.graphiti.StyleUtil;
 import ru.runa.gpd.editor.graphiti.TransitionUtil;
@@ -25,36 +28,36 @@ public class UpdateTransitionFeature extends UpdateFeature {
         GraphicsAlgorithm defaultFlowGa = PropertyUtil.findGaRecursiveByName(pe, GaProperty.DEFAULT_FLOW);
         if (defaultFlowGa != null
                 && defaultFlowGa.getPictogramElement().isVisible() != (TransitionUtil.markDefaultTransition() && transition.isDefaultFlow())) {
-            return Reason.createTrueReason();
+            return Reason.createTrueReason("Default flow marker is out of date");
         }
         GraphicsAlgorithm exclusiveFlowGa = PropertyUtil.findGaRecursiveByName(pe, GaProperty.EXCLUSIVE_FLOW);
         if (exclusiveFlowGa != null && exclusiveFlowGa.getPictogramElement().isVisible() != transition.isExclusiveFlow()) {
-            return Reason.createTrueReason();
+            return Reason.createTrueReason("Exclusive flow marker is out of date");
         }
         Text nameTextGa = (Text) PropertyUtil.findGaRecursiveByName(pe, GaProperty.NAME);
         if (nameTextGa != null) {
             boolean nameLabelVisible = !Strings.isNullOrEmpty(transition.getLabel());
             if (nameTextGa.getPictogramElement().isVisible() != nameLabelVisible) {
-                return Reason.createTrueReason();
+                return Reason.createTrueReason("Transition name must be " + (nameLabelVisible ? "visible" : "invisible"));
             }
             if (!Objects.equal(nameTextGa.getValue(), transition.getLabel())) {
-                return Reason.createTrueReason();
+                return Reason.createTrueReason("Name is out of date");
             }
         }
         Text numberGa = (Text) PropertyUtil.findGaRecursiveByName(pe, GaProperty.TRANSITION_NUMBER);
         if (numberGa != null) {
             if (!Objects.equal(numberGa.getValue(), StyleUtil.getTransitionNumber(transition))) {
-                return Reason.createTrueReason();
+                return Reason.createTrueReason("Transition number is out of date");
             }
             if (!numberGa.getStyle().getId().endsWith(transition.getColor().name())) {
-                return Reason.createTrueReason();
+                return Reason.createTrueReason("Transition style is wrong");
             }
             GraphicsAlgorithm colorMarkerGa = PropertyUtil.findGaRecursiveByName(pe, GaProperty.TRANSITION_COLOR_MARKER);
             if (numberGa.getY() != nameTextGa.getY() || numberGa.getX() + numberOffsetX(colorMarkerGa, numberGa) != nameTextGa.getX()) {
-                return Reason.createTrueReason();
+                return Reason.createTrueReason("Transition number position is wrong");
             }
             if (colorMarkerGa.getY() != nameTextGa.getY() || colorMarkerGa.getX() + colorMarkerGa.getWidth() + 1 != nameTextGa.getX()) {
-                return Reason.createTrueReason();
+                return Reason.createTrueReason("Transition color marker position is wrong");
             }
         }
         return Reason.createFalseReason();
@@ -98,12 +101,23 @@ public class UpdateTransitionFeature extends UpdateFeature {
             numberGa.setX(nameTextGa.getX() - numberOffsetX(colorMarkerGa, numberGa));
             numberGa.getPictogramElement().setVisible(visible);
         }
+        refreshLater();
         return true;
     }
 
     private int numberOffsetX(GraphicsAlgorithm colorMarkerGa, Text numberGa) {
         int numberWidth = GraphitiUi.getUiLayoutService().calculateTextSize(numberGa.getValue(), numberGa.getStyle().getFont()).getWidth();
         return numberWidth + (colorMarkerGa.getWidth() - numberWidth) / 2 + 1;
+    }
+
+    private void refreshLater() {
+        Display.getCurrent().asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                ((GraphitiProcessEditor) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor())
+                        .getDiagramEditorPage().getDiagramBehavior().refresh();
+            }
+        });
     }
 
 }

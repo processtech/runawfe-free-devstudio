@@ -1,18 +1,28 @@
 package ru.runa.gpd.editor.graphiti.create;
 
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.graphiti.features.context.IContext;
 import org.eclipse.graphiti.features.context.ICreateContext;
+import org.eclipse.graphiti.features.context.IDeleteContext;
 import org.eclipse.graphiti.features.context.impl.CreateConnectionContext;
 import org.eclipse.graphiti.features.context.impl.CreateContext;
+import org.eclipse.graphiti.features.context.impl.DeleteContext;
 import org.eclipse.graphiti.features.impl.AbstractCreateFeature;
 import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
 import org.eclipse.graphiti.mm.pictograms.AnchorContainer;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.services.Graphiti;
-
 import ru.runa.gpd.editor.GEFConstants;
+import ru.runa.gpd.editor.graphiti.CustomUndoRedoFeature;
 import ru.runa.gpd.editor.graphiti.DiagramFeatureProvider;
+import ru.runa.gpd.editor.graphiti.HasTextDecorator;
+import ru.runa.gpd.editor.graphiti.UndoRedoUtil;
 import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.lang.model.Action;
 import ru.runa.gpd.lang.model.GraphElement;
@@ -20,12 +30,16 @@ import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.SwimlanedNode;
+import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
+import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
 
-public class CreateElementFeature extends AbstractCreateFeature implements GEFConstants {
+public class CreateElementFeature extends AbstractCreateFeature implements GEFConstants, CustomUndoRedoFeature {
     public static final String CONNECTION_PROPERTY = "connectionContext";
     private NodeTypeDefinition nodeDefinition;
     private DiagramFeatureProvider featureProvider;
+    private GraphElement graphElement;
+    private List<Transition> transitions;
 
     public CreateElementFeature() {
         super(null, "", "");
@@ -70,7 +84,8 @@ public class CreateElementFeature extends AbstractCreateFeature implements GEFCo
 
     @Override
     public Object[] create(ICreateContext context) {
-        GraphElement graphElement = getNodeDefinition().createElement(getProcessDefinition(), true);
+        graphElement = getNodeDefinition().createElement(getProcessDefinition(), true);
+        UndoRedoUtil.watch(graphElement);
         GraphElement parent = (GraphElement) getBusinessObjectForPictogramElement(context.getTargetContainer());
         if (graphElement instanceof Action) {
             if (context.getTargetConnection() != null) {
@@ -125,4 +140,69 @@ public class CreateElementFeature extends AbstractCreateFeature implements GEFCo
         }
         element.setConstraint(new Rectangle(context.getX(), context.getY(), context.getWidth(), context.getHeight()));
     }
+
+    @Override
+    public boolean canUndo(IContext context) {
+        return graphElement != null;
+    }
+
+    @Override
+    public void postUndo(IContext context) {
+        if (graphElement instanceof TextDecorationNode) {
+            TextDecorationNode textDecoration = (TextDecorationNode) graphElement;
+            textDecoration.getTarget().getParent().removeChild(textDecoration.getTarget());
+            removeAndStoreTransitions(textDecoration.getTarget());
+        } else if (graphElement instanceof HasTextDecorator) {
+            HasTextDecorator withDefinition = (HasTextDecorator) graphElement;
+            IDeleteContext delContext = new DeleteContext(withDefinition.getTextDecoratorEmulation().getDefinition().getUiContainer().getOwner());
+            PictogramElement pe = delContext.getPictogramElement();
+            Object[] businessObjectsForPictogramElement = getAllBusinessObjectsForPictogramElement(pe);
+            if (businessObjectsForPictogramElement != null) {
+                for (Object buzinessObject : businessObjectsForPictogramElement) {
+                    EcoreUtil.delete((EObject) buzinessObject, true);
+                }
+            }
+        } else if (graphElement instanceof Node) {
+            Node node = (Node) graphElement;
+            removeAndStoreTransitions(node);
+        }
+        graphElement.getParent().removeChild(graphElement);
+    }
+
+    private void removeAndStoreTransitions(Node node) {
+        transitions = Stream.concat(node.getLeavingTransitions().stream(), node.getArrivingTransitions().stream()).collect(Collectors.toList());
+        transitions.stream().forEach(t -> t.getSource().removeLeavingTransition(t));
+    }
+
+    @Override
+    public boolean canRedo(IContext context) {
+        return graphElement != null;
+    }
+
+    @Override
+    public void postRedo(IContext context) {
+        if (graphElement instanceof TextDecorationNode) {
+            TextDecorationNode textDecoration = (TextDecorationNode) graphElement;
+            textDecoration.getTarget().getParent().addChild(textDecoration.getTarget());
+            restoreTransitions();
+        } else {
+            graphElement.getParent().addChild(graphElement);
+        }
+        if (graphElement instanceof Node) {
+            restoreTransitions();
+        }
+    }
+
+    private void restoreTransitions() {
+        if (transitions != null) {
+            transitions.stream().forEach(t -> t.getSource().addChild(t));
+        }
+        getDiagramBehavior().refresh();
+    }
+
+    @Override
+    public String getName() {
+        return getClass().getSimpleName();
+    }
+
 }

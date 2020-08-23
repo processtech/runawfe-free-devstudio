@@ -46,6 +46,9 @@ public class TimerAction extends GraphElement implements Delegable {
 
     @Override
     public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
         TimerAction t = (TimerAction) obj;
         return Objects.equal(getDelegationClassName(), t.getDelegationClassName())
                 && Objects.equal(getDelegationConfiguration(), t.getDelegationConfiguration()) && Objects.equal(repeatDelay, t.repeatDelay);

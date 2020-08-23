@@ -1,6 +1,7 @@
 package ru.runa.gpd.editor.graphiti.create;
 
 import org.eclipse.graphiti.features.IFeatureProvider;
+import org.eclipse.graphiti.features.context.IContext;
 import org.eclipse.graphiti.features.context.ICreateConnectionContext;
 import org.eclipse.graphiti.features.context.impl.AddConnectionContext;
 import org.eclipse.graphiti.features.impl.AbstractCreateConnectionFeature;
@@ -11,13 +12,16 @@ import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.mm.pictograms.Shape;
 import org.eclipse.graphiti.services.Graphiti;
-
+import ru.runa.gpd.editor.graphiti.CustomUndoRedoFeature;
 import ru.runa.gpd.lang.NodeRegistry;
 import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.Transition;
 
-public class CreateTransitionFeature extends AbstractCreateConnectionFeature {
+public class CreateTransitionFeature extends AbstractCreateConnectionFeature implements CustomUndoRedoFeature {
+    private Transition transition;
+    private Node sourceNode;
+    private Node targetNode;
     private final NodeTypeDefinition transitionDefinition;
     private IFeatureProvider featureProvider;
 
@@ -67,13 +71,13 @@ public class CreateTransitionFeature extends AbstractCreateConnectionFeature {
 
     @Override
     public Connection create(ICreateConnectionContext context) {
-        Node source = (Node) getBusinessObjectForPictogramElement(context.getSourcePictogramElement());
-        Node target = (Node) getBusinessObjectForPictogramElement(context.getTargetPictogramElement());
+        sourceNode = (Node) getBusinessObjectForPictogramElement(context.getSourcePictogramElement());
+        targetNode = (Node) getBusinessObjectForPictogramElement(context.getTargetPictogramElement());
         // create new business object
-        Transition transition = transitionDefinition.createElement(source, false);
-        transition.setTarget(target);
-        transition.setName(source.getNextTransitionName(transitionDefinition));
-        source.addLeavingTransition(transition);
+        transition = transitionDefinition.createElement(sourceNode, false);
+        transition.setTarget(targetNode);
+        transition.setName(sourceNode.getNextTransitionName(transitionDefinition));
+        sourceNode.addLeavingTransition(transition);
         // add connection for business object
         Anchor sourceAnchor = context.getSourceAnchor();
         if (sourceAnchor == null) {
@@ -104,6 +108,30 @@ public class CreateTransitionFeature extends AbstractCreateConnectionFeature {
             }
         }
         return null;
+    }
+
+    @Override
+    public boolean canUndo(IContext context) {
+        return transition != null;
+    }
+
+    @Override
+    public void postUndo(IContext context) {
+        transition.getSource().removeLeavingTransition(transition);
+    }
+
+    @Override
+    public boolean canRedo(IContext context) {
+        return transition != null;
+    }
+
+    @Override
+    public void postRedo(IContext context) {
+        if (context instanceof ICreateConnectionContext) {
+            sourceNode.addLeavingTransition(transition);
+            getDiagramBehavior().refresh();
+        }
+
     }
 
 }

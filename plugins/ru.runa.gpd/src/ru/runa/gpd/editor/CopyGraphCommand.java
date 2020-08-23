@@ -80,7 +80,7 @@ public class CopyGraphCommand extends Command {
 
     @Override
     public String getLabel() {
-        return Localization.getString("button.paste");
+        return Localization.getString("button.paste") + " " + this.getClass().getSimpleName();
     }
 
     @Override
@@ -99,6 +99,9 @@ public class CopyGraphCommand extends Command {
                         Localization.getString("CopyBuffer.DifferentVersion.warning"), null).open();
                 return;
             }
+            targetNodeMap.clear();
+            executedCopyActions.clear();
+            nodeToSwimlaneNameMap.clear();
             Set<ExtraCopyAction> copyActions = new HashSet<ExtraCopyAction>();
             List<NamedGraphElement> sourceNodeList = copyBuffer.getSourceNodes();
             // add nodes

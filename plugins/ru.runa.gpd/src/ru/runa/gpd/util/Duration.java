@@ -1,13 +1,11 @@
 package ru.runa.gpd.util;
 
+import com.google.common.base.Objects;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import ru.runa.gpd.Localization;
-
-import com.google.common.base.Objects;
 
 public class Duration {
     public static final String CURRENT_DATE_MESSAGE = Localization.getString("duration.baseDateNow");
@@ -125,6 +123,9 @@ public class Duration {
 
     @Override
     public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
         Duration d = (Duration) obj;
         return Objects.equal(variableName, d.variableName) && Objects.equal(delay, d.delay) && Objects.equal(unit, d.unit);
     }
@@ -174,5 +175,13 @@ public class Duration {
             return label.compareTo(unit.label);
         }
 
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            Unit u = (Unit) obj;
+            return Objects.equal(label, u.label) && Objects.equal(value, u.value);
+        }
     }
 }

@@ -12,7 +12,6 @@ import org.eclipse.emf.transaction.RecordingCommand;
 import org.eclipse.emf.transaction.TransactionalEditingDomain;
 import org.eclipse.emf.transaction.util.TransactionUtil;
 import org.eclipse.gef.LayerConstants;
-import org.eclipse.gef.commands.CommandStack;
 import org.eclipse.gef.editparts.LayerManager;
 import org.eclipse.gef.editparts.ScalableFreeformRootEditPart;
 import org.eclipse.graphiti.features.IAddFeature;
@@ -36,6 +35,7 @@ import org.eclipse.graphiti.services.Graphiti;
 import org.eclipse.graphiti.ui.editor.DiagramBehavior;
 import org.eclipse.graphiti.ui.editor.DiagramEditor;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
@@ -68,8 +68,8 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
     @Override
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
         super.init(site, input);
+        UndoRedoUtil.watch(editor.getDefinition());
         editor.getDefinition().setDelegatedListener(this);
-
     }
 
     public ProcessDefinition getDefinition() {
@@ -81,8 +81,11 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
         PictogramElement pe = getDiagramTypeProvider().getFeatureProvider().getPictogramElementForBusinessObject(event.getSource());
         // TODO unify event propagation to interested parties
         if (pe != null) {
-            BOUpdateContext context = new BOUpdateContext(pe, event.getSource());
-            getDiagramTypeProvider().getFeatureProvider().updateIfPossibleAndNeeded(context);
+            final PictogramElement fpe = pe;
+            Display.getDefault().asyncExec(() -> {
+                BOUpdateContext context = new BOUpdateContext(fpe, event.getSource());
+                getDiagramTypeProvider().getFeatureProvider().updateIfPossibleAndNeeded(context);
+            });
             if (PropertyNames.NODE_BOUNDS_RESIZED.equals(event.getPropertyName())) {
                 LayoutContext layoutContext = new LayoutContext(pe);
                 getDiagramTypeProvider().getFeatureProvider().layoutIfPossible(layoutContext);
@@ -108,17 +111,19 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
     }
 
     private void updateLeavingTransitions(Node node) {
-        final List<AbstractTransition> transitions = new ArrayList<>(node.getLeavingTransitions());
-        if (node instanceof ConnectableViaDottedTransition) {
-            transitions.addAll(((ConnectableViaDottedTransition) node).getLeavingDottedTransitions());
-        }
-        for (AbstractTransition transition : transitions) {
-            PictogramElement pe = getDiagramTypeProvider().getFeatureProvider().getPictogramElementForBusinessObject(transition);
-            if (pe != null) {
-                BOUpdateContext context = new BOUpdateContext(pe, transition);
-                getDiagramTypeProvider().getFeatureProvider().updateIfPossibleAndNeeded(context);
+        Display.getDefault().asyncExec(() -> {
+            final List<AbstractTransition> transitions = new ArrayList<>(node.getLeavingTransitions());
+            if (node instanceof ConnectableViaDottedTransition) {
+                transitions.addAll(((ConnectableViaDottedTransition) node).getLeavingDottedTransitions());
             }
-        }
+            for (AbstractTransition transition : transitions) {
+                PictogramElement pe = getDiagramTypeProvider().getFeatureProvider().getPictogramElementForBusinessObject(transition);
+                if (pe != null) {
+                    BOUpdateContext context = new BOUpdateContext(pe, transition);
+                    getDiagramTypeProvider().getFeatureProvider().updateIfPossibleAndNeeded(context);
+                }
+            }
+        });
     }
 
     @Override
@@ -127,6 +132,7 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
         if (diagramCreator != null) {
             diagramCreator.disposeDiagram();
         }
+        UndoRedoUtil.unwatch(editor.getDefinition());
         super.dispose();
     }
 
@@ -196,11 +202,6 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
 
     public PictogramElement[] getAllPictogramElementsForBusinessObject(GraphElement model) {
         return getDiagramTypeProvider().getFeatureProvider().getAllPictogramElementsForBusinessObject(model);
-    }
-
-    @Override
-    public CommandStack getCommandStack() {
-        return super.getCommandStack();
     }
 
     @Override

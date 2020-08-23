@@ -56,11 +56,12 @@ public class DeleteFormFilesAction extends BaseModelActionDelegate {
                     formNode.setTemplateFileName(FormNode.EMPTY);
                 }
                 if (deleteValidationFile != null && deleteValidationFile.isEnabled()) {
-                    IOUtils.markAsDeleted(IOUtils.getAdjacentFile(formNode.getProcessDefinition().getFile(), formNode.getValidationFileName()));
+                    IOUtils.markAsDeleted(IOUtils.getAdjacentFile(formNode.getProcessDefinition().getFile(), formNode.getValidationFileName()),
+                            false);
                     formNode.setDirty();
                 }
                 if (deleteScriptFile != null && deleteScriptFile.isEnabled()) {
-                    IOUtils.markAsDeleted(IOUtils.getAdjacentFile(formNode.getProcessDefinition().getFile(), formNode.getScriptFileName()));
+                    IOUtils.markAsDeleted(IOUtils.getAdjacentFile(formNode.getProcessDefinition().getFile(), formNode.getScriptFileName()), false);
                     formNode.setDirty();
                 }
             } catch (CoreException e) {
