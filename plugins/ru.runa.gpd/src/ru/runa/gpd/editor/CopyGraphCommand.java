@@ -1,17 +1,17 @@
 package ru.runa.gpd.editor;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.CoreException;
@@ -21,10 +21,8 @@ import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.commands.Command;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
@@ -51,7 +49,7 @@ import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 import ru.runa.gpd.ui.dialog.InfoWithDetailsDialog;
-import ru.runa.gpd.ui.dialog.MultipleSelectionDialog;
+import ru.runa.gpd.util.EditorUtils;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.SwimlaneDisplayMode;
 import ru.runa.gpd.util.VariableUtils;
@@ -88,13 +86,17 @@ public class CopyGraphCommand extends Command {
     @Override
     public void execute() {
         try {
+            if (targetDefinition instanceof SubprocessDefinition) {
+                IFile definitionFile = ((SubprocessDefinition) targetDefinition).getMainProcessDefinition().getFile();
+                if (EditorUtils.getOpenedEditor(definitionFile) == null) {
+                    new InfoWithDetailsDialog(MessageDialog.WARNING, Localization.getString("message.warning"),
+                            Localization.getString("CopyBuffer.MainProcessDefinition.closed.warning"), null).open();
+                    return;
+                }
+            }
             if (!copyBuffer.getLanguage().equals(targetDefinition.getLanguage())) {
-                (new InfoWithDetailsDialog(MessageDialog.WARNING,  Localization.getString("message.warning"), Localization.getString("CopyBuffer.DifferentVersion.warning"), null) {
-                    @Override
-                    protected void createButtonsForButtonBar(Composite parent) {
-                        createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, false);
-                    }
-                }).open();
+                new InfoWithDetailsDialog(MessageDialog.WARNING, Localization.getString("message.warning"),
+                        Localization.getString("CopyBuffer.DifferentVersion.warning"), null).open();
                 return;
             }
             Set<ExtraCopyAction> copyActions = new HashSet<ExtraCopyAction>();
@@ -115,16 +117,22 @@ public class CopyGraphCommand extends Command {
                 NamedGraphElement copy = (NamedGraphElement) node.makeCopy(targetDefinition);
                 adjustLocation(copy);
                 newElements.add(copy);
-                for (Variable variable : node.getUsedVariables(copyBuffer.getSourceFolder())) {
-                    ExtraCopyAction copyAction;
+                List<Variable> usedVariables = node.getUsedVariables(copyBuffer.getSourceFolder());
+                Set<String> usedVariableNames = usedVariables.stream().map(v -> v.getName()).collect(Collectors.toSet());
+                for (Variable variable : usedVariables) {
                     if (variable instanceof Swimlane) {
-                        copyAction = new CopySwimlaneAction((Swimlane) variable);
+                        copyActions.add(new CopySwimlaneAction((Swimlane) variable));
                     } else {
                         String rootVariableName = variable.getName().split(Pattern.quote(UserType.DELIM))[0];
-                        copyAction = new CopyVariableAction(node.getProcessDefinition(),
-                                VariableUtils.getVariableByName(node.getProcessDefinition(), rootVariableName));
+                        CopyVariableAction copyVariableAction = new CopyVariableAction(node.getProcessDefinition(),
+                                VariableUtils.getVariableByName(node.getProcessDefinition(), rootVariableName), usedVariableNames);
+                        if (copyActions.contains(copyVariableAction)) {
+                            copyActions.stream().filter(a -> a.equals(copyVariableAction))
+                                    .anyMatch(a -> ((CopyVariableAction) a).usedVariableNames.addAll(usedVariableNames));
+                        } else {
+                            copyActions.add(copyVariableAction);
+                        }
                     }
-                    copyActions.add(copyAction);
                 }
                 targetNodeMap.put(node.getId(), copy);
                 if (node instanceof FormNode) {
@@ -198,19 +206,26 @@ public class CopyGraphCommand extends Command {
                         copy.setTarget((Node) target);
                         newElements.add(copy);
                     }
-                    for (Variable variable : transition.getUsedVariables(copyBuffer.getSourceFolder())) {
-                        ExtraCopyAction copyAction;
+                    List<Variable> usedVariables = transition.getUsedVariables(copyBuffer.getSourceFolder());
+                    Set<String> usedVariableNames = usedVariables.stream().map(v -> v.getName()).collect(Collectors.toSet());
+                    for (Variable variable : usedVariables) {
                         if (variable instanceof Swimlane) {
-                            copyAction = new CopySwimlaneAction((Swimlane) variable);
+                            copyActions.add(new CopySwimlaneAction((Swimlane) variable));
                         } else {
                             String rootVariableName = variable.getName().split(Pattern.quote(UserType.DELIM))[0];
-                            copyAction = new CopyVariableAction(node.getProcessDefinition(),
-                                    VariableUtils.getVariableByName(node.getProcessDefinition(), rootVariableName));
+                            CopyVariableAction copyVariableAction = new CopyVariableAction(node.getProcessDefinition(),
+                                    VariableUtils.getVariableByName(node.getProcessDefinition(), rootVariableName), usedVariableNames);
+                            if (copyActions.contains(copyVariableAction)) {
+                                copyActions.stream().filter(a -> a.equals(copyVariableAction))
+                                        .anyMatch(a -> ((CopyVariableAction) a).usedVariableNames.addAll(usedVariableNames));
+                            } else {
+                                copyActions.add(copyVariableAction);
+                            }
                         }
-                        copyActions.add(copyAction);
                     }
                 }
             }
+            // select new elements
             if (newElements.size() > 0) {
                 if (copyBuffer.getLanguage() == Language.JPDL) {
                     List<EditPart> editParts = new ArrayList<>();
@@ -243,34 +258,10 @@ public class CopyGraphCommand extends Command {
                     });
                 }
             }
-            List<ExtraCopyAction> sortedCopyActions = Lists.newArrayList(copyActions);
-            Collections.sort(sortedCopyActions);
-            List<ExtraCopyAction> userConfirmedActions = new ArrayList<ExtraCopyAction>();
-            for (ExtraCopyAction copyAction : sortedCopyActions) {
-                if (copyAction.isUserConfirmationRequired()) {
-                    copyAction.setEnabled(false);
-                    userConfirmedActions.add(copyAction);
-                }
-            }
-            if (userConfirmedActions.size() > 0) {
-                // display dialog with collisions
-                MultipleSelectionDialog dialog = new MultipleSelectionDialog(Localization.getString("CopyGraphRewriteDialog.title"),
-                        userConfirmedActions);
-                if (dialog.open() != IDialogConstants.OK_ID) {
-                    for (ExtraCopyAction copyAction : userConfirmedActions) {
-                        copyAction.setEnabled(false);
-                    }
-                }
-            }
             // run copy actions
-            for (ExtraCopyAction copyAction : sortedCopyActions) {
-                if (copyAction.isEnabled()) {
-                    PluginLogger.logInfo("Copying '" + copyAction + "'");
-                    copyAction.execute();
-                    executedCopyActions.add(copyAction);
-                } else {
-                    PluginLogger.logInfo("Ignored to copy '" + copyAction + "'");
-                }
+            for (ExtraCopyAction copyAction : copyActions) {
+                copyAction.execute();
+                executedCopyActions.add(copyAction);
             }
             // set swimlanes
             for (Map.Entry<String, NamedGraphElement> entry : targetNodeMap.entrySet()) {
@@ -360,24 +351,6 @@ public class CopyGraphCommand extends Command {
         }
 
         @Override
-        protected String getChanges() {
-            List<String> fileNames = Lists.newArrayList();
-            if (targetFormNode.hasForm() && targetFolder.getFile(targetFormNode.getFormFileName()).exists()) {
-                fileNames.add(targetFormNode.getFormFileName());
-            }
-            if (targetFormNode.hasFormValidation()) {
-                fileNames.add(targetFormNode.getValidationFileName());
-            }
-            if (targetFormNode.hasFormScript()) {
-                fileNames.add(targetFormNode.getScriptFileName());
-            }
-            if (fileNames.isEmpty()) {
-                return super.getChanges();
-            }
-            return fileNames.toString();
-        }
-
-        @Override
         public void execute() throws CoreException {
             if (sourceFormNode.hasForm()) {
                 formFile = copyFile(sourceFormNode.getFormFileName(), targetFormNode.getFormFileName());
@@ -394,7 +367,6 @@ public class CopyGraphCommand extends Command {
         }
 
         private IFile copyFile(String sourceFileName, String targetFileName) throws CoreException {
-            PluginLogger.logInfo("copying " + sourceFileName + " to " + targetFileName);
             InputStream is = sourceFolder.getFile(sourceFileName).getContents();
             IFile file = targetFolder.getFile(targetFileName);
             IOUtils.createOrUpdateFile(file, is);
@@ -462,39 +434,20 @@ public class CopyGraphCommand extends Command {
             super(CopyBuffer.GROUP_SWIMLANES, sourceSwimlane.getName());
             this.sourceSwimlane = sourceSwimlane;
             this.oldSwimlane = targetDefinition.getSwimlaneByName(sourceSwimlane.getName());
-            if (oldSwimlane != null) {
-                setEnabled(getChanges() != null);
-            }
-        }
-
-        @Override
-        protected String getChanges() {
-            if (oldSwimlane == null) {
-                return null;
-            }
-            if (!Objects.equal(oldSwimlane.getDelegationClassName(), sourceSwimlane.getDelegationClassName())) {
-                return oldSwimlane.getDelegationClassName() + "/" + sourceSwimlane.getDelegationClassName();
-            }
-            if (!Objects.equal(oldSwimlane.getDelegationConfiguration(), sourceSwimlane.getDelegationConfiguration())) {
-                return oldSwimlane.getDelegationConfiguration() + "/" + sourceSwimlane.getDelegationConfiguration();
-            }
-            return super.getChanges();
         }
 
         @Override
         public void execute() {
-            if (oldSwimlane != null) {
-                targetDefinition.removeChild(oldSwimlane);
+            if (oldSwimlane == null) {
+                addedSwimlane = (Swimlane) sourceSwimlane.makeCopy(targetDefinition);
+                adjustLocation(addedSwimlane);
             }
-            addedSwimlane = (Swimlane) sourceSwimlane.makeCopy(targetDefinition);
-            adjustLocation(addedSwimlane);
         }
 
         @Override
         public void undo() {
-            targetDefinition.removeChild(addedSwimlane);
-            if (oldSwimlane != null) {
-                targetDefinition.addChild(oldSwimlane);
+            if (addedSwimlane != null) {
+                targetDefinition.removeChild(addedSwimlane);
             }
         }
 
@@ -505,121 +458,69 @@ public class CopyGraphCommand extends Command {
         private final Variable sourceVariable;
         private final Variable oldVariable;
         private Variable addedVariable;
-        private VariableUserType addedUserType;
+        private Map<VariableUserType, List<Variable>> changedUserTypes = new HashMap<>();
+        private Set<String> usedVariableNames;
 
-        public CopyVariableAction(ProcessDefinition sourceProcessDefinition, Variable sourceVariable) {
+        public CopyVariableAction(ProcessDefinition sourceProcessDefinition, Variable sourceVariable, Set<String> usedVariableNames) {
             super(CopyBuffer.GROUP_VARIABLES, sourceVariable.getName());
             this.sourceProcessDefinition = sourceProcessDefinition;
             this.sourceVariable = sourceVariable;
             this.oldVariable = VariableUtils.getVariableByName(targetDefinition, sourceVariable.getName());
-            if (oldVariable != null) {
-                setEnabled(getChanges() != null);
-            }
-        }
-
-        @Override
-        protected String getChanges() {
-            if (oldVariable == null) {
-                return null;
-            }
-            if (!Objects.equal(oldVariable.getFormat(), sourceVariable.getFormat())) {
-                return oldVariable.getFormat() + "/" + sourceVariable.getFormat();
-            }
-            return getDifference(sourceVariable, oldVariable);
-        }
-
-        private String getDifference(Variable srcVariable, Variable dstVariable) {
-            if (srcVariable.isComplex()) {
-                VariableUserType dstUserType = targetDefinition.getVariableUserType(srcVariable.getUserType().getName());
-                if (dstUserType == null) {
-                    return srcVariable.getUserType().getName();
-                } else {
-                    List<Variable> dstUserTypeAttributes = dstUserType.getAttributes();
-                    for (Variable v : srcVariable.getUserType().getAttributes()) {
-                        if (dstUserTypeAttributes.contains(v)) {
-                            if (v.isComplex() || VariableUtils.isContainerVariable(v)) {
-                                String difference = getDifference(v, dstUserTypeAttributes.get(dstUserTypeAttributes.indexOf(v)));
-                                if (difference != null) {
-                                    return difference;
-                                }
-                            }
-                        } else {
-                            return v.getName();
-                        }
-                    }
-                }
-            } else if (VariableUtils.isContainerVariable(srcVariable)) {
-                String[] componentNames = srcVariable.getFormatComponentClassNames();
-                for (String componentName : componentNames) {
-                    if (VariableUtils.isValidUserTypeName(componentName)) {
-                        VariableUserType srcUserType = sourceProcessDefinition.getVariableUserType(componentName);
-                        if (srcUserType != null) {
-                            VariableUserType dstUserType = targetDefinition.getVariableUserType(srcUserType.getName());
-                            if (dstUserType == null) {
-                                return srcUserType.getName();
-                            } else {
-                                List<Variable> dstUserTypeAttributes = dstUserType.getAttributes();
-                                for (Variable v : srcUserType.getAttributes()) {
-                                    if (dstUserTypeAttributes.contains(v)) {
-                                        if (v.isComplex() || VariableUtils.isContainerVariable(v)) {
-                                            String difference = getDifference(v, dstUserTypeAttributes.get(dstUserTypeAttributes.indexOf(v)));
-                                            if (difference != null) {
-                                                return difference;
-                                            }
-                                        }
-                                    } else {
-                                        return v.getName();
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            return null;
+            this.usedVariableNames = usedVariableNames;
         }
 
         @Override
         public void execute() {
-            if (oldVariable != null) {
-                targetDefinition.removeChild(oldVariable);
+            copyReferencedUserTypes(sourceVariable);
+            if (oldVariable == null) {
+                addedVariable = (Variable) sourceVariable.makeCopy(targetDefinition);
             }
-            addedVariable = (Variable) sourceVariable.makeCopy(targetDefinition);
-            copyUserType(sourceVariable);
         }
 
-        private void copyUserType(Variable srcVar) {
+        private void copyReferencedUserTypes(Variable srcVar) {
             if (srcVar.isComplex()) {
                 VariableUserType sourceUserType = srcVar.getUserType().getCopy();
                 VariableUserType userType = targetDefinition.getVariableUserType(srcVar.getUserType().getName());
                 if (userType == null) {
-                    targetDefinition.addVariableUserType(sourceUserType);
+                    // full copy
+                    userType = srcVar.getUserType().getCopy();
+                    targetDefinition.addVariableUserType(userType);
+                    changedUserTypes.put(userType, null);
                     for (Variable v : sourceUserType.getAttributes()) {
                         if (v.isComplex() || VariableUtils.isContainerVariable(v)) {
-                            copyUserType(v);
+                            copyReferencedUserTypes(v);
                         }
                     }
                 } else {
+                    // copy only referenced attributes
+                    List<Variable> addedAttributes = new ArrayList<>();
                     List<Variable> userTypeAttributes = userType.getAttributes();
                     for (Variable v : sourceUserType.getAttributes()) {
-                        if (!userTypeAttributes.contains(v)) {
+                        if (!userTypeAttributes.contains(v) && usedVariableNames.contains(srcVar.getName() + UserType.DELIM + v.getName())) {
                             if (v.isComplex() || VariableUtils.isContainerVariable(v)) {
-                                copyUserType(v);
+                                copyReferencedUserTypes(v);
                             }
                             userType.addAttribute(v);
+                            addedAttributes.add(v);
                         }
+                    }
+                    if (!changedUserTypes.containsKey(userType)) {
+                        changedUserTypes.put(userType, addedAttributes);
                     }
                 }
             } else if (VariableUtils.isContainerVariable(srcVar)) {
                 String[] componentNames = srcVar.getFormatComponentClassNames();
                 for (String componentName : componentNames) {
                     if (VariableUtils.isValidUserTypeName(componentName)) {
-                        VariableUserType vut = sourceProcessDefinition.getVariableUserType(componentName);
-                        if (vut != null && targetDefinition.getVariableUserType(vut.getName()) == null) {
-                            targetDefinition.addVariableUserType(vut.getCopy());
-                            for (Variable v : vut.getAttributes()) {
+                        VariableUserType sourceUserType = sourceProcessDefinition.getVariableUserType(componentName);
+                        if (sourceUserType != null && targetDefinition.getVariableUserType(sourceUserType.getName()) == null) {
+                            // full copy
+                            VariableUserType addedUserType = sourceUserType.getCopy();
+                            targetDefinition.addVariableUserType(addedUserType);
+                            changedUserTypes.put(addedUserType, null);
+                            for (Variable v : sourceUserType.getAttributes()) {
                                 if (v.isComplex() || VariableUtils.isContainerVariable(v)) {
-                                    copyUserType(v);
+                                    copyReferencedUserTypes(v);
                                 }
                             }
                         }
@@ -630,12 +531,17 @@ public class CopyGraphCommand extends Command {
 
         @Override
         public void undo() {
-            targetDefinition.removeChild(addedVariable);
-            if (addedUserType != null) {
-                targetDefinition.removeVariableUserType(addedUserType);
+            if (addedVariable != null) {
+                targetDefinition.removeChild(addedVariable);
             }
-            if (oldVariable != null) {
-                targetDefinition.addChild(oldVariable);
+            for (Map.Entry<VariableUserType, List<Variable>> entry : changedUserTypes.entrySet()) {
+                if (entry.getValue() == null) {
+                    targetDefinition.removeVariableUserType(entry.getKey());
+                } else {
+                    for (Variable addedAttribute : entry.getValue()) {
+                        entry.getKey().removeAttribute(addedAttribute);
+                    }
+                }
             }
         }
 

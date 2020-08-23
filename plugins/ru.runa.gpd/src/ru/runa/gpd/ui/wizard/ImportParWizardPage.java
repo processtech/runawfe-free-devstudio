@@ -24,8 +24,11 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
@@ -60,6 +63,7 @@ public class ImportParWizardPage extends ImportWizardPage {
     private Button importFromServerButton;
     private WfeServerConnectorComposite serverConnectorComposite;
     private TreeViewer serverDefinitionViewer;
+    private Text serverDefinitionFilter;
     private String selectedDirFileName;
     private String[] selectedFileNames;
 
@@ -175,6 +179,17 @@ public class ImportParWizardPage extends ImportWizardPage {
     }
 
     private void createServerDefinitionsGroup(Composite parent) {
+    	serverDefinitionFilter = new Text(parent, SWT.SINGLE | SWT.BORDER);   
+        GridData gridDataText = new GridData(SWT.FILL,SWT.BEGINNING, true, false);
+        serverDefinitionFilter.setLayoutData(gridDataText);
+        serverDefinitionFilter.setMessage(Localization.getString("text.message.filter"));
+        serverDefinitionFilter.addModifyListener(new ModifyListener( ) {
+
+            @Override
+            public void modifyText(ModifyEvent e) {
+                serverDefinitionViewer.refresh();
+            }});
+        
         serverDefinitionViewer = new TreeViewer(parent);
         GridData gridData = new GridData(GridData.FILL_BOTH);
         gridData.heightHint = 100;
@@ -182,7 +197,50 @@ public class ImportParWizardPage extends ImportWizardPage {
         serverDefinitionViewer.setContentProvider(new ViewContentProvider());
         serverDefinitionViewer.setLabelProvider(new ViewLabelProvider());
         serverDefinitionViewer.setInput(new Object());
+        serverDefinitionViewer.addFilter(new ViewerFilter() {
+
+            @Override
+            public boolean select(Viewer viewer, Object parentElement, Object element) {  
+                String searchText = serverDefinitionFilter.getText();
+                if (searchText == null || searchText.trim().length() == 0) {
+                    return true;
+                }
+                              
+                if ((element instanceof DefinitionTreeNode) ) {
+                    String name = ((DefinitionTreeNode) element).getLabel();
+                    
+                    if (((DefinitionTreeNode) element).definition == null) {
+                        // This is the node. Show nodes with at least one matching child definition     
+                        return matchAtLeastOneSub(((DefinitionTreeNode) element).getChildren(), searchText);
+                    }
+                    
+                    // filter leafs only                    
+                    if (name.toLowerCase().contains(searchText.trim().toLowerCase())) {
+                        return true;
+                    }
+                }
+                return false;
+            }});
     }
+    
+    private boolean matchAtLeastOneSub(List<DefinitionTreeNode> source, String searchText) {
+        if (source == null || source.size() == 0) {
+            return false;
+        }
+        for (DefinitionTreeNode node: source) {
+            String name = ((DefinitionTreeNode) node).getLabel();
+            if (name.toLowerCase().contains(searchText.trim().toLowerCase())) {
+                return true;
+            }
+            if (node.getChildren() != null && node.getChildren().size() > 0) {
+                boolean bSub = matchAtLeastOneSub(node.getChildren(), searchText);
+                if (bSub) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }    
 
     public boolean performFinish() {
         List<ProcessDefinitionImportInfo> importInfos = Lists.newArrayList();

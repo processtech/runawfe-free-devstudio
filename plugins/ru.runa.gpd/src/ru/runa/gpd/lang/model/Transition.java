@@ -1,7 +1,6 @@
 package ru.runa.gpd.lang.model;
 
 import com.google.common.base.Objects;
-import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -26,9 +25,7 @@ import ru.runa.gpd.validation.FormNodeValidation;
 import ru.runa.gpd.validation.ValidationUtil;
 import ru.runa.gpd.validation.ValidatorConfig;
 
-public class Transition extends NamedGraphElement implements ActionContainer {
-    private Node target;
-    private List<Point> bendpoints = Lists.newArrayList();
+public class Transition extends AbstractTransition implements ActionContainer {
     private boolean exclusiveFlow;
     private boolean defaultFlow;
     private Point labelLocation;
@@ -44,30 +41,6 @@ public class Transition extends NamedGraphElement implements ActionContainer {
             this.labelLocation = labelLocation;
             firePropertyChange(TRANSITION_LABEL_LOCATION_CHANGED, old, labelLocation);
         }
-    }
-
-    public List<Point> getBendpoints() {
-        return bendpoints;
-    }
-
-    public void setBendpoints(List<Point> bendpoints) {
-        this.bendpoints = bendpoints;
-        firePropertyChange(TRANSITION_BENDPOINTS_CHANGED, null, 1);
-    }
-
-    public void addBendpoint(int index, Point bendpoint) {
-        getBendpoints().add(index, bendpoint);
-        firePropertyChange(TRANSITION_BENDPOINTS_CHANGED, null, index);
-    }
-
-    public void removeBendpoint(int index) {
-        getBendpoints().remove(index);
-        firePropertyChange(TRANSITION_BENDPOINTS_CHANGED, null, index);
-    }
-
-    public void setBendpoint(int index, Point bendpoint) {
-        getBendpoints().set(index, bendpoint);
-        firePropertyChange(TRANSITION_BENDPOINTS_CHANGED, null, index);
     }
 
     public boolean isExclusiveFlow() {
@@ -139,25 +112,6 @@ public class Transition extends NamedGraphElement implements ActionContainer {
         }
     }
 
-    public Node getSource() {
-        return (Node) getParent();
-    }
-
-    public Node getTarget() {
-        return target;
-    }
-
-    public void setTarget(Node target) {
-        Node old = this.target;
-        this.target = target;
-        if (old != null) {
-            old.firePropertyChange(NODE_ARRIVING_TRANSITION_REMOVED, null, this);
-        }
-        if (this.target != null) {
-            this.target.firePropertyChange(NODE_ARRIVING_TRANSITION_ADDED, null, this);
-        }
-    }
-
     @Override
     public void populateCustomPropertyDescriptors(List<IPropertyDescriptor> descriptors) {
         super.populateCustomPropertyDescriptors(descriptors);
@@ -191,14 +145,6 @@ public class Transition extends NamedGraphElement implements ActionContainer {
             return getSource() instanceof FormNode ? getColor().ordinal() : null;
         }
         return super.getPropertyValue(id);
-    }
-
-    @Override
-    public String toString() {
-        if (getParent() == null || target == null) {
-            return "not_completed";
-        }
-        return getParent().toString() + " -> (" + getName() + ") -> " + target.toString();
     }
 
     @Override

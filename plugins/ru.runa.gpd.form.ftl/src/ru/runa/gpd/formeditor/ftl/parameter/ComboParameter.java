@@ -24,6 +24,26 @@ import ru.runa.gpd.formeditor.ftl.ComponentParameter;
 import ru.runa.gpd.ui.custom.LoggingSelectionChangedAdapter;
 
 public class ComboParameter extends ParameterType {
+    /**
+     * Determines whether to automatically select a single ComboOption if {@link ComboParameter#getOptions} returned a single item list
+     */
+    private final boolean autoSelectSingleOption;
+    private PropertyChangeListener propertyChangeListener;
+
+    public ComboParameter() {
+        super();
+        autoSelectSingleOption = false;
+    }
+
+    public ComboParameter(boolean multiple) {
+        super(multiple);
+        autoSelectSingleOption = false;
+    }
+
+    public ComboParameter(boolean multiple, boolean autoSelectSingleOption) {
+        super(multiple);
+        this.autoSelectSingleOption = autoSelectSingleOption;
+    }
 
     @Override
     public PropertyDescriptor createPropertyDescriptor(Component component, ComponentParameter parameter, int propertyId) {
@@ -47,6 +67,7 @@ public class ComboParameter extends ParameterType {
     @Override
     public Object createEditor(Composite parent, Component component, ComponentParameter parameter, final Object oldValue,
             final PropertyChangeListener listener) {
+        this.propertyChangeListener = listener;
         final ComboViewer viewer = new ComboViewer(parent, SWT.SINGLE | SWT.READ_ONLY | SWT.BORDER);
         viewer.getCombo().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         viewer.setContentProvider(ArrayContentProvider.getInstance());
@@ -56,14 +77,17 @@ public class ComboParameter extends ParameterType {
                 return ((ComboOption) element).getLabel();
             }
         });
-        viewer.setInput(getOptions(component, parameter));
+
+        final List<ComboOption> options = getOptions(component, parameter);
+        viewer.setInput(options);
         if (!Strings.isNullOrEmpty((String) oldValue)) {
             viewer.setSelection(new StructuredSelection(new ComboOption((String) oldValue, null)));
+        } else if (options.size() == 1 && autoSelectSingleOption) {
+            selectValue(oldValue, listener, viewer, options.get(0));
         } else {
             for (ComboOption option : parameter.getOptions()) {
                 if (option.isDefault()) {
-                    viewer.setSelection(new StructuredSelection(option));
-                    listener.propertyChange(new PropertyChangeEvent(viewer, PropertyNames.PROPERTY_VALUE, oldValue, option.getValue()));
+                    selectValue(oldValue, listener, viewer, option);
                     break;
                 }
             }
@@ -82,7 +106,11 @@ public class ComboParameter extends ParameterType {
     @Override
     public void updateEditor(Object ui, Component component, ComponentParameter parameter) {
         ComboViewer viewer = (ComboViewer) ui;
-        viewer.setInput(getOptions(component, parameter));
+        final List<ComboOption> options = getOptions(component, parameter);
+        viewer.setInput(options);
+        if (options.size() == 1 && autoSelectSingleOption) {
+            selectValue(null, propertyChangeListener, viewer, options.get(0));
+        }
     }
 
     protected List<ComboOption> getOptions(Component component, ComponentParameter parameter) {
@@ -107,6 +135,13 @@ public class ComboParameter extends ParameterType {
                 return option.getValue();
             }
         });
+    }
+
+    private void selectValue(final Object oldValue, final PropertyChangeListener listener, final ComboViewer viewer, ComboOption option) {
+        viewer.setSelection(new StructuredSelection(option));
+        if (listener != null) {
+            listener.propertyChange(new PropertyChangeEvent(viewer, PropertyNames.PROPERTY_VALUE, oldValue, option.getValue()));
+        }
     }
 
 }
