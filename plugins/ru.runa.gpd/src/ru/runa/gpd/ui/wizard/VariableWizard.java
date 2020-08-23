@@ -72,12 +72,17 @@ public class VariableWizard extends Wizard {
             format += Variable.FORMAT_COMPONENT_TYPE_END;
         }
         String defaultValue = defaultValuePage.getDefaultValue();
-        boolean publicVisibility = accessPage != null ? accessPage.isPublicVisibility() : false;
-        variable = new Variable(name, scriptingName, format, formatPage.getUserType());
-        variable.setPublicVisibility(publicVisibility);
-        variable.setDefaultValue(defaultValue == null || defaultValue.isEmpty() ? null : defaultValue);
-        variable.setDescription(description);
-        variable.setStoreType(storeTypePage.getStoreType());
-        return true;
+        if (!defaultValuePage.isValidContent()) {
+            this.getContainer().showPage(defaultValuePage);
+            return false;
+        } else {
+            boolean publicVisibility = accessPage != null ? accessPage.isPublicVisibility() : false;
+            variable = new Variable(name, scriptingName, format, formatPage.getUserType());
+            variable.setPublicVisibility(publicVisibility);
+            variable.setDefaultValue(defaultValue == null || defaultValue.isEmpty() ? null : defaultValue);
+            variable.setDescription(description);
+            variable.setStoreType(storeTypePage.getStoreType());
+            return true;
+        }
     }
 }
