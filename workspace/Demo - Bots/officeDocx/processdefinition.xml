@@ -4,9 +4,9 @@
   <process name="officeDocx">
     <extensionElements>
       <runa:property name="showSwimlane" value="none"/>
-      <runa:property name="documentation" value="Bot creates docx file"/>
-      <runa:property name="version" value="4.2.0.M20150318-1835"/>
       <runa:property name="accessType" value="Process"/>
+      <runa:property name="version" value="4.4.0.M20200807-0618"/>
+      <runa:property name="documentation" value="Bot creates docx file"/>
     </extensionElements>
     <laneSet id="laneSet1">
       <lane id="ID5" name="operator">
@@ -33,6 +33,8 @@
       <documentation><![CDATA[Create report]]></documentation>
       <extensionElements>
         <runa:property name="lane" value="bot"/>
+        <runa:property name="reassign" value="false"/>
+        <runa:property name="reassignSwimlaneToTaskPerformer" value="true"/>
       </extensionElements>
     </userTask>
     <sequenceFlow id="ID23" name="tr1" sourceRef="ID2" targetRef="ID6"/>
@@ -40,6 +42,8 @@
       <documentation><![CDATA[Download DOCX]]></documentation>
       <extensionElements>
         <runa:property name="lane" value="operator"/>
+        <runa:property name="reassign" value="false"/>
+        <runa:property name="reassignSwimlaneToTaskPerformer" value="true"/>
       </extensionElements>
     </userTask>
     <sequenceFlow id="ID24" name="tr1" sourceRef="ID6" targetRef="ID10"/>
