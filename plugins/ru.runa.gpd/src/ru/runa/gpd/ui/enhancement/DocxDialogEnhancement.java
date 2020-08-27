@@ -207,14 +207,21 @@ public class DocxDialogEnhancement {
                                     || baseVar.getFormat().compareTo("ru.runa.wfe.var.format.ActorFormat") == 0) ? actorFieldsMap
                                             : (baseVar.getFormat().compareTo("ru.runa.wfe.var.format.GroupFormat") == 0 ? groupFieldsMap : null);
 
-                            // for Lists and UserTypes
+                            // for Lists/Maps and UserTypes, List/Maps of standard types
                             if (null == fieldsMap) {
                                 VariableUserType userType = baseVar.getUserType();
-                                if (null == userType && baseVar.getFormat().startsWith("ru.runa.wfe.var.format.ListFormat")) {
+                                if (null == userType && (baseVar.getFormat().startsWith("ru.runa.wfe.var.format.ListFormat")
+                                        || baseVar.getFormat().startsWith("ru.runa.wfe.var.format.MapFormat"))) {
                                     embeddedTypeName = ru.runa.gpd.util.VariableUtils.getListVariableComponentFormat(baseVar);
                                     userType = processDefinition.getVariableUserType(embeddedTypeName);
+
+                                    if (null == userType) { // try standard type in list
+                                        if (!attrName.contains(".")) {
+                                            check = false;
+                                        }
+                                    }
                                 }
-                                if (null != userType) {
+                                if (null != userType && check) {
                                     String[] attrs = attrName.split("[.]");
                                     for (int index = 0; index < attrs.length; index++) {
                                         boolean finded = false;
