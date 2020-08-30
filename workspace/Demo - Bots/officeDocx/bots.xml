@@ -5,14 +5,15 @@
     <config> 
       <input> 
         <param name="ParamTemplate" value="FileTemplate"/>  
+        <param name="ParamNumbers" variable="numbers"/>  
+        <param name="ParamDateTimeNow" variable="dtnow"/>  
         <param name="ParamTableName" variable="TableName"/>  
         <param name="ParamItems" variable="items"/>  
-        <param name="ParamPrices" variable="prices"/>  
-        <param name="ParamNumbers" variable="numbers"/>  
-        <param name="ParamDateTimeNow" variable="dtnow"/> 
+        <param name="ParamPrices" variable="prices"/> 
       </input>  
       <output> 
-        <param name="ParamReport" variable="FileReport"/> 
+        <param name="ParamReport" value="FileReport"/>  
+        <param name="Полученный документ Word" variable="FileReport"/> 
       </output> 
     </config>
   </task>

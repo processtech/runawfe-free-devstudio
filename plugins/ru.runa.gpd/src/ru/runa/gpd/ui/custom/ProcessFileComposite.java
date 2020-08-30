@@ -36,7 +36,7 @@ public abstract class ProcessFileComposite extends Composite {
         if (null != dialogEnhancementMode
                 && (dialogEnhancementMode.checkBotDocxTemplateEnhancementMode() || dialogEnhancementMode.checkScriptDocxTemplateEnhancementMode())) {
             GridData gridData = new GridData();
-            gridData.widthHint = 333;
+            gridData.widthHint = 280;
             setLayoutData(gridData);
         }
         rebuild();
