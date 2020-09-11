@@ -487,7 +487,7 @@ public class FieldValidatorsPage extends Composite implements PropertyChangeList
             errorMessageText.addVerifyListener(new VerifyListener() {
                 @Override
                 public void verifyText(VerifyEvent e) {
-                    if (e.keyCode != 0) {
+                    if (!isConfiguring(errorMessageText)) {
                         setDirty(true);
                     }
                 }
