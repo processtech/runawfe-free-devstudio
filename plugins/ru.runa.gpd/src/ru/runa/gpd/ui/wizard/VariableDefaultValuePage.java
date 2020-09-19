@@ -97,7 +97,7 @@ public class VariableDefaultValuePage extends DynaContentWizardPage {
 
     public boolean isValidContent() {
         try {
-            if (defaultValue != null) {
+            if (defaultValue != null && !defaultValue.isEmpty()) {
                 verifyDefaultValue();
                 setErrorMessage(null);
             }
