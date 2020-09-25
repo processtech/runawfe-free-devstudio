@@ -89,7 +89,6 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
         //
         CreateConnectionContext createConnectionContext = new CreateConnectionContext();
         createConnectionContext.setSourcePictogramElement(pe);
-        //TODO: Do we need separate availability check at Node for DottedTransition? 
         boolean allowTargetNodeCreation = (element instanceof Node) && ((Node) element).canAddLeavingTransition();
         //
         ContainerShape targetContainer;
