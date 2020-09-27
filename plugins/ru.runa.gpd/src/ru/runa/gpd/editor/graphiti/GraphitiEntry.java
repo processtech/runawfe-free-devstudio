@@ -7,8 +7,10 @@ import org.eclipse.graphiti.features.ILayoutFeature;
 import org.eclipse.graphiti.features.IUpdateFeature;
 import org.eclipse.graphiti.features.custom.ICustomFeature;
 import ru.runa.gpd.editor.Entry;
+import ru.runa.gpd.editor.graphiti.add.AddDottedTransitionFeature;
 import ru.runa.gpd.editor.graphiti.add.AddElementFeature;
 import ru.runa.gpd.editor.graphiti.add.AddTransitionFeature;
+import ru.runa.gpd.editor.graphiti.create.CreateDottedTransitionFeature;
 import ru.runa.gpd.editor.graphiti.create.CreateElementFeature;
 import ru.runa.gpd.editor.graphiti.create.CreateTransitionFeature;
 import ru.runa.gpd.editor.graphiti.layout.LayoutElementFeature;
@@ -38,6 +40,9 @@ public class GraphitiEntry extends Entry {
         if (feature instanceof CreateTransitionFeature) {
             ((CreateTransitionFeature) feature).setFeatureProvider(provider);
         }
+        if (feature instanceof CreateDottedTransitionFeature) {
+            ((CreateDottedTransitionFeature) feature).setFeatureProvider(provider);
+        }
         return feature;
     }
 
@@ -48,6 +53,9 @@ public class GraphitiEntry extends Entry {
         }
         if (feature instanceof AddTransitionFeature) {
             ((AddTransitionFeature) feature).setFeatureProvider(provider);
+        }
+        if (feature instanceof AddDottedTransitionFeature) {
+            ((AddDottedTransitionFeature) feature).setFeatureProvider(provider);
         }
         return feature;
     }

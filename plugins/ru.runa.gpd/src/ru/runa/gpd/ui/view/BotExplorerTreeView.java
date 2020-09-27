@@ -1,7 +1,6 @@
 package ru.runa.gpd.ui.view;
 
 import java.util.List;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -29,7 +28,6 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.SharedImages;
@@ -127,8 +125,7 @@ public class BotExplorerTreeView extends ViewPart implements ISelectionListener 
                 SharedImages.getImageDescriptor("icons/import_bot.gif")) {
             @Override
             public void run() {
-                WorkspaceOperations.importBotElement(selection,
-                        new ImportBotStationWizardPage(Localization.getString("ImportParWizard.wizard.title"), selection));
+                WorkspaceOperations.importBotElement(selection, new ImportBotStationWizardPage(selection));
             }
         });
         if (menuOnBotStation) {
@@ -150,8 +147,7 @@ public class BotExplorerTreeView extends ViewPart implements ISelectionListener 
                     SharedImages.getImageDescriptor("icons/import_bot.gif")) {
                 @Override
                 public void run() {
-                    WorkspaceOperations.importBotElement(selection,
-                            new ImportBotWizardPage(Localization.getString("ImportParWizard.wizard.title"), selection));
+                    WorkspaceOperations.importBotElement(selection, new ImportBotWizardPage(selection));
                 }
             });
             manager.add(new Action(Localization.getString("RenameBotStationDialog.edit"), SharedImages.getImageDescriptor("icons/rename.gif")) {
@@ -187,8 +183,7 @@ public class BotExplorerTreeView extends ViewPart implements ISelectionListener 
                     SharedImages.getImageDescriptor("icons/import_bot.gif")) {
                 @Override
                 public void run() {
-                    WorkspaceOperations.importBotElement(selection,
-                            new ImportBotTaskWizardPage(Localization.getString("ImportParWizard.wizard.title"), selection));
+                    WorkspaceOperations.importBotElement(selection, new ImportBotTaskWizardPage(selection));
                 }
             });
             manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.renameProcess"),

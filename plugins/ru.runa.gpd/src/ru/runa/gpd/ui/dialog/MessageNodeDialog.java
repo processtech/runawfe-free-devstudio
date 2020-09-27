@@ -35,7 +35,7 @@ import ru.runa.gpd.ui.custom.DropDownButton;
 import ru.runa.gpd.ui.custom.LoggingDoubleClickAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionChangedAdapter;
-import ru.runa.gpd.ui.custom.SWTUtils;
+import ru.runa.gpd.ui.custom.SwtUtils;
 import ru.runa.gpd.ui.custom.TableViewerLocalDragAndDropSupport;
 import ru.runa.gpd.util.VariableMapping;
 import ru.runa.gpd.util.VariableUtils;
@@ -201,7 +201,7 @@ public class MessageNodeDialog extends Dialog {
                 }
             }
         });
-        selectorChangeButton = SWTUtils.createButtonFillHorizontal(composite, Localization.getString("button.change"), new LoggingSelectionAdapter() {
+        selectorChangeButton = SwtUtils.createButtonFillHorizontal(composite, Localization.getString("button.change"), new LoggingSelectionAdapter() {
 
             @Override
             protected void onSelection(SelectionEvent e) throws Exception {
@@ -212,7 +212,7 @@ public class MessageNodeDialog extends Dialog {
                 }
             }
         });
-        selectorDeleteButton = SWTUtils.createButtonFillHorizontal(composite, Localization.getString("button.delete"), new LoggingSelectionAdapter() {
+        selectorDeleteButton = SwtUtils.createButtonFillHorizontal(composite, Localization.getString("button.delete"), new LoggingSelectionAdapter() {
 
             @Override
             protected void onSelection(SelectionEvent e) throws Exception {
@@ -294,14 +294,14 @@ public class MessageNodeDialog extends Dialog {
         gridData.horizontalAlignment = SWT.LEFT;
         gridData.verticalAlignment = SWT.TOP;
         composite.setLayoutData(gridData);
-        SWTUtils.createButtonFillHorizontal(composite, Localization.getString("button.add"), new LoggingSelectionAdapter() {
+        SwtUtils.createButtonFillHorizontal(composite, Localization.getString("button.add"), new LoggingSelectionAdapter() {
 
             @Override
             protected void onSelection(SelectionEvent e) throws Exception {
                 editVariableMapping(null, VariableMapping.USAGE_READ);
             }
         });
-        dataChangeButton = SWTUtils.createButtonFillHorizontal(composite, Localization.getString("button.change"), new LoggingSelectionAdapter() {
+        dataChangeButton = SwtUtils.createButtonFillHorizontal(composite, Localization.getString("button.change"), new LoggingSelectionAdapter() {
 
             @Override
             protected void onSelection(SelectionEvent e) throws Exception {
@@ -312,11 +312,11 @@ public class MessageNodeDialog extends Dialog {
                 }
             }
         });
-        dataMoveUpButton = SWTUtils.createButtonFillHorizontal(composite, Localization.getString("button.up"),
+        dataMoveUpButton = SwtUtils.createButtonFillHorizontal(composite, Localization.getString("button.up"),
                 new MoveVariableSelectionListener(true));
-        dataMoveDownButton = SWTUtils.createButtonFillHorizontal(composite, Localization.getString("button.down"), new MoveVariableSelectionListener(
+        dataMoveDownButton = SwtUtils.createButtonFillHorizontal(composite, Localization.getString("button.down"), new MoveVariableSelectionListener(
                 false));
-        dataDeleteButton = SWTUtils.createButtonFillHorizontal(composite, Localization.getString("button.delete"), new LoggingSelectionAdapter() {
+        dataDeleteButton = SwtUtils.createButtonFillHorizontal(composite, Localization.getString("button.delete"), new LoggingSelectionAdapter() {
 
             @Override
             protected void onSelection(SelectionEvent e) throws Exception {

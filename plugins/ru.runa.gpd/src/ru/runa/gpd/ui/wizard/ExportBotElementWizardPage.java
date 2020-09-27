@@ -1,12 +1,12 @@
 package ru.runa.gpd.ui.wizard;
 
+import com.google.common.base.Strings;
+import com.google.common.base.Throwables;
 import java.io.File;
 import java.util.Map;
-
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -15,32 +15,30 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
-import org.eclipse.ui.internal.wizards.datatransfer.WizardArchiveFileResourceExportPage1;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
-import ru.runa.gpd.settings.WFEConnectionPreferencePage;
-import ru.runa.gpd.ui.custom.SyncUIHelper;
-import ru.runa.gpd.wfe.WFEServerBotElementImporter;
+import ru.runa.gpd.sync.WfeServerBotImporter;
+import ru.runa.gpd.sync.WfeServerConnector;
+import ru.runa.gpd.sync.WfeServerConnectorComposite;
+import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 
-import com.google.common.base.Throwables;
-
-@SuppressWarnings("restriction")
-public abstract class ExportBotElementWizardPage extends WizardArchiveFileResourceExportPage1 {
+public abstract class ExportBotElementWizardPage extends ExportWizardPage {
     protected Map<String, IResource> exportObjectNameFileMap;
     protected final IResource exportResource;
     private ListViewer exportResourceListViewer;
     private Button exportToFileButton;
     private Button exportToServerButton;
+    private WfeServerConnectorComposite serverConnectorComposite;
 
-    public ExportBotElementWizardPage(IStructuredSelection selection) {
-        super(selection);
+    public ExportBotElementWizardPage(Class<? extends ExportWizardPage> clazz, IStructuredSelection selection) {
+        super(clazz);
         this.exportResource = getInitialElement(selection);
     }
 
@@ -72,23 +70,53 @@ public abstract class ExportBotElementWizardPage extends WizardArchiveFileResour
         exportGroup.setLayout(new GridLayout(1, false));
         exportGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
         exportToFileButton = new Button(exportGroup, SWT.RADIO);
-        exportToFileButton.setText(Localization.getString("ExportParWizardPage.page.exportToFileButton"));
+        exportToFileButton.setText(Localization.getString("button.exportToFile"));
         exportToFileButton.setSelection(true);
-        createDestinationGroup(exportGroup);
+        exportToFileButton.addSelectionListener(new LoggingSelectionAdapter() {
+            @Override
+            protected void onSelection(SelectionEvent e) throws Exception {
+                onExportModeChanged();
+            }
+        });
+        createDestinationDirectoryGroup(exportGroup);
         exportToServerButton = new Button(exportGroup, SWT.RADIO);
-        exportToServerButton.setText(Localization.getString("ExportParWizardPage.page.exportToServerButton"));
-        SyncUIHelper.createHeader(exportGroup, WFEServerBotElementImporter.getInstance(), WFEConnectionPreferencePage.class, null);
-        restoreWidgetValues();
-        giveFocusToDestination();
+        exportToServerButton.setText(Localization.getString("button.exportToServer"));
+        serverConnectorComposite = new WfeServerConnectorComposite(exportGroup, WfeServerBotImporter.getInstance(), null);
         setControl(pageControl);
-        setPageComplete(false);
         if (exportResource != null) {
             exportResourceListViewer.setSelection(new StructuredSelection(getSelectionResourceKey(exportResource)));
+        }
+        onExportModeChanged();
+    }
+
+    private void onExportModeChanged() {
+        boolean fromFile = exportToFileButton.getSelection();
+        destinationValueText.setEnabled(fromFile);
+        browseButton.setEnabled(fromFile);
+        serverConnectorComposite.setEnabled(!fromFile);
+    }
+
+    @Override
+    protected void onBrowseButtonSelected() {
+        FileDialog dialog = new FileDialog(getContainer().getShell(), SWT.SAVE);
+        dialog.setFilterExtensions(new String[] { getOutputSuffix(), "*.*" });
+        String selectionName = getBotElementSelection();
+        if (selectionName != null) {
+            dialog.setFileName(getFileName(selectionName));
+        }
+        String currentSourceString = getDestinationValue();
+        int lastSeparatorIndex = currentSourceString.lastIndexOf(File.separator);
+        if (lastSeparatorIndex != -1) {
+            dialog.setFilterPath(currentSourceString.substring(0, lastSeparatorIndex));
+        }
+        String selectedFileName = dialog.open();
+        if (selectedFileName != null) {
+            setErrorMessage(null);
+            setDestinationValue(selectedFileName);
         }
     }
 
     private void createViewer(Composite parent) {
-        // process selection
         exportResourceListViewer = new ListViewer(parent, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
         exportResourceListViewer.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
         exportResourceListViewer.setContentProvider(new ArrayContentProvider());
@@ -109,54 +137,24 @@ public abstract class ExportBotElementWizardPage extends WizardArchiveFileResour
         return (String) ((IStructuredSelection) exportResourceListViewer.getSelection()).getFirstElement();
     }
 
-    @Override
-    protected String getDestinationLabel() {
-        return Localization.getString("ExportParWizardPage.label.destination_file");
-    }
-
-    @Override
-    protected void handleDestinationBrowseButtonPressed() {
-        FileDialog dialog = new FileDialog(getContainer().getShell(), SWT.SAVE);
-        dialog.setFilterExtensions(new String[] { getOutputSuffix(), "*.*" });
-        String selectionName = getBotElementSelection();
-        if (selectionName != null) {
-            dialog.setFileName(getFileName(selectionName));
-        }
-        String currentSourceString = getDestinationValue();
-        int lastSeparatorIndex = currentSourceString.lastIndexOf(File.separator);
-        if (lastSeparatorIndex != -1) {
-            dialog.setFilterPath(currentSourceString.substring(0, lastSeparatorIndex));
-        }
-        String selectedFileName = dialog.open();
-        if (selectedFileName != null) {
-            setErrorMessage(null);
-            setDestinationValue(selectedFileName);
-        }
-    }
-
     protected String getFileName(String selectionName) {
         return selectionName.substring(selectionName.lastIndexOf("/") + 1) + getOutputSuffix();
     }
 
-    @Override
-    protected void updatePageCompletion() {
-        setPageComplete(true);
-    }
-
-    @Override
     public boolean finish() {
         boolean exportToFile = exportToFileButton.getSelection();
-        // Save dirty editors if possible but do not stop if not all are saved
         saveDirtyEditors();
-        // about to invoke the operation so save our state
-        saveWidgetValues();
         String selected = getBotElementSelection();
         if (selected == null) {
-            setErrorMessage("select");
+            setErrorMessage("ExportBotElementWizardPage.error.empty.source.selection");
             return false;
         }
-        if (exportToFile && !ensureTargetIsValid()) {
-            setErrorMessage(Localization.getString("ExportParWizardPage.error.selectDestinationPath"));
+        if (exportToFile && Strings.isNullOrEmpty(getDestinationValue())) {
+            setErrorMessage(Localization.getString("error.selectDestinationPath"));
+            return false;
+        }
+        if (!exportToFile && !WfeServerConnector.getInstance().isConfigured()) {
+            setErrorMessage(Localization.getString("error.selectValidConnection"));
             return false;
         }
         IResource exportResource = exportObjectNameFileMap.get(selected);
@@ -169,7 +167,7 @@ public abstract class ExportBotElementWizardPage extends WizardArchiveFileResour
             }
             return true;
         } catch (Throwable th) {
-            PluginLogger.logErrorWithoutDialog("botelement.error.export", th);
+            PluginLogger.logErrorWithoutDialog("ExportBotElementWizardPage.error.export", th);
             setErrorMessage(Throwables.getRootCause(th).getMessage());
             return false;
         }
@@ -179,40 +177,8 @@ public abstract class ExportBotElementWizardPage extends WizardArchiveFileResour
 
     protected abstract void deployToServer(IResource exportResource) throws Exception;
 
-    @Override
     protected abstract String getOutputSuffix();
 
     protected abstract String getSelectionResourceKey(IResource resource);
 
-    private final static String STORE_DESTINATION_NAMES_ID = "WizardParExportPage1.STORE_DESTINATION_NAMES_ID";
-
-    @Override
-    protected void internalSaveWidgetValues() {
-        // update directory names history
-        IDialogSettings settings = getDialogSettings();
-        if (settings != null) {
-            String[] directoryNames = settings.getArray(STORE_DESTINATION_NAMES_ID);
-            if (directoryNames == null) {
-                directoryNames = new String[0];
-            }
-            directoryNames = addToHistory(directoryNames, getDestinationValue());
-            settings.put(STORE_DESTINATION_NAMES_ID, directoryNames);
-        }
-    }
-
-    @Override
-    protected void restoreWidgetValues() {
-        IDialogSettings settings = getDialogSettings();
-        if (settings != null) {
-            String[] directoryNames = settings.getArray(STORE_DESTINATION_NAMES_ID);
-            if (directoryNames == null || directoryNames.length == 0) {
-                return; // ie.- no settings stored
-            }
-            // destination
-            setDestinationValue(directoryNames[0]);
-            for (int i = 0; i < directoryNames.length; i++) {
-                addDestinationItem(directoryNames[i]);
-            }
-        }
-    }
 }

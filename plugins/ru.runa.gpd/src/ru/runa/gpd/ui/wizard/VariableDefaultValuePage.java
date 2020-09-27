@@ -78,25 +78,41 @@ public class VariableDefaultValuePage extends DynaContentWizardPage {
         text.setEditable(useDefaultValueButton.getSelection());
     }
 
+    private void verifyDefaultValue() throws Exception {
+        VariableFormatPage formatPage = (VariableFormatPage) getWizard().getPage(VariableFormatPage.class.getSimpleName());
+        if (formatPage.getUserType() != null || formatPage.getComponentClassNames().length > 0 /* List|Map */) {
+            // TODO validate UserType attributes
+            if (JSONValue.parse(defaultValue.replaceAll("&quot;", "\"")) == null) {
+                throw new Exception(Localization.getString("VariableDefaultValuePage.error.expected.json"));
+            }
+        } else {
+            String className = formatPage.getType().getJavaClassName();
+            if (Group.class.getName().equals(className) || Actor.class.getName().equals(className) || Executor.class.getName().equals(className)) {
+                // TODO validate using connection?
+            } else {
+                TypeConversionUtil.convertTo(ClassLoaderUtil.loadClass(className), defaultValue);
+            }
+        }
+    }
+
+    public boolean isValidContent() {
+        try {
+            if (defaultValue != null && !defaultValue.isEmpty()) {
+                verifyDefaultValue();
+                setErrorMessage(null);
+            }
+            return true;
+        } catch (Exception e) {
+            setErrorMessage(Localization.getString("VariableDefaultValuePage.error.conversion") + ": " + e.getMessage());
+            return false;
+        }
+    }
+
     @Override
     protected void verifyContentIsValid() {
         try {
             if (useDefaultValueButton != null && useDefaultValueButton.getSelection() && defaultValue != null) {
-                VariableFormatPage formatPage = (VariableFormatPage) getWizard().getPage(VariableFormatPage.class.getSimpleName());
-                if (formatPage.getUserType() != null || formatPage.getComponentClassNames().length > 0 /* List|Map */) {
-                    // TODO validate UserType attributes
-                    if (JSONValue.parse(defaultValue.replaceAll("&quot;", "\"")) == null) {
-                        throw new Exception(Localization.getString("VariableDefaultValuePage.error.expected.json"));
-                    }
-                } else {
-                    String className = formatPage.getType().getJavaClassName();
-                    if (Group.class.getName().equals(className) || Actor.class.getName().equals(className)
-                            || Executor.class.getName().equals(className)) {
-                        // TODO validate using connection?
-                    } else {
-                        TypeConversionUtil.convertTo(ClassLoaderUtil.loadClass(className), defaultValue);
-                    }
-                }
+                verifyDefaultValue();
             }
             setErrorMessage(null);
         } catch (Exception e) {

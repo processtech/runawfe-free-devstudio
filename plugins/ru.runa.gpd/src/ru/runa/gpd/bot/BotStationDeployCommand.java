@@ -3,12 +3,10 @@ package ru.runa.gpd.bot;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
-
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.widgets.Display;
-
-import ru.runa.gpd.wfe.WFEServerBotStationElementImporter;
+import ru.runa.gpd.sync.WfeServerConnector;
 
 public class BotStationDeployCommand extends BotStationExportCommand {
     public BotStationDeployCommand(IResource exportResource, OutputStream outputStream) {
@@ -24,7 +22,7 @@ public class BotStationDeployCommand extends BotStationExportCommand {
                 Display.getDefault().syncExec(new Runnable() {
                     @Override
                     public void run() {
-                        WFEServerBotStationElementImporter.getInstance().deployBotStation(baos.toByteArray());
+                        WfeServerConnector.getInstance().deployBotStation(baos.toByteArray());
                     }
                 });
             } catch (Exception e) {

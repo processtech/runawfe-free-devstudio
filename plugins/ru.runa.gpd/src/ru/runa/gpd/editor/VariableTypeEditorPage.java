@@ -39,6 +39,7 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PropertyNames;
+import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.editor.clipboard.VariableTransfer;
 import ru.runa.gpd.editor.clipboard.VariableUserTypeTransfer;
 import ru.runa.gpd.lang.NodeRegistry;
@@ -59,6 +60,7 @@ import ru.runa.gpd.ui.custom.TableViewerLocalDragAndDropSupport;
 import ru.runa.gpd.ui.dialog.ChooseUserTypeDialog;
 import ru.runa.gpd.ui.dialog.ChooseVariableDialog;
 import ru.runa.gpd.ui.dialog.ErrorDialog;
+import ru.runa.gpd.ui.dialog.RenameUserTypeDialog;
 import ru.runa.gpd.ui.dialog.UpdateVariableNameDialog;
 import ru.runa.gpd.ui.dialog.VariableUserTypeDialog;
 import ru.runa.gpd.ui.wizard.CompactWizardDialog;
@@ -69,6 +71,7 @@ import ru.runa.gpd.util.WorkspaceOperations;
 public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
 
     private TableViewer typeTableViewer;
+    private Button editTypeButton;
     private Button renameTypeButton;
     private Button moveUpTypeButton;
     private Button moveDownTypeButton;
@@ -115,10 +118,12 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
                 }
                 return result;
             }
-        }), new TableColumnDescription("property.name", 200, SWT.LEFT));
+        }), new TableColumnDescription("property.name", 100, SWT.LEFT),
+                new TableColumnDescription("UserDefinedVariableType.storeInExternalStorage", 100, SWT.LEFT, false));
 
         Composite typeButtonsBar = createActionBar(leftComposite);
         addButton(typeButtonsBar, "button.create", new CreateTypeSelectionListener(), false);
+        editTypeButton = addButton(typeButtonsBar, "button.change", new EditTypeSelectionListener(), true);
         renameTypeButton = addButton(typeButtonsBar, "button.rename", new RenameTypeSelectionListener(), true);
         moveUpTypeButton = addButton(typeButtonsBar, "button.up", new MoveTypeSelectionListener(true), true);
         moveDownTypeButton = addButton(typeButtonsBar, "button.down", new MoveTypeSelectionListener(false), true);
@@ -187,7 +192,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
         if (PropertyNames.PROPERTY_USER_TYPES_CHANGED.equals(type)) {
             updateViewer();
         } else if (evt.getSource() instanceof VariableUserType) {
-            if (PropertyNames.PROPERTY_NAME.equals(type)) {
+            if (PropertyNames.PROPERTY_NAME.equals(type) || PropertyNames.PROPERTY_STORE_IN_EXTERNAL_STORAGE.equals(type)) {
                 typeTableViewer.refresh(evt.getSource());
             }
             if (PropertyNames.PROPERTY_CHILDREN_CHANGED.equals(type)) {
@@ -200,6 +205,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
     protected void updateUI() {
         VariableUserType selectedType = getSelection();
         enableAction(deleteTypeButton, selectedType != null);
+        enableAction(editTypeButton, selectedType != null);
         enableAction(renameTypeButton, selectedType != null);
         enableAction(moveUpTypeButton, selectedType != null && getDefinition().getVariableUserTypes().indexOf(selectedType) > 0);
         enableAction(moveDownTypeButton, selectedType != null
@@ -212,11 +218,10 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
         enableAction(searchAttributeButton, attributes.size() == 1);
         enableAction(renameAttributeButton, attributes.size() == 1);
         enableAction(mergeAttributesButton, attributes.size() == 2);
-        enableAction(moveUpAttributeButton, selectedType != null && attributes.size() == 1
-                && selectedType.getAttributes().indexOf(attributes.get(0)) > 0);
-        enableAction(moveDownAttributeButton,
-                selectedType != null && attributes.size() == 1
-                        && selectedType.getAttributes().indexOf(attributes.get(0)) < selectedType.getAttributes().size() - 1);
+        enableAction(moveUpAttributeButton,
+                selectedType != null && attributes.size() == 1 && selectedType.getAttributes().indexOf(attributes.get(0)) > 0);
+        enableAction(moveDownAttributeButton, selectedType != null && attributes.size() == 1
+                && selectedType.getAttributes().indexOf(attributes.get(0)) < selectedType.getAttributes().size() - 1);
         enableAction(deleteAttributeButton, attributes.size() > 0);
         enableAction(moveToTypeAttributeButton, attributes.size() == 1);
 
@@ -258,9 +263,21 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
         protected void onSelection(SelectionEvent e) throws Exception {
             VariableUserTypeDialog dialog = new VariableUserTypeDialog(getDefinition(), null);
             if (dialog.open() == Window.OK) {
-                VariableUserType type = new VariableUserType(dialog.getName());
+                VariableUserType type = new VariableUserType(dialog.getName(), dialog.isStoreInExternalStorage());
                 getDefinition().addVariableUserType(type);
                 typeTableViewer.setSelection(new StructuredSelection(type));
+            }
+        }
+    }
+
+    private class EditTypeSelectionListener extends LoggingSelectionAdapter {
+        @Override
+        protected void onSelection(SelectionEvent e) throws Exception {
+            VariableUserType type = getSelection();
+            VariableUserTypeDialog dialog = new VariableUserTypeDialog(getDefinition(), type);
+            if (dialog.open() == Window.OK) {
+                VariableUtils.renameUserType(getDefinition(), type, dialog.getName());
+                type.setStoreInExternalStorage(dialog.isStoreInExternalStorage());
             }
         }
     }
@@ -269,7 +286,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
         @Override
         protected void onSelection(SelectionEvent e) throws Exception {
             VariableUserType type = getSelection();
-            VariableUserTypeDialog dialog = new VariableUserTypeDialog(getDefinition(), type);
+            RenameUserTypeDialog dialog = new RenameUserTypeDialog(getDefinition(), type);
             if (dialog.open() == Window.OK) {
                 VariableUtils.renameUserType(getDefinition(), type, dialog.getName());
             }
@@ -440,6 +457,8 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             switch (index) {
             case 0:
                 return type.getName();
+            case 1:
+                return "";
             default:
                 return "unknown " + index;
             }
@@ -452,6 +471,9 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
 
         @Override
         public Image getColumnImage(Object element, int columnIndex) {
+            if (columnIndex == 1) {
+                return SharedImages.getImage(((VariableUserType) element).isStoreInExternalStorage() ? "icons/checked.gif" : "icons/unchecked.gif");
+            }
             return null;
         }
     }
@@ -520,8 +542,8 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             String syntheticScriptingName = (parent != null ? (parent.getScriptingName() + VariableUserType.DELIM) : "")
                     + variable.getScriptingName();
             if (Objects.equal(variable.getUserType(), searchType)) {
-                Variable syntheticVariable = new Variable(syntheticName + VariableUserType.DELIM + searchAttribute.getName(), syntheticScriptingName
-                        + VariableUserType.DELIM + searchAttribute.getScriptingName(), searchAttribute);
+                Variable syntheticVariable = new Variable(syntheticName + VariableUserType.DELIM + searchAttribute.getName(),
+                        syntheticScriptingName + VariableUserType.DELIM + searchAttribute.getScriptingName(), searchAttribute);
                 result.add(syntheticVariable);
                 if (searchAttribute.isComplex()) {
                     result.addAll(VariableUtils.expandComplexVariable(syntheticVariable, searchAttribute));
@@ -567,8 +589,8 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
                 RenameRefactoringWizard wizard = new RenameRefactoringWizard(refactoring);
                 wizard.setDefaultPageTitle(Localization.getString("Refactoring.variable.name"));
                 RefactoringWizardOpenOperation operation = new RefactoringWizardOpenOperation(wizard);
-                result = operation
-                        .run(Display.getCurrent().getActiveShell(), Localization.getString("VariableTypeEditorPage.attribute.rename.title"));
+                result = operation.run(Display.getCurrent().getActiveShell(),
+                        Localization.getString("VariableTypeEditorPage.attribute.rename.title"));
                 if (result != IDialogConstants.OK_ID) {
                     return;
                 }
@@ -686,9 +708,8 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
                 }
                 Map<String, List<FormNode>> variableFormNodesMapping = Maps.newHashMap();
                 for (Variable variable : VariableUtils.findVariablesOfTypeWithAttributeExpanded(getDefinition(), getSelection(), attribute)) {
-                    variableFormNodesMapping.put(variable.getName(),
-                            ParContentProvider.getFormsWhereUserTypeAttributeUsed(editor.getDefinitionFile(), getDefinition(), getSelection(),
-                                    attribute));
+                    variableFormNodesMapping.put(variable.getName(), ParContentProvider.getFormsWhereUserTypeAttributeUsed(editor.getDefinitionFile(),
+                            getDefinition(), getSelection(), attribute));
                 }
                 // remove variable from form validations
                 for (Map.Entry<String, List<FormNode>> entry : variableFormNodesMapping.entrySet()) {
@@ -700,8 +721,8 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
     }
 
     private class MoveToTypeAttributeSelectionListener extends LoggingSelectionAdapter {
-        private final VariableUserType TOP_LEVEL = new VariableUserType("("
-                + Localization.getString("VariableTypeEditorPage.attribute.move.to.variables") + ")");
+        private final VariableUserType TOP_LEVEL = new VariableUserType(
+                "(" + Localization.getString("VariableTypeEditorPage.attribute.move.to.variables") + ")");
 
         @Override
         protected void onSelection(SelectionEvent e) throws Exception {

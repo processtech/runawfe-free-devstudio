@@ -4,8 +4,8 @@ package ru.runa.gpd.settings;
  * Constant definitions for plug-in preferences
  */
 public interface PrefConstants {
-    public static final String LOGIN_MODE_LOGIN_PASSWORD = "login.mode.login_password";
-    public static final String LOGIN_MODE_KERBEROS = "login.mode.kerberos";
+    public static final String AUTHENTICATION_TYPE_LOGIN_PASSWORD = "authType.login_password";
+    public static final String AUTHENTICATION_TYPE_KERBEROS = "authType.kerberos";
     public static final String P_BPMN_SHOW_SWIMLANE = "showSwimlane";
     public static final String P_BPMN_FONT = "font";
     public static final String P_BPMN_FONT_COLOR = "fontColor";
@@ -36,16 +36,16 @@ public interface PrefConstants {
     public static final String P_ESCALATION_DURATION = "escalationDuration";
     public static final String P_ESCALATION_CONFIG = "escalationConfig";
     public static final String P_ESCALATION_REPEAT = "escalationRepeat";
-    public static final String P_WFE_CONNECTION_LOGIN = "wfeLogin";
-    public static final String P_WFE_CONNECTION_PASSWORD = "wfePassword";
-    public static final String P_WFE_CONNECTION_LOGIN_MODE = "wfeLoginMode";
-    public static final String P_WFE_CONNECTION_HOST = "wfeServerHost";
-    public static final String P_WFE_CONNECTION_PORT = "wfeServerPort";
-    public static final String P_WFE_CONNECTION_PROTOCOL = "wfeServerProtocol";
-    public static final String P_WFE_CONNECTION_VERSION = "wfeServerVersion";
-    public static final String P_WFE_CONNECTION_INITIAL_CTX_FACTORY = "wfeInitialCtxFactory";
-    public static final String P_WFE_CONNECTION_URL_PKG_PREFIXES = "wfeUrlPkg";
-    public static final String P_WFE_LOAD_PROCESS_DEFINITIONS_HISTORY = "wfeLoadProcessDefinitionsHistory";
+    public static final String P_WFE_SERVER_CONNECTOR_INDICES = "wfeServerConnectorIndices";
+    public static final String P_WFE_SERVER_CONNECTOR_SELECTED_INDEX = "wfeServerConnectorSelectedIndex";
+    public static final String P_WFE_SERVER_CONNECTOR_LOGIN_SUFFIX = "login";
+    public static final String P_WFE_SERVER_CONNECTOR_PASSWORD_SUFFIX = "password";
+    public static final String P_WFE_SERVER_CONNECTOR_AUTHENTICATION_TYPE_SUFFIX = "authenticationType";
+    public static final String P_WFE_SERVER_CONNECTOR_HOST_SUFFIX = "host";
+    public static final String P_WFE_SERVER_CONNECTOR_PORT_SUFFIX = "port";
+    public static final String P_WFE_SERVER_CONNECTOR_PROTOCOL_SUFFIX = "protocol";
+    public static final String P_WFE_SERVER_CONNECTOR_LOAD_PROCESS_DEFINITIONS_HISTORY_SUFFIX = "loadProcessDefinitionsHistory";
+    public static final String P_WFE_SERVER_CONNECTOR_ALLOW_UPDATE_LAST_VERSION_BY_KEY_BINDING_SUFFIX = "allowUpdateLastVersionByKeyBinding";
     public static final String P_LDAP_CONNECTION_LOGIN = "ldapLogin";
     public static final String P_LDAP_CONNECTION_PASSWORD = "ldapPassword";
     public static final String P_LDAP_CONNECTION_LOGIN_MODE = "ldapLoginMode";
@@ -60,5 +60,5 @@ public interface PrefConstants {
     public static final String P_PROCESS_SAVE_HISTORY = "processSaveHistory";
     public static final String P_PROCESS_SAVEPOINT_NUMBER = "processSavepointNumber";
     public static final String P_ENABLE_USER_ACTIVITY_LOGGING = "enableUserActivityLogging";
-    public static final String P_ALLOW_UPDATE_LAST_VERSION_BY_KEYBINDING = "allowUpdateLastVersionByKeybinding";
+    public static final String P_KEEP_VARIABLE_VALIDATION_ON_COMPONENT_REMOVAL = "keepVariableValidationOnComponentRemoval";
 }

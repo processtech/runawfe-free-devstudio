@@ -8,6 +8,7 @@ import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.editor.graphiti.StyleUtil;
 import ru.runa.gpd.lang.Language;
+import ru.runa.gpd.sync.WfeServerConnectorSettings;
 
 /**
  * Class used to initialize default preference values.
@@ -24,14 +25,12 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer impleme
         store.setDefault(P_FORM_EXTERNAL_EDITOR_PATH, "");
         store.setDefault(P_FORM_USE_EXTERNAL_EDITOR, false);
         store.setDefault(P_FORM_IGNORE_ERRORS_FROM_WEBPAGE, true);
-        store.setDefault(P_WFE_CONNECTION_HOST, "localhost");
-        store.setDefault(P_WFE_CONNECTION_PROTOCOL, "http");
-        store.setDefault(P_WFE_CONNECTION_PORT, "8080");
-        store.setDefault(P_WFE_CONNECTION_VERSION, "auto");
-        store.setDefault(P_WFE_CONNECTION_LOGIN_MODE, LOGIN_MODE_LOGIN_PASSWORD);
-        store.setDefault(P_WFE_CONNECTION_LOGIN, "Administrator");
-        store.setDefault(P_WFE_CONNECTION_PASSWORD, "wf");
-        store.setDefault(P_WFE_LOAD_PROCESS_DEFINITIONS_HISTORY, false);
+
+        store.setDefault(P_WFE_SERVER_CONNECTOR_INDICES, "0");
+        store.setDefault(P_WFE_SERVER_CONNECTOR_SELECTED_INDEX, 0);
+        WfeServerConnectorSettings connectorSettings = WfeServerConnectorSettings.createDefault(0);
+        connectorSettings.saveDefaultToStore();
+
         store.setDefault(P_LDAP_CONNECTION_PROVIDER_URL, "ldap://192.168.0.1/dc=domain,dc=com");
         store.setDefault(P_DATE_FORMAT_PATTERN, "dd.MM.yyyy");
         store.setDefault(P_ENABLE_REGULATIONS_MENU_ITEMS, Localization.getString("disable"));
@@ -40,6 +39,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer impleme
         store.setDefault(P_PROCESS_SAVE_HISTORY, true);
         store.setDefault(P_PROCESS_SAVEPOINT_NUMBER, 10);
         store.setDefault(P_ENABLE_USER_ACTIVITY_LOGGING, true);
+        store.setDefault(P_KEEP_VARIABLE_VALIDATION_ON_COMPONENT_REMOVAL, false);
         // PreferenceConverter.FONTDATA_DEFAULT_DEFAULT
         // backward compatibility
         store.setDefault(LanguageElementPreferenceNode.getBpmnDefaultPropertyName(P_BPMN_FONT), new FontData("Arial", 8, SWT.NORMAL).toString());

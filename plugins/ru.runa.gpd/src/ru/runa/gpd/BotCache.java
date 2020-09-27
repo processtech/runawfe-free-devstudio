@@ -1,21 +1,5 @@
 package ru.runa.gpd;
 
-import java.io.InputStreamReader;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.ui.PlatformUI;
-
-import ru.runa.gpd.lang.model.BotTask;
-import ru.runa.gpd.util.BotTaskUtils;
-import ru.runa.gpd.util.IOUtils;
-
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
@@ -23,6 +7,19 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.io.CharStreams;
+import java.io.InputStreamReader;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.ui.PlatformUI;
+import ru.runa.gpd.lang.model.BotTask;
+import ru.runa.gpd.util.BotTaskUtils;
+import ru.runa.gpd.util.IOUtils;
 
 /**
  * 
@@ -46,8 +43,7 @@ public class BotCache {
             BOT_STATION_BOTS.clear();
             BOT_TASKS.clear();
             BOT_TASK_FILES.clear();
-            IProject[] projects = IOUtils.getAllBotStationProjects();
-            for (IProject botStationProject : projects) {
+            for (IProject botStationProject : IOUtils.getAllBotStationProjects()) {
                 Set<String> botNames = Sets.newHashSet();
                 IFolder botStationFolder = botStationProject.getFolder("src/botstation");
                 for (IResource botResource : botStationFolder.members()) {

@@ -4,7 +4,7 @@
    <extension
          point="org.eclipse.ui.importWizards">
       <wizard
-            class="ru.runa.xpdl.wizard.ImportFromXPDLWizard"
+            class="ru.runa.xpdl.wizard.ImportFromXpdlWizard"
             icon="icons/import.png"
             id="ru.runa.xpdl.wizard.import"
             name="%wizard.import.name">
@@ -17,7 +17,7 @@
             label="xpdl"
             visible="true">
          <action
-               class="ru.runa.xpdl.actions.ImportFromXPDLAction"
+               class="ru.runa.xpdl.actions.ImportFromXpdlAction"
                icon="icons/import.png"
                id="ru.runa.xpdl.action.import"
                label="%action.import.label"

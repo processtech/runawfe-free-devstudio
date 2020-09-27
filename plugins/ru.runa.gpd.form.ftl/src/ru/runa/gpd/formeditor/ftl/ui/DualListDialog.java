@@ -16,7 +16,7 @@ import org.eclipse.swt.widgets.Shell;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.formeditor.resources.Messages;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
-import ru.runa.gpd.ui.custom.SWTUtils;
+import ru.runa.gpd.ui.custom.SwtUtils;
 
 import com.google.common.collect.Lists;
 
@@ -57,10 +57,10 @@ public class DualListDialog extends Dialog {
         java.util.List<String> availableList = Lists.newArrayList(availableNames);
         availableList.removeAll(selectedValues);
         availableItems = createList(area, availableList, true);
-        addButton = SWTUtils.createButton(area, Localization.getString("button.add"), new AddRemoveVariableSelectionListener(true));
-        removeButton = SWTUtils.createButton(area, Localization.getString("button.delete"), new AddRemoveVariableSelectionListener(false));
-        moveUpButton = SWTUtils.createButton(area, Localization.getString("button.up"), new MoveVariableSelectionListener(true));
-        moveDownButton = SWTUtils.createButton(area, Localization.getString("button.down"), new MoveVariableSelectionListener(false));
+        addButton = SwtUtils.createButton(area, Localization.getString("button.add"), new AddRemoveVariableSelectionListener(true));
+        removeButton = SwtUtils.createButton(area, Localization.getString("button.delete"), new AddRemoveVariableSelectionListener(false));
+        moveUpButton = SwtUtils.createButton(area, Localization.getString("button.up"), new MoveVariableSelectionListener(true));
+        moveDownButton = SwtUtils.createButton(area, Localization.getString("button.down"), new MoveVariableSelectionListener(false));
         selectedItems = createList(area, selectedValues, false);
         return area;
     }
