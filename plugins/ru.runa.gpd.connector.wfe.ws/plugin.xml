@@ -2,10 +2,9 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension
-         point="ru.runa.gpd.wfeConnectors">
+         point="ru.runa.gpd.wfeServerConnectors">
       <connector
-            class="ru.runa.gpd.connector.wfe.ws.WildflyWebServicesConnector"
-            defaultPort="8080"
+            class="ru.runa.gpd.connector.wfe.ws.WildflyWebServiceWfeServerConnector"
             description="%wildfly.ws.connector.description"
             id="wildfly.ws"
             name="%wildfly.ws.connector.name">

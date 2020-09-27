@@ -40,9 +40,19 @@ public class FtlFormType extends BaseHtmlFormType {
         super.validate(formNode, formData, validation, errors);
         ValidationHashModel model = new ValidationHashModel(formNode.getProcessDefinition());
         TemplateProcessor.process(formNode.getProcessDefinition().getName() + formNode.getId(), formData, model);
+        int componentNumber = 0;
         for (Component component : model.getComponents()) {
             IComponentValidator validator = component.getType().getValidator();
-            List<ValidationError> list = validator.validate(formNode, component);
+            int componentOrder = componentNumber++;
+            Component componentShade = new Component(component) {
+
+                @Override
+                public int getId() {
+                    return componentOrder;
+                }
+
+            };
+            List<ValidationError> list = validator.validate(formNode, componentShade);
             errors.addAll(list);
         }
         for (String undefinedComponentName : model.getUndefinedComponentNames()) {

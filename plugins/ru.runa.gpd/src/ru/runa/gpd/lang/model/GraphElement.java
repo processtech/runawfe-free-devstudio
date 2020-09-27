@@ -37,7 +37,8 @@ import ru.runa.gpd.util.EventSupport;
 import ru.runa.gpd.util.VariableUtils;
 
 @SuppressWarnings("unchecked")
-public abstract class GraphElement extends EventSupport implements IPropertySource, PropertyNames, IActionFilter, VariableContainer {
+public abstract class GraphElement extends EventSupport
+        implements IPropertySource, PropertyNames, IActionFilter, VariableContainer, ProcessDefinitionAware {
     private PropertyChangeListener delegatedListener;
     private GraphElement parent;
     private GraphElement parentContainer;
@@ -54,8 +55,7 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
     }
 
     /**
-     * @return parent container or <code>null</code> in case of
-     *         {@link ProcessDefinition}
+     * @return parent container or <code>null</code> in case of {@link ProcessDefinition}
      */
     public GraphElement getParentContainer() {
         return parentContainer;
@@ -70,7 +70,7 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
         if ("language".equals(name)) {
             return Objects.equal(value, getProcessDefinition().getLanguage().name().toLowerCase());
         }
-        if ("delegable".equals(name)) {
+        if ("delegableEditHandler".equals(name) || "delegableEditConfiguration".equals(name)) {
             return Objects.equal(value, String.valueOf(isDelegable()));
         }
         if ("regulationsEnabled".equals(name)) {
@@ -118,6 +118,7 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
         }
     }
 
+    @Override
     public ProcessDefinition getProcessDefinition() {
         if (this instanceof ProcessDefinition) {
             return (ProcessDefinition) this;
@@ -201,12 +202,8 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
         child.setDelegatedListener(delegatedListener);
         firePropertyChange(NODE_ADDED, null, child);
         firePropertyChange(PROPERTY_CHILDREN_CHANGED, null, child);
-        String nodeId = child.getId();
-        if (nodeId == null) {
-            nodeId = getProcessDefinition().getNextNodeId();
-            child.setId(nodeId);
-        } else {
-            getProcessDefinition().setNextNodeIdIfApplicable(nodeId);
+        if (child.getId() == null && !Variable.class.equals(child.getClass())) {
+            child.setId(getProcessDefinition().getNextNodeId());
         }
     }
 
@@ -376,14 +373,14 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
         if (isDelegable()) {
             Delegable delegable = (Delegable) this;
             descriptors.add(new DelegableClassPropertyDescriptor(PROPERTY_CLASS, Localization.getString("property.delegation.class"), delegable));
-            descriptors.add(new DelegableConfPropertyDescriptor(PROPERTY_CONFIGURATION, (Delegable) this, Localization
-                    .getString("property.delegation.configuration")));
+            descriptors.add(new DelegableConfPropertyDescriptor(PROPERTY_CONFIGURATION, (Delegable) this,
+                    Localization.getString("property.delegation.configuration")));
         }
         if (this instanceof ITimed && getProcessDefinition().getLanguage() == Language.JPDL) {
             Timer timer = ((ITimed) this).getTimer();
             if (timer != null) {
-                descriptors.add(new DurationPropertyDescriptor(PROPERTY_TIMER_DELAY, timer.getProcessDefinition(), timer.getDelay(), Localization
-                        .getString("property.duration")));
+                descriptors.add(new DurationPropertyDescriptor(PROPERTY_TIMER_DELAY, timer.getProcessDefinition(), timer.getDelay(),
+                        Localization.getString("property.duration")));
                 descriptors.add(new TimerActionPropertyDescriptor(PROPERTY_TIMER_ACTION, Localization.getString("Timer.action"), timer));
             }
         }
@@ -434,7 +431,9 @@ public abstract class GraphElement extends EventSupport implements IPropertySour
 
     public GraphElement makeCopy(GraphElement parent) {
         GraphElement copy = getTypeDefinition().createElement(parent, false);
-        copy.setId(parent.getProcessDefinition().getNextNodeId());
+        if (!Variable.class.equals(copy.getClass())) {
+            copy.setId(parent.getProcessDefinition().getNextNodeId());
+        }
         if (this instanceof Describable) {
             copy.setDescription(getDescription());
         }

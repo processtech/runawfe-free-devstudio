@@ -2,7 +2,6 @@ package ru.runa.gpd.office.store;
 
 import org.dom4j.Document;
 import org.dom4j.Element;
-
 import ru.runa.gpd.util.BackCompatibilityUtils;
 
 public class StorageConstraintsModel {
@@ -137,7 +136,9 @@ public class StorageConstraintsModel {
     public void serialize(Document document, Element root) {
         Element binding = root.addElement("binding");
         Element config = binding.addElement("config");
-        binding.addAttribute("variable", variableName);
+        if (variableName != null && !variableName.trim().isEmpty()) {
+            binding.addAttribute("variable", variableName);
+        }
         switch (type) {
         case ATTR:
             binding.addAttribute("class", ATTR_CLASS);

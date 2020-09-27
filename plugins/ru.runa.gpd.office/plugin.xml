@@ -55,16 +55,6 @@
             enabled="true">
       </handler>
       <handler
-            actionHandler="false"
-            assignmentHandler="false"
-            botTaskHandler="true"
-            decisionHandler="false"
-            cellEditorProvider="ru.runa.gpd.office.word.MSWordTaskHandlerConfigurator"
-            className="ru.runa.wf.logic.bot.MSWordReportTaskHandler"
-            label="%ActionHandler.MSWordHandler"
-            enabled="true">
-      </handler>
-      <handler
             actionHandler="true"
             assignmentHandler="false"
             botTaskHandler="true"
@@ -73,6 +63,16 @@
             className="ru.runa.wfe.office.storage.handler.ExternalStorageHandler"
             label="%ru.runa.wfe.office.storage.handler.ExternalStorageHandler"
             enabled="true">
+      </handler>
+      <handler
+            actionHandler="true"
+            assignmentHandler="false"
+            botTaskHandler="false"
+            decisionHandler="false"
+            cellEditorProvider="ru.runa.gpd.office.store.InternalStorageOperationHandlerCellEditorProvider"
+            className="ru.runa.wfe.office.storage.handler.InternalStorageHandler"
+            label="%ru.runa.wfe.office.storage.handler.InternalStorageHandler"
+            enabled="false">
       </handler>
    </extension>
 

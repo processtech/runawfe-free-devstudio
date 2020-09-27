@@ -1,12 +1,11 @@
 package ru.runa.gpd.lang.par;
 
+import com.google.common.collect.Lists;
 import java.util.List;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.ValidationError;
@@ -17,8 +16,6 @@ import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.ui.view.ValidationErrorsView;
-
-import com.google.common.collect.Lists;
 
 public class ProcessDefinitionValidator {
 
@@ -91,6 +88,7 @@ public class ProcessDefinitionValidator {
                 }
                 marker.setAttribute(IMarker.LOCATION, validationError.getSource().toString());
                 marker.setAttribute(IMarker.SEVERITY, validationError.getSeverity());
+                marker.setAttribute(PluginConstants.VALIDATION_ERROR_DETAILS_KEY, validationError.getDetails());
                 marker.setAttribute(PluginConstants.PROCESS_NAME_KEY, definition.getName());
             }
         } catch (CoreException e) {

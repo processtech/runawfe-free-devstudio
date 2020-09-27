@@ -1,17 +1,22 @@
 package ru.runa.gpd.formeditor.ftl.ui;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Queue;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -30,7 +35,7 @@ import ru.runa.gpd.formeditor.ftl.ComponentType;
 import ru.runa.gpd.formeditor.ftl.ComponentTypeRegistry;
 import ru.runa.gpd.formeditor.resources.Messages;
 import ru.runa.gpd.formeditor.settings.PreferencePage;
-import ru.runa.gpd.ui.custom.SWTUtils;
+import ru.runa.gpd.ui.custom.SwtUtils;
 import ru.runa.gpd.ui.dialog.ChooseComponentLabelDialog;
 
 public class ComponentParametersDialog extends Dialog {
@@ -63,9 +68,21 @@ public class ComponentParametersDialog extends Dialog {
 
     @Override
     protected Control createDialogArea(Composite parent) {
-        final Composite parametersComposite = (Composite) super.createDialogArea(parent);
+        final Composite rootComposite = new Composite(parent, SWT.NONE);
+        rootComposite.setLayout(GridLayoutFactory.fillDefaults().create());
+        rootComposite.setSize(parent.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+        rootComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        final int initialY = component.getType().getParameters().size() < 7 ? (component.getType().getParameters().size() + 1) * 64 : 512;
+        final ScrolledComposite scrolledComposite = new ScrolledComposite(rootComposite, SWT.V_SCROLL);
+        scrolledComposite.setLayoutData(GridDataFactory.fillDefaults().grab(true, true).hint(SWT.DEFAULT, initialY).create());
+        scrolledComposite.setExpandHorizontal(true);
+        scrolledComposite.setExpandVertical(true);
+
+        final Composite parametersComposite = (Composite) super.createDialogArea(scrolledComposite);
         parametersComposite.setLayout(new GridLayout());
-        SWTUtils.createLabel(parametersComposite, Messages.getString("ComponentParametersDialog.component"));
+
+        SwtUtils.createLabel(parametersComposite, Messages.getString("ComponentParametersDialog.component"));
         Composite compComposite = new Composite(parametersComposite, SWT.NONE);
         compComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         compComposite.setLayout(new GridLayout(2, false));
@@ -90,7 +107,8 @@ public class ComponentParametersDialog extends Dialog {
                             if (componentType.getLabel().equals(type)) {
                                 Component previousComponent = component;
                                 component = new Component(componentType, component.getId());
-                                int commonParametersCount = Math.min(previousComponent.getType().getParameters().size(), component.getType().getParameters().size());
+                                int commonParametersCount = Math.min(previousComponent.getType().getParameters().size(),
+                                        component.getType().getParameters().size());
                                 for (int i = 0; i < commonParametersCount; i++) {
                                     ComponentParameter previousParameter = previousComponent.getType().getParameters().get(i);
                                     ComponentParameter parameter = component.getType().getParameters().get(i);
@@ -105,29 +123,56 @@ public class ComponentParametersDialog extends Dialog {
                         for (int i = 2; i < children.length; i++) {
                             children[i].dispose();
                         }
-                        drawParameters(parametersComposite);
+                        drawParameters(parametersComposite, null);
                         parametersComposite.layout(true, true);
+
+                        final int initialY = component.getType().getParameters().size() < 7 ? (component.getType().getParameters().size() + 1) * 64
+                                : 512;
+                        scrolledComposite.setLayoutData(GridDataFactory.fillDefaults().grab(true, true).hint(SWT.DEFAULT, initialY).create());
+                        scrolledComposite.setMinSize(parametersComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT));
                         getShell().pack();
                     }
                 }
             }
         });
-        drawParameters(parametersComposite);
-        return parametersComposite;
+
+        /*
+         * Deferred event handling of dependent parameters which editors are not initialized in stage of initial drawing. This can occur if dependent
+         * parameter is placed below main parameter and main parameter has default value on configuration screen
+         */
+        final Queue<ComponentParameter> deferredDefaultInitializationQueue = new LinkedList<>();
+        drawParameters(parametersComposite, deferredDefaultInitializationQueue::add);
+        while (deferredDefaultInitializationQueue.peek() != null) {
+            final ComponentParameter dependentParameter = deferredDefaultInitializationQueue.poll();
+            final Object parameterEditor = parameterEditors.get(dependentParameter);
+            Preconditions.checkState(parameterEditor != null,
+                    "Editor for parameter " + dependentParameter.getLabel() + " can not be null at this stage");
+            updateDependentParameter(dependentParameter, parameterEditor);
+        }
+
+        scrolledComposite.setContent(parametersComposite);
+        scrolledComposite.setMinSize(parametersComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+        return rootComposite;
     }
 
-    private void drawParameters(Composite parametersComposite) {
+    private void drawParameters(Composite parametersComposite, Consumer<ComponentParameter> deferredDefaultValueEventInitializationConsumer) {
         parameterEditors.clear();
         for (final ComponentParameter componentParameter : component.getType().getParameters()) {
-            SWTUtils.createLabel(parametersComposite, componentParameter.getLabel()).setToolTipText(componentParameter.getDescription());
+            SwtUtils.createLabel(parametersComposite, componentParameter.getLabel()).setToolTipText(componentParameter.getDescription());
             Object editor = componentParameter.getType().createEditor(parametersComposite, component, componentParameter,
-                    component.getParameterValue(componentParameter), new PropertyChangeListener() {
-
-                        @Override
-                        public void propertyChange(PropertyChangeEvent event) {
-                            component.setParameterValue(componentParameter, event.getNewValue());
-                            for (ComponentParameter dependentParameter : componentParameter.getDependents()) {
-                                dependentParameter.getType().updateEditor(parameterEditors.get(dependentParameter), component, dependentParameter);
+                    component.getParameterValue(componentParameter), event -> {
+                        component.setParameterValue(componentParameter, event.getNewValue());
+                        for (ComponentParameter dependentParameter : componentParameter.getDependents()) {
+                            final Object parameterEditor = parameterEditors.get(dependentParameter);
+                            if (parameterEditor == null) {
+                                if (deferredDefaultValueEventInitializationConsumer != null) {
+                                    deferredDefaultValueEventInitializationConsumer.accept(dependentParameter);
+                                } else {
+                                    throw new IllegalStateException(
+                                            "Editor for parameter " + dependentParameter.getLabel() + " can not be null at this stage");
+                                }
+                            } else {
+                                updateDependentParameter(dependentParameter, parameterEditor);
                             }
                         }
                     });
@@ -141,6 +186,10 @@ public class ComponentParametersDialog extends Dialog {
         }
     }
 
+    private void updateDependentParameter(ComponentParameter dependentParameter, Object parameterEditor) {
+        dependentParameter.getType().updateEditor(parameterEditor, component, dependentParameter);
+    }
+
     private void setDefaultDisplayFormat(ComboViewer comboViewer) {
         String defaultValue = EditorsPlugin.getDefault().getPreferenceStore().getString(PreferencePage.P_FORM_DEFAULT_DISPLAY_FORMAT);
         for (ComboOption option : (List<ComboOption>) comboViewer.getInput()) {
@@ -150,5 +199,4 @@ public class ComponentParametersDialog extends Dialog {
             }
         }
     }
-
 }

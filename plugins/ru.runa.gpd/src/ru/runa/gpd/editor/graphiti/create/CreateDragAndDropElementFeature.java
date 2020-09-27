@@ -25,6 +25,7 @@ import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.SwimlanedNode;
+import ru.runa.gpd.lang.model.bpmn.IBoundaryEvent;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 
 public class CreateDragAndDropElementFeature extends AbstractCreateConnectionFeature implements GEFConstants {
@@ -83,14 +84,26 @@ public class CreateDragAndDropElementFeature extends AbstractCreateConnectionFea
         if (connectionContext != null) {
             if (connectionContext.getTargetLocation() == null) {
                 PictogramElement sourceElement = connectionContext.getSourcePictogramElement();
-                int xRight = sourceElement.getGraphicsAlgorithm().getX() + sourceElement.getGraphicsAlgorithm().getWidth();
-                int yDelta = (defaultSize.height - sourceElement.getGraphicsAlgorithm().getHeight()) / 2;
+                GraphElement sourceGraphElement = (GraphElement) getBusinessObjectForPictogramElement(sourceElement);
                 int shift = 5 * GRID_SIZE;
-                GraphicsAlgorithm container = context.getTargetContainer().getGraphicsAlgorithm();
-                if (container.getWidth() < xRight + shift + defaultSize.width) {
-                    shift = 2 * GRID_SIZE;
+                if (sourceGraphElement instanceof IBoundaryEvent && !(sourceGraphElement.getParent() instanceof ProcessDefinition)) {
+                    PictogramElement parentElement = Graphiti.getPeService().getPictogramElementParent(sourceElement);
+                    int yBottom = parentElement.getGraphicsAlgorithm().getY() + parentElement.getGraphicsAlgorithm().getHeight();
+                    int xDelta = (defaultSize.width - parentElement.getGraphicsAlgorithm().getWidth()) / 2;
+                    GraphicsAlgorithm container = context.getTargetContainer().getGraphicsAlgorithm();
+                    if (container.getHeight() < yBottom + shift + defaultSize.height) {
+                        shift = 2 * GRID_SIZE;
+                    }
+                    context.setLocation(parentElement.getGraphicsAlgorithm().getX() - xDelta, yBottom + shift);
+                } else {
+                    int xRight = sourceElement.getGraphicsAlgorithm().getX() + sourceElement.getGraphicsAlgorithm().getWidth();
+                    int yDelta = (defaultSize.height - sourceElement.getGraphicsAlgorithm().getHeight()) / 2;
+                    GraphicsAlgorithm container = context.getTargetContainer().getGraphicsAlgorithm();
+                    if (container.getWidth() < xRight + shift + defaultSize.width) {
+                        shift = 2 * GRID_SIZE;
+                    }
+                    context.setLocation(xRight + shift, sourceElement.getGraphicsAlgorithm().getY() - yDelta);
                 }
-                context.setLocation(xRight + shift, sourceElement.getGraphicsAlgorithm().getY() - yDelta);
             } else {
                 context.setLocation(connectionContext.getTargetLocation().getX() - context.getWidth() / 2,
                         connectionContext.getTargetLocation().getY() - context.getHeight() / 2);

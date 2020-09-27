@@ -1,5 +1,9 @@
 package ru.runa.gpd.ui.wizard;
 
+import com.google.common.base.Charsets;
+import com.google.common.base.Strings;
+import com.google.common.base.Throwables;
+import com.google.common.collect.Lists;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -12,14 +16,11 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
-import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -29,7 +30,6 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -38,35 +38,27 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
-import org.eclipse.ui.internal.wizards.datatransfer.IFileExporter;
-import org.eclipse.ui.internal.wizards.datatransfer.WizardArchiveFileResourceExportPage1;
-
-import com.google.common.base.Charsets;
-import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
-import ru.runa.gpd.settings.WFEConnectionPreferencePage;
+import ru.runa.gpd.sync.WfeServerConnector;
+import ru.runa.gpd.sync.WfeServerConnectorComposite;
+import ru.runa.gpd.sync.WfeServerDataSourceImporter;
+import ru.runa.gpd.sync.WfeServerProcessDefinitionImporter;
 import ru.runa.gpd.ui.custom.Dialogs;
-import ru.runa.gpd.ui.custom.SyncUIHelper;
+import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.util.DataSourceUtils;
-import ru.runa.gpd.wfe.WFEServerDataSourceImporter;
-import ru.runa.gpd.wfe.WFEServerProcessDefinitionImporter;
 import ru.runa.wfe.datasource.DataSourceStuff;
 
-@SuppressWarnings("restriction")
-public class ExportDataSourceWizardPage extends WizardArchiveFileResourceExportPage1 {
-
+public class ExportDataSourceWizardPage extends ExportWizardPage {
     private final Map<String, IFile> dataSourceNameFileMap;
     private ListViewer dataSourceListViewer;
     protected final IResource exportResource;
     private Button exportToFileButton;
     private Button exportToServerButton;
-    private List<String> serverDataSourceNames;
+    private WfeServerConnectorComposite serverConnectorComposite;
 
     protected ExportDataSourceWizardPage(IStructuredSelection selection) {
-        super(selection);
+        super(ExportDataSourceWizardPage.class);
         setTitle(Localization.getString("ExportDataSourceWizard.wizard.title"));
         setDescription(Localization.getString("ExportDataSourceWizardPage.page.description"));
         dataSourceNameFileMap = new TreeMap<String, IFile>();
@@ -105,30 +97,34 @@ public class ExportDataSourceWizardPage extends WizardArchiveFileResourceExportP
         exportGroup.setLayout(new GridLayout(1, false));
         exportGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
         exportToFileButton = new Button(exportGroup, SWT.RADIO);
-        exportToFileButton.setText(Localization.getString("ExportParWizardPage.page.exportToFileButton"));
+        exportToFileButton.setText(Localization.getString("button.exportToFile"));
         exportToFileButton.setSelection(true);
-        createDestinationGroup(exportGroup);
-        exportToServerButton = new Button(exportGroup, SWT.RADIO);
-        exportToServerButton.setText(Localization.getString("ExportParWizardPage.page.exportToServerButton"));
-        exportToServerButton.addSelectionListener(new SelectionAdapter() {
+        exportToFileButton.addSelectionListener(new LoggingSelectionAdapter() {
             @Override
-            public void widgetSelected(SelectionEvent e) {
-                serverDataSourceNames = WFEServerDataSourceImporter.getInstance().getDataSourceNames();
+            protected void onSelection(SelectionEvent e) throws Exception {
+                onExportModeChanged();
             }
         });
-        SyncUIHelper.createHeader(exportGroup, WFEServerProcessDefinitionImporter.getInstance(), WFEConnectionPreferencePage.class, null);
-        restoreWidgetValues();
-        giveFocusToDestination();
+        createDestinationDirectoryGroup(exportGroup);
+        exportToServerButton = new Button(exportGroup, SWT.RADIO);
+        exportToServerButton.setText(Localization.getString("button.exportToServer"));
+        serverConnectorComposite = new WfeServerConnectorComposite(exportGroup, WfeServerProcessDefinitionImporter.getInstance(), null);
         setControl(pageControl);
-        setPageComplete(false);
         if (exportResource != null) {
             String name = exportResource.getName();
             dataSourceListViewer.setSelection(new StructuredSelection(name.substring(0, name.lastIndexOf('.'))));
         }
+        onExportModeChanged();
+    }
+
+    private void onExportModeChanged() {
+        boolean fromFile = exportToFileButton.getSelection();
+        destinationValueText.setEnabled(fromFile);
+        browseButton.setEnabled(fromFile);
+        serverConnectorComposite.setEnabled(!fromFile);
     }
 
     private void createViewer(Composite parent) {
-        // process selection
         dataSourceListViewer = new ListViewer(parent, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
         dataSourceListViewer.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
         dataSourceListViewer.setContentProvider(new ArrayContentProvider());
@@ -141,23 +137,18 @@ public class ExportDataSourceWizardPage extends WizardArchiveFileResourceExportP
         });
     }
 
-    @Override
-    protected String getDestinationLabel() {
-        return Localization.getString("ExportParWizardPage.label.destination_file");
-    }
-
     private String getSelection() {
         return (String) ((IStructuredSelection) dataSourceListViewer.getSelection()).getFirstElement();
     }
 
     private String getFileName(String selectionName) {
-        return selectionName.substring(selectionName.lastIndexOf("/") + 1) + getOutputSuffix();
+        return selectionName.substring(selectionName.lastIndexOf("/") + 1) + DataSourceStuff.DATA_SOURCE_ARCHIVE_SUFFIX;
     }
 
     @Override
-    protected void handleDestinationBrowseButtonPressed() {
+    protected void onBrowseButtonSelected() {
         FileDialog dialog = new FileDialog(getContainer().getShell(), SWT.SAVE);
-        dialog.setFilterExtensions(new String[] { getOutputSuffix(), "*.*" });
+        dialog.setFilterExtensions(new String[] { DataSourceStuff.DATA_SOURCE_ARCHIVE_SUFFIX, "*.*" });
         String selectionName = getSelection();
         if (selectionName != null) {
             dialog.setFileName(getFileName(selectionName));
@@ -174,30 +165,19 @@ public class ExportDataSourceWizardPage extends WizardArchiveFileResourceExportP
         }
     }
 
-    @Override
-    protected void updatePageCompletion() {
-        setPageComplete(true);
-    }
-
-    @Override
-    protected String getOutputSuffix() {
-        return DataSourceStuff.DATA_SOURCE_ARCHIVE_SUFFIX;
-    }
-
-    @Override
     public boolean finish() {
         boolean exportToFile = exportToFileButton.getSelection();
-        // Save dirty editors if possible but do not stop if not all are saved
-        //saveDirtyEditors();
-        // about to invoke the operation so save our state
-        saveWidgetValues();
         String selected = getSelection();
         if (selected == null) {
             setErrorMessage("select");
             return false;
         }
-        if (exportToFile && getDestinationValue().isEmpty()) {
-            setErrorMessage(Localization.getString("ExportParWizardPage.error.selectDestinationPath"));
+        if (exportToFile && Strings.isNullOrEmpty(getDestinationValue())) {
+            setErrorMessage(Localization.getString("error.selectDestinationPath"));
+            return false;
+        }
+        if (!exportToFile && !WfeServerConnector.getInstance().isConfigured()) {
+            setErrorMessage(Localization.getString("error.selectValidConnection"));
             return false;
         }
         IResource exportResource = dataSourceNameFileMap.get(selected);
@@ -208,6 +188,7 @@ public class ExportDataSourceWizardPage extends WizardArchiveFileResourceExportP
             } else {
                 String name = exportResource.getName();
                 name = name.substring(0, name.lastIndexOf('.'));
+                List<String> serverDataSourceNames = WfeServerDataSourceImporter.getInstance().getData();
                 if (!serverDataSourceNames.contains(name)
                         || Dialogs.confirm(Localization.getString("ExportDataSourceWizardPage.error.dataSourceWithSameNameExists", name))) {
                     deployToServer(exportResource);
@@ -231,38 +212,6 @@ public class ExportDataSourceWizardPage extends WizardArchiveFileResourceExportP
         new DataSourceDeployOperation(Lists.newArrayList((IFile) exportResource)).run(null);
     }
 
-    private final static String STORE_DESTINATION_NAMES_ID = "WizardParExportPage1.STORE_DESTINATION_NAMES_ID";
-
-    @Override
-    protected void internalSaveWidgetValues() {
-        // update directory names history
-        IDialogSettings settings = getDialogSettings();
-        if (settings != null) {
-            String[] directoryNames = settings.getArray(STORE_DESTINATION_NAMES_ID);
-            if (directoryNames == null) {
-                directoryNames = new String[0];
-            }
-            directoryNames = addToHistory(directoryNames, getDestinationValue());
-            settings.put(STORE_DESTINATION_NAMES_ID, directoryNames);
-        }
-    }
-
-    @Override
-    protected void restoreWidgetValues() {
-        IDialogSettings settings = getDialogSettings();
-        if (settings != null) {
-            String[] directoryNames = settings.getArray(STORE_DESTINATION_NAMES_ID);
-            if (directoryNames == null || directoryNames.length == 0) {
-                return; // ie.- no settings stored
-            }
-            // destination
-            setDestinationValue(directoryNames[0]);
-            for (int i = 0; i < directoryNames.length; i++) {
-                addDestinationItem(directoryNames[i]);
-            }
-        }
-    }
-
     private static class DsExportOperation implements IRunnableWithProgress {
         
         protected final OutputStream outputStream;
@@ -273,7 +222,8 @@ public class ExportDataSourceWizardPage extends WizardArchiveFileResourceExportP
             this.resourcesToExport = resourcesToExport;
         }
 
-        protected void exportResource(IFileExporter exporter, IFile fileResource, IProgressMonitor progressMonitor) throws IOException, CoreException {
+        protected void exportResource(DsFileExporter exporter, IFile fileResource, IProgressMonitor progressMonitor)
+                throws IOException, CoreException {
             if (!fileResource.isSynchronized(IResource.DEPTH_ONE)) {
                 fileResource.refreshLocal(IResource.DEPTH_ONE, null);
             }
@@ -318,7 +268,7 @@ public class ExportDataSourceWizardPage extends WizardArchiveFileResourceExportP
                 Display.getDefault().syncExec(new Runnable() {
                     @Override
                     public void run() {
-                        WFEServerDataSourceImporter.getInstance().deployDataSource(baos.toByteArray());
+                        WfeServerConnector.getInstance().deployDataSourceArchive(baos.toByteArray());
                     }
                 });
             } catch (Exception e) {
@@ -327,7 +277,7 @@ public class ExportDataSourceWizardPage extends WizardArchiveFileResourceExportP
         }
     }
 
-    private static class DsFileExporter implements IFileExporter {
+    private static class DsFileExporter {
         
         private final ZipOutputStream outputStream;
 
@@ -335,7 +285,6 @@ public class ExportDataSourceWizardPage extends WizardArchiveFileResourceExportP
             this.outputStream = new ZipOutputStream(outputStream, Charsets.UTF_8);
         }
 
-        @Override
         public void finished() throws IOException {
             outputStream.close();
         }
@@ -357,16 +306,11 @@ public class ExportDataSourceWizardPage extends WizardArchiveFileResourceExportP
             outputStream.closeEntry();
         }
 
-        @Override
         public void write(IFile resource, String destinationPath) throws IOException, CoreException {
             ZipEntry newEntry = new ZipEntry(destinationPath);
             write(newEntry, resource);
         }
 
-        @Override
-        public void write(IContainer container, String destinationPath) throws IOException {
-            throw new UnsupportedOperationException();
-        }
     }
 
 }

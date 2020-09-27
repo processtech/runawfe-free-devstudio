@@ -69,7 +69,8 @@ public abstract class FormType {
         }
         for (String validationVarName : validation.getVariableNames()) {
             if (!formVariables.keySet().contains(validationVarName)) {
-                errors.add(ValidationError.createLocalizedWarning(formNode, "formNode.validationVariableOutOfForm", validationVarName));
+                errors.add(ValidationError.createLocalizedWarning(formNode, "formNode.validationVariableOutOfForm",
+                            validationVarName));
             }
             if (!allVariableNames.contains(validationVarName)) {
                 errors.add(ValidationError.createLocalizedError(formNode, "formNode.validationVariableDoesNotExist", validationVarName));

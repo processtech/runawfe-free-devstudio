@@ -5,7 +5,6 @@ import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.IPath;
-import ru.runa.gpd.Localization;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.util.IOUtils;
@@ -27,7 +26,7 @@ public final class ParFileImporter implements FileImporter {
     public IFolder importFile(final FileImportInfo file) throws Exception {
         final IFolder processFolder = IOUtils.getProcessFolder(container, file.getPath());
         if (processFolder.exists()) {
-            throw new Exception(Localization.getString("ImportParWizardPage.error.processWithSameNameExists", file.getPath()));
+            return null;
         }
         IOUtils.createFolder(processFolder);
         IOUtils.extractArchiveToFolder(file.getInputStream(), processFolder);

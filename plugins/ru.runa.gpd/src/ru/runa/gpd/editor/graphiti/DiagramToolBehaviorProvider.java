@@ -24,8 +24,11 @@ import org.eclipse.graphiti.tb.DefaultToolBehaviorProvider;
 import org.eclipse.graphiti.tb.IContextButtonPadData;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
+import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PropertyNames;
+import ru.runa.gpd.editor.graphiti.create.CreateDataStoreFeature;
+import ru.runa.gpd.editor.graphiti.create.CreateDottedTransitionFeature;
 import ru.runa.gpd.editor.graphiti.create.CreateDragAndDropElementFeature;
 import ru.runa.gpd.editor.graphiti.create.CreateElementFeature;
 import ru.runa.gpd.editor.graphiti.create.CreateStartNodeFeature;
@@ -44,6 +47,7 @@ import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
+import ru.runa.gpd.settings.PrefConstants;
 
 public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
     public DiagramToolBehaviorProvider(IDiagramTypeProvider provider) {
@@ -57,14 +61,16 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
 
     @Override
     public ICustomFeature getDoubleClickFeature(IDoubleClickContext context) {
-        PictogramElement pe = context.getInnerPictogramElement();
-        GraphElement element = (GraphElement) getFeatureProvider().getBusinessObjectForPictogramElement(pe);
-        if (element instanceof Subprocess) {
-            return new OpenSubProcessFeature(getFeatureProvider());
-        }
-        NodeTypeDefinition definition = element.getTypeDefinition();
-        if (definition != null && definition.getGraphitiEntry() != null) {
-            return definition.getGraphitiEntry().createDoubleClickFeature(getFeatureProvider());
+        if (context.getPictogramElements().length == 1) {
+            PictogramElement pe = context.getPictogramElements()[0];
+            GraphElement element = (GraphElement) getFeatureProvider().getBusinessObjectForPictogramElement(pe);
+            if (element instanceof Subprocess) {
+                return new OpenSubProcessFeature(getFeatureProvider());
+            }
+            NodeTypeDefinition definition = element.getTypeDefinition();
+            if (definition != null && definition.getGraphitiEntry() != null) {
+                return definition.getGraphitiEntry().createDoubleClickFeature(getFeatureProvider());
+            }
         }
         return super.getDoubleClickFeature(context);
     }
@@ -92,8 +98,9 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
         CreateContext createContext = new CreateContext();
         createContext.setTargetContainer(targetContainer);
         createContext.putProperty(CreateElementFeature.CONNECTION_PROPERTY, createConnectionContext);
-        if (allowTargetNodeCreation) {
-            //
+
+        boolean expandContextButtonPad = Activator.getPrefBoolean(PrefConstants.P_BPMN_EXPAND_CONTEXT_BUTTON_PAD);
+        if (allowTargetNodeCreation && !expandContextButtonPad) {
             NodeTypeDefinition taskStateDefinition = NodeRegistry.getNodeTypeDefinition(TaskState.class);
             CreateDragAndDropElementFeature createTaskStateFeature = new CreateDragAndDropElementFeature(createContext);
             createTaskStateFeature.setNodeDefinition(taskStateDefinition);
@@ -104,6 +111,7 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
             createTaskStateButton.addDragAndDropFeature(createTaskStateFeature);
             data.getDomainSpecificContextButtons().add(createTaskStateButton);
         }
+
         //
         ContextButtonEntry createTransitionButton = new ContextButtonEntry(null, context);
         NodeTypeDefinition transitionDefinition = NodeRegistry.getNodeTypeDefinition(Transition.class);
@@ -111,43 +119,59 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
         createTransitionButton.setIconId(transitionDefinition.getPaletteIcon());
         ICreateConnectionFeature[] features = getFeatureProvider().getCreateConnectionFeatures();
         for (ICreateConnectionFeature feature : features) {
-            if (feature.isAvailable(createConnectionContext) && feature.canStartConnection(createConnectionContext)) {
+            if (!(feature instanceof CreateDottedTransitionFeature) && feature.isAvailable(createConnectionContext)
+                    && feature.canStartConnection(createConnectionContext)) {
                 createTransitionButton.addDragAndDropFeature(feature);
             }
         }
-        if (createTransitionButton.getDragAndDropFeatures().size() > 0) {
-            data.getDomainSpecificContextButtons().add(createTransitionButton);
-        }
         //
+        
         if (allowTargetNodeCreation) {
-            ContextButtonEntry createElementButton = new ContextButtonEntry(null, null);
-            createElementButton.setText(Localization.getString("new.element.label"));
-            createElementButton.setDescription(Localization.getString("new.element.description"));
-            createElementButton.setIconId("elements.png");
-            data.getDomainSpecificContextButtons().add(createElementButton);
+            ContextButtonEntry createElementButton = null;
+            if (!expandContextButtonPad) {
+                createElementButton = new ContextButtonEntry(null, null);
+                createElementButton.setText(Localization.getString("new.element.label"));
+                createElementButton.setDescription(Localization.getString("new.element.description"));
+                createElementButton.setIconId("elements.png");
+                data.getDomainSpecificContextButtons().add(createElementButton);
+            }
+
             for (ICreateFeature feature : getFeatureProvider().getCreateFeatures()) {
-                if (feature instanceof CreateSwimlaneFeature || feature instanceof CreateStartNodeFeature) {
+                if (feature instanceof CreateSwimlaneFeature || feature instanceof CreateStartNodeFeature
+                        || feature instanceof CreateDataStoreFeature) {
                     continue;
                 }
                 if (feature instanceof CreateElementFeature && feature.canCreate(createContext)) {
                     CreateElementFeature createElementFeature = (CreateElementFeature) feature;
                     NodeTypeDefinition typeDefinition = createElementFeature.getNodeDefinition();
-                    CreateDragAndDropElementFeature createDrugAndDropFeature = new CreateDragAndDropElementFeature(createContext);
-                    createDrugAndDropFeature.setNodeDefinition(typeDefinition);
-                    createDrugAndDropFeature.setFeatureProvider(getFeatureProvider());
-                    ContextButtonEntry createButton = new ContextButtonEntry(createDrugAndDropFeature, createConnectionContext);
+                    CreateDragAndDropElementFeature createDragAndDropElementFeature = new CreateDragAndDropElementFeature(createContext);
+                    createDragAndDropElementFeature.setNodeDefinition(typeDefinition);
+                    createDragAndDropElementFeature.setFeatureProvider(getFeatureProvider());
+                    ContextButtonEntry createButton = new ContextButtonEntry(createDragAndDropElementFeature, createConnectionContext);
                     createButton.setText(typeDefinition.getLabel());
                     createButton.setIconId(typeDefinition.getPaletteIcon());
-                    createElementButton.addDragAndDropFeature(createDrugAndDropFeature);
-                    createElementButton.getContextButtonMenuEntries().add(createButton);
+                    if (expandContextButtonPad) {
+                        createButton.addDragAndDropFeature(createDragAndDropElementFeature);
+                        data.getDomainSpecificContextButtons().add(createButton);
+                    } else {
+                        createElementButton.addDragAndDropFeature(createDragAndDropElementFeature);
+                        createElementButton.getContextButtonMenuEntries().add(createButton);
+                    }
                 }
+            }
+        }
+        if (createTransitionButton.getDragAndDropFeatures().size() > 0) {
+            if (expandContextButtonPad) {
+                data.getDomainSpecificContextButtons().add(createTransitionButton);
+            } else {
+                data.getDomainSpecificContextButtons().add(createTransitionButton.getDragAndDropFeatures().size(), createTransitionButton);
             }
         }
         return data;
     }
 
-    static final private Set<String> TOOL_TIP_PROPERTY_NAMES =
-            Sets.newHashSet(PropertyNames.PROPERTY_ID, PropertyNames.PROPERTY_NAME, PropertyNames.PROPERTY_DESCRIPTION, PropertyNames.PROPERTY_CLASS);
+    static final private Set<String> TOOL_TIP_PROPERTY_NAMES = Sets.newHashSet(PropertyNames.PROPERTY_ID, PropertyNames.PROPERTY_NAME,
+            PropertyNames.PROPERTY_DESCRIPTION, PropertyNames.PROPERTY_CLASS);
 
     @Override
     public String getToolTip(GraphicsAlgorithm ga) {

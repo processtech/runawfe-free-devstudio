@@ -3,6 +3,8 @@ package ru.runa.gpd.lang.par;
 import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.eclipse.draw2d.geometry.Point;
@@ -16,6 +18,8 @@ import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.model.Transition;
+import ru.runa.gpd.lang.model.bpmn.ConnectableViaDottedTransition;
+import ru.runa.gpd.lang.model.bpmn.DottedTransition;
 import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
 import ru.runa.gpd.util.XmlUtil;
 
@@ -41,6 +45,7 @@ public class GpdXmlContentProvider extends AuxContentProvider {
     private static final String PROCESS_DIAGRAM = "process-diagram";
     private static final String NODE = "node";
     private static final String TRANSITION = "transition";
+    private static final String DOTTED_TRANSITION = "dataStoreReference";
     private static final String BENDPOINT = "bendpoint";
     private static final String LABEL = "label";
     private static final String TEXT_DECORATION = "textDecoration";
@@ -91,6 +96,24 @@ public class GpdXmlContentProvider extends AuxContentProvider {
                             break;
                         }
                     }
+                }
+            }
+            if (graphElement instanceof ConnectableViaDottedTransition) {
+                final ConnectableViaDottedTransition node = (ConnectableViaDottedTransition) graphElement;
+                final List<DottedTransition> leavingTransitions = node.getLeavingDottedTransitions();
+                final List<Element> transitionInfoList = element.elements(DOTTED_TRANSITION);
+
+                for (DottedTransition transition : leavingTransitions) {
+                    final Optional<Element> transitionElement = transitionInfoList.stream()
+                            .filter(e -> Objects.equals(transition.getId(), e.attributeValue(NAME))).findAny();
+                    if (!transitionElement.isPresent()) {
+                        continue;
+                    }
+
+                    final List<Element> bendpointInfoList = transitionElement.get().<Element> elements(BENDPOINT);
+                    final List<Point> bendpoints = bendpointInfoList.stream().map(e -> new Point(getIntAttribute(e, X, 0), getIntAttribute(e, Y, 0)))
+                            .collect(Collectors.toList());
+                    transition.setBendpoints(bendpoints);
                 }
             }
             if (graphElement instanceof HasTextDecorator) {
@@ -202,6 +225,20 @@ public class GpdXmlContentProvider extends AuxContentProvider {
                         Element bendpointElement = transitionElement.addElement(BENDPOINT);
                         int x = bendpoint.x - xOffset;
                         int y = bendpoint.y - yOffset;
+                        addAttribute(bendpointElement, X, String.valueOf(x));
+                        addAttribute(bendpointElement, Y, String.valueOf(y));
+                    }
+                }
+            }
+            if (graphElement instanceof ConnectableViaDottedTransition) {
+                final ConnectableViaDottedTransition node = (ConnectableViaDottedTransition) graphElement;
+                for (DottedTransition transition : node.getLeavingDottedTransitions()) {
+                    final Element transitionElement = element.addElement(DOTTED_TRANSITION);
+                    addAttribute(transitionElement, NAME, transition.getId());
+                    for (Point bendpoint : transition.getBendpoints()) {
+                        final Element bendpointElement = transitionElement.addElement(BENDPOINT);
+                        final int x = bendpoint.x - xOffset;
+                        final int y = bendpoint.y - yOffset;
                         addAttribute(bendpointElement, X, String.valueOf(x));
                         addAttribute(bendpointElement, Y, String.valueOf(y));
                     }

@@ -20,7 +20,7 @@ import ru.runa.gpd.Application;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
-import ru.runa.gpd.ui.custom.SWTUtils;
+import ru.runa.gpd.ui.custom.SwtUtils;
 
 public class AboutDialog extends Dialog {
 
@@ -38,7 +38,7 @@ public class AboutDialog extends Dialog {
         Text versionText = new Text(parent, SWT.READ_ONLY);
         versionText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         versionText.setText(Localization.getString("version") + ": " + Application.getVersion().toString());
-        SWTUtils.createLink(parent, "runawfe.org", new LoggingHyperlinkAdapter() {
+        SwtUtils.createLink(parent, "runawfe.org", new LoggingHyperlinkAdapter() {
 
             @Override
             protected void onLinkActivated(HyperlinkEvent e) throws Exception {

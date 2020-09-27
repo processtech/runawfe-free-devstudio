@@ -6,20 +6,25 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.dialogs.ProgressMonitorDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
@@ -27,36 +32,45 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.TreeItem;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.SharedImages;
-import ru.runa.gpd.settings.WFEConnectionPreferencePage;
+import ru.runa.gpd.sync.WfeServerConnector;
+import ru.runa.gpd.sync.WfeServerConnectorComposite;
+import ru.runa.gpd.sync.WfeServerConnectorSynchronizationCallback;
+import ru.runa.gpd.sync.WfeServerProcessDefinitionImporter;
 import ru.runa.gpd.ui.custom.Dialogs;
-import ru.runa.gpd.ui.custom.SyncUIHelper;
+import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.files.ParFileImporter;
 import ru.runa.gpd.util.files.ProcessDefinitionImportInfo;
-import ru.runa.gpd.wfe.ConnectorCallback;
-import ru.runa.gpd.wfe.WFEServerProcessDefinitionImporter;
 import ru.runa.wfe.definition.dto.WfDefinition;
 
 public class ImportParWizardPage extends ImportWizardPage {
     private Button importFromFileButton;
     private Composite fileSelectionArea;
-    private Text selectedParsLabel;
+    private Text selectedParsText;
     private Button selectParsButton;
     private Button importFromServerButton;
+    private WfeServerConnectorComposite serverConnectorComposite;
     private TreeViewer serverDefinitionViewer;
+    private Text serverDefinitionFilter;
     private String selectedDirFileName;
     private String[] selectedFileNames;
 
-    public ImportParWizardPage(String pageName, IStructuredSelection selection) {
-        super(pageName, selection);
+    public ImportParWizardPage(IStructuredSelection selection) {
+        super(ImportParWizardPage.class, selection);
         setTitle(Localization.getString("ImportParWizardPage.page.title"));
-        setDescription(Localization.getString("ImportParWizardPage.page.description"));
+    }
+
+    @Override
+    protected IContainer getInitialSelection(IStructuredSelection selection) {
+        return (IContainer) IOUtils.getProcessSelectionResource(selection);
     }
 
     @Override
@@ -66,17 +80,22 @@ public class ImportParWizardPage extends ImportWizardPage {
         pageControl.setLayoutData(new GridData(GridData.FILL_BOTH));
         SashForm sashForm = new SashForm(pageControl, SWT.HORIZONTAL);
         sashForm.setLayoutData(new GridData(GridData.FILL_BOTH));
-        createProjectsGroup(sashForm);
+        createProjectsGroup(sashForm, IOUtils.getAllProcessContainers(), new LabelProvider() {
+            @Override
+            public String getText(Object element) {
+                return IOUtils.getProcessContainerName((IContainer) element);
+            }
+        });
         Group importGroup = new Group(sashForm, SWT.NONE);
         importGroup.setLayout(new GridLayout(1, false));
         importGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
         importFromFileButton = new Button(importGroup, SWT.RADIO);
-        importFromFileButton.setText(Localization.getString("ImportParWizardPage.page.importFromFileButton"));
+        importFromFileButton.setText(Localization.getString("button.importFromFile"));
         importFromFileButton.setSelection(true);
         importFromFileButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                setImportMode();
+                onImportModeChanged();
             }
         });
         fileSelectionArea = new Composite(importGroup, SWT.NONE);
@@ -89,10 +108,10 @@ public class ImportParWizardPage extends ImportWizardPage {
         fileSelectionLayout.marginWidth = 0;
         fileSelectionLayout.marginHeight = 0;
         fileSelectionArea.setLayout(fileSelectionLayout);
-        selectedParsLabel = new Text(fileSelectionArea, SWT.MULTI | SWT.READ_ONLY | SWT.V_SCROLL);
+        selectedParsText = new Text(fileSelectionArea, SWT.MULTI | SWT.READ_ONLY | SWT.V_SCROLL | SWT.BORDER);
         GridData gridData = new GridData(GridData.GRAB_HORIZONTAL | GridData.FILL_HORIZONTAL);
         gridData.heightHint = 30;
-        selectedParsLabel.setLayoutData(gridData);
+        selectedParsText.setLayoutData(gridData);
         selectParsButton = new Button(fileSelectionArea, SWT.PUSH);
         selectParsButton.setText(Localization.getString("button.choose"));
         selectParsButton.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_END));
@@ -108,55 +127,66 @@ public class ImportParWizardPage extends ImportWizardPage {
                     for (String fileName : selectedFileNames) {
                         text += fileName + "\n";
                     }
-                    selectedParsLabel.setText(text);
+                    selectedParsText.setText(text);
                 }
             }
         });
         importFromServerButton = new Button(importGroup, SWT.RADIO);
-        importFromServerButton.setText(Localization.getString("ImportParWizardPage.page.importFromServerButton"));
-        SyncUIHelper.createHeader(importGroup, WFEServerProcessDefinitionImporter.getInstance(), WFEConnectionPreferencePage.class,
-                new ConnectorCallback() {
+        importFromServerButton.setText(Localization.getString("button.importFromServer"));
+        serverConnectorComposite = new WfeServerConnectorComposite(importGroup, WfeServerProcessDefinitionImporter.getInstance(),
+                new WfeServerConnectorSynchronizationCallback() {
 
                     @Override
-                    public void onSynchronizationFailed(Exception e) {
-                        Dialogs.error(Localization.getString("error.Synchronize"), e);
+                    public void onCompleted() {
+                        updateServerDefinitionViewer(WfeServerProcessDefinitionImporter.getInstance().getData());
                     }
 
                     @Override
-                    public void onSynchronizationCompleted() {
-                        setupServerDefinitionViewer();
+                    public void onFailed() {
+                        updateServerDefinitionViewer(null);
                     }
+
                 });
         createServerDefinitionsGroup(importGroup);
         setControl(pageControl);
+        onImportModeChanged();
     }
 
-    private void setImportMode() {
+    private void onImportModeChanged() {
         boolean fromFile = importFromFileButton.getSelection();
+        selectedParsText.setEnabled(fromFile);
         selectParsButton.setEnabled(fromFile);
+        serverConnectorComposite.setEnabled(!fromFile);
+        serverDefinitionViewer.getControl().setEnabled(!fromFile);
         if (fromFile) {
-            serverDefinitionViewer.setInput(new Object());
+            updateServerDefinitionViewer(null);
         } else {
-            if (WFEServerProcessDefinitionImporter.getInstance().isConfigured()) {
-                if (!WFEServerProcessDefinitionImporter.getInstance().hasCachedData()) {
-                    long start = System.currentTimeMillis();
-                    WFEServerProcessDefinitionImporter.getInstance().synchronize();
-                    long end = System.currentTimeMillis();
-                    PluginLogger.logInfo("def sync [sec]: " + ((end - start) / 1000));
-                }
-                setupServerDefinitionViewer();
-            }
+            updateServerDefinitionViewer(WfeServerProcessDefinitionImporter.getInstance().getData());
         }
     }
 
-    private void setupServerDefinitionViewer() {
-        Map<WfDefinition, List<WfDefinition>> definitions = WFEServerProcessDefinitionImporter.getInstance().loadCachedData();
-        DefinitionTreeNode treeDefinitions = createTree(new TreeMap<>(definitions));
-        serverDefinitionViewer.setInput(treeDefinitions);
+    private void updateServerDefinitionViewer(List<WfDefinition> definitions) {
+        if (definitions != null) {
+            DefinitionTreeNode treeDefinitions = createTree(definitions);
+            serverDefinitionViewer.setInput(treeDefinitions);
+        } else {
+            serverDefinitionViewer.setInput(new Object());
+        }
         serverDefinitionViewer.refresh(true);
     }
 
     private void createServerDefinitionsGroup(Composite parent) {
+    	serverDefinitionFilter = new Text(parent, SWT.SINGLE | SWT.BORDER);   
+        GridData gridDataText = new GridData(SWT.FILL,SWT.BEGINNING, true, false);
+        serverDefinitionFilter.setLayoutData(gridDataText);
+        serverDefinitionFilter.setMessage(Localization.getString("text.message.filter"));
+        serverDefinitionFilter.addModifyListener(new ModifyListener( ) {
+
+            @Override
+            public void modifyText(ModifyEvent e) {
+                serverDefinitionViewer.refresh();
+            }});
+        
         serverDefinitionViewer = new TreeViewer(parent);
         GridData gridData = new GridData(GridData.FILL_BOTH);
         gridData.heightHint = 100;
@@ -164,16 +194,62 @@ public class ImportParWizardPage extends ImportWizardPage {
         serverDefinitionViewer.setContentProvider(new ViewContentProvider());
         serverDefinitionViewer.setLabelProvider(new ViewLabelProvider());
         serverDefinitionViewer.setInput(new Object());
+        serverDefinitionViewer.addFilter(new ViewerFilter() {
+
+            @Override
+            public boolean select(Viewer viewer, Object parentElement, Object element) {  
+                String searchText = serverDefinitionFilter.getText();
+                if (searchText == null || searchText.trim().length() == 0) {
+                    return true;
+                }
+                              
+                if ((element instanceof DefinitionTreeNode) ) {
+                    String name = ((DefinitionTreeNode) element).getLabel();
+                    
+                    if (((DefinitionTreeNode) element).definition == null) {
+                        // This is the node. Show nodes with at least one matching child definition     
+                        return matchAtLeastOneSub(((DefinitionTreeNode) element).getChildren(), searchText);
+                    }
+                    
+                    // filter leafs only                    
+                    if (name.toLowerCase().contains(searchText.trim().toLowerCase())) {
+                        return true;
+                    }
+                }
+                return false;
+            }});
     }
+    
+    private boolean matchAtLeastOneSub(List<DefinitionTreeNode> source, String searchText) {
+        if (source == null || source.size() == 0) {
+            return false;
+        }
+        for (DefinitionTreeNode node: source) {
+            String name = node.getLabel();
+            if (name.toLowerCase().contains(searchText.trim().toLowerCase())) {
+                return true;
+            }
+            if (node.getChildren() != null && node.getChildren().size() > 0) {
+                boolean bSub = matchAtLeastOneSub(node.getChildren(), searchText);
+                if (bSub) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }    
 
     public boolean performFinish() {
         List<ProcessDefinitionImportInfo> importInfos = Lists.newArrayList();
         try {
-            IContainer container = getSelectedContainer();
+            IContainer selectedProject = getSelectedProject();
+            if (selectedProject == null) {
+                return false;
+            }
             boolean fromFile = importFromFileButton.getSelection();
             if (fromFile) {
                 if (selectedDirFileName == null) {
-                    throw new Exception(Localization.getString("ImportParWizardPage.error.selectValidPar"));
+                    throw new Exception(Localization.getString("error.selectValidFile"));
                 }
                 for (int i = 0; i < selectedFileNames.length; i++) {
                     String definitionName = selectedFileNames[i].substring(0, selectedFileNames[i].length() - ".par".length());
@@ -187,11 +263,15 @@ public class ImportParWizardPage extends ImportWizardPage {
                 }
             }
             if (importInfos.isEmpty()) {
-                throw new Exception(Localization.getString("ImportParWizardPage.error.selectValidDefinition"));
+                setErrorMessage(Localization.getString("ImportParWizardPage.error.selectValidDefinition"));
+                return false;
             }
-            final ParFileImporter importer = new ParFileImporter(container);
+            final ParFileImporter importer = new ParFileImporter(selectedProject);
             for (ProcessDefinitionImportInfo importInfo : importInfos) {
-                importer.importFile(importInfo);
+                if (importer.importFile(importInfo) == null) {
+                    setErrorMessage(Localization.getString("ImportParWizardPage.error.processWithSameNameExists", importInfo.getPath()));
+                    return false;
+                }
             }
         } catch (Exception exception) {
             PluginLogger.logErrorWithoutDialog("import par", exception);
@@ -208,12 +288,10 @@ public class ImportParWizardPage extends ImportWizardPage {
         return true;
     }
 
-    private DefinitionTreeNode createTree(Map<WfDefinition, List<WfDefinition>> definitions) {
+    private DefinitionTreeNode createTree(List<WfDefinition> definitions) {
         DefinitionTreeNode rootTreeNode = new DefinitionTreeNode("", "", null, false, false);
-        for (Map.Entry<WfDefinition, List<WfDefinition>> entry : definitions.entrySet()) {
-            WfDefinition definition = entry.getKey();
-            List<WfDefinition> historyDefinitions = entry.getValue();
-            rootTreeNode.addElementToTree(rootTreeNode.path, definition.getCategories(), definition, historyDefinitions);
+        for (WfDefinition definition : definitions) {
+            rootTreeNode.addElementToTree(rootTreeNode.path, definition.getCategories(), definition);
         }
         return rootTreeNode;
     }
@@ -223,11 +301,7 @@ public class ImportParWizardPage extends ImportWizardPage {
         @Override
         public String getText(Object obj) {
             DefinitionTreeNode treeNode = (DefinitionTreeNode) obj;
-            String label = treeNode.getName();
-            if (treeNode.isHistoryNode() && !treeNode.isGroupNode()) {
-                label = treeNode.getDefinition().getVersion().toString();
-            }
-            return label;
+            return treeNode.getLabel();
         }
 
         @Override
@@ -280,22 +354,22 @@ public class ImportParWizardPage extends ImportWizardPage {
 
     class DefinitionTreeNode {
         private final String path;
-        private final String name;
+        private final String label;
         private final WfDefinition definition;
         private final boolean groupNode;
         private final boolean historyNode;
         private final List<DefinitionTreeNode> children = new ArrayList<DefinitionTreeNode>();
 
-        public DefinitionTreeNode(String parentPath, String name, WfDefinition definition, boolean groupNode, boolean historyNode) {
-            this.path = parentPath + File.separator + name;
-            this.name = name;
+        public DefinitionTreeNode(String parentPath, String label, WfDefinition definition, boolean groupNode, boolean historyNode) {
+            this.path = parentPath + File.separator + label;
+            this.label = label;
             this.definition = definition;
             this.groupNode = groupNode;
             this.historyNode = historyNode;
         }
 
-        private String getName() {
-            return name;
+        private String getLabel() {
+            return label;
         }
 
         private boolean isHistoryNode() {
@@ -306,15 +380,13 @@ public class ImportParWizardPage extends ImportWizardPage {
             return groupNode;
         }
 
-        private WfDefinition getDefinition() {
-            return definition;
-        }
-
-        private void addElementToTree(String path, String[] categories, WfDefinition definition, List<WfDefinition> historyDefinitions) {
+        private void addElementToTree(String path, String[] categories, WfDefinition definition) {
             if (categories.length == 0) {
                 DefinitionTreeNode leafNode = new DefinitionTreeNode(path, definition.getName(), definition, false, false);
-                if (!historyDefinitions.isEmpty()) {
-                    leafNode.getChildren().add(createHistoryGroup(leafNode.path, historyDefinitions));
+                if (WfeServerConnector.getInstance().getSettings().isLoadProcessDefinitionsHistory()) {
+                    String label = Localization.getString("ImportParWizardPage.page.oldDefinitionVersions");
+                    DefinitionTreeNode historyGroup = new DefinitionTreeNode(leafNode.path, label, definition, true, true);
+                    leafNode.getChildren().add(historyGroup);
                 }
                 children.add(leafNode);
                 return;
@@ -329,7 +401,7 @@ public class ImportParWizardPage extends ImportWizardPage {
                 groupTreeNode = children.get(index);
             }
             String[] newCategories = Arrays.copyOfRange(categories, 1, categories.length);
-            groupTreeNode.addElementToTree(groupTreeNode.path, newCategories, definition, historyDefinitions);
+            groupTreeNode.addElementToTree(groupTreeNode.path, newCategories, definition);
         }
 
         @Override
@@ -342,10 +414,47 @@ public class ImportParWizardPage extends ImportWizardPage {
 
         @Override
         public String toString() {
-            return name;
+            return label;
         }
 
         private List<DefinitionTreeNode> getChildren() {
+            if (groupNode && historyNode && children.isEmpty()) {
+                Shell shell = Display.getCurrent() != null ? Display.getCurrent().getActiveShell() : null;
+                final ProgressMonitorDialog monitorDialog = new ProgressMonitorDialog(shell);
+                monitorDialog.setCancelable(true);
+                final IRunnableWithProgress runnable = new IRunnableWithProgress() {
+                    @Override
+                    public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                        try {
+                            monitor.beginTask(Localization.getString("task.LoadData"), 1);
+                            List<WfDefinition> list = WfeServerConnector.getInstance().getProcessDefinitionHistory(definition);
+                            if (list.isEmpty()) {
+                                String label = Localization.getString("ImportParWizardPage.page.oldDefinitionVersions.empty");
+                                DefinitionTreeNode historyDefinitionNode = new DefinitionTreeNode(path, label, null, false, true);
+                                children.add(historyDefinitionNode);
+                            }
+                            for (WfDefinition definition : list) {
+                                DefinitionTreeNode historyDefinitionNode = new DefinitionTreeNode(path, String.valueOf(definition.getVersion()),
+                                        definition, false,
+                                        true);
+                                children.add(historyDefinitionNode);
+                            }
+                            monitor.done();
+                        } catch (Exception e) {
+                            PluginLogger.logErrorWithoutDialog("error.Synchronize", e);
+                            throw new InvocationTargetException(e);
+                        } finally {
+                            monitor.done();
+                        }
+                    }
+                };
+                try {
+                    monitorDialog.run(true, false, runnable);
+                } catch (InvocationTargetException ex) {
+                    Dialogs.error(Localization.getString("error.Synchronize"), ex.getTargetException());
+                } catch (InterruptedException consumed) {
+                }
+            }
             return children;
         }
 
@@ -357,32 +466,18 @@ public class ImportParWizardPage extends ImportWizardPage {
             if (isGroupNode()) {
                 for (DefinitionTreeNode currentNode : children) {
                     if (currentNode != null) {
-                        result.addAll(currentNode.toRecursiveImportInfo(importPath + File.separator + name));
+                        result.addAll(currentNode.toRecursiveImportInfo(importPath + File.separator + label));
                     }
                 }
-            } else {
+            } else if (definition != null) {
                 result.add(toImportInfo(importPath));
             }
             return result;
         }
 
         private ProcessDefinitionImportInfo toImportInfo(String importPath) throws Exception {
-            byte[] par = WFEServerProcessDefinitionImporter.getInstance().loadPar(definition);
+            byte[] par = WfeServerProcessDefinitionImporter.getInstance().loadPar(definition);
             return new ProcessDefinitionImportInfo(definition.getName(), importPath, new ByteArrayInputStream(par));
-        }
-
-        private DefinitionTreeNode createHistoryGroup(String path, List<WfDefinition> historyDefinitions) {
-            DefinitionTreeNode historyGroup = null;
-            if (historyDefinitions != null && !historyDefinitions.isEmpty()) {
-                String oldDefinitionVersionsLabel = Localization.getString("ImportParWizardPage.page.oldDefinitionVersions");
-                historyGroup = new DefinitionTreeNode(path, oldDefinitionVersionsLabel, null, true, true);
-                for (WfDefinition historyDefinition : historyDefinitions) {
-                    String name = historyDefinition.getName();
-                    DefinitionTreeNode historyDefinitionNode = new DefinitionTreeNode(historyGroup.path, name, historyDefinition, false, true);
-                    historyGroup.getChildren().add(historyDefinitionNode);
-                }
-            }
-            return historyGroup;
         }
 
     }

@@ -91,10 +91,10 @@ CKEDITOR.plugins.add(FTL_PLUGIN_NAME, {
 			}
 		},
 		afterInit: function(editor) {
-			editor.on("selectionChange", function () {
+			editor.selectionChangeCleaner = editor.on("selectionChange", function () {
 				var selection = editor.getSelection();
 				var selectedElement = selection.getSelectedElement();
-				if (!selectedElement || selectedElement.$.className.indexOf("cke_ftl_component") == -1){
+				if (!selectedElement || selectedElement.$.className.indexOf("cke_ftl_component") == -1) {
 					FtlComponents.ComponentDeselected();
 				} else {
 					FtlComponents.ComponentSelected(selectedElement.$.id);

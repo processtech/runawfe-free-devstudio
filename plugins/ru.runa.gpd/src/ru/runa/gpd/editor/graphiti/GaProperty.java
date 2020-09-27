@@ -10,6 +10,7 @@ public class GaProperty extends PropertyImpl {
     public static final String EXCLUSIVE_FLOW = "exclusiveFlow";
     public static final String DEFAULT_FLOW = "defaultFlow";
     public static final String SUBPROCESS = "subProcess";
+    public static final String EMBEDDED = "embedded";
     public static final String MULTIPLE_INSTANCES = "multipleInstances";
     public static final String SWIMLANE_DISPLAY_VERTICAL = "swimlaneDisplayVertical";
     public static final String MINIMAZED_VIEW = "minimazedView";

@@ -173,6 +173,10 @@ public class Variable extends NamedGraphElement implements Describable {
     public void populateCustomPropertyDescriptors(List<IPropertyDescriptor> descriptors) {
         super.populateCustomPropertyDescriptors(descriptors);
         descriptors.add(new PropertyDescriptor(PROPERTY_SCRIPTING_NAME, Localization.getString("Variable.property.scriptingName")));
+        fillCustomPropertyDescriptors(descriptors);
+    }
+
+    protected void fillCustomPropertyDescriptors(List<IPropertyDescriptor> descriptors) {
         descriptors.add(new PropertyDescriptor(PROPERTY_FORMAT, Localization.getString("Variable.property.format")));
         descriptors.add(new PropertyDescriptor(PROPERTY_PUBLIC_VISIBILITY, Localization.getString("Variable.property.publicVisibility")));
         descriptors.add(new PropertyDescriptor(PROPERTY_DEFAULT_VALUE, Localization.getString("Variable.property.defaultValue")));
@@ -220,7 +224,7 @@ public class Variable extends NamedGraphElement implements Describable {
         Variable copyVariable = (Variable) copy;
         copyVariable.setFormat(getFormat());
         if (getUserType() != null) {
-            copyVariable.setUserType(getUserType().getCopy());
+            copyVariable.setUserType(copyVariable.getProcessDefinition().getVariableUserType(getUserType().getName()));
         }
         copyVariable.setScriptingName(getScriptingName());
         copyVariable.setDefaultValue(getDefaultValue());

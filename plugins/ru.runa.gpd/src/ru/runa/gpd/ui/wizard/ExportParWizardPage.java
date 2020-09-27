@@ -22,7 +22,6 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -38,7 +37,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Group;
-import org.eclipse.ui.internal.wizards.datatransfer.WizardArchiveFileResourceExportPage1;
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
@@ -47,26 +45,27 @@ import ru.runa.gpd.aspects.UserActivity;
 import ru.runa.gpd.editor.ProcessSaveHistory;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
-import ru.runa.gpd.settings.WFEConnectionPreferencePage;
+import ru.runa.gpd.sync.WfeServerConnector;
+import ru.runa.gpd.sync.WfeServerConnectorComposite;
+import ru.runa.gpd.sync.WfeServerProcessDefinitionImporter;
 import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
-import ru.runa.gpd.ui.custom.SyncUIHelper;
+import ru.runa.gpd.ui.custom.StatusBarUtils;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.files.FileResourcesExportOperation;
 import ru.runa.gpd.util.files.ParFileExporter;
 import ru.runa.gpd.util.files.ZipFileExporter;
-import ru.runa.gpd.wfe.WFEServerProcessDefinitionImporter;
 
-@SuppressWarnings("restriction")
-public class ExportParWizardPage extends WizardArchiveFileResourceExportPage1 {
+public class ExportParWizardPage extends ExportWizardPage {
     private final Map<String, IFile> definitionNameFileMap;
     private ListViewer definitionListViewer;
     private Button exportToFileButton;
     private Button exportToServerButton;
     private Button updateLatestVersionButton;
+    private WfeServerConnectorComposite serverConnectorComposite;
 
-    protected ExportParWizardPage(IStructuredSelection selection) {
-        super(selection);
+    protected ExportParWizardPage() {
+        super(ExportParWizardPage.class);
         setTitle(Localization.getString("ExportParWizardPage.page.title"));
         setDescription(Localization.getString("ExportParWizardPage.page.description"));
         this.definitionNameFileMap = new TreeMap<String, IFile>();
@@ -94,26 +93,23 @@ public class ExportParWizardPage extends WizardArchiveFileResourceExportPage1 {
         exportGroup.setLayout(new GridLayout(1, false));
         exportGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
         exportToFileButton = new Button(exportGroup, SWT.RADIO);
-        exportToFileButton.setText(Localization.getString("ExportParWizardPage.page.exportToFileButton"));
+        exportToFileButton.setText(Localization.getString("button.exportToFile"));
         exportToFileButton.setSelection(true);
-        createDestinationGroup(exportGroup);
+        createDestinationDirectoryGroup(exportGroup);
         exportToServerButton = new Button(exportGroup, SWT.RADIO);
-        exportToServerButton.setText(Localization.getString("ExportParWizardPage.page.exportToServerButton"));
+        exportToServerButton.setText(Localization.getString("button.exportToServer"));
         updateLatestVersionButton = new Button(exportGroup, SWT.CHECK);
         updateLatestVersionButton.setEnabled(false);
         updateLatestVersionButton.setText(Localization.getString("ExportParWizardPage.page.exportToServer.updateMode"));
         exportToFileButton.addSelectionListener(new LoggingSelectionAdapter() {
             @Override
             protected void onSelection(SelectionEvent e) throws Exception {
-                updateLatestVersionButton.setEnabled(!exportToFileButton.getSelection());
+                onExportModeChanged();
             }
         });
 
-        SyncUIHelper.createHeader(exportGroup, WFEServerProcessDefinitionImporter.getInstance(), WFEConnectionPreferencePage.class, null);
-        restoreWidgetValues();
-        giveFocusToDestination();
+        serverConnectorComposite = new WfeServerConnectorComposite(exportGroup, WfeServerProcessDefinitionImporter.getInstance(), null);
         setControl(pageControl);
-        setPageComplete(false);
         IFile adjacentFile = IOUtils.getCurrentFile();
         if (adjacentFile != null && adjacentFile.getParent().exists()) {
             IFile definitionFile = IOUtils.getProcessDefinitionFile((IFolder) adjacentFile.getParent());
@@ -124,10 +120,32 @@ public class ExportParWizardPage extends WizardArchiveFileResourceExportPage1 {
                 }
             }
         }
+        onExportModeChanged();
+    }
+
+    private void onExportModeChanged() {
+        boolean fromFile = exportToFileButton.getSelection();
+        destinationValueText.setEnabled(fromFile);
+        browseButton.setEnabled(fromFile);
+        updateLatestVersionButton.setEnabled(!exportToFileButton.getSelection());
+        serverConnectorComposite.setEnabled(!fromFile);
+    }
+
+    @Override
+    protected void onBrowseButtonSelected() {
+        DirectoryDialog dialog = new DirectoryDialog(getContainer().getShell(), SWT.SAVE);
+        dialog.setFilterPath(getDestinationValue());
+        String selectedDirectoryName = dialog.open();
+        if (selectedDirectoryName != null) {
+            setErrorMessage(null);
+            if (!selectedDirectoryName.endsWith(File.separator)) {
+                selectedDirectoryName += File.separator;
+            }
+            setDestinationValue(selectedDirectoryName);
+        }
     }
 
     private void createViewer(Composite parent) {
-        // process selection
         definitionListViewer = new ListViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
         definitionListViewer.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
         definitionListViewer.setContentProvider(new ArrayContentProvider());
@@ -153,56 +171,21 @@ public class ExportParWizardPage extends WizardArchiveFileResourceExportPage1 {
         }
     }
 
-    @Override
-    protected String getDestinationLabel() {
-        return Localization.getString("ExportParWizardPage.label.destination_file");
-    }
-
-    @Override
-    protected void handleDestinationBrowseButtonPressed() {
-        DirectoryDialog dialog = new DirectoryDialog(getContainer().getShell(), SWT.SAVE);
-        dialog.setFilterPath(getDestinationValue());
-        String selectedFolderName = dialog.open();
-        if (selectedFolderName != null) {
-            setErrorMessage(null);
-            if (!selectedFolderName.endsWith(File.separator)) {
-                selectedFolderName += File.separator;
-            }
-            setDestinationValue(selectedFolderName);
-        }
-    }
-
-    @Override
-    protected void updatePageCompletion() {
-        setPageComplete(true);
-    }
-
-    @Override
-    protected String getOutputSuffix() {
-        return "";
-    }
-
-    @Override
     public boolean finish() {
         final boolean exportToFile = exportToFileButton.getSelection();
-        // Save dirty editors if possible but do not stop if not all are saved
         saveDirtyEditors();
-        // about to invoke the operation so save our state
-        saveWidgetValues();
         List<String> selectedDefinitionNames = ((IStructuredSelection) definitionListViewer.getSelection()).toList();
         if (selectedDefinitionNames.size() == 0) {
             setErrorMessage(Localization.getString("ExportParWizardPage.error.selectProcess"));
             return false;
         }
         if (exportToFile && Strings.isNullOrEmpty(getDestinationValue())) {
-            setErrorMessage(Localization.getString("ExportParWizardPage.error.selectDestinationPath"));
+            setErrorMessage(Localization.getString("error.selectDestinationPath"));
             return false;
         }
-        if (!exportToFile && !WFEServerProcessDefinitionImporter.getInstance().isConfigured()) {
-            SyncUIHelper.openConnectionSettingsDialog(WFEConnectionPreferencePage.class);
-            if (!WFEServerProcessDefinitionImporter.getInstance().isConfigured()) {
-                return false;
-            }
+        if (!exportToFile && WfeServerProcessDefinitionImporter.getInstance().getData() == null) {
+            setErrorMessage(Localization.getString("error.selectValidConnection"));
+            return false;
         }
         boolean result = true;
         for (final String selectedDefinitionName : selectedDefinitionNames) {
@@ -252,39 +235,7 @@ public class ExportParWizardPage extends WizardArchiveFileResourceExportPage1 {
         return result;
     }
 
-    private final static String STORE_DESTINATION_NAMES_ID = "WizardParExportPage1.STORE_DESTINATION_NAMES_ID";
-
-    @Override
-    protected void internalSaveWidgetValues() {
-        // update directory names history
-        IDialogSettings settings = getDialogSettings();
-        if (settings != null) {
-            String[] directoryNames = settings.getArray(STORE_DESTINATION_NAMES_ID);
-            if (directoryNames == null) {
-                directoryNames = new String[0];
-            }
-            directoryNames = addToHistory(directoryNames, getDestinationValue());
-            settings.put(STORE_DESTINATION_NAMES_ID, directoryNames);
-        }
-    }
-
-    @Override
-    protected void restoreWidgetValues() {
-        IDialogSettings settings = getDialogSettings();
-        if (settings != null) {
-            String[] directoryNames = settings.getArray(STORE_DESTINATION_NAMES_ID);
-            if (directoryNames == null || directoryNames.length == 0) {
-                return; // ie.- no settings stored
-            }
-            // destination
-            setDestinationValue(directoryNames[0]);
-            for (int i = 0; i < directoryNames.length; i++) {
-                addDestinationItem(directoryNames[i]);
-            }
-        }
-    }
-
-    private class ParDeployOperation extends FileResourcesExportOperation {
+    public static class ParDeployOperation extends FileResourcesExportOperation {
         private final ByteArrayOutputStream outputStream;
         private final String definitionName;
         private final boolean updateLatestVersion;
@@ -300,7 +251,14 @@ public class ExportParWizardPage extends WizardArchiveFileResourceExportPage1 {
         @Override
         public void exportResources(final IProgressMonitor progressMonitor) {
             super.exportResources(progressMonitor);
-            WFEServerProcessDefinitionImporter.getInstance().uploadPar(definitionName, updateLatestVersion, outputStream.toByteArray(), true);
+            WfeServerProcessDefinitionImporter.getInstance().uploadPar(definitionName, updateLatestVersion, outputStream.toByteArray(), true);
+            String message;
+            if (updateLatestVersion) {
+                message = Localization.getString("ExportParWizardPage.par.update.completed");
+            } else {
+                message = Localization.getString("ExportParWizardPage.par.deploy.completed");
+            }
+            StatusBarUtils.updateStatusBar(message + " " + WfeServerConnector.getInstance().getSettings().getUrl());
         }
     }
 

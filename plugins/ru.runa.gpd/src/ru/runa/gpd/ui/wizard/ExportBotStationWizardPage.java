@@ -3,19 +3,18 @@ package ru.runa.gpd.ui.wizard;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.util.TreeMap;
-
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.viewers.IStructuredSelection;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.bot.BotStationDeployCommand;
 import ru.runa.gpd.bot.BotStationExportCommand;
 import ru.runa.gpd.util.IOUtils;
 
 public class ExportBotStationWizardPage extends ExportBotElementWizardPage {
+
     public ExportBotStationWizardPage(IStructuredSelection selection) {
-        super(selection);
+        super(ExportBotElementWizardPage.class, selection);
         setTitle(Localization.getString("ExportBotStationWizardPage.page.title"));
         setDescription(Localization.getString("ExportBotStationWizardPage.page.description"));
         this.exportObjectNameFileMap = new TreeMap<String, IResource>();

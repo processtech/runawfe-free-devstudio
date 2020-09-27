@@ -1,6 +1,7 @@
 package ru.runa.gpd.lang;
 
 import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -44,6 +45,9 @@ import ru.runa.gpd.lang.model.TransitionColor;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.bpmn.AbstractEventNode;
 import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
+import ru.runa.gpd.lang.model.bpmn.ConnectableViaDottedTransition;
+import ru.runa.gpd.lang.model.bpmn.DataStore;
+import ru.runa.gpd.lang.model.bpmn.DottedTransition;
 import ru.runa.gpd.lang.model.bpmn.EventNodeType;
 import ru.runa.gpd.lang.model.bpmn.ExclusiveGateway;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEvent;
@@ -81,6 +85,7 @@ public class BpmnSerializer extends ProcessSerializer {
     private static final String TEXT = "text";
     private static final String SERVICE_TASK = "serviceTask";
     private static final String SCRIPT_TASK = "scriptTask";
+    private static final String DATA_STORE = "dataStore";
     private static final String VARIABLES = "variables";
     private static final String SOURCE_REF = "sourceRef";
     private static final String TARGET_REF = "targetRef";
@@ -98,6 +103,9 @@ public class BpmnSerializer extends ProcessSerializer {
     private static final String FLOW_NODE_REF = "flowNodeRef";
     public static final String SHOW_SWIMLANE = "showSwimlane";
     private static final String SEQUENCE_FLOW = "sequenceFlow";
+    private static final String DOTTED_TRANSITION = "dataStoreReference";
+    private static final String ITEM_SUBJECT_REF = "itemSubjectRef";
+    private static final String DATA_STORE_REF = "dataStoreRef";
     private static final String DOCUMENTATION = "documentation";
     private static final String CONFIG = "config";
     private static final String MAPPED_NAME = "mappedName";
@@ -116,6 +124,8 @@ public class BpmnSerializer extends ProcessSerializer {
     public static final String END_TEXT_DECORATION = "endTextDecoration";
     private static final String ACTION_HANDLER = "actionHandler";
     private static final String EVENT_TYPE = "eventType";
+    private static final String PROPERTY_USE_EXTERNAL_STORAGE_OUT = "useExternalStorageOut";
+    private static final String PROPERTY_USE_EXTERNAL_STORAGE_IN = "useExternalStorageIn";
 
     @Override
     public boolean isSupported(Document document) {
@@ -143,6 +153,7 @@ public class BpmnSerializer extends ProcessSerializer {
     @Override
     public void saveToXML(ProcessDefinition definition, Document document) {
         Element definitionsElement = document.getRootElement();
+        writeDataStores(definitionsElement, definition.getChildren(DataStore.class));
         Element processElement = definitionsElement.element(QName.get(PROCESS, BPMN_NAMESPACE));
         processElement.addAttribute(NAME, definition.getName());
         Map<String, String> processProperties = Maps.newLinkedHashMap();
@@ -209,6 +220,11 @@ public class BpmnSerializer extends ProcessSerializer {
         for (ScriptTask scriptTask : scriptTasks) {
             writeNode(processElement, scriptTask);
             writeBoundaryEvents(processElement, scriptTask);
+            writeDottedTransitions(processElement, scriptTask);
+        }
+        List<DataStore> dataStores = definition.getChildren(DataStore.class);
+        for (DataStore dataStore : dataStores) {
+            writeDottedTransitions(processElement, dataStore);
         }
         List<ParallelGateway> parallelGateways = definition.getChildren(ParallelGateway.class);
         for (ParallelGateway gateway : parallelGateways) {
@@ -228,6 +244,9 @@ public class BpmnSerializer extends ProcessSerializer {
             }
             if (subprocess.isTransactional()) {
                 properties.put(TRANSACTIONAL, true);
+            }
+            if (subprocess.isValidateAtStart()) {
+                properties.put(VALIDATE_AT_START, true);
             }
             if (subprocess.isAsync()) {
                 properties.put(ASYNC, Boolean.TRUE.toString());
@@ -455,6 +474,22 @@ public class BpmnSerializer extends ProcessSerializer {
         }
     }
 
+    private void writeDottedTransitions(Element processElement, ConnectableViaDottedTransition node) {
+        final List<DottedTransition> transitions = node.getLeavingDottedTransitions();
+        for (DottedTransition transition : transitions) {
+            final Element transitionElement = processElement.addElement(DOTTED_TRANSITION);
+            transitionElement.addAttribute(ID, transition.getId());
+            transitionElement.addAttribute(NAME, transition.getName());
+
+            final String sourceNodeId = transition.getSource().getId();
+            final String targetNodeId = transition.getTarget().getId();
+            Preconditions.checkState(!Objects.equal(sourceNodeId, targetNodeId), "Invalid transition " + transition);
+
+            transitionElement.addAttribute(ITEM_SUBJECT_REF, sourceNodeId);
+            transitionElement.addAttribute(DATA_STORE_REF, targetNodeId);
+        }
+    }
+
     private void writeActionHandlers(Element element, GraphElement graphElement) {
         for (ActionImpl action : graphElement.getChildren(ActionImpl.class)) {
             writeActionHandler(element, action);
@@ -541,6 +576,12 @@ public class BpmnSerializer extends ProcessSerializer {
         if (delegable instanceof Variable && ((Variable) delegable).isGlobal()) {
             extensionsElement.addElement(RUNA_PREFIX + ":" + PROPERTY).addAttribute(NAME, GLOBAL).addAttribute(VALUE, "true");
         }
+        if (delegable instanceof ScriptTask) {
+            extensionsElement.addElement(RUNA_PREFIX + ":" + PROPERTY).addAttribute(NAME, PROPERTY_USE_EXTERNAL_STORAGE_IN).addAttribute(VALUE,
+                    String.valueOf(((ScriptTask) delegable).isUseExternalStorageIn()));
+            extensionsElement.addElement(RUNA_PREFIX + ":" + PROPERTY).addAttribute(NAME, PROPERTY_USE_EXTERNAL_STORAGE_OUT).addAttribute(VALUE,
+                    String.valueOf(((ScriptTask) delegable).isUseExternalStorageOut()));
+        }
     }
 
     @Override
@@ -602,6 +643,10 @@ public class BpmnSerializer extends ProcessSerializer {
             element.setDelegationClassName(properties.get(CLASS));
             element.setDelegationConfiguration(properties.get(CONFIG));
         }
+        if (element instanceof ScriptTask) {
+            ((ScriptTask) element).setUseExternalStorageIn(Boolean.valueOf(properties.get(PROPERTY_USE_EXTERNAL_STORAGE_IN)));
+            ((ScriptTask) element).setUseExternalStorageOut(Boolean.valueOf(properties.get(PROPERTY_USE_EXTERNAL_STORAGE_OUT)));
+        }
         if (element instanceof Node && properties.containsKey(NODE_ASYNC_EXECUTION)) {
             ((Node) element).setAsyncExecution(NodeAsyncExecution.getByValueNotNull(properties.get(NODE_ASYNC_EXECUTION)));
         }
@@ -652,6 +697,7 @@ public class BpmnSerializer extends ProcessSerializer {
     @Override
     public void parseXML(Document document, ProcessDefinition definition) {
         Element definitionsElement = document.getRootElement();
+        parseDataStores(definitionsElement.elements(DATA_STORE), definition);
         Element processElement = definitionsElement.element(PROCESS);
         definition.setInvalid(!Boolean.parseBoolean(processElement.attributeValue(EXECUTABLE, "true")));
         Map<String, String> processProperties = parseExtensionProperties(processElement);
@@ -745,8 +791,8 @@ public class BpmnSerializer extends ProcessSerializer {
                 if (state instanceof MultiTaskState) {
                     MultiTaskState multiTaskState = (MultiTaskState) state;
                     multiTaskState.setCreationMode(MultiTaskCreationMode.valueOf(properties.get(PropertyNames.PROPERTY_MULTI_TASK_CREATION_MODE)));
-                    multiTaskState.setSynchronizationMode(MultiTaskSynchronizationMode.valueOf(properties
-                            .get(PropertyNames.PROPERTY_MULTI_TASK_SYNCHRONIZATION_MODE)));
+                    multiTaskState.setSynchronizationMode(
+                            MultiTaskSynchronizationMode.valueOf(properties.get(PropertyNames.PROPERTY_MULTI_TASK_SYNCHRONIZATION_MODE)));
                     multiTaskState.setDiscriminatorUsage(properties.get(PropertyNames.PROPERTY_DISCRIMINATOR_USAGE));
                     multiTaskState.setDiscriminatorValue(properties.get(PropertyNames.PROPERTY_DISCRIMINATOR_VALUE));
                     multiTaskState.setDiscriminatorCondition(properties.get(PropertyNames.PROPERTY_DISCRIMINATOR_CONDITION));
@@ -788,6 +834,9 @@ public class BpmnSerializer extends ProcessSerializer {
             }
             if (properties.containsKey(TRANSACTIONAL)) {
                 subprocess.setTransactional(Boolean.parseBoolean(properties.get(TRANSACTIONAL)));
+            }
+            if (properties.containsKey(VALIDATE_AT_START)) {
+                subprocess.setValidateAtStart(Boolean.parseBoolean(properties.get(VALIDATE_AT_START)));
             }
             String async = properties.get(ASYNC);
             if (async != null) {
@@ -877,6 +926,24 @@ public class BpmnSerializer extends ProcessSerializer {
                 definition.getGraphElementByIdNotNull(nodeId).setParentContainer(entry.getKey());
             }
         }
+
+        final List<Element> dottedTransitions = processElement.elements(DOTTED_TRANSITION);
+        for (Element transitionElement : dottedTransitions) {
+            final Node source = definition.getGraphElementByIdNotNull(transitionElement.attributeValue(ITEM_SUBJECT_REF));
+            final Node target = definition.getGraphElementById(transitionElement.attributeValue(DATA_STORE_REF));
+            if (target == null) {
+                PluginLogger.logErrorWithoutDialog("Unable to restore transition " + transitionElement.attributeValue(ID)
+                        + " due to missed target node " + transitionElement.attributeValue(DATA_STORE_REF));
+                continue;
+            }
+
+            final DottedTransition transition = NodeRegistry.getNodeTypeDefinition(DottedTransition.class).createElement(source, false);
+            transition.setId(transitionElement.attributeValue(ID));
+            transition.setName(transitionElement.attributeValue(NAME));
+            transition.setTarget(target);
+            ((ConnectableViaDottedTransition) source).addLeavingDottedTransition(transition);
+        }
+        definition.onLoadingCompleted();
     }
 
     private GraphElement parseEventElement(ProcessDefinition definition, GraphElement parent, Element eventElement) {
@@ -906,6 +973,19 @@ public class BpmnSerializer extends ProcessSerializer {
             }
             eventNode.setVariableMappings(parseVariableMappings(eventElement));
             return eventNode;
+        }
+    }
+
+    private void writeDataStores(Element definitionsElement, List<DataStore> dataStores) {
+        for (DataStore dataStore : dataStores) {
+            final Element dataStoreElement = definitionsElement.addElement(DATA_STORE, BPMN_NAMESPACE);
+            writeBaseProperties(dataStoreElement, dataStore);
+        }
+    }
+
+    private void parseDataStores(List<Element> dataStoreElements, ProcessDefinition definition) {
+        for (Element dataStoreElement : dataStoreElements) {
+            create(dataStoreElement, definition);
         }
     }
 }
