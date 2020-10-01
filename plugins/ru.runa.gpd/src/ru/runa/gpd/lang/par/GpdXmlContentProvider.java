@@ -10,6 +10,7 @@ import org.dom4j.Element;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 import ru.runa.gpd.editor.graphiti.HasTextDecorator;
+import ru.runa.gpd.editor.graphiti.TextDecoratorEmulation;
 import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.model.Action;
 import ru.runa.gpd.lang.model.GraphElement;
@@ -244,11 +245,19 @@ public class GpdXmlContentProvider extends AuxContentProvider {
                 }
             }
             if (graphElement instanceof HasTextDecorator) {
-                TextDecorationNode decorationNode = ((HasTextDecorator) graphElement).getTextDecoratorEmulation().getDefinition();
+                TextDecoratorEmulation textDecoratorEmulation = ((HasTextDecorator) graphElement).getTextDecoratorEmulation();
+                TextDecorationNode decorationNode = textDecoratorEmulation.getDefinition();
+                Point point = null;
                 if (decorationNode != null && decorationNode.getConstraint() != null) {
+                    point = decorationNode.getConstraint().getLocation();
+                } else if (textDecoratorEmulation.hasDefinitionLocation()) {
+                    // for dispenser
+                    point = textDecoratorEmulation.getDefinitionLocation();
+                }
+                if (point != null) {
                     Element pointDefinition = element.addElement(TEXT_DECORATION);
-                    addAttribute(pointDefinition, X, String.valueOf(decorationNode.getConstraint().x - xOffset));
-                    addAttribute(pointDefinition, Y, String.valueOf(decorationNode.getConstraint().y - yOffset));
+                    addAttribute(pointDefinition, X, String.valueOf(point.x - xOffset));
+                    addAttribute(pointDefinition, Y, String.valueOf(point.y - yOffset));
                 }
             }
             Rectangle definitionRectangle = definition.getConstraint();
