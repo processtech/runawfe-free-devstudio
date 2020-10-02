@@ -548,12 +548,10 @@ public class WorkspaceOperations {
             IFile botStationFile = botStationProject.getFolder("/src/botstation/").getFile("botstation");
             BufferedReader botStationReader = new BufferedReader(new InputStreamReader(botStationFile.getContents(), Charsets.UTF_8));
             String oldName = botStationReader.readLine();
-            String oldRmi = botStationReader.readLine();
             botStationReader.close();
-            RenameBotStationDialog dialog = new RenameBotStationDialog(oldName, oldRmi);
+            RenameBotStationDialog dialog = new RenameBotStationDialog(oldName);
             if (dialog.open() == IDialogConstants.OK_ID) {
                 String newName = dialog.getName();
-                String newRmi = dialog.getRmi();
                 if (!newName.equals(oldName)) {
                     IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
                     List<IFolder> bots = IOUtils.getBotFolders(botStationProject);
@@ -572,12 +570,8 @@ public class WorkspaceOperations {
                     botStationProject = ResourcesPlugin.getWorkspace().getRoot().getProject(newName);
                     // rename in file
                     IFile file = botStationProject.getFolder("/src/botstation/").getFile("botstation");
-                    IOUtils.createOrUpdateFile(file, BotTaskUtils.createBotStationInfo(newName, newRmi));
+                    IOUtils.createOrUpdateFile(file, BotTaskUtils.createBotStationInfo(newName));
                     ResourcesPlugin.getWorkspace().getRoot().getProject(oldName).delete(true, null);
-                } else if (!newRmi.equals(oldRmi)) {
-                    IFile file = botStationProject.getFolder("/src/botstation/").getFile("botstation");
-                    IOUtils.createOrUpdateFile(file, BotTaskUtils.createBotStationInfo(newName, newRmi));
-                    refreshResources(selection.toList());
                 }
             }
             BotCache.reload();
