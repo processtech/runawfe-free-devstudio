@@ -20,12 +20,10 @@ import ru.runa.gpd.ui.custom.FileNameChecker;
 
 public class RenameBotStationDialog extends Dialog {
     private String name;
-    private String rmi;
 
-    public RenameBotStationDialog(String name, String rmi) {
+    public RenameBotStationDialog(String name) {
         super(Display.getDefault().getActiveShell());
         this.name = name;
-        this.rmi = rmi;
     }
 
     @Override
@@ -54,21 +52,6 @@ public class RenameBotStationDialog extends Dialog {
                 updateButtons();
             }
         });
-        labelName = new Label(composite, SWT.NONE);
-        labelName.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-        labelName.setText(Localization.getString("RenameBotStationDialog.property.rmi") + ":");
-        final Text rmiField = new Text(composite, SWT.BORDER);
-        GridData rmiTextData = new GridData(GridData.FILL_HORIZONTAL);
-        rmiTextData.minimumWidth = 200;
-        rmiField.setText(rmi);
-        rmiField.setLayoutData(rmiTextData);
-        rmiField.addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e) {
-                rmi = rmiField.getText();
-                updateButtons();
-            }
-        });
         return area;
     }
 
@@ -91,9 +74,5 @@ public class RenameBotStationDialog extends Dialog {
 
     public String getName() {
         return name;
-    }
-
-    public String getRmi() {
-        return rmi;
     }
 }

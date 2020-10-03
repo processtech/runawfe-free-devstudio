@@ -73,7 +73,6 @@ public class BotStationImportCommand extends BotSyncCommand {
     private String importBotStation(ZipInputStream zin) throws IOException, CoreException {
         BufferedReader r = new BufferedReader(new InputStreamReader(zin));
         String botStationName = r.readLine();
-        String rmiAddress = r.readLine();
         if (BotCache.getAllBotStationNames().contains(botStationName)) {
             throw new UniqueBotStationException(Localization.getString("ImportBotStationWizardPage.error.botstationWithSameNameExists"));
         }
@@ -86,7 +85,7 @@ public class BotStationImportCommand extends BotSyncCommand {
         IFolder folder = newProject.getFolder("/src/botstation/");
         IOUtils.createFolder(folder);
         IFile file = folder.getFile("botstation");
-        IOUtils.createOrUpdateFile(file, BotTaskUtils.createBotStationInfo(botStationName, rmiAddress));
+        IOUtils.createOrUpdateFile(file, BotTaskUtils.createBotStationInfo(botStationName));
         return botStationName;
     }
 }

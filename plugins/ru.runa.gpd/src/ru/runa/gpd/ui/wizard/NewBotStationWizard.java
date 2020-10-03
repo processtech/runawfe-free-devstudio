@@ -57,7 +57,7 @@ public class NewBotStationWizard extends Wizard implements INewWizard {
                         IOUtils.createFolder(folder);
                         monitor.worked(1);
                         IFile file = folder.getFile("botstation");
-                        IOUtils.createOrUpdateFile(file, BotTaskUtils.createBotStationInfo(page.getProjectName(), page.getRmiAddress()));
+                        IOUtils.createOrUpdateFile(file, BotTaskUtils.createBotStationInfo(page.getProjectName()));
                         monitor.worked(1);
                         monitor.done();
                     } catch (Exception e) {
