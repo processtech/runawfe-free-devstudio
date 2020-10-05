@@ -1,9 +1,12 @@
 package ru.runa.gpd.lang;
 
+import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 import org.dom4j.Document;
 import org.eclipse.core.internal.resources.ResourceException;
 import org.eclipse.core.resources.IFile;
@@ -12,20 +15,17 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.Platform;
-
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
+import ru.runa.gpd.lang.model.bpmn.DataStore;
+import ru.runa.gpd.lang.model.bpmn.DottedTransition;
 import ru.runa.gpd.lang.par.ParContentProvider;
+import ru.runa.gpd.settings.CommonPreferencePage;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.XmlUtil;
-
-import com.google.common.base.Objects;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 public class NodeRegistry {
     private static Map<String, NodeTypeDefinition> typesByModelClass = Maps.newHashMap();
@@ -52,8 +52,14 @@ public class NodeRegistry {
         if (!configElement.getName().equals("element")) {
             throw new RuntimeException("unknown config element: " + configElement.getName());
         }
+        final String model = configElement.getAttribute("model");
+        if ((DottedTransition.class.getName().equals(model) || DataStore.class.getName().equals(model))
+                && !CommonPreferencePage.isInternalStorageFunctionalityEnabled()) {
+            return;
+        }
+
         NodeTypeDefinition type = new NodeTypeDefinition(configElement);
-        typesByModelClass.put(configElement.getAttribute("model"), type);
+        typesByModelClass.put(model, type);
         definitions.add(type);
     }
 
