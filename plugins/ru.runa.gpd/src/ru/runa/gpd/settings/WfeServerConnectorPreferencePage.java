@@ -103,7 +103,7 @@ public class WfeServerConnectorPreferencePage extends FieldEditorPreferencePage 
                 passwordEditor.setEnabled(enabled, getFieldEditorParent());
             }
             else if (getKey(P_WFE_SERVER_CONNECTOR_PROTOCOL_SUFFIX).equals(fieldEditor.getPreferenceName())) {
-                portEditor.setStringValue(HTTP.equals(event.getNewValue()) ? "8080" : "443");
+                portEditor.setStringValue(HTTP.equals(event.getNewValue()) ? "80" : "443");
             }
         }
     }
