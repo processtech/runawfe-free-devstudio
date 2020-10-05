@@ -26,6 +26,9 @@ import ru.runa.gpd.sync.WfeServerConnectorSettings;
 import ru.runa.gpd.ui.custom.Dialogs;
 
 public class WfeServerConnectorPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage, PrefConstants {
+    private static final String HTTP = "http";
+    private static final String HTTPS = "https";
+
     private final String id;
     private StringFieldEditor loginEditor;
     private StringFieldEditor passwordEditor;
@@ -48,10 +51,10 @@ public class WfeServerConnectorPreferencePage extends FieldEditorPreferencePage 
 
     private static String[][] getProtocolEntriesArray() {
         String[][] strings = new String[2][2];
-        strings[0][0] = "http";
-        strings[0][1] = "http";
-        strings[1][0] = "https";
-        strings[1][1] = "https";
+        strings[0][0] = HTTP;
+        strings[0][1] = HTTP;
+        strings[1][0] = HTTPS;
+        strings[1][1] = HTTPS;
         return strings;
     }
 
@@ -98,6 +101,9 @@ public class WfeServerConnectorPreferencePage extends FieldEditorPreferencePage 
                 boolean enabled = AUTHENTICATION_TYPE_LOGIN_PASSWORD.equals(event.getNewValue());
                 loginEditor.setEnabled(enabled, getFieldEditorParent());
                 passwordEditor.setEnabled(enabled, getFieldEditorParent());
+            }
+            else if (getKey(P_WFE_SERVER_CONNECTOR_PROTOCOL_SUFFIX).equals(fieldEditor.getPreferenceName())) {
+                portEditor.setStringValue(HTTP.equals(event.getNewValue()) ? "8080" : "443");
             }
         }
     }
