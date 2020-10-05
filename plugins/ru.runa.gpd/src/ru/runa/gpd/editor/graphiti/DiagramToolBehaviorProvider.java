@@ -7,10 +7,12 @@ import java.util.Set;
 import org.eclipse.graphiti.dt.IDiagramTypeProvider;
 import org.eclipse.graphiti.features.ICreateConnectionFeature;
 import org.eclipse.graphiti.features.ICreateFeature;
+import org.eclipse.graphiti.features.context.ICustomContext;
 import org.eclipse.graphiti.features.context.IDoubleClickContext;
 import org.eclipse.graphiti.features.context.IPictogramElementContext;
 import org.eclipse.graphiti.features.context.impl.CreateConnectionContext;
 import org.eclipse.graphiti.features.context.impl.CreateContext;
+import org.eclipse.graphiti.features.context.impl.CustomContext;
 import org.eclipse.graphiti.features.custom.ICustomFeature;
 import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
 import org.eclipse.graphiti.mm.algorithms.Image;
@@ -33,6 +35,7 @@ import ru.runa.gpd.editor.graphiti.create.CreateDragAndDropElementFeature;
 import ru.runa.gpd.editor.graphiti.create.CreateElementFeature;
 import ru.runa.gpd.editor.graphiti.create.CreateStartNodeFeature;
 import ru.runa.gpd.editor.graphiti.create.CreateSwimlaneFeature;
+import ru.runa.gpd.editor.graphiti.update.ChangeEventTypeFeature;
 import ru.runa.gpd.editor.graphiti.update.OpenSubProcessFeature;
 import ru.runa.gpd.extension.HandlerArtifact;
 import ru.runa.gpd.extension.HandlerRegistry;
@@ -41,11 +44,14 @@ import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.lang.model.Action;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.GraphElement;
+import ru.runa.gpd.lang.model.MessageNode;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.Subprocess;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Transition;
+import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
+import ru.runa.gpd.lang.model.bpmn.EventNodeType;
 import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
 import ru.runa.gpd.settings.PrefConstants;
 
@@ -165,6 +171,22 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
                 data.getDomainSpecificContextButtons().add(createTransitionButton);
             } else {
                 data.getDomainSpecificContextButtons().add(createTransitionButton.getDragAndDropFeatures().size(), createTransitionButton);
+            }
+        }
+        if (element instanceof MessageNode) {
+            ContextButtonEntry changeEventTypeButton = new ContextButtonEntry(null, null);
+            changeEventTypeButton.setText(Localization.getString("event.type.label"));
+            changeEventTypeButton.setDescription(Localization.getString("event.type.description"));
+            changeEventTypeButton.setIconId("wrench.png");
+            data.getDomainSpecificContextButtons().add(changeEventTypeButton);
+            PictogramElement pes[] = { pe };
+            ICustomContext customContext = new CustomContext(pes);
+            for (int i = 0; i < EventNodeType.LABELS.length; i++) {
+                EventNodeType et = EventNodeType.values()[i];
+                ContextButtonEntry createButton = new ContextButtonEntry(new ChangeEventTypeFeature(getFeatureProvider(), et), customContext);
+                createButton.setIconId("graph/" + et.getImageName(element instanceof CatchEventNode, false));
+                createButton.setText(EventNodeType.LABELS[i]);
+                changeEventTypeButton.addContextButtonMenuEntry(createButton);
             }
         }
         return data;

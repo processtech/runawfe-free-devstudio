@@ -299,6 +299,7 @@ public class FieldValidatorsPage extends Composite implements PropertyChangeList
         TabItem tabItem2 = new TabItem(tabFolder, SWT.NONE);
         tabItem2.setText(Localization.getString("FieldValidatorsWizardPage.Swimlanes"));
         tabItem2.setControl(swimlanesTableViewer.getControl());
+        tabFolder.addSelectionListener(LoggingSelectionAdapter.widgetSelectedAdapter(e -> updateVariableSelection()));
         SashForm right = new SashForm(mainComposite, SWT.VERTICAL);
         right.setLayoutData(data);
 
@@ -487,7 +488,7 @@ public class FieldValidatorsPage extends Composite implements PropertyChangeList
             errorMessageText.addVerifyListener(new VerifyListener() {
                 @Override
                 public void verifyText(VerifyEvent e) {
-                    if (e.keyCode != 0) {
+                    if (!isConfiguring(errorMessageText)) {
                         setDirty(true);
                     }
                 }
@@ -563,6 +564,8 @@ public class FieldValidatorsPage extends Composite implements PropertyChangeList
             }
             validatorsTableViewer
                     .setCheckedElements(checkedValidatorDefinitions.toArray(new ValidatorDefinition[checkedValidatorDefinitions.size()]));
+        } else {
+            validatorsTableViewer.setInput(null);
         }
     }
 
