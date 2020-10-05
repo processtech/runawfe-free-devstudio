@@ -129,7 +129,9 @@ public class VariablesXmlContentProvider extends AuxContentProvider {
         for (VariableUserType type : definition.getVariableUserTypes()) {
             Element typeElement = root.addElement(USER_TYPE);
             typeElement.addAttribute(NAME, type.getName());
-            typeElement.addAttribute(VariableUserType.PROPERTY_STORE_IN_EXTERNAL_STORAGE, String.valueOf(type.isStoreInExternalStorage()));
+            if (type.isStoreInExternalStorage()) {
+                typeElement.addAttribute(VariableUserType.PROPERTY_STORE_IN_EXTERNAL_STORAGE, Boolean.TRUE.toString());
+            }
             for (Variable variable : type.getAttributes()) {
                 writeVariable(typeElement, variable);
             }

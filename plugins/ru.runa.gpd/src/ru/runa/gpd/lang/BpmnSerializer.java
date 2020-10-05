@@ -577,10 +577,15 @@ public class BpmnSerializer extends ProcessSerializer {
             extensionsElement.addElement(RUNA_PREFIX + ":" + PROPERTY).addAttribute(NAME, GLOBAL).addAttribute(VALUE, "true");
         }
         if (delegable instanceof ScriptTask) {
-            extensionsElement.addElement(RUNA_PREFIX + ":" + PROPERTY).addAttribute(NAME, PROPERTY_USE_EXTERNAL_STORAGE_IN).addAttribute(VALUE,
-                    String.valueOf(((ScriptTask) delegable).isUseExternalStorageIn()));
-            extensionsElement.addElement(RUNA_PREFIX + ":" + PROPERTY).addAttribute(NAME, PROPERTY_USE_EXTERNAL_STORAGE_OUT).addAttribute(VALUE,
-                    String.valueOf(((ScriptTask) delegable).isUseExternalStorageOut()));
+            ScriptTask scriptTask = (ScriptTask) delegable;
+            if (scriptTask.isUseExternalStorageIn()) {
+                extensionsElement.addElement(RUNA_PREFIX + ":" + PROPERTY).addAttribute(NAME, PROPERTY_USE_EXTERNAL_STORAGE_IN).addAttribute(VALUE,
+                        Boolean.TRUE.toString());
+            }
+            if (scriptTask.isUseExternalStorageOut()) {
+                extensionsElement.addElement(RUNA_PREFIX + ":" + PROPERTY).addAttribute(NAME, PROPERTY_USE_EXTERNAL_STORAGE_OUT).addAttribute(VALUE,
+                        Boolean.TRUE.toString());
+            }
         }
     }
 
