@@ -7,6 +7,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.Widget;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.validation.ValidatorConfig;
 import ru.runa.gpd.validation.ValidatorDefinition;
@@ -47,11 +48,17 @@ public abstract class ValidatorInfoControl extends Composite {
             if (descriptionLabel != null) {
                 descriptionLabel.setText(definition.getDescription());
             }
+            errorMessageText.setData(new Object());
             errorMessageText.setText(config.getMessage());
+            errorMessageText.setData(null);
             parametersComposite.clear();
             parametersComposite.build(definition, config.getParams());
         }
         setVisible(config != null);
+    }
+
+    protected boolean isConfiguring(Widget widget) {
+        return widget.getData() != null;
     }
 
     public void saveConfig() {
