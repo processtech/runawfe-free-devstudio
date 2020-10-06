@@ -2,7 +2,6 @@ package ru.runa.gpd.ui.custom;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.graphics.Color;
@@ -24,13 +23,9 @@ public class JavaHighlightTextStyling extends HighlightTextStyling {
         addHighlight("blockComment", "(?s)/\\*.*?(?:\\*/|\\z)", COLOR_COMMENT, SWT.ITALIC);
     }
 
-    public static void addHighlight(String name, String regexp, Color fg, int textStyle) {
+    private static void addHighlight(String name, String regexp, Color fg, int textStyle) {
         StyleRange styleRange = new StyleRange(0, 0, fg, null, textStyle);
         highlightDefinitions.add(new RegexpHighlight(name, regexp, false, styleRange));
-    }
-
-    public JavaHighlightTextStyling() {
-        super(highlightDefinitions);
     }
 
     public JavaHighlightTextStyling(List<String> variableNames) {

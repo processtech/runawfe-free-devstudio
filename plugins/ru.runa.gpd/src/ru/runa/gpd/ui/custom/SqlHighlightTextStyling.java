@@ -25,7 +25,7 @@ public class SqlHighlightTextStyling extends HighlightTextStyling {
         addHighlight("questionMark", "\\?", COLOR_QUESTION_MARK, SWT.BOLD);
     }
 
-    public static void addHighlight(String name, String regexp, Color fg, int textStyle) {
+    private static void addHighlight(String name, String regexp, Color fg, int textStyle) {
         StyleRange styleRange = new StyleRange(0, 0, fg, null, textStyle);
         highlightDefinitions.add(new RegexpHighlight(name, regexp, false, styleRange));
     }
