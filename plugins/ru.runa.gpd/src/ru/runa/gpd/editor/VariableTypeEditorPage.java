@@ -267,7 +267,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
         protected void onSelection(SelectionEvent e) throws Exception {
             VariableUserTypeDialog dialog = new VariableUserTypeDialog(getDefinition(), null);
             if (dialog.open() == Window.OK) {
-                VariableUserType type = new VariableUserType(dialog.getName(), dialog.isStoreInExternalStorage());
+                VariableUserType type = new VariableUserType(dialog.getName(), dialog.isStoreInInternalStorage());
                 getDefinition().addVariableUserType(type);
                 typeTableViewer.setSelection(new StructuredSelection(type));
             }
@@ -281,7 +281,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             VariableUserTypeDialog dialog = new VariableUserTypeDialog(getDefinition(), type);
             if (dialog.open() == Window.OK) {
                 VariableUtils.renameUserType(getDefinition(), type, dialog.getName());
-                type.setStoreInExternalStorage(dialog.isStoreInExternalStorage());
+                type.setStoreInExternalStorage(dialog.isStoreInInternalStorage());
             }
         }
     }
