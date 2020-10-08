@@ -4,6 +4,7 @@ import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.Platform;
+import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.lang.model.GraphElement;
@@ -75,6 +77,9 @@ public class NodeRegistry {
             if (language == Language.BPMN && Objects.equal(definition.getBpmnElementName(), name)) {
                 return definition;
             }
+        }
+        if (BpmnSerializer.DATA_STORE.equals(name) || BpmnSerializer.DOTTED_TRANSITION.equals(name)) {
+            PluginLogger.logWarnWithDialog(MessageFormat.format(Localization.getString("NodeRegistry.cannot.find.internal.storage.component"), name));
         }
         throw new RuntimeException("No type found by name " + name);
     }
