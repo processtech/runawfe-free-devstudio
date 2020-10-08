@@ -110,7 +110,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             }
         });
 
-        final List<TableColumnDescription> descriptions = Lists.newArrayList(new TableColumnDescription("property.name", 100, SWT.LEFT));
+        final List<TableColumnDescription> descriptions = Lists.newArrayList(new TableColumnDescription("property.name", 250, SWT.LEFT));
         if (CommonPreferencePage.isInternalStorageFunctionalityEnabled()) {
             descriptions.add(new TableColumnDescription("UserDefinedVariableType.storeInExternalStorage", 100, SWT.LEFT, false));
         }
