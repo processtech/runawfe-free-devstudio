@@ -12,6 +12,13 @@ public class PluginLogger {
         log(createStatus(IStatus.INFO, IStatus.OK, message, null));
     }
 
+    public static void logInfoWithDialog(String message) {
+        log(createStatus(IStatus.INFO, IStatus.OK, message, null));
+        if (Display.getCurrent() != null) {
+            Dialogs.information(message);
+        }
+    }
+
     public static void logWarnWithDialog(String message) {
         log(createStatus(IStatus.WARNING, IStatus.OK, message, null));
         if (Display.getCurrent() != null) {

@@ -85,7 +85,7 @@ public class BpmnSerializer extends ProcessSerializer {
     private static final String TEXT = "text";
     private static final String SERVICE_TASK = "serviceTask";
     private static final String SCRIPT_TASK = "scriptTask";
-    private static final String DATA_STORE = "dataStore";
+    public static final String DATA_STORE = "dataStore";
     private static final String VARIABLES = "variables";
     private static final String SOURCE_REF = "sourceRef";
     private static final String TARGET_REF = "targetRef";
@@ -103,7 +103,7 @@ public class BpmnSerializer extends ProcessSerializer {
     private static final String FLOW_NODE_REF = "flowNodeRef";
     public static final String SHOW_SWIMLANE = "showSwimlane";
     private static final String SEQUENCE_FLOW = "sequenceFlow";
-    private static final String DOTTED_TRANSITION = "dataStoreReference";
+    public static final String DOTTED_TRANSITION = "dataStoreReference";
     private static final String ITEM_SUBJECT_REF = "itemSubjectRef";
     private static final String DATA_STORE_REF = "dataStoreRef";
     private static final String DOCUMENTATION = "documentation";
@@ -577,10 +577,15 @@ public class BpmnSerializer extends ProcessSerializer {
             extensionsElement.addElement(RUNA_PREFIX + ":" + PROPERTY).addAttribute(NAME, GLOBAL).addAttribute(VALUE, "true");
         }
         if (delegable instanceof ScriptTask) {
-            extensionsElement.addElement(RUNA_PREFIX + ":" + PROPERTY).addAttribute(NAME, PROPERTY_USE_EXTERNAL_STORAGE_IN).addAttribute(VALUE,
-                    String.valueOf(((ScriptTask) delegable).isUseExternalStorageIn()));
-            extensionsElement.addElement(RUNA_PREFIX + ":" + PROPERTY).addAttribute(NAME, PROPERTY_USE_EXTERNAL_STORAGE_OUT).addAttribute(VALUE,
-                    String.valueOf(((ScriptTask) delegable).isUseExternalStorageOut()));
+            ScriptTask scriptTask = (ScriptTask) delegable;
+            if (scriptTask.isUseExternalStorageIn()) {
+                extensionsElement.addElement(RUNA_PREFIX + ":" + PROPERTY).addAttribute(NAME, PROPERTY_USE_EXTERNAL_STORAGE_IN).addAttribute(VALUE,
+                        Boolean.TRUE.toString());
+            }
+            if (scriptTask.isUseExternalStorageOut()) {
+                extensionsElement.addElement(RUNA_PREFIX + ":" + PROPERTY).addAttribute(NAME, PROPERTY_USE_EXTERNAL_STORAGE_OUT).addAttribute(VALUE,
+                        Boolean.TRUE.toString());
+            }
         }
     }
 
