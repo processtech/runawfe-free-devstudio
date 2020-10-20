@@ -1,20 +1,16 @@
 package ru.runa.gpd.ui.wizard;
 
-import com.google.common.base.Objects;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.InputStream;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -44,15 +40,15 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.TreeItem;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
-import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.SharedImages;
-import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.sync.WfeServerConnector;
 import ru.runa.gpd.sync.WfeServerConnectorComposite;
 import ru.runa.gpd.sync.WfeServerConnectorSynchronizationCallback;
 import ru.runa.gpd.sync.WfeServerProcessDefinitionImporter;
 import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.util.IOUtils;
+import ru.runa.gpd.util.files.ParFileImporter;
+import ru.runa.gpd.util.files.ProcessDefinitionImportInfo;
 import ru.runa.wfe.definition.dto.WfDefinition;
 
 public class ImportParWizardPage extends ImportWizardPage {
@@ -72,6 +68,7 @@ public class ImportParWizardPage extends ImportWizardPage {
         setTitle(Localization.getString("ImportParWizardPage.page.title"));
     }
 
+    @Override
     protected IContainer getInitialSelection(IStructuredSelection selection) {
         return (IContainer) IOUtils.getProcessSelectionResource(selection);
     }
@@ -228,7 +225,7 @@ public class ImportParWizardPage extends ImportWizardPage {
             return false;
         }
         for (DefinitionTreeNode node: source) {
-            String name = ((DefinitionTreeNode) node).getLabel();
+            String name = node.getLabel();
             if (name.toLowerCase().contains(searchText.trim().toLowerCase())) {
                 return true;
             }
@@ -269,24 +266,11 @@ public class ImportParWizardPage extends ImportWizardPage {
                 setErrorMessage(Localization.getString("ImportParWizardPage.error.selectValidDefinition"));
                 return false;
             }
+            final ParFileImporter importer = new ParFileImporter(selectedProject);
             for (ProcessDefinitionImportInfo importInfo : importInfos) {
-                IFolder processFolder = IOUtils.getProcessFolder(selectedProject, importInfo.getFolderPath());
-                if (processFolder.exists()) {
-                    setErrorMessage(Localization.getString("ImportParWizardPage.error.processWithSameNameExists", importInfo.getFolderPath()));
+                if (importer.importFile(importInfo) == null) {
+                    setErrorMessage(Localization.getString("ImportParWizardPage.error.processWithSameNameExists", importInfo.getPath()));
                     return false;
-                }
-                IOUtils.createFolder(processFolder);
-                IOUtils.extractArchiveToFolder(importInfo.inputStream, processFolder);
-                IFile definitionFile = IOUtils.getProcessDefinitionFile(processFolder);
-                ProcessDefinition definition = ProcessCache.newProcessDefinitionWasCreated(definitionFile);
-                if (definition != null && !Objects.equal(definition.getName(), processFolder.getName())) {
-                    // if par name differs from definition name
-                    IPath destination = IOUtils.getProcessFolder(selectedProject, definition.getName()).getFullPath();
-                    processFolder.move(destination, true, false, null);
-                    processFolder = IOUtils.getProcessFolder(selectedProject, definition.getName());
-                    IFile movedDefinitionFile = IOUtils.getProcessDefinitionFile(processFolder);
-                    ProcessCache.newProcessDefinitionWasCreated(movedDefinitionFile);
-                    ProcessCache.invalidateProcessDefinition(definitionFile);
                 }
             }
         } catch (Exception exception) {
@@ -296,8 +280,8 @@ public class ImportParWizardPage extends ImportWizardPage {
         } finally {
             for (ProcessDefinitionImportInfo importInfo : importInfos) {
                 try {
-                    importInfo.inputStream.close();
-                } catch (Exception e) {
+                    importInfo.close();
+                } catch (IOException e) {
                 }
             }
         }
@@ -496,24 +480,5 @@ public class ImportParWizardPage extends ImportWizardPage {
             return new ProcessDefinitionImportInfo(definition.getName(), importPath, new ByteArrayInputStream(par));
         }
 
-    }
-
-    class ProcessDefinitionImportInfo {
-        private final String name;
-        private final String path;
-        private final InputStream inputStream;
-
-        public ProcessDefinitionImportInfo(String name, String path, InputStream inputStream) {
-            this.name = name;
-            this.path = path;
-            this.inputStream = inputStream;
-        }
-
-        private String getFolderPath() {
-            if (path.trim().isEmpty()) {
-                return name;
-            }
-            return path + File.separator + name;
-        }
     }
 }

@@ -54,6 +54,7 @@ import ru.runa.gpd.ltk.RenameRefactoringWizard;
 import ru.runa.gpd.ltk.RenameUserTypeAttributeRefactoring;
 import ru.runa.gpd.search.ElementMatch;
 import ru.runa.gpd.search.MultiVariableSearchQuery;
+import ru.runa.gpd.settings.CommonPreferencePage;
 import ru.runa.gpd.ui.custom.DragAndDropAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.custom.TableViewerLocalDragAndDropSupport;
@@ -109,6 +110,10 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             }
         });
 
+        final List<TableColumnDescription> descriptions = Lists.newArrayList(new TableColumnDescription("property.name", 250, SWT.LEFT));
+        if (CommonPreferencePage.isInternalStorageFunctionalityEnabled()) {
+            descriptions.add(new TableColumnDescription("UserDefinedVariableType.storeInExternalStorage", 100, SWT.LEFT, false));
+        }
         createTable(typeTableViewer, new DataViewerComparator<>(new ValueComparator<VariableUserType>() {
             @Override
             public int compare(VariableUserType o1, VariableUserType o2) {
@@ -118,8 +123,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
                 }
                 return result;
             }
-        }), new TableColumnDescription("property.name", 100, SWT.LEFT),
-                new TableColumnDescription("UserDefinedVariableType.storeInExternalStorage", 100, SWT.LEFT, false));
+        }), descriptions.toArray(new TableColumnDescription[] {}));
 
         Composite typeButtonsBar = createActionBar(leftComposite);
         addButton(typeButtonsBar, "button.create", new CreateTypeSelectionListener(), false);
@@ -263,7 +267,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
         protected void onSelection(SelectionEvent e) throws Exception {
             VariableUserTypeDialog dialog = new VariableUserTypeDialog(getDefinition(), null);
             if (dialog.open() == Window.OK) {
-                VariableUserType type = new VariableUserType(dialog.getName(), dialog.isStoreInExternalStorage());
+                VariableUserType type = new VariableUserType(dialog.getName(), dialog.isStoreInInternalStorage());
                 getDefinition().addVariableUserType(type);
                 typeTableViewer.setSelection(new StructuredSelection(type));
             }
@@ -277,7 +281,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             VariableUserTypeDialog dialog = new VariableUserTypeDialog(getDefinition(), type);
             if (dialog.open() == Window.OK) {
                 VariableUtils.renameUserType(getDefinition(), type, dialog.getName());
-                type.setStoreInExternalStorage(dialog.isStoreInExternalStorage());
+                type.setStoreInExternalStorage(dialog.isStoreInInternalStorage());
             }
         }
     }

@@ -36,7 +36,6 @@ public class NewBotStationWizardPage extends WizardPage {
     private String initialProjectFieldValue;
     // widgets
     private Text projectNameField;
-    private Text rmiAddressField;
     private final IWorkspaceRoot workspaceRoot;
     private Listener nameModifyListener = new Listener() {
         @Override
@@ -74,8 +73,7 @@ public class NewBotStationWizardPage extends WizardPage {
         PlatformUI.getWorkbench().getHelpSystem().setHelp(composite, IIDEHelpContextIds.NEW_PROJECT_WIZARD_PAGE);
         composite.setLayout(new GridLayout(2, false));
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
-        createProjectNameGroup(composite);
-        createRmiAddressGroup(composite);
+        createProjectNameGroup(composite);        
         Composite c = new Composite(composite, SWT.NONE);
         c.setLayout(new GridLayout());
         GridData data = new GridData(GridData.FILL_BOTH);
@@ -168,17 +166,6 @@ public class NewBotStationWizardPage extends WizardPage {
         projectNameField.addListener(SWT.Modify, nameModifyListener);
     }
 
-    private void createRmiAddressGroup(Composite parent) {
-        Label projectLabel = new Label(parent, SWT.NONE);
-        projectLabel.setText(Localization.getString("NewBotStationWizardPage.page.address"));
-        projectLabel.setFont(parent.getFont());
-        rmiAddressField = new Text(parent, SWT.BORDER);
-        GridData addressData = new GridData(GridData.FILL_HORIZONTAL);
-        addressData.widthHint = SIZING_TEXT_FIELD_WIDTH;
-        rmiAddressField.setLayoutData(addressData);
-        rmiAddressField.setFont(parent.getFont());
-    }
-
     /**
      * Returns the current project location path as entered by 
      * the user, or its anticipated initial value.
@@ -245,20 +232,6 @@ public class NewBotStationWizardPage extends WizardPage {
             return ""; //$NON-NLS-1$
         }
         return projectNameField.getText().trim();
-    }
-
-    public String getRmiAddress() {
-        if (rmiAddressField == null) {
-            return initialProjectFieldValue;
-        }
-        return getRmiAddressValue();
-    }
-
-    private String getRmiAddressValue() {
-        if (rmiAddressField == null) {
-            return ""; //$NON-NLS-1$
-        }
-        return rmiAddressField.getText().trim();
     }
 
     /**
