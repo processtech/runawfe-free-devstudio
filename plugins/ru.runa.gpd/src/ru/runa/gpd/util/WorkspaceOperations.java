@@ -134,8 +134,7 @@ public class WorkspaceOperations {
                         try {
                             SubprocessDefinition subprocessDefinition = (SubprocessDefinition) ProcessCache.getProcessDefinition(definitionFile);
                             subprocessDefinition.getParent().getEmbeddedSubprocesses().remove(subprocessDefinition.getId());
-                            for (Subprocess sp : subprocessDefinition.getParent().getChildren(Subprocess.class))
-                            {
+                            for (Subprocess sp : subprocessDefinition.getParent().getChildren(Subprocess.class)) {
                                 if (!sp.getSubProcessName().equals(subprocessDefinition.getName())) {
                                     continue;
                                 }
@@ -325,7 +324,7 @@ public class WorkspaceOperations {
                     }
                 }
                 subprocessDefinition.setName(newName);
-                
+
                 saveProcessDefinition(subprocessDefinition);
                 ProcessCache.invalidateProcessDefinition(subdefinitionFile);
                 refreshResource(definitionFolder);
@@ -683,7 +682,12 @@ public class WorkspaceOperations {
         IFile selected = (selection == null ? null : (IFile) selection.getFirstElement());
         DataSourceDialog dialog = new DataSourceDialog(selected);
         if (dialog.open() == IDialogConstants.OK_ID) {
-            try (InputStream is = new ByteArrayInputStream(dialog.getXml().getBytes(Charsets.UTF_8));) {
+            if (!(dialog.getName() + DataSourceStuff.DATA_SOURCE_FILE_SUFFIX).equals(selected.getName())
+                    && !new ModifyDataSourceAvailabilityChecker(selected.getName()).checkModifyAvailable()) {
+                return;
+            }
+
+            try (InputStream is = new ByteArrayInputStream(dialog.getXml().getBytes(Charsets.UTF_8))) {
                 IFile dsFile = DataSourceUtils.getDataSourcesProject().getFile(dialog.getName() + DataSourceStuff.DATA_SOURCE_FILE_SUFFIX);
                 IOUtils.createOrUpdateFile(dsFile, is);
                 if (selected != null && !selected.getName().equals(dsFile.getName())) {
@@ -727,6 +731,10 @@ public class WorkspaceOperations {
             try {
                 resource.refreshLocal(IResource.DEPTH_ZERO, null);
                 if (Dialogs.confirm(Localization.getString("Delete.dataSource.message", resource.getName()))) {
+                    if (!new ModifyDataSourceAvailabilityChecker(resource.getName()).checkModifyAvailable()) {
+                        break;
+                    }
+
                     if (resource instanceof IFile) {
                         resource.delete(true, null);
                     }
