@@ -1,7 +1,8 @@
 package ru.runa.gpd.editor.graphiti;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import java.util.List;
-
 import org.eclipse.graphiti.dt.IDiagramTypeProvider;
 import org.eclipse.graphiti.features.IAddBendpointFeature;
 import org.eclipse.graphiti.features.IAddFeature;
@@ -29,12 +30,10 @@ import org.eclipse.graphiti.features.context.IReconnectionContext;
 import org.eclipse.graphiti.features.context.IRemoveBendpointContext;
 import org.eclipse.graphiti.features.context.IResizeShapeContext;
 import org.eclipse.graphiti.features.context.IUpdateContext;
+import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
+import org.eclipse.graphiti.mm.algorithms.Text;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.ui.features.DefaultFeatureProvider;
-
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
-
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.editor.graphiti.add.AddTransitionBendpointFeature;
 import ru.runa.gpd.editor.graphiti.update.BOUpdateContext;
@@ -54,6 +53,7 @@ import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
+import ru.runa.gpd.lang.model.SwimlanedNode;
 import ru.runa.gpd.lang.model.bpmn.TextAnnotation;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.SwimlaneDisplayMode;
@@ -189,6 +189,14 @@ public class DiagramFeatureProvider extends DefaultFeatureProvider {
         PictogramElement pe = context.getPictogramElement();
         Object bo = getBusinessObjectForPictogramElement(pe);
         if (bo instanceof Node) {
+            if (bo instanceof SwimlanedNode) {
+                GraphicsAlgorithm ga = context.getGraphicsAlgorithm();
+                if (ga instanceof Text) {
+                    if (PropertyUtil.hasProperty(ga, GaProperty.ID, GaProperty.SWIMLANE_NAME)) {
+                        return null;
+                    }
+                }
+            }
             return new DirectEditNodeNameFeature(this);
         }
         if (bo instanceof TextAnnotation) {
