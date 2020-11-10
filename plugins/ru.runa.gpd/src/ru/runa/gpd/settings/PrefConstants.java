@@ -61,4 +61,5 @@ public interface PrefConstants {
     public static final String P_PROCESS_SAVEPOINT_NUMBER = "processSavepointNumber";
     public static final String P_ENABLE_USER_ACTIVITY_LOGGING = "enableUserActivityLogging";
     public static final String P_KEEP_VARIABLE_VALIDATION_ON_COMPONENT_REMOVAL = "keepVariableValidationOnComponentRemoval";
+    public static final String P_INTERNAL_STORAGE_FUNCTIONALITY_ENABLED = "internalStorageFunctionalityEnabled";
 }
