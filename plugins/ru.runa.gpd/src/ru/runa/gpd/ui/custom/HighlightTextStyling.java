@@ -1,6 +1,8 @@
 package ru.runa.gpd.ui.custom;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,46 +26,47 @@ public abstract class HighlightTextStyling implements LineStyleListener {
 
     @Override
     public void lineGetStyle(LineStyleEvent event) {
-        String cacheKey = event.lineOffset + "_" + event.lineText;
+        final String cacheKey = event.lineOffset + "_" + event.lineText;
         StyleRange[] ranges = cache.get(cacheKey);
-        if (ranges == null) {
-            Map<StyleRange, List<StyleRange>> rangesMap = new HashMap<>();
-            for (RegexpHighlight rh : highlightDefinitions) {
-                Matcher matcher = rh.regexp.matcher(event.lineText);
-                while (matcher.find()) {
-                    int start = event.lineOffset + matcher.start();
-                    int length = matcher.end() - matcher.start();
-                    if (!rangesMap.containsKey(rh.styleRange)) {
-                        rangesMap.put(rh.styleRange, new ArrayList<>());
-                    }
-                    StyleRange intersectedStyleRange = null;
-                    for (StyleRange styleRange : rangesMap.get(rh.styleRange)) {
-                        if (start + length < styleRange.start || start > styleRange.start + styleRange.length) {
-                            continue;
-                        }
-                        intersectedStyleRange = styleRange;
-                        break;
-                    }
-                    if (intersectedStyleRange == null) {
-                        rangesMap.get(rh.styleRange).add(copyWithNewRegion(start, length, rh.styleRange));
-                    } else {
-                        int newStart = Math.min(start, intersectedStyleRange.start);
-                        int newEnd = Math.max(start + length, intersectedStyleRange.start + intersectedStyleRange.length);
-                        int newLength = newEnd - newStart;
-                        if (newStart != intersectedStyleRange.start || newLength != intersectedStyleRange.length) {
-                            intersectedStyleRange.start = newStart;
-                            intersectedStyleRange.length = newLength;
-                        }
+        if (ranges != null) {
+            event.styles = ranges;
+            return;
+        }
+
+        final Map<StyleRange, List<StyleRange>> rangesMap = new HashMap<>();
+        for (RegexpHighlight rh : highlightDefinitions) {
+            final Matcher matcher = rh.regexp.matcher(event.lineText);
+            while (matcher.find()) {
+                final int start = event.lineOffset + matcher.start();
+                final int length = matcher.end() - matcher.start();
+
+                final List<StyleRange> styleRanges = rangesMap.computeIfAbsent(rh.styleRange, styleRange -> new ArrayList<>());
+                final StyleRange intersectedStyleRange = styleRanges.stream()
+                        .filter(styleRange -> !(start + length < styleRange.start || start > styleRange.start + styleRange.length)).findFirst()
+                        .orElse(null);
+
+                if (intersectedStyleRange == null) {
+                    styleRanges.add(copyWithNewRegion(start, length, rh.styleRange));
+                } else {
+                    final int newStart = Math.min(start, intersectedStyleRange.start);
+                    final int newEnd = Math.max(start + length, intersectedStyleRange.start + intersectedStyleRange.length);
+                    final int newLength = newEnd - newStart;
+                    if (newStart != intersectedStyleRange.start || newLength != intersectedStyleRange.length) {
+                        intersectedStyleRange.start = newStart;
+                        intersectedStyleRange.length = newLength;
                     }
                 }
             }
-            List<StyleRange> rangesList = rangesMap.entrySet().stream().map(e -> e.getValue()).reduce(new ArrayList<>(), (result, list) -> {
-                result.addAll(list);
-                return result;
-            });
-            ranges = rangesList.toArray(new StyleRange[rangesList.size()]);
-            cache.put(cacheKey, ranges);
         }
+
+        List<StyleRange> rangesList = rangesMap.entrySet().stream().map(e -> e.getValue()).reduce(new ArrayList<>(), (result, list) -> {
+            result.addAll(list);
+            return result;
+        });
+
+        ranges = rangesList.toArray(new StyleRange[] {});
+        Arrays.sort(ranges, Comparator.comparingInt(range -> range.start));
+        cache.put(cacheKey, ranges);
         event.styles = ranges;
     }
 
