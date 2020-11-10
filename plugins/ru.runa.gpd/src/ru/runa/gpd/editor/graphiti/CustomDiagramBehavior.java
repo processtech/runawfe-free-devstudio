@@ -14,6 +14,7 @@ import org.eclipse.gef.ui.parts.ScrollingGraphicalViewer;
 import org.eclipse.graphiti.mm.pictograms.Diagram;
 import org.eclipse.graphiti.tb.IToolBehaviorProvider;
 import org.eclipse.graphiti.ui.CustomContextButtonManagerForPad;
+import org.eclipse.graphiti.ui.editor.DefaultPaletteBehavior;
 import org.eclipse.graphiti.ui.editor.DiagramBehavior;
 import org.eclipse.graphiti.ui.editor.DiagramEditor;
 import org.eclipse.graphiti.ui.editor.IDiagramContainerUI;
@@ -108,4 +109,8 @@ public class CustomDiagramBehavior extends DiagramBehavior {
         configurationProvider.setContextButtonManager(new CustomContextButtonManagerForPad(this, configurationProvider.getResourceRegistry()));
     }
 
+    @Override
+    protected DefaultPaletteBehavior createPaletteBehaviour() {
+        return new CustomPaletteBehavior(this);
+    }
 }
