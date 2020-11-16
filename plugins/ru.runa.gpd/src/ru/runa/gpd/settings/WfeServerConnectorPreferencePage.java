@@ -11,12 +11,17 @@ import org.eclipse.jface.preference.RadioGroupFieldEditor;
 import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import ru.runa.gpd.Activator;
@@ -26,13 +31,19 @@ import ru.runa.gpd.sync.WfeServerConnectorSettings;
 import ru.runa.gpd.ui.custom.Dialogs;
 
 public class WfeServerConnectorPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage, PrefConstants {
+    private static final String SLASH = "/";
     private static final String HTTP = "http";
+    private static final String HTTP_DEFAULT_PORT = "8080";
     private static final String HTTPS = "https";
+    private static final String HTTPS_DEFAULT_PORT = "8443";
+    private static final String LOCALHOST = "localhost";
 
     private final String id;
+    private Combo protocolCombo;
     private StringFieldEditor loginEditor;
     private StringFieldEditor passwordEditor;
     private StringFieldEditor hostEditor;
+    private Text hostText;
     private StringFieldEditor portEditor;
     private Button testButton;
     private Button deleteButton;
@@ -61,9 +72,33 @@ public class WfeServerConnectorPreferencePage extends FieldEditorPreferencePage 
     @Override
     public void createFieldEditors() {
         addField(new ComboFieldEditor(getKey(P_WFE_SERVER_CONNECTOR_PROTOCOL_SUFFIX), Localization.getString("pref.connection.wfe.protocol"),
-                getProtocolEntriesArray(), getFieldEditorParent()));
+                getProtocolEntriesArray(), getFieldEditorParent()) {
+
+            @Override
+            protected void doFillIntoGrid(Composite parent, int numColumns) {
+                super.doFillIntoGrid(parent, numColumns);
+                for (Control child : parent.getChildren()) {
+                    if (child instanceof Combo) {
+                        protocolCombo = (Combo) child;
+                        break;
+                    }
+                }
+            }
+        });
         hostEditor = new StringFieldEditor(getKey(P_WFE_SERVER_CONNECTOR_HOST_SUFFIX), Localization.getString("pref.connection.wfe.host"),
-                getFieldEditorParent());
+                getFieldEditorParent()) {
+
+            @Override
+            protected void doFillIntoGrid(Composite parent, int numColumns) {
+                super.doFillIntoGrid(parent, numColumns);
+                for (Control child : parent.getChildren()) {
+                    if (child instanceof Text) {
+                        hostText = (Text) child;
+                        break;
+                    }
+                }
+            }
+        };
         addField(hostEditor);
         portEditor = new IntegerFieldEditor(getKey(P_WFE_SERVER_CONNECTOR_PORT_SUFFIX), Localization.getString("pref.connection.wfe.port"),
                 getFieldEditorParent());
@@ -103,9 +138,52 @@ public class WfeServerConnectorPreferencePage extends FieldEditorPreferencePage 
                 passwordEditor.setEnabled(enabled, getFieldEditorParent());
             }
             else if (getKey(P_WFE_SERVER_CONNECTOR_PROTOCOL_SUFFIX).equals(fieldEditor.getPreferenceName())) {
-                portEditor.setStringValue(HTTP.equals(event.getNewValue()) ? "80" : "443");
+                String newProtocol = ((String) event.getNewValue()).toLowerCase();
+                String oldPort = portEditor.getStringValue();
+                if (HTTP.equals(newProtocol)) {
+                    if (HTTPS_DEFAULT_PORT.equals(oldPort)) {
+                        portEditor.setStringValue(HTTP_DEFAULT_PORT);
+                    }
+                } else if (HTTP_DEFAULT_PORT.equals(oldPort)) {
+                    portEditor.setStringValue(HTTPS_DEFAULT_PORT);
+                }
+            }
+            else if (getKey(P_WFE_SERVER_CONNECTOR_HOST_SUFFIX).equals(fieldEditor.getPreferenceName())) {
+                String host = host(hostEditor.getStringValue());
+                String protocol = protocolCombo.getItem(protocolCombo.getSelectionIndex());
+                String oldPort = portEditor.getStringValue();
+                if (LOCALHOST.equals(host.toLowerCase())) {
+                    if (HTTPS.equals(protocol)) {
+                        protocolCombo.select(0); // http
+                        if (HTTPS_DEFAULT_PORT.equals(oldPort)) {
+                            portEditor.setStringValue(HTTP_DEFAULT_PORT);
+                        }
+                    }
+                } else {
+                    if (HTTP.equals(protocol)) {
+                        protocolCombo.select(1); // https
+                        if (HTTP_DEFAULT_PORT.equals(oldPort)) {
+                            portEditor.setStringValue(HTTPS_DEFAULT_PORT);
+                        }
+                    }
+                }
             }
         }
+    }
+
+    private String host(String url) {
+        int colonIndex = url.indexOf(':');
+        if (colonIndex >= 0) {
+            url = url.substring(colonIndex + 1);
+            while (url.startsWith(SLASH)) {
+                url = url.substring(1);
+            }
+        }
+        int slashIndex = url.indexOf('/');
+        if (slashIndex >= 0) {
+            url = url.substring(0, slashIndex);
+        }
+        return url;
     }
 
     @Override
@@ -165,9 +243,34 @@ public class WfeServerConnectorPreferencePage extends FieldEditorPreferencePage 
         applyDialogFont(buttonBar);
     }
 
+    private FocusListener hostFocusListener = new FocusListener() {
+
+        @Override
+        public void focusLost(FocusEvent e) {
+            adjustHost();
+        }
+
+        @Override
+        public void focusGained(FocusEvent e) {
+            adjustHost();
+        }
+
+        private void adjustHost() {
+            String host = host(hostText.getText());
+            hostText.setText(host);
+        }
+    };
+
     @Override
     protected void initialize() {
         super.initialize();
+        hostText.addFocusListener(hostFocusListener);
+    }
+
+    @Override
+    public void dispose() {
+        hostText.removeFocusListener(hostFocusListener);
+        super.dispose();
     }
 
     private String getKey(String property) {
