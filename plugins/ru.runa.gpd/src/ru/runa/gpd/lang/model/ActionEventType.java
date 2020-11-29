@@ -9,6 +9,7 @@ public class ActionEventType extends GraphElement {
     public static final String TASK_START = "task-start";
     public static final String TASK_ASSIGN = "task-assign";
     public static final String TASK_END = "task-end";
+    public static final String TASK_OPEN = "task-open";
 
     public static final String TRANSITION = "transition";
 
