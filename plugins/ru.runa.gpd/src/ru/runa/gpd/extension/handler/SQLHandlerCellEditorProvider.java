@@ -1,5 +1,9 @@
 package ru.runa.gpd.extension.handler;
 
+import java.util.Collections;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
@@ -23,6 +27,7 @@ import org.springframework.util.StringUtils;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.SharedImages;
+import ru.runa.gpd.extension.DelegableUsedDataSourcesProvider;
 import ru.runa.gpd.extension.handler.SQLTasksModel.SQLQueryModel;
 import ru.runa.gpd.extension.handler.SQLTasksModel.SQLQueryParameterModel;
 import ru.runa.gpd.extension.handler.SQLTasksModel.SQLTaskModel;
@@ -37,7 +42,7 @@ import ru.runa.wfe.datasource.DataSourceStuff;
 import ru.runa.wfe.datasource.DataSourceType;
 import ru.runa.wfe.user.Executor;
 
-public class SQLHandlerCellEditorProvider extends XmlBasedConstructorProvider<SQLTasksModel> {
+public class SQLHandlerCellEditorProvider extends XmlBasedConstructorProvider<SQLTasksModel> implements DelegableUsedDataSourcesProvider {
     @Override
     protected SQLTasksModel createDefault() {
         return SQLTasksModel.createDefault();
@@ -61,6 +66,18 @@ public class SQLHandlerCellEditorProvider extends XmlBasedConstructorProvider<SQ
     @Override
     protected int getSelectedTabIndex(Delegable delegable, SQLTasksModel model) {
         return model.hasFields() ? 1 : 0;
+    }
+
+    @Override
+    public Set<String> usedDataSourceNames(String configuration) {
+        try {
+            final SQLTasksModel tasksModel = fromXml(configuration);
+            return tasksModel.tasks.stream().map(taskModel -> DataSourceUtils.getDataSourceNameFromParameter(taskModel.dsName))
+                    .filter(Objects::nonNull).collect(Collectors.toSet());
+        } catch (Exception e) {
+            PluginLogger.logError(e);
+            return Collections.emptySet();
+        }
     }
 
     private class ConstructorView extends ConstructorComposite {
@@ -122,18 +139,15 @@ public class SQLHandlerCellEditorProvider extends XmlBasedConstructorProvider<SQ
                     cbDsTypes.select(1);
                     cbVariables.setText(dsName);
                     stackLayout.topControl = cbVariables;
-                }
-                else if (taskModel.dsName.startsWith(DataSourceStuff.PATH_PREFIX_DATA_SOURCE)) {
+                } else if (taskModel.dsName.startsWith(DataSourceStuff.PATH_PREFIX_DATA_SOURCE)) {
                     cbDsTypes.select(2);
                     cbDataSources.setText(dsName);
                     stackLayout.topControl = cbDataSources;
-                }
-                else if (taskModel.dsName.startsWith(DataSourceStuff.PATH_PREFIX_DATA_SOURCE_VARIABLE)) {
+                } else if (taskModel.dsName.startsWith(DataSourceStuff.PATH_PREFIX_DATA_SOURCE_VARIABLE)) {
                     cbDsTypes.select(3);
                     cbVariables.setText(dsName);
                     stackLayout.topControl = cbVariables;
-                }
-                else {
+                } else {
                     cbDsTypes.select(0);
                     txtJndiName.setText(dsName);
                     stackLayout.topControl = txtJndiName;
@@ -191,16 +205,16 @@ public class SQLHandlerCellEditorProvider extends XmlBasedConstructorProvider<SQ
 
                 @Override
                 protected void onSelection(SelectionEvent e) throws Exception {
-                    model.getFirstTask().dsName = (cbDsTypes.getSelectionIndex() == 1 ?
-                            DataSourceStuff.PATH_PREFIX_JNDI_NAME_VARIABLE : DataSourceStuff.PATH_PREFIX_DATA_SOURCE_VARIABLE) + cb.getText();
+                    model.getFirstTask().dsName = (cbDsTypes.getSelectionIndex() == 1 ? DataSourceStuff.PATH_PREFIX_JNDI_NAME_VARIABLE
+                            : DataSourceStuff.PATH_PREFIX_DATA_SOURCE_VARIABLE) + cb.getText();
                 }
             });
             cb.addModifyListener(new LoggingModifyTextAdapter() {
 
                 @Override
                 protected void onTextChanged(ModifyEvent e) throws Exception {
-                    model.getFirstTask().dsName = (cbDsTypes.getSelectionIndex() == 1 ?
-                            DataSourceStuff.PATH_PREFIX_JNDI_NAME_VARIABLE : DataSourceStuff.PATH_PREFIX_DATA_SOURCE_VARIABLE) + cb.getText();
+                    model.getFirstTask().dsName = (cbDsTypes.getSelectionIndex() == 1 ? DataSourceStuff.PATH_PREFIX_JNDI_NAME_VARIABLE
+                            : DataSourceStuff.PATH_PREFIX_DATA_SOURCE_VARIABLE) + cb.getText();
                 }
             });
             return cb;
