@@ -42,7 +42,8 @@ public class ActionImpl extends Action {
     }
 
     private static final String[] TRANSITION_EVENT_TYPES = { ActionEventType.TRANSITION };
-    private static final String[] TASK_EVENT_TYPES = { ActionEventType.TASK_CREATE, ActionEventType.TASK_ASSIGN, ActionEventType.TASK_END };
+    private static final String[] TASK_EVENT_TYPES = { ActionEventType.TASK_CREATE, ActionEventType.TASK_ASSIGN, ActionEventType.TASK_END,
+            ActionEventType.TASK_OPEN };
     private static final String[] START_STATE_EVENT_TYPES = { ActionEventType.NODE_LEAVE };
     private static final String[] END_STATE_EVENT_TYPES = { ActionEventType.NODE_ENTER };
     private static final String[] NODE_EVENT_TYPES = { ActionEventType.NODE_ENTER, ActionEventType.NODE_ACTION, ActionEventType.NODE_LEAVE };
