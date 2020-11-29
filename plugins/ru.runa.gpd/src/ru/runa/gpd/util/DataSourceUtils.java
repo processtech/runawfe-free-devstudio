@@ -1,5 +1,6 @@
 package ru.runa.gpd.util;
 
+import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,6 +17,8 @@ import ru.runa.wfe.datasource.DataSourceStuff;
 import ru.runa.wfe.datasource.DataSourceType;
 
 public class DataSourceUtils {
+    public static final String PARAM_DELIMITER = ":";
+    public static final String DATASOURCE_PREFIX = "datasource";
 
     public static IProject getDataSourcesProject() {
         return ResourcesPlugin.getWorkspace().getRoot().getProject("DataSources");
@@ -51,6 +54,18 @@ public class DataSourceUtils {
             }
         }
         return fileList;
+    }
+
+    public static String getDataSourceNameFromParameter(String parameterValue) {
+        if (Strings.isNullOrEmpty(parameterValue)) {
+            return null;
+        }
+
+        final String[] split = parameterValue.split(DataSourceUtils.PARAM_DELIMITER);
+        if (split.length == 2 && DataSourceUtils.DATASOURCE_PREFIX.equals(split[0])) {
+            return split[1];
+        }
+        return null;
     }
 
     private DataSourceUtils() {
