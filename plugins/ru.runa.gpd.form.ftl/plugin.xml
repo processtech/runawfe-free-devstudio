@@ -6,895 +6,863 @@
    <extension-point id="filters" name="Freemarker component filters" schema="metadata/filters.exsd"/>
 
    <extension
-         point="org.eclipse.ui.editors">
+           point="org.eclipse.ui.editors">
       <editor
-            class="ru.runa.gpd.formeditor.wysiwyg.FormEditor"
-            filenames="index.html"
-            icon="icons/html.png"
-            id="ru.runa.gpd.wysiwyg.WYSIWYGHTMLEditor"
-            name="%editor.name">
+              class="ru.runa.gpd.formeditor.wysiwyg.FormEditor"
+              filenames="index.html"
+              icon="icons/html.png"
+              id="ru.runa.gpd.wysiwyg.WYSIWYGHTMLEditor"
+              name="%editor.name">
       </editor>
       <editor
-            class="ru.runa.gpd.htmleditor.editors.HTMLEditor"
-            contributorClass="ru.runa.gpd.htmleditor.editors.HTMLEditorContributor"
-            extensions="xhtml"
-            icon="icons/html.png"
-            id="ru.runa.gpd.htmleditor.editors.HTMLEditor"
-            name="%plugin.editor.htmleditor"/>
+              class="ru.runa.gpd.htmleditor.editors.HTMLEditor"
+              contributorClass="ru.runa.gpd.htmleditor.editors.HTMLEditorContributor"
+              extensions="xhtml"
+              icon="icons/html.png"
+              id="ru.runa.gpd.htmleditor.editors.HTMLEditor"
+              name="%plugin.editor.htmleditor"/>
       <editor
-            class="ru.runa.gpd.csseditor.CSSEditor"
-            contributorClass="org.eclipse.ui.editors.text.TextEditorActionContributor"
-            extensions="css"
-            icon="icons/css.png"
-            id="ru.runa.gpd.csseditor.CSSEditor"
-            name="%plugin.editor.csseditor"/>
+              class="ru.runa.gpd.csseditor.CSSEditor"
+              contributorClass="org.eclipse.ui.editors.text.TextEditorActionContributor"
+              extensions="css"
+              icon="icons/css.png"
+              id="ru.runa.gpd.csseditor.CSSEditor"
+              name="%plugin.editor.csseditor"/>
       <editor
-            class="ru.runa.gpd.xmleditor.XMLEditor"
-            contributorClass="ru.runa.gpd.xmleditor.XMLEditorContributor"
-            extensions="xml,tld"
-            icon="icons/xml.png"
-            id="ru.runa.gpd.xmleditor.XMLEditor"
-            name="%plugin.editor.xmleditor"/>
+              class="ru.runa.gpd.xmleditor.XMLEditor"
+              contributorClass="ru.runa.gpd.xmleditor.XMLEditorContributor"
+              extensions="xml,tld"
+              icon="icons/xml.png"
+              id="ru.runa.gpd.xmleditor.XMLEditor"
+              name="%plugin.editor.xmleditor"/>
       <editor
-            class="ru.runa.gpd.jseditor.JavaScriptEditor"
-            contributorClass="ru.runa.gpd.jseditor.JavaScriptEditorContributor"
-            extensions="js"
-            icon="icons/javascript.gif"
-            id="ru.runa.gpd.jseditor.JavaScriptEditor"
-            name="%plugin.editor.jseditor"/>
+              class="ru.runa.gpd.jseditor.JavaScriptEditor"
+              contributorClass="ru.runa.gpd.jseditor.JavaScriptEditorContributor"
+              extensions="js"
+              icon="icons/javascript.gif"
+              id="ru.runa.gpd.jseditor.JavaScriptEditor"
+              name="%plugin.editor.jseditor"/>
       <editor
-            class="ru.runa.gpd.htmleditor.editors.WebBrowser"
-            extensions="url"
-            icon="icons/web.gif"
-            id="ru.runa.gpd.htmleditor.editors.WebBrowser"
-            name="%plugin.editor.webbrowser"/>
+              class="ru.runa.gpd.htmleditor.editors.WebBrowser"
+              extensions="url"
+              icon="icons/web.gif"
+              id="ru.runa.gpd.htmleditor.editors.WebBrowser"
+              name="%plugin.editor.webbrowser"/>
       <editor
-            class="ru.runa.gpd.formeditor.wysiwyg.RegulationsViewer"
-            filenames="regulations.html"
-            icon="icons/html.png"
-            id="ru.runa.gpd.wysiwyg.RegulationsViewer"
-            name="regulations viewer">
+              class="ru.runa.gpd.formeditor.wysiwyg.RegulationsViewer"
+              filenames="regulations.html"
+              icon="icons/html.png"
+              id="ru.runa.gpd.wysiwyg.RegulationsViewer"
+              name="regulations viewer">
       </editor>
       <editor
-            class="ru.runa.gpd.jointformeditor.JointFormEditor"
-            extensions="ftl"
-            default="true"
-            id="ru.runa.gpd.jointformeditor"
-            name="%joint.editor.name">
+              class="ru.runa.gpd.jointformeditor.JointFormEditor"
+              extensions="ftl"
+              default="true"
+              id="ru.runa.gpd.jointformeditor"
+              name="%joint.editor.name">
       </editor>
    </extension>
 
    <extension
-         point="ru.runa.gpd.form.ftl.parameters">
+           point="ru.runa.gpd.form.ftl.parameters">
       <type
-            class="ru.runa.gpd.formeditor.ftl.parameter.StringParameter"
-            validator="ru.runa.gpd.formeditor.ftl.validation.DefaultParameterTypeValidator"
-            id="text">
+              class="ru.runa.gpd.formeditor.ftl.parameter.StringParameter"
+              validator="ru.runa.gpd.formeditor.ftl.validation.DefaultParameterTypeValidator"
+              id="text">
       </type>
       <type
-            class="ru.runa.gpd.formeditor.ftl.parameter.ComboParameter"
-            validator="ru.runa.gpd.formeditor.ftl.validation.DefaultParameterTypeValidator"
-            id="combo">
+              class="ru.runa.gpd.formeditor.ftl.parameter.ComboParameter"
+              validator="ru.runa.gpd.formeditor.ftl.validation.DefaultParameterTypeValidator"
+              id="combo">
       </type>
       <type
-            class="ru.runa.gpd.formeditor.ftl.parameter.VariableFinderParameter"
-            validator="ru.runa.gpd.formeditor.ftl.validation.VariableParameterTypeValidator"
-            id="varfinder">
+              class="ru.runa.gpd.formeditor.ftl.parameter.VariableFinderParameter"
+              validator="ru.runa.gpd.formeditor.ftl.validation.VariableParameterTypeValidator"
+              id="varfinder">
       </type>
       <type
-            class="ru.runa.gpd.formeditor.ftl.parameter.VariableComboParameter"
-            validator="ru.runa.gpd.formeditor.ftl.validation.VariableParameterTypeValidator"
-            id="varcombo">
+              class="ru.runa.gpd.formeditor.ftl.parameter.VariableComboParameter"
+              validator="ru.runa.gpd.formeditor.ftl.validation.VariableParameterTypeValidator"
+              id="varcombo">
       </type>
       <type
-            class="ru.runa.gpd.formeditor.ftl.parameter.RichComboParameter"
-            validator="ru.runa.gpd.formeditor.ftl.validation.DefaultParameterTypeValidator"
-            id="richcombo">
+              class="ru.runa.gpd.formeditor.ftl.parameter.RichComboParameter"
+              validator="ru.runa.gpd.formeditor.ftl.validation.DefaultParameterTypeValidator"
+              id="richcombo">
       </type>
       <type
-            class="ru.runa.gpd.formeditor.ftl.parameter.VariableListParameter"
-            validator="ru.runa.gpd.formeditor.ftl.validation.VariableParameterTypeValidator"
-            id="varlist">
+              class="ru.runa.gpd.formeditor.ftl.parameter.VariableListParameter"
+              validator="ru.runa.gpd.formeditor.ftl.validation.VariableParameterTypeValidator"
+              id="varlist">
       </type>
       <type
-            class="ru.runa.gpd.formeditor.ftl.parameter.TextListParameter"
-            validator="ru.runa.gpd.formeditor.ftl.validation.DefaultParameterTypeValidator"
-            id="textlist">
+              class="ru.runa.gpd.formeditor.ftl.parameter.TextListParameter"
+              validator="ru.runa.gpd.formeditor.ftl.validation.DefaultParameterTypeValidator"
+              id="textlist">
       </type>
       <type
-            class="ru.runa.gpd.formeditor.ftl.parameter.UserTypeVariableListComboParameter"
-            validator="ru.runa.gpd.formeditor.ftl.validation.VariableParameterTypeValidator"
-            id="usertypevarlistcombo">
+              class="ru.runa.gpd.formeditor.ftl.parameter.UserTypeVariableListComboParameter"
+              validator="ru.runa.gpd.formeditor.ftl.validation.VariableParameterTypeValidator"
+              id="usertypevarlistcombo">
       </type>
       <type
-            class="ru.runa.gpd.formeditor.ftl.parameter.DbUserTypeListComboParameter"
-            validator="ru.runa.gpd.formeditor.ftl.validation.DefaultParameterTypeValidator"
-            id="dbusertypelistcombo">
+              class="ru.runa.gpd.formeditor.ftl.parameter.DbUserTypeListComboParameter"
+              validator="ru.runa.gpd.formeditor.ftl.validation.DefaultParameterTypeValidator"
+              id="dbusertypelistcombo">
       </type>
       <type
-            class="ru.runa.gpd.formeditor.ftl.parameter.DbUserTypeVariableListComboParameter"
-            validator="ru.runa.gpd.formeditor.ftl.validation.DefaultParameterTypeValidator"
-            depends="dbusertypelistcombo,combo"
-            id="dbusertypevarlistcombo">
+              class="ru.runa.gpd.formeditor.ftl.parameter.DbUserTypeVariableListComboParameter"
+              validator="ru.runa.gpd.formeditor.ftl.validation.DefaultParameterTypeValidator"
+              depends="dbusertypelistcombo,combo"
+              id="dbusertypevarlistcombo">
       </type>
       <type
-            class="ru.runa.gpd.formeditor.ftl.parameter.UserTypeAttributeParameter"
-            depends="usertypevarlistcombo,varcombo,varfinder"
-            validator="ru.runa.gpd.formeditor.ftl.validation.UserTypeAttributeValidator"
-            id="usertypeattribute">
+              class="ru.runa.gpd.formeditor.ftl.parameter.UserTypeAttributeParameter"
+              depends="usertypevarlistcombo,varcombo,varfinder"
+              validator="ru.runa.gpd.formeditor.ftl.validation.UserTypeAttributeValidator"
+              id="usertypeattribute">
       </type>
       <type
-            class="ru.runa.gpd.formeditor.ftl.parameter.UserTypeAttributeListParameter"
-            depends="usertypevarlistcombo"
-            validator="ru.runa.gpd.formeditor.ftl.validation.UserTypeAttributeListValidator"
-            id="usertypeattributelist">
+              class="ru.runa.gpd.formeditor.ftl.parameter.UserTypeAttributeListParameter"
+              depends="usertypevarlistcombo"
+              validator="ru.runa.gpd.formeditor.ftl.validation.UserTypeAttributeListValidator"
+              id="usertypeattributelist">
       </type>
       <type
-            class="ru.runa.gpd.formeditor.ftl.parameter.SwimlaneComboParameter"
-            validator="ru.runa.gpd.formeditor.ftl.validation.SwimlaneParameterValidator"
-            id="swimlanecombo">
+              class="ru.runa.gpd.formeditor.ftl.parameter.SwimlaneComboParameter"
+              validator="ru.runa.gpd.formeditor.ftl.validation.SwimlaneParameterValidator"
+              id="swimlanecombo">
       </type>
       <type
-            class="ru.runa.gpd.formeditor.ftl.parameter.PredicatesParameter"
-            validator="ru.runa.gpd.formeditor.ftl.validation.PredicatesComponentValidator"
-            depends="dbusertypelistcombo"
-            id="predicates">
+              class="ru.runa.gpd.formeditor.ftl.parameter.PredicatesParameter"
+              validator="ru.runa.gpd.formeditor.ftl.validation.PredicatesComponentValidator"
+              depends="dbusertypelistcombo"
+              id="predicates">
       </type>
       <type
-            class="ru.runa.gpd.formeditor.ftl.parameter.ProjectionParameter"
-            validator="ru.runa.gpd.formeditor.ftl.validation.ProjectionComponentValidator"
-            depends="dbusertypelistcombo"
-            id="projections">
+              class="ru.runa.gpd.formeditor.ftl.parameter.ProjectionParameter"
+              validator="ru.runa.gpd.formeditor.ftl.validation.ProjectionComponentValidator"
+              depends="dbusertypelistcombo"
+              id="projections">
       </type>
    </extension>
 
    <extension
-         point="org.eclipse.core.runtime.preferences">
+           point="org.eclipse.core.runtime.preferences">
       <initializer class="ru.runa.gpd.htmleditor.HTMLPreferenceInitializer"/>
       <initializer class="ru.runa.gpd.formeditor.settings.PreferenceInitializer"/>
    </extension>
 
    <extension
-         point="org.eclipse.ui.preferencePages">
+           point="org.eclipse.ui.preferencePages">
       <page
-         category="gpd.pref.form"
-         class="ru.runa.gpd.formeditor.settings.PreferencePage"
-         id="gpd.pref.editor"
-         name="%FormType.ftl">
+              category="gpd.pref.form"
+              class="ru.runa.gpd.formeditor.settings.PreferencePage"
+              id="gpd.pref.editor"
+              name="%FormType.ftl">
       </page>
    </extension>
 
    <extension
-         point="org.eclipse.ui.views">
+           point="org.eclipse.ui.views">
       <category
-            name="%plugin.preference.category"
-            id="ru.runa.gpd.htmleditor"/>
+              name="%plugin.preference.category"
+              id="ru.runa.gpd.htmleditor"/>
       <view
-            icon="icons/image.gif"
-            category="ru.runa.gpd.htmleditor"
-            class="ru.runa.gpd.htmleditor.views.ImageView"
-            name="%plugin.views.image"
-            id="ru.runa.gpd.htmleditor.views.ImageView"/>
+              icon="icons/image.gif"
+              category="ru.runa.gpd.htmleditor"
+              class="ru.runa.gpd.htmleditor.views.ImageView"
+              name="%plugin.views.image"
+              id="ru.runa.gpd.htmleditor.views.ImageView"/>
       <view
-            category="ru.runa.gpd.view.category"
-            class="ru.runa.gpd.formeditor.ftl.ui.FormComponentsView"
-            icon="icons/components.gif"
-            id="ru.runa.gpd.formeditor.ftl.formComponentsView"
-            name="%label.view.formComponents"/>
+              category="ru.runa.gpd.view.category"
+              class="ru.runa.gpd.formeditor.ftl.ui.FormComponentsView"
+              icon="icons/components.gif"
+              id="ru.runa.gpd.formeditor.ftl.formComponentsView"
+              name="%label.view.formComponents"/>
    </extension>
    <extension
-         point="org.eclipse.ui.actionSets">
-         <actionSet
-               id="ru.runa.gpd.form.ftl.actionSet2"
-               label="label"
-               visible="true">
-	         <action
-	               class="ru.runa.gpd.formeditor.action.OpenFormComponentsViewAction"
-	               icon="icons/components.gif"
-	               id="ru.runa.gpd.form.ftl.openFormComponents"
-	               label="%label.view.formComponents"
-	               menubarPath="window/additions"
-	               style="push"/>
-         </actionSet>
+           point="org.eclipse.ui.actionSets">
+      <actionSet
+              id="ru.runa.gpd.form.ftl.actionSet2"
+              label="label"
+              visible="true">
+         <action
+                 class="ru.runa.gpd.formeditor.action.OpenFormComponentsViewAction"
+                 icon="icons/components.gif"
+                 id="ru.runa.gpd.form.ftl.openFormComponents"
+                 label="%label.view.formComponents"
+                 menubarPath="window/additions"
+                 style="push"/>
+      </actionSet>
    </extension>
 
    <extension
-         point="org.eclipse.ui.editors.templates">
+           point="org.eclipse.ui.editors.templates">
       <contextType
-            class="ru.runa.gpd.htmleditor.template.HTMLContextType"
-            name="HTML/JSP/XML"
-            id="ru.runa.gpd.htmleditor.templateContextType.html"/>
+              class="ru.runa.gpd.htmleditor.template.HTMLContextType"
+              name="HTML/JSP/XML"
+              id="ru.runa.gpd.htmleditor.templateContextType.html"/>
       <contextType
-            class="ru.runa.gpd.htmleditor.template.JavaScriptContextType"
-            name="JavaScript"
-            id="ru.runa.gpd.htmleditor.templateContextType.javascript"/>
+              class="ru.runa.gpd.htmleditor.template.JavaScriptContextType"
+              name="JavaScript"
+              id="ru.runa.gpd.htmleditor.templateContextType.javascript"/>
    </extension>
 
    <extension
-         point="ru.runa.gpd.formtype">
+           point="ru.runa.gpd.formtype">
       <element
-            contributor="ru.runa.gpd.formeditor.FtlFormType"
-            name="%FormType.ftl"
-            type="ftl"/>
+              contributor="ru.runa.gpd.formeditor.FtlFormType"
+              name="%FormType.ftl"
+              type="ftl"/>
       <element
-            contributor="ru.runa.gpd.formeditor.HtmlFormType"
-            name="%FormType.html"
-            type="html"/>
+              contributor="ru.runa.gpd.formeditor.HtmlFormType"
+              name="%FormType.html"
+              type="html"/>
    </extension>
    <extension
-         point="ru.runa.gpd.form.ftl.components">
+           point="ru.runa.gpd.form.ftl.components">
       <component
-            enabled="true"
-            id="InputVariable"
-            imageProvider="ru.runa.gpd.formeditor.ftl.image.VariableComponentImageProvider"
-            name="%Method.InputVariable"
-            order="-99">
+              enabled="true"
+              id="InputVariable"
+              imageProvider="ru.runa.gpd.formeditor.ftl.image.VariableComponentImageProvider"
+              name="%Method.InputVariable"
+              order="-99">
          <param
-               name="%Param.Variable"
-               type="varfinder"
-               variableAccess="WRITE"
-               variableTypeFilter="java.lang.Object">
+                 name="%Param.Variable"
+                 type="varfinder"
+                 variableAccess="WRITE"
+                 variableTypeFilter="java.lang.Object">
          </param>
       </component>
       <component
-            enabled="true"
-            id="DisplayVariable"
-            imageProvider="ru.runa.gpd.formeditor.ftl.image.VariableComponentImageProvider"
-            name="%Method.DisplayVariable"
-            order="-98">
+              enabled="true"
+              id="DisplayVariable"
+              imageProvider="ru.runa.gpd.formeditor.ftl.image.VariableComponentImageProvider"
+              name="%Method.DisplayVariable"
+              order="-98">
          <param
-               name="%Param.Variable"
-               type="varfinder"
-               variableTypeFilter="java.lang.Object"
-               variableAccess="READ">
+                 name="%Param.Variable"
+                 type="varfinder"
+                 variableTypeFilter="java.lang.Object"
+                 variableAccess="READ">
          </param>
          <param
-               name="%Param.DisplayFormat"
-               type="combo"
-               variableAccess="NONE">
+                 name="%Param.DisplayFormat"
+                 type="combo"
+                 variableAccess="NONE">
             <paramValue
-                  name="%Format.Variable.Component"
-                  value="true">
+                    name="%Format.Variable.Component"
+                    value="true">
             </paramValue>
             <paramValue
-                  name="%Format.Variable.Output"
-                  value="false">
-            </paramValue>
-         </param>
-      </component>
-      <component
-            enabled="false"
-            id="ChooseActor"
-            name="%Method.ChooseActor">
-         <param
-               name="%Param.ActorVariable"
-               type="varfinder"
-               variableTypeFilter="ru.runa.wfe.user.Executor"
-               variableAccess="WRITE">
-         </param>
-         <param
-               name="%Param.InputPresentation"
-               type="combo"
-               variableAccess="NONE">
-            <paramValue
-                  name="%Presentation.ListAll"
-                  value="all">
-            </paramValue>
-            <paramValue
-                  name="%Presentation.ListRaw"
-                  value="raw">
+                    name="%Format.Variable.Output"
+                    value="false">
             </paramValue>
          </param>
       </component>
       <component
-            enabled="false"
-            id="ChooseGroup"
-            name="%Method.ChooseGroup">
+              enabled="false"
+              id="ChooseActor"
+              name="%Method.ChooseActor">
          <param
-               name="%Param.GroupVariable"
-               type="varfinder"
-               variableTypeFilter="ru.runa.wfe.user.Group"
-               variableAccess="WRITE">
+                 name="%Param.ActorVariable"
+                 type="varfinder"
+                 variableTypeFilter="ru.runa.wfe.user.Executor"
+                 variableAccess="WRITE">
          </param>
          <param
-               name="%Param.InputPresentation"
-               type="combo"
-               variableAccess="NONE">
+                 name="%Param.InputPresentation"
+                 type="combo"
+                 variableAccess="NONE">
             <paramValue
-                  name="%Presentation.SelectNameInList"
-                  value="selectName">
+                    name="%Presentation.ListAll"
+                    value="all">
             </paramValue>
             <paramValue
-                  name="%Presentation.SelectIdInList"
-                  value="selectId">
-            </paramValue>
-            <paramValue
-                  name="%Presentation.ListRaw"
-                  value="raw">
+                    name="%Presentation.ListRaw"
+                    value="raw">
             </paramValue>
          </param>
       </component>
       <component
-            enabled="false"
-            id="InputDateTime"
-            name="%Method.InputDateTime">
+              enabled="false"
+              id="ChooseGroup"
+              name="%Method.ChooseGroup">
          <param
-               name="%Param.DateVariable"
-               type="varfinder"
-               variableTypeFilter="java.util.Date"
-               variableAccess="WRITE">
+                 name="%Param.GroupVariable"
+                 type="varfinder"
+                 variableTypeFilter="ru.runa.wfe.user.Group"
+                 variableAccess="WRITE">
          </param>
          <param
-               name="%Param.DisplayFormat"
-               type="combo"
-               variableAccess="NONE">
+                 name="%Param.InputPresentation"
+                 type="combo"
+                 variableAccess="NONE">
             <paramValue
-                  name="%Format.Date.AsDate"
-                  value="date">
+                    name="%Presentation.SelectNameInList"
+                    value="selectName">
             </paramValue>
             <paramValue
-                  name="%Format.Date.AsDatetime"
-                  value="datetime">
+                    name="%Presentation.SelectIdInList"
+                    value="selectId">
             </paramValue>
             <paramValue
-                  name="%Format.Date.AsTime"
-                  value="time">
-            </paramValue>
-         </param>
-      </component>
-      <component
-            enabled="true"
-            id="GroupMembers"
-            name="%Method.GroupMembers"
-            order="-97">
-         <param
-               name="%Param.ActorVariable"
-               type="varfinder"
-               variableTypeFilter="ru.runa.wfe.user.Actor"
-               variableAccess="WRITE">
-         </param>
-         <param
-               name="%Param.GroupVariable"
-               type="richcombo"
-               variableTypeFilter="ru.runa.wfe.user.Group"
-               variableAccess="READ">
-         </param>
-         <param
-               name="%Param.InputPresentation"
-               type="combo"
-               variableAccess="NONE">
-            <paramValue
-                  default="true"
-                  name="%Presentation.ListAll"
-                  value="all">
-            </paramValue>
-            <paramValue
-                  name="%Presentation.ListRaw"
-                  value="raw">
-            </paramValue>
-         </param>
-         <param
-               name="%Param.UseCurrentUserAsDefault"
-               type="combo"
-               variableAccess="NONE">
-            <paramValue
-                  default="true"
-                  name="%Param.Value.No"
-                  value="false">
-            </paramValue>
-            <paramValue
-                  name="%Param.Value.Yes"
-                  value="true">
+                    name="%Presentation.ListRaw"
+                    value="raw">
             </paramValue>
          </param>
       </component>
       <component
-            enabled="false"
-            id="DisplayActor"
-            name="%Method.DisplayActor">
+              enabled="false"
+              id="InputDateTime"
+              name="%Method.InputDateTime">
          <param
-               name="%Param.ActorVariable"
-               type="varfinder"
-               variableTypeFilter="ru.runa.wfe.user.Actor"
-               variableAccess="READ">
+                 name="%Param.DateVariable"
+                 type="varfinder"
+                 variableTypeFilter="java.util.Date"
+                 variableAccess="WRITE">
          </param>
          <param
-               name="%Param.DisplayFormat"
-               type="combo"
-               variableAccess="NONE">
+                 name="%Param.DisplayFormat"
+                 type="combo"
+                 variableAccess="NONE">
             <paramValue
-                  name="%Format.Actor.Fullname"
-                  value="fullname">
+                    name="%Format.Date.AsDate"
+                    value="date">
             </paramValue>
             <paramValue
-                  name="%Format.Actor.Shortname"
-                  value="shortname">
-            </paramValue>
-         </param>
-      </component>
-      <component
-            enabled="true"
-            id="ViewFile"
-            name="%Method.ViewFile"
-            order="-96">
-         <param
-               name="%Param.FileVariable"
-               type="varfinder"
-               variableTypeFilter="ru.runa.wfe.var.file.FileVariable"
-               variableAccess="READ">
-         </param>
-         <param
-               name="%Param.DisplayFormat"
-               type="combo"
-               variableAccess="NONE">
-            <paramValue
-                  name="%Format.File.Content"
-                  value="content">
+                    name="%Format.Date.AsDatetime"
+                    value="datetime">
             </paramValue>
             <paramValue
-                  name="%Format.File.Length"
-                  value="contentlength">
-            </paramValue>
-            <paramValue
-                  name="%Format.File.Type"
-                  value="contenttype">
-            </paramValue>
-            <paramValue
-                  name="%Format.File.DrawImage"
-                  value="drawimage">
-            </paramValue>
-            <paramValue
-                  name="%Presentation.ObjectRaw"
-                  value="raw">
+                    name="%Format.Date.AsTime"
+                    value="time">
             </paramValue>
          </param>
       </component>
       <component
-            enabled="false"
-            id="DownloadFile"
-            name="%Method.DownloadFile">
+              enabled="true"
+              id="GroupMembers"
+              name="%Method.GroupMembers"
+              order="-97">
          <param
-               name="%Param.FileVariable"
-               type="varfinder"
-               variableTypeFilter="ru.runa.wfe.var.file.FileVariable"
-               variableAccess="READ">
-         </param>
-      </component>
-      <component
-            enabled="false"
-            id="DisplayExecutor"
-            name="%Method.DisplayExecutor">
-         <param
-               name="%Param.GroupVariable"
-               type="varfinder"
-               variableTypeFilter="ru.runa.wfe.user.Group"
-               variableAccess="READ">
-         </param>
-      </component>
-      <component
-            enabled="true"
-            id="AjaxGroupMembers"
-            name="%Method.AjaxGroupMembers"
-            order="-95">
-         <param
-               name="%Param.GroupVariable"
-               type="varfinder"
-               variableTypeFilter="ru.runa.wfe.user.Group"
-               variableAccess="WRITE">
+                 name="%Param.ActorVariable"
+                 type="varfinder"
+                 variableTypeFilter="ru.runa.wfe.user.Actor"
+                 variableAccess="WRITE">
          </param>
          <param
-               name="%Param.ActorVariable"
-               type="varfinder"
-               variableTypeFilter="ru.runa.wfe.user.Actor"
-               variableAccess="WRITE">
-         </param>
-      </component>
-      <component
-            enabled="true"
-            id="ChooseRelationName"
-            name="%Method.ChooseRelationName">
-         <param
-               name="%Param.RelationName"
-               optional="false"
-               type="varfinder"
-               variableAccess="WRITE"
-               variableTypeFilter="java.lang.String">
-         </param>
-      </component>
-      <component
-            enabled="true"
-            id="ChooseActorByRelation"
-            name="%Method.ChooseActorByRelation"
-            order="-94">
-         <param
-               name="%Param.ActorVariable"
-               type="varfinder"
-               variableTypeFilter="ru.runa.wfe.user.Actor"
-               variableAccess="WRITE">
+                 name="%Param.GroupVariable"
+                 type="richcombo"
+                 variableTypeFilter="ru.runa.wfe.user.Group"
+                 variableAccess="READ">
          </param>
          <param
-               name="%Param.RelationName"
-               type="richcombo"
-               variableTypeFilter="java.lang.String"
-               variableAccess="READ">
-         </param>
-         <param
-               name="%Param.RelationParameter"
-               type="richcombo"
-               variableTypeFilter="ru.runa.wfe.user.Executor"
-               variableAccess="READ">
-         </param>
-         <param
-               name="%Param.RelationInversed"
-               type="combo"
-               variableAccess="NONE">
+                 name="%Param.InputPresentation"
+                 type="combo"
+                 variableAccess="NONE">
             <paramValue
-                  name="%Param.Value.No"
-                  value="false">
+                    default="true"
+                    name="%Presentation.ListAll"
+                    value="all">
             </paramValue>
             <paramValue
-                  name="%Param.Value.Yes"
-                  value="true">
+                    name="%Presentation.ListRaw"
+                    value="raw">
+            </paramValue>
+         </param>
+         <param
+                 name="%Param.UseCurrentUserAsDefault"
+                 type="combo"
+                 variableAccess="NONE">
+            <paramValue
+                    default="true"
+                    name="%Param.Value.No"
+                    value="false">
+            </paramValue>
+            <paramValue
+                    name="%Param.Value.Yes"
+                    value="true">
             </paramValue>
          </param>
       </component>
       <component
-            enabled="true"
-            id="ChooseExecutorByRelation"
-            name="%Method.ChooseExecutorByRelation"
-            order="-93">
+              enabled="false"
+              id="DisplayActor"
+              name="%Method.DisplayActor">
          <param
-               name="%Param.Variable"
-               type="varfinder"
-               variableTypeFilter="ru.runa.wfe.user.Executor"
-               variableAccess="WRITE">
+                 name="%Param.ActorVariable"
+                 type="varfinder"
+                 variableTypeFilter="ru.runa.wfe.user.Actor"
+                 variableAccess="READ">
          </param>
          <param
-               name="%Param.RelationName"
-               type="richcombo"
-               variableTypeFilter="java.lang.String"
-               variableAccess="READ">
-         </param>
-         <param
-               name="%Param.RelationParameter"
-               type="richcombo"
-               variableTypeFilter="ru.runa.wfe.user.Executor"
-               variableAccess="READ">
-         </param>
-         <param
-               name="%Param.RelationInversed"
-               type="combo"
-               variableAccess="NONE">
+                 name="%Param.DisplayFormat"
+                 type="combo"
+                 variableAccess="NONE">
             <paramValue
-                  name="%Param.Value.No"
-                  value="false">
+                    name="%Format.Actor.Fullname"
+                    value="fullname">
             </paramValue>
             <paramValue
-                  name="%Param.Value.Yes"
-                  value="true">
+                    name="%Format.Actor.Shortname"
+                    value="shortname">
             </paramValue>
          </param>
       </component>
       <component
-            enabled="true"
-            id="ChooseExecutorFromRelation"
-            name="%Method.ChooseExecutorFromRelation"
-            order="-92">
+              enabled="true"
+              id="ViewFile"
+              name="%Method.ViewFile"
+              order="-96">
          <param
-               name="%Param.Variable"
-               type="varfinder"
-               variableTypeFilter="ru.runa.wfe.user.Executor"
-               variableAccess="WRITE">
+                 name="%Param.FileVariable"
+                 type="varfinder"
+                 variableTypeFilter="ru.runa.wfe.var.file.FileVariable"
+                 variableAccess="READ">
          </param>
          <param
-               name="%Param.RelationName"
-               type="richcombo"
-               variableTypeFilter="java.lang.String"
-               variableAccess="READ">
+                 name="%Param.DisplayFormat"
+                 type="combo"
+                 variableAccess="NONE">
+            <paramValue
+                    name="%Format.File.Content"
+                    value="content">
+            </paramValue>
+            <paramValue
+                    name="%Format.File.Length"
+                    value="contentlength">
+            </paramValue>
+            <paramValue
+                    name="%Format.File.Type"
+                    value="contenttype">
+            </paramValue>
+            <paramValue
+                    name="%Format.File.DrawImage"
+                    value="drawimage">
+            </paramValue>
+            <paramValue
+                    name="%Presentation.ObjectRaw"
+                    value="raw">
+            </paramValue>
+         </param>
+      </component>
+      <component
+              enabled="false"
+              id="DownloadFile"
+              name="%Method.DownloadFile">
+         <param
+                 name="%Param.FileVariable"
+                 type="varfinder"
+                 variableTypeFilter="ru.runa.wfe.var.file.FileVariable"
+                 variableAccess="READ">
+         </param>
+      </component>
+      <component
+              enabled="false"
+              id="DisplayExecutor"
+              name="%Method.DisplayExecutor">
+         <param
+                 name="%Param.GroupVariable"
+                 type="varfinder"
+                 variableTypeFilter="ru.runa.wfe.user.Group"
+                 variableAccess="READ">
+         </param>
+      </component>
+      <component
+              enabled="true"
+              id="AjaxGroupMembers"
+              name="%Method.AjaxGroupMembers"
+              order="-95">
+         <param
+                 name="%Param.GroupVariable"
+                 type="varfinder"
+                 variableTypeFilter="ru.runa.wfe.user.Group"
+                 variableAccess="WRITE">
+         </param>
+         <param
+                 name="%Param.ActorVariable"
+                 type="varfinder"
+                 variableTypeFilter="ru.runa.wfe.user.Actor"
+                 variableAccess="WRITE">
+         </param>
+      </component>
+      <component
+              enabled="true"
+              id="ChooseRelationName"
+              name="%Method.ChooseRelationName">
+         <param
+                 name="%Param.RelationName"
+                 optional="false"
+                 type="varfinder"
+                 variableAccess="WRITE"
+                 variableTypeFilter="java.lang.String">
+         </param>
+      </component>
+      <component
+              enabled="true"
+              id="ChooseActorByRelation"
+              name="%Method.ChooseActorByRelation"
+              order="-94">
+         <param
+                 name="%Param.ActorVariable"
+                 type="varfinder"
+                 variableTypeFilter="ru.runa.wfe.user.Actor"
+                 variableAccess="WRITE">
+         </param>
+         <param
+                 name="%Param.RelationName"
+                 type="richcombo"
+                 variableTypeFilter="java.lang.String"
+                 variableAccess="READ">
+         </param>
+         <param
+                 name="%Param.RelationParameter"
+                 type="richcombo"
+                 variableTypeFilter="ru.runa.wfe.user.Executor"
+                 variableAccess="READ">
+         </param>
+         <param
+                 name="%Param.RelationInversed"
+                 type="combo"
+                 variableAccess="NONE">
+            <paramValue
+                    name="%Param.Value.No"
+                    value="false">
+            </paramValue>
+            <paramValue
+                    name="%Param.Value.Yes"
+                    value="true">
+            </paramValue>
+         </param>
+      </component>
+      <component
+              enabled="true"
+              id="ChooseExecutorByRelation"
+              name="%Method.ChooseExecutorByRelation"
+              order="-93">
+         <param
+                 name="%Param.Variable"
+                 type="varfinder"
+                 variableTypeFilter="ru.runa.wfe.user.Executor"
+                 variableAccess="WRITE">
+         </param>
+         <param
+                 name="%Param.RelationName"
+                 type="richcombo"
+                 variableTypeFilter="java.lang.String"
+                 variableAccess="READ">
+         </param>
+         <param
+                 name="%Param.RelationParameter"
+                 type="richcombo"
+                 variableTypeFilter="ru.runa.wfe.user.Executor"
+                 variableAccess="READ">
+         </param>
+         <param
+                 name="%Param.RelationInversed"
+                 type="combo"
+                 variableAccess="NONE">
+            <paramValue
+                    name="%Param.Value.No"
+                    value="false">
+            </paramValue>
+            <paramValue
+                    name="%Param.Value.Yes"
+                    value="true">
+            </paramValue>
+         </param>
+      </component>
+      <component
+              enabled="true"
+              id="ChooseExecutorFromRelation"
+              name="%Method.ChooseExecutorFromRelation"
+              order="-92">
+         <param
+                 name="%Param.Variable"
+                 type="varfinder"
+                 variableTypeFilter="ru.runa.wfe.user.Executor"
+                 variableAccess="WRITE">
+         </param>
+         <param
+                 name="%Param.RelationName"
+                 type="richcombo"
+                 variableTypeFilter="java.lang.String"
+                 variableAccess="READ">
          </param>
          <param
 
-               name="%Param.RelationInversed"
-               type="combo"
-               variableAccess="NONE">
+                 name="%Param.RelationInversed"
+                 type="combo"
+                 variableAccess="NONE">
             <paramValue
-                  name="%Param.Value.No"
-                  value="false">
+                    name="%Param.Value.No"
+                    value="false">
             </paramValue>
             <paramValue
-                  name="%Param.Value.Yes"
-                  value="true">
-            </paramValue>
-         </param>
-      </component>
-      <component
-            enabled="false"
-            id="MultipleSelect"
-            name="%Method.MultipleSelect">
-         <param
-               name="%Param.ListVariable"
-               type="varfinder"
-               variableTypeFilter="java.util.List"
-               variableAccess="WRITE">
-         </param>
-         <param
-               name="%Param.InputData"
-               type="varfinder"
-               variableTypeFilter="java.util.List"
-               variableAccess="READ">
-         </param>
-      </component>
-      <component
-            enabled="false"
-            id="EditStringList"
-            name="%Method.EditStringList">
-         <param
-               name="%Param.ListVariable"
-               type="varfinder"
-               variableTypeFilter="java.util.List"
-               variableAccess="WRITE">
-         </param>
-      </component>
-      <component
-            enabled="false"
-            id="ViewList"
-            name="%Method.ViewList">
-         <param
-               name="%Param.ListVariable"
-               type="varfinder"
-               variableTypeFilter="java.util.List"
-               variableAccess="READ">
-         </param>
-         <param
-               name="%Param.InputPresentation"
-               type="combo"
-               variableAccess="NONE">
-            <paramValue
-                  name="%Param.Value.UL"
-                  value="ul">
-            </paramValue>
-            <paramValue
-                  name="%Param.Value.OL"
-                  value="ol">
-            </paramValue>
-            <paramValue
-                  name="%Param.Value.Raw"
-                  value="raw">
+                    name="%Param.Value.Yes"
+                    value="true">
             </paramValue>
          </param>
       </component>
       <component
-            enabled="true"
-            id="EditLinkedLists"
-            imageProvider="ru.runa.gpd.formeditor.ftl.image.EditLinkedListsImageProvider"
-            name="%Method.EditLinkedLists"
-            order="-91">
+              enabled="false"
+              id="MultipleSelect"
+              name="%Method.MultipleSelect">
          <param
-               name="%Param.ListAddition"
-               type="combo"
-               variableAccess="NONE">
-            <paramValue
-                  name="false"
-                  value="false">
-            </paramValue>
-            <paramValue
-                  name="true"
-                  value="true">
-            </paramValue>
+                 name="%Param.ListVariable"
+                 type="varfinder"
+                 variableTypeFilter="java.util.List"
+                 variableAccess="WRITE">
          </param>
          <param
-               name="%Param.ListChange"
-               type="combo"
-               variableAccess="NONE">
-            <paramValue
-                  name="false"
-                  value="false">
-            </paramValue>
-            <paramValue
-                  name="true"
-                  value="true">
-            </paramValue>
-         </param>
-         <param
-               name="%Param.ListRemoval"
-               type="combo"
-               variableAccess="NONE">
-            <paramValue
-                  name="false"
-                  value="false">
-            </paramValue>
-            <paramValue
-                  name="true"
-                  value="true">
-            </paramValue>
-         </param>
-         <param
-               name="%Param.ListVariable"
-               type="varlist"
-               variableAccess="WRITE"
-               variableTypeFilter="java.util.List">
+                 name="%Param.InputData"
+                 type="varfinder"
+                 variableTypeFilter="java.util.List"
+                 variableAccess="READ">
          </param>
       </component>
       <component
-            enabled="true"
-            id="DisplayLinkedLists"
-            imageProvider="ru.runa.gpd.formeditor.ftl.image.DisplayLinkedListsImageProvider"
-            name="%Method.DisplayLinkedLists"
-            order="-90">
+              enabled="false"
+              id="EditStringList"
+              name="%Method.EditStringList">
          <param
-               name="%Param.DisplayFormat"
-               type="combo"
-               variableAccess="NONE">
-            <paramValue
-                  name="%Format.Variable.Output"
-                  value="false">
-            </paramValue>
-            <paramValue
-                  name="%Format.Variable.Component"
-                  value="true">
-            </paramValue>
-         </param>
-         <param
-               name="%Param.ListVariable"
-               type="varlist"
-               variableAccess="READ"
-               variableTypeFilter="java.util.List">
+                 name="%Param.ListVariable"
+                 type="varfinder"
+                 variableTypeFilter="java.util.List"
+                 variableAccess="WRITE">
          </param>
       </component>
       <component
-            enabled="false"
-            id="DisplayLinkedListsInTable"
-            name="%Method.DisplayLinkedLists">
+              enabled="false"
+              id="ViewList"
+              name="%Method.ViewList">
          <param
-               name="%Param.ListVariable"
-               type="varlist"
-               variableTypeFilter="java.util.List"
-               variableAccess="READ">
+                 name="%Param.ListVariable"
+                 type="varfinder"
+                 variableTypeFilter="java.util.List"
+                 variableAccess="READ">
          </param>
-      </component>
-      <component
-            enabled="true"
-            id="DisplayLinkedMaps"
-            name="%Method.DisplayLinkedMaps"
-            order="-89">
          <param
-               name="%Param.DisplayFormat"
-               type="combo"
-               variableAccess="NONE">
+                 name="%Param.InputPresentation"
+                 type="combo"
+                 variableAccess="NONE">
             <paramValue
-                  name="%Format.Variable.Output"
-                  value="false">
+                    name="%Param.Value.UL"
+                    value="ul">
             </paramValue>
             <paramValue
-                  name="%Format.Variable.Component"
-                  value="true">
-            </paramValue>
-         </param>
-         <param
-               name="%Param.MapVariable"
-               type="varlist"
-               variableAccess="READ"
-               variableTypeFilter="java.util.Map">
-         </param>
-      </component>
-      <component
-            enabled="false"
-            id="DisplayLinkedMapsInTable"
-            name="%Method.DisplayLinkedMaps">
-         <param
-               name="%Param.MapVariable"
-               type="varlist"
-               variableTypeFilter="java.util.Map"
-               variableAccess="READ">
-         </param>
-      </component>
-      <component
-            enabled="false"
-            id="DisplayFormattedText"
-            name="%Method.DisplayFormattedText">
-         <param
-               name="%Param.String"
-               type="varfinder"
-               variableTypeFilter="java.lang.String"
-               variableAccess="READ">
-         </param>
-      </component>
-      <component
-            enabled="false"
-            id="ActorsMultiSelect"
-            name="%Method.ActorsMultiSelect">
-         <param
-               name="%Param.ListVariable"
-               type="varfinder"
-               variableTypeFilter="java.util.List"
-               variableAccess="WRITE">
-         </param>
-         <param
-               name="%Param.InputPresentation"
-               type="combo"
-               variableAccess="NONE">
-            <paramValue
-                  name="%Param.Value.fio"
-                  value="fio">
+                    name="%Param.Value.OL"
+                    value="ol">
             </paramValue>
             <paramValue
-                  name="%Param.Value.login"
-                  value="login">
+                    name="%Param.Value.Raw"
+                    value="raw">
+            </paramValue>
+         </param>
+      </component>
+      <component
+              enabled="true"
+              id="EditLinkedLists"
+              imageProvider="ru.runa.gpd.formeditor.ftl.image.EditLinkedListsImageProvider"
+              name="%Method.EditLinkedLists"
+              order="-91">
+         <param
+                 name="%Param.ListAddition"
+                 type="combo"
+                 variableAccess="NONE">
+            <paramValue
+                    name="false"
+                    value="false">
+            </paramValue>
+            <paramValue
+                    name="true"
+                    value="true">
             </paramValue>
          </param>
          <param
-               name="%Param.GroupVariable"
-               type="richcombo"
-               variableTypeFilter="ru.runa.wfe.user.Group"
-               variableAccess="READ">
-         </param>
-      </component>
-      <component
-            enabled="true"
-            id="DisplayListElement"
-            name="%Method.DisplayListElement"
-            order="-88">
-         <param
-               name="%Param.ListVariable"
-               type="varfinder"
-               variableTypeFilter="java.util.List"
-               variableAccess="READ">
-         </param>
-         <param
-               name="%Param.ListIndex"
-               type="richcombo"
-               variableTypeFilter="java.lang.Long"
-               variableAccess="READ">
-         </param>
-      </component>
-      <component
-            enabled="true"
-            id="DisplayMapElement"
-            name="%Method.DisplayMapElement"
-            order="-87">
-         <param
-               name="%Param.ListVariable"
-               type="varfinder"
-               variableTypeFilter="java.util.Map"
-               variableAccess="READ">
-         </param>
-         <param
-               name="%Param.MapKey"
-               type="richcombo"
-               variableTypeFilter="java.lang.Object"
-               variableAccess="READ">
-         </param>
-      </component>
-      <component
-            enabled="true"
-            id="MultipleSelectFromList"
-            name="%Method.MultipleSelectFromList"
-            order="-86">
-         <param
-               name="%Param.Variable"
-               type="varfinder"
-               variableTypeFilter="java.util.List"
-               variableAccess="WRITE">
-         </param>
-         <param
-               name="%Param.InputData"
-               type="varfinder"
-               variableTypeFilter="java.util.List"
-               variableAccess="READ">
-         </param>
-         <param
-               name="%Param.Layout"
-               type="combo"
-               variableAccess="NONE"
-               optional="true">
+                 name="%Param.ListChange"
+                 type="combo"
+                 variableAccess="NONE">
             <paramValue
-                  name="%Param.Layout.vertical"
-                  value="vertical">
+                    name="false"
+                    value="false">
             </paramValue>
             <paramValue
-                  name="%Param.Layout.horizontal"
-                  value="horizontal">
+                    name="true"
+                    value="true">
             </paramValue>
+         </param>
+         <param
+                 name="%Param.ListRemoval"
+                 type="combo"
+                 variableAccess="NONE">
+            <paramValue
+                    name="false"
+                    value="false">
+            </paramValue>
+            <paramValue
+                    name="true"
+                    value="true">
+            </paramValue>
+         </param>
+         <param
+                 name="%Param.ListVariable"
+                 type="varlist"
+                 variableAccess="WRITE"
+                 variableTypeFilter="java.util.List">
+         </param>
+      </component>
+      <component
+              enabled="true"
+              id="DisplayLinkedLists"
+              imageProvider="ru.runa.gpd.formeditor.ftl.image.DisplayLinkedListsImageProvider"
+              name="%Method.DisplayLinkedLists"
+              order="-90">
+         <param
+                 name="%Param.DisplayFormat"
+                 type="combo"
+                 variableAccess="NONE">
+            <paramValue
+                    name="%Format.Variable.Output"
+                    value="false">
+            </paramValue>
+            <paramValue
+                    name="%Format.Variable.Component"
+                    value="true">
+            </paramValue>
+         </param>
+         <param
+                 name="%Param.ListVariable"
+                 type="varlist"
+                 variableAccess="READ"
+                 variableTypeFilter="java.util.List">
+         </param>
+      </component>
+      <component
+              enabled="false"
+              id="DisplayLinkedListsInTable"
+              name="%Method.DisplayLinkedLists">
+         <param
+                 name="%Param.ListVariable"
+                 type="varlist"
+                 variableTypeFilter="java.util.List"
+                 variableAccess="READ">
+         </param>
+      </component>
+      <component
+              enabled="true"
+              id="DisplayLinkedMaps"
+              name="%Method.DisplayLinkedMaps"
+              order="-89">
+         <param
+                 name="%Param.DisplayFormat"
+                 type="combo"
+                 variableAccess="NONE">
+            <paramValue
+                    name="%Format.Variable.Output"
+                    value="false">
+            </paramValue>
+            <paramValue
+                    name="%Format.Variable.Component"
+                    value="true">
+            </paramValue>
+         </param>
+         <param
+                 name="%Param.MapVariable"
+                 type="varlist"
+                 variableAccess="READ"
+                 variableTypeFilter="java.util.Map">
+         </param>
+      </component>
+      <component
+              enabled="false"
+              id="DisplayLinkedMapsInTable"
+              name="%Method.DisplayLinkedMaps">
+         <param
+                 name="%Param.MapVariable"
+                 type="varlist"
+                 variableTypeFilter="java.util.Map"
+                 variableAccess="READ">
+         </param>
+      </component>
+      <component
+              enabled="false"
+              id="DisplayFormattedText"
+              name="%Method.DisplayFormattedText">
+         <param
+                 name="%Param.String"
+                 type="varfinder"
+                 variableTypeFilter="java.lang.String"
+                 variableAccess="READ">
+         </param>
+      </component>
+      <component
+              enabled="false"
+              id="ActorsMultiSelect"
+              name="%Method.ActorsMultiSelect">
+         <param
+                 name="%Param.ListVariable"
+                 type="varfinder"
+                 variableTypeFilter="java.util.List"
+                 variableAccess="WRITE">
+         </param>
+         <param
+                 name="%Param.InputPresentation"
+                 type="combo"
+                 variableAccess="NONE">
+            <paramValue
+                    name="%Param.Value.fio"
+                    value="fio">
+            </paramValue>
+            <paramValue
+                    name="%Param.Value.login"
+                    value="login">
+            </paramValue>
+         </param>
+         <param
+                 name="%Param.GroupVariable"
+                 type="richcombo"
+                 variableTypeFilter="ru.runa.wfe.user.Group"
+                 variableAccess="READ">
+         </param>
+      </component>
+      <component
+              enabled="true"
+              id="DisplayListElement"
+              name="%Method.DisplayListElement"
+              order="-88">
+         <param
+                 name="%Param.ListVariable"
+                 type="varfinder"
+                 variableTypeFilter="java.util.List"
+                 variableAccess="READ">
+         </param>
+         <param
+                 name="%Param.ListIndex"
+                 type="richcombo"
+                 variableTypeFilter="java.lang.Long"
+                 variableAccess="READ">
+         </param>
+      </component>
+      <component
+              enabled="true"
+              id="DisplayMapElement"
+              name="%Method.DisplayMapElement"
+              order="-87">
+         <param
+                 name="%Param.ListVariable"
+                 type="varfinder"
+                 variableTypeFilter="java.util.Map"
+                 variableAccess="READ">
+         </param>
+         <param
+                 name="%Param.MapKey"
+                 type="richcombo"
+                 variableTypeFilter="java.lang.Object"
+                 variableAccess="READ">
          </param>
       </component>
       <component
@@ -930,282 +898,243 @@
          </param>
       </component>
       <component
-            enabled="true"
-            id="DisplayMultipleSelectInList"
-            name="%Method.DisplayMultipleSelectInList">
+              enabled="true"
+              id="DisplayMultipleSelectInList"
+              name="%Method.DisplayMultipleSelectInList">
          <param
-               name="%Param.Variable"
-               type="varfinder"
-               variableTypeFilter="java.util.List"
-               variableAccess="READ">
+                 name="%Param.Variable"
+                 type="varfinder"
+                 variableTypeFilter="java.util.List"
+                 variableAccess="READ">
          </param>
          <param
-               name="%Param.InputData"
-               type="varfinder"
-               variableTypeFilter="java.util.List"
-               variableAccess="READ">
-         </param>
-      </component>
-      <component
-            enabled="true"
-            id="OptionSelectFromVariableList"
-            name="%Method.OptionSelectFromVariableList"
-            order="-85">
-         <param
-               name="%Param.Variable"
-               type="varfinder"
-               variableTypeFilter="java.lang.Object"
-               variableAccess="WRITE">
-         </param>
-         <param
-               name="%Param.InputData"
-               type="varfinder"
-               variableTypeFilter="java.util.List"
-               variableAccess="READ">
-         </param>
-      </component>
-      <component
-            enabled="true"
-            id="CheckboxSelectFromVariableList"
-            name="%Method.CheckboxSelectFromVariableList"
-            order="-85">
-         <param
-               name="%Param.Variable"
-               type="varfinder"
-               variableTypeFilter="java.lang.Object"
-               variableAccess="WRITE">
-         </param>
-         <param
-               name="%Param.InputData"
-               type="varfinder"
-               variableTypeFilter="java.util.List"
-               variableAccess="READ">
-         </param>
-         <param
-               name="%Param.Layout"
-               type="combo"
-               variableAccess="NONE"
-               optional="true">
-            <paramValue
-                  name="%Param.Layout.vertical"
-                  value="vertical">
-            </paramValue>
-            <paramValue
-                  name="%Param.Layout.horizontal"
-                  value="horizontal">
-            </paramValue>
-         </param>
-      </component>
-      <component
-            enabled="false"
-            id="SelectFromList"
-            name="%Method.OptionSelectFromVariableList"
-            order="-85">
-         <param
-               name="%Param.Variable"
-               type="varfinder"
-               variableTypeFilter="java.lang.Object"
-               variableAccess="WRITE">
-         </param>
-         <param
-               name="%Param.InputData"
-               type="varfinder"
-               variableTypeFilter="java.util.List"
-               variableAccess="READ">
-         </param>
-      </component>
-      <component
-            enabled="true"
-            id="SelectFromValueList"
-            name="%Method.SelectFromValueList">
-         <param
-               name="%Param.Variable"
-               type="varfinder"
-               variableTypeFilter="java.lang.Object"
-               variableAccess="WRITE">
-         </param>
-         <param
-               name="%Param.Value"
-               type="textlist"
-               variableAccess="NONE">
-         </param>
-      </component>
-      <component
-            enabled="false"
-            id="ChooseValueFromList"
-            name="%Method.SelectFromValueList">
-         <param
-               name="%Param.Variable"
-               type="varfinder"
-               variableTypeFilter="java.lang.Object"
-               variableAccess="WRITE">
-         </param>
-         <param
-               name="%Param.Value"
-               type="textlist"
-               variableAccess="NONE">
-         </param>
-      </component>
-      <component
-            enabled="true"
-            id="TreeviewSupport"
-            name="%Method.TreeviewSupport"
-            order="-84">
-      </component>
-      <component
-            enabled="false"
-            id="DisplayListUserVariables"
-            imageProvider="ru.runa.gpd.formeditor.ftl.image.VariableComponentImageProvider"
-            name="%Method.DisplayListUserVariables"
-            order="-83">
-         <param
-               name="%Param.Variable"
-               optional="false"
-               type="usertypevarlistcombo"
-               variableAccess="READ"
-               variableTypeFilter="java.util.List">
-         </param>
-         <param
-               name="%Param.DisplayFormat"
-               optional="false"
-               type="combo"
-               variableAccess="NONE"
-               variableTypeFilter="java.lang.String">
-            <paramValue
-                  name="%Format.Variable.TwoDimensionalTable"
-                  value="two-dimentional">
-            </paramValue>
-            <paramValue
-                  name="%Format.Variable.MultiDimensionalTable"
-                  value="multi-dimentional">
-            </paramValue>
-         </param>
-         <param
-               name="%Param.UseToSortField"
-               optional="true"
-               type="usertypeattribute"
-               variableAccess="NONE"
-               variableTypeFilter="java.lang.String">
-         </param>
-      </component>
-      <component
-            enabled="false"
-            id="MultipleSelectFromListUserVariables"
-            name="%Method.MultipleSelectFromListUserVariables"
-            order="-82">
-         <param
-               name="%Param.Variable"
-               optional="false"
-               type="usertypevarlistcombo"
-               variableAccess="WRITE"
-               variableTypeFilter="java.util.List">
-         </param>
-         <param
-               name="%Param.InputData"
-               optional="false"
-               type="usertypevarlistcombo"
-               variableAccess="READ"
-               variableTypeFilter="java.util.List">
-         </param>
-         <param
-               name="%Param.DisplayFormat"
-               optional="false"
-               type="combo"
-               variableAccess="NONE"
-               variableTypeFilter="java.lang.String">
-            <paramValue
-                  name="%Format.Variable.TwoDimensionalTable"
-                  value="two-dimentional">
-            </paramValue>
-            <paramValue
-                  name="%Format.Variable.MultiDimensionalTable"
-                  value="multi-dimentional">
-            </paramValue>
-         </param>
-         <param
-               name="%Param.UseToSortField"
-               optional="true"
-               type="usertypeattribute"
-               variableAccess="NONE"
-               variableTypeFilter="java.lang.String">
-         </param>
-      </component>
-      <component
-            enabled="true"
-            id="DisplayUserTypeList"
-            imageProvider="ru.runa.gpd.formeditor.ftl.image.VariableComponentImageProvider"
-            name="%Method.DisplayUserTypeList"
-            order="-83">
-         <param
-               name="%Param.Variable"
-               optional="false"
-               type="usertypevarlistcombo"
-               variableAccess="READ"
-               variableTypeFilter="java.util.List">
-         </param>
-         <param
-               name="%Param.DisplayFormat"
-               type="combo"
-               variableAccess="NONE">
-            <paramValue
-                  name="%Format.Variable.Component"
-                  value="true">
-            </paramValue>
-            <paramValue
-                  name="%Format.Variable.Output"
-                  value="false">
-            </paramValue>
-         </param>
-         <param
-               name="%Param.Attributes"
-               optional="true"
-               type="usertypeattributelist"
-               variableAccess="NONE">
-         </param>
-      </component>
-      <component
-            enabled="true"
-            id="MultipleSelectFromUserTypeList"
-            name="%Method.MultipleSelectFromUserTypeList"
-            order="-82">
-         <param
-               name="%Param.Variable"
-               optional="false"
-               type="usertypevarlistcombo"
-               variableAccess="WRITE"
-               variableTypeFilter="java.util.List">
-         </param>
-         <param
-               name="%Param.InputData"
-               optional="false"
-               type="usertypevarlistcombo"
-               variableAccess="READ"
-               variableTypeFilter="java.util.List">
-         </param>
-         <param
-               name="%Param.DisplayFormat"
-               type="combo"
-               variableAccess="NONE">
-            <paramValue
-                  name="%Format.Variable.Component"
-                  value="true">
-            </paramValue>
-            <paramValue
-                  name="%Format.Variable.Output"
-                  value="false">
-            </paramValue>
-         </param>
-         <param
-               name="%Param.Attributes"
-               optional="true"
-               type="usertypeattributelist"
-               variableAccess="NONE">
+                 name="%Param.InputData"
+                 type="varfinder"
+                 variableTypeFilter="java.util.List"
+                 variableAccess="READ">
          </param>
       </component>
       <component
               enabled="true"
-              id="OneSelectFromUserTypeList"
-              name="%Method.OneSelectFromUserTypeList"
+              id="OptionSelectFromVariableList"
+              name="%Method.OptionSelectFromVariableList"
+              order="-85">
+         <param
+                 name="%Param.Variable"
+                 type="varfinder"
+                 variableTypeFilter="java.lang.Object"
+                 variableAccess="WRITE">
+         </param>
+         <param
+                 name="%Param.InputData"
+                 type="varfinder"
+                 variableTypeFilter="java.util.List"
+                 variableAccess="READ">
+         </param>
+      </component>
+      <component
+              enabled="true"
+              id="CheckboxSelectFromVariableList"
+              name="%Method.CheckboxSelectFromVariableList"
+              order="-85">
+         <param
+                 name="%Param.Variable"
+                 type="varfinder"
+                 variableTypeFilter="java.lang.Object"
+                 variableAccess="WRITE">
+         </param>
+         <param
+                 name="%Param.InputData"
+                 type="varfinder"
+                 variableTypeFilter="java.util.List"
+                 variableAccess="READ">
+         </param>
+         <param
+                 name="%Param.Layout"
+                 type="combo"
+                 variableAccess="NONE"
+                 optional="true">
+            <paramValue
+                    name="%Param.Layout.vertical"
+                    value="vertical">
+            </paramValue>
+            <paramValue
+                    name="%Param.Layout.horizontal"
+                    value="horizontal">
+            </paramValue>
+         </param>
+      </component>
+      <component
+              enabled="false"
+              id="SelectFromList"
+              name="%Method.OptionSelectFromVariableList"
+              order="-85">
+         <param
+                 name="%Param.Variable"
+                 type="varfinder"
+                 variableTypeFilter="java.lang.Object"
+                 variableAccess="WRITE">
+         </param>
+         <param
+                 name="%Param.InputData"
+                 type="varfinder"
+                 variableTypeFilter="java.util.List"
+                 variableAccess="READ">
+         </param>
+      </component>
+      <component
+              enabled="true"
+              id="SelectFromValueList"
+              name="%Method.SelectFromValueList">
+         <param
+                 name="%Param.Variable"
+                 type="varfinder"
+                 variableTypeFilter="java.lang.Object"
+                 variableAccess="WRITE">
+         </param>
+         <param
+                 name="%Param.Value"
+                 type="textlist"
+                 variableAccess="NONE">
+         </param>
+      </component>
+      <component
+              enabled="false"
+              id="ChooseValueFromList"
+              name="%Method.SelectFromValueList">
+         <param
+                 name="%Param.Variable"
+                 type="varfinder"
+                 variableTypeFilter="java.lang.Object"
+                 variableAccess="WRITE">
+         </param>
+         <param
+                 name="%Param.Value"
+                 type="textlist"
+                 variableAccess="NONE">
+         </param>
+      </component>
+      <component
+              enabled="true"
+              id="TreeviewSupport"
+              name="%Method.TreeviewSupport"
+              order="-84">
+      </component>
+      <component
+              enabled="false"
+              id="DisplayListUserVariables"
+              imageProvider="ru.runa.gpd.formeditor.ftl.image.VariableComponentImageProvider"
+              name="%Method.DisplayListUserVariables"
+              order="-83">
+         <param
+                 name="%Param.Variable"
+                 optional="false"
+                 type="usertypevarlistcombo"
+                 variableAccess="READ"
+                 variableTypeFilter="java.util.List">
+         </param>
+         <param
+                 name="%Param.DisplayFormat"
+                 optional="false"
+                 type="combo"
+                 variableAccess="NONE"
+                 variableTypeFilter="java.lang.String">
+            <paramValue
+                    name="%Format.Variable.TwoDimensionalTable"
+                    value="two-dimentional">
+            </paramValue>
+            <paramValue
+                    name="%Format.Variable.MultiDimensionalTable"
+                    value="multi-dimentional">
+            </paramValue>
+         </param>
+         <param
+                 name="%Param.UseToSortField"
+                 optional="true"
+                 type="usertypeattribute"
+                 variableAccess="NONE"
+                 variableTypeFilter="java.lang.String">
+         </param>
+      </component>
+      <component
+              enabled="false"
+              id="MultipleSelectFromListUserVariables"
+              name="%Method.MultipleSelectFromListUserVariables"
+              order="-82">
+         <param
+                 name="%Param.Variable"
+                 optional="false"
+                 type="usertypevarlistcombo"
+                 variableAccess="WRITE"
+                 variableTypeFilter="java.util.List">
+         </param>
+         <param
+                 name="%Param.InputData"
+                 optional="false"
+                 type="usertypevarlistcombo"
+                 variableAccess="READ"
+                 variableTypeFilter="java.util.List">
+         </param>
+         <param
+                 name="%Param.DisplayFormat"
+                 optional="false"
+                 type="combo"
+                 variableAccess="NONE"
+                 variableTypeFilter="java.lang.String">
+            <paramValue
+                    name="%Format.Variable.TwoDimensionalTable"
+                    value="two-dimentional">
+            </paramValue>
+            <paramValue
+                    name="%Format.Variable.MultiDimensionalTable"
+                    value="multi-dimentional">
+            </paramValue>
+         </param>
+         <param
+                 name="%Param.UseToSortField"
+                 optional="true"
+                 type="usertypeattribute"
+                 variableAccess="NONE"
+                 variableTypeFilter="java.lang.String">
+         </param>
+      </component>
+      <component
+              enabled="true"
+              id="DisplayUserTypeList"
+              imageProvider="ru.runa.gpd.formeditor.ftl.image.VariableComponentImageProvider"
+              name="%Method.DisplayUserTypeList"
+              order="-83">
+         <param
+                 name="%Param.Variable"
+                 optional="false"
+                 type="usertypevarlistcombo"
+                 variableAccess="READ"
+                 variableTypeFilter="java.util.List">
+         </param>
+         <param
+                 name="%Param.DisplayFormat"
+                 type="combo"
+                 variableAccess="NONE">
+            <paramValue
+                    name="%Format.Variable.Component"
+                    value="true">
+            </paramValue>
+            <paramValue
+                    name="%Format.Variable.Output"
+                    value="false">
+            </paramValue>
+         </param>
+         <param
+                 name="%Param.Attributes"
+                 optional="true"
+                 type="usertypeattributelist"
+                 variableAccess="NONE">
+         </param>
+      </component>
+      <component
+              enabled="true"
+              id="MultipleSelectFromUserTypeList"
+              name="%Method.MultipleSelectFromUserTypeList"
               order="-82">
          <param
                  name="%Param.Variable"
@@ -1242,108 +1171,147 @@
          </param>
       </component>
       <component
-            enabled="true"
-            id="EditUserTypeList"
-            imageProvider="ru.runa.gpd.formeditor.ftl.image.VariableComponentImageProvider"
-            name="%Method.EditUserTypeList"
-            order="-81">
+              enabled="true"
+              id="SingleSelectFromUserTypeList"
+              name="%Method.SingleSelectFromUserTypeList"
+              order="-82">
          <param
-               name="%Param.Variable"
-               optional="false"
-               type="usertypevarlistcombo"
-               variableAccess="WRITE"
-               variableTypeFilter="java.util.List">
+                 name="%Param.Variable"
+                 optional="false"
+                 type="usertypevarlistcombo"
+                 variableAccess="WRITE"
+                 variableTypeFilter="java.util.List">
          </param>
          <param
-               name="%Param.ListAddition"
-               type="combo"
-               variableAccess="NONE">
-            <paramValue
-                  name="false"
-                  value="false">
-            </paramValue>
-            <paramValue
-                  name="true"
-                  value="true">
-            </paramValue>
+                 name="%Param.InputData"
+                 optional="false"
+                 type="usertypevarlistcombo"
+                 variableAccess="READ"
+                 variableTypeFilter="java.util.List">
          </param>
          <param
-               name="%Param.ListRemoval"
-               type="combo"
-               variableAccess="NONE">
+                 name="%Param.DisplayFormat"
+                 type="combo"
+                 variableAccess="NONE">
             <paramValue
-                  name="false"
-                  value="false">
+                    name="%Format.Variable.Component"
+                    value="true">
             </paramValue>
             <paramValue
-                  name="true"
-                  value="true">
+                    name="%Format.Variable.Output"
+                    value="false">
             </paramValue>
          </param>
          <param
-               name="%Param.ListChange"
-               type="combo"
-               variableAccess="NONE">
-            <paramValue
-                  name="false"
-                  value="false">
-            </paramValue>
-            <paramValue
-                  name="true"
-                  value="true">
-            </paramValue>
-         </param>
-         <param
-               name="%Param.Attributes"
-               optional="true"
-               type="usertypeattributelist"
-               variableAccess="NONE">
+                 name="%Param.Attributes"
+                 optional="true"
+                 type="usertypeattributelist"
+                 variableAccess="NONE">
          </param>
       </component>
       <component
-            enabled="false"
-            id="SelectFromInternalStorage"
-            imageProvider="ru.runa.gpd.formeditor.ftl.image.VariableComponentImageProvider"
-            name="%Method.SelectFromInternalStorage"
-            order="-80">
+              enabled="true"
+              id="EditUserTypeList"
+              imageProvider="ru.runa.gpd.formeditor.ftl.image.VariableComponentImageProvider"
+              name="%Method.EditUserTypeList"
+              order="-81">
          <param
-               name="%Param.UserType"
-               optional="false"
-               type="dbusertypelistcombo"
-               variableAccess="NONE">
+                 name="%Param.Variable"
+                 optional="false"
+                 type="usertypevarlistcombo"
+                 variableAccess="WRITE"
+                 variableTypeFilter="java.util.List">
          </param>
          <param
-               name="%Param.Multiplicity"
-               optional="false"
-               type="combo"
-               variableAccess="NONE">
-               <paramValue
-                  name="%Param.ChooseOne"
-                  value="one"
-                  default="true">
-               </paramValue>
-               <paramValue
-                  name="%Param.ChooseSome"
-                  value="many">
-               </paramValue>
+                 name="%Param.ListAddition"
+                 type="combo"
+                 variableAccess="NONE">
+            <paramValue
+                    name="false"
+                    value="false">
+            </paramValue>
+            <paramValue
+                    name="true"
+                    value="true">
+            </paramValue>
          </param>
          <param
-               name=""
-               optional="true"
-               type="predicates"
-               variableAccess="NONE">
+                 name="%Param.ListRemoval"
+                 type="combo"
+                 variableAccess="NONE">
+            <paramValue
+                    name="false"
+                    value="false">
+            </paramValue>
+            <paramValue
+                    name="true"
+                    value="true">
+            </paramValue>
          </param>
          <param
-               name=""
-               optional="true"
-               type="projections"
-               variableAccess="NONE">
+                 name="%Param.ListChange"
+                 type="combo"
+                 variableAccess="NONE">
+            <paramValue
+                    name="false"
+                    value="false">
+            </paramValue>
+            <paramValue
+                    name="true"
+                    value="true">
+            </paramValue>
          </param>
          <param
-               name="%Param.WriteTo"
-               optional="false"
-               type="dbusertypevarlistcombo"
-               variableAccess="WRITE">
+                 name="%Param.Attributes"
+                 optional="true"
+                 type="usertypeattributelist"
+                 variableAccess="NONE">
+         </param>
+      </component>
+      <component
+              enabled="false"
+              id="SelectFromInternalStorage"
+              imageProvider="ru.runa.gpd.formeditor.ftl.image.VariableComponentImageProvider"
+              name="%Method.SelectFromInternalStorage"
+              order="-80">
+         <param
+                 name="%Param.UserType"
+                 optional="false"
+                 type="dbusertypelistcombo"
+                 variableAccess="NONE">
+         </param>
+         <param
+                 name="%Param.Multiplicity"
+                 optional="false"
+                 type="combo"
+                 variableAccess="NONE">
+            <paramValue
+                    name="%Param.ChooseOne"
+                    value="one"
+                    default="true">
+            </paramValue>
+            <paramValue
+                    name="%Param.ChooseSome"
+                    value="many">
+            </paramValue>
+         </param>
+         <param
+                 name=""
+                 optional="true"
+                 type="predicates"
+                 variableAccess="NONE">
+         </param>
+         <param
+                 name=""
+                 optional="true"
+                 type="projections"
+                 variableAccess="NONE">
+         </param>
+         <param
+                 name="%Param.WriteTo"
+                 optional="false"
+                 type="dbusertypevarlistcombo"
+                 variableAccess="WRITE">
          </param>
       </component>
    </extension>
