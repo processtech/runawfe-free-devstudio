@@ -228,11 +228,22 @@ public class ExportParWizardPage extends ExportWizardPage {
                 }
             } catch (Throwable th) {
                 PluginLogger.logErrorWithoutDialog(Localization.getString("ExportParWizardPage.error.export"), th);
-                setErrorMessage(Throwables.getRootCause(th).getMessage());
+                setErrorMessage(stripSoapTrash(Throwables.getRootCause(th).getMessage()));
                 return false;
             }
         }
         return result;
+    }
+
+    private String stripSoapTrash(String trash) {
+        final String head = "exception:";
+        final String tail = "please see the server log to find more detail regarding exact cause of the failure.";
+        int index = trash.toLowerCase().lastIndexOf(head);
+        String tag = (index > 0 ? trash.substring(index + head.length()) : trash);
+        if (tag.toLowerCase().endsWith(tail)) {
+            tag = tag.substring(0, tag.length() - tail.length());
+        }
+        return tag.trim();
     }
 
     public static class ParDeployOperation extends FileResourcesExportOperation {
