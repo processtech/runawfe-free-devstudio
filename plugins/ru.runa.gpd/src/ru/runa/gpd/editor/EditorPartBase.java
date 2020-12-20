@@ -2,7 +2,6 @@ package ru.runa.gpd.editor;
 
 import java.beans.PropertyChangeListener;
 import java.util.Comparator;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -35,7 +34,6 @@ import org.eclipse.ui.forms.widgets.Form;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.part.EditorPart;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 
@@ -113,6 +111,7 @@ public abstract class EditorPartBase<T> extends EditorPart implements PropertyCh
         GridData gridData = new GridData();
         gridData.horizontalAlignment = SWT.LEFT;
         gridData.verticalAlignment = SWT.TOP;
+        gridData.grabExcessVerticalSpace = true;
         actionBar.setLayoutData(gridData);
         return actionBar;
     }
