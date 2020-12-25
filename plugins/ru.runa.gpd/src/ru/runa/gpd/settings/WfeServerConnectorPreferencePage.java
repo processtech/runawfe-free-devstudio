@@ -84,6 +84,12 @@ public class WfeServerConnectorPreferencePage extends FieldEditorPreferencePage 
                     }
                 }
             }
+
+            @Override
+            protected void doStore() {
+                super.doStore();
+                getPreferenceStore().setValue(getPreferenceName(), protocolCombo.getText());
+            }
         });
         hostEditor = new StringFieldEditor(getKey(P_WFE_SERVER_CONNECTOR_HOST_SUFFIX), Localization.getString("pref.connection.wfe.host"),
                 getFieldEditorParent()) {
