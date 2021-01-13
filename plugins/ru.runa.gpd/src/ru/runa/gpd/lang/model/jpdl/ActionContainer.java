@@ -17,4 +17,9 @@ public interface ActionContainer {
     public int removeAction(Action action);
 
     public List<? extends Action> getActions();
+
+    public void setName(String newName);
+
+    public String getName();
+
 }
