@@ -682,7 +682,7 @@ public class WorkspaceOperations {
         IFile selected = (selection == null ? null : (IFile) selection.getFirstElement());
         DataSourceDialog dialog = new DataSourceDialog(selected);
         if (dialog.open() == IDialogConstants.OK_ID) {
-            if (!(dialog.getName() + DataSourceStuff.DATA_SOURCE_FILE_SUFFIX).equals(selected.getName())
+            if (selected != null && !(dialog.getName() + DataSourceStuff.DATA_SOURCE_FILE_SUFFIX).equals(selected.getName())
                     && !new ModifyDataSourceAvailabilityChecker(selected.getName()).checkModifyAvailable()) {
                 return;
             }
