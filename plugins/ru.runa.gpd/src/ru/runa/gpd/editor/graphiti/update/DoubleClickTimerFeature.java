@@ -23,7 +23,7 @@ public class DoubleClickTimerFeature extends DoubleClickElementFeature {
         DurationEditDialog dialog = new DurationEditDialog(timer.getProcessDefinition(), timer.getDelay());
         Duration result = (Duration) dialog.openDialog();
         if (result != null) {
-        	if (!Objects.equal(result, oldDelay)) {
+            if (!Objects.equal(result, oldDelay)) {
                 Display.getDefault().asyncExec(new Runnable() {
                     @Override
                     public void run() {
