@@ -78,7 +78,6 @@ import ru.runa.gpd.quick.formeditor.util.QuickFormConvertor.ConverterSource;
 import ru.runa.gpd.quick.formeditor.util.QuickFormXMLUtil;
 import ru.runa.gpd.quick.tag.FormHashModelGpdWrap;
 import ru.runa.gpd.ui.custom.DragAndDropAdapter;
-import ru.runa.gpd.ui.custom.DropDownButton;
 import ru.runa.gpd.ui.custom.InsertVariableTextMenuDetectListener;
 import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
@@ -284,29 +283,27 @@ public class QuickFormEditor extends EditorPart implements ISelectionListener, I
         gridData.verticalAlignment = SWT.TOP;
         buttonsBar.setLayoutData(gridData);
 
-        DropDownButton addButton = new DropDownButton(buttonsBar);
-        addButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        addButton.setText(Messages.getString("editor.button.add"));
-        addButton.addSelectionListener(new LoggingSelectionAdapter() {
-
-            @Override
-            protected void onSelection(SelectionEvent e) throws Exception {
-                QuickFormVariableWizard wizard = new QuickFormVariableWizard(formNode, quickForm.getVariables(), -1);
-                CompactWizardDialog dialog = new CompactWizardDialog(wizard);
-                if (dialog.open() == Window.OK) {
-                    setTableInput();
-                    setTableSelection(quickForm.getVariables().get(quickForm.getVariables().size() - 1));
-                    setDirty(true);
-                }
-            }
-        });
-        addButton.addButton(Messages.getString("editor.button.multiple"), new LoggingSelectionAdapter() {
-
+        SwtUtils.createButtonFillHorizontal(buttonsBar, Messages.getString("editor.button.edit"), new LoggingSelectionAdapter() {
             @Override
             protected void onSelection(SelectionEvent e) throws Exception {
                 QuickFormVariabliesToDisplayWizard wizard = new QuickFormVariabliesToDisplayWizard(formNode, quickForm.getVariables());
                 CompactWizardDialog dialog = new CompactWizardDialog(wizard);
-                dialog.setPageSize(500, 300);
+                dialog.setPageSize(500, 400);
+                if (dialog.open() == Window.OK) {
+                    setTableInput();
+                    List<QuickFormGpdVariable> variables = quickForm.getVariables();
+                    if (variables.size() > 0) {
+                        setTableSelection(variables.get(variables.size() - 1));
+                    }
+                    setDirty(true);
+                }
+            }
+        });
+        SwtUtils.createButtonFillHorizontal(buttonsBar, Messages.getString("editor.button.add"), new LoggingSelectionAdapter() {
+            @Override
+            protected void onSelection(SelectionEvent e) throws Exception {
+                QuickFormVariableWizard wizard = new QuickFormVariableWizard(formNode, quickForm.getVariables(), -1);
+                CompactWizardDialog dialog = new CompactWizardDialog(wizard);
                 if (dialog.open() == Window.OK) {
                     setTableInput();
                     setTableSelection(quickForm.getVariables().get(quickForm.getVariables().size() - 1));

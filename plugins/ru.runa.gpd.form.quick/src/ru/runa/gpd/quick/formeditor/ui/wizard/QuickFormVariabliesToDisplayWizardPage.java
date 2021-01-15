@@ -104,7 +104,7 @@ public class QuickFormVariabliesToDisplayWizardPage extends WizardPage {
     }
 
     private void createVariableCheckboxes(final Composite parent) {
-        scrolledComposite = new ScrolledComposite(parent, SWT.V_SCROLL | SWT.BORDER);
+        scrolledComposite = new ScrolledComposite(parent, SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER);
         scrolledComposite.setExpandHorizontal(true);
         scrolledComposite.setExpandVertical(true);
         scrolledComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -171,7 +171,6 @@ public class QuickFormVariabliesToDisplayWizardPage extends WizardPage {
 
         final Button variableCheckbox = new Button(clientArea, SWT.CHECK);
         variableCheckbox.setSelection(selectedVariables.contains(variableDef));
-        variableCheckbox.setEnabled(!initialVariables.contains(variableDef));
         // variableCheckbox.setText(name);
         variableCheckbox.addSelectionListener(new LoggingSelectionAdapter() {
             @Override
@@ -286,7 +285,6 @@ public class QuickFormVariabliesToDisplayWizardPage extends WizardPage {
     }
 
     public List<QuickFormGpdVariable> getSelectedVariables() {
-        selectedVariables.removeAll(initialVariables);
         return selectedVariables;
     }
 }
