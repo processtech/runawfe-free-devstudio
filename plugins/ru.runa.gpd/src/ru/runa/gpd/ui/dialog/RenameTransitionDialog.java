@@ -16,13 +16,14 @@ public class RenameTransitionDialog extends InputDialog {
 
     public RenameTransitionDialog() {
         super(Display.getDefault().getActiveShell(), Localization.getString("RenameTransitionDialog.update.title"),
-              Localization.getString("property.name") + ":", "examplename", new IInputValidator() {
+                Localization.getString("property.name") + ":", Localization.getString("RenameTransitionDialog.defaultTransitionName"),
+                new IInputValidator() {
 
-            @Override
-            public String isValid(String value) {
-                return null;
-            }
-        });
+                    @Override
+                    public String isValid(String value) {
+                        return null;
+                    }
+                });
         setBlockOnOpen(true);
     }
 
@@ -41,8 +42,7 @@ public class RenameTransitionDialog extends InputDialog {
     }
 
     private void updateButtons() {
-        getButton(IDialogConstants.OK_ID).setEnabled(
-                !(Strings.isNullOrEmpty(getText().getText())) );
+        getButton(IDialogConstants.OK_ID).setEnabled(!(Strings.isNullOrEmpty(getText().getText())));
     }
 
     @Override

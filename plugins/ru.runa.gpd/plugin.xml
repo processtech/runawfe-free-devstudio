@@ -51,7 +51,7 @@
         <action
               class="ru.runa.gpd.lang.action.RenameTransitionDelegate"
               id="graph.actions2"
-              label="Переименовать"
+              label="%label.action.rename"
               menubarPath="additions"
               style="push">
         </action>
@@ -74,7 +74,7 @@
        <action
              class="ru.runa.gpd.lang.action.RenameTransitionDelegate"
              id="graph.actions2"
-             label="Переименовать"
+             label="%label.action.rename"
              menubarPath="additions"
              style="push">
        </action>
