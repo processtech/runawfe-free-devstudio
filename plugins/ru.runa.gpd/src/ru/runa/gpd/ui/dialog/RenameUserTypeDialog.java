@@ -20,71 +20,71 @@ import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
 import ru.runa.gpd.ui.custom.VariableNameChecker;
 
 public class RenameUserTypeDialog extends Dialog {
-	private String name;
-	private final ProcessDefinition processDefinition;
+    private String name;
+    private final ProcessDefinition processDefinition;
 
-	public RenameUserTypeDialog(ProcessDefinition processDefinition, VariableUserType type) {
-		super(Display.getCurrent().getActiveShell());
-		this.processDefinition = processDefinition;
-		this.name = type != null ? type.getName() : "";
-	}
+    public RenameUserTypeDialog(ProcessDefinition processDefinition, VariableUserType type) {
+        super(Display.getCurrent().getActiveShell());
+        this.processDefinition = processDefinition;
+        this.name = type != null ? type.getName() : "";
+    }
 
-	@Override
-	protected void configureShell(Shell newShell) {
-		super.configureShell(newShell);
-		newShell.setText(Localization.getString("UserDefinedVariableType.update.title"));
-	}
+    @Override
+    protected void configureShell(Shell newShell) {
+        super.configureShell(newShell);
+        newShell.setText(Localization.getString("UserDefinedVariableType.update.title"));
+    }
 
-	@Override
-	protected Control createDialogArea(Composite parent) {
-		Composite area = (Composite) super.createDialogArea(parent);
-		GridLayout layout = new GridLayout(1, false);
-		area.setLayout(layout);
+    @Override
+    protected Control createDialogArea(Composite parent) {
+        Composite area = (Composite) super.createDialogArea(parent);
+        GridLayout layout = new GridLayout(1, false);
+        area.setLayout(layout);
 
-		Composite composite = new Composite(area, SWT.NONE);
+        Composite composite = new Composite(area, SWT.NONE);
 
-		GridLayout gridLayout = new GridLayout();
-		gridLayout.numColumns = 2;
-		composite.setLayout(gridLayout);
-		composite.setLayoutData(new GridData());
+        GridLayout gridLayout = new GridLayout();
+        gridLayout.numColumns = 2;
+        composite.setLayout(gridLayout);
+        composite.setLayoutData(new GridData());
 
-		Label labelName = new Label(composite, SWT.NONE);
-		labelName.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-		labelName.setText(Localization.getString("property.name") + ":");
+        Label labelName = new Label(composite, SWT.NONE);
+        labelName.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+        labelName.setText(Localization.getString("property.name") + ":");
 
-		final Text nameField = new Text(composite, SWT.BORDER);
-		GridData nameTextData = new GridData(GridData.FILL_HORIZONTAL);
-		nameTextData.minimumWidth = 200;
-		nameField.setText(name);
-		nameField.addKeyListener(new VariableNameChecker());
-		nameField.setLayoutData(nameTextData);
-		nameField.addModifyListener(new LoggingModifyTextAdapter() {
+        final Text nameField = new Text(composite, SWT.BORDER);
+        GridData nameTextData = new GridData(GridData.FILL_HORIZONTAL);
+        nameTextData.minimumWidth = 200;
+        nameField.setText(name);
+        nameField.addKeyListener(new VariableNameChecker());
+        nameField.setLayoutData(nameTextData);
+        nameField.addModifyListener(new LoggingModifyTextAdapter() {
 
-			@Override
-			protected void onTextChanged(ModifyEvent e) throws Exception {
-				name = nameField.getText();
-				updateButtons();
-			}
-		});
-		nameField.selectAll();
-		return area;
-	}
+            @Override
+            protected void onTextChanged(ModifyEvent e) throws Exception {
+                name = nameField.getText();
+                updateButtons();
+            }
+        });
+        nameField.selectAll();
+        return area;
+    }
 
-	private void updateButtons() {
-		VariableUserType type = processDefinition.getVariableUserType(name);
-		boolean allowCreation = type == null && VariableFormatRegistry.getInstance().getArtifactByLabel(name) == null
-				&& VariableNameChecker.isValid(name);
-		getButton(IDialogConstants.OK_ID).setEnabled(allowCreation);
-	}
+    private void updateButtons() {
+        VariableUserType type = processDefinition.getVariableUserType(name);
+        boolean allowCreation = type == null && VariableFormatRegistry.getInstance().getArtifactByLabel(name) == null
+                && VariableNameChecker.isValid(name);
+        getButton(IDialogConstants.OK_ID).setEnabled(allowCreation);
+    }
 
-	@Override
-	protected void createButtonsForButtonBar(Composite parent) {
-		super.createButtonsForButtonBar(parent);
-		updateButtons();
-	}
+    @Override
+    protected void createButtonsForButtonBar(Composite parent) {
+        super.createButtonsForButtonBar(parent);
+        updateButtons();
+    }
 
-	public String getName() {
-		return name;
-	}
+    public String getName() {
+        return name;
+    }
 
 }
