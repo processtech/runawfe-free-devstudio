@@ -90,6 +90,7 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
             return null;
         }
         setGenericContextButtons(data, pe, CONTEXT_BUTTON_DELETE);
+        ((ContextButtonEntry) data.getGenericContextButtons().get(0)).setIconId("delete.gif");
         //
         CreateConnectionContext createConnectionContext = new CreateConnectionContext();
         createConnectionContext.setSourcePictogramElement(pe);
