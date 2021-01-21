@@ -42,7 +42,7 @@ public class RenameTransitionDialog extends InputDialog {
     }
 
     private void updateButtons() {
-        getButton(IDialogConstants.OK_ID).setEnabled(!(Strings.isNullOrEmpty(getText().getText())));
+        getButton(IDialogConstants.OK_ID).setEnabled(!Strings.isNullOrEmpty(getText().getText()));
     }
 
     @Override

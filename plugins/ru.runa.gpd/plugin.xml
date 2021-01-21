@@ -50,8 +50,8 @@
         </filter>
         <action
               class="ru.runa.gpd.lang.action.RenameTransitionDelegate"
-              id="graph.actions2"
-              label="%label.action.rename"
+              id="graph.actions.rename"
+              label="%button.rename"
               menubarPath="additions"
               style="push">
         </action>
@@ -73,8 +73,8 @@
        </action>
        <action
              class="ru.runa.gpd.lang.action.RenameTransitionDelegate"
-             id="graph.actions2"
-             label="%label.action.rename"
+             id="graph.actions.rename"
+             label="%button.rename"
              menubarPath="additions"
              style="push">
        </action>
