@@ -9,7 +9,7 @@ public class RenameTransitionDelegate extends BaseModelActionDelegate {
     @Override
     public void run(IAction action) {
         Transition transition = (Transition) getSelectionNotNull();
-        RenameTransitionDialog dialog = new RenameTransitionDialog();
+        RenameTransitionDialog dialog = new RenameTransitionDialog(transition.getName());
         if (dialog.open() == RenameTransitionDialog.OK) {
             String newTransitionName = dialog.getValue().trim();
             transition.setName(newTransitionName);
