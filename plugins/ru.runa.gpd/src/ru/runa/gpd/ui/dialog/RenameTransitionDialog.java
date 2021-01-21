@@ -14,16 +14,18 @@ import ru.runa.gpd.Localization;
 
 public class RenameTransitionDialog extends InputDialog {
 
-    public RenameTransitionDialog() {
+    private String transitionName;
+
+    public RenameTransitionDialog(String currentTransitionName) {
         super(Display.getDefault().getActiveShell(), Localization.getString("RenameTransitionDialog.update.title"),
-                Localization.getString("property.name") + ":", Localization.getString("RenameTransitionDialog.defaultTransitionName"),
-                new IInputValidator() {
+                Localization.getString("property.name") + ":", currentTransitionName, new IInputValidator() {
 
                     @Override
                     public String isValid(String value) {
                         return null;
                     }
                 });
+        transitionName = currentTransitionName;
         setBlockOnOpen(true);
     }
 
@@ -42,7 +44,7 @@ public class RenameTransitionDialog extends InputDialog {
     }
 
     private void updateButtons() {
-        getButton(IDialogConstants.OK_ID).setEnabled(!Strings.isNullOrEmpty(getText().getText()));
+        getButton(IDialogConstants.OK_ID).setEnabled(!(Strings.isNullOrEmpty(getText().getText())) && !(getText().getText().equals(transitionName)));
     }
 
     @Override

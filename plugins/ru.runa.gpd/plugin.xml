@@ -73,7 +73,7 @@
        </action>
        <action
              class="ru.runa.gpd.lang.action.RenameTransitionDelegate"
-             id="graph.actions.rename"
+             id="graph.actions.rename.transition"
              label="%button.rename"
              menubarPath="additions"
              style="push">
