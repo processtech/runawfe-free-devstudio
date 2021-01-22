@@ -44,7 +44,7 @@ public class RenameTransitionDialog extends InputDialog {
     }
 
     private void updateButtons() {
-        getButton(IDialogConstants.OK_ID).setEnabled(!(Strings.isNullOrEmpty(getText().getText())) && !(getText().getText().equals(transitionName)));
+        getButton(IDialogConstants.OK_ID).setEnabled(!Strings.isNullOrEmpty(getText().getText()) && !getText().getText().equals(transitionName));
     }
 
     @Override
