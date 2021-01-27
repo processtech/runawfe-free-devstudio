@@ -14,7 +14,7 @@ import ru.runa.gpd.Localization;
 
 public class RenameTransitionDialog extends InputDialog {
 
-    private String transitionName;
+    private final String transitionName;
 
     public RenameTransitionDialog(String currentTransitionName) {
         super(Display.getDefault().getActiveShell(), Localization.getString("RenameTransitionDialog.update.title"),
@@ -44,7 +44,8 @@ public class RenameTransitionDialog extends InputDialog {
     }
 
     private void updateButtons() {
-        getButton(IDialogConstants.OK_ID).setEnabled(!Strings.isNullOrEmpty(getText().getText()) && !getText().getText().equals(transitionName));
+        final String newTransitionName = getText().getText();
+        getButton(IDialogConstants.OK_ID).setEnabled(!Strings.isNullOrEmpty(newTransitionName) && !newTransitionName.equals(transitionName));
     }
 
     @Override
