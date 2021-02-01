@@ -199,6 +199,11 @@
              menubarPath="additions"
              style="pulldown"
              />
+       <action
+             class="ru.runa.gpd.lang.action.RenameAction"
+             id="ru.runa.gpd.action2"
+             label="%button.rename">
+       </action>
     </objectContribution>
     <objectContribution
           adaptable="false"
@@ -648,6 +653,16 @@
              label="%label.menu.generateRegulationData">
        </action>
      </objectContribution>
+    <objectContribution
+          adaptable="false"
+          id="node.rename"
+          objectClass="ru.runa.gpd.lang.model.RenameModel">
+       <action
+             class="ru.runa.gpd.lang.action.RenameAction"
+             id="ru.runa.gpd.action1"
+             label="%button.rename">
+       </action>
+    </objectContribution>
   </extension>
  <extension
        point="org.eclipse.ui.menus">
