@@ -68,7 +68,7 @@ public class SearchPage extends AbstractTextSearchViewPage {
         ElementMatch elementMatch = (ElementMatch) match.getElement();
         IEditorPart editor = null;
         if (ElementMatch.CONTEXT_FORM.equals(elementMatch.getContext())) {
-        	selectFormOrFormValidation(elementMatch);
+        	selectFormNode(elementMatch);
             try {
                 FormNode formNode = (FormNode) elementMatch.getGraphElement();
                 editor = FormTypeProvider.getFormType(formNode.getFormType()).openForm(elementMatch.getFile(), formNode);
@@ -76,7 +76,7 @@ public class SearchPage extends AbstractTextSearchViewPage {
                 PluginLogger.logError(e);
             }
         } else if (ElementMatch.CONTEXT_FORM_VALIDATION.equals(elementMatch.getContext())) {
-        	selectFormOrFormValidation(elementMatch);
+        	selectFormNode(elementMatch);
             try {
                 FormNode formNode = (FormNode) elementMatch.getGraphElement();
                 editor = FormTypeProvider.getFormType(formNode.getFormType())
@@ -146,15 +146,10 @@ public class SearchPage extends AbstractTextSearchViewPage {
         }
     }
     
-<<<<<<< HEAD
-    private void selectFormOrFormValidation(ElementMatch elementMatch) {
-=======
     private void selectFormNode(ElementMatch elementMatch) {
->>>>>>> 85ec0f2bb61c72a961c862de598fbb5d4af77b82
 		ProcessEditorBase processEditor = WorkspaceOperations.openProcessDefinition(elementMatch.getParent().getFile());
 		if (processEditor != null) {
 			processEditor.select(elementMatch.getParent().getGraphElement());
 		}
-    	
     }
 }
