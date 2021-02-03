@@ -146,7 +146,7 @@ public class SearchPage extends AbstractTextSearchViewPage {
         }
     }
     
-    private void selectFormOrFormValidation(ElementMatch elementMatch) {
+    private void selectFormNode(ElementMatch elementMatch) {
 		ProcessEditorBase processEditor = WorkspaceOperations.openProcessDefinition(elementMatch.getParent().getFile());
 		if (processEditor != null) {
 			processEditor.select(elementMatch.getParent().getGraphElement());
