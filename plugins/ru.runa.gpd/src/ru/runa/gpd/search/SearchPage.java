@@ -145,11 +145,11 @@ public class SearchPage extends AbstractTextSearchViewPage {
             contentProvider.clear();
         }
     }
-    
+	
     private void selectFormNode(ElementMatch elementMatch) {
-	ProcessEditorBase processEditor = WorkspaceOperations.openProcessDefinition(elementMatch.getParent().getFile());
-	if (processEditor != null) {
-	    processEditor.select(elementMatch.getParent().getGraphElement());
-	}
+        ProcessEditorBase processEditor = WorkspaceOperations.openProcessDefinition(elementMatch.getParent().getFile());
+        if (processEditor != null) {
+            processEditor.select(elementMatch.getParent().getGraphElement());
+        }
     }
 }
