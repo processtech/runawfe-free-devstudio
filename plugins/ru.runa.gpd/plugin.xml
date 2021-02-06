@@ -199,11 +199,6 @@
              menubarPath="additions"
              style="pulldown"
              />
-       <action
-             class="ru.runa.gpd.lang.action.RenameAction"
-             id="ru.runa.gpd.action2"
-             label="%button.rename">
-       </action>
     </objectContribution>
     <objectContribution
           adaptable="false"
@@ -655,11 +650,31 @@
      </objectContribution>
     <objectContribution
           adaptable="false"
-          id="node.rename"
-          objectClass="ru.runa.gpd.lang.model.RenameModel">
+          id="ru.runa.gpd.rename.node.startstate.action"
+          objectClass="ru.runa.gpd.lang.model.StartState">
        <action
              class="ru.runa.gpd.lang.action.RenameAction"
-             id="ru.runa.gpd.action1"
+             id="Rename"
+             label="%button.rename">
+       </action>
+    </objectContribution>
+    <objectContribution
+          adaptable="false"
+          id="ru.runa.gpd.rename.node.endstat.action"
+          objectClass="ru.runa.gpd.lang.model.EndState">
+       <action
+             class="ru.runa.gpd.lang.action.RenameAction"
+             id="Rename"
+             label="%button.rename">
+       </action>
+    </objectContribution>
+    <objectContribution
+          adaptable="false"
+          id="ru.runa.gpd.rename.node.endtokenstate.action"
+          objectClass="ru.runa.gpd.lang.model.EndTokenState">
+       <action
+             class="ru.runa.gpd.lang.action.RenameAction"
+             id="Rename"
              label="%button.rename">
        </action>
     </objectContribution>
