@@ -660,18 +660,8 @@
     </objectContribution>
     <objectContribution
           adaptable="false"
-          id="ru.runa.gpd.rename.node.endstat.action"
-          objectClass="ru.runa.gpd.lang.model.EndState">
-       <action
-             class="ru.runa.gpd.lang.action.RenameAction"
-             id="Rename"
-             label="%button.rename">
-       </action>
-    </objectContribution>
-    <objectContribution
-          adaptable="false"
-          id="ru.runa.gpd.rename.node.endtokenstate.action"
-          objectClass="ru.runa.gpd.lang.model.EndTokenState">
+          id="ru.runa.gpd.rename.abstractendtextdecorated.action"
+          objectClass="ru.runa.gpd.lang.model.bpmn.AbstractEndTextDecorated">
        <action
              class="ru.runa.gpd.lang.action.RenameAction"
              id="Rename"
