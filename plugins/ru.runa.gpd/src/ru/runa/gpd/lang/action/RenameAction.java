@@ -19,7 +19,7 @@ public class RenameAction extends BaseModelActionDelegate {
                 (String value) -> {
                     if (value.trim().isEmpty()) {
                         return Localization.getString("VariableNamePage.error.empty", value);
-                    } else if (value.equals(currentName)) {
+                    } else if (value.trim().equals(currentName)) {
                         return Localization.getString("VariableNamePage.error.duplicated", value);
                     }
                     return null;
