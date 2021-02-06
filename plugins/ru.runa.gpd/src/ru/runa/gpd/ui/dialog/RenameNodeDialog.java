@@ -4,8 +4,7 @@ import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.swt.widgets.Shell;
 
-
-public class RenameNodeDialog extends InputDialog{
+public class RenameNodeDialog extends InputDialog {
 
 	public RenameNodeDialog(Shell parentShell, String dialogTitle, String dialogMessage, String initialValue,
 			IInputValidator validator) {
