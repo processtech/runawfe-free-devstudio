@@ -36,20 +36,22 @@ public class ParFileExporter {
         final IFolder processFolder = (IFolder) definitionFile.getParent();
         processFolder.refreshLocal(IResource.DEPTH_ONE, null);
         final ProcessDefinition definition = ProcessCache.getProcessDefinition(definitionFile);
-        int validationResult = ProcessDefinitionValidator.validateDefinition(definition);
-        if (!ignoreErrors && validationResult != ProcessDefinitionValidator.NO_ERRORS) {
-            warningHandler.apply(ValidationErrorsView.ID);
-            if (validationResult == ProcessDefinitionValidator.ERRORS) {
-                errorHandler.apply(Localization.getString("ExportParWizardPage.page.errorsExist"));
-                return false;
-            }
-        }
-        for (final SubprocessDefinition subprocessDefinition : definition.getEmbeddedSubprocesses().values()) {
-            validationResult = ProcessDefinitionValidator.validateDefinition(subprocessDefinition);
-            if (!ignoreErrors && validationResult != ProcessDefinitionValidator.NO_ERRORS) {
+        if (!ignoreErrors) {
+            int validationResult = ProcessDefinitionValidator.validateDefinition(definition);
+            if (validationResult != ProcessDefinitionValidator.NO_ERRORS) {
+                warningHandler.apply(ValidationErrorsView.ID);
                 if (validationResult == ProcessDefinitionValidator.ERRORS) {
-                    errorHandler.apply(Localization.getString("ExportParWizardPage.page.errorsExistInEmbeddedSubprocess"));
+                    errorHandler.apply(Localization.getString("ExportParWizardPage.page.errorsExist"));
                     return false;
+                }
+            }
+            for (final SubprocessDefinition subprocessDefinition : definition.getEmbeddedSubprocesses().values()) {
+                validationResult = ProcessDefinitionValidator.validateDefinition(subprocessDefinition);
+                if (validationResult != ProcessDefinitionValidator.NO_ERRORS) {
+                    if (validationResult == ProcessDefinitionValidator.ERRORS) {
+                        errorHandler.apply(Localization.getString("ExportParWizardPage.page.errorsExistInEmbeddedSubprocess"));
+                        return false;
+                    }
                 }
             }
         }
