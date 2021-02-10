@@ -390,5 +390,4 @@ Export-Package: antlr,
  ru.runa.wfe.var.impl,
  ru.runa.wfe.var.logic,
  ru.runa.wfe.var.matcher
-Import-Package: org.eclipse.debug.internal.ui.actions
 
