@@ -1,7 +1,6 @@
 package ru.runa.gpd.lang.action;
 
 import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.swt.widgets.Display;
 
@@ -17,18 +16,20 @@ public class RenameAction extends BaseModelActionDelegate {
         String currentName = node.getName();
         InputDialog renameNodeDialog = new InputDialog(Display.getDefault().getActiveShell(), null, Localization.getString("InputValue"), currentName,
                 (String value) -> {
-                    if (value.trim().isEmpty()) {
+                    value = value.trim();
+                    if (value.isEmpty()) {
                         return Localization.getString("VariableNamePage.error.empty", value);
-                    } else if (value.trim().equals(currentName)) {
-                        return Localization.getString("VariableNamePage.error.duplicated", value);
+                    } else if (value.equals(currentName)) {
+                        return Localization.getString("RenameAction.error.new.name.equals.old", value);
                     }
                     return null;
                 });
         renameNodeDialog.open();
         try {
             String newName = renameNodeDialog.getValue();
-            if (newName != null && !newName.trim().equals(""))
+            if (renameNodeDialog.getReturnCode() == 0) {
                 node.setName(newName.trim());
+            }
         } catch (Exception e) {
             PluginLogger.logError(e);
         }
