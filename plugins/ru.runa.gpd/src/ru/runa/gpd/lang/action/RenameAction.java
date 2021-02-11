@@ -24,11 +24,9 @@ public class RenameAction extends BaseModelActionDelegate {
                     }
                     return null;
                 });
-        renameNodeDialog.open();
         try {
-            String newName = renameNodeDialog.getValue();
-            if (renameNodeDialog.getReturnCode() == 0) {
-                node.setName(newName.trim());
+            if (renameNodeDialog.open() == InputDialog.OK) {
+                node.setName(renameNodeDialog.getValue().trim());
             }
         } catch (Exception e) {
             PluginLogger.logError(e);
