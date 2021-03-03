@@ -1171,6 +1171,45 @@
          </param>
       </component>
       <component
+              enabled="true"
+              id="SingleSelectFromUserTypeList"
+              name="%Method.SingleSelectFromUserTypeList"
+              order="-82">
+         <param
+                 name="%Param.Variable"
+                 optional="false"
+                 type="varfinder"
+                 variableAccess="WRITE"
+                 variableTypeFilter="ru.runa.wfe.var.UserTypeMap">
+         </param>
+         <param
+                 name="%Param.InputData"
+                 optional="false"
+                 type="usertypevarlistcombo"
+                 variableAccess="READ"
+                 variableTypeFilter="java.util.List">
+         </param>
+         <param
+                 name="%Param.DisplayFormat"
+                 type="combo"
+                 variableAccess="NONE">
+            <paramValue
+                    name="%Format.Variable.Component"
+                    value="true">
+            </paramValue>
+            <paramValue
+                    name="%Format.Variable.Output"
+                    value="false">
+            </paramValue>
+         </param>
+         <param
+                 name="%Param.Attributes"
+                 optional="true"
+                 type="usertypeattributelist"
+                 variableAccess="NONE">
+         </param>
+      </component>
+      <component
             enabled="true"
             id="EditUserTypeList"
             imageProvider="ru.runa.gpd.formeditor.ftl.image.VariableComponentImageProvider"
