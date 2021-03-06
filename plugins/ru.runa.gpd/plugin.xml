@@ -671,6 +671,26 @@
              label="%label.menu.generateRegulationData">
        </action>
      </objectContribution>
+    <objectContribution
+          adaptable="false"
+          id="ru.runa.gpd.rename.node.startstate.action"
+          objectClass="ru.runa.gpd.lang.model.FormNode">
+       <action
+             class="ru.runa.gpd.lang.action.RenameAction"
+             id="Rename"
+             label="%button.rename">
+       </action>
+    </objectContribution>
+    <objectContribution
+          adaptable="false"
+          id="ru.runa.gpd.rename.abstractendtextdecorated.action"
+          objectClass="ru.runa.gpd.lang.model.bpmn.AbstractEndTextDecorated">
+       <action
+             class="ru.runa.gpd.lang.action.RenameAction"
+             id="Rename"
+             label="%button.rename">
+       </action>
+    </objectContribution>
   </extension>
  <extension
        point="org.eclipse.ui.menus">
