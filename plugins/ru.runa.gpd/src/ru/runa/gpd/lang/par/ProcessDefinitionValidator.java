@@ -1,7 +1,9 @@
 package ru.runa.gpd.lang.par;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import java.util.List;
+import java.util.Map;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
@@ -60,36 +62,38 @@ public class ProcessDefinitionValidator {
         try {
             IMarker marker = definitionFile.createMarker(ValidationErrorsView.ID);
             if (marker.exists()) {
-                marker.setAttribute(IMarker.MESSAGE, validationError.getMessage());
+                Map<String, Object> attributes = Maps.newHashMap();
+                attributes.put(IMarker.MESSAGE, validationError.getMessage());
                 String elementId = validationError.getSource().toString();
                 if (validationError.getSource() instanceof Node) {
                     elementId = ((Node) validationError.getSource()).getId();
                 }
                 if (validationError.getSource() instanceof Swimlane) {
-                    marker.setAttribute(PluginConstants.SWIMLANE_LINK_KEY, elementId);
+                    attributes.put(PluginConstants.SWIMLANE_LINK_KEY, elementId);
                 } else if (validationError.getSource() instanceof Action) {
                     Action action = (Action) validationError.getSource();
                     NamedGraphElement actionParent = (NamedGraphElement) action.getParent();
                     if (actionParent != null) {
-                        marker.setAttribute(PluginConstants.ACTION_INDEX_KEY, actionParent.getActions().indexOf(action));
+                        attributes.put(PluginConstants.ACTION_INDEX_KEY, actionParent.getActions().indexOf(action));
                         String parentNodeTreePath;
                         if (actionParent instanceof Transition) {
                             parentNodeTreePath = ((NamedGraphElement) actionParent.getParent()).getName() + "|" + actionParent.getName();
                         } else {
                             parentNodeTreePath = actionParent.getName();
                         }
-                        marker.setAttribute(PluginConstants.PARENT_NODE_KEY, parentNodeTreePath);
+                        attributes.put(PluginConstants.PARENT_NODE_KEY, parentNodeTreePath);
                         elementId = action + " (" + parentNodeTreePath + ")";
                     } else {
                         elementId = action.toString();
                     }
                 } else {
-                    marker.setAttribute(PluginConstants.SELECTION_LINK_KEY, elementId);
+                    attributes.put(PluginConstants.SELECTION_LINK_KEY, elementId);
                 }
-                marker.setAttribute(IMarker.LOCATION, validationError.getSource().toString());
-                marker.setAttribute(IMarker.SEVERITY, validationError.getSeverity());
-                marker.setAttribute(PluginConstants.VALIDATION_ERROR_DETAILS_KEY, validationError.getDetails());
-                marker.setAttribute(PluginConstants.PROCESS_NAME_KEY, definition.getName());
+                attributes.put(IMarker.LOCATION, validationError.getSource().toString());
+                attributes.put(IMarker.SEVERITY, validationError.getSeverity());
+                attributes.put(PluginConstants.VALIDATION_ERROR_DETAILS_KEY, validationError.getDetails());
+                attributes.put(PluginConstants.PROCESS_NAME_KEY, definition.getName());
+                marker.setAttributes(attributes);
             }
         } catch (CoreException e) {
             PluginLogger.logError(e);
