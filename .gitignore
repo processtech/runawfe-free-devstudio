@@ -2,6 +2,7 @@
 /plugins/*/target
 /plugins/ru.altlinux.tnms*
 tnms-devstudio-pom.xml
+tnms-utils-devstudio-pom.xml
 /plugins/ru.runa.spz
 /plugins/ru.runa.spz.maven
 spz-devstudio-pom.xml
@@ -9,3 +10,4 @@ spz-devstudio-pom.xml
 *.iml
 .idea
 plugins/workspace
+

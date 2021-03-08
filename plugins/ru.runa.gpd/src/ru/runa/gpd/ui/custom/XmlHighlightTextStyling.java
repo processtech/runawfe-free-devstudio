@@ -2,7 +2,6 @@ package ru.runa.gpd.ui.custom;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.graphics.Color;
@@ -24,7 +23,7 @@ public class XmlHighlightTextStyling extends HighlightTextStyling {
         addHighlight("comment", "(?s)(<!--.*?-->)|(<!--.*?\\z)", COLOR_XML_COMMENT, SWT.ITALIC);
     }
 
-    public static void addHighlight(String name, String regexp, Color fg, int textStyle) {
+    private static void addHighlight(String name, String regexp, Color fg, int textStyle) {
         StyleRange styleRange = new StyleRange(0, 0, fg, null, textStyle);
         RegexpHighlight highlight = new RegexpHighlight(name, regexp, false, styleRange);
         highlightDefinitions.add(highlight);

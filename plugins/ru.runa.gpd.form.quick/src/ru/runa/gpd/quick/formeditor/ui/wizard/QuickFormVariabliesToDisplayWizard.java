@@ -1,12 +1,10 @@
 package ru.runa.gpd.quick.formeditor.ui.wizard;
 
 import java.util.List;
-
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
-
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.quick.formeditor.QuickFormGpdVariable;
 
@@ -33,6 +31,7 @@ public class QuickFormVariabliesToDisplayWizard extends Wizard implements INewWi
 
     @Override
     public boolean performFinish() {
+        quickFormVariableDefs.clear();
     	quickFormVariableDefs.addAll(page.getSelectedVariables());
         return true;
     }

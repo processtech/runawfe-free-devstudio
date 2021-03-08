@@ -144,9 +144,9 @@ public class GlobalValidatorsPage extends Composite implements PropertyChangeLis
         valComposite.setLayoutData(valGridData);
         valComposite.setLayout(new GridLayout(2, false));
 
-        validatorsTableViewer = new TableViewer(valComposite, SWT.SINGLE | SWT.BORDER | SWT.FULL_SELECTION);
+        validatorsTableViewer = new TableViewer(valComposite, SWT.BORDER | SWT.FULL_SELECTION);
         GridData data = new GridData(GridData.FILL_BOTH);
-        data.minimumHeight = 200;
+        data.minimumHeight = 100;
         validatorsTableViewer.getControl().setLayoutData(data);
         validatorsTableViewer.setLabelProvider(new LabelProvider() {
             @Override
@@ -245,7 +245,7 @@ public class GlobalValidatorsPage extends Composite implements PropertyChangeLis
             errorMessageText.addVerifyListener(new VerifyListener() {
                 @Override
                 public void verifyText(VerifyEvent e) {
-                    if (e.keyCode != 0) {
+                    if (!isConfiguring(errorMessageText)) {
                         setDirty(true);
                     }
                 }

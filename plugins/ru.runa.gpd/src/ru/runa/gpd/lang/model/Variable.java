@@ -3,6 +3,9 @@ package ru.runa.gpd.lang.model;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
@@ -10,6 +13,8 @@ import ru.runa.gpd.Localization;
 import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.extension.LocalizationRegistry;
 import ru.runa.gpd.extension.VariableFormatRegistry;
+import ru.runa.gpd.lang.ValidationError;
+import ru.runa.gpd.util.VariableUtils;
 import ru.runa.wfe.var.UserTypeMap;
 
 public class Variable extends NamedGraphElement implements Describable {
@@ -258,4 +263,40 @@ public class Variable extends NamedGraphElement implements Describable {
         return super.equals(obj);
     }
 
+    @Override
+    public void validate(List<ValidationError> errors, IFile definitionFile) {
+        super.validate(errors, definitionFile);
+        Map<String, String> undeclaredTypesMap = new TreeMap<String, String>();
+        checkVariableType(this, getVariables(true, true), undeclaredTypesMap);
+        undeclaredTypesMap.entrySet().stream()
+                .forEach(entry -> errors.add(ValidationError.createLocalizedError(this, "unknown.variableType", entry.getValue(), entry.getKey())));
+    }
+
+    private void checkVariableType(Variable variable, List<Variable> allVaribales, Map<String, String> undeclaredTypesMap) {
+        VariableUserType userType = variable.getUserType();
+        String format = variable.getFormat();
+        if (format.startsWith(VariableUserType.PREFIX) && null == userType) {
+            undeclaredTypesMap.put(variable.getName(), getName());
+        }
+        if (null == userType && VariableUtils.isContainerVariable(variable)) {
+            String embeddedTypeName = VariableUtils.getListVariableComponentFormat(variable);
+            userType = getProcessDefinition().getVariableUserType(embeddedTypeName);
+            Class<?> objectClass = null;
+            try {
+                objectClass = Class.forName(embeddedTypeName);
+            } catch (ClassNotFoundException e) {
+                objectClass = null;
+            }
+
+            if (null == objectClass && null == userType) {
+                undeclaredTypesMap.put(embeddedTypeName, getName());
+            }
+        }
+        if (null != userType) {
+            List<Variable> attributesList = userType.getAttributes();
+            for (Variable attributeVariable : attributesList) {
+                checkVariableType(attributeVariable, allVaribales, undeclaredTypesMap);
+            }
+        }
+    }
 }

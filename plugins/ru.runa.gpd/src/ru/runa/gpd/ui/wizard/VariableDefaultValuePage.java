@@ -1,5 +1,6 @@
 package ru.runa.gpd.ui.wizard;
 
+import com.google.common.base.Strings;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.SelectionEvent;
@@ -7,8 +8,9 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.ui.custom.DynaContentWizardPage;
@@ -19,8 +21,6 @@ import ru.runa.wfe.commons.TypeConversionUtil;
 import ru.runa.wfe.user.Actor;
 import ru.runa.wfe.user.Executor;
 import ru.runa.wfe.user.Group;
-
-import com.google.common.base.Strings;
 
 public class VariableDefaultValuePage extends DynaContentWizardPage {
     private String defaultValue;
@@ -82,8 +82,13 @@ public class VariableDefaultValuePage extends DynaContentWizardPage {
         VariableFormatPage formatPage = (VariableFormatPage) getWizard().getPage(VariableFormatPage.class.getSimpleName());
         if (formatPage.getUserType() != null || formatPage.getComponentClassNames().length > 0 /* List|Map */) {
             // TODO validate UserType attributes
-            if (JSONValue.parse(defaultValue.replaceAll("&quot;", "\"")) == null) {
-                throw new Exception(Localization.getString("VariableDefaultValuePage.error.expected.json"));
+            Object value = JSONValue.parse(defaultValue.replaceAll("&quot;", "\""));
+            if ((formatPage.getUserType() != null || formatPage.getComponentClassNames().length == 2 /* Map */)) {
+                if (value == null || !(value instanceof JSONObject)) {
+                    throw new Exception(Localization.getString("VariableDefaultValuePage.error.expected.json_object"));
+                }
+            } else if (formatPage.getComponentClassNames().length == 1 /* List */ && (value == null || !(value instanceof JSONArray))) {
+                throw new Exception(Localization.getString("VariableDefaultValuePage.error.expected.json_array"));
             }
         } else {
             String className = formatPage.getType().getJavaClassName();
@@ -97,7 +102,7 @@ public class VariableDefaultValuePage extends DynaContentWizardPage {
 
     public boolean isValidContent() {
         try {
-            if (defaultValue != null) {
+            if (defaultValue != null && !defaultValue.isEmpty()) {
                 verifyDefaultValue();
                 setErrorMessage(null);
             }

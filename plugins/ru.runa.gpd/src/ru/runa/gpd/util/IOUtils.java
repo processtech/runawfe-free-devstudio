@@ -90,6 +90,11 @@ public class IOUtils {
         return fileName.substring(lastPointIndex + 1);
     }
 
+    public static String getWithoutExtension(String fileName) {
+        int index = fileName.lastIndexOf('.');
+        return index == -1 ? fileName : fileName.substring(0, index);
+    }
+
     public static void copyFileToDir(File sourceFile, File destDir) throws IOException {
         FileInputStream fis = new FileInputStream(sourceFile);
         File destFile = new File(destDir, sourceFile.getName());

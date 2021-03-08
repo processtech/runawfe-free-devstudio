@@ -9,21 +9,19 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.Optional;
 import java.util.TreeMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -47,15 +45,16 @@ import ru.runa.gpd.aspects.UserActivity;
 import ru.runa.gpd.editor.ProcessSaveHistory;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
-import ru.runa.gpd.lang.par.ProcessDefinitionValidator;
 import ru.runa.gpd.sync.WfeServerConnector;
 import ru.runa.gpd.sync.WfeServerConnectorComposite;
 import ru.runa.gpd.sync.WfeServerProcessDefinitionImporter;
 import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.custom.StatusBarUtils;
-import ru.runa.gpd.ui.view.ValidationErrorsView;
 import ru.runa.gpd.util.IOUtils;
+import ru.runa.gpd.util.files.FileResourcesExportOperation;
+import ru.runa.gpd.util.files.ParFileExporter;
+import ru.runa.gpd.util.files.ZipFileExporter;
 
 public class ExportParWizardPage extends ExportWizardPage {
     private final Map<String, IFile> definitionNameFileMap;
@@ -173,7 +172,7 @@ public class ExportParWizardPage extends ExportWizardPage {
     }
 
     public boolean finish() {
-        boolean exportToFile = exportToFileButton.getSelection();
+        final boolean exportToFile = exportToFileButton.getSelection();
         saveDirtyEditors();
         List<String> selectedDefinitionNames = ((IStructuredSelection) definitionListViewer.getSelection()).toList();
         if (selectedDefinitionNames.size() == 0) {
@@ -188,133 +187,83 @@ public class ExportParWizardPage extends ExportWizardPage {
             setErrorMessage(Localization.getString("error.selectValidConnection"));
             return false;
         }
-        for (String selectedDefinitionName : selectedDefinitionNames) {
+        boolean result = true;
+        for (final String selectedDefinitionName : selectedDefinitionNames) {
             try {
-                IFile definitionFile = definitionNameFileMap.get(selectedDefinitionName);
-                IFolder processFolder = (IFolder) definitionFile.getParent();
-                processFolder.refreshLocal(IResource.DEPTH_ONE, null);
-                ProcessDefinition definition = ProcessCache.getProcessDefinition(definitionFile);
-                int validationResult = ProcessDefinitionValidator.validateDefinition(definition);
-                if (!exportToFile && validationResult != 0) {
-                    Activator.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(ValidationErrorsView.ID);
-                    if (validationResult == 2) {
-                        setErrorMessage(Localization.getString("ExportParWizardPage.page.errorsExist"));
-                        return false;
-                    }
-                }
-                for (SubprocessDefinition subprocessDefinition : definition.getEmbeddedSubprocesses().values()) {
-                    validationResult = ProcessDefinitionValidator.validateDefinition(subprocessDefinition);
-                    if (!exportToFile && validationResult != 0) {
-                        if (validationResult == 2) {
-                            setErrorMessage(Localization.getString("ExportParWizardPage.page.errorsExistInEmbeddedSubprocess"));
-                            return false;
+                final IFile definitionFile = definitionNameFileMap.get(selectedDefinitionName);
+                result &= new ParFileExporter(definitionFile).export(exportToFile, (definition, resourcesToExport) -> {
+                    if (exportToFile) {
+                        if (definition.isInvalid() && !Dialogs
+                                .confirm(Localization.getString("ExportParWizardPage.confirm.export.invalid.process", definition.getName()))) {
+                            return Optional.empty();
                         }
+                        final String outputFileName = getDestinationValue() + definition.getName() + ".par";
+                        return Optional
+                                .of(new FileResourcesExportOperation(resourcesToExport, new ZipFileExporter(new FileOutputStream(outputFileName))));
+                    } else {
+                        return Optional.of(new ParDeployOperation(resourcesToExport, definition.getName(), new ByteArrayOutputStream(),
+                                updateLatestVersionButton.getSelection()));
                     }
-                }
-                definition.getLanguage().getSerializer().validateProcessDefinitionXML(definitionFile);
-                List<IFile> resourcesToExport = new ArrayList<IFile>();
-                IResource[] members = processFolder.members();
-                for (IResource resource : members) {
-                    if (resource instanceof IFile) {
-                        resourcesToExport.add((IFile) resource);
-                    }
-                }
-                if (exportToFile) {
-                    if (definition.isInvalid()
-                            && !Dialogs.confirm(Localization.getString("ExportParWizardPage.confirm.export.invalid.process", definition.getName()))) {
-                        continue;
-                    }
-                    String outputFileName = getDestinationValue() + definition.getName() + ".par";
-                    new ParExportOperation(resourcesToExport, new FileOutputStream(outputFileName)).run(null);
-                    if (ProcessSaveHistory.isActive()) {
-                        Map<String, File> savepoints = ProcessSaveHistory.getSavepoints(processFolder);
-                        if (savepoints.size() > 0) {
-                            List<File> filesToExport = new ArrayList<>();
-                            for (Map.Entry<String, File> savepoint : savepoints.entrySet()) {
-                                filesToExport.add(savepoint.getValue());
-                            }
-                            filesToExport.add(new File(outputFileName));
-                            String oldestSavepointName = ((NavigableMap<String, File>) savepoints).lastEntry().getValue().getName();
-                            String oldestTimestamp = oldestSavepointName.substring(oldestSavepointName.lastIndexOf("_") + 1,
-                                    oldestSavepointName.lastIndexOf("."));
-                            Map<String, File> uaLogs = UserActivity.getLogs(processFolder);
-                            for (Map.Entry<String, File> uaLog : uaLogs.entrySet()) {
-                                if (oldestTimestamp.compareTo(uaLog.getKey()) <= 0) {
-                                    filesToExport.add(uaLog.getValue());
-                                }
-                            }
-                            zip(filesToExport, new FileOutputStream(getDestinationValue() + definition.getName() + ".har"));
-                            PluginLogger.logInfo(Localization.getString("DialogEnhancement.exportSuccessful"));
+                }, w -> Activator.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(w), e -> setErrorMessage(e));
+                if (exportToFile && result && ProcessSaveHistory.isActive()) {
+                    IFolder processFolder = (IFolder) definitionFile.getParent();
+                    Map<String, File> savepoints = ProcessSaveHistory.getSavepoints(processFolder);
+                    if (savepoints.size() > 0) {
+                        List<File> filesToExport = new ArrayList<>();
+                        for (Map.Entry<String, File> savepoint : savepoints.entrySet()) {
+                            filesToExport.add(savepoint.getValue());
                         }
+                        filesToExport.add(new File(getDestinationValue() + processFolder.getName() + ".par"));
+                        String oldestSavepointName = ((NavigableMap<String, File>) savepoints).lastEntry().getValue().getName();
+                        String oldestTimestamp = oldestSavepointName.substring(oldestSavepointName.lastIndexOf("_") + 1,
+                                oldestSavepointName.lastIndexOf("."));
+                        Map<String, File> uaLogs = UserActivity.getLogs(processFolder);
+                        for (Map.Entry<String, File> uaLog : uaLogs.entrySet()) {
+                            if (oldestTimestamp.compareTo(uaLog.getKey()) <= 0) {
+                                filesToExport.add(uaLog.getValue());
+                            }
+                        }
+                        zip(filesToExport, new FileOutputStream(getDestinationValue() + processFolder.getName() + ".har"));
+                        PluginLogger.logInfo(Localization.getString("DialogEnhancement.exportSuccessful"));
                     }
-                } else {
-                    new ParDeployOperation(resourcesToExport, definition.getName(), updateLatestVersionButton.getSelection()).run(null);
-                    PluginLogger.logInfo(Localization.getString("DialogEnhancement.exportSuccessful"));
                 }
             } catch (Throwable th) {
                 PluginLogger.logErrorWithoutDialog(Localization.getString("ExportParWizardPage.error.export"), th);
-                setErrorMessage(Throwables.getRootCause(th).getMessage());
+                setErrorMessage(stripSoapTrash(Throwables.getRootCause(th).getMessage()));
                 return false;
             }
         }
-        return true;
+        return result;
     }
 
-    public static class ParExportOperation implements IRunnableWithProgress {
-        protected final OutputStream outputStream;
-        protected final List<IFile> resourcesToExport;
-
-        public ParExportOperation(List<IFile> resourcesToExport, OutputStream outputStream) {
-            this.outputStream = outputStream;
-            this.resourcesToExport = resourcesToExport;
+    private String stripSoapTrash(String trash) {
+        final String head = "exception:";
+        final String tail = "please see the server log to find more detail regarding exact cause of the failure.";
+        int index = trash.toLowerCase().lastIndexOf(head);
+        String tag = (index > 0 ? trash.substring(index + head.length()) : trash);
+        if (tag.toLowerCase().endsWith(tail)) {
+            tag = tag.substring(0, tag.length() - tail.length());
         }
-
-        protected void exportResource(ParFileExporter exporter, IFile fileResource, IProgressMonitor progressMonitor)
-                throws IOException, CoreException {
-            if (!fileResource.isSynchronized(IResource.DEPTH_ONE)) {
-                fileResource.refreshLocal(IResource.DEPTH_ONE, null);
-            }
-            if (!fileResource.isAccessible()) {
-                return;
-            }
-            String destinationName = fileResource.getName();
-            exporter.write(fileResource, destinationName);
-        }
-
-        protected void exportResources(IProgressMonitor progressMonitor) {
-            try {
-                ParFileExporter exporter = new ParFileExporter(outputStream);
-                for (IFile resource : resourcesToExport) {
-                    exportResource(exporter, resource, progressMonitor);
-                }
-                exporter.finished();
-                outputStream.flush();
-            } catch (Exception e) {
-                throw Throwables.propagate(e);
-            }
-        }
-
-        @Override
-        public void run(IProgressMonitor progressMonitor) throws InvocationTargetException, InterruptedException {
-            exportResources(progressMonitor);
-        }
+        return tag.trim();
     }
 
-    public static class ParDeployOperation extends ParExportOperation {
+    public static class ParDeployOperation extends FileResourcesExportOperation {
+        private final ByteArrayOutputStream outputStream;
         private final String definitionName;
         private final boolean updateLatestVersion;
 
-        public ParDeployOperation(List<IFile> resourcesToExport, String definitionName, boolean updateLatestVersion) {
-            super(resourcesToExport, new ByteArrayOutputStream());
+        public ParDeployOperation(List<IFile> resourcesToExport, String definitionName, ByteArrayOutputStream outputStream,
+                boolean updateLatestVersion) throws IOException {
+            super(resourcesToExport, new ZipFileExporter(outputStream));
+            this.outputStream = outputStream;
             this.definitionName = definitionName;
             this.updateLatestVersion = updateLatestVersion;
         }
 
         @Override
-        public void run(final IProgressMonitor progressMonitor) {
-            exportResources(progressMonitor);
-            final ByteArrayOutputStream baos = (ByteArrayOutputStream) outputStream;
-            WfeServerProcessDefinitionImporter.getInstance().uploadPar(definitionName, updateLatestVersion, baos.toByteArray(), true);
+        public void exportResources(final IProgressMonitor progressMonitor) {
+            super.exportResources(progressMonitor);
+            WfeServerProcessDefinitionImporter.getInstance().uploadPar(definitionName, updateLatestVersion, outputStream.toByteArray(), true);
             String message;
             if (updateLatestVersion) {
                 message = Localization.getString("ExportParWizardPage.par.update.completed");
@@ -323,41 +272,6 @@ public class ExportParWizardPage extends ExportWizardPage {
             }
             StatusBarUtils.updateStatusBar(message + " " + WfeServerConnector.getInstance().getSettings().getUrl());
         }
-    }
-
-    private static class ParFileExporter {
-        private final ZipOutputStream outputStream;
-
-        public ParFileExporter(OutputStream outputStream) throws IOException {
-            this.outputStream = new ZipOutputStream(outputStream);
-        }
-
-        public void write(IFile resource, String destinationPath) throws IOException, CoreException {
-            ZipEntry newEntry = new ZipEntry(destinationPath);
-            write(newEntry, resource);
-        }
-
-        public void finished() throws IOException {
-            outputStream.close();
-        }
-
-        private void write(ZipEntry entry, IFile contents) throws IOException, CoreException {
-            byte[] readBuffer = new byte[1024];
-            outputStream.putNextEntry(entry);
-            InputStream contentStream = contents.getContents();
-            try {
-                int n;
-                while ((n = contentStream.read(readBuffer)) > 0) {
-                    outputStream.write(readBuffer, 0, n);
-                }
-            } finally {
-                if (contentStream != null) {
-                    contentStream.close();
-                }
-            }
-            outputStream.closeEntry();
-        }
-
     }
 
     private void zip(List<File> files, OutputStream os) throws IOException, CoreException {

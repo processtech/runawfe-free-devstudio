@@ -18,12 +18,13 @@ import ru.runa.gpd.Localization;
 import ru.runa.gpd.extension.VariableFormatRegistry;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.VariableUserType;
+import ru.runa.gpd.settings.CommonPreferencePage;
 import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
 import ru.runa.gpd.ui.custom.VariableNameChecker;
 
 public class VariableUserTypeDialog extends Dialog {
     private String name;
-    private boolean isStoreInExternalStorage;
+    private boolean isStoreInInternalStorage;
     private final ProcessDefinition processDefinition;
     private final boolean createMode;
 
@@ -31,7 +32,7 @@ public class VariableUserTypeDialog extends Dialog {
         super(Display.getCurrent().getActiveShell());
         this.processDefinition = processDefinition;
         this.name = type != null ? type.getName() : "";
-        this.isStoreInExternalStorage = type != null ? type.isStoreInExternalStorage() : false;
+        this.isStoreInInternalStorage = type != null ? type.isStoreInExternalStorage() : false;
         this.createMode = type == null;
     }
 
@@ -73,14 +74,16 @@ public class VariableUserTypeDialog extends Dialog {
             }
         });
 
-        new Label(composite, SWT.NONE);
-        final Button storeInExternalStorageCheckbox = new Button(composite, SWT.CHECK);
-        storeInExternalStorageCheckbox.setText(Localization.getString("UserDefinedVariableType.storeInExternalStorage"));
-        storeInExternalStorageCheckbox.setSelection(isStoreInExternalStorage);
-        storeInExternalStorageCheckbox.addSelectionListener(SelectionListener.widgetSelectedAdapter(c -> {
-            isStoreInExternalStorage = !isStoreInExternalStorage;
-            updateButtons();
-        }));
+        if (CommonPreferencePage.isInternalStorageFunctionalityEnabled()) {
+            new Label(composite, SWT.NONE);
+            final Button storeInExternalStorageCheckbox = new Button(composite, SWT.CHECK);
+            storeInExternalStorageCheckbox.setText(Localization.getString("UserDefinedVariableType.storeInExternalStorage"));
+            storeInExternalStorageCheckbox.setSelection(isStoreInInternalStorage);
+            storeInExternalStorageCheckbox.addSelectionListener(SelectionListener.widgetSelectedAdapter(c -> {
+                isStoreInInternalStorage = !isStoreInInternalStorage;
+                updateButtons();
+            }));
+        }
 
         if (!createMode) {
             nameField.selectAll();
@@ -92,7 +95,7 @@ public class VariableUserTypeDialog extends Dialog {
         final VariableUserType type = processDefinition.getVariableUserType(name);
         final boolean allowCreation = type == null && VariableFormatRegistry.getInstance().getArtifactByLabel(name) == null
                 && VariableNameChecker.isValid(name);
-        final boolean allowEdit = (type != null && type.isStoreInExternalStorage() != isStoreInExternalStorage) || allowCreation;
+        final boolean allowEdit = (type != null && type.isStoreInExternalStorage() != isStoreInInternalStorage) || allowCreation;
         getButton(IDialogConstants.OK_ID).setEnabled(createMode ? allowCreation : allowEdit);
     }
 
@@ -106,7 +109,7 @@ public class VariableUserTypeDialog extends Dialog {
         return name;
     }
 
-    public boolean isStoreInExternalStorage() {
-        return isStoreInExternalStorage;
+    public boolean isStoreInInternalStorage() {
+        return isStoreInInternalStorage;
     }
 }

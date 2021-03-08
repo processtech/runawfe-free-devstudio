@@ -99,11 +99,9 @@ public class BotTaskUtils {
         return false;
     }
 
-    public static InputStream createBotStationInfo(String botStationName, String rmiAddress) {
+    public static InputStream createBotStationInfo(String botStationName) {
         StringBuilder buffer = new StringBuilder();
         buffer.append(botStationName);
-        buffer.append("\n");
-        buffer.append(rmiAddress);
         buffer.append("\n");
         return new ByteArrayInputStream(buffer.toString().getBytes());
     }

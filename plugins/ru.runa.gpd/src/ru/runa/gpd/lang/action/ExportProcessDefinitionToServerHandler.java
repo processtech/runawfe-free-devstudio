@@ -1,5 +1,6 @@
 package ru.runa.gpd.lang.action;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.core.commands.AbstractHandler;
@@ -65,7 +66,7 @@ public class ExportProcessDefinitionToServerHandler extends AbstractHandler impl
                 resourcesToExport.add((IFile) resource);
             }
         }
-        new ParDeployOperation(resourcesToExport, definition.getName(), true).run(null);
+        new ParDeployOperation(resourcesToExport, definition.getName(), new ByteArrayOutputStream(), true).exportResources(null);
     }
 
     private boolean saveDirtyEditors() {
