@@ -1,5 +1,6 @@
 package ru.runa.gpd.ui.wizard;
 
+import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import java.io.ByteArrayInputStream;
@@ -9,6 +10,8 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -21,6 +24,7 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.ModifyEvent;
@@ -38,6 +42,8 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.internal.WorkbenchImages;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.SharedImages;
@@ -60,6 +66,7 @@ public class ImportParWizardPage extends ImportWizardPage {
     private WfeServerConnectorComposite serverConnectorComposite;
     private TreeViewer serverDefinitionViewer;
     private Text serverDefinitionFilter;
+    private Button clearFilterButton;
     private String selectedDirFileName;
     private String[] selectedFileNames;
 
@@ -158,6 +165,8 @@ public class ImportParWizardPage extends ImportWizardPage {
         selectParsButton.setEnabled(fromFile);
         serverConnectorComposite.setEnabled(!fromFile);
         serverDefinitionViewer.getControl().setEnabled(!fromFile);
+        serverDefinitionFilter.setEnabled(!fromFile);
+        clearFilterButton.setEnabled(!fromFile);
         if (fromFile) {
             updateServerDefinitionViewer(null);
         } else {
@@ -166,6 +175,7 @@ public class ImportParWizardPage extends ImportWizardPage {
     }
 
     private void updateServerDefinitionViewer(List<WfDefinition> definitions) {
+        serverDefinitionFilter.setText("");
         if (definitions != null) {
             DefinitionTreeNode treeDefinitions = createTree(definitions);
             serverDefinitionViewer.setInput(treeDefinitions);
@@ -176,20 +186,38 @@ public class ImportParWizardPage extends ImportWizardPage {
     }
 
     private void createServerDefinitionsGroup(Composite parent) {
-    	serverDefinitionFilter = new Text(parent, SWT.SINGLE | SWT.BORDER);   
-        GridData gridDataText = new GridData(SWT.FILL,SWT.BEGINNING, true, false);
-        serverDefinitionFilter.setLayoutData(gridDataText);
+        Composite filterArea = new Composite(parent, SWT.NONE);
+        filterArea.setLayoutData(new GridData(GridData.GRAB_HORIZONTAL | GridData.FILL_HORIZONTAL));
+        GridLayout filterLayout = new GridLayout();
+        filterLayout.numColumns = 2;
+        filterLayout.makeColumnsEqualWidth = false;
+        filterLayout.marginWidth = 0;
+        filterLayout.marginHeight = 0;
+        filterArea.setLayout(filterLayout);
+        serverDefinitionFilter = new Text(filterArea, SWT.SINGLE | SWT.BORDER);
+        serverDefinitionFilter.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
         serverDefinitionFilter.setMessage(Localization.getString("text.message.filter"));
-        serverDefinitionFilter.addModifyListener(new ModifyListener( ) {
+        serverDefinitionFilter.addModifyListener(new ModifyListener() {
 
             @Override
             public void modifyText(ModifyEvent e) {
                 serverDefinitionViewer.refresh();
-            }});
-        
+            }
+        });
+        clearFilterButton = new Button(filterArea, SWT.PUSH);
+        clearFilterButton.setToolTipText(Localization.getString("button.clear"));
+        clearFilterButton.setImage(WorkbenchImages.getImage(ISharedImages.IMG_ETOOL_CLEAR));
+        clearFilterButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+        clearFilterButton.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                serverDefinitionFilter.setText("");
+            }
+        });
         serverDefinitionViewer = new TreeViewer(parent);
         GridData gridData = new GridData(GridData.FILL_BOTH);
-        gridData.heightHint = 100;
+        gridData.heightHint = 300;
         serverDefinitionViewer.getControl().setLayoutData(gridData);
         serverDefinitionViewer.setContentProvider(new ViewContentProvider());
         serverDefinitionViewer.setLabelProvider(new ViewLabelProvider());
@@ -197,24 +225,18 @@ public class ImportParWizardPage extends ImportWizardPage {
         serverDefinitionViewer.addFilter(new ViewerFilter() {
 
             @Override
-            public boolean select(Viewer viewer, Object parentElement, Object element) {  
+            public boolean select(Viewer viewer, Object parentElement, Object element) {
                 String searchText = serverDefinitionFilter.getText();
                 if (searchText == null || searchText.trim().length() == 0) {
                     return true;
                 }
-                              
-                if ((element instanceof DefinitionTreeNode) ) {
-                    String name = ((DefinitionTreeNode) element).getLabel();
-                    
-                    if (((DefinitionTreeNode) element).definition == null) {
-                        // This is the node. Show nodes with at least one matching child definition     
-                        return matchAtLeastOneSub(((DefinitionTreeNode) element).getChildren(), searchText);
-                    }
-                    
-                    // filter leafs only                    
-                    if (name.toLowerCase().contains(searchText.trim().toLowerCase())) {
-                        return true;
-                    }
+                DefinitionTreeNode node = (DefinitionTreeNode) element;
+                if (node.definition == null && node.isGroupNode()) {
+                    // This is the node. Show nodes with at least one matching child definition
+                    return matchAtLeastOneSub(node.children, searchText);
+                }
+                if (matchNode(node, searchText)) {
+                    return true;
                 }
                 return false;
             }});
@@ -225,19 +247,22 @@ public class ImportParWizardPage extends ImportWizardPage {
             return false;
         }
         for (DefinitionTreeNode node: source) {
-            String name = node.getLabel();
-            if (name.toLowerCase().contains(searchText.trim().toLowerCase())) {
+            if (matchNode(node, searchText)) {
                 return true;
             }
-            if (node.getChildren() != null && node.getChildren().size() > 0) {
-                boolean bSub = matchAtLeastOneSub(node.getChildren(), searchText);
+            if (node.children.size() > 0) {
+                boolean bSub = matchAtLeastOneSub(node.children, searchText);
                 if (bSub) {
                     return true;
                 }
             }
         }
         return false;
-    }    
+    }
+
+    private boolean matchNode(DefinitionTreeNode node, String searchText) {
+        return node.definition != null && node.definition.getName().toLowerCase().contains(searchText.trim().toLowerCase());
+    }
 
     public boolean performFinish() {
         List<ProcessDefinitionImportInfo> importInfos = Lists.newArrayList();
@@ -290,6 +315,28 @@ public class ImportParWizardPage extends ImportWizardPage {
 
     private DefinitionTreeNode createTree(List<WfDefinition> definitions) {
         DefinitionTreeNode rootTreeNode = new DefinitionTreeNode("", "", null, false, false);
+        Collections.sort(definitions, new Comparator<WfDefinition>() {
+
+            @Override
+            public int compare(WfDefinition o1, WfDefinition o2) {
+                String[] categories1 = o1.getCategories();
+                String[] categories2 = o2.getCategories();
+                if (categoryIsEmpty(categories1)) {
+                    if (categoryIsEmpty(categories2)) {
+                        return 0;
+                    }
+                    return 1;
+                }
+                if (categoryIsEmpty(categories2)) {
+                    return -1;
+                }
+                return categories1[0].compareTo(categories2[0]);
+            }
+
+            private boolean categoryIsEmpty(String[] categories) {
+                return categories == null || categories.length == 0 || Strings.isNullOrEmpty(categories[0]) || categories[0].trim().length() == 0;
+            }
+        });
         for (WfDefinition definition : definitions) {
             rootTreeNode.addElementToTree(rootTreeNode.path, definition.getCategories(), definition);
         }
@@ -426,7 +473,7 @@ public class ImportParWizardPage extends ImportWizardPage {
                     @Override
                     public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                         try {
-                            monitor.beginTask(Localization.getString("task.LoadData"), 1);
+                            monitor.beginTask(NLS.bind(Localization.getString("task.LoadHistoryData"), definition.getName()), 1);
                             List<WfDefinition> list = WfeServerConnector.getInstance().getProcessDefinitionHistory(definition);
                             if (list.isEmpty()) {
                                 String label = Localization.getString("ImportParWizardPage.page.oldDefinitionVersions.empty");

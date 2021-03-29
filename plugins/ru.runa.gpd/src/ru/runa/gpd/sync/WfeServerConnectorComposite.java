@@ -13,11 +13,13 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.widgets.Hyperlink;
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.settings.PrefConstants;
+import ru.runa.gpd.settings.WfeServerConnectorPreferenceNode;
 import ru.runa.gpd.settings.WfeServerConnectorPreferencePage;
 import ru.runa.gpd.settings.WfeServerConnectorsPreferenceNode;
 import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
@@ -28,6 +30,7 @@ public class WfeServerConnectorComposite extends Composite {
     private final WfeServerConnectorDataImporter<?> importer;
     private final WfeServerConnectorSynchronizationCallback callback;
     private Combo combo;
+    private Hyperlink addConnectionLink;
     private Hyperlink settingsLink;
     private Hyperlink synchronizeLink;
 
@@ -35,8 +38,10 @@ public class WfeServerConnectorComposite extends Composite {
         super(parent, SWT.NONE);
         this.importer = importer;
         this.callback = callback;
-        setLayout(new GridLayout(3, true));
+        setLayout(new GridLayout(4, false));
+
         createCombo();
+        createAddConnectionLink();
         createConnectionSettingsLink();
         createSynchronizeLink();
     }
@@ -45,6 +50,7 @@ public class WfeServerConnectorComposite extends Composite {
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
         combo.setEnabled(enabled);
+        addConnectionLink.setEnabled(enabled);
         settingsLink.setEnabled(enabled);
         synchronizeLink.setEnabled(enabled && WfeServerConnector.getInstance().isConfigured());
     }
@@ -77,6 +83,33 @@ public class WfeServerConnectorComposite extends Composite {
                 importer.synchronize(callback);
             }
         });
+    }
+
+    private void createAddConnectionLink() {
+        addConnectionLink = SwtUtils.createLink(this, Localization.getString("button.add.connection.server"), new LoggingHyperlinkAdapter() {
+
+            @Override
+            protected void onLinkActivated(HyperlinkEvent e) {
+                getShell().dispose();
+                openAddConnectionDialog();
+            }
+
+        });
+    }
+
+    private void openAddConnectionDialog() {
+        WfeServerConnectorsPreferenceNode wfeServerConnectorsNode = WfeServerConnectorsPreferenceNode.getInstance();
+        IPreferenceNode[] children = wfeServerConnectorsNode.getSubNodes();
+        WfeServerConnectorPreferenceNode lastNode = (WfeServerConnectorPreferenceNode) children[children.length - 1];
+        WfeServerConnectorPreferenceNode node = new WfeServerConnectorPreferenceNode(lastNode.getIndex() + 1);
+        wfeServerConnectorsNode.add(node);
+        wfeServerConnectorsNode.saveIndices();
+        WfeServerConnectorSettings connectorSettings = WfeServerConnectorSettings.createDefault(node.getIndex());
+        connectorSettings.saveToStore();
+        children = wfeServerConnectorsNode.getSubNodes();
+        lastNode = (WfeServerConnectorPreferenceNode) children[children.length - 1];
+        PreferenceDialog dialog = PreferencesUtil.createPreferenceDialogOn(null, "gpd.pref.connector.wfe." + lastNode.getIndex(), null, null);
+        dialog.open();
     }
 
     private void createConnectionSettingsLink() {
