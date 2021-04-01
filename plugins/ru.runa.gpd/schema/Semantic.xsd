@@ -659,6 +659,15 @@
 			</xsd:extension>
 		</xsd:complexContent>
 	</xsd:complexType>	
+
+	<xsd:element name="businessRule" type="tBusinessRule" substitutionGroup="flowElement"/>
+	<xsd:complexType name="tBusinessRule">
+		<xsd:complexContent>
+			<xsd:extension base="tGateway">
+				<xsd:attribute name="default" type="xsd:IDREF" use="optional"/>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>	
 	
 	<xsd:element name="expression" type="tExpression"/>
 	<xsd:complexType name="tExpression">
@@ -1566,5 +1575,7 @@
 			</xsd:extension>
 		</xsd:complexContent>
 	</xsd:complexType>
+
+
 
 </xsd:schema>
