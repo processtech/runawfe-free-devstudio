@@ -73,6 +73,7 @@ import ru.runa.gpd.ui.dialog.RenameBotStationDialog;
 import ru.runa.gpd.ui.dialog.RenameBotTaskDialog;
 import ru.runa.gpd.ui.dialog.RenameProcessDefinitionDialog;
 import ru.runa.gpd.ui.wizard.CompactWizardDialog;
+import ru.runa.gpd.ui.wizard.CompareProcessDefinitionWizard;
 import ru.runa.gpd.ui.wizard.CopyBotTaskWizard;
 import ru.runa.gpd.ui.wizard.CopyProcessDefinitionWizard;
 import ru.runa.gpd.ui.wizard.ExportBotElementWizardPage;
@@ -402,6 +403,13 @@ public class WorkspaceOperations {
 
     public static void importProcessDefinition(IStructuredSelection selection) {
         ImportParWizard wizard = new ImportParWizard();
+        wizard.init(PlatformUI.getWorkbench(), selection);
+        CompactWizardDialog dialog = new CompactWizardDialog(wizard);
+        dialog.open();
+    }
+
+    public static void compareProcessDefinition(IStructuredSelection selection) {
+        CompareProcessDefinitionWizard wizard = new CompareProcessDefinitionWizard();
         wizard.init(PlatformUI.getWorkbench(), selection);
         CompactWizardDialog dialog = new CompactWizardDialog(wizard);
         dialog.open();
