@@ -283,6 +283,15 @@ public class ProcessExplorerTreeView extends ViewPart implements ISelectionListe
                 }
             });
         }
+        if (menuOnProcess && !menuOnSubprocess) {
+            manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.compareProcesses"),
+                    SharedImages.getImageDescriptor("icons/compare.gif")) {
+                @Override
+                public void run() {
+                    WorkspaceOperations.compareProcessDefinition(selection);
+                }
+            });
+        }
         manager.add(new Action(Localization.getString("button.delete"), SharedImages.getImageDescriptor("icons/delete.gif")) {
 
             @Override
