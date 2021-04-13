@@ -41,7 +41,6 @@ public class BusinessRuleProvider extends DelegableProvider {
         return true;
     }
 
-
     @Override
     public List<String> getUsedVariableNames(Delegable delegable) throws Exception {
         List<Variable> variables = ((GraphElement) delegable).getProcessDefinition().getVariables(true, true);

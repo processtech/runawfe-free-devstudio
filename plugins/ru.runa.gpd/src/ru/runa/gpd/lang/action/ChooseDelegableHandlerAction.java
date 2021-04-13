@@ -9,16 +9,13 @@ import ru.runa.gpd.ui.dialog.ChooseHandlerClassDialog;
 
 public class ChooseDelegableHandlerAction extends BaseModelActionDelegate {
 
-	@Override
-	public void run(IAction action) {
-		Delegable delegable = (Delegable) getSelection();
-		if (!(delegable instanceof BusinessRule)) {
-			ChooseHandlerClassDialog dialog = new ChooseHandlerClassDialog(delegable.getDelegationType(),
-					delegable.getDelegationClassName());
-			String className = dialog.openDialog();
-			if (className != null) {
-				UndoRedoUtil.executeFeature(new ChangeDelegationClassNameFeature(delegable, className));
-			}
-		}
-	}
+    @Override
+    public void run(IAction action) {
+        Delegable delegable = (Delegable) getSelection();
+        ChooseHandlerClassDialog dialog = new ChooseHandlerClassDialog(delegable.getDelegationType(), delegable.getDelegationClassName());
+        String className = dialog.openDialog();
+        if (className != null) {
+            UndoRedoUtil.executeFeature(new ChangeDelegationClassNameFeature(delegable, className));
+        }
+    }
 }
