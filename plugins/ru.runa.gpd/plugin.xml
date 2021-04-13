@@ -480,17 +480,6 @@
     </objectContribution>
     <objectContribution
           adaptable="false"
-          id="businessRule.compactview"
-          objectClass="ru.runa.gpd.lang.model.bpmn.BusinessRule">
-       <action
-             class="ru.runa.gpd.lang.action.CompactViewFeatureDelegate"
-             id="feature.compactView"
-             label="%label.action.feature.compactView"
-             menubarPath="features/sp1">
-       </action>
-    </objectContribution>
-    <objectContribution
-          adaptable="false"
           id="delegable.configuration"
           objectClass="ru.runa.gpd.lang.model.Delegable">
        <filter
@@ -515,6 +504,17 @@
              class="ru.runa.gpd.lang.action.OpenDelegableConfigurationDelegate"
              id="delegable.2editConfiguration"
              label="%label.action.editConfiguration"/>
+    </objectContribution>
+    <objectContribution
+          adaptable="false"
+          id="businessRule.compactview"
+          objectClass="ru.runa.gpd.lang.model.bpmn.BusinessRule">
+       <action
+             class="ru.runa.gpd.lang.action.CompactViewFeatureDelegate"
+             id="feature.compactView"
+             label="%label.action.feature.compactView"
+             menubarPath="features/sp1">
+       </action>
     </objectContribution>
     <objectContribution
           adaptable="false"
@@ -1193,7 +1193,7 @@
          </graphiti>
       </element>
       <element
-            bpmn="businessRule"
+            bpmn="businessRuleTask"
             enabledInRegulationsByDefault="false"
             icon="businessRule.png"
             label="%label.element.businessRule"
@@ -1644,7 +1644,7 @@
             className="ru.runa.wfe.extension.handler.var.BusinessRuleHandler"
             decisionHandler="false"
             enabled="false"
-            label="%ru.runa.wfe.extension.handler.var.BusinessRuleHandler">
+            label="%label.element.businessRule">
       </handler>
       <handler
             actionHandler="true"
