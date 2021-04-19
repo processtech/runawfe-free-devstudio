@@ -50,6 +50,7 @@ public class CopyProcessDefinitionWizard extends Wizard implements INewWizard {
                         IFile definitionFile = IOUtils.getProcessDefinitionFile(targetFolder);
                         monitor.worked(1);
                         ProcessDefinition definition = ProcessCache.getProcessDefinition(definitionFile);
+                        definition.getVersionInfoList().clear();
                         definition.setName(page.getProcessName());
                         definition.setLanguage(page.getLanguage());
                         WorkspaceOperations.saveProcessDefinition(definition);
