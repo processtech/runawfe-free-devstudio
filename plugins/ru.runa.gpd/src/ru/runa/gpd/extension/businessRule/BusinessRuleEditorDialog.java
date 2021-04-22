@@ -349,7 +349,8 @@ public class BusinessRuleEditorDialog extends Dialog {
                 refresh(operBoxes.get(i));
                 String lexem2Text = ifExpr.getLexem2TextValue();
                 int var2index = 0;
-                if (VariableUtils.getVariableByScriptingName(variables, lexem2Text) != null) {
+                if (VariableUtils.getVariableByScriptingName(variables, lexem2Text) != null
+                        && (VariableUtils.getVariableByScriptingName(variables, lexem2Text).getJavaClassName()).equals(variable.getJavaClassName())) {
                     var2index = getVariable2Names(variable).indexOf(lexem2Text);
                 } else {
                     int predefinedIndex = typeSupport.getPredefinedValues(ifExpr.getOperation()).indexOf(lexem2Text);
@@ -526,7 +527,11 @@ public class BusinessRuleEditorDialog extends Dialog {
                 Object lexem2;
                 Variable variable2 = VariableUtils.getVariableByScriptingName(variables, lexem2Text);
                 if (variable2 != null) {
-                    lexem2 = variable2;
+                    if (variable2.getJavaClassName().equals(variable1.getJavaClassName())) {
+                        lexem2 = variable2;
+                    } else {
+                        lexem2 = lexem2Text;
+                    }
                 } else {
                     lexem2 = lexem2Text;
                 }
