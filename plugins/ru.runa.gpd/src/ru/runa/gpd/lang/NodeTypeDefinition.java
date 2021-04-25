@@ -187,7 +187,7 @@ public class NodeTypeDefinition {
                 String key = LanguageElementPreferenceNode.getId(this, parent.getProcessDefinition().getLanguage()) + '.'
                         + PrefConstants.P_LANGUAGE_SWIMLANE_INITIALIZER;
                 if (store.contains(key)) {
-                    ((TaskState) element).setReassignSwimlaneToInitializerValue(store.getBoolean(key));
+                    ((TaskState) element).setReassignSwimlaneToInitializer(store.getBoolean(key));
                 }
                 key = LanguageElementPreferenceNode.getId(this, parent.getProcessDefinition().getLanguage()) + '.'
                         + PrefConstants.P_LANGUAGE_SWIMLANE_PERFORMER;

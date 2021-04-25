@@ -325,6 +325,12 @@ public class BpmnSerializer extends ProcessSerializer {
         if (((ProcessDefinition) swimlanedNode.getParent()).getSwimlaneByName(swimlaneName) != null) {
             properties.put(LANE, swimlaneName);
         }
+        if (swimlanedNode instanceof StartState) {
+            StartState startState = (StartState) swimlanedNode;
+            if (startState.isReassignSwimlaneToTaskPerformer() != null) {
+                properties.put(REASSIGN_SWIMLANE_TO_TASK_PERFORMER, String.valueOf(startState.isReassignSwimlaneToTaskPerformer()));
+            }
+        }
         if (swimlanedNode instanceof TaskState) {
             TaskState taskState = (TaskState) swimlanedNode;
             if (taskState.isAsync()) {
@@ -335,8 +341,12 @@ public class BpmnSerializer extends ProcessSerializer {
             if (taskDeadline != null) {
                 properties.put(TASK_DEADLINE, taskDeadline);
             }
-            properties.put(REASSIGN, String.valueOf(taskState.isReassignSwimlaneToInitializerValue()));
-            properties.put(REASSIGN_SWIMLANE_TO_TASK_PERFORMER, String.valueOf(taskState.isReassignSwimlaneToTaskPerformer()));
+            if (taskState.isReassignSwimlaneToInitializer() != null) {
+                properties.put(REASSIGN, String.valueOf(taskState.isReassignSwimlaneToInitializer()));
+            }
+            if (taskState.isReassignSwimlaneToTaskPerformer() != null) {
+                properties.put(REASSIGN_SWIMLANE_TO_TASK_PERFORMER, String.valueOf(taskState.isReassignSwimlaneToTaskPerformer()));
+            }
             if (taskState.isIgnoreSubstitutionRules()) {
                 properties.put(IGNORE_SUBSTITUTION_RULES, "true");
             }
@@ -771,7 +781,7 @@ public class BpmnSerializer extends ProcessSerializer {
                 }
                 String reassign = properties.get(REASSIGN);
                 if (reassign != null) {
-                    state.setReassignSwimlaneToInitializerValue(Boolean.parseBoolean(reassign));
+                    state.setReassignSwimlaneToInitializer(Boolean.parseBoolean(reassign));
                 }
                 String reassignSwimlaneToTaskPerformer = properties.get(REASSIGN_SWIMLANE_TO_TASK_PERFORMER);
                 if (reassignSwimlaneToTaskPerformer != null) {

@@ -18,7 +18,7 @@ public interface PrefConstants {
     public static final String P_LANGUAGE_NODE_NAME_PATTERN = "nodeNamePattern";
     public static final String P_LANGUAGE_NODE_WIDTH = "nodeWidth";
     public static final String P_LANGUAGE_NODE_HEIGHT = "nodeHeight";
-    public static final String P_LANGUAGE_SWIMLANE_INITIALIZER = "reassignSwimlaneToInitializerValue";
+    public static final String P_LANGUAGE_SWIMLANE_INITIALIZER = "reassignSwimlaneToInitializer";
     public static final String P_LANGUAGE_SWIMLANE_PERFORMER = "reassignSwimlaneToTaskPerformer";
     public static final String P_LANGUAGE_TASK_STATE_ASYNC_INPUT_DATA = "inputDataAllowedInAsyncTaskNode";
     public static final String P_LANGUAGE_SUB_PROCESS_ASYNC_INPUT_DATA = "inputDataAllowedInAsyncSubprocess";

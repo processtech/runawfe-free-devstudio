@@ -1,6 +1,7 @@
 package ru.runa.gpd.lang.action;
 
 import java.util.List;
+import java.util.Objects;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
@@ -13,10 +14,9 @@ import org.eclipse.swt.widgets.MenuItem;
 
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.editor.ProcessEditorBase;
-import ru.runa.gpd.editor.gef.command.EnableReassignSwimlaneToInitializerCommand;
-import ru.runa.gpd.editor.gef.command.EnableReassignSwimlaneToTaskPerformerCommand;
 import ru.runa.gpd.editor.gef.command.IgnoreSubstitutionCommand;
 import ru.runa.gpd.lang.NodeRegistry;
+import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.StartState;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
@@ -25,8 +25,6 @@ import ru.runa.gpd.lang.model.SwimlanedNode;
 import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.ui.dialog.UpdateSwimlaneNameDialog;
 import ru.runa.gpd.util.SwimlaneDisplayMode;
-
-import com.google.common.base.Objects;
 
 public class SwimlaneActionsDelegate extends BaseModelDropDownActionDelegate {
     private Swimlane selectedSwimlane;
@@ -55,7 +53,7 @@ public class SwimlaneActionsDelegate extends BaseModelDropDownActionDelegate {
         for (Swimlane swimlane : swimlanes) {
             Action action = new SetSwimlaneAction();
             action.setText(swimlane.getName());
-            if (Objects.equal(selectedSwimlane, swimlane)) {
+            if (Objects.equals(selectedSwimlane, swimlane)) {
                 action.setChecked(true);
             }
             action.setEnabled(definition.getSwimlaneDisplayMode() == SwimlaneDisplayMode.none);
@@ -69,23 +67,51 @@ public class SwimlaneActionsDelegate extends BaseModelDropDownActionDelegate {
         action.setEnabled(!(definition instanceof SubprocessDefinition));
         item = new ActionContributionItem(action);
         item.fill(menu, -1);
-        if (swimlanedNode instanceof StartState && selectedSwimlane == null && definition.getSwimlaneDisplayMode() == SwimlaneDisplayMode.none) {
-            action = new CreateSwimlaneAction();
-            action.setEnabled(!(definition instanceof SubprocessDefinition));
-            item = new ActionContributionItem(action);
-            item.fill(menu, -1);
-        }
-        if (swimlanedNode instanceof TaskState) {
-            if (selectedSwimlane != null) {
-                action = new EnableReassignSwimlaneToInitializerAction();
-                action.setChecked(((TaskState) swimlanedNode).isReassignSwimlaneToInitializerValue());
-                item = new ActionContributionItem(action);
-                item.fill(menu, -1);
-                action = new EnableReassignSwimlaneToTaskPerformerAction();
-                action.setChecked(((TaskState) swimlanedNode).isReassignSwimlaneToTaskPerformer());
+        if (swimlanedNode instanceof StartState) {
+            if (selectedSwimlane == null && definition.getSwimlaneDisplayMode() == SwimlaneDisplayMode.none) {
+                action = new CreateSwimlaneAction();
+                action.setEnabled(!(definition instanceof SubprocessDefinition));
                 item = new ActionContributionItem(action);
                 item.fill(menu, -1);
             }
+            if (selectedSwimlane != null) {
+                Menu submenu = new Menu(menu);
+                MenuItem menuItem = new MenuItem(menu, SWT.CASCADE);
+                menuItem.setText(Localization.getString("Swimlane.reassignSwimlaneToTaskPerformer"));
+                menuItem.setMenu(submenu);
+                for (ReassignSwimlaneMode mode : ReassignSwimlaneMode.values()) {
+                    action = new SetCheckedReassignSwimlaneToTaskPerformerModeAction(mode);
+                    action.setChecked(mode.isChecked(((StartState) swimlanedNode).isReassignSwimlaneToTaskPerformer()));
+                    item = new ActionContributionItem(action);
+                    item.fill(submenu, -1);
+                }
+            }
+        }
+        if (swimlanedNode instanceof TaskState) {
+            if (selectedSwimlane != null) {
+                Menu submenu = new Menu(menu);
+                MenuItem menuItem = new MenuItem(menu, SWT.CASCADE);
+                menuItem.setText(Localization.getString("Swimlane.reassignSwimlaneToInitializer"));
+                menuItem.setMenu(submenu);
+                for (ReassignSwimlaneMode mode : ReassignSwimlaneMode.values()) {
+                    action = new SetReassignSwimlaneToInitializerModeAction(mode);
+                    action.setChecked(mode.isChecked(((TaskState) swimlanedNode).isReassignSwimlaneToInitializer()));
+                    item = new ActionContributionItem(action);
+                    item.fill(submenu, -1);
+                }
+
+                submenu = new Menu(menu);
+                menuItem = new MenuItem(menu, SWT.CASCADE);
+                menuItem.setText(Localization.getString("Swimlane.reassignSwimlaneToTaskPerformer"));
+                menuItem.setMenu(submenu);
+                for (ReassignSwimlaneMode mode : ReassignSwimlaneMode.values()) {
+                    action = new SetCheckedReassignSwimlaneToTaskPerformerModeAction(mode);
+                    action.setChecked(mode.isChecked(((TaskState) swimlanedNode).isReassignSwimlaneToTaskPerformer()));
+                    item = new ActionContributionItem(action);
+                    item.fill(submenu, -1);
+                }
+            }
+
             action = new IgnoreSubstitutionAction();
             action.setChecked(((TaskState) swimlanedNode).isIgnoreSubstitutionRules());
             item = new ActionContributionItem(action);
@@ -170,27 +196,50 @@ public class SwimlaneActionsDelegate extends BaseModelDropDownActionDelegate {
         }
     }
 
-    private class EnableReassignSwimlaneToInitializerAction extends Action {
+    public enum ReassignSwimlaneMode {
+        YES(true),
+        NO(false),
+        DEFAULT(null);
+        private final Boolean value;
 
-        public EnableReassignSwimlaneToInitializerAction() {
-            setText(Localization.getString("Swimlane.reassignSwimlaneToInitializerValue"));
+        ReassignSwimlaneMode(Boolean value) {
+            this.value = value;
         }
 
-        @Override
-        public void run() {
-            executeCommand(new EnableReassignSwimlaneToInitializerCommand((TaskState) swimlanedNode));
+        public Boolean getValue() {
+            return value;
+        }
+
+        public boolean isChecked(Boolean param) {
+            return Objects.equals(value, param);
         }
     }
 
-    private class EnableReassignSwimlaneToTaskPerformerAction extends Action {
+    public class SetReassignSwimlaneToInitializerModeAction extends Action {
+        private final ReassignSwimlaneMode mode;
 
-        public EnableReassignSwimlaneToTaskPerformerAction() {
-            setText(Localization.getString("Swimlane.reassignSwimlaneToTaskPerformer"));
+        public SetReassignSwimlaneToInitializerModeAction(ReassignSwimlaneMode mode) {
+            this.mode = mode;
+            setText(Localization.getString(mode.name().toLowerCase()));
         }
 
         @Override
         public void run() {
-            executeCommand(new EnableReassignSwimlaneToTaskPerformerCommand((TaskState) swimlanedNode));
+            ((TaskState) swimlanedNode).setReassignSwimlaneToInitializer(mode.getValue());
+        }
+    }
+
+    public class SetCheckedReassignSwimlaneToTaskPerformerModeAction extends Action {
+        private final ReassignSwimlaneMode mode;
+
+        public SetCheckedReassignSwimlaneToTaskPerformerModeAction(ReassignSwimlaneMode mode) {
+            this.mode = mode;
+            setText(Localization.getString(mode.name().toLowerCase()));
+        }
+
+        @Override
+        public void run() {
+            ((FormNode) swimlanedNode).setReassignSwimlaneToTaskPerformer(mode.getValue());
         }
     }
 
