@@ -82,8 +82,6 @@ import ru.runa.gpd.util.VariableUtils;
 import ru.runa.wfe.InternalApplicationException;
 
 /**
- * The WYSIWYG HTML editor using <a href="http://www.fckeditor.net/">FCKeditor</a>.
- * <p>
  * org.eclipse.ui.texteditor.BasicTextEditorActionContributor
  * </p>
  */

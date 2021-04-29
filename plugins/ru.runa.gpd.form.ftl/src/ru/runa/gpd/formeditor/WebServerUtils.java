@@ -27,12 +27,7 @@ public class WebServerUtils {
     private static String lastUsedEditor = null;
 
     public static File getEditorDirectory() {
-        File result;
-        if (useCKEditor()) {
-            result = new File(getStateLocation().toFile(), getEditorDirectoryName());
-        } else {
-            result = new File(new File(getStateLocation().toFile(), getEditorDirectoryName()), "editor");
-        }
+    	File result = new File(new File(getStateLocation().toFile(), getEditorDirectoryName()), "editor");
         if (!result.exists()) {
             result.mkdirs();
         }
@@ -40,17 +35,8 @@ public class WebServerUtils {
     }
 
     public static String getEditorURL() {
-        String url = "http://localhost:" + SERVER_PORT;
-        String pref = Activator.getPrefString(PrefConstants.P_FORM_DEFAULT_FCK_EDITOR);
-        if (PrefConstants.FORM_CK_EDITOR4.equals(pref)) {
-            url += "/editor.html";
-        } else {
-            if (EditorsPlugin.DEBUG) {
-                url += "/fckeditor.debug.html";
-            } else {
-                url += "/fckeditor.html";
-            }
-        }
+        String url = "http://localhost:" + SERVER_PORT + "/editor.html";
+        
         if (EditorsPlugin.DEBUG) {
             PluginLogger.logInfo("Editor url: " + url);
         }
@@ -59,11 +45,6 @@ public class WebServerUtils {
 
     public static String getRegulationsViewerUrl() {
         return "http://localhost:" + SERVER_PORT + "/regulation.html";
-    }
-
-    public static boolean useCKEditor() {
-        String pref = Activator.getPrefString(PrefConstants.P_FORM_DEFAULT_FCK_EDITOR);
-        return PrefConstants.FORM_CK_EDITOR4.equals(pref);
     }
 
     public static File copyEditor(IProgressMonitor monitor, int allProgressCount) throws Exception {
@@ -109,12 +90,7 @@ public class WebServerUtils {
     }
 
     private static String getEditorDirectoryName() {
-        String pref = Activator.getPrefString(PrefConstants.P_FORM_DEFAULT_FCK_EDITOR);
-        if (PrefConstants.FORM_CK_EDITOR4.equals(pref)) {
-            return "CKeditor4";
-        } else {
-            return "FCKeditor";
-        }
+        return "CKeditor4";
     }
 
     private static IPath getStateLocation() {

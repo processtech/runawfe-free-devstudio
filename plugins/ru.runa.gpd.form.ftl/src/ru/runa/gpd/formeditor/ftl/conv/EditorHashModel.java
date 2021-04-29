@@ -92,19 +92,7 @@ public class EditorHashModel extends SimpleHash {
             buffer.append("id=\"").append(component.getId()).append("\" ");
             String params = Joiner.on(DesignUtils.PARAMETERS_DELIM).join(component.getRawParameters());
             buffer.append(DesignUtils.ATTR_COMPONENT_PARAMETERS).append("=\"").append(params).append("\"");
-            if (WebServerUtils.useCKEditor()) {
-                buffer.append("></").append(DesignUtils.getComponentHtmlElementName()).append(">");
-            } else {
-                String url = "/editor/FtlComponentServlet?command=GetImage&type=" + componentType.getId() + "&parameters=";
-                try {
-                    url += URLEncoder.encode(params.toString(), Charsets.UTF_8.name());
-                } catch (UnsupportedEncodingException e) {
-                    PluginLogger.logError(e);
-                }
-                buffer.append(" src=\"").append(url).append("\" ");
-                buffer.append(DesignUtils.ATTR_STYLE).append("=\"margin: 3px; border: 2px solid black;\" ");
-                buffer.append("/>");
-            }
+            buffer.append("></").append(DesignUtils.getComponentHtmlElementName()).append(">");
             return buffer.toString();
         }
     }
