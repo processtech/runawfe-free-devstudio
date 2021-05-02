@@ -4,7 +4,6 @@ import org.eclipse.jface.action.IAction;
 import ru.runa.gpd.editor.graphiti.ChangeDelegationClassNameFeature;
 import ru.runa.gpd.editor.graphiti.UndoRedoUtil;
 import ru.runa.gpd.lang.model.Delegable;
-import ru.runa.gpd.lang.model.bpmn.BusinessRule;
 import ru.runa.gpd.ui.dialog.ChooseHandlerClassDialog;
 
 public class ChooseDelegableHandlerAction extends BaseModelActionDelegate {

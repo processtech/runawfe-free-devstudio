@@ -1195,7 +1195,7 @@
       <element
             bpmn="businessRuleTask"
             enabledInRegulationsByDefault="false"
-            icon="bussiness-pravilo.png"
+            icon="business-rule.png"
             label="%label.element.businessRule"
             model="ru.runa.gpd.lang.model.bpmn.BusinessRule"
             type="node">
