@@ -6,16 +6,16 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import ru.runa.gpd.extension.decision.GroovyModel;
 import ru.runa.gpd.extension.decision.GroovyTypeSupport;
 import ru.runa.gpd.extension.decision.Operation;
-import ru.runa.gpd.extension.decision.GroovyDecisionModel.IfExpr;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.util.VariableUtils;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 
-public class BusinessRuleModel {
+public class BusinessRuleModel implements GroovyModel {
     private final List<IfExpr> ifs = new ArrayList<IfExpr>();
     private static Pattern IF_PATTERN = Pattern.compile("if \\((.*)\\)");
     private static Pattern RETURN_PATTERN = Pattern.compile("return '''(.*?)''';", Pattern.DOTALL);
