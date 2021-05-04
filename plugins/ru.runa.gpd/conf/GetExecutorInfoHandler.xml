@@ -4,6 +4,6 @@
     <param name="format" variable="false" options="id,name,description,fullName,active,code,email,phone,title,department" label.key="Param.Format" />
   </input>
   <output>
-    <param name="result" label.key="Param.Result" />
+    <param name="result" formatFilter="java.lang.String" label.key="Param.Result" />
   </output>
 </config>
