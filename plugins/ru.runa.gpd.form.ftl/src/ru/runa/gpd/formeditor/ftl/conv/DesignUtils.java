@@ -32,7 +32,7 @@ public class DesignUtils {
     public static final String ATTR_STYLE = "style";
 
     public static String getComponentHtmlElementName() {
-        return WebServerUtils.useCKEditor() ? "ftl_component" : "img";
+        return "ftl_component";
     }
 
     public static String transformFromHtml(String html, Map<String, Variable> variables, Map<Integer, Component> components) throws Exception {

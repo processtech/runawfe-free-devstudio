@@ -20,7 +20,6 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer impleme
         IPreferenceStore store = Activator.getDefault().getPreferenceStore();
         store.setDefault(P_BPMN_SHOW_SWIMLANE, true);
         store.setDefault(P_DEFAULT_LANGUAGE, Language.BPMN.toString());
-        store.setDefault(P_FORM_DEFAULT_FCK_EDITOR, FORM_CK_EDITOR4);
         store.setDefault(P_FORM_WEB_SERVER_PORT, "48780");
         store.setDefault(P_FORM_EXTERNAL_EDITOR_PATH, "");
         store.setDefault(P_FORM_USE_EXTERNAL_EDITOR, false);
