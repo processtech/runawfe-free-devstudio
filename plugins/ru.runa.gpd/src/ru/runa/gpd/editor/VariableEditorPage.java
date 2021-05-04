@@ -56,6 +56,7 @@ import ru.runa.gpd.ui.dialog.ErrorDialog;
 import ru.runa.gpd.ui.dialog.UpdateVariableNameDialog;
 import ru.runa.gpd.ui.wizard.CompactWizardDialog;
 import ru.runa.gpd.ui.wizard.VariableWizard;
+import ru.runa.gpd.util.EmbeddedFileUtils;
 import ru.runa.gpd.util.VariableUtils;
 import ru.runa.gpd.util.VariablesUsageXlsExporter;
 import ru.runa.gpd.util.WorkspaceOperations;
@@ -117,8 +118,8 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
                 return result;
             }
         }), new TableColumnDescription("property.name", 200, SWT.LEFT), new TableColumnDescription("Variable.property.format", 200, SWT.LEFT),
-                new TableColumnDescription("Variable.property.defaultValue", 200, SWT.LEFT, false), new TableColumnDescription(
-                        "Variable.property.storeType", 200, SWT.LEFT));
+                new TableColumnDescription("Variable.property.defaultValue", 200, SWT.LEFT, false),
+                new TableColumnDescription("Variable.property.storeType", 200, SWT.LEFT));
 
         Composite buttonsBar = createActionBar(allVariablesComposite);
         addButton(buttonsBar, "button.create", new CreateVariableSelectionListener(), false);
@@ -287,6 +288,20 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
         }
     }
 
+    private IFile getDefaultValueAsFile(Variable variable) {
+        if (EmbeddedFileUtils.isFileVariableClassName(variable.getJavaClassName())) {
+            String defaultValue = variable.getDefaultValue();
+            if (!Strings.isNullOrEmpty(defaultValue) && EmbeddedFileUtils.isProcessFile(defaultValue)) {
+                IFile file = EmbeddedFileUtils.getProcessFile(EmbeddedFileUtils.getProcessFileName(defaultValue));
+                if (null != file && file.exists()) {
+                    return file;
+                }
+            }
+        }
+
+        return null;
+    }
+
     private void delete(Variable variable) {
         List<FormNode> nodesWithVar = ParContentProvider.getFormsWhereVariableUsed(editor.getDefinitionFile(), getDefinition(), variable.getName());
         StringBuilder confirmationInfo = new StringBuilder();
@@ -328,6 +343,14 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
             command.setVariable(variable);
             // TODO Ctrl+Z support (form validation)
             // editor.getCommandStack().execute(command);
+
+            // Warning: You can't undo delete operation for file variable with default value
+            // because of next code deletes the file
+            IFile file = getDefaultValueAsFile(variable);
+            if (null != file) {
+                EmbeddedFileUtils.deleteProcessFile(file);
+            }
+
             command.execute();
         }
     }
@@ -350,6 +373,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
         protected void onSelection(SelectionEvent e) throws Exception {
             IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
             Variable variable = (Variable) selection.getFirstElement();
+            IFile previousFileVariableDefaultValue = getDefaultValueAsFile(variable);
             VariableWizard wizard = new VariableWizard(getDefinition(), variable, false, true);
             CompactWizardDialog dialog = new CompactWizardDialog(wizard);
             if (dialog.open() == Window.OK) {
@@ -358,6 +382,9 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
                 variable.setPublicVisibility(wizard.getVariable().isPublicVisibility());
                 variable.setDefaultValue(wizard.getVariable().getDefaultValue());
                 variable.setStoreType(wizard.getVariable().getStoreType());
+                if (previousFileVariableDefaultValue != null && !EmbeddedFileUtils.isFileVariableClassName(variable.getJavaClassName())) {
+                    EmbeddedFileUtils.deleteProcessFile(previousFileVariableDefaultValue);
+                }
                 tableViewer.setSelection(selection);
             }
         }
