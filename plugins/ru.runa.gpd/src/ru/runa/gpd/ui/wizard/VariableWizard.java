@@ -32,6 +32,10 @@ public class VariableWizard extends Wizard {
         setWindowTitle(showNamePage ? Localization.getString("VariableWizard.create") : Localization.getString("VariableWizard.edit"));
     }
 
+    public VariableFormatPage getFormatPage() {
+        return formatPage;
+    }
+
     @Override
     public void addPages() {
         if (namePage != null) {
