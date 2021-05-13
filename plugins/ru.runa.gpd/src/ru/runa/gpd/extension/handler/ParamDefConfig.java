@@ -19,7 +19,9 @@ import ru.runa.gpd.extension.handler.ParamDef.Presentation;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.GraphElement;
+import ru.runa.gpd.util.VariableUtils;
 import ru.runa.gpd.util.XmlUtil;
+import ru.runa.gpd.Localization;
 
 @SuppressWarnings("unchecked")
 public class ParamDefConfig {
@@ -213,7 +215,14 @@ public class ParamDefConfig {
                     String[] filters = paramDef.getFormatFilters().toArray(new String[paramDef.getFormatFilters().size()]);
                     List<String> variableNames = graphElement.getProcessDefinition().getVariableNames(true, filters);
                     if (!variableNames.contains(value)) {
-                        errors.add(ValidationError.createLocalizedError(graphElement, "parambased.missedParamVariable", paramDef.getLabel(), value));
+                    	if (VariableUtils.variableExists(value, graphElement.getProcessDefinition())) {
+                    		String localizedVariableType = Localization
+                    				.getString(VariableUtils.getVariableByName(graphElement.getProcessDefinition(), value).getFormat());
+                            errors.add(ValidationError.createLocalizedError(graphElement, "parambased.paramVariableTypeMismatch",
+                            		localizedVariableType, value, paramDef.getLabel()));
+                    	} else {
+                            errors.add(ValidationError.createLocalizedError(graphElement, "parambased.missedParamVariable", paramDef.getLabel(), value));
+                    	}
                     }
                 }
             }

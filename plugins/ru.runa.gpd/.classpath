@@ -34,5 +34,6 @@
 	<classpathentry exported="true" kind="lib" path="lib/guava/guava-26.0-jre.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/guava/j2objc-annotations-1.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/guava/jsr305-3.0.2.jar"/>
+	<classpathentry kind="lib" path="lib/java-diff-utils-4.9.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

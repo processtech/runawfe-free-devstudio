@@ -35,6 +35,11 @@
           id="ru.runa.gpd.editor.BotTaskEditor"
           name="bot task editor">
     </editor>
+    <editor
+          class="ru.runa.gpd.editors.DiffEditor"
+          id="ru.runa.gpd.editors.DiffEditor"
+          name="Process Differences Editor">
+    </editor>
   </extension> 
     
   <extension
@@ -2645,6 +2650,17 @@
                toolbarPath="normal/commons"
                tooltip="%tooltip.menu.delete"/>
          <action
+               class="ru.runa.gpd.ui.action.ExportProcessDiff"
+               definitionId="ru.runa.gpd.commands.exportProcessDiff"
+               disabledIcon="icons/saveas_edit_d.gif"
+               icon="icons/saveas_edit.png"
+               id="ru.runa.gpd.exportProcessDiff"
+               label="%label.menu.exportProcessDiff"
+               menubarPath="file/saves"
+               style="push"
+               toolbarPath="normal/commons">
+         </action>
+         <action
                class="ru.runa.gpd.ui.action.SaveAll"
                definitionId="ru.runa.gpd.commands.saveall"
                icon="icons/saveall_edit.gif"
@@ -2693,6 +2709,15 @@
                style="push"
                toolbarPath="normal/syncproc"
                tooltip="%tooltip.menu.export"/>
+         <action
+               class="ru.runa.gpd.ui.action.CompareProcessAction"
+               icon="icons/compare.gif"
+               id="ru.runa.gpd.compareProcesses"
+               label="%label.menu.compareProcesses"
+               menubarPath="file/command"
+               style="push"
+               toolbarPath="normal/syncproc"
+               tooltip="%tooltip.menu.compareProcesses"/> 
          <action
                class="ru.runa.gpd.ui.action.ImportProcessAction"
                icon="icons/import_wiz.gif"

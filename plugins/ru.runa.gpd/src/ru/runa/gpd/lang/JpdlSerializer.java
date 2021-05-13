@@ -304,11 +304,11 @@ public class JpdlSerializer extends ProcessSerializer {
         }
         if (swimlanedNode instanceof TaskState) {
             TaskState taskState = (TaskState) swimlanedNode;
-            if (taskState.isReassignSwimlaneToInitializerValue()) {
-                setAttribute(taskElement, REASSIGN, "true");
+            if (taskState.isReassignSwimlaneToInitializer() != null) {
+                setAttribute(taskElement, REASSIGN, Boolean.toString(taskState.isReassignSwimlaneToInitializer()));
             }
-            if (!taskState.isReassignSwimlaneToTaskPerformer()) {
-                setAttribute(taskElement, REASSIGN_SWIMLANE_TO_TASK_PERFORMER, "false");
+            if (taskState.isReassignSwimlaneToTaskPerformer() != null) {
+                setAttribute(taskElement, REASSIGN_SWIMLANE_TO_TASK_PERFORMER, Boolean.toString(taskState.isReassignSwimlaneToTaskPerformer()));
             }
             if (taskState.isIgnoreSubstitutionRules()) {
                 setAttribute(taskElement, IGNORE_SUBSTITUTION_RULES, "true");
@@ -623,7 +623,7 @@ public class JpdlSerializer extends ProcessSerializer {
                         String reassign = stateNodeChild.attributeValue(REASSIGN);
                         if (reassign != null) {
                             boolean forceReassign = Boolean.parseBoolean(reassign);
-                            ((TaskState) state).setReassignSwimlaneToInitializerValue(forceReassign);
+                            ((TaskState) state).setReassignSwimlaneToInitializer(forceReassign);
                         }
                         String reassignSwimlaneToTaskPerformer = stateNodeChild.attributeValue(REASSIGN_SWIMLANE_TO_TASK_PERFORMER);
                         if (reassignSwimlaneToTaskPerformer != null) {

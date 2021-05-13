@@ -141,7 +141,9 @@ public class JavaScriptEditor extends TextEditor {
         super.doSave(progressMonitor);
         update();
         if (wasDirty) {
-            ParContentProvider.saveFormsXml(formNode.getProcessDefinition());
+            if (formNode != null) {
+                ParContentProvider.saveFormsXml(formNode.getProcessDefinition());
+            }
         }
     }
 

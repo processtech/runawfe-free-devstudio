@@ -12,7 +12,6 @@ import org.eclipse.jface.window.Window;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.HandlerArtifact;
-import ru.runa.gpd.extension.decision.GroovyDecisionModel.IfExpr;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.Decision;
 import ru.runa.gpd.lang.model.Delegable;
@@ -20,6 +19,7 @@ import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.Variable;
+import ru.runa.gpd.search.VariableSearchVisitor;
 import ru.runa.gpd.ui.enhancement.DialogEnhancementMode;
 
 public class GroovyDecisionProvider extends DelegableProvider implements IDecisionProvider {
@@ -85,14 +85,12 @@ public class GroovyDecisionProvider extends DelegableProvider implements IDecisi
     @Override
     public List<String> getUsedVariableNames(Delegable delegable) throws Exception {
         List<Variable> variables = ((GraphElement) delegable).getProcessDefinition().getVariables(true, true);
-        GroovyDecisionModel model = new GroovyDecisionModel(delegable.getDelegationConfiguration(), variables);
         List<String> result = Lists.newArrayList();
-        for (IfExpr expr : model.getIfExprs()) {
-            if (expr.getVariable1() != null) {
-                result.add(expr.getVariable1().getName());
-            }
-            if (expr.getLexem2() instanceof Variable) {
-                result.add(((Variable) expr.getLexem2()).getName());
+        String configuration = "(" + delegable.getDelegationConfiguration() + ")";
+        for (Variable variable : variables) {
+            String variableName = String.format(VariableSearchVisitor.REGEX_SCRIPT_VARIABLE, variable.getScriptingName());
+            if (Pattern.compile(variableName).matcher(configuration).find()) {
+                result.add(variable.getName());
             }
         }
         return result;

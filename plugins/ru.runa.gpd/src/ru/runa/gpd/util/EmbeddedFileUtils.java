@@ -10,6 +10,7 @@ import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.wfe.definition.IFileDataProvider;
+import ru.runa.wfe.var.file.FileVariable;
 
 public class EmbeddedFileUtils {
 
@@ -39,6 +40,10 @@ public class EmbeddedFileUtils {
             return IFileDataProvider.PROCESS_FILE_PROTOCOL + fileName;
         }
         return fileName;
+    }
+
+    public static boolean isFileVariableClassName(String className) {
+        return FileVariable.class.getName().equals(className);
     }
 
     public static void deleteProcessFile(String path) {
