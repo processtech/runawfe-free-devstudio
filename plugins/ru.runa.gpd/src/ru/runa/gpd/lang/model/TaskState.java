@@ -44,32 +44,21 @@ public class TaskState extends FormNode implements ActionContainer, ITimed, Sync
     private AsyncCompletionMode asyncCompletionMode = AsyncCompletionMode.ON_MAIN_PROCESS_END;
     private BotTaskLink botTaskLink;
     private Duration timeOutDelay = new Duration();
-    private boolean reassignSwimlaneToInitializerValue = false;
-    private boolean reassignSwimlaneToTaskPerformer = true;
+    protected Boolean reassignSwimlaneToInitializer = null;
 
     @Override
     public Timer getTimer() {
         return getFirstChild(Timer.class);
     }
 
-    public boolean isReassignSwimlaneToInitializerValue() {
-        return reassignSwimlaneToInitializerValue;
+    public Boolean isReassignSwimlaneToInitializer() {
+        return reassignSwimlaneToInitializer;
     }
 
-    public void setReassignSwimlaneToInitializerValue(boolean reassignSwimlaneToInitializerValue) {
-        boolean old = this.reassignSwimlaneToInitializerValue;
-        this.reassignSwimlaneToInitializerValue = reassignSwimlaneToInitializerValue;
-        firePropertyChange(PROPERTY_SWIMLANE_REASSIGN, old, this.reassignSwimlaneToInitializerValue);
-    }
-
-    public boolean isReassignSwimlaneToTaskPerformer() {
-        return reassignSwimlaneToTaskPerformer;
-    }
-
-    public void setReassignSwimlaneToTaskPerformer(boolean reassignSwimlaneToTaskPerformer) {
-        boolean old = this.reassignSwimlaneToTaskPerformer;
-        this.reassignSwimlaneToTaskPerformer = reassignSwimlaneToTaskPerformer;
-        firePropertyChange(PROPERTY_SWIMLANE_REASSIGN, old, this.reassignSwimlaneToTaskPerformer);
+    public void setReassignSwimlaneToInitializer(Boolean reassignSwimlaneToInitializer) {
+        Boolean old = this.reassignSwimlaneToInitializer;
+        this.reassignSwimlaneToInitializer = reassignSwimlaneToInitializer;
+        firePropertyChange(PROPERTY_SWIMLANE_REASSIGN, old, this.reassignSwimlaneToInitializer);
     }
 
     public String getTimeOutDueDate() {
@@ -293,7 +282,7 @@ public class TaskState extends FormNode implements ActionContainer, ITimed, Sync
             copy.setEscalationDelay(new Duration(getEscalationDelay()));
         }
         copy.setIgnoreSubstitutionRules(ignoreSubstitutionRules);
-        copy.setReassignSwimlaneToInitializerValue(reassignSwimlaneToInitializerValue);
+        copy.setReassignSwimlaneToInitializer(reassignSwimlaneToInitializer);
         copy.setReassignSwimlaneToTaskPerformer(reassignSwimlaneToTaskPerformer);
         if (getTimeOutDelay() != null) {
             copy.setTimeOutDelay(new Duration(getTimeOutDelay()));

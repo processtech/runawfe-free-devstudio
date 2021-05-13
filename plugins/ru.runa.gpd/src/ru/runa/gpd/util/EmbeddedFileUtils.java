@@ -3,14 +3,12 @@ package ru.runa.gpd.util;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.CoreException;
-
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.BotTask;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.wfe.definition.FileDataProvider;
-
-import com.google.common.base.Strings;
+import ru.runa.wfe.var.file.FileVariable;
 
 public class EmbeddedFileUtils {
 
@@ -31,6 +29,10 @@ public class EmbeddedFileUtils {
             return FileDataProvider.PROCESS_FILE_PROTOCOL + fileName;
         }
         return fileName;
+    }
+
+    public static boolean isFileVariableClassName(String className) {
+        return FileVariable.class.getName().equals(className);
     }
 
     public static void deleteProcessFile(String path) {

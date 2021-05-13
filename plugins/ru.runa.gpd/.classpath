@@ -22,5 +22,6 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="lib" path="lib/poi-3.10-FINAL.jar"/>
 	<classpathentry kind="lib" path="lib/pdfbox-2.0.7.jar"/>
+	<classpathentry kind="lib" path="lib/java-diff-utils-4.9.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

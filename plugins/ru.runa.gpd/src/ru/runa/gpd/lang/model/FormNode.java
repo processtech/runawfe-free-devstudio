@@ -34,6 +34,7 @@ public abstract class FormNode extends SwimlanedNode {
     private boolean useJSValidation;
     private String templateFileName;
     private boolean formEditorOpened;
+    protected Boolean reassignSwimlaneToTaskPerformer = null;
 
     @Override
     public boolean testAttribute(Object target, String name, String value) {
@@ -118,6 +119,16 @@ public abstract class FormNode extends SwimlanedNode {
     
     public void setFormEditorOpened(boolean formEditorOpened) { 
         this.formEditorOpened = formEditorOpened; 
+    }
+
+    public Boolean isReassignSwimlaneToTaskPerformer() {
+        return reassignSwimlaneToTaskPerformer;
+    }
+
+    public void setReassignSwimlaneToTaskPerformer(Boolean reassignSwimlaneToTaskPerformer) {
+        Boolean old = this.reassignSwimlaneToTaskPerformer;
+        this.reassignSwimlaneToTaskPerformer = reassignSwimlaneToTaskPerformer;
+        firePropertyChange(PROPERTY_SWIMLANE_REASSIGN, old, this.reassignSwimlaneToTaskPerformer);
     }
      
     @Override

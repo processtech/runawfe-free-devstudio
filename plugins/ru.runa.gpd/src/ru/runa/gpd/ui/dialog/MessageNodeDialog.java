@@ -67,6 +67,7 @@ public class MessageNodeDialog extends Dialog {
         this.definition = definition;
         this.sendMode = sendMode;
         this.title = title;
+        setShellStyle(SWT.TITLE | SWT.RESIZE);
     }
 
     @Override

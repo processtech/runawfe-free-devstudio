@@ -73,7 +73,7 @@ public class LanguageElementPreferencePage extends FieldEditorPreferencePage imp
         }
         if (element instanceof TaskState) {
             addField(new BooleanFieldEditor(getKey(P_LANGUAGE_SWIMLANE_INITIALIZER),
-                    Localization.getString("Swimlane.reassignSwimlaneToInitializerValue"), getFieldEditorParent()));
+                    Localization.getString("Swimlane.reassignSwimlaneToInitializer"), getFieldEditorParent()));
             addField(new BooleanFieldEditor(getKey(P_LANGUAGE_SWIMLANE_PERFORMER),
                     Localization.getString("Swimlane.reassignSwimlaneToTaskPerformer"), getFieldEditorParent()));
             addField(new BooleanFieldEditor(getKey(P_LANGUAGE_TASK_STATE_ASYNC_INPUT_DATA),

@@ -7,6 +7,7 @@ import com.google.common.collect.Maps;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
+import java.net.BindException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -50,6 +51,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.texteditor.ITextEditor;
+import org.mortbay.util.MultiException;
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.EditorsPlugin;
 import ru.runa.gpd.PluginLogger;
@@ -82,8 +84,6 @@ import ru.runa.gpd.util.VariableUtils;
 import ru.runa.wfe.InternalApplicationException;
 
 /**
- * The WYSIWYG HTML editor using <a href="http://www.fckeditor.net/">FCKeditor</a>.
- * <p>
  * org.eclipse.ui.texteditor.BasicTextEditorActionContributor
  * </p>
  */
@@ -348,7 +348,19 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
                     try {
                         monitorDialog.run(true, false, runnable);
                     } catch (InvocationTargetException e) {
-                        PluginLogger.logError(Messages.getString("wysiwyg.design.create_error"), e.getTargetException());
+                        Exception ex = (Exception) e.getTargetException();
+                        if (ex instanceof MultiException) {
+                            for (Object multExc : ((MultiException) ex).getExceptions()) {
+                                if (multExc instanceof BindException) {
+                                    String port = Activator.getPrefString(PrefConstants.P_FORM_WEB_SERVER_PORT);
+                                    PluginLogger.logError(Messages.getString("wysiwyg.design.create_error_port", port), ex);
+                                    break;
+                                }
+                            }
+                        } else {
+                            PluginLogger.logError(Messages.getString("wysiwyg.design.create_error"), e.getTargetException());
+                        }
+
                     } catch (InterruptedException e) {
                         EditorsPlugin.logError("Web editor page", e);
                     }
