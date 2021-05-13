@@ -92,7 +92,7 @@ public class RenameVariableRefactoring extends Refactoring {
         for (TaskState taskState : stateNodes) {
             cache.add(new TimedPresentation(taskState));
         }
-        List<Timer> timers = processDefinition.getChildren(Timer.class);
+        List<Timer> timers = processDefinition.getChildrenRecursive(Timer.class);
         for (Timer timer : timers) {
             cache.add(new TimerPresentation(timer));
         }
