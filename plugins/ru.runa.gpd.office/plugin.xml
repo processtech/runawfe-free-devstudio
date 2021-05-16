@@ -65,14 +65,14 @@
             enabled="true">
       </handler>
       <handler
-            actionHandler="true"
+            actionHandler="false"
             assignmentHandler="false"
-            botTaskHandler="false"
+            botTaskHandler="true"
             decisionHandler="false"
             cellEditorProvider="ru.runa.gpd.office.store.InternalStorageOperationHandlerCellEditorProvider"
             className="ru.runa.wfe.office.storage.handler.InternalStorageHandler"
             label="%ru.runa.wfe.office.storage.handler.InternalStorageHandler"
-            enabled="false">
+            enabled="true">
       </handler>
    </extension>
 
