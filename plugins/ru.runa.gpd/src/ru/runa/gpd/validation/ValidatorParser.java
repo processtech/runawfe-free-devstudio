@@ -72,12 +72,12 @@ public class ValidatorParser {
         return result;
     }
 
-    public static void writeValidation(IFile validationFile, FormNode formNode, FormNodeValidation validation) {
+    public static void writeValidation(IFile validationFile, FormNode formNode, FormNodeValidation validation, boolean forceRewriteOnDelete) {
         try {
             if (validation.isEmpty()) {
                 if (validationFile.exists()) {
                     validationFile.delete(true, null);
-                    if (!formNode.getProcessDefinition().isDirty()) {
+                    if (!formNode.getProcessDefinition().isDirty() || forceRewriteOnDelete) {
                         // perform forms.xml synchronization now
                         ParContentProvider.saveFormsXml(formNode.getProcessDefinition());
                     }

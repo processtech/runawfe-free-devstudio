@@ -5,10 +5,11 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import java.beans.PropertyChangeEvent;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -684,23 +685,24 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             @SuppressWarnings("unchecked")
             List<Variable> attributes = ((IStructuredSelection) attributeTableViewer.getSelection()).toList();
             for (Variable attribute : attributes) {
-                List<Variable> result = Lists.newArrayList();
-                searchInVariables(result, getSelection(), attribute, null, getDefinition().getVariables(false, false));
-                String searchText = Joiner.on(", ").join(Lists.transform(result, new Function<Variable, String>() {
-                    @Override
-                    public String apply(Variable variable) {
-                        return variable.getName();
-                    }
-                }));
-                MultiVariableSearchQuery query = new MultiVariableSearchQuery(searchText, editor.getDefinitionFile(), getDefinition(), result);
+                List<Variable> variablesToBeRemoved = Lists.newArrayList();
+                searchInVariables(variablesToBeRemoved, getSelection(), attribute, null, getDefinition().getVariables(false, false));
+                List<String> variableNamesToBeRemoved = variablesToBeRemoved.stream().map(Variable::getName).collect(Collectors.toList());
+                String searchText = Joiner.on(", ").join(variableNamesToBeRemoved);
+                MultiVariableSearchQuery query = new MultiVariableSearchQuery(searchText, editor.getDefinitionFile(), getDefinition(),
+                        variablesToBeRemoved);
                 query.run(null);
                 Object[] elements = query.getSearchResult().getElements();
+                Set<FormNode> affectedFormNodes = new HashSet<>();
                 if (elements.length > 0) {
                     List<String> elementLabels = Lists.newArrayList();
                     for (Object element : elements) {
                         NamedGraphElement nge = (NamedGraphElement) ((ElementMatch) element).getGraphElement();
                         elementLabels.add(NodeRegistry.getNodeTypeDefinition(nge.getClass()).getLabel() + ": " + nge.getName() + " ("
                                 + ((ElementMatch) element).getFile().getName() + ")");
+                        if (nge instanceof FormNode) {
+                            affectedFormNodes.add((FormNode) nge);
+                        }
                     }
                     StringBuilder formNames = new StringBuilder(Localization.getString("Variable.ExistInElements")).append("\n\n");
                     elementLabels.stream().sorted().forEach(label -> formNames.append("- ").append(label).append("\n"));
@@ -710,15 +712,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
                         continue;
                     }
                 }
-                Map<String, List<FormNode>> variableFormNodesMapping = Maps.newHashMap();
-                for (Variable variable : VariableUtils.findVariablesOfTypeWithAttributeExpanded(getDefinition(), getSelection(), attribute)) {
-                    variableFormNodesMapping.put(variable.getName(), ParContentProvider.getFormsWhereUserTypeAttributeUsed(editor.getDefinitionFile(),
-                            getDefinition(), getSelection(), attribute));
-                }
-                // remove variable from form validations
-                for (Map.Entry<String, List<FormNode>> entry : variableFormNodesMapping.entrySet()) {
-                    ParContentProvider.rewriteFormValidationsRemoveVariable(editor.getDefinitionFile(), entry.getValue(), entry.getKey());
-                }
+                ParContentProvider.rewriteFormValidationsRemoveVariable(editor.getDefinitionFile(), affectedFormNodes, variableNamesToBeRemoved);
                 getSelection().removeAttribute(attribute);
             }
         }
