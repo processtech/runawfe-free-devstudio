@@ -243,6 +243,7 @@ public abstract class ProcessEditorBase extends MultiPageEditorPart implements I
     public void propertyChange(PropertyChangeEvent evt) {
         if (PropertyNames.PROPERTY_DIRTY.equals(evt.getPropertyName())) {
             firePropertyChange(IEditorPart.PROP_DIRTY);
+            DirtyDependentActions.update();
         }
         if (PropertyNames.PROPERTY_SHOW_GRID.equals(evt.getPropertyName())) {
             updateGridLayerVisibility(definition.isShowGrid());
@@ -310,7 +311,7 @@ public abstract class ProcessEditorBase extends MultiPageEditorPart implements I
 
     @Override
     public boolean isDirty() {
-        return graphPage.isDirty() || definition.isDirty();
+        return graphPage != null && graphPage.isDirty() || definition.isDirty();
     }
 
     @Override
