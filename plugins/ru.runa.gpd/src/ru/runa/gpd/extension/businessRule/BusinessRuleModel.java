@@ -19,6 +19,7 @@ public class BusinessRuleModel implements GroovyModel {
     private final List<IfExpr> ifs = new ArrayList<IfExpr>();
     private static Pattern IF_PATTERN = Pattern.compile("if \\((.*)\\)");
     private static Pattern RETURN_PATTERN = Pattern.compile("return '''(.*?)''';", Pattern.DOTALL);
+    private static Pattern LOGIC_PATTERN = Pattern.compile("(\\|\\||&&)");
     private String defaultFunction;
 
     public BusinessRuleModel() {
@@ -27,100 +28,131 @@ public class BusinessRuleModel implements GroovyModel {
     public BusinessRuleModel(String code, List<Variable> variables) throws Exception {
         Matcher returnMatcher = RETURN_PATTERN.matcher(code);
         Matcher matcher = IF_PATTERN.matcher(code);
+        Matcher logicMatcher = LOGIC_PATTERN.matcher(code);
         int startReturnSearch = 0;
         while (matcher.find()) {
-            String function;
-            String ifContent = normalizeString(matcher.group(1));
-            String[] strings = ifContent.split(" ");
-            // tmp
-            String lexem1Text = "";
-            String operator;
-            String lexem2Text = "";
-            boolean isOperationDateType = false;
-            if (strings.length == 1 || ifContent.indexOf("\"") > 0) {
-                // i.e. var1.equals(var2) or var1.contains(var2)
-                int start;
-                if (ifContent.charAt(0) != '!') {
-                    start = 0;
-                    if (ifContent.contains("equals")) {
-                        operator = "==";
+            String function = null;
+            List<Variable> variable1list = new ArrayList();
+            List<Object> lexem2list = new ArrayList();
+            List<Operation> operationNames = new ArrayList();
+            List<String> logicExprs = new ArrayList();
+            logicExprs.add("null");
+            String[] ifc = matcher.group(1).split("(\\|\\||&&)");
+            while (logicMatcher.find()) {
+                if (logicMatcher.group().equals("||")) {
+                    logicExprs.add("or");
+                }
+                if (logicMatcher.group().equals("&&")) {
+                    logicExprs.add("and");
+                }
+            }
+            for (int j = 0; j < ifc.length; j++) {
+                // String ifContent = normalizeString(matcher.group(1));
+                String ifContent = normalizeString(ifc[j]);
+                String[] strings = ifContent.split(" ");
+                // tmp
+                String lexem1Text = "";
+                String operator;
+                String lexem2Text = "";
+                boolean isOperationDateType = false;
+                if (strings.length == 1 || ifContent.indexOf("\"") > 0) {
+                    // i.e. var1.equals(var2) or var1.contains(var2)
+                    int start;
+                    if (ifContent.charAt(0) != '!') {
+                        start = 0;
+                        if (ifContent.contains("equals")) {
+                            operator = "==";
+                        } else {
+                            operator = "contains";
+                        }
                     } else {
-                        operator = "contains";
+                        start = 1;
+                        operator = "!=";
                     }
+                    lexem1Text = ifContent.substring(start, ifContent.indexOf("."));
+                    lexem2Text = ifContent.substring(ifContent.indexOf("(") + 1, ifContent.length() - 1);
+                } else if (strings.length > 3 && ifContent.contains(" || ") && ifContent.contains("ru.runa.wfe.commons.CalendarUtil.dateToCalendar")
+                        && ifContent.endsWith(" 0")) {
+                    // GroovyTypeSupport.DateType
+                    isOperationDateType = true;
+                    String ifContentWithoutNullCheck = ifContent.substring(ifContent.lastIndexOf(" || ") + " || ".length());
+                    String[] stringsWithoutNullCheck = ifContentWithoutNullCheck.split(" ");
+                    String[] parts = stringsWithoutNullCheck[0].split("\\.compareTo\\(");
+                    lexem1Text = parts[0].substring(parts[0].lastIndexOf("(") + 1, parts[0].indexOf(")"));
+                    lexem2Text = parts[1].substring(parts[1].lastIndexOf("(") + 1, parts[1].indexOf(")"));
+                    operator = stringsWithoutNullCheck[1];
+                } else if (strings.length > 3 && ifContent.contains(" || ") && ifContent.contains("BigDecimal") && ifContent.endsWith(" 0")) {
+                    // GroovyTypeSupport.BigDecimalType
+                    isOperationDateType = false;
+                    String ifContentWithoutNullCheck = ifContent.substring(ifContent.lastIndexOf(" || ") + " || ".length());
+                    String[] stringsWithoutNullCheck = ifContentWithoutNullCheck.split(" ");
+                    lexem1Text = stringsWithoutNullCheck[2];
+                    lexem2Text = stringsWithoutNullCheck[6];
+                    operator = stringsWithoutNullCheck[9];
                 } else {
-                    start = 1;
-                    operator = "!=";
-                }
-                lexem1Text = ifContent.substring(start, ifContent.indexOf("."));
-                lexem2Text = ifContent.substring(ifContent.indexOf("(") + 1, ifContent.length() - 1);
-            } else if (strings.length > 3 && ifContent.contains(" || ") && ifContent.contains("ru.runa.wfe.commons.CalendarUtil.dateToCalendar")
-                    && ifContent.endsWith(" 0")) {
-                // GroovyTypeSupport.DateType
-                isOperationDateType = true;
-                String ifContentWithoutNullCheck = ifContent.substring(ifContent.lastIndexOf(" || ") + " || ".length());
-                String[] stringsWithoutNullCheck = ifContentWithoutNullCheck.split(" ");
-                String[] parts = stringsWithoutNullCheck[0].split("\\.compareTo\\(");
-                lexem1Text = parts[0].substring(parts[0].lastIndexOf("(") + 1, parts[0].indexOf(")"));
-                lexem2Text = parts[1].substring(parts[1].lastIndexOf("(") + 1, parts[1].indexOf(")"));
-                operator = stringsWithoutNullCheck[1];
-            } else if (strings.length > 3 && ifContent.contains(" || ") && ifContent.contains("BigDecimal") && ifContent.endsWith(" 0")) {
-                // GroovyTypeSupport.BigDecimalType
-                isOperationDateType = false;
-                String ifContentWithoutNullCheck = ifContent.substring(ifContent.lastIndexOf(" || ") + " || ".length());
-                String[] stringsWithoutNullCheck = ifContentWithoutNullCheck.split(" ");
-                lexem1Text = stringsWithoutNullCheck[2];
-                lexem2Text = stringsWithoutNullCheck[6];
-                operator = stringsWithoutNullCheck[9];
-            } else {
-                lexem1Text = strings[0];
-                operator = strings[1];
-                if (strings.length == 3) {
-                    lexem2Text = strings[2];
-                } else {
-                    for (int i = 2; i < strings.length; i++) {
-                        lexem2Text += " " + strings[i];
+                    lexem1Text = strings[0];
+                    operator = strings[1];
+                    if (strings.length == 3) {
+                        lexem2Text = strings[2];
+                    } else {
+                        for (int i = 2; i < strings.length; i++) {
+                            lexem2Text += " " + strings[i];
+                        }
                     }
                 }
-            }
-            startReturnSearch = matcher.end(1);
-            if (returnMatcher.find(startReturnSearch)) {
-                function = returnMatcher.group(1);
-                startReturnSearch = returnMatcher.end(1);
-            } else {
-                throw new RuntimeException("unparsed");
-            }
-            if (lexem1Text.indexOf(".") > 0 && !isOperationDateType) {
-                // Java names doesn't allowed use of point in variable name
-                lexem1Text = lexem1Text.substring(0, lexem1Text.lastIndexOf("."));
-            }
-            Variable variable1 = VariableUtils.getVariableByScriptingName(variables, lexem1Text);
-            if (variable1 == null) {
-                // variable deleted
-                continue;
-            }
-            GroovyTypeSupport typeSupport = GroovyTypeSupport.get(variable1.getJavaClassName());
-            Operation operation = Operation.getByOperator(operator, typeSupport);
-            if (operation == null) {
-                throw new RuntimeException("Operation not found for operator: " + operator);
-            }
-            Object lexem2;
-            if (lexem2Text.indexOf(".") > 0 && !isOperationDateType) {
-                try {
-                    Double.parseDouble(lexem2Text);
-                } catch (NumberFormatException e) {
+                startReturnSearch = matcher.end(1);
+                if (returnMatcher.find(startReturnSearch)) {
+                    function = returnMatcher.group(1);
+                    startReturnSearch = returnMatcher.end(1);
+                } else {
+                    throw new RuntimeException("unparsed");
+                }
+                if (lexem1Text.indexOf(".") > 0 && !isOperationDateType) {
                     // Java names doesn't allowed use of point in variable name
-                    lexem2Text = lexem2Text.substring(0, lexem2Text.lastIndexOf("."));
+                    lexem1Text = lexem1Text.substring(0, lexem1Text.lastIndexOf("."));
+                }
+                Variable variable1 = VariableUtils.getVariableByScriptingName(variables, lexem1Text);
+                if (variable1 == null) {
+                    // variable deleted
+                    continue;
+                }
+                GroovyTypeSupport typeSupport = GroovyTypeSupport.get(variable1.getJavaClassName());
+                Operation operation = Operation.getByOperator(operator, typeSupport);
+                if (operation == null) {
+                    throw new RuntimeException("Operation not found for operator: " + operator);
+                }
+                Object lexem2;
+                if (lexem2Text.indexOf(".") > 0 && !isOperationDateType) {
+                    try {
+                        Double.parseDouble(lexem2Text);
+                    } catch (NumberFormatException e) {
+                        // Java names doesn't allowed use of point in variable name
+                        lexem2Text = lexem2Text.substring(0, lexem2Text.lastIndexOf("."));
+                    }
+                }
+                Variable variable2 = VariableUtils.getVariableByScriptingName(variables, lexem2Text);
+                if (variable2 != null) {
+                    lexem2 = variable2;
+                } else if (Operation.VOID.equals(lexem2Text) || Operation.NULL.equals(lexem2Text)) {
+                    lexem2 = "null";
+                } else {
+                    lexem2 = typeSupport.unwrapValue(lexem2Text);
+                }
+                if (j == 0) {
+                    variable1list.add(variable1);
+                    lexem2list.add(lexem2);
+                    operationNames.add(operation);
+                    variable1list.add(variable1);
+                    lexem2list.add(lexem2);
+                    operationNames.add(operation);
+                } else {
+                    variable1list.add(variable1);
+                    lexem2list.add(lexem2);
+                    operationNames.add(operation);
                 }
             }
-            Variable variable2 = VariableUtils.getVariableByScriptingName(variables, lexem2Text);
-            if (variable2 != null) {
-                lexem2 = variable2;
-            } else if (Operation.VOID.equals(lexem2Text) || Operation.NULL.equals(lexem2Text)) {
-                lexem2 = "null";
-            } else {
-                lexem2 = typeSupport.unwrapValue(lexem2Text);
-            }
-            IfExpr ifExpr = new IfExpr(function, variable1, lexem2, operation);
+            logicExprs.add("null");
+            IfExpr ifExpr = new IfExpr(function, variable1list, lexem2list, operationNames, logicExprs);
             addIfExpr(ifExpr);
         }
         if (returnMatcher.find(startReturnSearch)) {
@@ -194,53 +226,65 @@ public class BusinessRuleModel implements GroovyModel {
     }
 
     public static class IfExpr {
-        private Variable variable1;
-        private Object lexem2;
-        private final Operation operation;
+        private List<Variable> variable1;
+        private List<Object> lexem2;
+        private List<String> logicExprs;
+        private final List<Operation> operation;
         private final String function;
 
-        public IfExpr(String function, Variable variable, Object lexem2, Operation operation) {
+        public IfExpr(String function, List<Variable> variable, List<Object> lexem2, List<Operation> operation, List<String> logicExprs) {
             this.function = function;
             this.variable1 = variable;
             this.lexem2 = lexem2;
             this.operation = operation;
+            this.logicExprs = logicExprs;
         }
 
         public String generateCode() {
-            return "if ( " + operation.generateCode(variable1, lexem2) + " ) {\n\treturn '''" + function + "''';\n};\n";
+            StringBuffer buffer = new StringBuffer();
+            buffer.append("if ( ");
+            for (int i = 1; i < variable1.size(); i++) {
+                buffer.append(operation.get(i).generateCode(variable1.get(i), lexem2.get(i)));
+                if (!logicExprs.get(i).equals("null")) {
+                    if (logicExprs.get(i).equals("or")) {
+                        buffer.append(" " + "||" + " ");
+                    }
+                    if (logicExprs.get(i).equals("and")) {
+                        buffer.append(" " + "&&" + " ");
+                    }
+                    // buffer.append(" " + logicExprs.get(i) + " ");
+                }
+            }
+            buffer.append(" ) {\n\treturn '''" + function + "''';\n};\n");
+            return buffer.toString();
         }
 
-        public Variable getVariable1() {
+        public List<Variable> getVariable1() {
             return variable1;
         }
 
-        public void setVariable1(Variable variable) {
-            this.variable1 = variable;
-        }
-
-        public Object getLexem2() {
+        public List<Object> getLexem2() {
             return lexem2;
         }
 
-        public void setLexem2(Object lexem2) {
-            this.lexem2 = lexem2;
-        }
-
-        public String getLexem2TextValue() {
-            if (lexem2 instanceof Variable) {
-                return ((Variable) lexem2).getScriptingName();
-            } else if (lexem2 instanceof String) {
-                return (String) lexem2;
+        public String getLexem2TextValue(int index) {
+            if (lexem2.get(index) instanceof Variable) {
+                return ((Variable) lexem2.get(index)).getScriptingName();
+            } else if (lexem2.get(index) instanceof String) {
+                return (String) lexem2.get(index);
             } else {
-                throw new IllegalArgumentException("lexem2 class is " + lexem2.getClass().getName());
+                throw new IllegalArgumentException("lexem2 class is " + lexem2.get(index).getClass().getName());
             }
         }
 
-        public Operation getOperation() {
+        public List<Operation> getOperation() {
             return operation;
         }
 
-        //// look
+        public List<String> getLogicExprs() {
+            return logicExprs;
+        }
+
         public String getFunction() {
             return function;
         }

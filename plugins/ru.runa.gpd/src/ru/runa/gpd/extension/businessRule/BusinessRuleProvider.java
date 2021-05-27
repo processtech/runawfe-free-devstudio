@@ -48,7 +48,7 @@ public class BusinessRuleProvider extends DelegableProvider {
         List<String> result = Lists.newArrayList();
         for (IfExpr expr : model.getIfExprs()) {
             if (expr.getVariable1() != null) {
-                result.add(expr.getVariable1().getName());
+                result.add(expr.getVariable1().get(model.getIfExprs().indexOf(expr)).getName());
             }
             if (expr.getLexem2() instanceof Variable) {
                 result.add(((Variable) expr.getLexem2()).getName());
