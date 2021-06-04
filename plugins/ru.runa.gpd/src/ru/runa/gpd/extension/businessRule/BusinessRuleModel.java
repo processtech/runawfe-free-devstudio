@@ -47,7 +47,6 @@ public class BusinessRuleModel implements GroovyModel {
                 }
             }
             for (int j = 0; j < ifc.length; j++) {
-                // String ifContent = normalizeString(matcher.group(1));
                 String ifContent = normalizeString(ifc[j]);
                 String[] strings = ifContent.split(" ");
                 // tmp
@@ -252,7 +251,6 @@ public class BusinessRuleModel implements GroovyModel {
                     if (logicExprs.get(i).equals("and")) {
                         buffer.append(" " + "&&" + " ");
                     }
-                    // buffer.append(" " + logicExprs.get(i) + " ");
                 }
             }
             buffer.append(" ) {\n\treturn '''" + function + "''';\n};\n");
