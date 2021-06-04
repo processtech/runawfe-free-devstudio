@@ -28,9 +28,9 @@ public class BusinessRuleModel implements GroovyModel {
     public BusinessRuleModel(String code, List<Variable> variables) throws Exception {
         Matcher returnMatcher = RETURN_PATTERN.matcher(code);
         Matcher matcher = IF_PATTERN.matcher(code);
-        Matcher logicMatcher = LOGIC_PATTERN.matcher(code);
         int startReturnSearch = 0;
         while (matcher.find()) {
+            Matcher logicMatcher = LOGIC_PATTERN.matcher(matcher.group(1));
             String function = null;
             List<Variable> variable1list = new ArrayList();
             List<Object> lexem2list = new ArrayList();
