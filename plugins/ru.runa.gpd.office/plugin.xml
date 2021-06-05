@@ -65,8 +65,8 @@
             enabled="true">
       </handler>
       <handler
-            actionHandler="false"
-            assignmentHandler="false"
+            actionHandler="true"
+            assignmentHandler="true"
             botTaskHandler="true"
             decisionHandler="false"
             cellEditorProvider="ru.runa.gpd.office.store.InternalStorageOperationHandlerCellEditorProvider"

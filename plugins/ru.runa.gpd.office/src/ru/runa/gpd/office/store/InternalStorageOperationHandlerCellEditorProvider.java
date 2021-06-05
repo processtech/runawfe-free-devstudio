@@ -3,36 +3,27 @@ package ru.runa.gpd.office.store;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.dom4j.Document;
+import org.dom4j.Element;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.forms.events.HyperlinkEvent;
-
 import ru.runa.gpd.PluginLogger;
+import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.extension.handler.XmlBasedConstructorProvider;
-import ru.runa.gpd.extension.handler.XmlBasedConstructorProvider.ConstructorComposite;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.GraphElement;
@@ -43,47 +34,48 @@ import ru.runa.gpd.lang.model.StorageAware;
 import ru.runa.gpd.lang.model.VariableContainer;
 import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.gpd.lang.model.VariableUserTypeNameAware;
+import ru.runa.gpd.lang.par.VariablesXmlContentProvider;
 import ru.runa.gpd.office.FilesSupplierMode;
-import ru.runa.gpd.office.InputOutputComposite;
 import ru.runa.gpd.office.Messages;
 import ru.runa.gpd.office.store.externalstorage.ConstraintsCompositeBuilder;
+import ru.runa.gpd.office.store.externalstorage.DeleteBotConstraintsComposite;
 import ru.runa.gpd.office.store.externalstorage.DeleteConstraintsComposite;
 import ru.runa.gpd.office.store.externalstorage.InsertConstraintsComposite;
 import ru.runa.gpd.office.store.externalstorage.InternalStorageDataModel;
+import ru.runa.gpd.office.store.externalstorage.PredicateBotCompositeDelegateBuilder;
 import ru.runa.gpd.office.store.externalstorage.PredicateCompositeDelegateBuilder;
 import ru.runa.gpd.office.store.externalstorage.ProcessDefinitionVariableProvider;
+import ru.runa.gpd.office.store.externalstorage.SelectBotConstraintsComposite;
 import ru.runa.gpd.office.store.externalstorage.SelectConstraintsComposite;
 import ru.runa.gpd.office.store.externalstorage.UpdateConstraintsComposite;
 import ru.runa.gpd.office.store.externalstorage.VariableProvider;
-import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
-import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
-import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.custom.SwtUtils;
 import ru.runa.gpd.util.EmbeddedFileUtils;
+import ru.runa.gpd.util.XmlUtil;
 
 public class InternalStorageOperationHandlerCellEditorProvider extends XmlBasedConstructorProvider<InternalStorageDataModel> {
     public static final String INTERNAL_STORAGE_DATASOURCE_PATH = "datasource:InternalStorage";
-
+    public static final String INTERNAL_STORAGE_GLOBALSECTION_PATH = "datasource:";
+    private Delegable delegable;
+    private ProcessDefinition  definition;
     @Override
     public void onDelete(Delegable delegable) {
         try {
-            final InternalStorageDataModel model = fromXml(delegable.getDelegationConfiguration());
+        	this.delegable = delegable;        	
+            final InternalStorageDataModel model = fromXml(delegable.getDelegationConfiguration());            
             EmbeddedFileUtils.deleteProcessFile(model.getInOutModel().inputPath);
         } catch (Exception e) {
             PluginLogger.logErrorWithoutDialog("Template file deletion", e);
         }
     }
-
     @Override
     protected String getTitle() {
         return Messages.getString("InternalStorageHandlerConfig.title");
     }
-
     @Override
     protected Composite createConstructorComposite(Composite parent, Delegable delegable, InternalStorageDataModel model) {
         final boolean isUseExternalStorageIn = (delegable instanceof StorageAware) ? ((StorageAware) delegable).isUseExternalStorageIn() : false;
-        final boolean isUseExternalStorageOut = (delegable instanceof StorageAware) ? ((StorageAware) delegable).isUseExternalStorageOut() : false;
-
+        final boolean isUseExternalStorageOut = (delegable instanceof StorageAware) ? ((StorageAware) delegable).isUseExternalStorageOut() : false;       
         Optional<ProcessDefinition> processDefinition = Optional.empty();
         if (delegable instanceof ProcessDefinitionAware) {
             processDefinition = Optional.ofNullable(((ProcessDefinitionAware) delegable).getProcessDefinition());
@@ -92,7 +84,7 @@ public class InternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
             processDefinition = ((VariableContainer) delegable).getVariables(false, true).stream().map(variable -> variable.getProcessDefinition())
                     .findAny();
         }
-
+        delegable.getDelegationClassName();
         if (delegable instanceof StorageAware) {
             if (delegable instanceof VariableUserTypeNameAware) {
                 return new ConstructorView(parent, delegable, model,
@@ -106,19 +98,43 @@ public class InternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
                             processDefinition.orElseThrow(() -> new IllegalStateException("process definition unavailable"))),
                     isUseExternalStorageIn, isUseExternalStorageOut).build();
         } else {
-        	return new BotConstructorView(parent, delegable, model).build();
-            // TODO 1506 Реализовать VariableProvider для параметров бота
-            //throw new UnsupportedOperationException("VariableProvider is not realized for " + delegable.getClass().getName());
+        	ProcessDefinition globalDefinition = ProcessCache.getProcessDefinition(getGlobalFile(delegable));
+        	if (globalDefinition!= null) {
+        		this.definition = globalDefinition;        		
+        	}      	
+        	
+        	return new BotConstructorView(parent, delegable, model, definition).build();
+            
         }
     }
 
-    @Override
+	private IFile getGlobalFile(Delegable delegable) { 
+		String configText = delegable.getDelegationConfiguration();
+    	Element input;
+    	if(!XmlUtil.isXml(configText)) {
+    		return null;
+    	}    		
+    	Document doc = XmlUtil.parseWithoutValidation(configText);
+    	input = doc.getRootElement();
+    	String globalName = input.element("input").attributeValue("variable");
+	    for (IFile file : ProcessCache.getAllProcessDefinitionsMap().keySet()) {
+	    		
+	    	if(file.getParent().getName().equals(globalName) ) {
+	            	return file;
+	            }
+	    	
+    	}
+		return null;
+	}
+
+	@Override
     protected InternalStorageDataModel createDefault() {
         return new InternalStorageDataModel(FilesSupplierMode.BOTH);
     }
-
+	
     @Override
     protected InternalStorageDataModel fromXml(String xml) throws Exception {
+    	
         return InternalStorageDataModel.fromXml(xml);
     }
 
@@ -160,7 +176,7 @@ public class InternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
         private VariableUserTypeInfo variableUserTypeInfo = new VariableUserTypeInfo(false, "");
 
         private ConstraintsCompositeBuilder constraintsCompositeBuilder;
-        
+         
         public ConstructorView(Composite parent, Delegable delegable, InternalStorageDataModel model, VariableProvider variableProvider,
                 boolean isUseExternalStorageIn, boolean isUseExternalStorageOut) {
             super(parent, delegable, model);
@@ -204,7 +220,7 @@ public class InternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
                 constraintsModel.setQueryType(QueryType.SELECT);
                 model.setMode(FilesSupplierMode.BOTH);
             } else {
-                addActionCombo(isUseExternalStorageIn, isUseExternalStorageOut);
+            	addActionCombo(isUseExternalStorageIn, isUseExternalStorageOut);
             }
 
             new Label(this, SWT.NONE).setText(Messages.getString("label.DataType"));
@@ -216,7 +232,7 @@ public class InternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
             } else {
                 addDataTypeCombo();
             }
-
+            
             initConstraintsCompositeBuilder();
             if (constraintsCompositeBuilder != null) {
                 constraintsCompositeBuilder.clearConstraints();
@@ -282,6 +298,7 @@ public class InternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
                 if (constraintsCompositeBuilder != null) {
                     constraintsCompositeBuilder.onChangeVariableTypeName(variableUserTypeInfo.getVariableTypeName());
                 }
+                model.getInOutModel();
                 buildFromModel();
             }));
 
@@ -291,6 +308,7 @@ public class InternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
                 variableUserTypeInfo.setVariableTypeName(userType.getName());
             }
         }
+               
 
         private void addActionCombo(boolean isUseExternalStorageIn, boolean isUseExternalStorageOut) {
             final Combo combo = new Combo(this, SWT.READ_ONLY);
@@ -323,113 +341,140 @@ public class InternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
     }
 
     private class BotConstructorView extends ConstructorComposite {
-    	private List<String> operators = Lists.newArrayList("==", "!=", ">=", "<=", ">", "<", "like", "and", "or");
-        private Text queryText;
-        private Label warning;
-        private Color darkRed = new Color(null, 128, 0, 0);
-
-        public BotConstructorView(Composite parent, Delegable delegable, InternalStorageDataModel model) {
+    	private ProcessDefinition globalSectionDefinition;
+        private VariableProvider variableProvider;        
+        private ConstraintsCompositeBuilder constraintsCompositeBuilder;
+        private StorageConstraintsModel constraintsModel;
+        private String dataTypeName = null;  
+        private String VariableTypeName = null; 
+        private VariableUserType Type = null;
+        private VariableUserTypeInfo variableUserTypeInfo = new VariableUserTypeInfo(false, "");        
+        private QueryType queryType;
+        
+        
+        public BotConstructorView(Composite parent, Delegable delegable, InternalStorageDataModel model, ProcessDefinition GlobalSection) {
             super(parent, delegable, model);
-            setLayout(new GridLayout(3, false));
-            buildFromModel();
+            this.globalSectionDefinition = GlobalSection;             
+            this.variableProvider = new ProcessDefinitionVariableProvider(GlobalSection);
+            model.getInOutModel().inputPath = INTERNAL_STORAGE_GLOBALSECTION_PATH;
+            model.getInOutModel().inputVariable = GlobalSection.getName();
+            setLayout(new GridLayout(2, false));
         }
 
         public BotConstructorView build() {
+        	
             buildFromModel();
             return this;
         }
-
-		@Override
-        public void dispose() {
-            if (!darkRed.isDisposed()) {
-                darkRed.dispose();
-            }
-            super.dispose();
-        }
-
-        private void validateCondition() {
-            warning.setText("");
-            if (queryText != null && !queryText.isDisposed()) {
-                Set<Integer> indexes = Sets.newHashSet();
-                String queryString = queryText.getText().toLowerCase();
-                for (String operator : operators) {
-                    int index = -1;
-                    while ((index = queryString.indexOf(operator, index + 1)) > 0) {
-                        if (!indexes.contains(index) && (queryString.charAt(index - 1) != ' '
-                                || index < queryString.length() - operator.length() && queryString.charAt(index + operator.length()) != ' ')) {
-                            warning.setText(Messages.getString("query.operators.warning"));
-                            return;
-                        }
-                        indexes.add(index);
-                    }
-                }
-            }
-        }
-
+        
         @Override
         protected void buildFromModel() {
-            try {
-                for (Control control : getChildren()) {
-                    control.dispose();
+        	VariablesXmlContentProvider VariableXmlProvider = new VariablesXmlContentProvider();
+            initConstraintsModel();
+            for (Control control : getChildren()) {
+                control.dispose();
+            }
+            model.getInOutModel().inputPath = INTERNAL_STORAGE_GLOBALSECTION_PATH+variableUserTypeInfo.variableTypeName;
+            if (constraintsModel.getSheetName() != null && !constraintsModel.getSheetName().isEmpty()) {
+                final VariableUserType userType = variableProvider.getUserType(constraintsModel.getSheetName());
+                variableUserTypeInfo.setVariableTypeName(userType != null ? userType.getName() : "");
+
+                if (variableUserTypeInfo.isImmutable() && !variableUserTypeInfo.getVariableTypeName().equals(constraintsModel.getSheetName())) {
+                    constraintsModel.setQueryString("");
                 }
-                Label l = new Label(this, SWT.NONE);
-                l.setText(Messages.getString("label.ExecutionAction"));
-                addActionCombo();
+            }
+            
+            new Label(this, SWT.NONE).setText(Messages.getString("label.ExecutionAction"));            
+            addActionCombo();
+            model.setMode(FilesSupplierMode.IN);
+            new Label(this, SWT.NONE).setText(Messages.getString("label.DataType"));
+            if (variableUserTypeInfo.isImmutable()) {
+                SwtUtils.createLabel(this, variableUserTypeInfo.getVariableTypeName());
+                constraintsModel.setSheetName(variableUserTypeInfo.getVariableTypeName());                
+                constraintsModel.setVariableName(VariableTypeName);
+                model.setMode(FilesSupplierMode.IN);
+            } else {
+                addDataTypeCombo();
+            }            
+            initConstraintsCompositeBuilder();
+            constraintsModel.setVariableName(VariableTypeName);
+            if (constraintsCompositeBuilder != null) {
+                //constraintsCompositeBuilder.clearConstraints();
                 new Label(this, SWT.NONE);
-                if (queryType != null && !queryType.equals(QueryType.INSERT)) {
-                    l = new Label(this, SWT.NONE);
-                    l.setText(Messages.getString("label.Query"));
-                    queryText = new Text(this, SWT.BORDER);
-                    if (model != null && model.constraints != null && model.constraints.size() > 0) {
-                        queryString = model.constraints.get(0).getQueryString();
-                    }
-                    if (!Strings.isNullOrEmpty(queryString)) {
-                        queryText.setText(queryString);
-                    }
-                    queryText.addModifyListener(new ModifyListener() {
+                constraintsCompositeBuilder.build();
+            }
+            
+            ((ScrolledComposite) getParent()).setMinSize(computeSize(getSize().x, SWT.DEFAULT));
+            String configText = delegable.getDelegationConfiguration();        	
+            this.layout(true, true);
+            this.redraw();
+        }
 
-                        @Override
-                        public void modifyText(ModifyEvent e) {
-                            for (StorageConstraintsModel m : model.constraints) {
-                                m.setQueryString(queryText.getText());
-                            }
-                            validateCondition();
-                        }
-                    });
-                } else {
-                    new Label(this, SWT.NONE);
-                }
+        private void initConstraintsModel() {
+            if (constraintsModel != null && model.constraints.get(0) == constraintsModel) {
+                return;
+            }
 
-                SwtUtils.createLink(this, Messages.getString("label.AddVar"), new LoggingHyperlinkAdapter() {
-
-                    @Override
-                    protected void onLinkActivated(HyperlinkEvent e) throws Exception {
-                        model.constraints.add(new StorageConstraintsModel(StorageConstraintsModel.ATTR, queryType));
-                        buildFromModel();
-                    }
-                }).setLayoutData(new GridData(GridData.GRAB_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
-                new Label(this, SWT.NONE);
-                warning = new Label(this, SWT.NONE);
-                warning.setForeground(darkRed);
-                warning.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
-                validateCondition();
-                model.getInOutModel().canWorkWithDataSource = true;
-                
-                for (StorageConstraintsModel c : model.constraints) {
-                    new ArrtibuteComposite(c);
-                }
-                ((ScrolledComposite) getParent()).setMinSize(computeSize(getSize().x, SWT.DEFAULT));
-                this.layout(true, true);
-                this.redraw();
-            } catch (Throwable e) {
-                PluginLogger.logErrorWithoutDialog("Cannot build model", e);
+            if (!model.constraints.isEmpty()) {
+                Preconditions.checkState(model.constraints.size() == 1, "Expected model.constraints.size() == 1, actual " + model.constraints.size());
+                constraintsModel = Iterables.getOnlyElement(model.constraints);
+            } else {
+                constraintsModel = new StorageConstraintsModel(StorageConstraintsModel.ATTR, QueryType.SELECT);
+                model.constraints.add(constraintsModel);
             }
         }
 
-        private QueryType queryType;
-
-        private String queryString;
-
+        private void initConstraintsCompositeBuilder() {
+            if (constraintsModel.getQueryType() != null) {
+                switch (constraintsModel.getQueryType()) {
+                case INSERT:
+                    constraintsCompositeBuilder = new InsertConstraintsComposite(this, SWT.NONE, constraintsModel, variableProvider,
+                            variableUserTypeInfo.getVariableTypeName());
+                    break;
+                case SELECT:
+                    constraintsCompositeBuilder = new PredicateBotCompositeDelegateBuilder(this, SWT.NONE, constraintsModel, variableProvider,
+                            variableUserTypeInfo.getVariableTypeName(), new SelectBotConstraintsComposite(this, SWT.NONE, constraintsModel,
+                                    variableProvider, variableUserTypeInfo.getVariableTypeName()),delegable);
+                    break;
+                case UPDATE:
+                    constraintsCompositeBuilder = new PredicateBotCompositeDelegateBuilder(this, SWT.NONE, constraintsModel, variableProvider,
+                            variableUserTypeInfo.getVariableTypeName(), new UpdateConstraintsComposite(this, SWT.NONE, constraintsModel,
+                                    variableProvider, variableUserTypeInfo.getVariableTypeName()),delegable);
+                    break;
+                case DELETE:
+                    constraintsCompositeBuilder = new PredicateBotCompositeDelegateBuilder(this, SWT.NONE, constraintsModel, variableProvider,
+                            variableUserTypeInfo.getVariableTypeName(), new DeleteBotConstraintsComposite(this, SWT.NONE, constraintsModel,
+                                    variableProvider, variableUserTypeInfo.getVariableTypeName()),delegable);
+                    break;
+                }
+            }
+        }
+        
+        private void addDataTypeCombo() {
+        	final Combo combo = new Combo(this, SWT.READ_ONLY);        	
+        	List <VariableUserType> Types = globalSectionDefinition.getVariableUserTypes();
+        	for(VariableUserType Type : Types) {
+        		combo.add(Type.getName());
+        	}        	
+        	if(variableProvider== null) {				
+	            return;
+			}       	 		
+        	
+			combo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+                final String text = combo.getText();
+                if (Strings.isNullOrEmpty(text)) {
+                    return;
+                }
+                dataTypeName =  text;             
+                
+	            variableUserTypeInfo.setVariableTypeName(combo.getText());
+	            Type = Types.get(combo.getSelectionIndex());	            
+	            buildFromModel(); 
+            }));			
+            if(dataTypeName != null) {
+            	combo.setText(dataTypeName);
+            }
+        }
         private void addActionCombo() {
             final Combo combo = new Combo(this, SWT.READ_ONLY);
             for (QueryType action : QueryType.values()) {
@@ -442,14 +487,7 @@ public class InternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
                     if (Strings.isNullOrEmpty(text)) {
                         return;
                     }
-                    // if
-                    // (!QueryType.valueOf(combo.getText()).equals(queryType)) {
-                    // for (StorageConstraintsModel m : model.constraints) {
-                    // if (m.getConditionModel() != null) {
-                    // m.getConditionModel().getConditions().clear();
-                    // }
-                    // }
-                    // }
+                    
                     queryType = QueryType.valueOf(combo.getText());
                     for (StorageConstraintsModel m : model.constraints) {
                         m.setQueryType(queryType);
@@ -466,143 +504,13 @@ public class InternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
             if (queryType != null) {
                 combo.setText(queryType.toString());
             }
+        } 
+        protected String[] getTypeFilters() {
+            return new String[] { List.class.getName() };
         }
-
-        public abstract class ConstraintsComposite extends Composite {
-            public final StorageConstraintsModel cmodel;
-
-            ConstraintsComposite(StorageConstraintsModel m) {
-                super(BotConstructorView.this, SWT.NONE);
-                cmodel = m;
-                GridData data = new GridData(GridData.FILL_HORIZONTAL);
-                data.horizontalSpan = 3;
-                setLayoutData(data);
-                setLayout(new FillLayout(SWT.VERTICAL));
-                Group group = new Group(this, SWT.None);
-                group.setLayout(new GridLayout(3, false));
-                group.setText(getTitle());
-                Label l = new Label(group, SWT.NONE);
-                l.setText(Messages.getString("label.variable"));
-                final Combo combo = new Combo(group, SWT.READ_ONLY);
-                for (String variableName : delegable.getVariableNames(true, getTypeFilters())) {
-                    combo.add(variableName);
-                }
-                combo.setText(cmodel.variableName);
-                combo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-                combo.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        cmodel.variableName = combo.getText();
-                    }
-                });
-                SwtUtils.createLink(group, "[X]", new LoggingHyperlinkAdapter() {
-
-                    @Override
-                    protected void onLinkActivated(HyperlinkEvent e) throws Exception {
-                        model.constraints.remove(cmodel);
-                        buildFromModel();
-                    }
-                });
-                final Combo sheetCombo = new Combo(group, SWT.READ_ONLY);
-                sheetCombo.add(Messages.getString("label.sheetByTitle"));
-                sheetCombo.add(Messages.getString("label.sheetByIndex"));
-                final Text sheetText = new Text(group, SWT.BORDER);
-                sheetText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-                if (cmodel.sheetName != null && cmodel.sheetName.length() > 0) {
-                    sheetCombo.select(0);
-                    sheetText.setText(cmodel.sheetName);
-                } else {
-                    sheetCombo.select(1);
-                    sheetText.setText("" + cmodel.sheetIndex);
-                }
-                sheetText.addModifyListener(new LoggingModifyTextAdapter() {
-
-                    @Override
-                    protected void onTextChanged(ModifyEvent e) throws Exception {
-                        updateSheet(sheetCombo, sheetText);
-                    }
-                });
-                sheetCombo.addSelectionListener(new LoggingSelectionAdapter() {
-
-                    @Override
-                    protected void onSelection(SelectionEvent e) throws Exception {
-                        updateSheet(sheetCombo, sheetText);
-                    }
-                });
-                new Label(group, SWT.NONE);
-                l = new Label(group, SWT.None);
-                l.setText(getXcoordMessage());
-                final Text tx = new Text(group, SWT.BORDER);
-                tx.setText("" + cmodel.getColumn());
-                tx.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-                new Label(group, SWT.NONE);
-                tx.addModifyListener(new ModifyListener() {
-                    @Override
-                    public void modifyText(ModifyEvent arg0) {
-                        try {
-                            int x = Integer.parseInt(tx.getText());
-                            if (x > 0 && x < 65535) {
-                                cmodel.setColumn(x);
-                            } else {
-                                tx.setText("1");
-                            }
-                        } catch (Exception e) {
-                            tx.setText("1");
-                        }
-                    }
-                });
-                layout(true, true);
-            }
-
-            private void updateSheet(Combo combo, Text text) {
-                if (combo.getSelectionIndex() == 0) {
-                    cmodel.sheetName = text.getText();
-                    cmodel.sheetIndex = 1;
-                } else {
-                    cmodel.sheetName = "";
-                    try {
-                        cmodel.sheetIndex = Integer.parseInt(text.getText());
-                        if (cmodel.sheetIndex <= 0) {
-                            cmodel.sheetIndex = 1;
-                        }
-                    } catch (Exception e) {
-                        cmodel.sheetIndex = 1;
-                        text.setText("1");
-                    }
-                }
-            }
-
-            protected String[] getTypeFilters() {
-                return new String[] { List.class.getName() };
-            }
-
-            public abstract String getTitle();
-
-            public String getXcoordMessage() {
-                return Messages.getString("label.xcoord");
-            }
-        }
-
-        public class ArrtibuteComposite extends ConstraintsComposite {
-            ArrtibuteComposite(StorageConstraintsModel m) {
-                super(m);
-            }
-
-            @Override
-            protected String[] getTypeFilters() {
-                if (queryType.equals(QueryType.SELECT)) {
-                    return super.getTypeFilters();
-                }
-                return null;
-            }
-
-            @Override
-            public String getTitle() {
-                return Messages.getString("label.Arrtibute");
-            }
-        }
+                
     }
-    public static class VariableUserTypeInfo {
+    public class VariableUserTypeInfo {
         private final boolean isImmutable;
         private String variableTypeName;
 
