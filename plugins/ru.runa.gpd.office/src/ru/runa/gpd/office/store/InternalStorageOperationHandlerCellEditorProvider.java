@@ -403,7 +403,9 @@ public class InternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
                 new Label(this, SWT.NONE);
                 constraintsCompositeBuilder.build();
             }
-            
+            if(constraintsModel.getQueryType() == QueryType.SELECT) {
+            	model.setMode(FilesSupplierMode.BOTH);
+            }            
             ((ScrolledComposite) getParent()).setMinSize(computeSize(getSize().x, SWT.DEFAULT));
             String configText = delegable.getDelegationConfiguration();        	
             this.layout(true, true);
@@ -434,7 +436,7 @@ public class InternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
                 case SELECT:
                     constraintsCompositeBuilder = new PredicateBotCompositeDelegateBuilder(this, SWT.NONE, constraintsModel, variableProvider,
                             variableUserTypeInfo.getVariableTypeName(), new SelectBotConstraintsComposite(this, SWT.NONE, constraintsModel,
-                                    variableProvider, variableUserTypeInfo.getVariableTypeName()),delegable);
+                                    variableProvider, variableUserTypeInfo, model.getInOutModel(),delegable),delegable);
                     break;
                 case UPDATE:
                     constraintsCompositeBuilder = new PredicateBotCompositeDelegateBuilder(this, SWT.NONE, constraintsModel, variableProvider,
