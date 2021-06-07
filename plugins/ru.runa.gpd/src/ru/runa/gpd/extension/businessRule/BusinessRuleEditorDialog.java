@@ -473,18 +473,15 @@ public class BusinessRuleEditorDialog extends GroovyEditorDialogType {
 
         public void createComplexExpressionBody() {
             indexLine = exprLines.indexOf(this);
+            createExpr(complexExpression, indexLine);
             if (initModel != null) {
                 List<IfExpr> ifExprs = ((BusinessRuleModel) initModel).getIfExprs();
                 if (ifExprs.size() > indexLine) {
                     IfExpr ifExpr = ifExprs.get(indexLine);
-                    for (int j = 1; j < ifExpr.getVariable1().size(); j++) {
+                    for (int j = 2; j < ifExpr.getVariable1().size(); j++) {
                         createExpr(complexExpression, indexLine);
                     }
-                } else {
-                    createExpr(complexExpression, indexLine);
                 }
-            } else {
-                createExpr(complexExpression, indexLine);
             }
         }
 

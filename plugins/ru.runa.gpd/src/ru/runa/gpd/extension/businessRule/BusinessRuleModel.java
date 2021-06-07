@@ -38,15 +38,33 @@ public class BusinessRuleModel implements GroovyModel {
             List<String> logicExprs = new ArrayList();
             logicExprs.add("null");
             String[] ifc = matcher.group(1).split("(\\|\\||&&)");
-            while (logicMatcher.find()) {
-                if (logicMatcher.group().equals("||")) {
-                    logicExprs.add("or");
-                }
-                if (logicMatcher.group().equals("&&")) {
-                    logicExprs.add("and");
+
+            boolean flag = false;
+            ArrayList<Integer> indexes = new ArrayList();
+            if (matcher.group(1).contains("BigDecimal") || matcher.group(1).contains("ru.runa.wfe.commons.CalendarUtil.dateToCalendar")) {
+                flag = true;
+                for (int i = 0; i < ifc.length; i++) {
+                    if (ifc[i].contains("BigDecimal") || ifc[i].contains("ru.runa.wfe.commons.CalendarUtil.dateToCalendar")) {
+                        indexes.add(i);
+                    }
                 }
             }
+
+            for (int i = 0; i < ifc.length; i++) {
+                if (logicMatcher.find() && (!indexes.contains(i + 1) && !indexes.contains(i + 2))) {
+                    if (logicMatcher.group().equals("||")) {
+                        logicExprs.add("or");
+                    }
+                    if (logicMatcher.group().equals("&&")) {
+                        logicExprs.add("and");
+                    }
+                }
+            }
+
             for (int j = 0; j < ifc.length; j++) {
+                if (flag && (indexes.contains(j + 1) || indexes.contains(j + 2))) {
+                    continue;
+                }
                 String ifContent = normalizeString(ifc[j]);
                 String[] strings = ifContent.split(" ");
                 // tmp
@@ -70,24 +88,19 @@ public class BusinessRuleModel implements GroovyModel {
                     }
                     lexem1Text = ifContent.substring(start, ifContent.indexOf("."));
                     lexem2Text = ifContent.substring(ifContent.indexOf("(") + 1, ifContent.length() - 1);
-                } else if (strings.length > 3 && ifContent.contains(" || ") && ifContent.contains("ru.runa.wfe.commons.CalendarUtil.dateToCalendar")
-                        && ifContent.endsWith(" 0")) {
+                } else if (ifContent.contains("ru.runa.wfe.commons.CalendarUtil.dateToCalendar") && ifContent.endsWith(" 0")) {
                     // GroovyTypeSupport.DateType
                     isOperationDateType = true;
-                    String ifContentWithoutNullCheck = ifContent.substring(ifContent.lastIndexOf(" || ") + " || ".length());
-                    String[] stringsWithoutNullCheck = ifContentWithoutNullCheck.split(" ");
-                    String[] parts = stringsWithoutNullCheck[0].split("\\.compareTo\\(");
+                    String[] parts = strings[0].split("\\.compareTo\\(");
                     lexem1Text = parts[0].substring(parts[0].lastIndexOf("(") + 1, parts[0].indexOf(")"));
                     lexem2Text = parts[1].substring(parts[1].lastIndexOf("(") + 1, parts[1].indexOf(")"));
-                    operator = stringsWithoutNullCheck[1];
-                } else if (strings.length > 3 && ifContent.contains(" || ") && ifContent.contains("BigDecimal") && ifContent.endsWith(" 0")) {
+                    operator = strings[1];
+                } else if (ifContent.contains("BigDecimal") && ifContent.endsWith(" 0")) {
                     // GroovyTypeSupport.BigDecimalType
                     isOperationDateType = false;
-                    String ifContentWithoutNullCheck = ifContent.substring(ifContent.lastIndexOf(" || ") + " || ".length());
-                    String[] stringsWithoutNullCheck = ifContentWithoutNullCheck.split(" ");
-                    lexem1Text = stringsWithoutNullCheck[2];
-                    lexem2Text = stringsWithoutNullCheck[6];
-                    operator = stringsWithoutNullCheck[9];
+                    lexem1Text = strings[2];
+                    lexem2Text = strings[6];
+                    operator = strings[9];
                 } else {
                     lexem1Text = strings[0];
                     operator = strings[1];
@@ -137,7 +150,7 @@ public class BusinessRuleModel implements GroovyModel {
                 } else {
                     lexem2 = typeSupport.unwrapValue(lexem2Text);
                 }
-                if (j == 0) {
+                if (variable1list.size() == 0) {
                     variable1list.add(variable1);
                     lexem2list.add(lexem2);
                     operationNames.add(operation);
