@@ -1269,7 +1269,7 @@
          </param>
       </component>
       <component
-            enabled="false"
+            enabled="true"
             id="SelectFromInternalStorage"
             imageProvider="ru.runa.gpd.formeditor.ftl.image.VariableComponentImageProvider"
             name="%Method.SelectFromInternalStorage"
