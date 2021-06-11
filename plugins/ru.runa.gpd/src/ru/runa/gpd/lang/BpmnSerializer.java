@@ -248,6 +248,9 @@ public class BpmnSerializer extends ProcessSerializer {
             if (subprocess.isValidateAtStart()) {
                 properties.put(VALIDATE_AT_START, true);
             }
+            if (subprocess.isDisableCascadingSuspension()) {
+                properties.put(DISABLE_CASCADING_SUSPENSION, true);
+            }
             if (subprocess.isAsync()) {
                 properties.put(ASYNC, Boolean.TRUE.toString());
                 properties.put(ASYNC_COMPLETION_MODE, subprocess.getAsyncCompletionMode().name());
@@ -852,6 +855,9 @@ public class BpmnSerializer extends ProcessSerializer {
             }
             if (properties.containsKey(VALIDATE_AT_START)) {
                 subprocess.setValidateAtStart(Boolean.parseBoolean(properties.get(VALIDATE_AT_START)));
+            }
+            if (properties.containsKey(DISABLE_CASCADING_SUSPENSION)) {
+                subprocess.setDisableCascadingSuspension(Boolean.parseBoolean(properties.get(DISABLE_CASCADING_SUSPENSION)));
             }
             String async = properties.get(ASYNC);
             if (async != null) {

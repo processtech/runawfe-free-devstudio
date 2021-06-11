@@ -76,5 +76,6 @@ public interface PropertyNames {
     public static final String PROPERTY_GLOBAL = "global";
     public static final String PROPERTY_VALIDATE_AT_START = "validateAtStart";
     public static final String PROPERTY_STORE_IN_EXTERNAL_STORAGE = "storeInExternalStorage";
+    public static final String PROPERTY_DISABLE_CASCADING_SUSPENSION = "disableCascadingSuspension";
 
 }
