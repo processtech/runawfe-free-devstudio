@@ -20,6 +20,7 @@ import ru.runa.gpd.editor.graphiti.TransitionUtil;
 import ru.runa.gpd.lang.model.ActionImpl;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.Describable;
+import ru.runa.gpd.lang.model.EmbeddedSubprocess;
 import ru.runa.gpd.lang.model.EndState;
 import ru.runa.gpd.lang.model.EndTokenState;
 import ru.runa.gpd.lang.model.EndTokenSubprocessDefinitionBehavior;
@@ -126,6 +127,7 @@ public class BpmnSerializer extends ProcessSerializer {
     private static final String EVENT_TYPE = "eventType";
     private static final String PROPERTY_USE_EXTERNAL_STORAGE_OUT = "useExternalStorageOut";
     private static final String PROPERTY_USE_EXTERNAL_STORAGE_IN = "useExternalStorageIn";
+    private static final String EMBEDDED = "embedded";
 
     @Override
     public boolean isSupported(Document document) {
@@ -438,7 +440,8 @@ public class BpmnSerializer extends ProcessSerializer {
         String bpmnElementName;
         if (graphElement instanceof EndTokenState) {
             bpmnElementName = END_EVENT;
-        } else if (graphElement instanceof MultiSubprocess) {
+        } else if (graphElement instanceof MultiSubprocess
+                || graphElement instanceof EmbeddedSubprocess) {
             bpmnElementName = SUBPROCESS;
         } else {
             bpmnElementName = graphElement.getTypeDefinition().getBpmnElementName();
@@ -618,6 +621,8 @@ public class BpmnSerializer extends ProcessSerializer {
             bpmnElementName = "endTokenEvent";
         } else if (properties.containsKey(MULTI_INSTANCE)) {
             bpmnElementName = "multiProcess";
+        } else if (properties.containsKey(EMBEDDED)) {
+            bpmnElementName = "embeddedProcess";
         } else {
             bpmnElementName = node.getName();
             if (SEND_TASK.equals(bpmnElementName)) {

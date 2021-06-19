@@ -144,11 +144,12 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
         if (isEmbedded()) {
             descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_TRANSACTIONAL, Localization.getString("Subprocess.Transactional"),
                     YesNoComboBoxTransformer.LABELS));
-        }
-        descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_VALIDATE_AT_START, Localization.getString("Subprocess.ValidateAtStart"),
+        } else {
+            descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_VALIDATE_AT_START, Localization.getString("Subprocess.ValidateAtStart"),
                 YesNoComboBoxTransformer.LABELS));
-        descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_DISABLE_CASCADING_SUSPENSION,
+            descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_DISABLE_CASCADING_SUSPENSION,
                 Localization.getString("Subprocess.DisableCascadingSuspension"), YesNoComboBoxTransformer.LABELS));
+        }
     }
 
     @Override
@@ -163,7 +164,7 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
                 return Integer.valueOf(1);
             }
         }
-        else if (PROPERTY_VALIDATE_AT_START.equals(id)) {
+        if (PROPERTY_VALIDATE_AT_START.equals(id)) {
             if (validateAtStart) {
                 return Integer.valueOf(0);
             } else {

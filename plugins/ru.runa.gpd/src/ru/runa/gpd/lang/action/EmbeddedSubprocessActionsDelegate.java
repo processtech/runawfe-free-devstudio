@@ -16,6 +16,7 @@ import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.ui.part.FileEditorInput;
 
 import ru.runa.gpd.Localization;
+import ru.runa.gpd.lang.model.EmbeddedSubprocess;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Subprocess;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
@@ -36,15 +37,11 @@ public class EmbeddedSubprocessActionsDelegate extends BaseModelDropDownActionDe
         super.selectionChanged(action, selection);
         subprocess = getSelection();
         if (subprocess != null) {
-            if (subprocess.getClass() == Subprocess.class) {
-                definition = subprocess.getProcessDefinition();
-                selectedName = subprocess.getSubProcessName();
-                action.setChecked(subprocess.isEmbedded());
-                definitionFile = ((FileEditorInput) getActiveEditor().getEditorInput()).getFile();
-                action.setEnabled(true);
-            } else {
-                action.setEnabled(false);
-            }
+            definition = subprocess.getProcessDefinition();
+            selectedName = subprocess.getSubProcessName();
+            action.setChecked(subprocess.isEmbedded());
+            definitionFile = ((FileEditorInput) getActiveEditor().getEditorInput()).getFile();
+            action.setEnabled(true);
         }
     }
 
@@ -56,7 +53,7 @@ public class EmbeddedSubprocessActionsDelegate extends BaseModelDropDownActionDe
      */
     @Override
     protected void fillMenu(Menu menu) {
-        if (subprocess.getClass() != Subprocess.class) {
+        if (subprocess.getClass() != EmbeddedSubprocess.class) {
             return;
         }
         List<String> allNames = Lists.newArrayList();

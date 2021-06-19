@@ -148,6 +148,13 @@
           adaptable="false"
           id="synchronizable.async"
           objectClass="ru.runa.gpd.lang.model.Synchronizable">
+        <visibility>
+            <not>
+                <objectClass
+                        name="ru.runa.gpd.lang.model.EmbeddedSubprocess">
+                </objectClass>
+            </not>
+        </visibility>
        <action
              class="ru.runa.gpd.lang.action.AsyncFeatureDelegate"
              id="feature.async"
@@ -512,22 +519,34 @@
     </objectContribution>
     <objectContribution
           adaptable="false"
-          id="subprocess.mapping"
-          objectClass="ru.runa.gpd.lang.model.Subprocess">
-       <action
-             class="ru.runa.gpd.lang.action.SubprocessDelegate"
-             id="subprocess"
-             label="%label.action.subprocess"
-             menubarPath="additions"
-             style="push"
-             />
+          id="embeddedSubprocess.mapping"
+          objectClass="ru.runa.gpd.lang.model.EmbeddedSubprocess">
        <action
              class="ru.runa.gpd.lang.action.EmbeddedSubprocessActionsDelegate"
              id="embeddedSubprocessActions"
              label="%label.action.embeddedSubprocessActions"
              menubarPath="additions"
-             style="pulldown"
-             />
+             style="pulldown">
+       </action>
+    </objectContribution>
+    <objectContribution
+          adaptable="false"
+          id="externalSubprocess.mapping"
+          objectClass="ru.runa.gpd.lang.model.Subprocess">
+        <visibility>
+            <not>
+                <objectClass
+                        name="ru.runa.gpd.lang.model.EmbeddedSubprocess">
+                </objectClass>
+            </not>
+        </visibility>
+       <action
+             class="ru.runa.gpd.lang.action.SubprocessDelegate"
+             id="subprocess"
+             label="%label.action.subprocess"
+             menubarPath="additions"
+             style="push">
+       </action>
     </objectContribution>
     <objectContribution
           adaptable="false"
@@ -1244,6 +1263,28 @@
             figure="ru.runa.gpd.editor.gef.figure.SubprocessFigure"
             graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.SubprocessGraphicalEditPart"
             treeEditPart="ru.runa.gpd.editor.gef.part.tree.NodeTreeEditPart">
+         </gef>
+         <graphiti
+               add="ru.runa.gpd.editor.graphiti.add.AddSubProcessFeature"
+               create="ru.runa.gpd.editor.graphiti.create.CreateElementFeature"
+               fixedSize="false"
+               height="10"
+               layout="ru.runa.gpd.editor.graphiti.layout.LayoutSubprocessNodeFeature"
+               update="ru.runa.gpd.editor.graphiti.update.UpdateSubprocessNodeFeature"
+               width="15">
+         </graphiti>
+      </element>
+      <element
+            bpmn="embeddedProcess"
+            icon="subprocess_composition.png"
+            jpdl="process-state"
+            label="%label.element.embeddedSubprocess"
+            model="ru.runa.gpd.lang.model.EmbeddedSubprocess"
+            type="artifact">
+         <gef
+               figure="ru.runa.gpd.editor.gef.figure.SubprocessFigure"
+               graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.SubprocessGraphicalEditPart"
+               treeEditPart="ru.runa.gpd.editor.gef.part.tree.NodeTreeEditPart">
          </gef>
          <graphiti
                add="ru.runa.gpd.editor.graphiti.add.AddSubProcessFeature"
