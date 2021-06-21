@@ -10,7 +10,6 @@ import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
 import org.eclipse.graphiti.mm.pictograms.AnchorContainer;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.services.Graphiti;
-
 import ru.runa.gpd.editor.GEFConstants;
 import ru.runa.gpd.editor.graphiti.DiagramFeatureProvider;
 import ru.runa.gpd.lang.NodeTypeDefinition;
@@ -20,6 +19,8 @@ import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.SwimlanedNode;
+import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
+import ru.runa.gpd.lang.model.bpmn.EventNodeType;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 
 public class CreateElementFeature extends AbstractCreateFeature implements GEFConstants {
@@ -77,6 +78,9 @@ public class CreateElementFeature extends AbstractCreateFeature implements GEFCo
                 parent = (GraphElement) getBusinessObjectForPictogramElement(context.getTargetConnection());
             }
             ((Action) graphElement).setName(getCreateName() + " " + (parent.getChildren(Action.class).size() + 1));
+        }
+        if (graphElement instanceof CatchEventNode && parent instanceof IBoundaryEventContainer) {
+            ((CatchEventNode) graphElement).setEventNodeType(EventNodeType.signal);
         }
         graphElement.setParentContainer(parent);
         Swimlane swimlane = null;
