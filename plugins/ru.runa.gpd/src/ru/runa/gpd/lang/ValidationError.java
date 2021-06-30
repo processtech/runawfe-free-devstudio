@@ -33,6 +33,10 @@ public class ValidationError {
         return new ValidationError(source, message, IMarker.SEVERITY_WARNING);
     }
     
+    public static ValidationError createWarning(GraphElement source, String message, ValidationErrorDetails details) {
+        return new ValidationError(source, message, IMarker.SEVERITY_WARNING, details);
+    }
+
     private static String getLocalizedMessage(String messageKey, Object... params) {
         return Localization.getString("model.validation." + messageKey, params);
     }
