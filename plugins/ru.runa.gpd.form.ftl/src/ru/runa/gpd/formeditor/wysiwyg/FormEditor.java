@@ -56,6 +56,7 @@ import ru.runa.gpd.Activator;
 import ru.runa.gpd.EditorsPlugin;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
+import ru.runa.gpd.editor.DirtyDependentActions;
 import ru.runa.gpd.formeditor.WebServerUtils;
 import ru.runa.gpd.formeditor.ftl.Component;
 import ru.runa.gpd.formeditor.ftl.ComponentIdGenerator;
@@ -388,6 +389,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
         this.dirty = dirty;
         if (changedDirtyState && fireEvent) {
             firePropertyChange(IEditorPart.PROP_DIRTY);
+            DirtyDependentActions.update();
         }
     }
 

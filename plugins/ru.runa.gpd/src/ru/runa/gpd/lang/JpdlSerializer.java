@@ -249,6 +249,9 @@ public class JpdlSerializer extends ProcessSerializer {
             if (subprocess.isValidateAtStart()) {
                 setAttribute(processStateElement, VALIDATE_AT_START, Boolean.TRUE.toString());
             }
+            if (subprocess.isDisableCascadingSuspension()) {
+                setAttribute(processStateElement, DISABLE_CASCADING_SUSPENSION, Boolean.TRUE.toString());
+            }
         }
         List<SendMessageNode> sendMessageNodes = definition.getChildren(SendMessageNode.class);
         for (SendMessageNode messageNode : sendMessageNodes) {
@@ -740,6 +743,7 @@ public class JpdlSerializer extends ProcessSerializer {
                     subprocess.setSubProcessName(childNode.attributeValue(NAME));
                     subprocess.setEmbedded(Boolean.parseBoolean(childNode.attributeValue(EMBEDDED, "false")));
                     subprocess.setValidateAtStart(Boolean.parseBoolean(childNode.attributeValue(VALIDATE_AT_START, "false")));
+                    subprocess.setDisableCascadingSuspension(Boolean.parseBoolean(childNode.attributeValue(DISABLE_CASCADING_SUSPENSION, "false")));
                 }
                 if (VARIABLE.equals(childNode.getName())) {
                     VariableMapping variable = new VariableMapping();

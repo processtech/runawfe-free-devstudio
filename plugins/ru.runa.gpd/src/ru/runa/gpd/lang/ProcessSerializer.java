@@ -27,6 +27,7 @@ public abstract class ProcessSerializer {
     protected static final String USE_GLOBALS = "useGlobals";
     protected static final String GLOBAL = "global";
     protected static final String VALIDATE_AT_START = "validateAtStart";
+    protected static final String DISABLE_CASCADING_SUSPENSION = "disableCascadingSuspension";
 
     public abstract boolean isSupported(Document document);
 
