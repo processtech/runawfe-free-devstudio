@@ -25,6 +25,12 @@ public class CopyFormDelegate extends FormDelegate {
                 IFile sourceFile = IOUtils.getAdjacentFile(getDefinitionFile(), sourceFormNode.getValidationFileName());
                 IOUtils.copyFile(sourceFile.getContents(), file);
             }
+            if (!formNode.hasFormScript() && sourceFormNode.hasFormScript()) {
+                String fileName = formNode.getId().concat(".").concat(FormNode.SCRIPT_SUFFIX);
+                IFile file = IOUtils.getAdjacentFile(getDefinitionFile(), fileName);
+                IFile sourceFile = IOUtils.getAdjacentFile(getDefinitionFile(), sourceFormNode.getScriptFileName());
+                IOUtils.copyFile(sourceFile.getContents(), file);
+            }
             if (!formNode.hasForm() && sourceFormNode.hasForm()) {
                 formNode.setFormType(sourceFormNode.getFormType());
                 formNode.setTemplateFileName(sourceFormNode.getTemplateFileName());
