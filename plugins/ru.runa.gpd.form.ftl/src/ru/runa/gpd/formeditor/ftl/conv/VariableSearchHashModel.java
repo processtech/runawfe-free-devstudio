@@ -1,9 +1,15 @@
 package ru.runa.gpd.formeditor.ftl.conv;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.Maps;
+import freemarker.template.SimpleHash;
+import freemarker.template.SimpleScalar;
+import freemarker.template.TemplateMethodModel;
+import freemarker.template.TemplateModel;
+import freemarker.template.TemplateModelException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import ru.runa.gpd.form.FormVariableAccess;
 import ru.runa.gpd.formeditor.ftl.ComponentParameter;
 import ru.runa.gpd.formeditor.ftl.ComponentType;
@@ -13,15 +19,6 @@ import ru.runa.gpd.formeditor.ftl.parameter.RichComboParameter;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.util.VariableUtils;
-
-import com.google.common.base.Strings;
-import com.google.common.collect.Maps;
-
-import freemarker.template.SimpleHash;
-import freemarker.template.SimpleScalar;
-import freemarker.template.TemplateMethodModel;
-import freemarker.template.TemplateModel;
-import freemarker.template.TemplateModelException;
 
 public class VariableSearchHashModel extends SimpleHash {
     private static final long serialVersionUID = 1L;
@@ -116,8 +113,8 @@ public class VariableSearchHashModel extends SimpleHash {
                 if (Strings.isNullOrEmpty(arg)) {
                     continue;
                 }
-                FormVariableAccess usedVariableFormAccess = usedVariables.get(arg);
-                if (usedVariableFormAccess != null && usedVariableFormAccess != FormVariableAccess.WRITE) {
+                Variable variable = VariableUtils.getVariableByName(definition, arg);
+                if (variable != null && usedVariables.get(arg) != FormVariableAccess.WRITE) {
                     usedVariables.put(arg, FormVariableAccess.DOUBTFUL);
                 }
             }
