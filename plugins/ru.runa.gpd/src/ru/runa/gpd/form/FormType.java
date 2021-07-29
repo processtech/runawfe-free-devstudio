@@ -49,7 +49,6 @@ public abstract class FormType {
         for (Map.Entry<String, FormVariableAccess> formEntry : formVariables.entrySet()) {
             switch (formEntry.getValue()) {
             case DOUBTFUL:
-                errors.add(ValidationError.createLocalizedWarning(formNode, "formNode.formVariableUnknown", formEntry.getKey()));
                 continue;
             case WRITE:
                 if (!validation.getVariableNames().contains(formEntry.getKey())) {
@@ -63,7 +62,7 @@ public abstract class FormType {
                 }
                 break;
             }
-            if (!allVariableNames.contains(formEntry.getKey()) && formEntry.getValue() != FormVariableAccess.DOUBTFUL) {
+            if (!allVariableNames.contains(formEntry.getKey())) {
                 errors.add(ValidationError.createLocalizedError(formNode, "formNode.formVariableDoesNotExist", formEntry.getKey()));
             }
         }
