@@ -36,7 +36,7 @@ public class BusinessRuleModel implements GroovyModel {
             List<Object> secondVariables = new ArrayList();
             List<Operation> operations = new ArrayList();
             List<String> logicExpressions = new ArrayList();
-            logicExpressions.add("null");
+            logicExpressions.add(BusinessRuleEditorDialog.NULL_LOGIC_EXPRESSION);
             String[] ifc = matcher.group(1).split("(\\|\\||&&)");
 
             boolean flag = false;
@@ -53,10 +53,10 @@ public class BusinessRuleModel implements GroovyModel {
             for (int i = 0; i < ifc.length; i++) {
                 if (logicMatcher.find() && (!indexes.contains(i + 1) && !indexes.contains(i + 2))) {
                     if (logicMatcher.group().equals("||")) {
-                        logicExpressions.add("or");
+                        logicExpressions.add(BusinessRuleEditorDialog.OR_LOGIC_EXPRESSION);
                     }
                     if (logicMatcher.group().equals("&&")) {
-                        logicExpressions.add("and");
+                        logicExpressions.add(BusinessRuleEditorDialog.AND_LOGIC_EXPRESSION);
                     }
                 }
             }
@@ -163,7 +163,7 @@ public class BusinessRuleModel implements GroovyModel {
                     operations.add(operation);
                 }
             }
-            logicExpressions.add("null");
+            logicExpressions.add(BusinessRuleEditorDialog.NULL_LOGIC_EXPRESSION);
             IfExpr ifExpr = new IfExpr(function, firstVariables, secondVariables, operations, logicExpressions);
             addIfExpr(ifExpr);
         }
@@ -258,11 +258,11 @@ public class BusinessRuleModel implements GroovyModel {
             buffer.append("if ( ");
             for (int i = 1; i < firstVariables.size(); i++) {
                 buffer.append(operations.get(i).generateCode(firstVariables.get(i), secondVariables.get(i)));
-                if (!logicExpressions.get(i).equals("null")) {
-                    if (logicExpressions.get(i).equals("or")) {
+                if (!logicExpressions.get(i).equals(BusinessRuleEditorDialog.NULL_LOGIC_EXPRESSION)) {
+                    if (logicExpressions.get(i).equals(BusinessRuleEditorDialog.OR_LOGIC_EXPRESSION)) {
                         buffer.append(" " + "||" + " ");
                     }
-                    if (logicExpressions.get(i).equals("and")) {
+                    if (logicExpressions.get(i).equals(BusinessRuleEditorDialog.AND_LOGIC_EXPRESSION)) {
                         buffer.append(" " + "&&" + " ");
                     }
                 }

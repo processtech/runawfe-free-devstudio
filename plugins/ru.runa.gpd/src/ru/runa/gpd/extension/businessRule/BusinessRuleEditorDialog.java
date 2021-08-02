@@ -134,9 +134,9 @@ public class BusinessRuleEditorDialog extends GroovyEditorDialogType {
     private static final int SECOND_VARIABLE_INDEX = 1;
     private static final int OPERATION_INDEX = 2;
     
-    private static final String AND_LOGIC_EXPRESSION = "and";
-    private static final String OR_LOGIC_EXPRESSION = "or";
-    private static final String NULL_LOGIC_EXPRESSION = "null";
+    protected static final String AND_LOGIC_EXPRESSION = "and";
+    protected static final String OR_LOGIC_EXPRESSION = "or";
+    protected static final String NULL_LOGIC_EXPRESSION = "null";
 
     private void createExpression(Composite parent, int indexLine) {
         ExpressionLine expressionLine = expressionLines.get(indexLine);
