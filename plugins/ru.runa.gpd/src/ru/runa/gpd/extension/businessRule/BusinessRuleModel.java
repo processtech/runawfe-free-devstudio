@@ -32,11 +32,11 @@ public class BusinessRuleModel implements GroovyModel {
         while (matcher.find()) {
             Matcher logicMatcher = LOGIC_PATTERN.matcher(matcher.group(1));
             String function = null;
-            List<Variable> variable1list = new ArrayList();
-            List<Object> lexem2list = new ArrayList();
-            List<Operation> operationNames = new ArrayList();
-            List<String> logicExprs = new ArrayList();
-            logicExprs.add("null");
+            List<Variable> firstVariables = new ArrayList();
+            List<Object> secondVariables = new ArrayList();
+            List<Operation> operations = new ArrayList();
+            List<String> logicExpressions = new ArrayList();
+            logicExpressions.add("null");
             String[] ifc = matcher.group(1).split("(\\|\\||&&)");
 
             boolean flag = false;
@@ -53,10 +53,10 @@ public class BusinessRuleModel implements GroovyModel {
             for (int i = 0; i < ifc.length; i++) {
                 if (logicMatcher.find() && (!indexes.contains(i + 1) && !indexes.contains(i + 2))) {
                     if (logicMatcher.group().equals("||")) {
-                        logicExprs.add("or");
+                        logicExpressions.add("or");
                     }
                     if (logicMatcher.group().equals("&&")) {
-                        logicExprs.add("and");
+                        logicExpressions.add("and");
                     }
                 }
             }
@@ -150,21 +150,21 @@ public class BusinessRuleModel implements GroovyModel {
                 } else {
                     lexem2 = typeSupport.unwrapValue(lexem2Text);
                 }
-                if (variable1list.size() == 0) {
-                    variable1list.add(variable1);
-                    lexem2list.add(lexem2);
-                    operationNames.add(operation);
-                    variable1list.add(variable1);
-                    lexem2list.add(lexem2);
-                    operationNames.add(operation);
+                if (firstVariables.size() == 0) {
+                    firstVariables.add(variable1);
+                    secondVariables.add(lexem2);
+                    operations.add(operation);
+                    firstVariables.add(variable1);
+                    secondVariables.add(lexem2);
+                    operations.add(operation);
                 } else {
-                    variable1list.add(variable1);
-                    lexem2list.add(lexem2);
-                    operationNames.add(operation);
+                    firstVariables.add(variable1);
+                    secondVariables.add(lexem2);
+                    operations.add(operation);
                 }
             }
-            logicExprs.add("null");
-            IfExpr ifExpr = new IfExpr(function, variable1list, lexem2list, operationNames, logicExprs);
+            logicExpressions.add("null");
+            IfExpr ifExpr = new IfExpr(function, firstVariables, secondVariables, operations, logicExpressions);
             addIfExpr(ifExpr);
         }
         if (returnMatcher.find(startReturnSearch)) {
@@ -238,30 +238,31 @@ public class BusinessRuleModel implements GroovyModel {
     }
 
     public static class IfExpr {
-        private List<Variable> variable1;
-        private List<Object> lexem2;
-        private List<String> logicExprs;
-        private final List<Operation> operation;
+        private List<Variable> firstVariables;
+        private List<Object> secondVariables;
+        private List<String> logicExpressions;
+        private final List<Operation> operations;
         private final String function;
 
-        public IfExpr(String function, List<Variable> variable, List<Object> lexem2, List<Operation> operation, List<String> logicExprs) {
+        public IfExpr(String function, List<Variable> firstVariables, List<Object> secondVariables, List<Operation> operations,
+                List<String> logicExpressions) {
             this.function = function;
-            this.variable1 = variable;
-            this.lexem2 = lexem2;
-            this.operation = operation;
-            this.logicExprs = logicExprs;
+            this.firstVariables = firstVariables;
+            this.secondVariables = secondVariables;
+            this.operations = operations;
+            this.logicExpressions = logicExpressions;
         }
 
         public String generateCode() {
             StringBuffer buffer = new StringBuffer();
             buffer.append("if ( ");
-            for (int i = 1; i < variable1.size(); i++) {
-                buffer.append(operation.get(i).generateCode(variable1.get(i), lexem2.get(i)));
-                if (!logicExprs.get(i).equals("null")) {
-                    if (logicExprs.get(i).equals("or")) {
+            for (int i = 1; i < firstVariables.size(); i++) {
+                buffer.append(operations.get(i).generateCode(firstVariables.get(i), secondVariables.get(i)));
+                if (!logicExpressions.get(i).equals("null")) {
+                    if (logicExpressions.get(i).equals("or")) {
                         buffer.append(" " + "||" + " ");
                     }
-                    if (logicExprs.get(i).equals("and")) {
+                    if (logicExpressions.get(i).equals("and")) {
                         buffer.append(" " + "&&" + " ");
                     }
                 }
@@ -270,30 +271,30 @@ public class BusinessRuleModel implements GroovyModel {
             return buffer.toString();
         }
 
-        public List<Variable> getVariable1() {
-            return variable1;
+        public List<Variable> getFirstVariables() {
+            return firstVariables;
         }
 
-        public List<Object> getLexem2() {
-            return lexem2;
+        public List<Object> getSecondVariables() {
+            return secondVariables;
         }
 
-        public String getLexem2TextValue(int index) {
-            if (lexem2.get(index) instanceof Variable) {
-                return ((Variable) lexem2.get(index)).getScriptingName();
-            } else if (lexem2.get(index) instanceof String) {
-                return (String) lexem2.get(index);
+        public String getSecondVariableTextValue(int index) {
+            if (secondVariables.get(index) instanceof Variable) {
+                return ((Variable) secondVariables.get(index)).getScriptingName();
+            } else if (secondVariables.get(index) instanceof String) {
+                return (String) secondVariables.get(index);
             } else {
-                throw new IllegalArgumentException("lexem2 class is " + lexem2.get(index).getClass().getName());
+                throw new IllegalArgumentException("secondVariable class is " + secondVariables.get(index).getClass().getName());
             }
         }
 
-        public List<Operation> getOperation() {
-            return operation;
+        public List<Operation> getOperations() {
+            return operations;
         }
 
-        public List<String> getLogicExprs() {
-            return logicExprs;
+        public List<String> getLogicExpressions() {
+            return logicExpressions;
         }
 
         public String getFunction() {

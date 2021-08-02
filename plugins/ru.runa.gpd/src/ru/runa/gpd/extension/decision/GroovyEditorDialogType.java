@@ -214,7 +214,7 @@ public abstract class GroovyEditorDialogType extends Dialog {
     protected void refresh(FilterBox filterBox) {
     };
 
-    protected List<String> getVariable2Names(Variable variable1) {
+    protected List<String> getSecondVariableNames(Variable variable1) {
         List<String> names = new ArrayList<String>();
         GroovyTypeSupport typeSupport1 = GroovyTypeSupport.get(variable1.getJavaClassName());
         for (Variable variable : variables) {

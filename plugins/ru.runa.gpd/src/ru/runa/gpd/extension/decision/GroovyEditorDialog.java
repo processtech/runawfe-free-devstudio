@@ -159,11 +159,11 @@ public class GroovyEditorDialog extends GroovyEditorDialogType {
                     String lexem2Text = ifExpr.getLexem2TextValue();
                     int var2index = 0;
                     if (VariableUtils.getVariableByScriptingName(variables, lexem2Text) != null) {
-                        var2index = getVariable2Names(variable).indexOf(lexem2Text);
+                        var2index = getSecondVariableNames(variable).indexOf(lexem2Text);
                     } else {
                         int predefinedIndex = typeSupport.getPredefinedValues(ifExpr.getOperation()).indexOf(lexem2Text);
                         if (predefinedIndex >= 0) {
-                            var2index = getVariable2Names(variable).size() + predefinedIndex;
+                            var2index = getSecondVariableNames(variable).size() + predefinedIndex;
                         } else {
                             varBoxes[i][1].add(lexem2Text, 0);
                             varBoxes[i][1].setData(DATA_USER_INPUT_KEY, lexem2Text);
@@ -270,7 +270,7 @@ public class GroovyEditorDialog extends GroovyEditorDialogType {
                 GroovyTypeSupport typeSupport = GroovyTypeSupport.get(variable1.getJavaClassName());
                 Operation operation = Operation.getByName(operCombo.getText(), typeSupport);
                 operCombo.setData(DATA_OPERATION_KEY, operation);
-                for (String variableName : getVariable2Names(variable1)) {
+                for (String variableName : getSecondVariableNames(variable1)) {
                     targetCombo.add(variableName);
                 }
                 for (String pv : typeSupport.getPredefinedValues(operation)) {

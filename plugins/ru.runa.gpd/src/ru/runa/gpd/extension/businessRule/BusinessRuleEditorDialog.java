@@ -36,7 +36,7 @@ import ru.runa.gpd.util.VariableUtils;
 public class BusinessRuleEditorDialog extends GroovyEditorDialogType {
     private static final Image addImage = SharedImages.getImage("icons/add_obj.gif");
     private static final Image downImage = SharedImages.getImage("icons/down.png");
-    private List<ExprLine> exprLines = new ArrayList();
+    private List<ExpressionLine> expressionLines = new ArrayList();
     private String defaultFunction;
 
     public BusinessRuleEditorDialog(ProcessDefinition definition, String initValue) {
@@ -51,16 +51,15 @@ public class BusinessRuleEditorDialog extends GroovyEditorDialogType {
         }
     }
 
-    @Override
     protected void createConstructorView() {
         constructor.setLayout(new GridLayout(6, false));
         if (initModel != null) {
             defaultFunction = ((BusinessRuleModel) initModel).getDefaultFunction();
             for (int i = 0; i < ((BusinessRuleModel) initModel).getIfExprs().size(); i++) {
-                createLines();
+                createExpressionLine();
             }
         } else {
-            createLines();
+            createExpressionLine();
         }
 
         createBottomComposite();
@@ -97,18 +96,19 @@ public class BusinessRuleEditorDialog extends GroovyEditorDialogType {
     public class SyncFilterBoxHandler extends SelectionAdapter {
         @Override
         public void widgetSelected(SelectionEvent e) {
-            FilterBox fb = ((FilterBox) e.widget);
-            FilterBox targetFB;
-            int[] indexData = (int[]) fb.getData(DATA_INDEX_KEY);
-            int varNum = indexData[2] == 0 ? 0 : 1;
-            if (indexData[1] == 0) {
-                targetFB = exprLines.get(indexData[0]).getVariableBoxes().get(1)[varNum];
+            FilterBox box = ((FilterBox) e.widget);
+            FilterBox targetBox;
+            int[] indexData = (int[]) box.getData(DATA_INDEX_KEY);
+            int lineNumber = indexData[0];
+            int variableNumber = indexData[2];
+            if (expressionLines.get(lineNumber).getVariableBoxes().get(0)[variableNumber].equals(box)) {
+                targetBox = expressionLines.get(lineNumber).getVariableBoxes().get(1)[variableNumber];
             } else {
-                targetFB = exprLines.get(indexData[0]).getVariableBoxes().get(0)[varNum];
+                targetBox = expressionLines.get(lineNumber).getVariableBoxes().get(0)[variableNumber];
             }
-            refresh(fb);
-            targetFB.setSelectedItem(fb.getText());
-            refresh(targetFB);
+            refresh(box);
+            targetBox.setSelectedItem(box.getText());
+            refresh(targetBox);
         }
     }
 
@@ -118,10 +118,11 @@ public class BusinessRuleEditorDialog extends GroovyEditorDialogType {
             Combo combo = ((Combo) e.widget);
             Combo targetCombo;
             int[] indexData = (int[]) combo.getData(DATA_INDEX_KEY);
-            if (indexData[1] == 0) {
-                targetCombo = exprLines.get(indexData[0]).getOperationBoxes().get(1);
+            int lineNumber = indexData[0];
+            if (expressionLines.get(lineNumber).getOperationBoxes().get(0).equals(combo)) {
+                targetCombo = expressionLines.get(lineNumber).getOperationBoxes().get(1);
             } else {
-                targetCombo = exprLines.get(indexData[0]).getOperationBoxes().get(0);
+                targetCombo = expressionLines.get(lineNumber).getOperationBoxes().get(0);
             }
             targetCombo.select(combo.getSelectionIndex());
             refresh(combo);
@@ -129,53 +130,58 @@ public class BusinessRuleEditorDialog extends GroovyEditorDialogType {
         }
     }
 
-    private void createExpr(Composite parent, int indexLine) {
-        ExprLine exprLine = exprLines.get(indexLine);
+    private static final int FIRST_VARIABLE_INDEX = 0;
+    private static final int SECOND_VARIABLE_INDEX = 1;
+    private static final int OPERATION_INDEX = 2;
+    
+    private static final String AND_LOGIC_EXPRESSION = "and";
+    private static final String OR_LOGIC_EXPRESSION = "or";
+    private static final String NULL_LOGIC_EXPRESSION = "null";
 
-        Composite exprComposite = new Composite(parent, SWT.NONE);
+    private void createExpression(Composite parent, int indexLine) {
+        ExpressionLine expressionLine = expressionLines.get(indexLine);
+
+        Composite expressionComposite = new Composite(parent, SWT.NONE);
         GridData data = new GridData(GridData.FILL_HORIZONTAL);
         if (parent == constructor) {
-            exprComposite.setLayout(new GridLayout(3, true));
+            expressionComposite.setLayout(new GridLayout(3, true));
             data.horizontalSpan = 3;
         } else {
-            exprComposite.setLayout(new GridLayout(4, true));
+            expressionComposite.setLayout(new GridLayout(4, true));
             data.horizontalSpan = 4;
         }
-        exprComposite.setLayoutData(data);
+        expressionComposite.setLayoutData(data);
 
         FilterBox[] variable = new FilterBox[2];
-        exprLine.setVariableBox(variable);
-        int indexExpr = exprLine.getVariableBoxes().indexOf(variable);
-        variable[0] = new FilterBox(exprComposite, VariableUtils.getVariableNamesForScripting(variables));
-        variable[0].setData(DATA_INDEX_KEY, new int[] { indexLine, indexExpr, 0 });
+        expressionLine.setVariableBox(variable);
+        int expressionIndex = expressionLine.getVariableBoxes().indexOf(variable);
+        variable[0] = new FilterBox(expressionComposite, VariableUtils.getVariableNamesForScripting(variables));
+        variable[0].setData(DATA_INDEX_KEY, new int[] { indexLine, expressionIndex, FIRST_VARIABLE_INDEX });
         variable[0].setSelectionListener(new FilterBoxSelectionHandler());
-        if (indexExpr == 0 || indexExpr == 1) {
-            variable[0].setSelectionListener(new SyncFilterBoxHandler());
-        }
         variable[0].setLayoutData(getGridData());
         variable[0].setSize(100, 20);
 
-        Combo operation = new Combo(exprComposite, SWT.READ_ONLY);
-        exprLine.setOperationBox(operation);
-        operation.setData(DATA_INDEX_KEY, new int[] { indexLine, indexExpr, 1 });
+        Combo operation = new Combo(expressionComposite, SWT.READ_ONLY);
+        expressionLine.setOperationBox(operation);
+        operation.setData(DATA_INDEX_KEY, new int[] { indexLine, expressionIndex, OPERATION_INDEX });
         operation.addSelectionListener(new ComboSelectionHandler());
-        if (indexExpr == 0 || indexExpr == 1) {
-            operation.addSelectionListener(new SyncOperComboHandler());
-        }
         operation.setLayoutData(getGridData());
 
-        variable[1] = new FilterBox(exprComposite, null);
-        variable[1].setData(DATA_INDEX_KEY, new int[] { indexLine, indexExpr, 2 });
+        variable[1] = new FilterBox(expressionComposite, null);
+        variable[1].setData(DATA_INDEX_KEY, new int[] { indexLine, expressionIndex, SECOND_VARIABLE_INDEX });
         variable[1].setSelectionListener(new FilterBoxSelectionHandler());
-        if (indexExpr == 0 || indexExpr == 1) {
-            variable[1].setSelectionListener(new SyncFilterBoxHandler());
-        }
         variable[1].setLayoutData(getGridData());
         variable[1].setSize(100, 20);
 
-        Combo logicBox = new Combo(exprComposite, SWT.READ_ONLY);
-        exprLine.setLogicBox(logicBox);
-        logicBox.setItems("null", "and", "or");
+        if (expressionIndex == 0 || expressionIndex == 1) {
+            variable[0].setSelectionListener(new SyncFilterBoxHandler());
+            operation.addSelectionListener(new SyncOperComboHandler());
+            variable[1].setSelectionListener(new SyncFilterBoxHandler());
+        }
+
+        Combo logicBox = new Combo(expressionComposite, SWT.READ_ONLY);
+        expressionLine.setLogicBox(logicBox);
+        logicBox.setItems(NULL_LOGIC_EXPRESSION, AND_LOGIC_EXPRESSION, OR_LOGIC_EXPRESSION);
         logicBox.setLayoutData(getGridData());
         logicBox.select(0);
         logicBox.setData(logicBox.getText());
@@ -183,18 +189,18 @@ public class BusinessRuleEditorDialog extends GroovyEditorDialogType {
             @Override
             protected void onSelection(SelectionEvent e) throws Exception {
                 Combo combo = (Combo) e.getSource();
-                if (combo.getData().equals("null") && !combo.getText().equals("null")) {
+                if (combo.getData().equals(NULL_LOGIC_EXPRESSION) && !combo.getText().equals(NULL_LOGIC_EXPRESSION)) {
                     combo.setData(combo.getText());
-                    createExpr(parent, indexLine);
+                    createExpression(parent, indexLine);
                     constructor.layout();
-                } else if (combo.getText().equals("null") && !combo.getData().equals("null")) {
+                } else if (combo.getText().equals(NULL_LOGIC_EXPRESSION) && !combo.getData().equals(NULL_LOGIC_EXPRESSION)) {
                     combo.setData(combo.getText());
-                    int indexExpr = exprLine.getLogicBoxes().indexOf(combo);
-                    while (indexExpr < parent.getChildren().length) {
-                        parent.getChildren()[indexExpr].dispose();
-                        exprLine.getVariableBoxes().remove(indexExpr + 1);
-                        exprLine.getOperationBoxes().remove(indexExpr + 1);
-                        exprLine.getLogicBoxes().remove(indexExpr + 1);
+                    int logicExpressionIndex = expressionLine.getLogicBoxes().indexOf(combo);
+                    while (logicExpressionIndex < parent.getChildren().length) {
+                        parent.getChildren()[logicExpressionIndex].dispose();
+                        expressionLine.getVariableBoxes().remove(logicExpressionIndex + 1);
+                        expressionLine.getOperationBoxes().remove(logicExpressionIndex + 1);
+                        expressionLine.getLogicBoxes().remove(logicExpressionIndex + 1);
                         constructor.layout();
                     }
                 }
@@ -204,23 +210,23 @@ public class BusinessRuleEditorDialog extends GroovyEditorDialogType {
             logicBox.setVisible(false);
             ((GridData) logicBox.getLayoutData()).exclude = true;
         }
-        if (exprLine.getVariableBoxes().size() > 2) {
-            exprLine.getExprButton().setBackground(new Color(Display.getCurrent(), 255, 219, 222));
+        if (expressionLine.getVariableBoxes().size() > 2) {
+            expressionLine.getExpressionButton().setBackground(new Color(Display.getCurrent(), 255, 219, 222));
         }
 
-        exprComposite.pack();
+        expressionComposite.pack();
     }
 
-    private void createLines() {
-        ExprLine exprLine = new ExprLine();
-        exprLines.add(exprLine);
-        createExpr(constructor, exprLines.size() - 1);
+    private void createExpressionLine() {
+        ExpressionLine expressionLine = new ExpressionLine();
+        expressionLines.add(expressionLine);
+        createExpression(constructor, expressionLines.size() - 1);
 
         Button functionButton = new Button(constructor, SWT.NONE);
-        exprLine.setFunctionButton(functionButton);
+        expressionLine.setFunctionButton(functionButton);
         functionButton.setLayoutData(getGridData());
-        functionButton.setData(exprLines.size() - 1);
-        functionButton.setText(Localization.getString("GroovyEditor.functionButton") + exprLines.size());
+        functionButton.setData(expressionLines.size() - 1);
+        functionButton.setText(Localization.getString("GroovyEditor.functionButton") + expressionLines.size());
         functionButton.addSelectionListener(new LoggingSelectionAdapter() {
             @Override
             protected void onSelection(SelectionEvent e) throws Exception {
@@ -238,29 +244,29 @@ public class BusinessRuleEditorDialog extends GroovyEditorDialogType {
             @Override
             protected void onSelection(SelectionEvent e) throws Exception {
                 constructor.getChildren()[constructor.getChildren().length - 1].dispose();
-                createLines();
+                createExpressionLine();
                 createBottomComposite();
                 constructor.layout();
             }
         });
 
-        Button addExprButton = new Button(constructor, SWT.TOGGLE);
-        exprLine.setExprButton(addExprButton);
-        addExprButton.moveAbove(addFunctionButton);
-        addExprButton.setToolTipText(Localization.getString("GroovyEditor.complexCondition"));
-        addExprButton.setImage(downImage);
-        addExprButton.setData(exprLines.size() - 1);
-        addExprButton.addSelectionListener(new LoggingSelectionAdapter() {
+        Button addExpressionButton = new Button(constructor, SWT.TOGGLE);
+        expressionLine.setExpressionButton(addExpressionButton);
+        addExpressionButton.moveAbove(addFunctionButton);
+        addExpressionButton.setToolTipText(Localization.getString("GroovyEditor.complexCondition"));
+        addExpressionButton.setImage(downImage);
+        addExpressionButton.setData(expressionLines.size() - 1);
+        addExpressionButton.addSelectionListener(new LoggingSelectionAdapter() {
             @Override
             protected void onSelection(SelectionEvent e) throws Exception {
-                if (addExprButton.getSelection()) {
-                    Composite complexExpression = exprLines.get((int) addExprButton.getData()).getComplexExpression();
+                if (addExpressionButton.getSelection()) {
+                    Composite complexExpression = expressionLines.get((int) addExpressionButton.getData()).getComplexExpression();
                     complexExpression.setVisible(true);
                     ((GridData) complexExpression.getLayoutData()).exclude = false;
                     complexExpression.moveBelow(addFunctionButton);
                     constructor.layout();
                 } else {
-                    Composite complexExpression = exprLines.get((int) addExprButton.getData()).getComplexExpression();
+                    Composite complexExpression = expressionLines.get((int) addExpressionButton.getData()).getComplexExpression();
                     complexExpression.setVisible(false);
                     ((GridData) complexExpression.getLayoutData()).exclude = true;
                     constructor.layout();
@@ -268,7 +274,7 @@ public class BusinessRuleEditorDialog extends GroovyEditorDialogType {
             }
         });
 
-        exprLine.createComplexExpressionBody();
+        expressionLine.createComplexExpressionBody();
     }
 
     @Override
@@ -277,43 +283,43 @@ public class BusinessRuleEditorDialog extends GroovyEditorDialogType {
         for (int i = 0; i < ifExprs.size(); i++) {
             IfExpr ifExpr = ifExprs.get(i);
             if (ifExpr != null) {
-                ExprLine exprLine = exprLines.get(i);
-                exprLine.getFunctionButton().setText(ifExpr.getFunction());
-                for (int j = 0; j < ifExpr.getVariable1().size(); j++) {
-                    Variable variable = ifExpr.getVariable1().get(j);
-                    exprLine.getLogicBoxes().get(j).select(ifExpr.getLogicExprs().indexOf(ifExpr.getLogicExprs().get(j)));
-                    exprLine.getLogicBoxes().get(j).setData(ifExpr.getLogicExprs().get(j));
-                    int index = variables.indexOf(variable);
-                    if (index == -1) {
+                ExpressionLine expressionLine = expressionLines.get(i);
+                expressionLine.getFunctionButton().setText(ifExpr.getFunction());
+                for (int j = 0; j < ifExpr.getFirstVariables().size(); j++) {
+                    Variable firstVariable = ifExpr.getFirstVariables().get(j);
+                    expressionLine.getLogicBoxes().get(j).select(ifExpr.getLogicExpressions().indexOf(ifExpr.getLogicExpressions().get(j)));
+                    expressionLine.getLogicBoxes().get(j).setData(ifExpr.getLogicExpressions().get(j));
+                    int firstVariableIndex = variables.indexOf(firstVariable);
+                    if (firstVariableIndex == -1) {
                         // required variable was deleted in process definition
                         continue;
                     }
-                    exprLine.getVariableBoxes().get(j)[0].select(index);
-                    refresh(exprLine.getVariableBoxes().get(j)[0]);
-                    GroovyTypeSupport typeSupport = GroovyTypeSupport.get(variable.getJavaClassName());
-                    index = Operation.getAll(typeSupport).indexOf(ifExpr.getOperation().get(j));
-                    if (index == -1) {
+                    expressionLine.getVariableBoxes().get(j)[0].select(firstVariableIndex);
+                    refresh(expressionLine.getVariableBoxes().get(j)[0]);
+                    GroovyTypeSupport typeSupport = GroovyTypeSupport.get(firstVariable.getJavaClassName());
+                    firstVariableIndex = Operation.getAll(typeSupport).indexOf(ifExpr.getOperations().get(j));
+                    if (firstVariableIndex == -1) {
                         // required operation was deleted !!!
                         continue;
                     }
-                    exprLine.getOperationBoxes().get(j).select(index);
-                    refresh(exprLine.getOperationBoxes().get(j));
-                    String lexem2Text = ifExpr.getLexem2TextValue(j);
-                    int var2index = 0;
-                    if (VariableUtils.getVariableByScriptingName(variables, lexem2Text) != null
-                            && (VariableUtils.getVariableByScriptingName(variables, lexem2Text).getJavaClassName())
-                                    .equals(variable.getJavaClassName())) {
-                        var2index = getVariable2Names(variable).indexOf(lexem2Text);
+                    expressionLine.getOperationBoxes().get(j).select(firstVariableIndex);
+                    refresh(expressionLine.getOperationBoxes().get(j));
+                    String secondVariableText = ifExpr.getSecondVariableTextValue(j);
+                    int secondVariableIndex = 0;
+                    if (VariableUtils.getVariableByScriptingName(variables, secondVariableText) != null
+                            && (VariableUtils.getVariableByScriptingName(variables, secondVariableText).getJavaClassName())
+                                    .equals(firstVariable.getJavaClassName())) {
+                        secondVariableIndex = getSecondVariableNames(firstVariable).indexOf(secondVariableText);
                     } else {
-                        int predefinedIndex = typeSupport.getPredefinedValues(ifExpr.getOperation().get(j)).indexOf(lexem2Text);
+                        int predefinedIndex = typeSupport.getPredefinedValues(ifExpr.getOperations().get(j)).indexOf(secondVariableText);
                         if (predefinedIndex >= 0) {
-                            var2index = getVariable2Names(variable).size() + predefinedIndex;
+                            secondVariableIndex = getSecondVariableNames(firstVariable).size() + predefinedIndex;
                         } else {
-                            exprLine.getVariableBoxes().get(j)[1].add(lexem2Text, 0);
-                            exprLine.getVariableBoxes().get(j)[1].setData(DATA_USER_INPUT_KEY, lexem2Text);
+                            expressionLine.getVariableBoxes().get(j)[1].add(secondVariableText, 0);
+                            expressionLine.getVariableBoxes().get(j)[1].setData(DATA_USER_INPUT_KEY, secondVariableText);
                         }
                     }
-                    exprLine.getVariableBoxes().get(j)[1].select(var2index);
+                    expressionLine.getVariableBoxes().get(j)[1].select(secondVariableIndex);
                 }
             }
         }
@@ -323,12 +329,12 @@ public class BusinessRuleEditorDialog extends GroovyEditorDialogType {
     protected void refresh(FilterBox filterBox) {
         try {
             int[] indexes = (int[]) filterBox.getData(DATA_INDEX_KEY);
-            if (indexes[2] == 2) {
-                // indexes[1] == 2 - second variable
+            if (indexes[2] == SECOND_VARIABLE_INDEX) {
                 if (TypedUserInputCombo.INPUT_VALUE.equals(filterBox.getSelectedItem())) {
                     String oldUserInput = (String) filterBox.getData(DATA_USER_INPUT_KEY);
-                    Variable variable1 = (Variable) exprLines.get(indexes[0]).getVariableBoxes().get(indexes[1])[0].getData(DATA_VARIABLE_KEY);
-                    GroovyTypeSupport typeSupport = GroovyTypeSupport.get(variable1.getJavaClassName());
+                    Variable firstVariable = (Variable) expressionLines.get(indexes[0]).getVariableBoxes().get(indexes[1])[0]
+                            .getData(DATA_VARIABLE_KEY);
+                    GroovyTypeSupport typeSupport = GroovyTypeSupport.get(firstVariable.getJavaClassName());
                     UserInputDialog inputDialog = typeSupport.createUserInputDialog();
                     inputDialog.setInitialValue(oldUserInput);
                     if (OK == inputDialog.open()) {
@@ -350,9 +356,8 @@ public class BusinessRuleEditorDialog extends GroovyEditorDialogType {
                 }
                 return;
             }
-            if (indexes[2] == 0) {
-                // indexes[1] == 0 - first variable
-                Combo operCombo = exprLines.get(indexes[0]).getOperationBoxes().get(indexes[1]);
+            if (indexes[2] == FIRST_VARIABLE_INDEX) {
+                Combo operCombo = expressionLines.get(indexes[0]).getOperationBoxes().get(indexes[1]);
                 operCombo.setItems(new String[0]);
                 Variable variable = VariableUtils.getVariableByScriptingName(variables, filterBox.getText());
                 filterBox.setData(DATA_VARIABLE_KEY, variable);
@@ -372,14 +377,14 @@ public class BusinessRuleEditorDialog extends GroovyEditorDialogType {
     protected void refresh(Combo operCombo) {
         try {
             int[] indexes = (int[]) operCombo.getData(DATA_INDEX_KEY);
-            Variable variable1 = (Variable) exprLines.get(indexes[0]).getVariableBoxes().get(indexes[1])[0].getData(DATA_VARIABLE_KEY);
-            if (variable1 != null) {
-                FilterBox targetCombo = exprLines.get(indexes[0]).getVariableBoxes().get(indexes[1])[1];
+            Variable firstVariable = (Variable) expressionLines.get(indexes[0]).getVariableBoxes().get(indexes[1])[0].getData(DATA_VARIABLE_KEY);
+            if (firstVariable != null) {
+                FilterBox targetCombo = expressionLines.get(indexes[0]).getVariableBoxes().get(indexes[1])[1];
                 targetCombo.setItems(new String[0]);
-                GroovyTypeSupport typeSupport = GroovyTypeSupport.get(variable1.getJavaClassName());
+                GroovyTypeSupport typeSupport = GroovyTypeSupport.get(firstVariable.getJavaClassName());
                 Operation operation = Operation.getByName(operCombo.getText(), typeSupport);
                 operCombo.setData(DATA_OPERATION_KEY, operation);
-                for (String variableName : getVariable2Names(variable1)) {
+                for (String variableName : getSecondVariableNames(firstVariable)) {
                     targetCombo.add(variableName);
                 }
                 for (String pv : typeSupport.getPredefinedValues(operation)) {
@@ -396,11 +401,13 @@ public class BusinessRuleEditorDialog extends GroovyEditorDialogType {
 
     @Override
     protected void toCode() {
-        for (int i = 0; i < exprLines.size(); i++) {
-            ExprLine exprLine = exprLines.get(i);
-            for (int j = 0; j < exprLine.getVariableBoxes().size(); j++) {
-                if (exprLine.getVariableBoxes().get(j)[0].getText().length() == 0 || exprLine.getVariableBoxes().get(j)[1].getText().length() == 0
-                        && !exprLine.getFunctionButton().getText().equals(defaultFunction)) {
+        for (int i = 0; i < expressionLines.size(); i++) {
+            ExpressionLine expressionLine = expressionLines.get(i);
+            for (int j = 0; j < expressionLine.getVariableBoxes().size(); j++) {
+                boolean emptyFieldExist = expressionLine.getVariableBoxes().get(j)[0].getText().length() == 0
+                        || expressionLine.getVariableBoxes().get(j)[1].getText().length() == 0
+                                && !expressionLine.getFunctionButton().getText().equals(defaultFunction);
+                if (emptyFieldExist) {
                     setErrorLabelText(Localization.getString("GroovyEditor.fillAll"));
                     // we cannot construct while all data not filled
                     return;
@@ -413,36 +420,37 @@ public class BusinessRuleEditorDialog extends GroovyEditorDialogType {
             if (defaultFunction != null) {
                 model.setDefaultFunction(defaultFunction);
             }
-            for (int i = 0; i < exprLines.size(); i++) {
-                ExprLine exprLine = exprLines.get(i);
+            for (int i = 0; i < expressionLines.size(); i++) {
+                ExpressionLine expressionLine = expressionLines.get(i);
                 IfExpr ifExpr;
-                List<Variable> variable1list = new ArrayList();
-                List<Object> lexem2list = new ArrayList();
-                List<Operation> operationNames = new ArrayList();
-                List<String> logicExprs = new ArrayList();
-                for (int j = 0; j < exprLine.getVariableBoxes().size(); j++) {
-                    Variable variable1 = (Variable) exprLine.getVariableBoxes().get(j)[0].getData(DATA_VARIABLE_KEY);
-                    String operationName = exprLine.getOperationBoxes().get(j).getItem(exprLine.getOperationBoxes().get(j).getSelectionIndex());
-                    String lexem2Text = exprLine.getVariableBoxes().get(j)[1].getText();
-                    Object lexem2;
-                    Variable variable2 = VariableUtils.getVariableByScriptingName(variables, lexem2Text);
+                List<Variable> firstVariables = new ArrayList();
+                List<Object> secondVariables = new ArrayList();
+                List<Operation> operations = new ArrayList();
+                List<String> logicExprsessions = new ArrayList();
+                for (int j = 0; j < expressionLine.getVariableBoxes().size(); j++) {
+                    Variable firstVariable = (Variable) expressionLine.getVariableBoxes().get(j)[0].getData(DATA_VARIABLE_KEY);
+                    String operationName = expressionLine.getOperationBoxes().get(j)
+                            .getItem(expressionLine.getOperationBoxes().get(j).getSelectionIndex());
+                    String secondVariableText = expressionLine.getVariableBoxes().get(j)[1].getText();
+                    Object secondVariable;
+                    Variable variable2 = VariableUtils.getVariableByScriptingName(variables, secondVariableText);
                     if (variable2 != null) {
-                        if (variable2.getJavaClassName().equals(variable1.getJavaClassName())) {
-                            lexem2 = variable2;
+                        if (variable2.getJavaClassName().equals(firstVariable.getJavaClassName())) {
+                            secondVariable = variable2;
                         } else {
-                            lexem2 = lexem2Text;
+                            secondVariable = secondVariableText;
                         }
                     } else {
-                        lexem2 = lexem2Text;
+                        secondVariable = secondVariableText;
                     }
-                    GroovyTypeSupport typeSupport = GroovyTypeSupport.get(variable1.getJavaClassName());
+                    GroovyTypeSupport typeSupport = GroovyTypeSupport.get(firstVariable.getJavaClassName());
 
-                    variable1list.add(variable1);
-                    lexem2list.add(lexem2);
-                    operationNames.add(Operation.getByName(operationName, typeSupport));
-                    logicExprs.add(exprLine.getLogicBoxes().get(j).getText());
+                    firstVariables.add(firstVariable);
+                    secondVariables.add(secondVariable);
+                    operations.add(Operation.getByName(operationName, typeSupport));
+                    logicExprsessions.add(expressionLine.getLogicBoxes().get(j).getText());
                 }
-                ifExpr = new IfExpr(exprLine.getFunctionButton().getText(), variable1list, lexem2list, operationNames, logicExprs);
+                ifExpr = new IfExpr(expressionLine.getFunctionButton().getText(), firstVariables, secondVariables, operations, logicExprsessions);
                 model.addIfExpr(ifExpr);
             }
             styledText.setText(model.toString());
@@ -452,16 +460,16 @@ public class BusinessRuleEditorDialog extends GroovyEditorDialogType {
         }
     }
 
-    private class ExprLine {
+    private class ExpressionLine {
         private Composite complexExpression;
         private Button functionButton;
-        private Button addExprButton;
+        private Button addExpressionButton;
         private List<FilterBox[]> variableBoxes = new ArrayList();
         private List<Combo> operationBoxes = new ArrayList();
         private List<Combo> logicBoxes = new ArrayList();
-        private int indexLine;
+        private int lineIndex;
 
-        public ExprLine() {
+        public ExpressionLine() {
             complexExpression = new Composite(constructor, SWT.BORDER);
             GridData data = new GridData(GridData.FILL_HORIZONTAL);
             data.horizontalSpan = 6;
@@ -472,14 +480,14 @@ public class BusinessRuleEditorDialog extends GroovyEditorDialogType {
         }
 
         public void createComplexExpressionBody() {
-            indexLine = exprLines.indexOf(this);
-            createExpr(complexExpression, indexLine);
+            lineIndex = expressionLines.indexOf(this);
+            createExpression(complexExpression, lineIndex);
             if (initModel != null) {
                 List<IfExpr> ifExprs = ((BusinessRuleModel) initModel).getIfExprs();
-                if (ifExprs.size() > indexLine) {
-                    IfExpr ifExpr = ifExprs.get(indexLine);
-                    for (int j = 2; j < ifExpr.getVariable1().size(); j++) {
-                        createExpr(complexExpression, indexLine);
+                if (ifExprs.size() > lineIndex) {
+                    IfExpr ifExpr = ifExprs.get(lineIndex);
+                    for (int j = 2; j < ifExpr.getFirstVariables().size(); j++) {
+                        createExpression(complexExpression, lineIndex);
                     }
                 }
             }
@@ -497,12 +505,12 @@ public class BusinessRuleEditorDialog extends GroovyEditorDialogType {
             this.functionButton = functionButton;
         }
 
-        public Button getExprButton() {
-            return addExprButton;
+        public Button getExpressionButton() {
+            return addExpressionButton;
         }
 
-        public void setExprButton(Button button) {
-            addExprButton = button;
+        public void setExpressionButton(Button button) {
+            addExpressionButton = button;
         }
 
         public void setVariableBox(FilterBox[] filterBox) {
