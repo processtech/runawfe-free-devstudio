@@ -35,6 +35,11 @@ import ru.runa.gpd.util.VariableUtils;
 import ru.runa.gpd.util.GroovyStuff.Item;
 
 public abstract class GroovyEditorDialogType extends Dialog {
+    protected static final String DATA_INDEX_KEY = "indexes";
+    protected static final String DATA_VARIABLE_KEY = "variable";
+    protected static final String DATA_USER_INPUT_KEY = "userInput";
+    protected static final String DATA_OPERATION_KEY = "operation";
+    
     protected TabFolder tabFolder;
     protected StyledText styledText;
     protected Composite constructor;
@@ -196,11 +201,6 @@ public abstract class GroovyEditorDialogType extends Dialog {
 
     protected void initConstructorView() {
     };
-
-    protected static final String DATA_INDEX_KEY = "indexes";
-    protected static final String DATA_VARIABLE_KEY = "variable";
-    protected static final String DATA_USER_INPUT_KEY = "userInput";
-    protected static final String DATA_OPERATION_KEY = "operation";
 
     protected GridData getGridData() {
         GridData data = new GridData(GridData.FILL_HORIZONTAL);

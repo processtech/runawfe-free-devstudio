@@ -172,7 +172,7 @@ public class BusinessRuleModel implements GroovyModel {
         }
     }
 
-    public static Set<String> getFunctionName(String code) {
+    public static Set<String> getFunctionNames(String code) {
         Set<String> result = Sets.newHashSet();
         Matcher returnMatcher = RETURN_PATTERN.matcher(code);
         while (returnMatcher.find()) {
@@ -182,7 +182,7 @@ public class BusinessRuleModel implements GroovyModel {
         return result;
     }
 
-    public List<String> getFunctionName() {
+    public List<String> getFunctionNames() {
         List<String> functionName = new ArrayList<String>();
         for (IfExpr ifExpr : ifs) {
             functionName.add(ifExpr.getFunction());
