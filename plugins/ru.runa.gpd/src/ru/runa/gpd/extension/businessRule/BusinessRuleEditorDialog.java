@@ -120,7 +120,7 @@ public class BusinessRuleEditorDialog extends GroovyEditorDialogType {
         }
     }
 
-    public class SyncOperComboHandler extends SelectionAdapter {
+    public class SyncComboHandler extends SelectionAdapter {
         @Override
         public void widgetSelected(SelectionEvent e) {
             Combo combo = ((Combo) e.widget);
@@ -175,7 +175,7 @@ public class BusinessRuleEditorDialog extends GroovyEditorDialogType {
 
         if (expressionIndex == 0 || expressionIndex == 1) {
             variable[0].setSelectionListener(new SyncFilterBoxHandler());
-            operation.addSelectionListener(new SyncOperComboHandler());
+            operation.addSelectionListener(new SyncComboHandler());
             variable[1].setSelectionListener(new SyncFilterBoxHandler());
         }
 
