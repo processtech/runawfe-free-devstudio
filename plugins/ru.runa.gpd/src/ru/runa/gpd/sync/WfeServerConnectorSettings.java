@@ -42,7 +42,7 @@ public class WfeServerConnectorSettings implements PrefConstants {
         if (loadFromStore) {
             String prefix = WfeServerConnectorPreferenceNode.getId(index);
             this.protocol = Activator.getPrefString(prefix + '.' + P_WFE_SERVER_CONNECTOR_PROTOCOL_SUFFIX);
-            this.allowSslInsecure = Activator.getPrefBoolean(prefix + '.' + P_WFE_SERVER_CONNECTOR_SSL_ALLOW_INSECURE_SUFFIX);
+            this.allowSslInsecure = Activator.getPrefBoolean(prefix + '.' + P_WFE_SERVER_CONNECTOR_ALLOW_SSL_INSECURE_SUFFIX);
             this.host = Activator.getPrefString(prefix + '.' + P_WFE_SERVER_CONNECTOR_HOST_SUFFIX);
             this.port = Activator.getPrefInt(prefix + '.' + P_WFE_SERVER_CONNECTOR_PORT_SUFFIX);
             this.authenticationType = Activator.getPrefString(prefix + '.' + P_WFE_SERVER_CONNECTOR_AUTHENTICATION_TYPE_SUFFIX);
@@ -153,7 +153,7 @@ public class WfeServerConnectorSettings implements PrefConstants {
         IPreferenceStore store = Activator.getDefault().getPreferenceStore();
         String prefix = WfeServerConnectorPreferenceNode.getId(index);
         store.setValue(prefix + "." + P_WFE_SERVER_CONNECTOR_PROTOCOL_SUFFIX, protocol);
-        store.setValue(prefix + "." + P_WFE_SERVER_CONNECTOR_SSL_ALLOW_INSECURE_SUFFIX, allowSslInsecure);
+        store.setValue(prefix + "." + P_WFE_SERVER_CONNECTOR_ALLOW_SSL_INSECURE_SUFFIX, allowSslInsecure);
         store.setValue(prefix + "." + P_WFE_SERVER_CONNECTOR_HOST_SUFFIX, host);
         store.setValue(prefix + "." + P_WFE_SERVER_CONNECTOR_PORT_SUFFIX, port);
         store.setValue(prefix + "." + P_WFE_SERVER_CONNECTOR_AUTHENTICATION_TYPE_SUFFIX, authenticationType);
@@ -167,7 +167,7 @@ public class WfeServerConnectorSettings implements PrefConstants {
         IPreferenceStore store = Activator.getDefault().getPreferenceStore();
         String prefix = WfeServerConnectorPreferenceNode.getId(index);
         store.setDefault(prefix + "." + P_WFE_SERVER_CONNECTOR_PROTOCOL_SUFFIX, protocol);
-        store.setDefault(prefix + "." + P_WFE_SERVER_CONNECTOR_SSL_ALLOW_INSECURE_SUFFIX, allowSslInsecure);
+        store.setDefault(prefix + "." + P_WFE_SERVER_CONNECTOR_ALLOW_SSL_INSECURE_SUFFIX, allowSslInsecure);
         store.setDefault(prefix + "." + P_WFE_SERVER_CONNECTOR_HOST_SUFFIX, host);
         store.setDefault(prefix + "." + P_WFE_SERVER_CONNECTOR_PORT_SUFFIX, port);
         store.setDefault(prefix + "." + P_WFE_SERVER_CONNECTOR_AUTHENTICATION_TYPE_SUFFIX, authenticationType);

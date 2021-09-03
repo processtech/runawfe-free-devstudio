@@ -91,7 +91,7 @@ public class WfeServerConnectorPreferencePage extends FieldEditorPreferencePage 
                 getPreferenceStore().setValue(getPreferenceName(), protocolCombo.getText());
             }
         });
-        addField(new BooleanFieldEditor(getKey(P_WFE_SERVER_CONNECTOR_SSL_ALLOW_INSECURE_SUFFIX),
+        addField(new BooleanFieldEditor(getKey(P_WFE_SERVER_CONNECTOR_ALLOW_SSL_INSECURE_SUFFIX),
                 Localization.getString("pref.connection.wfe.ssl.allow.insecure"), getFieldEditorParent()));
         hostEditor = new StringFieldEditor(getKey(P_WFE_SERVER_CONNECTOR_HOST_SUFFIX), Localization.getString("pref.connection.wfe.host"),
                 getFieldEditorParent()) {
