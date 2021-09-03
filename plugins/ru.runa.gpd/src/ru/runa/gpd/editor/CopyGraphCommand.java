@@ -471,24 +471,24 @@ public class CopyGraphCommand extends Command {
 
         @Override
         public void execute() {
-            copyReferencedUserTypes(sourceVariable);
+            copyReferencedUserTypes(sourceVariable, true);
             if (oldVariable == null) {
                 addedVariable = (Variable) sourceVariable.makeCopy(targetDefinition);
             }
         }
 
-        private void copyReferencedUserTypes(Variable srcVar) {
+        private void copyReferencedUserTypes(Variable srcVar, boolean isCopyNeeded) {
             if (srcVar.isComplex()) {
-                VariableUserType sourceUserType = srcVar.getUserType().getCopy();
+                VariableUserType sourceUserType = isCopyNeeded ? srcVar.getUserType().getCopy() : srcVar.getUserType();
                 VariableUserType userType = targetDefinition.getVariableUserType(srcVar.getUserType().getName());
                 if (userType == null) {
                     // full copy
-                    userType = srcVar.getUserType().getCopy();
+                    userType = sourceUserType;
                     targetDefinition.addVariableUserType(userType);
                     changedUserTypes.put(userType, null);
                     for (Variable v : sourceUserType.getAttributes()) {
                         if (v.isComplex() || VariableUtils.isContainerVariable(v)) {
-                            copyReferencedUserTypes(v);
+                            copyReferencedUserTypes(v, false);
                         }
                     }
                 } else {
@@ -498,7 +498,7 @@ public class CopyGraphCommand extends Command {
                     for (Variable v : sourceUserType.getAttributes()) {
                         if (!userTypeAttributes.contains(v) && usedVariableNames.contains(srcVar.getName() + UserType.DELIM + v.getName())) {
                             if (v.isComplex() || VariableUtils.isContainerVariable(v)) {
-                                copyReferencedUserTypes(v);
+                                copyReferencedUserTypes(v, false);
                             }
                             userType.addAttribute(v);
                             addedAttributes.add(v);
@@ -520,7 +520,7 @@ public class CopyGraphCommand extends Command {
                             changedUserTypes.put(addedUserType, null);
                             for (Variable v : sourceUserType.getAttributes()) {
                                 if (v.isComplex() || VariableUtils.isContainerVariable(v)) {
-                                    copyReferencedUserTypes(v);
+                                    copyReferencedUserTypes(v, false);
                                 }
                             }
                         }
