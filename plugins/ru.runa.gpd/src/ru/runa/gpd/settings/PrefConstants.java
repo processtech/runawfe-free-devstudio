@@ -41,6 +41,7 @@ public interface PrefConstants {
     public static final String P_WFE_SERVER_CONNECTOR_HOST_SUFFIX = "host";
     public static final String P_WFE_SERVER_CONNECTOR_PORT_SUFFIX = "port";
     public static final String P_WFE_SERVER_CONNECTOR_PROTOCOL_SUFFIX = "protocol";
+    public static final String P_WFE_SERVER_CONNECTOR_SSL_ALLOW_INSECURE_SUFFIX = "sslAllowInsecure";
     public static final String P_WFE_SERVER_CONNECTOR_LOAD_PROCESS_DEFINITIONS_HISTORY_SUFFIX = "loadProcessDefinitionsHistory";
     public static final String P_WFE_SERVER_CONNECTOR_ALLOW_UPDATE_LAST_VERSION_BY_KEY_BINDING_SUFFIX = "allowUpdateLastVersionByKeyBinding";
     public static final String P_LDAP_CONNECTION_LOGIN = "ldapLogin";
