@@ -46,7 +46,6 @@ import ru.runa.wfe.webservice.SystemAPI;
 import ru.runa.wfe.webservice.SystemWebService;
 import ru.runa.wfe.webservice.User;
 import ru.runa.wfe.webservice.WfExecutor;
-import sun.net.www.protocol.https.DefaultHostnameVerifier;
 
 public abstract class AbstractWebServiceWfeServerConnector extends WfeServerConnector {
     private User user;
@@ -264,7 +263,11 @@ public abstract class AbstractWebServiceWfeServerConnector extends WfeServerConn
                         });
                     } else {
                         sslContext.init(null, null, new SecureRandom());
-                        HttpsURLConnection.setDefaultHostnameVerifier(new DefaultHostnameVerifier());
+                        HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
+                            public boolean verify(String hostname, SSLSession session) {
+                                return false;
+                            }
+                        });
                     }
                     HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
                 }
