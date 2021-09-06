@@ -5,9 +5,11 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.io.CharStreams;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
+import javax.xml.ws.BindingProvider;
 import javax.xml.ws.soap.SOAPFaultException;
 import ru.runa.gpd.sync.WfeServerConnector;
 import ru.runa.wfe.bot.Bot;
@@ -38,20 +40,20 @@ import ru.runa.wfe.webservice.SystemWebService;
 import ru.runa.wfe.webservice.User;
 import ru.runa.wfe.webservice.WfExecutor;
 
-public abstract class AbstractWebServiceWfeServerConnector extends WfeServerConnector {
+public class WebServiceWfeServerConnector extends WfeServerConnector {
     private User user;
 
     @Override
     public void connect() {
-        AuthenticationAPI authenticationAPI = new AuthenticationWebService(getUrl("Authentication")).getAuthenticationAPIPort();
+        AuthenticationAPI api = getAuthenticationService();
         if (AUTHENTICATION_TYPE_LOGIN_PASSWORD.equals(settings.getAuthenticationType())) {
             String password = settings.getPassword();
             if (password == null) {
                 return;
             }
-            user = authenticationAPI.authenticateByLoginPassword(settings.getLogin(), password);
+            user = api.authenticateByLoginPassword(settings.getLogin(), password);
         } else {
-            user = authenticationAPI.authenticateByKerberos(getKerberosToken());
+            user = api.authenticateByKerberos(getKerberosToken());
         }
     }
 
@@ -77,7 +79,7 @@ public abstract class AbstractWebServiceWfeServerConnector extends WfeServerConn
 
     @Override
     public List<String> getRelationNames() {
-        RelationAPI api = new RelationWebService(getUrl("Relation")).getRelationAPIPort();
+        RelationAPI api = getRelationService();
         List<Relation> relations = api.getRelations(getUser(), null);
         List<String> result = Lists.newArrayListWithExpectedSize(relations.size());
         for (Relation relation : relations) {
@@ -219,9 +221,25 @@ public abstract class AbstractWebServiceWfeServerConnector extends WfeServerConn
         return getDataSourceService().getNames();
     }
 
-    protected abstract URL getUrl(String serviceName);
+    private String getServiceUrl(String serviceName) {
+        String version = getVersion();
+        return settings.getUrl() + "/wfe-service-" + version + "/" + serviceName + "WebService/" + serviceName + "API";
+    }
 
-    protected String getVersion() {
+    private void setApiEndpointAddress(Object api, String serviceUrl) {
+        BindingProvider bindingProvider = (BindingProvider) api;
+        bindingProvider.getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, serviceUrl);
+    }
+
+    private URL getWsdlUrl(String serviceUrl) {
+        try {
+            return new URL(serviceUrl + "?wsdl");
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String getVersion() {
         String version = settings.getVersion();
         if (version == null) {
             String url = settings.getUrl() + "/wfe/version";
@@ -234,7 +252,7 @@ public abstract class AbstractWebServiceWfeServerConnector extends WfeServerConn
                 }
                 reader.close();
             } catch (Exception e) {
-                throw new RuntimeException("Unable to acquire version using " + url);
+                throw new RuntimeException("Unable to acquire version using " + url, e);
             }
             settings.setVersion(version);
         }
@@ -258,24 +276,53 @@ public abstract class AbstractWebServiceWfeServerConnector extends WfeServerConn
         return user;
     }
 
+    private AuthenticationAPI getAuthenticationService() {
+        String serviceUrl = getServiceUrl("Authentication");
+        AuthenticationAPI api = new AuthenticationWebService(getWsdlUrl(serviceUrl)).getAuthenticationAPIPort();
+        setApiEndpointAddress(api, serviceUrl);
+        return api;
+    }
+
     private ExecutorAPI getExecutorService() {
-        return new ExecutorWebService(getUrl("Executor")).getExecutorAPIPort();
+        String serviceUrl = getServiceUrl("Executor");
+        ExecutorAPI api = new ExecutorWebService(getWsdlUrl(serviceUrl)).getExecutorAPIPort();
+        setApiEndpointAddress(api, serviceUrl);
+        return api;
     }
 
     private DefinitionAPI getDefinitionService() {
-        return new DefinitionWebService(getUrl("Definition")).getDefinitionAPIPort();
+        String serviceUrl = getServiceUrl("Definition");
+        DefinitionAPI api = new DefinitionWebService(getWsdlUrl(serviceUrl)).getDefinitionAPIPort();
+        setApiEndpointAddress(api, serviceUrl);
+        return api;
     }
 
     private BotAPI getBotService() {
-        return new BotWebService(getUrl("Bot")).getBotAPIPort();
+        String serviceUrl = getServiceUrl("Bot");
+        BotAPI api = new BotWebService(getWsdlUrl(serviceUrl)).getBotAPIPort();
+        setApiEndpointAddress(api, serviceUrl);
+        return api;
     }
 
     private DataSourceAPI getDataSourceService() {
-        return new DataSourceWebService(getUrl("DataSource")).getDataSourceAPIPort();
+        String serviceUrl = getServiceUrl("DataSource");
+        DataSourceAPI api = new DataSourceWebService(getWsdlUrl(serviceUrl)).getDataSourceAPIPort();
+        setApiEndpointAddress(api, serviceUrl);
+        return api;
     }
 
     private SystemAPI getSystemService() {
-        return new SystemWebService(getUrl("System")).getSystemAPIPort();
+        String serviceUrl = getServiceUrl("System");
+        SystemAPI api = new SystemWebService(getWsdlUrl(serviceUrl)).getSystemAPIPort();
+        setApiEndpointAddress(api, serviceUrl);
+        return api;
+    }
+
+    private RelationAPI getRelationService() {
+        String serviceUrl = getServiceUrl("Relation");
+        RelationAPI api = new RelationWebService(getWsdlUrl(serviceUrl)).getRelationAPIPort();
+        setApiEndpointAddress(api, serviceUrl);
+        return api;
     }
 
 }
