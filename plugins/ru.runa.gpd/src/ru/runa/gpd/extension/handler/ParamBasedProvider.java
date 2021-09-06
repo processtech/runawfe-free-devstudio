@@ -1,8 +1,12 @@
 package ru.runa.gpd.extension.handler;
 
+import com.google.common.base.Objects;
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-
+import java.util.Set;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.wizard.Wizard;
@@ -18,7 +22,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.LocalizationRegistry;
@@ -26,10 +29,6 @@ import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.ui.wizard.CompactWizardDialog;
-
-import com.google.common.base.Objects;
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 
 public abstract class ParamBasedProvider extends DelegableProvider {
     protected abstract ParamDefConfig getParamConfig(Delegable delegable);
@@ -95,6 +94,10 @@ public abstract class ParamBasedProvider extends DelegableProvider {
         if (Strings.isNullOrEmpty(configuration)) {
             return configuration;
         }
+        Set<String> variableNames = new HashSet<>(delegable.getVariableNames(true));
+        // variable names contain not only real variables but also old/new substitutions for correct configuration change during variable rename
+        // this is required due to possible multiple invocation of this method during single variable rename
+        variableNames.add(previewVariable.getName());
         ParamDefConfig paramDefConfig = getParamConfig(delegable);
         Map<String, String> properties = paramDefConfig.parseConfiguration(configuration);
         for (ParamDefGroup group : paramDefConfig.getGroups()) {
@@ -103,10 +106,11 @@ public abstract class ParamBasedProvider extends DelegableProvider {
                 if (paramDef.isUseVariable() && Objects.equal(value, currentVariable.getName())) {
                     properties.put(paramDef.getName(), previewVariable.getName());
                 }
+                if (paramDef.isUseVariable() && value != null) {
+                    variableNames.add(value);
+                }
             }
         }
-        List<String> variableNames = delegable.getVariableNames(true);
-        variableNames.add(previewVariable.getName());
         return paramDefConfig.toConfiguration(variableNames, properties);
     }
 
