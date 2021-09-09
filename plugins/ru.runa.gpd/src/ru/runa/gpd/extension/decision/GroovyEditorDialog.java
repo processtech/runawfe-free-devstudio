@@ -289,7 +289,8 @@ public class GroovyEditorDialog extends GroovyEditorDialogType {
     protected void toCode() {
         for (int i = 0; i < variableBoxes.length; i++) {
             for (int j = 0; j < 2; j++) {
-                if (variableBoxes[i][j].getText().length() == 0 && !labels[i].getText().equals(defaultTransitionCombo.getText())) {
+                boolean emptyFieldExist = variableBoxes[i][j].getText().length() == 0 && !labels[i].getText().equals(defaultTransitionCombo.getText());
+                if (emptyFieldExist) {
                     setErrorLabelText(Localization.getString("GroovyEditor.fillAll"));
                     // we cannot construct while all data not filled
                     return;
