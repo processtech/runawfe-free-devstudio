@@ -289,7 +289,8 @@ public class GroovyEditorDialog extends GroovyEditorDialogType {
     protected void toCode() {
         for (int i = 0; i < variableBoxes.length; i++) {
             for (int j = 0; j < 2; j++) {
-                boolean emptyFieldExist = variableBoxes[i][j].getText().length() == 0 && !labels[i].getText().equals(defaultTransitionCombo.getText());
+                boolean emptyFieldExist = variableBoxes[i][j].getText().length() == 0
+                        && !labels[i].getText().equals(defaultTransitionCombo.getText());
                 if (emptyFieldExist) {
                     setErrorLabelText(Localization.getString("GroovyEditor.fillAll"));
                     // we cannot construct while all data not filled
@@ -308,10 +309,11 @@ public class GroovyEditorDialog extends GroovyEditorDialogType {
                     Variable firstVariable = (Variable) variableBoxes[i][0].getData(DATA_VARIABLE_KEY);
                     String operationName = operationBoxes[i].getItem(operationBoxes[i].getSelectionIndex());
                     String secondVariableText = variableBoxes[i][1].getText();
-                    Object secondVariable = VariableUtils.getVariableByScriptingName(variables, secondVariableText);;
+                    Object secondVariable = VariableUtils.getVariableByScriptingName(variables, secondVariableText);
+                    ;
                     if (secondVariable == null) {
                         secondVariable = secondVariableText;
-                    } 
+                    }
                     GroovyTypeSupport typeSupport = GroovyTypeSupport.get(firstVariable.getJavaClassName());
                     ifExpr = new IfExpr(labels[i].getText(), firstVariable, secondVariable, Operation.getByName(operationName, typeSupport));
                 }
