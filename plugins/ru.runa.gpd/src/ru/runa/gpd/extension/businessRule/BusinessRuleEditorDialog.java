@@ -59,6 +59,7 @@ public class BusinessRuleEditorDialog extends GroovyEditorDialogType {
         }
     }
 
+    @Override
     protected void createConstructorView() {
         constructor.setLayout(new GridLayout(6, false));
         if (initModel != null) {
@@ -241,16 +242,16 @@ public class BusinessRuleEditorDialog extends GroovyEditorDialogType {
     }
 
     @Override
-    protected void refresh(Combo operCombo) {
+    protected void refresh(Combo operationCombo) {
         try {
-            int[] indexes = (int[]) operCombo.getData(DATA_INDEX_KEY);
+            int[] indexes = (int[]) operationCombo.getData(DATA_INDEX_KEY);
             Variable firstVariable = (Variable) expressionLines.get(indexes[0]).getVariableBoxes().get(indexes[1])[0].getData(DATA_VARIABLE_KEY);
             if (firstVariable != null) {
                 FilterBox targetCombo = expressionLines.get(indexes[0]).getVariableBoxes().get(indexes[1])[1];
                 targetCombo.setItems(new String[0]);
                 GroovyTypeSupport typeSupport = GroovyTypeSupport.get(firstVariable.getJavaClassName());
-                Operation operation = Operation.getByName(operCombo.getText(), typeSupport);
-                operCombo.setData(DATA_OPERATION_KEY, operation);
+                Operation operation = Operation.getByName(operationCombo.getText(), typeSupport);
+                operationCombo.setData(DATA_OPERATION_KEY, operation);
                 for (String variableName : getSecondVariableNames(firstVariable)) {
                     targetCombo.add(variableName);
                 }
