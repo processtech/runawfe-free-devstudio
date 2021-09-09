@@ -73,9 +73,9 @@ public abstract class GroovyEditorDialogType extends Dialog {
         tabFolder.addSelectionListener(new TabSelectionHandler());
         Composite constructorView = new Composite(tabFolder, SWT.NONE);
         constructorView.setLayout(new GridLayout());
-        TabItem tabItem1 = new TabItem(tabFolder, SWT.NONE);
-        tabItem1.setText(Localization.getString("GroovyEditor.title.constructor"));
-        tabItem1.setControl(constructorView);
+        TabItem constructorTab = new TabItem(tabFolder, SWT.NONE);
+        constructorTab.setText(Localization.getString("GroovyEditor.title.constructor"));
+        constructorTab.setControl(constructorView);
         constructorHeader = new ErrorHeaderComposite(constructorView);
         ScrolledComposite scrolledComposite = new ScrolledComposite(constructorView, SWT.V_SCROLL | SWT.BORDER);
         scrolledComposite.setExpandHorizontal(true);
@@ -164,9 +164,9 @@ public abstract class GroovyEditorDialogType extends Dialog {
         styledText.addLineStyleListener(new JavaHighlightTextStyling(variableNames));
         styledText.setText(this.initValue);
         styledText.setLayoutData(new GridData(GridData.FILL_BOTH));
-        TabItem tabItem2 = new TabItem(tabFolder, SWT.NONE);
-        tabItem2.setText(Localization.getString("GroovyEditor.title.code"));
-        tabItem2.setControl(sourceView);
+        TabItem codeTab = new TabItem(tabFolder, SWT.NONE);
+        codeTab.setText(Localization.getString("GroovyEditor.title.code"));
+        codeTab.setControl(sourceView);
         createConstructorView();
         try {
             if (initModel != null && initValue.equals(initModel.toString())) {
@@ -214,12 +214,12 @@ public abstract class GroovyEditorDialogType extends Dialog {
     protected void refresh(FilterBox filterBox) {
     };
 
-    protected List<String> getSecondVariableNames(Variable variable1) {
+    protected List<String> getSecondVariableNames(Variable firstVariable) {
         List<String> names = new ArrayList<String>();
-        GroovyTypeSupport typeSupport1 = GroovyTypeSupport.get(variable1.getJavaClassName());
+        GroovyTypeSupport typeSupportFirstVariable = GroovyTypeSupport.get(firstVariable.getJavaClassName());
         for (Variable variable : variables) {
             GroovyTypeSupport typeSupport = GroovyTypeSupport.get(variable.getJavaClassName());
-            if (typeSupport1.getClass() == typeSupport.getClass() && variable1 != variable) {
+            if (typeSupportFirstVariable.getClass() == typeSupport.getClass() && firstVariable != variable) {
                 names.add(variable.getScriptingName());
             }
         }
