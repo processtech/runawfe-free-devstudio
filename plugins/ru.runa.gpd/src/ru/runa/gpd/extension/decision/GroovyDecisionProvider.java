@@ -88,11 +88,11 @@ public class GroovyDecisionProvider extends DelegableProvider implements IDecisi
         GroovyDecisionModel model = new GroovyDecisionModel(delegable.getDelegationConfiguration(), variables);
         List<String> result = Lists.newArrayList();
         for (IfExpr expr : model.getIfExprs()) {
-            if (expr.getVariable1() != null) {
-                result.add(expr.getVariable1().getName());
+            if (expr.getFirstVariable() != null) {
+                result.add(expr.getFirstVariable().getName());
             }
-            if (expr.getLexem2() instanceof Variable) {
-                result.add(((Variable) expr.getLexem2()).getName());
+            if (expr.getSecondVariable() instanceof Variable) {
+                result.add(((Variable) expr.getSecondVariable()).getName());
             }
         }
         return result;

@@ -29,8 +29,8 @@ public class GroovyEditorDialog extends GroovyEditorDialogType {
     private static final Image upImage = SharedImages.getImage("icons/up.gif");
     private final List<String> transitionNames;
     private Label[] labels;
-    private FilterBox[][] varBoxes;
-    private Combo[] operBoxes;
+    private FilterBox[][] variableBoxes;
+    private Combo[] operationBoxes;
     private Combo defaultTransitionCombo;
 
     public GroovyEditorDialog(ProcessDefinition definition, List<String> transitionNames, String initValue) {
@@ -61,27 +61,27 @@ public class GroovyEditorDialog extends GroovyEditorDialogType {
                 transitionNames.add(newTransition);
             }
         }
-        varBoxes = new FilterBox[transitionNames.size()][2];
-        operBoxes = new Combo[transitionNames.size()];
+        variableBoxes = new FilterBox[transitionNames.size()][2];
+        operationBoxes = new Combo[transitionNames.size()];
         labels = new Label[transitionNames.size()];
         for (int i = 0; i < transitionNames.size(); i++) {
             labels[i] = new Label(constructor, SWT.NONE);
             labels[i].setText(transitionNames.get(i));
             labels[i].setLayoutData(getGridData());
-            varBoxes[i][0] = new FilterBox(constructor, VariableUtils.getVariableNamesForScripting(variables));
-            varBoxes[i][0].setData(DATA_INDEX_KEY, new int[] { i, 0 });
-            varBoxes[i][0].setSelectionListener(new FilterBoxSelectionHandler());
-            varBoxes[i][0].setLayoutData(getGridData());
+            variableBoxes[i][0] = new FilterBox(constructor, VariableUtils.getVariableNamesForScripting(variables));
+            variableBoxes[i][0].setData(DATA_INDEX_KEY, new int[] { i, 0 });
+            variableBoxes[i][0].setSelectionListener(new FilterBoxSelectionHandler());
+            variableBoxes[i][0].setLayoutData(getGridData());
 
-            operBoxes[i] = new Combo(constructor, SWT.READ_ONLY);
-            operBoxes[i].setData(DATA_INDEX_KEY, new int[] { i, 1 });
-            operBoxes[i].addSelectionListener(new ComboSelectionHandler());
-            operBoxes[i].setLayoutData(getGridData());
+            operationBoxes[i] = new Combo(constructor, SWT.READ_ONLY);
+            operationBoxes[i].setData(DATA_INDEX_KEY, new int[] { i, 1 });
+            operationBoxes[i].addSelectionListener(new ComboSelectionHandler());
+            operationBoxes[i].setLayoutData(getGridData());
 
-            varBoxes[i][1] = new FilterBox(constructor, null);
-            varBoxes[i][1].setData(DATA_INDEX_KEY, new int[] { i, 2 });
-            varBoxes[i][1].setSelectionListener(new FilterBoxSelectionHandler());
-            varBoxes[i][1].setLayoutData(getGridData());
+            variableBoxes[i][1] = new FilterBox(constructor, null);
+            variableBoxes[i][1].setData(DATA_INDEX_KEY, new int[] { i, 2 });
+            variableBoxes[i][1].setSelectionListener(new FilterBoxSelectionHandler());
+            variableBoxes[i][1].setLayoutData(getGridData());
             if (i != 0) {
                 Button upButton = new Button(constructor, SWT.PUSH);
                 upButton.setImage(upImage);
@@ -96,9 +96,9 @@ public class GroovyEditorDialog extends GroovyEditorDialogType {
                 new Label(constructor, SWT.NONE);
             }
         }
-        for (int i = 0; i < varBoxes.length; i++) {
+        for (int i = 0; i < variableBoxes.length; i++) {
             for (int j = 0; j < 2; j++) {
-                varBoxes[i][j].setSize(100, 20);
+                variableBoxes[i][j].setSize(100, 20);
             }
         }
         if (transitionNames.size() > 0) {
@@ -118,9 +118,9 @@ public class GroovyEditorDialog extends GroovyEditorDialogType {
                 protected void onSelection(SelectionEvent e) throws Exception {
                     for (int j = 0; j < labels.length; j++) {
                         boolean enabled = !labels[j].getText().equals(defaultTransitionCombo.getText());
-                        varBoxes[j][0].setEnabled(enabled);
-                        operBoxes[j].setEnabled(enabled);
-                        varBoxes[j][1].setEnabled(enabled);
+                        variableBoxes[j][0].setEnabled(enabled);
+                        operationBoxes[j].setEnabled(enabled);
+                        variableBoxes[j][1].setEnabled(enabled);
                     }
                 }
             });
@@ -135,28 +135,28 @@ public class GroovyEditorDialog extends GroovyEditorDialogType {
             if (ifExpr != null) {
                 labels[i].setText(ifExpr.getTransition());
                 if (ifExpr.isByDefault()) {
-                    varBoxes[i][0].setEnabled(false);
-                    operBoxes[i].setEnabled(false);
-                    varBoxes[i][1].setEnabled(false);
+                    variableBoxes[i][0].setEnabled(false);
+                    operationBoxes[i].setEnabled(false);
+                    variableBoxes[i][1].setEnabled(false);
                     defaultTransitionCombo.setText(ifExpr.getTransition());
                 } else {
-                    Variable variable = ifExpr.getVariable1();
+                    Variable variable = ifExpr.getFirstVariable();
                     int index = variables.indexOf(variable);
                     if (index == -1) {
                         // required variable was deleted in process definition
                         continue;
                     }
-                    varBoxes[i][0].select(index);
-                    refresh(varBoxes[i][0]);
+                    variableBoxes[i][0].select(index);
+                    refresh(variableBoxes[i][0]);
                     GroovyTypeSupport typeSupport = GroovyTypeSupport.get(variable.getJavaClassName());
                     index = Operation.getAll(typeSupport).indexOf(ifExpr.getOperation());
                     if (index == -1) {
                         // required operation was deleted !!!
                         continue;
                     }
-                    operBoxes[i].select(index);
-                    refresh(operBoxes[i]);
-                    String lexem2Text = ifExpr.getLexem2TextValue();
+                    operationBoxes[i].select(index);
+                    refresh(operationBoxes[i]);
+                    String lexem2Text = ifExpr.getSecondVariableTextValue();
                     int var2index = 0;
                     if (VariableUtils.getVariableByScriptingName(variables, lexem2Text) != null) {
                         var2index = getSecondVariableNames(variable).indexOf(lexem2Text);
@@ -165,11 +165,11 @@ public class GroovyEditorDialog extends GroovyEditorDialogType {
                         if (predefinedIndex >= 0) {
                             var2index = getSecondVariableNames(variable).size() + predefinedIndex;
                         } else {
-                            varBoxes[i][1].add(lexem2Text, 0);
-                            varBoxes[i][1].setData(DATA_USER_INPUT_KEY, lexem2Text);
+                            variableBoxes[i][1].add(lexem2Text, 0);
+                            variableBoxes[i][1].setData(DATA_USER_INPUT_KEY, lexem2Text);
                         }
                     }
-                    varBoxes[i][1].select(var2index);
+                    variableBoxes[i][1].select(var2index);
                 }
             }
         }
@@ -179,37 +179,37 @@ public class GroovyEditorDialog extends GroovyEditorDialogType {
         String recordText = labels[recordIndex].getText();
         labels[recordIndex].setText(labels[recordIndex - 1].getText());
         labels[recordIndex - 1].setText(recordText);
-        boolean enabledIndex = varBoxes[recordIndex][0].getEnabled();
-        boolean enabledIndexPrev = varBoxes[recordIndex - 1][0].getEnabled();
-        int var1Index = varBoxes[recordIndex][0].getSelectionIndex();
-        int operIndex = operBoxes[recordIndex].getSelectionIndex();
-        int var2Index = varBoxes[recordIndex][1].getSelectionIndex();
-        String var2UserInput = (String) varBoxes[recordIndex][1].getData(DATA_USER_INPUT_KEY);
-        varBoxes[recordIndex][0].select(varBoxes[recordIndex - 1][0].getSelectionIndex());
-        varBoxes[recordIndex][0].setEnabled(enabledIndexPrev);
-        refresh(varBoxes[recordIndex][0]);
-        operBoxes[recordIndex].select(operBoxes[recordIndex - 1].getSelectionIndex());
-        operBoxes[recordIndex].setEnabled(enabledIndexPrev);
-        refresh(operBoxes[recordIndex]);
-        String var2UserInput2 = (String) varBoxes[recordIndex - 1][1].getData(DATA_USER_INPUT_KEY);
-        if (var2UserInput2 != null) {
-            varBoxes[recordIndex][1].add(var2UserInput2, 0);
-            varBoxes[recordIndex][1].setData(DATA_USER_INPUT_KEY, var2UserInput2);
+        boolean enabledIndex = variableBoxes[recordIndex][0].getEnabled();
+        boolean enabledIndexPrev = variableBoxes[recordIndex - 1][0].getEnabled();
+        int firstVariableIndex = variableBoxes[recordIndex][0].getSelectionIndex();
+        int operationIndex = operationBoxes[recordIndex].getSelectionIndex();
+        int secondVariableIndex = variableBoxes[recordIndex][1].getSelectionIndex();
+        String secondVariableUserInput = (String) variableBoxes[recordIndex][1].getData(DATA_USER_INPUT_KEY);
+        variableBoxes[recordIndex][0].select(variableBoxes[recordIndex - 1][0].getSelectionIndex());
+        variableBoxes[recordIndex][0].setEnabled(enabledIndexPrev);
+        refresh(variableBoxes[recordIndex][0]);
+        operationBoxes[recordIndex].select(operationBoxes[recordIndex - 1].getSelectionIndex());
+        operationBoxes[recordIndex].setEnabled(enabledIndexPrev);
+        refresh(operationBoxes[recordIndex]);
+        String secondVariableUserInput2 = (String) variableBoxes[recordIndex - 1][1].getData(DATA_USER_INPUT_KEY);
+        if (secondVariableUserInput2 != null) {
+            variableBoxes[recordIndex][1].add(secondVariableUserInput2, 0);
+            variableBoxes[recordIndex][1].setData(DATA_USER_INPUT_KEY, secondVariableUserInput2);
         }
-        varBoxes[recordIndex][1].select(varBoxes[recordIndex - 1][1].getSelectionIndex());
-        varBoxes[recordIndex][1].setEnabled(enabledIndexPrev);
-        varBoxes[recordIndex - 1][0].select(var1Index);
-        varBoxes[recordIndex - 1][0].setEnabled(enabledIndex);
-        refresh(varBoxes[recordIndex - 1][0]);
-        operBoxes[recordIndex - 1].select(operIndex);
-        operBoxes[recordIndex - 1].setEnabled(enabledIndex);
-        refresh(operBoxes[recordIndex - 1]);
-        if (var2UserInput != null) {
-            varBoxes[recordIndex - 1][1].add(var2UserInput, 0);
-            varBoxes[recordIndex - 1][1].setData(DATA_USER_INPUT_KEY, var2UserInput);
+        variableBoxes[recordIndex][1].select(variableBoxes[recordIndex - 1][1].getSelectionIndex());
+        variableBoxes[recordIndex][1].setEnabled(enabledIndexPrev);
+        variableBoxes[recordIndex - 1][0].select(firstVariableIndex);
+        variableBoxes[recordIndex - 1][0].setEnabled(enabledIndex);
+        refresh(variableBoxes[recordIndex - 1][0]);
+        operationBoxes[recordIndex - 1].select(operationIndex);
+        operationBoxes[recordIndex - 1].setEnabled(enabledIndex);
+        refresh(operationBoxes[recordIndex - 1]);
+        if (secondVariableUserInput != null) {
+            variableBoxes[recordIndex - 1][1].add(secondVariableUserInput, 0);
+            variableBoxes[recordIndex - 1][1].setData(DATA_USER_INPUT_KEY, secondVariableUserInput);
         }
-        varBoxes[recordIndex - 1][1].select(var2Index);
-        varBoxes[recordIndex - 1][1].setEnabled(enabledIndex);
+        variableBoxes[recordIndex - 1][1].select(secondVariableIndex);
+        variableBoxes[recordIndex - 1][1].setEnabled(enabledIndex);
     }
 
     @Override
@@ -219,8 +219,8 @@ public class GroovyEditorDialog extends GroovyEditorDialogType {
             if (indexes[1] == 2) {
                 if (TypedUserInputCombo.INPUT_VALUE.equals(filterBox.getSelectedItem())) {
                     String oldUserInput = (String) filterBox.getData(DATA_USER_INPUT_KEY);
-                    Variable variable1 = (Variable) varBoxes[indexes[0]][0].getData(DATA_VARIABLE_KEY);
-                    GroovyTypeSupport typeSupport = GroovyTypeSupport.get(variable1.getJavaClassName());
+                    Variable firstVariable = (Variable) variableBoxes[indexes[0]][0].getData(DATA_VARIABLE_KEY);
+                    GroovyTypeSupport typeSupport = GroovyTypeSupport.get(firstVariable.getJavaClassName());
                     UserInputDialog inputDialog = typeSupport.createUserInputDialog();
                     inputDialog.setInitialValue(oldUserInput);
                     if (OK == inputDialog.open()) {
@@ -243,14 +243,14 @@ public class GroovyEditorDialog extends GroovyEditorDialogType {
                 return;
             }
             if (indexes[1] == 0) {
-                Combo operCombo = operBoxes[indexes[0]];
-                operCombo.setItems(new String[0]);
+                Combo operationCombo = operationBoxes[indexes[0]];
+                operationCombo.setItems(new String[0]);
                 Variable variable = VariableUtils.getVariableByScriptingName(variables, filterBox.getText());
                 filterBox.setData(DATA_VARIABLE_KEY, variable);
                 if (variable != null) {
                     GroovyTypeSupport typeSupport = GroovyTypeSupport.get(variable.getJavaClassName());
                     for (Operation operation : Operation.getAll(typeSupport)) {
-                        operCombo.add(operation.getVisibleName());
+                        operationCombo.add(operation.getVisibleName());
                     }
                 }
             }
@@ -260,17 +260,17 @@ public class GroovyEditorDialog extends GroovyEditorDialogType {
     }
 
     @Override
-    protected void refresh(Combo operCombo) {
+    protected void refresh(Combo operationCombo) {
         try {
-            int[] indexes = (int[]) operCombo.getData(DATA_INDEX_KEY);
-            Variable variable1 = (Variable) varBoxes[indexes[0]][0].getData(DATA_VARIABLE_KEY);
-            if (variable1 != null) {
-                FilterBox targetCombo = varBoxes[indexes[0]][1];
+            int[] indexes = (int[]) operationCombo.getData(DATA_INDEX_KEY);
+            Variable firstVariable = (Variable) variableBoxes[indexes[0]][0].getData(DATA_VARIABLE_KEY);
+            if (firstVariable != null) {
+                FilterBox targetCombo = variableBoxes[indexes[0]][1];
                 targetCombo.setItems(new String[0]);
-                GroovyTypeSupport typeSupport = GroovyTypeSupport.get(variable1.getJavaClassName());
-                Operation operation = Operation.getByName(operCombo.getText(), typeSupport);
-                operCombo.setData(DATA_OPERATION_KEY, operation);
-                for (String variableName : getSecondVariableNames(variable1)) {
+                GroovyTypeSupport typeSupport = GroovyTypeSupport.get(firstVariable.getJavaClassName());
+                Operation operation = Operation.getByName(operationCombo.getText(), typeSupport);
+                operationCombo.setData(DATA_OPERATION_KEY, operation);
+                for (String variableName : getSecondVariableNames(firstVariable)) {
                     targetCombo.add(variableName);
                 }
                 for (String pv : typeSupport.getPredefinedValues(operation)) {
@@ -287,9 +287,9 @@ public class GroovyEditorDialog extends GroovyEditorDialogType {
 
     @Override
     protected void toCode() {
-        for (int i = 0; i < varBoxes.length; i++) {
+        for (int i = 0; i < variableBoxes.length; i++) {
             for (int j = 0; j < 2; j++) {
-                if (varBoxes[i][j].getText().length() == 0 && !labels[i].getText().equals(defaultTransitionCombo.getText())) {
+                if (variableBoxes[i][j].getText().length() == 0 && !labels[i].getText().equals(defaultTransitionCombo.getText())) {
                     setErrorLabelText(Localization.getString("GroovyEditor.fillAll"));
                     // we cannot construct while all data not filled
                     return;
@@ -304,18 +304,15 @@ public class GroovyEditorDialog extends GroovyEditorDialogType {
                 if (labels[i].getText().equals(defaultTransitionCombo.getText())) {
                     ifExpr = new IfExpr(labels[i].getText());
                 } else {
-                    Variable variable1 = (Variable) varBoxes[i][0].getData(DATA_VARIABLE_KEY);
-                    String operationName = operBoxes[i].getItem(operBoxes[i].getSelectionIndex());
-                    String lexem2Text = varBoxes[i][1].getText();
-                    Object lexem2;
-                    Variable variable2 = VariableUtils.getVariableByScriptingName(variables, lexem2Text);
-                    if (variable2 != null) {
-                        lexem2 = variable2;
-                    } else {
-                        lexem2 = lexem2Text;
-                    }
-                    GroovyTypeSupport typeSupport = GroovyTypeSupport.get(variable1.getJavaClassName());
-                    ifExpr = new IfExpr(labels[i].getText(), variable1, lexem2, Operation.getByName(operationName, typeSupport));
+                    Variable firstVariable = (Variable) variableBoxes[i][0].getData(DATA_VARIABLE_KEY);
+                    String operationName = operationBoxes[i].getItem(operationBoxes[i].getSelectionIndex());
+                    String secondVariableText = variableBoxes[i][1].getText();
+                    Object secondVariable = VariableUtils.getVariableByScriptingName(variables, secondVariableText);;
+                    if (secondVariable == null) {
+                        secondVariable = secondVariableText;
+                    } 
+                    GroovyTypeSupport typeSupport = GroovyTypeSupport.get(firstVariable.getJavaClassName());
+                    ifExpr = new IfExpr(labels[i].getText(), firstVariable, secondVariable, Operation.getByName(operationName, typeSupport));
                 }
                 decisionModel.addIfExpr(ifExpr);
             }
