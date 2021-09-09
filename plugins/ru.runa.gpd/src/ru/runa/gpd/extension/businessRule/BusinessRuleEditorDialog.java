@@ -37,11 +37,11 @@ public class BusinessRuleEditorDialog extends GroovyEditorDialogType {
     private static final int FIRST_VARIABLE_INDEX = 0;
     private static final int SECOND_VARIABLE_INDEX = 1;
     private static final int OPERATION_INDEX = 2;
-    
+
     protected static final String AND_LOGIC_EXPRESSION = "and";
     protected static final String OR_LOGIC_EXPRESSION = "or";
     protected static final String NULL_LOGIC_EXPRESSION = "null";
-    
+
     private static final Image addImage = SharedImages.getImage("icons/add_obj.gif");
     private static final Image downImage = SharedImages.getImage("icons/down.png");
     private List<ExpressionLine> expressionLines = new ArrayList();
@@ -138,143 +138,9 @@ public class BusinessRuleEditorDialog extends GroovyEditorDialogType {
         }
     }
 
-    private void createExpression(Composite parent, int indexLine) {
-        ExpressionLine expressionLine = expressionLines.get(indexLine);
-
-        Composite expressionComposite = new Composite(parent, SWT.NONE);
-        GridData data = new GridData(GridData.FILL_HORIZONTAL);
-        if (parent == constructor) {
-            expressionComposite.setLayout(new GridLayout(3, true));
-            data.horizontalSpan = 3;
-        } else {
-            expressionComposite.setLayout(new GridLayout(4, true));
-            data.horizontalSpan = 4;
-        }
-        expressionComposite.setLayoutData(data);
-
-        FilterBox[] variable = new FilterBox[2];
-        expressionLine.setVariableBox(variable);
-        int expressionIndex = expressionLine.getVariableBoxes().indexOf(variable);
-        variable[0] = new FilterBox(expressionComposite, VariableUtils.getVariableNamesForScripting(variables));
-        variable[0].setData(DATA_INDEX_KEY, new int[] { indexLine, expressionIndex, FIRST_VARIABLE_INDEX });
-        variable[0].setSelectionListener(new FilterBoxSelectionHandler());
-        variable[0].setLayoutData(getGridData());
-        variable[0].setSize(100, 20);
-
-        Combo operation = new Combo(expressionComposite, SWT.READ_ONLY);
-        expressionLine.setOperationBox(operation);
-        operation.setData(DATA_INDEX_KEY, new int[] { indexLine, expressionIndex, OPERATION_INDEX });
-        operation.addSelectionListener(new ComboSelectionHandler());
-        operation.setLayoutData(getGridData());
-
-        variable[1] = new FilterBox(expressionComposite, null);
-        variable[1].setData(DATA_INDEX_KEY, new int[] { indexLine, expressionIndex, SECOND_VARIABLE_INDEX });
-        variable[1].setSelectionListener(new FilterBoxSelectionHandler());
-        variable[1].setLayoutData(getGridData());
-        variable[1].setSize(100, 20);
-
-        if (expressionIndex == 0 || expressionIndex == 1) {
-            variable[0].setSelectionListener(new SyncFilterBoxHandler());
-            operation.addSelectionListener(new SyncComboHandler());
-            variable[1].setSelectionListener(new SyncFilterBoxHandler());
-        }
-
-        Combo logicBox = new Combo(expressionComposite, SWT.READ_ONLY);
-        expressionLine.setLogicBox(logicBox);
-        logicBox.setItems(NULL_LOGIC_EXPRESSION, AND_LOGIC_EXPRESSION, OR_LOGIC_EXPRESSION);
-        logicBox.setLayoutData(getGridData());
-        logicBox.select(0);
-        logicBox.setData(logicBox.getText());
-        logicBox.addSelectionListener(new LoggingSelectionAdapter() {
-            @Override
-            protected void onSelection(SelectionEvent e) throws Exception {
-                Combo combo = (Combo) e.getSource();
-                if (combo.getData().equals(NULL_LOGIC_EXPRESSION) && !combo.getText().equals(NULL_LOGIC_EXPRESSION)) {
-                    combo.setData(combo.getText());
-                    createExpression(parent, indexLine);
-                    constructor.layout();
-                } else if (combo.getText().equals(NULL_LOGIC_EXPRESSION) && !combo.getData().equals(NULL_LOGIC_EXPRESSION)) {
-                    combo.setData(combo.getText());
-                    int logicExpressionIndex = expressionLine.getLogicBoxes().indexOf(combo);
-                    while (logicExpressionIndex < parent.getChildren().length) {
-                        parent.getChildren()[logicExpressionIndex].dispose();
-                        expressionLine.getVariableBoxes().remove(logicExpressionIndex + 1);
-                        expressionLine.getOperationBoxes().remove(logicExpressionIndex + 1);
-                        expressionLine.getLogicBoxes().remove(logicExpressionIndex + 1);
-                        constructor.layout();
-                    }
-                }
-            }
-        });
-        if (parent == constructor) {
-            logicBox.setVisible(false);
-            ((GridData) logicBox.getLayoutData()).exclude = true;
-        }
-        if (expressionLine.getVariableBoxes().size() > 2) {
-            expressionLine.getExpressionButton().setBackground(new Color(Display.getCurrent(), 255, 219, 222));
-        }
-
-        expressionComposite.pack();
-    }
-
     private void createExpressionLine() {
         ExpressionLine expressionLine = new ExpressionLine();
         expressionLines.add(expressionLine);
-        createExpression(constructor, expressionLines.size() - 1);
-
-        Button functionButton = new Button(constructor, SWT.NONE);
-        expressionLine.setFunctionButton(functionButton);
-        functionButton.setLayoutData(getGridData());
-        functionButton.setData(expressionLines.size() - 1);
-        functionButton.setText(Localization.getString("GroovyEditor.functionButton") + expressionLines.size());
-        functionButton.addSelectionListener(new LoggingSelectionAdapter() {
-            @Override
-            protected void onSelection(SelectionEvent e) throws Exception {
-                FormulaCellEditorProvider.ConfigurationDialog dialog = new FormulaCellEditorProvider.ConfigurationDialog(functionButton.getText(),
-                        variableNames);
-                if (dialog.open() == Window.OK) {
-                    functionButton.setText(dialog.getResult());
-                }
-            }
-        });
-
-        Button addFunctionButton = new Button(constructor, SWT.PUSH);
-        addFunctionButton.setImage(addImage);
-        addFunctionButton.addSelectionListener(new LoggingSelectionAdapter() {
-            @Override
-            protected void onSelection(SelectionEvent e) throws Exception {
-                constructor.getChildren()[constructor.getChildren().length - 1].dispose();
-                createExpressionLine();
-                createBottomComposite();
-                constructor.layout();
-            }
-        });
-
-        Button addExpressionButton = new Button(constructor, SWT.TOGGLE);
-        expressionLine.setExpressionButton(addExpressionButton);
-        addExpressionButton.moveAbove(addFunctionButton);
-        addExpressionButton.setToolTipText(Localization.getString("GroovyEditor.complexCondition"));
-        addExpressionButton.setImage(downImage);
-        addExpressionButton.setData(expressionLines.size() - 1);
-        addExpressionButton.addSelectionListener(new LoggingSelectionAdapter() {
-            @Override
-            protected void onSelection(SelectionEvent e) throws Exception {
-                if (addExpressionButton.getSelection()) {
-                    Composite complexExpression = expressionLines.get((int) addExpressionButton.getData()).getComplexExpression();
-                    complexExpression.setVisible(true);
-                    ((GridData) complexExpression.getLayoutData()).exclude = false;
-                    complexExpression.moveBelow(addFunctionButton);
-                    constructor.layout();
-                } else {
-                    Composite complexExpression = expressionLines.get((int) addExpressionButton.getData()).getComplexExpression();
-                    complexExpression.setVisible(false);
-                    ((GridData) complexExpression.getLayoutData()).exclude = true;
-                    constructor.layout();
-                }
-            }
-        });
-
-        expressionLine.createComplexExpressionBody();
     }
 
     @Override
@@ -308,7 +174,7 @@ public class BusinessRuleEditorDialog extends GroovyEditorDialogType {
                     int secondVariableIndex = 0;
                     boolean secondVariableIsNotUserInput = VariableUtils.getVariableByScriptingName(variables, secondVariableText) != null
                             && (VariableUtils.getVariableByScriptingName(variables, secondVariableText).getJavaClassName())
-                            .equals(firstVariable.getJavaClassName());
+                                    .equals(firstVariable.getJavaClassName());
                     if (secondVariableIsNotUserInput) {
                         secondVariableIndex = getSecondVariableNames(firstVariable).indexOf(secondVariableText);
                     } else {
@@ -465,6 +331,8 @@ public class BusinessRuleEditorDialog extends GroovyEditorDialogType {
         private int lineIndex;
 
         public ExpressionLine() {
+            lineIndex = expressionLines.size();
+            createExpression(constructor);
             complexExpression = new Composite(constructor, SWT.BORDER);
             GridData data = new GridData(GridData.FILL_HORIZONTAL);
             data.horizontalSpan = 6;
@@ -472,53 +340,152 @@ public class BusinessRuleEditorDialog extends GroovyEditorDialogType {
             complexExpression.setLayout(new GridLayout(1, true));
             complexExpression.setVisible(false);
             data.exclude = true;
+            functionButton = new Button(constructor, SWT.NONE);
+            functionButton.setLayoutData(getGridData());
+            functionButton.setData(expressionLines.size());
+            functionButton.setText(Localization.getString("GroovyEditor.functionButton") + expressionLines.size());
+            functionButton.addSelectionListener(new LoggingSelectionAdapter() {
+                @Override
+                protected void onSelection(SelectionEvent e) throws Exception {
+                    FormulaCellEditorProvider.ConfigurationDialog dialog = new FormulaCellEditorProvider.ConfigurationDialog(functionButton.getText(),
+                            variableNames);
+                    if (dialog.open() == Window.OK) {
+                        functionButton.setText(dialog.getResult());
+                    }
+                }
+            });
+
+            Button addLineButton = new Button(constructor, SWT.PUSH);
+            addLineButton.setImage(addImage);
+            addLineButton.addSelectionListener(new LoggingSelectionAdapter() {
+                @Override
+                protected void onSelection(SelectionEvent e) throws Exception {
+                    constructor.getChildren()[constructor.getChildren().length - 1].dispose();
+                    createExpressionLine();
+                    createBottomComposite();
+                    constructor.layout();
+                }
+            });
+
+            addExpressionButton = new Button(constructor, SWT.TOGGLE);
+            addExpressionButton.moveAbove(addLineButton);
+            addExpressionButton.setToolTipText(Localization.getString("GroovyEditor.complexCondition"));
+            addExpressionButton.setImage(downImage);
+            addExpressionButton.setData(expressionLines.size());
+            addExpressionButton.addSelectionListener(new LoggingSelectionAdapter() {
+                @Override
+                protected void onSelection(SelectionEvent e) throws Exception {
+                    if (addExpressionButton.getSelection()) {
+                        complexExpression.setVisible(true);
+                        ((GridData) complexExpression.getLayoutData()).exclude = false;
+                        complexExpression.moveBelow(addLineButton);
+                        constructor.layout();
+                    } else {
+                        complexExpression.setVisible(false);
+                        ((GridData) complexExpression.getLayoutData()).exclude = true;
+                        constructor.layout();
+                    }
+                }
+            });
+
+            createComplexExpressionBody();
         }
 
         public void createComplexExpressionBody() {
-            lineIndex = expressionLines.indexOf(this);
-            createExpression(complexExpression, lineIndex);
+            createExpression(complexExpression);
             if (initModel != null) {
                 List<IfExpr> ifExprs = ((BusinessRuleModel) initModel).getIfExprs();
                 if (ifExprs.size() > lineIndex) {
                     IfExpr ifExpr = ifExprs.get(lineIndex);
                     for (int j = 2; j < ifExpr.getFirstVariables().size(); j++) {
-                        createExpression(complexExpression, lineIndex);
+                        createExpression(complexExpression);
                     }
                 }
             }
         }
 
-        public Composite getComplexExpression() {
-            return complexExpression;
+        private void createExpression(Composite parent) {
+            Composite expressionComposite = new Composite(parent, SWT.NONE);
+            GridData data = new GridData(GridData.FILL_HORIZONTAL);
+            if (parent == constructor) {
+                expressionComposite.setLayout(new GridLayout(3, true));
+                data.horizontalSpan = 3;
+            } else {
+                expressionComposite.setLayout(new GridLayout(4, true));
+                data.horizontalSpan = 4;
+            }
+            expressionComposite.setLayoutData(data);
+
+            FilterBox[] variable = new FilterBox[2];
+            variableBoxes.add(variable);
+            int expressionIndex = variableBoxes.indexOf(variable);
+            variable[0] = new FilterBox(expressionComposite, VariableUtils.getVariableNamesForScripting(variables));
+            variable[0].setData(DATA_INDEX_KEY, new int[] { expressionLines.size(), expressionIndex, FIRST_VARIABLE_INDEX });
+            variable[0].setSelectionListener(new FilterBoxSelectionHandler());
+            variable[0].setLayoutData(getGridData());
+            variable[0].setSize(100, 20);
+
+            Combo operation = new Combo(expressionComposite, SWT.READ_ONLY);
+            operationBoxes.add(operation);
+            operation.setData(DATA_INDEX_KEY, new int[] { expressionLines.size(), expressionIndex, OPERATION_INDEX });
+            operation.addSelectionListener(new ComboSelectionHandler());
+            operation.setLayoutData(getGridData());
+
+            variable[1] = new FilterBox(expressionComposite, null);
+            variable[1].setData(DATA_INDEX_KEY, new int[] { expressionLines.size(), expressionIndex, SECOND_VARIABLE_INDEX });
+            variable[1].setSelectionListener(new FilterBoxSelectionHandler());
+            variable[1].setLayoutData(getGridData());
+            variable[1].setSize(100, 20);
+
+            if (expressionIndex == 0 || expressionIndex == 1) {
+                variable[0].setSelectionListener(new SyncFilterBoxHandler());
+                operation.addSelectionListener(new SyncComboHandler());
+                variable[1].setSelectionListener(new SyncFilterBoxHandler());
+            }
+
+            Combo logicBox = new Combo(expressionComposite, SWT.READ_ONLY);
+            logicBoxes.add(logicBox);
+            logicBox.setItems(NULL_LOGIC_EXPRESSION, AND_LOGIC_EXPRESSION, OR_LOGIC_EXPRESSION);
+            logicBox.setLayoutData(getGridData());
+            logicBox.select(0);
+            logicBox.setData(logicBox.getText());
+            logicBox.addSelectionListener(new LoggingSelectionAdapter() {
+                @Override
+                protected void onSelection(SelectionEvent e) throws Exception {
+                    Combo combo = (Combo) e.getSource();
+                    if (combo.getData().equals(NULL_LOGIC_EXPRESSION) && !combo.getText().equals(NULL_LOGIC_EXPRESSION)) {
+                        combo.setData(combo.getText());
+                        createExpression(parent);
+                        constructor.layout();
+                    } else if (combo.getText().equals(NULL_LOGIC_EXPRESSION) && !combo.getData().equals(NULL_LOGIC_EXPRESSION)) {
+                        combo.setData(combo.getText());
+                        int logicExpressionIndex = logicBoxes.indexOf(combo);
+                        while (logicExpressionIndex < parent.getChildren().length) {
+                            parent.getChildren()[logicExpressionIndex].dispose();
+                            variableBoxes.remove(logicExpressionIndex + 1);
+                            operationBoxes.remove(logicExpressionIndex + 1);
+                            logicBoxes.remove(logicExpressionIndex + 1);
+                            constructor.layout();
+                        }
+                    }
+                }
+            });
+            if (parent == constructor) {
+                logicBox.setVisible(false);
+                ((GridData) logicBox.getLayoutData()).exclude = true;
+            }
+            if (variableBoxes.size() > 2) {
+                addExpressionButton.setBackground(new Color(Display.getCurrent(), 255, 219, 222));
+            }
+
+            expressionComposite.pack();
         }
+
 
         public Button getFunctionButton() {
             return functionButton;
         }
 
-        public void setFunctionButton(Button functionButton) {
-            this.functionButton = functionButton;
-        }
-
-        public Button getExpressionButton() {
-            return addExpressionButton;
-        }
-
-        public void setExpressionButton(Button button) {
-            addExpressionButton = button;
-        }
-
-        public void setVariableBox(FilterBox[] filterBox) {
-            variableBoxes.add(filterBox);
-        }
-
-        public void setOperationBox(Combo operationCombo) {
-            operationBoxes.add(operationCombo);
-        }
-
-        public void setLogicBox(Combo logicBox) {
-            logicBoxes.add(logicBox);
-        }
 
         public List<FilterBox[]> getVariableBoxes() {
             return variableBoxes;
