@@ -67,10 +67,9 @@ public class BusinessRuleModel implements GroovyModel {
                 }
                 String ifContent = normalizeString(ifc[j]);
                 String[] strings = ifContent.split(" ");
-                // tmp
-                String lexem1Text = "";
+                String firstVariableText = "";
                 String operator;
-                String lexem2Text = "";
+                String secondVariableText = "";
                 boolean isOperationDateType = false;
                 if (strings.length == 1 || ifContent.indexOf("\"") > 0) {
                     // i.e. var1.equals(var2) or var1.contains(var2)
@@ -86,29 +85,29 @@ public class BusinessRuleModel implements GroovyModel {
                         start = 1;
                         operator = "!=";
                     }
-                    lexem1Text = ifContent.substring(start, ifContent.indexOf("."));
-                    lexem2Text = ifContent.substring(ifContent.indexOf("(") + 1, ifContent.length() - 1);
+                    firstVariableText = ifContent.substring(start, ifContent.indexOf("."));
+                    secondVariableText = ifContent.substring(ifContent.indexOf("(") + 1, ifContent.length() - 1);
                 } else if (ifContent.contains("ru.runa.wfe.commons.CalendarUtil.dateToCalendar") && ifContent.endsWith(" 0")) {
                     // GroovyTypeSupport.DateType
                     isOperationDateType = true;
                     String[] parts = strings[0].split("\\.compareTo\\(");
-                    lexem1Text = parts[0].substring(parts[0].lastIndexOf("(") + 1, parts[0].indexOf(")"));
-                    lexem2Text = parts[1].substring(parts[1].lastIndexOf("(") + 1, parts[1].indexOf(")"));
+                    firstVariableText = parts[0].substring(parts[0].lastIndexOf("(") + 1, parts[0].indexOf(")"));
+                    secondVariableText = parts[1].substring(parts[1].lastIndexOf("(") + 1, parts[1].indexOf(")"));
                     operator = strings[1];
                 } else if (ifContent.contains("BigDecimal") && ifContent.endsWith(" 0")) {
                     // GroovyTypeSupport.BigDecimalType
                     isOperationDateType = false;
-                    lexem1Text = strings[2];
-                    lexem2Text = strings[6];
+                    firstVariableText = strings[2];
+                    secondVariableText = strings[6];
                     operator = strings[9];
                 } else {
-                    lexem1Text = strings[0];
+                    firstVariableText = strings[0];
                     operator = strings[1];
                     if (strings.length == 3) {
-                        lexem2Text = strings[2];
+                        secondVariableText = strings[2];
                     } else {
                         for (int i = 2; i < strings.length; i++) {
-                            lexem2Text += " " + strings[i];
+                            secondVariableText += " " + strings[i];
                         }
                     }
                 }
@@ -119,11 +118,11 @@ public class BusinessRuleModel implements GroovyModel {
                 } else {
                     throw new RuntimeException("unparsed");
                 }
-                if (lexem1Text.indexOf(".") > 0 && !isOperationDateType) {
+                if (firstVariableText.indexOf(".") > 0 && !isOperationDateType) {
                     // Java names doesn't allowed use of point in variable name
-                    lexem1Text = lexem1Text.substring(0, lexem1Text.lastIndexOf("."));
+                    firstVariableText = firstVariableText.substring(0, firstVariableText.lastIndexOf("."));
                 }
-                Variable variable1 = VariableUtils.getVariableByScriptingName(variables, lexem1Text);
+                Variable variable1 = VariableUtils.getVariableByScriptingName(variables, firstVariableText);
                 if (variable1 == null) {
                     // variable deleted
                     continue;
@@ -134,21 +133,21 @@ public class BusinessRuleModel implements GroovyModel {
                     throw new RuntimeException("Operation not found for operator: " + operator);
                 }
                 Object lexem2;
-                if (lexem2Text.indexOf(".") > 0 && !isOperationDateType) {
+                if (secondVariableText.indexOf(".") > 0 && !isOperationDateType) {
                     try {
-                        Double.parseDouble(lexem2Text);
+                        Double.parseDouble(secondVariableText);
                     } catch (NumberFormatException e) {
                         // Java names doesn't allowed use of point in variable name
-                        lexem2Text = lexem2Text.substring(0, lexem2Text.lastIndexOf("."));
+                        secondVariableText = secondVariableText.substring(0, secondVariableText.lastIndexOf("."));
                     }
                 }
-                Variable variable2 = VariableUtils.getVariableByScriptingName(variables, lexem2Text);
+                Variable variable2 = VariableUtils.getVariableByScriptingName(variables, secondVariableText);
                 if (variable2 != null) {
                     lexem2 = variable2;
-                } else if (Operation.VOID.equals(lexem2Text) || Operation.NULL.equals(lexem2Text)) {
+                } else if (Operation.VOID.equals(secondVariableText) || Operation.NULL.equals(secondVariableText)) {
                     lexem2 = "null";
                 } else {
-                    lexem2 = typeSupport.unwrapValue(lexem2Text);
+                    lexem2 = typeSupport.unwrapValue(secondVariableText);
                 }
                 if (firstVariables.size() == 0) {
                     firstVariables.add(variable1);
