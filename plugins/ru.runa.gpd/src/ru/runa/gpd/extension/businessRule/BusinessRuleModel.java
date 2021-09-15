@@ -122,17 +122,17 @@ public class BusinessRuleModel implements GroovyModel {
                     // Java names doesn't allowed use of point in variable name
                     firstVariableText = firstVariableText.substring(0, firstVariableText.lastIndexOf("."));
                 }
-                Variable variable1 = VariableUtils.getVariableByScriptingName(variables, firstVariableText);
-                if (variable1 == null) {
+                Variable firstVariable = VariableUtils.getVariableByScriptingName(variables, firstVariableText);
+                if (firstVariable == null) {
                     // variable deleted
                     continue;
                 }
-                GroovyTypeSupport typeSupport = GroovyTypeSupport.get(variable1.getJavaClassName());
+                GroovyTypeSupport typeSupport = GroovyTypeSupport.get(firstVariable.getJavaClassName());
                 Operation operation = Operation.getByOperator(operator, typeSupport);
                 if (operation == null) {
                     throw new RuntimeException("Operation not found for operator: " + operator);
                 }
-                Object lexem2;
+                Object secondVariable;
                 if (secondVariableText.indexOf(".") > 0 && !isOperationDateType) {
                     try {
                         Double.parseDouble(secondVariableText);
@@ -141,24 +141,24 @@ public class BusinessRuleModel implements GroovyModel {
                         secondVariableText = secondVariableText.substring(0, secondVariableText.lastIndexOf("."));
                     }
                 }
-                Variable variable2 = VariableUtils.getVariableByScriptingName(variables, secondVariableText);
-                if (variable2 != null) {
-                    lexem2 = variable2;
+                Variable variable = VariableUtils.getVariableByScriptingName(variables, secondVariableText);
+                if (variable != null) {
+                    secondVariable = variable;
                 } else if (Operation.VOID.equals(secondVariableText) || Operation.NULL.equals(secondVariableText)) {
-                    lexem2 = "null";
+                    secondVariable = "null";
                 } else {
-                    lexem2 = typeSupport.unwrapValue(secondVariableText);
+                    secondVariable = typeSupport.unwrapValue(secondVariableText);
                 }
                 if (firstVariables.size() == 0) {
-                    firstVariables.add(variable1);
-                    secondVariables.add(lexem2);
+                    firstVariables.add(firstVariable);
+                    secondVariables.add(secondVariable);
                     operations.add(operation);
-                    firstVariables.add(variable1);
-                    secondVariables.add(lexem2);
+                    firstVariables.add(firstVariable);
+                    secondVariables.add(secondVariable);
                     operations.add(operation);
                 } else {
-                    firstVariables.add(variable1);
-                    secondVariables.add(lexem2);
+                    firstVariables.add(firstVariable);
+                    secondVariables.add(secondVariable);
                     operations.add(operation);
                 }
             }

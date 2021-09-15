@@ -107,9 +107,9 @@ public class GroovyDecisionModel implements GroovyModel {
                     secondVariableText = secondVariableText.substring(0, secondVariableText.lastIndexOf("."));
                 }
             }
-            Variable variable2 = VariableUtils.getVariableByScriptingName(variables, secondVariableText);
-            if (variable2 != null) {
-                secondVariable = variable2;
+            Variable variable = VariableUtils.getVariableByScriptingName(variables, secondVariableText);
+            if (variable != null) {
+                secondVariable = variable;
             } else if (Operation.VOID.equals(secondVariableText) || Operation.NULL.equals(secondVariableText)) {
                 secondVariable = "null";
             } else {
