@@ -156,20 +156,20 @@ public class GroovyEditorDialog extends GroovyEditorDialogType {
                     }
                     operationBoxes[i].select(index);
                     refresh(operationBoxes[i]);
-                    String lexem2Text = ifExpr.getSecondVariableTextValue();
-                    int var2index = 0;
-                    if (VariableUtils.getVariableByScriptingName(variables, lexem2Text) != null) {
-                        var2index = getSecondVariableNames(variable).indexOf(lexem2Text);
+                    String secondVariableText = ifExpr.getSecondVariableTextValue();
+                    int secondVariableindex = 0;
+                    if (VariableUtils.getVariableByScriptingName(variables, secondVariableText) != null) {
+                        secondVariableindex = getSecondVariableNames(variable).indexOf(secondVariableText);
                     } else {
-                        int predefinedIndex = typeSupport.getPredefinedValues(ifExpr.getOperation()).indexOf(lexem2Text);
+                        int predefinedIndex = typeSupport.getPredefinedValues(ifExpr.getOperation()).indexOf(secondVariableText);
                         if (predefinedIndex >= 0) {
-                            var2index = getSecondVariableNames(variable).size() + predefinedIndex;
+                            secondVariableindex = getSecondVariableNames(variable).size() + predefinedIndex;
                         } else {
-                            variableBoxes[i][1].add(lexem2Text, 0);
-                            variableBoxes[i][1].setData(DATA_USER_INPUT_KEY, lexem2Text);
+                            variableBoxes[i][1].add(secondVariableText, 0);
+                            variableBoxes[i][1].setData(DATA_USER_INPUT_KEY, secondVariableText);
                         }
                     }
-                    variableBoxes[i][1].select(var2index);
+                    variableBoxes[i][1].select(secondVariableindex);
                 }
             }
         }
