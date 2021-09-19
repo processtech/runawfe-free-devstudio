@@ -1,5 +1,6 @@
 package ru.runa.gpd.util;
 
+import com.google.common.base.Strings;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.CoreException;
