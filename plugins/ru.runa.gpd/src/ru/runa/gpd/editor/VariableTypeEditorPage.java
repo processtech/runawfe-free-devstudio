@@ -1,15 +1,11 @@
 package ru.runa.gpd.editor;
 
-import com.google.common.base.Function;
-import com.google.common.base.Joiner;
-import com.google.common.base.Objects;
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import java.beans.PropertyChangeEvent;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -38,6 +34,13 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
+
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.base.Objects;
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
+
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.SharedImages;
@@ -56,6 +59,7 @@ import ru.runa.gpd.ltk.RenameUserTypeAttributeRefactoring;
 import ru.runa.gpd.search.ElementMatch;
 import ru.runa.gpd.search.MultiVariableSearchQuery;
 import ru.runa.gpd.settings.CommonPreferencePage;
+import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.ui.custom.DragAndDropAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.custom.TableViewerLocalDragAndDropSupport;
@@ -694,6 +698,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
                 query.run(null);
                 Object[] elements = query.getSearchResult().getElements();
                 Set<FormNode> affectedFormNodes = new HashSet<>();
+                StringBuilder formNames = new StringBuilder();
                 if (elements.length > 0) {
                     List<String> elementLabels = Lists.newArrayList();
                     for (Object element : elements) {
@@ -703,17 +708,23 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
                         if (nge instanceof FormNode) {
                             affectedFormNodes.add((FormNode) nge);
                         }
+                        formNames.append(Localization.getString("Variable.ExistInElements")).append("\n\n");
                     }
-                    StringBuilder formNames = new StringBuilder(Localization.getString("Variable.ExistInElements")).append("\n\n");
                     elementLabels.stream().sorted().forEach(label -> formNames.append("- ").append(label).append("\n"));
                     formNames.append("\n").append(Localization.getString("Variable.WillBeRemovedFromFormAuto"));
-                    if (!MessageDialog.openConfirm(Display.getCurrent().getActiveShell(), Localization.getString("confirm.delete"),
-                            formNames.toString())) {
-                        continue;
-                    }
                 }
-                ParContentProvider.rewriteFormValidationsRemoveVariable(editor.getDefinitionFile(), affectedFormNodes, variableNamesToBeRemoved);
+                if (!Dialogs.confirm(Localization.getString("deletion.allEditorsWillBeSaved") + "\n\n" + Localization.getString("confirm.delete"),
+                        formNames.toString())) {
+                    continue;
+                }
+                for (Variable variable : VariableUtils.findVariablesOfTypeWithAttributeExpanded(getDefinition(), getSelection(), attribute)) {
+                    ParContentProvider.rewriteFormValidationsRemoveVariable(editor.getDefinitionFile(), affectedFormNodes,
+                            variable.getName());
+                }
                 getSelection().removeAttribute(attribute);
+
+                IResource projectRoot = editor.getDefinitionFile().getParent();
+                IDE.saveAllEditors(new IResource[] { projectRoot }, false);
             }
         }
     }
