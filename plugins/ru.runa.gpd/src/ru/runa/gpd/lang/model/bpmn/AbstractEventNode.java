@@ -7,11 +7,10 @@ import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.MessageNode;
-import ru.runa.gpd.lang.model.ProcessDefinition;
 
 public class AbstractEventNode extends MessageNode {
     private static String[] EVENT_NODE_TYPE_NAMES;
-    private EventNodeType eventNodeType;
+    private EventNodeType eventNodeType = EventNodeType.message;
 
     static {
         List<String> eventNodeTypeNames = Lists.newArrayList();
@@ -19,16 +18,6 @@ public class AbstractEventNode extends MessageNode {
             eventNodeTypeNames.add(Localization.getString("event.node.type." + eventNodeType.name().toLowerCase()));
         }
         EVENT_NODE_TYPE_NAMES = eventNodeTypeNames.toArray(new String[eventNodeTypeNames.size()]);
-    }
-
-    @Override
-    public void setParent(GraphElement parent) {
-        super.setParent(parent);
-        if (parent instanceof ProcessDefinition) {
-            eventNodeType = EventNodeType.message;
-        } else {
-            eventNodeType = EventNodeType.signal;
-        }
     }
 
     public EventNodeType getEventNodeType() {

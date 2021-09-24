@@ -60,6 +60,7 @@ import ru.runa.gpd.util.EmbeddedFileUtils;
 import ru.runa.gpd.util.VariableUtils;
 import ru.runa.gpd.util.VariablesUsageXlsExporter;
 import ru.runa.gpd.util.WorkspaceOperations;
+import ru.runa.wfe.var.format.FileFormat;
 
 public class VariableEditorPage extends EditorPartBase<Variable> {
 
@@ -538,7 +539,9 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
             case 1:
                 return variable.getFormatLabel();
             case 2:
-                return Strings.nullToEmpty(variable.getDefaultValue());
+                return Strings.nullToEmpty(variable.getDefaultValue() != null && FileFormat.class.getName().equals(variable.getFormatClassName())
+                        ? EmbeddedFileUtils.getProcessFileName(variable.getDefaultValue())
+                        : variable.getDefaultValue());
             case 3:
                 return variable.getStoreType().getDescription();
             default:
