@@ -7,8 +7,17 @@ import com.google.common.io.CharStreams;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.Map;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLHandshakeException;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.soap.SOAPFaultException;
 import ru.runa.gpd.sync.WfeServerConnector;
@@ -244,6 +253,44 @@ public class WebServiceWfeServerConnector extends WfeServerConnector {
         if (version == null) {
             String url = settings.getUrl() + "/wfe/version";
             try {
+                if ("https".equals(settings.getProtocol())) {
+                    SSLContext sslContext = SSLContext.getInstance("SSL");
+                    if (settings.isAllowSslInsecure()) {
+                        TrustManager[] tr = new TrustManager[] { new javax.net.ssl.X509TrustManager() {
+
+                            @Override
+                            public void checkClientTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
+                            }
+
+                            @Override
+                            public void checkServerTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
+                            }
+
+                            @Override
+                            public X509Certificate[] getAcceptedIssuers() {
+                                return null;
+                            }
+
+                        } };
+                        sslContext.init(null, tr, new SecureRandom());
+
+                        HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
+                            @Override
+                            public boolean verify(String hostname, SSLSession session) {
+                                return true;
+                            }
+                        });
+                    } else {
+                        sslContext.init(null, null, new SecureRandom());
+                        HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
+                            @Override
+                            public boolean verify(String hostname, SSLSession session) {
+                                return false;
+                            }
+                        });
+                    }
+                    HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
+                }
                 InputStreamReader reader = new InputStreamReader(new URL(url).openStream());
                 version = CharStreams.toString(reader);
                 int colonIndex = version.indexOf(":");
@@ -251,6 +298,8 @@ public class WebServiceWfeServerConnector extends WfeServerConnector {
                     version = version.substring(colonIndex + 1);
                 }
                 reader.close();
+            }catch (SSLHandshakeException sslEx){
+                throw new RuntimeException("Ssl certificate is invalid for " + url);
             } catch (Exception e) {
                 throw new RuntimeException("Unable to acquire version using " + url, e);
             }
