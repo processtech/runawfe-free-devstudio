@@ -178,7 +178,6 @@ public abstract class GroovyEditorDialogType extends Dialog {
                 setErrorLabelText(initErrorMessage);
             }
         }
-        // test
         return tabFolder;
     }
 
