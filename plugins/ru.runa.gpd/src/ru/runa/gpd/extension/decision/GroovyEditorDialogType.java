@@ -39,7 +39,7 @@ public abstract class GroovyEditorDialogType extends Dialog {
     protected static final String DATA_VARIABLE_KEY = "variable";
     protected static final String DATA_USER_INPUT_KEY = "userInput";
     protected static final String DATA_OPERATION_KEY = "operation";
-    
+
     protected TabFolder tabFolder;
     protected StyledText styledText;
     protected Composite constructor;
@@ -168,20 +168,15 @@ public abstract class GroovyEditorDialogType extends Dialog {
         codeTab.setText(Localization.getString("GroovyEditor.title.code"));
         codeTab.setControl(sourceView);
         createConstructorView();
-        try {
-            if (initModel != null && initValue.equals(initModel.toString())) {
-                initConstructorView();
-            } else {
-                if (this.initValue.length() > 0) {
-                    tabFolder.setSelection(1);
-                }
-                if (initErrorMessage != null) {
-                    setErrorLabelText(initErrorMessage);
-                }
+        if (initModel != null && initValue.equals(initModel.toString())) {
+            initConstructorView();
+        } else {
+            if (this.initValue.length() > 0) {
+                tabFolder.setSelection(1);
             }
-        } catch (RuntimeException e) {
-            // Activate source view if custom code found
-            tabFolder.setSelection(1);
+            if (initErrorMessage != null) {
+                setErrorLabelText(initErrorMessage);
+            }
         }
         return tabFolder;
     }
