@@ -1,9 +1,10 @@
 package ru.runa.gpd.editor;
 
-import com.google.common.base.Charsets;
 import java.beans.PropertyChangeEvent;
 import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
 import java.util.List;
+
 import org.eclipse.core.internal.resources.Folder;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -27,6 +28,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
+
+import com.google.common.base.Charsets;
+
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.PropertyNames;
@@ -35,6 +39,7 @@ import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.lang.NodeRegistry;
 import ru.runa.gpd.lang.model.FormNode;
+import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
@@ -178,29 +183,33 @@ public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
     }
 
     private void delete(Swimlane swimlane) throws Exception {
-        boolean confirmationRequired = false;
         StringBuffer confirmationInfo = new StringBuffer();
-        List<FormNode> nodesWithVar = ParContentProvider.getFormsWhereVariableUsed(editor.getDefinitionFile(), getDefinition(), swimlane.getName());
-        if (nodesWithVar.size() > 0) {
-            confirmationInfo.append(Localization.getString("Swimlane.ExistInForms")).append("\n");
-            for (FormNode node : nodesWithVar) {
-                confirmationInfo.append(" - ").append(node.getName()).append("\n");
-            }
-            confirmationInfo.append(Localization.getString("Variable.WillBeRemovedFromFormAuto")).append("\n\n");
-            confirmationRequired = true;
-        }
+        List<FormNode> formNodes = new ArrayList<>();
         VariableSearchQuery query = new VariableSearchQuery(editor.getDefinitionFile(), getDefinition(), swimlane);
         NewSearchUI.runQueryInForeground(PlatformUI.getWorkbench().getActiveWorkbenchWindow(), query);
         SearchResult searchResult = query.getSearchResult();
         if (searchResult.getMatchCount() > 0) {
             confirmationInfo.append(Localization.getString("Swimlane.ExistInProcess")).append("\n");
+            StringBuilder existenceInFormsInfo = new StringBuilder();
+            existenceInFormsInfo.append(Localization.getString("Swimlane.ExistInForms")).append("\n");
+            boolean isExistenceInFormsInfoShown = false;
             for (Object element : searchResult.getElements()) {
                 confirmationInfo.append(" - ").append(element instanceof ElementMatch ? ((ElementMatch) element).toString(searchResult) : element)
                         .append("\n");
+                NamedGraphElement nge = (NamedGraphElement) ((ElementMatch) element).getGraphElement();
+                if (nge instanceof FormNode) {
+                    formNodes.add((FormNode) nge);
+                    existenceInFormsInfo.append(" - ").append(nge.getName()).append("\n");
+                    isExistenceInFormsInfoShown = true;
+                }
             }
-            confirmationRequired = true;
+            if (isExistenceInFormsInfoShown) {
+                existenceInFormsInfo.append(Localization.getString("Variable.WillBeRemovedFromFormAuto")).append("\n\n");
+                confirmationInfo.insert(0, existenceInFormsInfo);
+            }
         }
-        if (!confirmationRequired || Dialogs.confirm(Localization.getString("confirm.delete"), confirmationInfo.toString())) {
+        if (Dialogs.confirm(Localization.getString("deletion.allEditorsWillBeSaved") + "\n\n" + Localization.getString("confirm.delete"),
+                        confirmationInfo.toString())) {
             // clear swimlanes
             ProcessDefinition mainProcessDefinition = getDefinition().getMainProcessDefinition();
             for (SwimlanedNode node : mainProcessDefinition.getChildren(SwimlanedNode.class)) {
@@ -217,7 +226,7 @@ public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
             }
             // TODO remove variable from form validations in
             // EmbeddedSubprocesses
-            ParContentProvider.rewriteFormValidationsRemoveVariable(editor.getDefinitionFile(), nodesWithVar, swimlane.getName());
+            ParContentProvider.rewriteFormValidationsRemoveVariable(editor.getDefinitionFile(), formNodes, swimlane.getName());
             ProcessDefinitionRemoveSwimlaneCommand command = new ProcessDefinitionRemoveSwimlaneCommand();
             command.setProcessDefinition(getDefinition());
             command.setSwimlane(swimlane);
@@ -227,6 +236,9 @@ public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
             if (editor.getPartName().startsWith(".")) { // globals
                 replaceAllReferences(swimlane.getName(), null, null);
             }
+
+            IResource projectRoot = editor.getDefinitionFile().getParent();
+            IDE.saveAllEditors(new IResource[] { projectRoot }, false);
         }
     }
 

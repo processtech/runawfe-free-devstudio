@@ -1,15 +1,16 @@
 package ru.runa.gpd.lang.par;
 
-import com.google.common.collect.Lists;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
 import org.dom4j.Document;
 import org.dom4j.io.OutputFormat;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.ProcessDefinition;
@@ -83,33 +84,16 @@ public class ParContentProvider {
         }
     }
 
-    public static List<FormNode> getFormsWhereVariableUsed(IFile definitionFile, ProcessDefinition definition, String variableName) {
-        List<FormNode> result = new ArrayList<FormNode>();
-        List<FormNode> allNodes = definition.getChildren(FormNode.class);
-        for (FormNode formNode : allNodes) {
-            if (formNode.hasFormValidation()) {
-                FormNodeValidation validation = formNode.getValidation(definitionFile);
-                if (validation.getVariableNames().contains(variableName)) {
-                    result.add(formNode);
-                }
-            }
-        }
-        return result;
-    }
-
     public static void rewriteFormValidationsRemoveVariable(IFile definitionFile, Collection<FormNode> formNodes, String variableName) {
-        rewriteFormValidationsRemoveVariable(definitionFile, formNodes, Lists.newArrayList(variableName));
-    }
-
-    public static void rewriteFormValidationsRemoveVariable(IFile definitionFile, Collection<FormNode> formNodes, Collection<String> variableNames) {
         for (FormNode formNode : formNodes) {
             if (formNode.hasFormValidation()) {
                 IFile validationFile = IOUtils.getAdjacentFile(definitionFile, formNode.getValidationFileName());
                 FormNodeValidation validation = formNode.getValidation(validationFile);
-                for (String variableName : variableNames) {
-                    validation.getFieldConfigs().remove(variableName);
+                int initialSize = validation.getFieldConfigs().size();
+                validation.getFieldConfigs().remove(variableName);
+                if (initialSize != validation.getFieldConfigs().size()) {
+                    ValidatorParser.writeValidation(validationFile, formNode, validation, true);
                 }
-                ValidatorParser.writeValidation(validationFile, formNode, validation, true);
             }
         }
     }
