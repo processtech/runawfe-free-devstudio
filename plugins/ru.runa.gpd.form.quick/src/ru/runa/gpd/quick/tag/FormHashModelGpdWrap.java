@@ -1,22 +1,22 @@
 package ru.runa.gpd.quick.tag;
 
-import ru.runa.wfe.commons.web.WebHelper;
-import ru.runa.wfe.user.User;
-import ru.runa.wfe.var.IVariableProvider;
 import freemarker.template.ObjectWrapper;
 import freemarker.template.SimpleHash;
 import freemarker.template.TemplateModel;
 import freemarker.template.TemplateModelException;
+import ru.runa.wfe.commons.web.WebHelper;
+import ru.runa.wfe.user.User;
+import ru.runa.wfe.var.VariableProvider;
 
 public class FormHashModelGpdWrap extends SimpleHash {
 
     private static final long serialVersionUID = 1L;
 
     private final User user;
-    private final IVariableProvider variableProvider;
+    private final VariableProvider variableProvider;
     private final WebHelper webHelper;
 
-    public FormHashModelGpdWrap(User user, IVariableProvider variableProvider, WebHelper webHelper) {
+    public FormHashModelGpdWrap(User user, VariableProvider variableProvider, WebHelper webHelper) {
     	super(ObjectWrapper.BEANS_WRAPPER);
         this.user = user;
         this.variableProvider = variableProvider;

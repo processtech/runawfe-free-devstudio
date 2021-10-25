@@ -8,7 +8,7 @@ import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.BotTask;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.GraphElement;
-import ru.runa.wfe.definition.IFileDataProvider;
+import ru.runa.wfe.definition.FileDataProvider;
 import ru.runa.wfe.var.file.FileVariable;
 
 public class EmbeddedFileUtils {
@@ -18,16 +18,16 @@ public class EmbeddedFileUtils {
     }
 
     public static boolean isProcessFile(String path) {
-        return path != null && path.startsWith(IFileDataProvider.PROCESS_FILE_PROTOCOL);
+        return path != null && path.startsWith(FileDataProvider.PROCESS_FILE_PROTOCOL);
     }
 
     public static String getProcessFileName(String path) {
-        return path.substring(IFileDataProvider.PROCESS_FILE_PROTOCOL.length());
+        return path.substring(FileDataProvider.PROCESS_FILE_PROTOCOL.length());
     }
 
     public static String getProcessFilePath(String fileName) {
         if (!Strings.isNullOrEmpty(fileName)) {
-            return IFileDataProvider.PROCESS_FILE_PROTOCOL + fileName;
+            return FileDataProvider.PROCESS_FILE_PROTOCOL + fileName;
         }
         return fileName;
     }
@@ -75,7 +75,7 @@ public class EmbeddedFileUtils {
     }
 
     public static boolean isBotTaskFile(String path) {
-        return path != null && path.startsWith(IFileDataProvider.BOT_TASK_FILE_PROTOCOL);
+        return path != null && path.startsWith(FileDataProvider.BOT_TASK_FILE_PROTOCOL);
     }
 
     public static boolean isBotTaskFileName(String fileName, String botTaskName) {
@@ -91,12 +91,12 @@ public class EmbeddedFileUtils {
         if (!isBotTaskFile(path)) {
             throw new IllegalArgumentException(path);
         }
-        return path.replace(IFileDataProvider.BOT_TASK_FILE_PROTOCOL, "");
+        return path.replace(FileDataProvider.BOT_TASK_FILE_PROTOCOL, "");
     }
 
     public static String getBotTaskFilePath(String fileName) {
         if (!Strings.isNullOrEmpty(fileName)) {
-            return IFileDataProvider.BOT_TASK_FILE_PROTOCOL + fileName;
+            return FileDataProvider.BOT_TASK_FILE_PROTOCOL + fileName;
         }
         return fileName;
     }
