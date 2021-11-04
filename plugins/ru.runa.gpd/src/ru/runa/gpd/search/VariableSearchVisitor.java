@@ -59,16 +59,17 @@ public class VariableSearchVisitor {
     private int numberOfElementsToScan;
     private GraphElement currentElement = null;
     private final MultiStatus status;
-    private final Matcher matcher;
-    private final Matcher matcherWithBrackets;
-    private Matcher matcherScriptingName;
+    private final Matcher matcherByVariable;
+    private final Matcher scriptMatcherByVariable;
+    private final Matcher scriptMatcherByScriptingVariable;
 
     public VariableSearchVisitor(VariableSearchQuery query) {
         this.query = query;
         this.status = new MultiStatus(NewSearchUI.PLUGIN_ID, IStatus.OK, SearchMessages.TextSearchEngine_statusMessage, null);
-        this.matcher = Pattern.compile(String.format(REGEX_SCRIPT_VARIABLE, Pattern.quote(query.getSearchText()))).matcher("");
-        this.matcherScriptingName = Pattern.compile(String.format(REGEX_SCRIPT_VARIABLE, query.getVariable().getScriptingName())).matcher("");
-        this.matcherWithBrackets = Pattern.compile(Pattern.quote("\"" + query.getSearchText() + "\"")).matcher("");
+        this.scriptMatcherByVariable = Pattern.compile(String.format(REGEX_SCRIPT_VARIABLE, Pattern.quote(query.getSearchText()))).matcher("");
+        this.scriptMatcherByScriptingVariable = Pattern.compile(String.format(REGEX_SCRIPT_VARIABLE, query.getVariable().getScriptingName()))
+                .matcher("");
+        this.matcherByVariable = Pattern.compile(Pattern.quote(query.getSearchText())).matcher("");
     }
 
     public IStatus search(SearchResult searchResult, IProgressMonitor monitor) {
@@ -177,10 +178,10 @@ public class VariableSearchVisitor {
         IFile file = IOUtils.getAdjacentFile(definitionFile, ParContentProvider.FORM_JS_FILE_NAME);
         if (file.exists()) {
             ElementMatch elementMatch = new ElementMatch(processDefinition, file, ElementMatch.CONTEXT_FORM_SCRIPT);
-            List<Match> matches = findInFile(elementMatch, file, matcherScriptingName);
+            List<Match> matches = findInFile(elementMatch, file, scriptMatcherByScriptingVariable);
             elementMatch.setMatchesCount(matches.size());
             if (!query.getVariable().getName().equals(query.getVariable().getScriptingName())) {
-                matches.addAll(findInFile(elementMatch, file, matcher));
+                matches.addAll(findInFile(elementMatch, file, scriptMatcherByVariable));
             }
             elementMatch.setPotentialMatchesCount(matches.size() - elementMatch.getMatchesCount());
             for (Match match : matches) {
@@ -192,9 +193,9 @@ public class VariableSearchVisitor {
     private void processDelegableNode(IFile definitionFile, Delegable delegable) throws Exception {
         Matcher delegableMatcher;
         if (HandlerRegistry.SCRIPT_HANDLER_CLASS_NAMES.contains(delegable.getDelegationClassName())) {
-            delegableMatcher = matcherScriptingName;
+            delegableMatcher = scriptMatcherByScriptingVariable;
         } else {
-            delegableMatcher = matcher;
+            delegableMatcher = scriptMatcherByVariable;
         }
         String conf = delegable.getDelegationConfiguration();
         ElementMatch elementMatch = new ElementMatch((GraphElement) delegable, definitionFile);
@@ -205,7 +206,7 @@ public class VariableSearchVisitor {
         }
         if (matches.isEmpty() && !HandlerRegistry.SCRIPT_HANDLER_CLASS_NAMES.contains(delegable.getDelegationClassName())
                 && !query.getVariable().getName().equals(query.getVariable().getScriptingName())) {
-            matches = findInString(elementMatch, "(" + conf + ")", matcherScriptingName);
+            matches = findInString(elementMatch, "(" + conf + ")", scriptMatcherByScriptingVariable);
             elementMatch.setPotentialMatchesCount(matches.size());
             for (Match match : matches) {
                 query.getSearchResult().addMatch(match);
@@ -296,7 +297,7 @@ public class VariableSearchVisitor {
                     matchesCount++;
                 }
                 elementMatch.setMatchesCount(matchesCount);
-                List<Match> matches = findInFile(elementMatch, file, matcherWithBrackets);
+                List<Match> matches = findInFile(elementMatch, file, matcherByVariable);
                 elementMatch.setPotentialMatchesCount(matches.size() - matchesCount);
                 for (Match match : matches) {
                     query.getSearchResult().addMatch(match);
@@ -326,10 +327,10 @@ public class VariableSearchVisitor {
                 IFile file = IOUtils.getAdjacentFile(definitionFile, formNode.getScriptFileName());
                 ElementMatch elementMatch = new ElementMatch(formNode, file, ElementMatch.CONTEXT_FORM_SCRIPT);
                 elementMatch.setParent(nodeElementMatch);
-                List<Match> matches = findInFile(elementMatch, file, matcherScriptingName);
+                List<Match> matches = findInFile(elementMatch, file, scriptMatcherByScriptingVariable);
                 elementMatch.setMatchesCount(matches.size());
                 if (!query.getVariable().getName().equals(query.getVariable().getScriptingName())) {
-                    matches.addAll(findInFile(elementMatch, file, matcher));
+                    matches.addAll(findInFile(elementMatch, file, scriptMatcherByVariable));
                 }
                 elementMatch.setPotentialMatchesCount(matches.size() - elementMatch.getMatchesCount());
                 for (Match match : matches) {
@@ -361,7 +362,7 @@ public class VariableSearchVisitor {
                         if (botTask != null && botTask.getType() == BotTaskType.SIMPLE) {
                             ElementMatch elementMatch = new ElementMatch(taskState, BotCache.getBotTaskFile(botTask), ElementMatch.CONTEXT_BOT_TASK);
                             elementMatch.setParent(nodeElementMatch);
-                            List<Match> matches = findInString(elementMatch, botTask.getDelegationConfiguration(), matcher);
+                            List<Match> matches = findInString(elementMatch, botTask.getDelegationConfiguration(), scriptMatcherByVariable);
                             elementMatch.setPotentialMatchesCount(matches.size());
                             for (Match match : matches) {
                                 query.getSearchResult().addMatch(match);

@@ -1,8 +1,10 @@
 package ru.runa.gpd.editor;
 
 import com.google.common.base.Charsets;
+import com.google.common.base.Joiner;
 import java.beans.PropertyChangeEvent;
 import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.core.internal.resources.Folder;
 import org.eclipse.core.resources.IContainer;
@@ -30,7 +32,6 @@ import org.eclipse.ui.ide.IDE;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.PropertyNames;
-import ru.runa.gpd.editor.gef.command.ProcessDefinitionRemoveSwimlaneCommand;
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.lang.NodeRegistry;
@@ -178,56 +179,46 @@ public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
     }
 
     private void delete(Swimlane swimlane) throws Exception {
-        boolean confirmationRequired = false;
-        StringBuffer confirmationInfo = new StringBuffer();
-        List<FormNode> nodesWithVar = ParContentProvider.getFormsWhereVariableUsed(editor.getDefinitionFile(), getDefinition(), swimlane.getName());
-        if (nodesWithVar.size() > 0) {
-            confirmationInfo.append(Localization.getString("Swimlane.ExistInForms")).append("\n");
-            for (FormNode node : nodesWithVar) {
-                confirmationInfo.append(" - ").append(node.getName()).append("\n");
-            }
-            confirmationInfo.append(Localization.getString("Variable.WillBeRemovedFromFormAuto")).append("\n\n");
-            confirmationRequired = true;
-        }
+        List<String> confirmationInfo = new ArrayList<>();
+        List<FormNode> formNodes = new ArrayList<>();
         VariableSearchQuery query = new VariableSearchQuery(editor.getDefinitionFile(), getDefinition(), swimlane);
         NewSearchUI.runQueryInForeground(PlatformUI.getWorkbench().getActiveWorkbenchWindow(), query);
         SearchResult searchResult = query.getSearchResult();
         if (searchResult.getMatchCount() > 0) {
-            confirmationInfo.append(Localization.getString("Swimlane.ExistInProcess")).append("\n");
-            for (Object element : searchResult.getElements()) {
-                confirmationInfo.append(" - ").append(element instanceof ElementMatch ? ((ElementMatch) element).toString(searchResult) : element)
-                        .append("\n");
+            confirmationInfo.add(Localization.getString("UsagesFoundFor", swimlane.getName()) + ":\n");
+            for (Object object : searchResult.getElements()) {
+                ElementMatch elementMatch = (ElementMatch) object;
+                confirmationInfo.add(" * " + elementMatch.toString(searchResult));
+                if (elementMatch.getGraphElement() instanceof FormNode) {
+                    formNodes.add((FormNode) elementMatch.getGraphElement());
+                }
             }
-            confirmationRequired = true;
         }
-        if (!confirmationRequired || Dialogs.confirm(Localization.getString("confirm.delete"), confirmationInfo.toString())) {
-            // clear swimlanes
-            ProcessDefinition mainProcessDefinition = getDefinition().getMainProcessDefinition();
-            for (SwimlanedNode node : mainProcessDefinition.getChildren(SwimlanedNode.class)) {
+        if (!confirmationInfo.isEmpty()
+                && !Dialogs.confirm(Localization.getString("deletion.allEditorsWillBeSaved") + "\n\n" + Localization.getString("confirm.delete"),
+                        Joiner.on("\n").join(confirmationInfo))) {
+            return;
+        }
+        ProcessDefinition mainProcessDefinition = getDefinition().getMainProcessDefinition();
+        for (SwimlanedNode node : mainProcessDefinition.getChildren(SwimlanedNode.class)) {
+            if (swimlane.getName().equals(node.getSwimlaneName())) {
+                node.setSwimlane(null);
+            }
+        }
+        for (SubprocessDefinition subprocessDefinition : mainProcessDefinition.getEmbeddedSubprocesses().values()) {
+            for (SwimlanedNode node : subprocessDefinition.getChildren(SwimlanedNode.class)) {
                 if (swimlane.getName().equals(node.getSwimlaneName())) {
                     node.setSwimlane(null);
                 }
             }
-            for (SubprocessDefinition subprocessDefinition : mainProcessDefinition.getEmbeddedSubprocesses().values()) {
-                for (SwimlanedNode node : subprocessDefinition.getChildren(SwimlanedNode.class)) {
-                    if (swimlane.getName().equals(node.getSwimlaneName())) {
-                        node.setSwimlane(null);
-                    }
-                }
-            }
-            // TODO remove variable from form validations in
-            // EmbeddedSubprocesses
-            ParContentProvider.rewriteFormValidationsRemoveVariable(editor.getDefinitionFile(), nodesWithVar, swimlane.getName());
-            ProcessDefinitionRemoveSwimlaneCommand command = new ProcessDefinitionRemoveSwimlaneCommand();
-            command.setProcessDefinition(getDefinition());
-            command.setSwimlane(swimlane);
-            // TODO Ctrl+Z support (form validation)
-            // editor.getCommandStack().execute(command);
-            command.execute();
-            if (editor.getPartName().startsWith(".")) { // globals
-                replaceAllReferences(swimlane.getName(), null, null);
-            }
         }
+        ParContentProvider.rewriteFormValidationsRemoveVariable(formNodes, swimlane.getName());
+        getDefinition().removeChild(swimlane);
+        if (editor.getPartName().startsWith(".")) { // globals
+            replaceAllReferences(swimlane.getName(), null, null);
+        }
+        IResource projectRoot = editor.getDefinitionFile().getParent();
+        IDE.saveAllEditors(new IResource[] { projectRoot }, false);
     }
 
     private class MoveSwimlaneSelectionListener extends SelectionAdapter {

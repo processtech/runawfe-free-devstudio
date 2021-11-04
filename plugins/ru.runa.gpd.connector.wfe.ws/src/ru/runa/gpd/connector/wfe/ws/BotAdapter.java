@@ -1,10 +1,8 @@
 package ru.runa.gpd.connector.wfe.ws;
 
-import java.util.List;
-
-import ru.runa.wfe.bot.Bot;
-
 import com.google.common.collect.Lists;
+import java.util.List;
+import ru.runa.wfe.bot.Bot;
 
 public class BotAdapter {
 
@@ -12,7 +10,6 @@ public class BotAdapter {
         Bot result = new Bot();
         result.setId(bot.getId());
         result.setCreateDate(DateAdapter.toDTO(bot.getCreateDate()));
-        result.setPassword(bot.getPassword());
         result.setUsername(bot.getUsername());
         result.setVersion(bot.getVersion());
         return result;
@@ -30,7 +27,6 @@ public class BotAdapter {
         ru.runa.wfe.webservice.Bot result = new ru.runa.wfe.webservice.Bot();
         result.setId(bot.getId());
         result.setCreateDate(DateAdapter.toJAXB(bot.getCreateDate()));
-        result.setPassword(bot.getPassword());
         result.setUsername(bot.getUsername());
         result.setVersion(bot.getVersion());
         return result;

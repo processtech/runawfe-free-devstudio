@@ -29,7 +29,7 @@ public class ValidationUtil {
 
     public static IFile rewriteValidation(IFile file, FormNode formNode, FormNodeValidation validation) {
         IFile validationFile = IOUtils.getAdjacentFile(file, formNode.getValidationFileName());
-        ValidatorParser.writeValidation(validationFile, formNode, validation);
+        ValidatorParser.writeValidation(validationFile, formNode, validation, false);
         return validationFile;
     }
 

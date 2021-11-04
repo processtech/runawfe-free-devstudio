@@ -18,7 +18,14 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
+import javax.xml.ws.Dispatch;
+import javax.xml.ws.Service;
+import javax.xml.ws.soap.SOAPBinding;
 import javax.xml.ws.soap.SOAPFaultException;
 import ru.runa.gpd.sync.WfeServerConnector;
 import ru.runa.wfe.bot.Bot;
@@ -41,11 +48,10 @@ import ru.runa.wfe.webservice.DefinitionAPI;
 import ru.runa.wfe.webservice.DefinitionWebService;
 import ru.runa.wfe.webservice.ExecutorAPI;
 import ru.runa.wfe.webservice.ExecutorWebService;
+import ru.runa.wfe.webservice.Login;
 import ru.runa.wfe.webservice.Relation;
 import ru.runa.wfe.webservice.RelationAPI;
 import ru.runa.wfe.webservice.RelationWebService;
-import ru.runa.wfe.webservice.SystemAPI;
-import ru.runa.wfe.webservice.SystemWebService;
 import ru.runa.wfe.webservice.User;
 import ru.runa.wfe.webservice.WfExecutor;
 
@@ -298,7 +304,7 @@ public class WebServiceWfeServerConnector extends WfeServerConnector {
                     version = version.substring(colonIndex + 1);
                 }
                 reader.close();
-            }catch (SSLHandshakeException sslEx){
+            } catch (SSLHandshakeException sslEx) {
                 throw new RuntimeException("Ssl certificate is invalid for " + url);
             } catch (Exception e) {
                 throw new RuntimeException("Unable to acquire version using " + url, e);
@@ -313,13 +319,23 @@ public class WebServiceWfeServerConnector extends WfeServerConnector {
             connect();
         } else {
             try {
-                // check user is up to date
-                getSystemService().login(user);
+                // check user is up to date (dynamic way allows changes API in neighbor methods)
+                Service service = Service.create(new QName("http://impl.service.wfe.runa.ru/", "SystemWebService"));
+                QName portQName = new QName("http://impl.service.wfe.runa.ru/", "SystemAPI");
+                service.addPort(portQName, SOAPBinding.SOAP11HTTP_BINDING, getServiceUrl("System"));
+                JAXBContext jaxbContext = JAXBContext.newInstance(Login.class, LoginResponse.class);
+                Dispatch<Object> dispatch = service.createDispatch(portQName, jaxbContext, Service.Mode.PAYLOAD);
+                Login login = new Login();
+                login.setUser(user);
+                // dispatch.invokeOneWay(..) does not work here (did not show error) but in simple program does...
+                dispatch.invoke(new JAXBElement<Login>(new QName("http://impl.service.wfe.runa.ru/", "login"), Login.class, login));
             } catch (SOAPFaultException e) {
                 if (e.getMessage() == null || !e.getMessage().contains("Error in subject decryption")) {
                     Throwables.propagate(e);
                 }
                 connect();
+            } catch (Exception e) {
+                Throwables.propagate(e);
             }
         }
         return user;
@@ -360,18 +376,17 @@ public class WebServiceWfeServerConnector extends WfeServerConnector {
         return api;
     }
 
-    private SystemAPI getSystemService() {
-        String serviceUrl = getServiceUrl("System");
-        SystemAPI api = new SystemWebService(getWsdlUrl(serviceUrl)).getSystemAPIPort();
-        setApiEndpointAddress(api, serviceUrl);
-        return api;
-    }
-
     private RelationAPI getRelationService() {
         String serviceUrl = getServiceUrl("Relation");
         RelationAPI api = new RelationWebService(getWsdlUrl(serviceUrl)).getRelationAPIPort();
         setApiEndpointAddress(api, serviceUrl);
         return api;
+    }
+
+    // ru.runa.wfe.webservice.LoginResponse cannot be used due to lack of @XmlRootElement
+    @XmlRootElement(namespace = "http://impl.service.wfe.runa.ru/", name = "loginResponse")
+    private static class LoginResponse {
+
     }
 
 }

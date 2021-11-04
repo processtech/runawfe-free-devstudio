@@ -1,12 +1,12 @@
 package ru.runa.gpd.quick.tag;
 
-import ru.runa.wfe.commons.web.WebHelper;
-import ru.runa.wfe.user.User;
-import ru.runa.wfe.var.VariableProvider;
 import freemarker.template.ObjectWrapper;
 import freemarker.template.SimpleHash;
 import freemarker.template.TemplateModel;
 import freemarker.template.TemplateModelException;
+import ru.runa.wfe.commons.web.WebHelper;
+import ru.runa.wfe.user.User;
+import ru.runa.wfe.var.VariableProvider;
 
 public class FormHashModelGpdWrap extends SimpleHash {
 

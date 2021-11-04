@@ -5,6 +5,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import java.beans.PropertyChangeEvent;
+import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -35,7 +36,6 @@ import org.eclipse.ui.part.FileEditorInput;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.clipboard.VariableTransfer;
-import ru.runa.gpd.editor.gef.command.ProcessDefinitionRemoveVariablesCommand;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.model.Variable;
@@ -304,56 +304,40 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
     }
 
     private void delete(Variable variable) {
-        List<FormNode> nodesWithVar = ParContentProvider.getFormsWhereVariableUsed(editor.getDefinitionFile(), getDefinition(), variable.getName());
-        StringBuilder confirmationInfo = new StringBuilder();
-        boolean confirmationRequired = false;
-        if (nodesWithVar.size() > 0) {
-            confirmationInfo.append(Localization.getString("Variable.ExistInForms")).append("\n");
-            for (FormNode node : nodesWithVar) {
-                confirmationInfo.append(" - ").append(node.getName()).append("\n");
-            }
-            confirmationInfo.append(Localization.getString("Variable.WillBeRemovedFromFormAuto")).append("\n\n");
-            confirmationRequired = true;
-        }
-
-        List<Variable> result = Lists.newArrayList();
-        result.add(variable);
+        List<FormNode> formNodes = new ArrayList<>();
+        List<String> confirmationInfo = new ArrayList<>();
+        List<Variable> variablesToBeRemoved = Lists.newArrayList();
+        variablesToBeRemoved.add(variable);
         if (variable.isComplex()) {
-            result.addAll(VariableUtils.expandComplexVariable(variable, variable));
+            variablesToBeRemoved.addAll(VariableUtils.expandComplexVariable(variable, variable));
         }
-        String searchText = Joiner.on(", ").join(Lists.transform(result, joinVariableNamesFunction));
-        MultiVariableSearchQuery query = new MultiVariableSearchQuery(searchText, editor.getDefinitionFile(), getDefinition(), result);
+        String searchText = Joiner.on(", ").join(Lists.transform(variablesToBeRemoved, joinVariableNamesFunction));
+        MultiVariableSearchQuery query = new MultiVariableSearchQuery(searchText, editor.getDefinitionFile(), getDefinition(), variablesToBeRemoved);
         NewSearchUI.runQueryInForeground(PlatformUI.getWorkbench().getActiveWorkbenchWindow(), query);
         SearchResult searchResult = query.getSearchResult();
         if (searchResult.getMatchCount() > 0) {
-            confirmationInfo.append(Localization.getString("Variable.ExistInProcess")).append("\n");
-            for (Object element : searchResult.getElements()) {
-                confirmationInfo.append(" - ").append(element instanceof ElementMatch ? ((ElementMatch) element).toString(searchResult) : element)
-                        .append("\n");
+            confirmationInfo.add(Localization.getString("UsagesFoundFor", variable.getName()) + ":\n");
+            for (Object object : searchResult.getElements()) {
+                ElementMatch elementMatch = (ElementMatch) object;
+                confirmationInfo.add(" * " + elementMatch.toString(searchResult));
+                if (elementMatch.getGraphElement() instanceof FormNode) {
+                    formNodes.add((FormNode) elementMatch.getGraphElement());
+                }
             }
-            confirmationRequired = true;
         }
-
-        if (!confirmationRequired || Dialogs.confirm(Localization.getString("confirm.delete"), confirmationInfo.toString())) {
-            // TODO remove variable from form validations in
-            // EmbeddedSubprocesses
-            ParContentProvider.rewriteFormValidationsRemoveVariable(editor.getDefinitionFile(), nodesWithVar, variable.getName());
-            // remove variable from definition
-            ProcessDefinitionRemoveVariablesCommand command = new ProcessDefinitionRemoveVariablesCommand();
-            command.setProcessDefinition(getDefinition());
-            command.setVariable(variable);
-            // TODO Ctrl+Z support (form validation)
-            // editor.getCommandStack().execute(command);
-
-            // Warning: You can't undo delete operation for file variable with default value
-            // because of next code deletes the file
-            IFile file = getDefaultValueAsFile(variable);
-            if (null != file) {
-                EmbeddedFileUtils.deleteProcessFile(file);
-            }
-
-            command.execute();
+        if (!confirmationInfo.isEmpty() && !Dialogs.confirm(
+                Localization.getString("deletion.allEditorsWillBeSaved") + "\n\n" + Localization.getString("confirm.delete"),
+                        Joiner.on("\n").join(confirmationInfo))) {
+            return;
         }
+        ParContentProvider.rewriteFormValidationsRemoveVariable(formNodes, variable.getName());
+        IFile file = getDefaultValueAsFile(variable);
+        if (null != file) {
+            EmbeddedFileUtils.deleteProcessFile(file);
+        }
+        getDefinition().removeChild(variable);
+        IResource projectRoot = editor.getDefinitionFile().getParent();
+        IDE.saveAllEditors(new IResource[] { projectRoot }, false);
     }
 
     private class CreateVariableSelectionListener extends LoggingSelectionAdapter {

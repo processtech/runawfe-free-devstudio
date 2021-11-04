@@ -5,10 +5,12 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import java.beans.PropertyChangeEvent;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -42,9 +44,7 @@ import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.editor.clipboard.VariableTransfer;
 import ru.runa.gpd.editor.clipboard.VariableUserTypeTransfer;
-import ru.runa.gpd.lang.NodeRegistry;
 import ru.runa.gpd.lang.model.FormNode;
-import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableUserType;
@@ -54,7 +54,9 @@ import ru.runa.gpd.ltk.RenameRefactoringWizard;
 import ru.runa.gpd.ltk.RenameUserTypeAttributeRefactoring;
 import ru.runa.gpd.search.ElementMatch;
 import ru.runa.gpd.search.MultiVariableSearchQuery;
+import ru.runa.gpd.search.SearchResult;
 import ru.runa.gpd.settings.CommonPreferencePage;
+import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.ui.custom.DragAndDropAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.custom.TableViewerLocalDragAndDropSupport;
@@ -684,42 +686,39 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             @SuppressWarnings("unchecked")
             List<Variable> attributes = ((IStructuredSelection) attributeTableViewer.getSelection()).toList();
             for (Variable attribute : attributes) {
-                List<Variable> result = Lists.newArrayList();
-                searchInVariables(result, getSelection(), attribute, null, getDefinition().getVariables(false, false));
-                String searchText = Joiner.on(", ").join(Lists.transform(result, new Function<Variable, String>() {
-                    @Override
-                    public String apply(Variable variable) {
-                        return variable.getName();
-                    }
-                }));
-                MultiVariableSearchQuery query = new MultiVariableSearchQuery(searchText, editor.getDefinitionFile(), getDefinition(), result);
+                List<Variable> variablesToBeRemoved = Lists.newArrayList();
+                searchInVariables(variablesToBeRemoved, getSelection(), attribute, null, getDefinition().getVariables(false, false));
+                List<String> variableNamesToBeRemoved = variablesToBeRemoved.stream().map(Variable::getName).collect(Collectors.toList());
+                String searchText = Joiner.on(", ").join(variableNamesToBeRemoved);
+                MultiVariableSearchQuery query = new MultiVariableSearchQuery(searchText, editor.getDefinitionFile(), getDefinition(),
+                        variablesToBeRemoved);
                 query.run(null);
-                Object[] elements = query.getSearchResult().getElements();
-                if (elements.length > 0) {
+                Set<FormNode> formNodes = new HashSet<>();
+                List<String> confirmationInfo = new ArrayList<>();
+                SearchResult searchResult = query.getSearchResult();
+                if (searchResult.getMatchCount() > 0) {
+                    confirmationInfo.add(Localization.getString("UsagesFoundFor", attribute.getName()) + ":\n");
                     List<String> elementLabels = Lists.newArrayList();
-                    for (Object element : elements) {
-                        NamedGraphElement nge = (NamedGraphElement) ((ElementMatch) element).getGraphElement();
-                        elementLabels.add(NodeRegistry.getNodeTypeDefinition(nge.getClass()).getLabel() + ": " + nge.getName() + " ("
-                                + ((ElementMatch) element).getFile().getName() + ")");
+                    for (Object object : searchResult.getElements()) {
+                        ElementMatch elementMatch = (ElementMatch) object;
+                        confirmationInfo.add(" * " + elementMatch.toString(searchResult));
+                        if (elementMatch.getGraphElement() instanceof FormNode) {
+                            formNodes.add((FormNode) elementMatch.getGraphElement());
+                        }
                     }
-                    StringBuilder formNames = new StringBuilder(Localization.getString("Variable.ExistInElements")).append("\n\n");
-                    elementLabels.stream().sorted().forEach(label -> formNames.append("- ").append(label).append("\n"));
-                    formNames.append("\n").append(Localization.getString("Variable.WillBeRemovedFromFormAuto"));
-                    if (!MessageDialog.openConfirm(Display.getCurrent().getActiveShell(), Localization.getString("confirm.delete"),
-                            formNames.toString())) {
-                        continue;
-                    }
+                    elementLabels.stream().sorted().forEach(label -> confirmationInfo.add(" * " + label));
                 }
-                Map<String, List<FormNode>> variableFormNodesMapping = Maps.newHashMap();
+                if (!confirmationInfo.isEmpty() && !Dialogs.confirm(
+                        Localization.getString("deletion.allEditorsWillBeSaved") + "\n\n" + Localization.getString("confirm.delete"),
+                        Joiner.on("\n").join(confirmationInfo))) {
+                    continue;
+                }
                 for (Variable variable : VariableUtils.findVariablesOfTypeWithAttributeExpanded(getDefinition(), getSelection(), attribute)) {
-                    variableFormNodesMapping.put(variable.getName(), ParContentProvider.getFormsWhereUserTypeAttributeUsed(editor.getDefinitionFile(),
-                            getDefinition(), getSelection(), attribute));
-                }
-                // remove variable from form validations
-                for (Map.Entry<String, List<FormNode>> entry : variableFormNodesMapping.entrySet()) {
-                    ParContentProvider.rewriteFormValidationsRemoveVariable(editor.getDefinitionFile(), entry.getValue(), entry.getKey());
+                    ParContentProvider.rewriteFormValidationsRemoveVariable(formNodes, variable.getName());
                 }
                 getSelection().removeAttribute(attribute);
+                IResource projectRoot = editor.getDefinitionFile().getParent();
+                IDE.saveAllEditors(new IResource[] { projectRoot }, false);
             }
         }
     }

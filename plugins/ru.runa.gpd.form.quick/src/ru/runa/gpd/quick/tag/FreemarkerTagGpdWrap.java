@@ -1,18 +1,16 @@
 package ru.runa.gpd.quick.tag;
 
-import java.io.Serializable;
-import java.util.List;
-
-import org.apache.commons.logging.LogFactory;
-
-import ru.runa.wfe.commons.TypeConversionUtil;
-import ru.runa.wfe.commons.web.WebHelper;
-import ru.runa.wfe.user.User;
-import ru.runa.wfe.var.VariableProvider;
 import freemarker.ext.beans.BeansWrapper;
 import freemarker.template.TemplateMethodModelEx;
 import freemarker.template.TemplateModel;
 import freemarker.template.TemplateModelException;
+import java.io.Serializable;
+import java.util.List;
+import org.apache.commons.logging.LogFactory;
+import ru.runa.wfe.commons.TypeConversionUtil;
+import ru.runa.wfe.commons.web.WebHelper;
+import ru.runa.wfe.user.User;
+import ru.runa.wfe.var.VariableProvider;
 
 @SuppressWarnings("unchecked")
 public abstract class FreemarkerTagGpdWrap implements TemplateMethodModelEx, Serializable {
