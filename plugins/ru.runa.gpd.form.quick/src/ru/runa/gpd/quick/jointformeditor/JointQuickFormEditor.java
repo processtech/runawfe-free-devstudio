@@ -63,6 +63,9 @@ public class JointQuickFormEditor extends MultiPageEditorPart {
                 break;
             }
         }
+        if (formNode == null) {
+            throw new IllegalStateException(input.getName() + " not found in form nodes");
+        }
         validation = formNode.getValidation(formFile);
     }
 
