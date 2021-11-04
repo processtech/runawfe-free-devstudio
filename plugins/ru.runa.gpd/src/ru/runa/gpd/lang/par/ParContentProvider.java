@@ -5,12 +5,10 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
 import org.dom4j.Document;
 import org.dom4j.io.OutputFormat;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
-
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.ProcessDefinition;
@@ -84,10 +82,10 @@ public class ParContentProvider {
         }
     }
 
-    public static void rewriteFormValidationsRemoveVariable(IFile definitionFile, Collection<FormNode> formNodes, String variableName) {
+    public static void rewriteFormValidationsRemoveVariable(Collection<FormNode> formNodes, String variableName) {
         for (FormNode formNode : formNodes) {
             if (formNode.hasFormValidation()) {
-                IFile validationFile = IOUtils.getAdjacentFile(definitionFile, formNode.getValidationFileName());
+                IFile validationFile = IOUtils.getAdjacentFile(formNode.getProcessDefinition().getFile(), formNode.getValidationFileName());
                 FormNodeValidation validation = formNode.getValidation(validationFile);
                 int initialSize = validation.getFieldConfigs().size();
                 validation.getFieldConfigs().remove(variableName);

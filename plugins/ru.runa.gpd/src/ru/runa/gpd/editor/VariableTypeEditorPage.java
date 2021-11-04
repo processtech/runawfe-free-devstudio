@@ -1,11 +1,16 @@
 package ru.runa.gpd.editor;
 
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.base.Objects;
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import java.beans.PropertyChangeEvent;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -34,21 +39,12 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
-
-import com.google.common.base.Function;
-import com.google.common.base.Joiner;
-import com.google.common.base.Objects;
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.editor.clipboard.VariableTransfer;
 import ru.runa.gpd.editor.clipboard.VariableUserTypeTransfer;
-import ru.runa.gpd.lang.NodeRegistry;
 import ru.runa.gpd.lang.model.FormNode;
-import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableUserType;
@@ -58,6 +54,7 @@ import ru.runa.gpd.ltk.RenameRefactoringWizard;
 import ru.runa.gpd.ltk.RenameUserTypeAttributeRefactoring;
 import ru.runa.gpd.search.ElementMatch;
 import ru.runa.gpd.search.MultiVariableSearchQuery;
+import ru.runa.gpd.search.SearchResult;
 import ru.runa.gpd.settings.CommonPreferencePage;
 import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.ui.custom.DragAndDropAdapter;
@@ -696,33 +693,30 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
                 MultiVariableSearchQuery query = new MultiVariableSearchQuery(searchText, editor.getDefinitionFile(), getDefinition(),
                         variablesToBeRemoved);
                 query.run(null);
-                Object[] elements = query.getSearchResult().getElements();
-                Set<FormNode> affectedFormNodes = new HashSet<>();
-                StringBuilder formNames = new StringBuilder();
-                if (elements.length > 0) {
+                Set<FormNode> formNodes = new HashSet<>();
+                List<String> confirmationInfo = new ArrayList<>();
+                SearchResult searchResult = query.getSearchResult();
+                if (searchResult.getMatchCount() > 0) {
+                    confirmationInfo.add(Localization.getString("UsagesFoundFor", attribute.getName()) + ":\n");
                     List<String> elementLabels = Lists.newArrayList();
-                    for (Object element : elements) {
-                        NamedGraphElement nge = (NamedGraphElement) ((ElementMatch) element).getGraphElement();
-                        elementLabels.add(NodeRegistry.getNodeTypeDefinition(nge.getClass()).getLabel() + ": " + nge.getName() + " ("
-                                + ((ElementMatch) element).getFile().getName() + ")");
-                        if (nge instanceof FormNode) {
-                            affectedFormNodes.add((FormNode) nge);
+                    for (Object object : searchResult.getElements()) {
+                        ElementMatch elementMatch = (ElementMatch) object;
+                        confirmationInfo.add(" * " + elementMatch.toString(searchResult));
+                        if (elementMatch.getGraphElement() instanceof FormNode) {
+                            formNodes.add((FormNode) elementMatch.getGraphElement());
                         }
-                        formNames.append(Localization.getString("Variable.ExistInElements")).append("\n\n");
                     }
-                    elementLabels.stream().sorted().forEach(label -> formNames.append("- ").append(label).append("\n"));
-                    formNames.append("\n").append(Localization.getString("Variable.WillBeRemovedFromFormAuto"));
+                    elementLabels.stream().sorted().forEach(label -> confirmationInfo.add(" * " + label));
                 }
-                if (!Dialogs.confirm(Localization.getString("deletion.allEditorsWillBeSaved") + "\n\n" + Localization.getString("confirm.delete"),
-                        formNames.toString())) {
+                if (!confirmationInfo.isEmpty() && !Dialogs.confirm(
+                        Localization.getString("deletion.allEditorsWillBeSaved") + "\n\n" + Localization.getString("confirm.delete"),
+                        Joiner.on("\n").join(confirmationInfo))) {
                     continue;
                 }
                 for (Variable variable : VariableUtils.findVariablesOfTypeWithAttributeExpanded(getDefinition(), getSelection(), attribute)) {
-                    ParContentProvider.rewriteFormValidationsRemoveVariable(editor.getDefinitionFile(), affectedFormNodes,
-                            variable.getName());
+                    ParContentProvider.rewriteFormValidationsRemoveVariable(formNodes, variable.getName());
                 }
                 getSelection().removeAttribute(attribute);
-
                 IResource projectRoot = editor.getDefinitionFile().getParent();
                 IDE.saveAllEditors(new IResource[] { projectRoot }, false);
             }
