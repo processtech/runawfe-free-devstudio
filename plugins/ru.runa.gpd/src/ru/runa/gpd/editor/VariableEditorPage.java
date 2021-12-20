@@ -523,9 +523,9 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
             case 1:
                 return variable.getFormatLabel();
             case 2:
-                return Strings.nullToEmpty(variable.getDefaultValue() != null && FileFormat.class.getName().equals(variable.getFormatClassName())
+                return FileFormat.class.getName().equals(variable.getFormatClassName()) && !Strings.isNullOrEmpty(variable.getDefaultValue()) 
                         ? EmbeddedFileUtils.getProcessFileName(variable.getDefaultValue())
-                        : variable.getDefaultValue());
+                        : Strings.nullToEmpty(variable.getDefaultValue());
             case 3:
                 return variable.getStoreType().getDescription();
             default:
