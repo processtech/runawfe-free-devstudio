@@ -4,7 +4,6 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-
 import ru.runa.gpd.util.WorkspaceOperations;
 
 public class DeleteAction extends BaseActionDelegate {
@@ -14,6 +13,8 @@ public class DeleteAction extends BaseActionDelegate {
         IStructuredSelection selection = getStructuredSelection();
         if (isBotStructuredSelection()) {
             WorkspaceOperations.deleteBotResources(selection.toList());
+        } else if (isDataSourceStructuredSelection()) {
+            WorkspaceOperations.deleteDataSources(selection.toList());
         } else {
             WorkspaceOperations.deleteResources(selection.toList());
         }
