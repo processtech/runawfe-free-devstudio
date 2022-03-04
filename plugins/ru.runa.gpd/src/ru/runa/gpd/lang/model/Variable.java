@@ -14,6 +14,7 @@ import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.extension.LocalizationRegistry;
 import ru.runa.gpd.extension.VariableFormatRegistry;
 import ru.runa.gpd.lang.ValidationError;
+import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.VariableUtils;
 import ru.runa.wfe.var.UserTypeMap;
 
@@ -298,5 +299,25 @@ public class Variable extends NamedGraphElement implements Describable {
                 checkVariableType(attributeVariable, allVaribales, undeclaredTypesMap);
             }
         }
+    }
+
+    public void updateFromGlobalPartition(Variable variableFromGlobalSection) {
+
+        if (variableFromGlobalSection.getUserType() != null) {
+            if (this.getUserType() == null) {
+                this.getProcessDefinition().addGlobalType(variableFromGlobalSection.getUserType());
+                this.setUserType(this.getProcessDefinition()
+                        .getVariableUserType(IOUtils.GLOBAL_OBJECT_PREFIX + variableFromGlobalSection.getUserType().getName()));
+            } else {
+                this.setUserType(this.getProcessDefinition()
+                        .getVariableUserType(IOUtils.GLOBAL_OBJECT_PREFIX + variableFromGlobalSection.getUserType().getName()));
+            }
+        } else {
+            this.setUserType(null);
+            this.setFormat(variableFromGlobalSection.getFormat());
+        }
+        this.setDefaultValue(variableFromGlobalSection.getDefaultValue());
+        this.setPublicVisibility(variableFromGlobalSection.isPublicVisibility());
+        this.setStoreType(variableFromGlobalSection.getStoreType());
     }
 }

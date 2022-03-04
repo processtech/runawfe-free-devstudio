@@ -19,6 +19,8 @@ import org.eclipse.core.runtime.Platform;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
+import ru.runa.gpd.globalsection.GlobalSectionUtils;
+import ru.runa.gpd.lang.model.GlobalSectionDefinition;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
@@ -129,7 +131,12 @@ public class NodeRegistry {
                     mainProcessDefinition.addEmbeddedSubprocess(subprocessDefinition);
                     return subprocessDefinition;
                 } else {
-                    ProcessDefinition definition = new ProcessDefinition(definitionFile);
+                    ProcessDefinition definition;
+                    if (definitionFile.getParent() != null && GlobalSectionUtils.isGlobalSectionContainer(definitionFile.getParent())) {
+                        definition = new GlobalSectionDefinition(definitionFile);
+                    } else {
+                        definition = new ProcessDefinition(definitionFile);
+                    }
                     definition.setLanguage(language);
                     language.getSerializer().parseXML(document, definition);
                     return definition;

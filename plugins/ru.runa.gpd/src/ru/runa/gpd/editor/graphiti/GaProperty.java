@@ -13,7 +13,7 @@ public class GaProperty extends PropertyImpl {
     public static final String EMBEDDED = "embedded";
     public static final String MULTIPLE_INSTANCES = "multipleInstances";
     public static final String SWIMLANE_DISPLAY_VERTICAL = "swimlaneDisplayVertical";
-    public static final String MINIMAZED_VIEW = "minimazedView";
+    public static final String MINIMIZED_VIEW = "minimizedView";
     public static final String SCRIPT = "script";
     public static final String ASYNC = "async";
     public static final String TRANSACTIONAL = "transactional";

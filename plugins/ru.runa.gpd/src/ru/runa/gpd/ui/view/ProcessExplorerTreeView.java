@@ -38,9 +38,11 @@ import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.editor.ProcessEditorBase;
 import ru.runa.gpd.editor.ProcessSaveHistory;
+import ru.runa.gpd.globalsection.GlobalSectionUtils;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.search.SubprocessSearchQuery;
+import ru.runa.gpd.settings.CommonPreferencePage;
 import ru.runa.gpd.ui.custom.LoggingDoubleClickAdapter;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.UiUtil;
@@ -148,7 +150,11 @@ public class ProcessExplorerTreeView extends ViewPart implements ISelectionListe
         if (element instanceof IFolder) {
             IFile definitionFile = IOUtils.getProcessDefinitionFile((IFolder) element);
             if (definitionFile.exists()) {
-                WorkspaceOperations.openProcessDefinition(definitionFile);
+                if (GlobalSectionUtils.isGlobalSectionName(((IFolder) element).getName())) {
+                    WorkspaceOperations.openGlobalSectionDefinition(definitionFile);
+                } else {
+                    WorkspaceOperations.openProcessDefinition(definitionFile);
+                }
             }
         }
         if (element instanceof IFile) {
@@ -196,7 +202,18 @@ public class ProcessExplorerTreeView extends ViewPart implements ISelectionListe
                 });
             }
         }
+
         if (menuOnContainer) {
+            if (!GlobalSectionUtils.isGlobalSectionResource((IResource) selectedObject) && CommonPreferencePage.isGlobalObjectsEnabled()) {
+                manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.newGlobalSection"),
+                        SharedImages.getImageDescriptor("icons/glb.gif")) {
+
+                    @Override
+                    public void run() {
+                        WorkspaceOperations.createNewGlobalSectionDefinition(selection, ProcessDefinitionAccessType.Process);
+                    }
+                });
+            }
             manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.newProcess"),
                     SharedImages.getImageDescriptor("icons/process.gif")) {
 
@@ -205,6 +222,15 @@ public class ProcessExplorerTreeView extends ViewPart implements ISelectionListe
                     WorkspaceOperations.createNewProcessDefinition(selection, ProcessDefinitionAccessType.Process);
                 }
             });
+            if (CommonPreferencePage.isGlobalObjectsEnabled()) {
+                manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.importGlobalSection"),
+                        SharedImages.getImageDescriptor("icons/import_glb.gif")) {
+                    @Override
+                    public void run() {
+                        WorkspaceOperations.importGlobalSectionDefinition(selection);
+                    }
+                });
+            }
             manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.importProcess"),
                     SharedImages.getImageDescriptor("icons/import.gif")) {
                 @Override
@@ -232,6 +258,27 @@ public class ProcessExplorerTreeView extends ViewPart implements ISelectionListe
                     WorkspaceOperations.exportProcessDefinition(selection);
                 }
             });
+        }
+        if (!menuOnProcess && GlobalSectionUtils.isGlobalSectionResource((IResource) selectedObject)
+                && CommonPreferencePage.isGlobalObjectsEnabled()) {
+            manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.exportGlobalSection"),
+                    SharedImages.getImageDescriptor("icons/export_glb.gif")) {
+                @Override
+                public void run() {
+                    WorkspaceOperations.exportGlobalSectionDefinition(selection);
+                }
+            });
+        }
+        if (GlobalSectionUtils.isGlobalSectionResource((IResource) selectedObject) && CommonPreferencePage.isGlobalObjectsEnabled()) {
+            manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.makeGSLocal"),
+                    SharedImages.getImageDescriptor("icons/gr_to_loc.gif")) {
+                @Override
+                public void run() {
+                    WorkspaceOperations.makeGlobalSectionLocal(selection);
+                }
+            });
+        }
+        if (menuOnProcess || GlobalSectionUtils.isGlobalSectionResource((IResource) selectedObject)) {
             manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.renameProcess"),
                     SharedImages.getImageDescriptor("icons/rename.gif")) {
                 @Override
@@ -239,7 +286,11 @@ public class ProcessExplorerTreeView extends ViewPart implements ISelectionListe
                     if (menuOnSubprocess) {
                         WorkspaceOperations.renameSubProcessDefinition(selection);
                     } else {
-                        WorkspaceOperations.renameProcessDefinition(selection);
+                        if (GlobalSectionUtils.isGlobalSectionResource((IResource) selectedObject)) {
+                            WorkspaceOperations.renameGlobalDefinition(selection);
+                        } else {
+                            WorkspaceOperations.renameProcessDefinition(selection);
+                        }
                     }
                 }
             });
@@ -253,6 +304,18 @@ public class ProcessExplorerTreeView extends ViewPart implements ISelectionListe
                         }
                     });
         }
+
+        if (menuOnProcess && !GlobalSectionUtils.isGlobalSectionResource((IResource) selectedObject)
+                && CommonPreferencePage.isGlobalObjectsEnabled()) {
+            manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.refreshGlobalObjects"),
+                    SharedImages.getImageDescriptor("icons/refresh.gif")) {
+                @Override
+                public void run() {
+                    WorkspaceOperations.updateGlobalObjects(selection);
+                }
+            });
+        }
+
         if (menuOnProcess) {
             manager.add(new Action(Localization.getString("button.findReferences"), SharedImages.getImageDescriptor("icons/search.gif")) {
 

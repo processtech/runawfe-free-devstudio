@@ -20,6 +20,7 @@ public class CommonPreferencePage extends FieldEditorPreferencePage implements I
 
     IntegerFieldEditor savepointNumberEditor;
     BooleanFieldEditor enableUserActivityLogging;
+    BooleanFieldEditor enableGlobalObjects;
 
     public CommonPreferencePage() {
         super(GRID);
@@ -66,6 +67,9 @@ public class CommonPreferencePage extends FieldEditorPreferencePage implements I
         addField(enableUserActivityLogging);
         addField(new BooleanFieldEditor(P_INTERNAL_STORAGE_FUNCTIONALITY_ENABLED,
                 Localization.getString("pref.commons.internalStorageFunctionalityEnabled"), getFieldEditorParent()));
+
+        addField(
+                new BooleanFieldEditor(P_GLOBAL_OBJECTS_ENABLED, Localization.getString("pref.commons.enableGlobalObjects"), getFieldEditorParent()));
     }
 
     @Override
@@ -90,6 +94,10 @@ public class CommonPreferencePage extends FieldEditorPreferencePage implements I
         return Activator.getDefault().getPreferenceStore().getBoolean(P_INTERNAL_STORAGE_FUNCTIONALITY_ENABLED);
     }
 
+    public static boolean isGlobalObjectsEnabled() {
+        return Activator.getDefault().getPreferenceStore().getBoolean(P_GLOBAL_OBJECTS_ENABLED);
+    }
+
     @Override
     public void propertyChange(PropertyChangeEvent event) {
         super.propertyChange(event);
@@ -98,7 +106,8 @@ public class CommonPreferencePage extends FieldEditorPreferencePage implements I
             if (P_PROCESS_SAVE_HISTORY.equals(fieldEditor.getPreferenceName())) {
                 savepointNumberEditor.setEnabled((Boolean) event.getNewValue(), getFieldEditorParent());
             }
-            if (P_INTERNAL_STORAGE_FUNCTIONALITY_ENABLED.equals(fieldEditor.getPreferenceName())) {
+            if (P_INTERNAL_STORAGE_FUNCTIONALITY_ENABLED.equals(fieldEditor.getPreferenceName())
+                    || P_GLOBAL_OBJECTS_ENABLED.equals(fieldEditor.getPreferenceName())) {
                 PluginLogger.logInfoWithDialog(Localization.getString("pref.commons.restart"));
             }
         }

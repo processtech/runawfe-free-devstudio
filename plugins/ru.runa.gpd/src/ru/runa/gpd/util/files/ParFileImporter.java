@@ -37,6 +37,9 @@ public final class ParFileImporter implements FileImporter {
             final IPath destination = IOUtils.getProcessFolder(container, definition.getName()).getFullPath();
             processFolder.move(destination, true, false, null);
             final IFile movedDefinitionFile = IOUtils.getProcessDefinitionFile(IOUtils.getProcessFolder(container, definition.getName()));
+            if (definition.isUsingGlobalVars() && definition.getPropertyValue("PROPERTY_USE_GLOBALS").equals(0)) {
+                definition.setPropertyValue("PROPERTY_USE_GLOBALS", true);
+            }
             ProcessCache.newProcessDefinitionWasCreated(movedDefinitionFile);
             ProcessCache.invalidateProcessDefinition(definitionFile);
         }

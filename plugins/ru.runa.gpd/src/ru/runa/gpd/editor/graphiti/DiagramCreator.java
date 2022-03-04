@@ -12,7 +12,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -44,8 +43,8 @@ import org.eclipse.graphiti.services.Graphiti;
 import org.eclipse.graphiti.ui.editor.DiagramEditorInput;
 import org.eclipse.graphiti.ui.internal.services.GraphitiUiInternal;
 import org.eclipse.graphiti.ui.services.GraphitiUi;
-
 import ru.runa.gpd.PluginLogger;
+import ru.runa.gpd.globalsection.GlobalSectionUtils;
 
 public class DiagramCreator {
     private final static String TEMPFILE_EXTENSION = "bpmn2d";
@@ -64,10 +63,9 @@ public class DiagramCreator {
             if (diagramFolder != null && !diagramFolder.exists()) {
                 diagramFolder.create(false, true, null);
             }
-            Diagram diagram = Graphiti.getPeCreateService().createDiagram("BPMNdiagram", diagramFile.getFullPath().removeFileExtension().lastSegment(), true);
+            Diagram diagram = Graphiti.getPeCreateService().createDiagram("BPMNdiagram",
+                    diagramFile.getFullPath().removeFileExtension().lastSegment(), true);
             // permanently hide grid on diagram
-            //diagram.setGridUnit(0);
-            //diagram.setVerticalGridUnit(0);
             uri = URI.createPlatformResourceURI(diagramFile.getFullPath().toString(), true);
             if (contentFileName != null) {
                 InputStream in = this.getClass().getClassLoader().getResourceAsStream(contentFileName);
@@ -109,12 +107,11 @@ public class DiagramCreator {
     }
 
     /**
-     * Construct a temporary folder based on the given path. The folder is
-     * constructed in the project root and its name will be the same as the given
+     * Construct a temporary folder based on the given path. The folder is constructed in the project root and its name will be the same as the given
      * path's file extension.
      * 
      * @param fullPath
-     *          - path of the actual BPMN2 model file
+     *            - path of the actual BPMN2 model file
      * @return an IFolder for the temporary folder.
      * @throws CoreException
      */
@@ -145,16 +142,14 @@ public class DiagramCreator {
     }
 
     /**
-     * Return the temporary file to be used as editor input. Conceptually, this is
-     * the "diagramFile" mentioned here which is just a placeholder for use by
-     * Graphiti as the DiagramEditorInput file.
+     * Return the temporary file to be used as editor input. Conceptually, this is the "diagramFile" mentioned here which is just a placeholder for
+     * use by Graphiti as the DiagramEditorInput file.
      * 
      * @param fullPath
-     *          - path of the actual BPMN2 model file
+     *            - path of the actual BPMN2 model file
      * @param folder
-     *          - folder containing the model file
-     * @return an IFile for the temporary file. If the file exists, it is first
-     *         deleted.
+     *            - folder containing the model file
+     * @return an IFile for the temporary file. If the file exists, it is first deleted.
      */
     public static IFile getTempFile(IPath fullPath, IFolder folder) {
         IPath path = fullPath.removeFileExtension().addFileExtension(TEMPFILE_EXTENSION);
@@ -172,11 +167,10 @@ public class DiagramCreator {
     }
 
     /**
-     * Return the BPMN2 model file given a path to either the "diagramFile"
-     * temporary file, or the actual model file.
+     * Return the BPMN2 model file given a path to either the "diagramFile" temporary file, or the actual model file.
      * 
      * @param fullPath
-     *          - path of the actual BPMN2 model file
+     *            - path of the actual BPMN2 model file
      * @return an IFile for the model file.
      */
     public static IFile getModelFile(IPath fullPath) {
@@ -193,8 +187,8 @@ public class DiagramCreator {
         if (TEMPFILE_EXTENSION.equals(ext)) {
             // this is a tempFile - rebuild the BPMN2 model file name from its path
             ext = fullPath.segment(matchingSegments);
-            if (ext.startsWith(".")) {
-                ext = ext.substring(1);
+            if (GlobalSectionUtils.isGlobalSectionName(ext)) {
+                ext = GlobalSectionUtils.getLabel(ext);
             }
             path = project.getFullPath();
             for (int i = matchingSegments + 1; i < segments.length; ++i) {

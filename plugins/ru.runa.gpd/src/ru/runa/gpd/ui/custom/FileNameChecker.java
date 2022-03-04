@@ -1,10 +1,13 @@
 package ru.runa.gpd.ui.custom;
 
-import com.google.common.collect.Lists;
 import java.util.Arrays;
 import java.util.List;
+
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
+
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 
 //
 // Based on org.eclipse.core.internal.resources.OS
@@ -49,6 +52,10 @@ public abstract class FileNameChecker extends KeyAdapter {
             }
             return Arrays.binarySearch(forbiddenFullNames, fileName.toLowerCase()) < 0;
         }
+    }
+
+    public static boolean isFirstSymbolADot(String fileName) {
+        return (!Strings.isNullOrEmpty(fileName)) && (fileName.charAt(0) == '.');
     }
 
 }

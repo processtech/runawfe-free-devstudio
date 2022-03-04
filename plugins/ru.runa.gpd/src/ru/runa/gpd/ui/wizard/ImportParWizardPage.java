@@ -75,9 +75,17 @@ public class ImportParWizardPage extends ImportWizardPage {
         setTitle(Localization.getString("ImportParWizardPage.page.title"));
     }
 
+    protected ImportParWizardPage(Class<? extends ImportParWizardPage> clazz, IStructuredSelection selection) {
+        super(clazz, selection);
+    }
+
     @Override
     protected IContainer getInitialSelection(IStructuredSelection selection) {
         return (IContainer) IOUtils.getProcessSelectionResource(selection);
+    }
+
+    public String fileExtension() {
+        return ".par";
     }
 
     @Override
@@ -126,7 +134,7 @@ public class ImportParWizardPage extends ImportWizardPage {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 FileDialog dialog = new FileDialog(getShell(), SWT.OPEN | SWT.MULTI);
-                dialog.setFilterExtensions(new String[] { "*.par" });
+                dialog.setFilterExtensions(new String[] { "*" + fileExtension() });
                 if (dialog.open() != null) {
                     selectedDirFileName = dialog.getFilterPath();
                     selectedFileNames = dialog.getFileNames();
@@ -215,6 +223,7 @@ public class ImportParWizardPage extends ImportWizardPage {
                 serverDefinitionFilter.setText("");
             }
         });
+
         serverDefinitionViewer = new TreeViewer(parent);
         GridData gridData = new GridData(GridData.FILL_BOTH);
         gridData.heightHint = 300;
@@ -230,6 +239,7 @@ public class ImportParWizardPage extends ImportWizardPage {
                 if (searchText == null || searchText.trim().length() == 0) {
                     return true;
                 }
+
                 DefinitionTreeNode node = (DefinitionTreeNode) element;
                 if (node.definition == null && node.isGroupNode()) {
                     // This is the node. Show nodes with at least one matching child definition
@@ -237,16 +247,19 @@ public class ImportParWizardPage extends ImportWizardPage {
                 }
                 if (matchNode(node, searchText)) {
                     return true;
+
                 }
                 return false;
-            }});
+            }
+        });
     }
-    
+
     private boolean matchAtLeastOneSub(List<DefinitionTreeNode> source, String searchText) {
         if (source == null || source.size() == 0) {
             return false;
         }
-        for (DefinitionTreeNode node: source) {
+
+        for (DefinitionTreeNode node : source) {
             if (matchNode(node, searchText)) {
                 return true;
             }
@@ -277,7 +290,7 @@ public class ImportParWizardPage extends ImportWizardPage {
                     throw new Exception(Localization.getString("error.selectValidFile"));
                 }
                 for (int i = 0; i < selectedFileNames.length; i++) {
-                    String definitionName = selectedFileNames[i].substring(0, selectedFileNames[i].length() - ".par".length());
+                    String definitionName = selectedFileNames[i].substring(0, selectedFileNames[i].length() - fileExtension().length());
                     String fileName = selectedDirFileName + File.separator + selectedFileNames[i];
                     importInfos.add(new ProcessDefinitionImportInfo(definitionName, "", new FileInputStream(fileName)));
                 }
@@ -399,7 +412,7 @@ public class ImportParWizardPage extends ImportWizardPage {
         }
     }
 
-    class DefinitionTreeNode {
+    static class DefinitionTreeNode {
         private final String path;
         private final String label;
         private final WfDefinition definition;
@@ -413,6 +426,14 @@ public class ImportParWizardPage extends ImportWizardPage {
             this.definition = definition;
             this.groupNode = groupNode;
             this.historyNode = historyNode;
+        }
+
+        public String getPath() {
+            return path;
+        }
+
+        public WfDefinition getDefinition() {
+            return definition;
         }
 
         private String getLabel() {
@@ -482,8 +503,7 @@ public class ImportParWizardPage extends ImportWizardPage {
                             }
                             for (WfDefinition definition : list) {
                                 DefinitionTreeNode historyDefinitionNode = new DefinitionTreeNode(path, String.valueOf(definition.getVersion()),
-                                        definition, false,
-                                        true);
+                                        definition, false, true);
                                 children.add(historyDefinitionNode);
                             }
                             monitor.done();
