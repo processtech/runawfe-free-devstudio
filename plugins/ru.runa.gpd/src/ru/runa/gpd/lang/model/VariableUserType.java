@@ -17,6 +17,7 @@ public class VariableUserType extends EventSupport implements VariableContainer,
     private final List<Variable> attributes = Lists.newArrayList();
     private ProcessDefinition processDefinition;
     private boolean isStoreInExternalStorage = false;
+    private boolean global;
 
     public VariableUserType() {
     }
@@ -141,6 +142,17 @@ public class VariableUserType extends EventSupport implements VariableContainer,
         return Objects.equal(name, type.name) && Objects.equal(attributes, type.attributes);
     }
 
+    public boolean isGlobal() {
+        return global;
+    }
+
+    public void setGlobal(boolean global) {
+        if (this.global != global) {
+            this.global = global;
+            firePropertyChange(PROPERTY_GLOBAL, !this.global, this.global);
+        }
+    }
+
     @Override
     public int compareTo(VariableUserType o) {
         return name.compareTo(o.name);
@@ -151,17 +163,31 @@ public class VariableUserType extends EventSupport implements VariableContainer,
         return Objects.toStringHelper(getClass()).add("name", name).add("attributes", attributes).toString();
     }
 
-    private VariableUserType getCopy(VariableUserType source) {
+    public VariableUserType getCopy(VariableUserType source) {
         VariableUserType clone = new VariableUserType(source.getName(), source.isStoreInExternalStorage());
         for (Variable attribute : source.getAttributes()) {
             if (attribute.isComplex()) {
-                clone.addAttribute(new Variable(attribute.getName(), attribute.getScriptingName(), attribute.getFormat(),
-                        getCopy(attribute.getUserType())));
+                clone.addAttribute(
+                        new Variable(attribute.getName(), attribute.getScriptingName(), attribute.getFormat(), getCopy(attribute.getUserType())));
             } else {
                 clone.addAttribute(new Variable(attribute));
             }
         }
+        clone.setGlobal(this.isGlobal());
         return clone;
+    }
+
+    public void updateFromGlobalPartition(VariableUserType typeFromGlobalSection) {
+        this.isStoreInExternalStorage = typeFromGlobalSection.isStoreInExternalStorage;
+        attributes.clear();
+        for (Variable attribute : typeFromGlobalSection.getAttributes()) {
+            if (attribute.isComplex()) {
+                this.addAttribute(
+                        new Variable(attribute.getName(), attribute.getScriptingName(), attribute.getFormat(), getCopy(attribute.getUserType())));
+            } else {
+                this.addAttribute(new Variable(attribute));
+            }
+        }
     }
 
 }

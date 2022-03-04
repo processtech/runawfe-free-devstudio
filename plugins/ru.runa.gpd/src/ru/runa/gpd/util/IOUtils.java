@@ -1,12 +1,5 @@
 package ru.runa.gpd.util;
 
-import com.google.common.base.Charsets;
-import com.google.common.base.Strings;
-import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
-import com.google.common.io.ByteStreams;
-import com.google.common.io.Closeables;
-import com.google.common.io.Files;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -22,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
 import org.eclipse.core.internal.resources.Workspace;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -41,17 +35,28 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
+
+import com.google.common.base.Charsets;
+import com.google.common.base.Strings;
+import com.google.common.base.Throwables;
+import com.google.common.collect.Lists;
+import com.google.common.io.ByteStreams;
+import com.google.common.io.Closeables;
+import com.google.common.io.Files;
+
 import ru.runa.gpd.BotCache;
 import ru.runa.gpd.BotStationNature;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessProjectNature;
 import ru.runa.gpd.form.FormType;
 import ru.runa.gpd.form.FormTypeProvider;
+import ru.runa.gpd.globalsection.GlobalSectionUtils;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.par.ParContentProvider;
 
 public class IOUtils {
+    public static final String GLOBAL_OBJECT_PREFIX = "Global_";
     private static final ByteArrayInputStream EMPTY_STREAM = new ByteArrayInputStream(new byte[0]);
     private static final List<String> formExtensions = new ArrayList<String>();
     static {
@@ -463,7 +468,7 @@ public class IOUtils {
                 result.add(definitionFile);
                 return;
             }
-            if (folder.getName().startsWith(".")) {
+            if (GlobalSectionUtils.isGlobalSectionName(folder.getName())) {
                 return;
             }
             if (folder.getName().equals("bin")) {
@@ -493,7 +498,7 @@ public class IOUtils {
             if (isProcessDefinitionFolder(folder)) {
                 return;
             }
-            if (folder.getName().startsWith(".")) {
+            if (GlobalSectionUtils.isGlobalSectionName(folder.getName())) {
                 return;
             }
         }
@@ -543,7 +548,7 @@ public class IOUtils {
     }
 
     public static boolean isProcessDefinitionFolder(IFolder folder) {
-        return getProcessDefinitionFile(folder).exists();
+        return !GlobalSectionUtils.isGlobalSectionName(folder.getName()) && getProcessDefinitionFile(folder).exists();
     }
 
     public static IFile getProcessDefinitionFile(IFolder folder) {
@@ -653,6 +658,10 @@ public class IOUtils {
                 }
             }
         }
+    }
+
+    public static boolean isDotXMLFolder(IFolder folder) {
+        return folder.getName().equals(".xml");
     }
 
 }

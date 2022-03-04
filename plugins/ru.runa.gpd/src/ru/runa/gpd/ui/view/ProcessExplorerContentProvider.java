@@ -52,14 +52,9 @@ public class ProcessExplorerContentProvider implements ITreeContentProvider {
             for (IResource resource : container.members()) {
                 if (resource instanceof IFolder) {
                     IFolder folder = (IFolder) resource;
-                    if (IOUtils.isProcessDefinitionFolder(folder)) {
+                    if (!IOUtils.isDotXMLFolder(folder)) {
                         result.add(folder);
-                        continue;
                     }
-                    if (folder.getName().startsWith(".")) {
-                        continue;
-                    }
-                    result.add(folder);
                 }
             }
         } catch (CoreException e) {

@@ -62,6 +62,7 @@ import ru.runa.gpd.util.Duration;
 import ru.runa.gpd.util.MultiinstanceParameters;
 import ru.runa.gpd.util.SwimlaneDisplayMode;
 import ru.runa.gpd.util.VariableMapping;
+import ru.runa.gpd.util.VariableUtils;
 import ru.runa.gpd.util.XmlUtil;
 import ru.runa.wfe.definition.ProcessDefinitionAccessType;
 import ru.runa.wfe.lang.AsyncCompletionMode;
@@ -179,7 +180,7 @@ public class BpmnSerializer extends ProcessSerializer {
         if (definition.getDefaultNodeAsyncExecution() != NodeAsyncExecution.DEFAULT) {
             processProperties.put(NODE_ASYNC_EXECUTION, definition.getDefaultNodeAsyncExecution().getValue());
         }
-        if (definition.isUseGlobals()) {
+        if (definition.isUsingGlobalVars()) {
             processProperties.put(USE_GLOBALS, "true");
         }
         writeExtensionElements(processElement, processProperties);
@@ -388,10 +389,6 @@ public class BpmnSerializer extends ProcessSerializer {
         }
         writeBaseProperties(parentElement, timer);
         Element eventDefinitionElement = parentElement.addElement(timer.getTypeDefinition().getBpmnElementName());
-        // TODO bc
-        // if (!Strings.isNullOrEmpty(timer.getDescription())) {
-        // eventDefinitionElement.addElement(DOCUMENTATION).addCDATA(timer.getDescription());
-        // }
         writeNodeAsyncExecution(eventDefinitionElement, timer);
         TimerAction timerAction = timer.getAction();
         if (timerAction != null) {
@@ -425,23 +422,19 @@ public class BpmnSerializer extends ProcessSerializer {
 
     private void writeEventNodeContent(Element processElement, Element eventElement, AbstractEventNode eventNode) {
         eventElement.addAttribute(RUNA_PREFIX + ":" + TYPE, eventNode.getEventNodeType().name());
-        // setAttribute(eventDefinitionElement, ID, eventNode.getId());
         if (eventNode instanceof ISendMessageNode) {
             eventElement.addAttribute(RUNA_PREFIX + ":" + TIME_DURATION, eventNode.getTtlDuration().getDuration());
         }
         writeVariables(eventElement, eventNode.getVariableMappings());
         writeNodeAsyncExecution(eventElement, eventNode);
         writeTransitions(processElement, eventNode);
-        // Element eventDefinitionElement =
-        // eventElement.addElement(eventNode.getEventNodeType().getXmlElementName());
     }
 
     private Element writeElement(Element parent, GraphElement graphElement) {
         String bpmnElementName;
         if (graphElement instanceof EndTokenState) {
             bpmnElementName = END_EVENT;
-        } else if (graphElement instanceof MultiSubprocess
-                || graphElement instanceof EmbeddedSubprocess) {
+        } else if (graphElement instanceof MultiSubprocess || graphElement instanceof EmbeddedSubprocess) {
             bpmnElementName = SUBPROCESS;
         } else {
             bpmnElementName = graphElement.getTypeDefinition().getBpmnElementName();
@@ -743,7 +736,7 @@ public class BpmnSerializer extends ProcessSerializer {
             definition.setDefaultNodeAsyncExecution(NodeAsyncExecution.getByValueNotNull(processProperties.get(NODE_ASYNC_EXECUTION)));
         }
         if (processProperties.containsKey(USE_GLOBALS)) {
-            definition.setUseGlobals("true".equals(processProperties.get(USE_GLOBALS)));
+            definition.setUsingGlobalVars("true".equals(processProperties.get(USE_GLOBALS)));
         }
         String swimlaneDisplayModeName = processProperties.get(SHOW_SWIMLANE);
         if (swimlaneDisplayModeName != null) {
@@ -754,15 +747,13 @@ public class BpmnSerializer extends ProcessSerializer {
         if (swimlaneSetElement != null) {
             List<Element> swimlanes = swimlaneSetElement.elements(LANE);
             for (Element swimlaneElement : swimlanes) {
-                if (!"true".equals(parseExtensionProperties(swimlaneElement).get(GLOBAL))) {
-                    Swimlane swimlane = create(swimlaneElement, definition);
-                    List<Element> flowNodeRefElements = swimlaneElement.elements(FLOW_NODE_REF);
-                    List<String> flowNodeIds = Lists.newArrayList();
-                    for (Element flowNodeRefElement : flowNodeRefElements) {
-                        flowNodeIds.add(flowNodeRefElement.getTextTrim());
-                    }
-                    swimlaneElementIds.put(swimlane, flowNodeIds);
+                Swimlane swimlane = create(swimlaneElement, definition);
+                List<Element> flowNodeRefElements = swimlaneElement.elements(FLOW_NODE_REF);
+                List<String> flowNodeIds = Lists.newArrayList();
+                for (Element flowNodeRefElement : flowNodeRefElements) {
+                    flowNodeIds.add(flowNodeRefElement.getTextTrim());
                 }
+                swimlaneElementIds.put(swimlane, flowNodeIds);
             }
         }
         List<Element> startStates = processElement.elements(START_EVENT);

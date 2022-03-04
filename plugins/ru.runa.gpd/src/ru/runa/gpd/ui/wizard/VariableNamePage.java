@@ -117,4 +117,11 @@ public class VariableNamePage extends ContentWizardPage {
         return scriptingVariableName;
     }
     
+    public void setScriptingVariableName(String ScriptingName) {
+        this.scriptingVariableName = ScriptingName;
+    }
+    
+    public void setVariableName(String Name) {
+        this.variableName = Name;
+    }
 }

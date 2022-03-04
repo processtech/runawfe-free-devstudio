@@ -15,7 +15,6 @@ import ru.runa.wfe.var.format.ExecutorFormat;
 
 public class Swimlane extends Variable implements Delegable {
 
-    public static final String GLOBAL_ROLE_REF_PREFIX = "Global_";
     public static final String DEFAULT_DELEGATION_CLASS_NAME = DefaultAssignmentHandler.class.getName();
     private String editorPath;
 
@@ -81,6 +80,13 @@ public class Swimlane extends Variable implements Delegable {
 
     @Override
     protected void fillCustomPropertyDescriptors(List<IPropertyDescriptor> descriptors) {
+    }
+
+    public void updateFromGlobalPartition(Variable swimlaneFromGlobalSection) {
+        this.setFormat(swimlaneFromGlobalSection.getFormat());
+        this.setDefaultValue(swimlaneFromGlobalSection.getDefaultValue());
+        this.setPublicVisibility(swimlaneFromGlobalSection.isPublicVisibility());
+        this.setStoreType(swimlaneFromGlobalSection.getStoreType());
     }
 
 }

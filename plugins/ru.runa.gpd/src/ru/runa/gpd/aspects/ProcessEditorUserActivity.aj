@@ -9,6 +9,7 @@ import org.eclipse.ui.PlatformUI;
 import ru.runa.gpd.editor.CopyAction;
 import ru.runa.gpd.editor.PasteAction;
 import ru.runa.gpd.editor.ProcessEditorBase;
+import ru.runa.gpd.editor.GlobalSectionEditorBase;
 import ru.runa.gpd.editor.graphiti.DiagramEditorPage;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.ProcessDefinition;
@@ -48,8 +49,6 @@ public aspect ProcessEditorUserActivity extends UserActivity {
     after(ProcessEditorBase editor) : execution(public void dispose()) && this(editor) {
         stopEditingSession(editor.getDefinition());
     }
-    
-    // Diagram Element Selection
 
     after(ProcessEditorBase editor, ISelection selection) : execution(public void selectionChanged(.., ISelection)) && this(editor) && args(.., selection) {
         if (selection instanceof IStructuredSelection) {
@@ -58,7 +57,7 @@ public aspect ProcessEditorUserActivity extends UserActivity {
                 Object lastSelected = structuredSelection.toArray()[structuredSelection.size() - 1];
                 if (lastSelected instanceof EditPart) {
                     EditPart editPart = (EditPart) lastSelected;
-                    if (editPart.getModel() instanceof PictogramElement) {
+                    if (editPart.getModel() instanceof PictogramElement && !(editor instanceof GlobalSectionEditorBase)) {
                         GraphElement ge = (GraphElement) ((DiagramEditorPage) editor.getDiagramEditorPage()).getDiagramTypeProvider()
                                 .getFeatureProvider().getBusinessObjectForPictogramElement((PictogramElement) editPart.getModel());
                         if (ge != null) {
@@ -82,8 +81,6 @@ public aspect ProcessEditorUserActivity extends UserActivity {
         log(((CopyAction) thisJoinPoint.getThis()).processEditor.getDefinition(), UserAction.TB_Copy.asString(e));
     }
 
-    // Copy
-
     private ProcessEditorBase CopyAction.processEditor;
 
     after(ProcessEditorBase editor) : execution(ru.runa.gpd.editor.CopyAction.new(ProcessEditorBase)) && args(editor) {
@@ -98,8 +95,6 @@ public aspect ProcessEditorUserActivity extends UserActivity {
         log(((CopyAction) thisJoinPoint.getThis()).processEditor.getDefinition(), UserAction.TB_Copy.asString(e));
     }
 
-    // Paste
-
     private ProcessEditorBase PasteAction.processEditor;
 
     after(ProcessEditorBase editor) : execution(ru.runa.gpd.editor.PasteAction.new(ProcessEditorBase)) && args(editor) {
@@ -113,8 +108,6 @@ public aspect ProcessEditorUserActivity extends UserActivity {
     after() throwing(Exception e) : execution(public void ru.runa.gpd.editor.PasteAction.run()) {
         log(((PasteAction) thisJoinPoint.getThis()).processEditor.getDefinition(), UserAction.TB_Paste.asString(e));
     }
-
-    // Graph element change property
 
     pointcut graphElementProperyChange(String propertyName, Object oldValue, Object newValue) : 
         call(public void firePropertyChange(..)) && target(ru.runa.gpd.lang.model.GraphElement) && args(propertyName, oldValue, newValue) 
