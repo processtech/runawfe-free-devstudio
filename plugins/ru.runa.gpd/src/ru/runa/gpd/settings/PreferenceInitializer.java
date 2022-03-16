@@ -34,6 +34,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer impleme
         store.setDefault(P_DATE_FORMAT_PATTERN, "dd.MM.yyyy");
         store.setDefault(P_ENABLE_REGULATIONS_MENU_ITEMS, Localization.getString("disable"));
         store.setDefault(P_ENABLE_EXPORT_WITH_SCALING, Localization.getString("disable"));
+        store.setDefault(P_ENABLE_EDITING_COMMENT_HISTORY_XML, Localization.getString("disable"));
         store.setDefault(P_CONFIRM_DELETION, true);
         store.setDefault(P_PROCESS_SAVE_HISTORY, true);
         store.setDefault(P_PROCESS_SAVEPOINT_NUMBER, 10);

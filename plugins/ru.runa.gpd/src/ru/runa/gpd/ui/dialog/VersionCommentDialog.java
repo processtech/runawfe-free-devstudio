@@ -1,8 +1,13 @@
 package ru.runa.gpd.ui.dialog;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+
+import org.dom4j.Document;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
@@ -15,21 +20,37 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.DateTime;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IPropertyListener;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.ide.IDE;
+
+import com.google.common.base.Strings;
+
 import ru.runa.gpd.Localization;
+import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.VersionInfo;
+import ru.runa.gpd.lang.par.ParContentProvider;
+import ru.runa.gpd.lang.par.VersionCommentXmlContentProvider;
+import ru.runa.gpd.settings.CommonPreferencePage;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
+import ru.runa.gpd.util.IOUtils;
+import ru.runa.gpd.util.XmlUtil;
 import ru.runa.wfe.commons.CalendarUtil;
 
 public class VersionCommentDialog extends Dialog {
 
     private Button addButton;
+    private Button editButton;
     private Button saveButton;
     private Button cancelButton;
     private DateTime dateControl;
@@ -38,11 +59,13 @@ public class VersionCommentDialog extends Dialog {
     private Table historyTable;
     private final ProcessDefinition definition;
     private Date currentDateTime;
+    private final IWorkbenchPage workbenchPage;
 
-    public VersionCommentDialog(ProcessDefinition definition) {
+    public VersionCommentDialog(ProcessDefinition definition, IWorkbenchPage workbenchPage) {
         super(Display.getCurrent().getActiveShell());
         this.definition = definition;
         setShellStyle(getShellStyle() | SWT.RESIZE);
+        this.workbenchPage = workbenchPage;
     }
 
     @Override
@@ -76,6 +99,10 @@ public class VersionCommentDialog extends Dialog {
             }
         });
 
+        if (CommonPreferencePage.isEditingCommentHistoryXmlEnabled()) {
+        	createXmlEditButton(parent);
+        }
+        
         super.createButtonsForButtonBar(parent);
 
         saveButton = getButton(IDialogConstants.OK_ID);
@@ -101,6 +128,60 @@ public class VersionCommentDialog extends Dialog {
 
     }
 
+    private void createXmlEditButton(Composite parent) {
+        editButton = createButton(parent, IDialogConstants.NO_ID, Localization.getString("button.edit"), false);
+
+        editButton.addSelectionListener(new LoggingSelectionAdapter() {
+            @Override
+            protected void onSelection(SelectionEvent e) throws Exception {
+                cancelButton.notifyListeners(SWT.Selection, new Event());
+                initAndOpenVersionCommentXmlEditor();
+            }
+            
+        });
+    }
+    
+    private void initAndOpenVersionCommentXmlEditor() throws PartInitException {
+        IFile file = IOUtils.getAdjacentFile(definition.getFile(), ParContentProvider.COMMENTS_FILE_NAME);
+        IEditorPart editor = IDE.openEditor(workbenchPage, file, true);
+        editor.addPropertyListener(new IPropertyListener() {
+            @Override
+            public void propertyChanged(Object source, int propId) {
+                if (propId == IEditorPart.PROP_DIRTY && !editor.isDirty()) {
+                    definition.getVersionInfoList().clear();
+                    // если при сохранении файл невалидный - то он перезапишется пустым
+                    try {
+                        ParContentProvider.rewriteVersionCommentXml(definition.getFile(), definition);
+                    } catch (Exception e) {
+                        VersionCommentXmlContentProvider contentProvider = new VersionCommentXmlContentProvider();
+                        InputStream contentStream = null;
+                        try {
+                            Document document = contentProvider.save(definition);
+                            byte[] contentBytes = XmlUtil.writeXml(document);
+                            contentStream = new ByteArrayInputStream(contentBytes);
+                            IOUtils.createOrUpdateFile(file, contentStream);
+                        } catch (Exception ex) {
+                            PluginLogger.logErrorWithoutDialog("Error saving blank version comment xml.", ex);
+                        } finally {
+                            if (contentStream != null) {
+                                try {
+                                    contentStream.close();
+                                } catch (Exception ex) {
+                                    PluginLogger.logErrorWithoutDialog("Error closing input stream.", ex); 
+                                }
+                            }
+                        }
+                        PluginLogger.logError("Error parsing version comment xml. " + file, e);
+                    }
+                    if (definition.getVersionInfoList().stream()
+                            .anyMatch(item -> Strings.isNullOrEmpty(item.getAuthor()) || Strings.isNullOrEmpty(item.getComment()))) {
+                        PluginLogger.logError("Error parsing version comment xml. One or more fields is empty " + file, new Exception());
+                    }
+                }
+            }
+        });
+    }
+    
     protected void setDefaultButton(Composite parent, Button button) {
         parent.getShell().setDefaultButton(button);
     }
@@ -215,11 +296,23 @@ public class VersionCommentDialog extends Dialog {
         if (versionInfoList.size() > 0) {
             setInputFieldsEnabled(true);
             historyTable.setEnabled(true);
-            for (int i = versionInfoList.size() - 1; i >= 0; --i) {
-                TableItem item = new TableItem(historyTable, SWT.NONE);
-                item.setText(0, versionInfoList.get(i).getDateTimeAsString());
-                item.setText(1, versionInfoList.get(i).getAuthor());
-                item.setText(2, versionInfoList.get(i).getComment());
+            try {
+                for (int i = versionInfoList.size() - 1; i >= 0; --i) {
+                    TableItem item = new TableItem(historyTable, SWT.NONE);
+                    item.setText(0, versionInfoList.get(i).getDateTimeAsString());
+                    item.setText(1, versionInfoList.get(i).getAuthor());
+                    item.setText(2, versionInfoList.get(i).getComment());
+                }
+            } catch (IllegalArgumentException e) {
+                try {
+                    if (CommonPreferencePage.isEditingCommentHistoryXmlEnabled()) {
+                        initAndOpenVersionCommentXmlEditor();
+                    }
+                } catch (Exception ex) {
+                    PluginLogger.logErrorWithoutDialog("Error opening version comment xml editor ", ex);
+                } finally {
+                    PluginLogger.logError("Error parsing version comment xml " + definition.getName(), e);
+                }
             }
             historyTable.setSelection(0);
             fillDialogFields(historyTable.getItem(0));

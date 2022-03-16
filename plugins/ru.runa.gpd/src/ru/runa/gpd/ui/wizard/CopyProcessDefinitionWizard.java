@@ -1,6 +1,7 @@
 package ru.runa.gpd.ui.wizard;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Objects;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -50,8 +51,11 @@ public class CopyProcessDefinitionWizard extends Wizard implements INewWizard {
                         IFile definitionFile = IOUtils.getProcessDefinitionFile(targetFolder);
                         monitor.worked(1);
                         ProcessDefinition definition = ProcessCache.getProcessDefinition(definitionFile);
-                        definition.getVersionInfoList().clear();
-                        definition.setName(page.getProcessName());
+                        boolean hasProcessNameBeenChanged = !Objects.equals(definition.getName(), page.getProcessName());
+                        if (hasProcessNameBeenChanged) {
+                        	definition.getVersionInfoList().clear();
+                        	definition.setName(page.getProcessName());
+                        }
                         definition.setLanguage(page.getLanguage());
                         WorkspaceOperations.saveProcessDefinition(definition);
                         ProcessCache.newProcessDefinitionWasCreated(definitionFile);
