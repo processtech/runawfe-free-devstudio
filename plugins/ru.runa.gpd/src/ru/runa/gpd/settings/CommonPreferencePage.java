@@ -54,6 +54,10 @@ public class CommonPreferencePage extends FieldEditorPreferencePage implements I
                 new String[][] { { Localization.getString("disable"), Localization.getString("disable") },
                         { Localization.getString("enable"), Localization.getString("enable") } },
                 getFieldEditorParent()));
+        addField(new RadioGroupFieldEditor(P_ENABLE_EDITING_COMMENT_HISTORY_XML, Localization.getString("pref.commons.enableEditingCommentHistoryXml"), 2,
+                new String[][] { { Localization.getString("disable"), Localization.getString("disable") },
+                        { Localization.getString("enable"), Localization.getString("enable") } },
+                getFieldEditorParent()));
         addField(new BooleanFieldEditor(P_CONFIRM_DELETION, Localization.getString("pref.commons.confirmDeletion"), getFieldEditorParent()));
         addField(new BooleanFieldEditor(P_PROCESS_SAVE_HISTORY, Localization.getString("pref.commons.processSaveHistory"), getFieldEditorParent()));
         savepointNumberEditor = new IntegerFieldEditor(P_PROCESS_SAVEPOINT_NUMBER, Localization.getString("pref.commons.processSavepointNumber"),
@@ -84,6 +88,10 @@ public class CommonPreferencePage extends FieldEditorPreferencePage implements I
 
     public static boolean isExportWithScalingEnabled() {
         return Activator.getDefault().getPreferenceStore().getString(P_ENABLE_EXPORT_WITH_SCALING).equals(Localization.getString("enable"));
+    }
+    
+    public static boolean isEditingCommentHistoryXmlEnabled() {
+        return Activator.getDefault().getPreferenceStore().getString(P_ENABLE_EDITING_COMMENT_HISTORY_XML).equals(Localization.getString("enable"));
     }
 
     public static boolean isInternalStorageFunctionalityEnabled() {

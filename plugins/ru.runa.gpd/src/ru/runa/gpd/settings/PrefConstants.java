@@ -54,6 +54,7 @@ public interface PrefConstants {
     public static final String P_DATE_FORMAT_PATTERN = "dateFormat";
     public static final String P_ENABLE_REGULATIONS_MENU_ITEMS = "enabledRegulationsMenuItems";
     public static final String P_ENABLE_EXPORT_WITH_SCALING = "enabledExportWithScaling";
+    public static final String P_ENABLE_EDITING_COMMENT_HISTORY_XML = "enabledEditingCommentHistoryXml";
     public static final String P_CONFIRM_DELETION = "confirmDeletion";
     public static final String P_PROCESS_SAVE_HISTORY = "processSaveHistory";
     public static final String P_PROCESS_SAVEPOINT_NUMBER = "processSavepointNumber";
