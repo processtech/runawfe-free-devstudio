@@ -592,6 +592,7 @@ public class GlobalValidatorsPage extends Composite implements PropertyChangeLis
             List<ValidatorConfig> data = (List<ValidatorConfig>) clipboard.getContents(GlobalValidatorTransfer.getInstance());
             if (data != null) {
                 for (ValidatorConfig config : data) {
+                    config.getTransitionNames().clear();
                     adjustTransitions(config);
                     validatorConfigs.add(config);
                 }
