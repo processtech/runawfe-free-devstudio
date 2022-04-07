@@ -91,7 +91,7 @@ public class ProcessExplorerTreeView extends ViewPart implements ISelectionListe
     @Override
     public void createPartControl(Composite parent) {
         UiUtil.hideToolBar(getViewSite());
-        viewer = new TreeViewer(parent, SWT.NONE);
+        viewer = new TreeViewer(parent, SWT.MULTI);
         viewer.setContentProvider(new ProcessExplorerContentProvider());
         viewer.setLabelProvider(new ProcessExplorerLabelProvider());
         viewer.setInput(new Object());
