@@ -10,6 +10,8 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 
+import com.google.common.collect.Maps;
+
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.extension.VariableFormatArtifact;
 import ru.runa.gpd.extension.VariableFormatRegistry;
@@ -25,8 +27,6 @@ import ru.runa.wfe.var.format.MapFormat;
 import ru.runa.wfe.var.format.StringFormat;
 import ru.runa.wfe.var.format.UserTypeFormat;
 
-import com.google.common.collect.Maps;
-
 public class VariableFormatPage extends DynaContentWizardPage {
     private final VariableContainer variableContainer;
     private VariableFormatArtifact type;
@@ -37,10 +37,8 @@ public class VariableFormatPage extends DynaContentWizardPage {
     private static Map<String, String[]> containerFormats = Maps.newHashMap();
     static {
         containerFormats.put(ListFormat.class.getName(), new String[] { Localization.getString("VariableFormatPage.components.list.value") });
-        containerFormats.put(
-                MapFormat.class.getName(),
-                new String[] { Localization.getString("VariableFormatPage.components.map.key"),
-                        Localization.getString("VariableFormatPage.components.map.value") });
+        containerFormats.put(MapFormat.class.getName(), new String[] { Localization.getString("VariableFormatPage.components.map.key"),
+                Localization.getString("VariableFormatPage.components.map.value") });
     }
 
     public VariableFormatPage(ProcessDefinition processDefinition, VariableContainer variableContainer, Variable variable, boolean editFormat) {
@@ -75,7 +73,7 @@ public class VariableFormatPage extends DynaContentWizardPage {
 
     @Override
     protected void createContent(Composite composite) {
-        final Combo combo = createTypeCombo(composite);
+        final Combo combo = createTypeCombo(composite, false, false);
         combo.setEnabled(editFormat);
         combo.setText(userType != null ? userType.getName() : type.getLabel());
         combo.addSelectionListener(new LoggingSelectionAdapter() {
@@ -105,12 +103,15 @@ public class VariableFormatPage extends DynaContentWizardPage {
         }
     }
 
-    private Combo createTypeCombo(Composite composite) {
+    private Combo createTypeCombo(Composite composite, boolean disableListFormat, boolean disableMapFormat) {
         final Combo combo = new Combo(composite, SWT.BORDER | SWT.READ_ONLY);
         for (VariableFormatArtifact artifact : VariableFormatRegistry.getInstance().getAll()) {
-            if (UserTypeFormat.class.getName().equals(artifact.getName())) {
+            if (UserTypeFormat.class.getName().equals(artifact.getName())
+                    || disableListFormat && ListFormat.class.getName().equals(artifact.getName())
+                    || disableMapFormat && MapFormat.class.getName().equals(artifact.getName())) {
                 continue;
             }
+
             if (artifact.isEnabled()) {
                 combo.add(artifact.getLabel());
             }
@@ -134,7 +135,7 @@ public class VariableFormatPage extends DynaContentWizardPage {
             for (int i = 0; i < labels.length; i++) {
                 Label label = new Label(dynaComposite, SWT.NONE);
                 label.setText(labels[i]);
-                final Combo combo = createTypeCombo(dynaComposite);
+                final Combo combo = createTypeCombo(dynaComposite, true, true);
                 combo.setData(i);
                 VariableFormatArtifact artifact = VariableFormatRegistry.getInstance().getArtifact(componentClassNames[i]);
                 combo.setText(artifact != null ? artifact.getLabel() : componentClassNames[i]);
