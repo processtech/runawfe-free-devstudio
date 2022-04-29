@@ -70,7 +70,19 @@ public abstract class WfeServerConnectorDataImporter<T> {
                 callback.onCompleted();
             }
         } catch (InvocationTargetException ex) {
-            Dialogs.error(Localization.getString("error.Synchronize"), ex.getTargetException());
+            String exceptionMessage = ex.getTargetException().getMessage();
+            if (exceptionMessage != null
+                    && exceptionMessage.contains("Unable to acquire version using")) {
+                Dialogs.error(Localization.getString("error.synchronize.simulator.connect"), ex.getTargetException());
+            } else if (exceptionMessage != null
+                    && exceptionMessage.contains("Connection refused: connect")) {
+                Dialogs.error(Localization.getString("error.synchronize.simulator.start"), ex.getTargetException());
+            } else if (exceptionMessage != null
+                    && exceptionMessage.contains("XML reader error")) {
+                Dialogs.error(String.format(Localization.getString("error.synchronize.port"), WfeServerConnector.getInstance().getSettings().getPort()));
+            } else {
+                Dialogs.error(Localization.getString("error.Synchronize"), ex.getTargetException());
+            }
             if (callback != null) {
                 callback.onFailed();
             }
