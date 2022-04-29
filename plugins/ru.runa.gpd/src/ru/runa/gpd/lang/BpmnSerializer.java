@@ -892,7 +892,7 @@ public class BpmnSerializer extends ProcessSerializer {
             String parentNodeId = boundaryEventElement.attributeValue(ATTACHED_TO_REF);
             GraphElement parent = definition.getGraphElementByIdNotNull(parentNodeId);
             IBoundaryEvent boundaryEvent = (IBoundaryEvent) parseEventElement(definition, parent, boundaryEventElement);
-            ((GraphElement) boundaryEvent).setParentContainer(parent);
+            ((GraphElement) boundaryEvent).setUiParentContainer(parent);
             String interrupting = boundaryEventElement.attributeValue(CANCEL_ACTIVITY);
             if (!Strings.isNullOrEmpty(interrupting)) {
                 boundaryEvent.setInterruptingBoundaryEvent(Boolean.parseBoolean(interrupting));
@@ -940,7 +940,7 @@ public class BpmnSerializer extends ProcessSerializer {
         definition.getChildren(ExclusiveGateway.class).stream().forEach(eg -> TransitionUtil.setDefaultFlow(eg, eg.getDelegationConfiguration()));
         for (Map.Entry<Swimlane, List<String>> entry : swimlaneElementIds.entrySet()) {
             for (String nodeId : entry.getValue()) {
-                definition.getGraphElementByIdNotNull(nodeId).setParentContainer(entry.getKey());
+                definition.getGraphElementByIdNotNull(nodeId).setUiParentContainer(entry.getKey());
             }
         }
 

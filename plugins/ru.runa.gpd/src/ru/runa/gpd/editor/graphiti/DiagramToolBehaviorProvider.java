@@ -99,8 +99,8 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
         boolean allowTargetNodeCreation = (element instanceof Node) && ((Node) element).canAddLeavingTransition();
         //
         ContainerShape targetContainer;
-        if (element.getParentContainer() instanceof Swimlane) {
-            targetContainer = (ContainerShape) getFeatureProvider().getPictogramElementForBusinessObject(element.getParentContainer());
+        if (element.getUiParentContainer() instanceof Swimlane) {
+            targetContainer = (ContainerShape) getFeatureProvider().getPictogramElementForBusinessObject(element.getUiParentContainer());
         } else {
             targetContainer = getFeatureProvider().getDiagramTypeProvider().getDiagram();
         }
