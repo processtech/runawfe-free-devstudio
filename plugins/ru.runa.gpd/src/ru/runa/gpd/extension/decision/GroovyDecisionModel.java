@@ -1,15 +1,13 @@
 package ru.runa.gpd.extension.decision;
 
+import com.google.common.collect.Sets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.util.VariableUtils;
-
-import com.google.common.collect.Sets;
 
 public class GroovyDecisionModel {
     private final List<IfExpr> ifs = new ArrayList<IfExpr>();
@@ -149,7 +147,7 @@ public class GroovyDecisionModel {
                 return ifExpr.getTransition();
             }
         }
-        return null;
+        return "";
     }
 
     private static String normalizeString(String str) {

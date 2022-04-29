@@ -2,7 +2,6 @@ package ru.runa.gpd.extension.decision;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.SWT;
@@ -23,7 +22,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.SharedImages;
@@ -40,8 +38,8 @@ import ru.runa.gpd.ui.dialog.ChooseVariableNameDialog;
 import ru.runa.gpd.ui.dialog.FilterBox;
 import ru.runa.gpd.ui.dialog.UserInputDialog;
 import ru.runa.gpd.util.GroovyStuff;
-import ru.runa.gpd.util.VariableUtils;
 import ru.runa.gpd.util.GroovyStuff.Item;
+import ru.runa.gpd.util.VariableUtils;
 
 public class GroovyEditorDialog extends Dialog {
     private static final Image upImage = SharedImages.getImage("icons/up.gif");
@@ -61,6 +59,7 @@ public class GroovyEditorDialog extends Dialog {
     private Combo[] operBoxes;
     private Combo defaultTransitionCombo;
     private String result;
+    private static final String NO_TRANSITION_BY_DEFAULT = "GroovyEditor.no.transition.byDefault";
 
     public GroovyEditorDialog(ProcessDefinition definition, List<String> transitionNames, String initValue) {
         super(Display.getCurrent().getActiveShell());
@@ -278,6 +277,8 @@ public class GroovyEditorDialog extends Dialog {
             Label defaultLabel = new Label(bottomComposite, SWT.NONE);
             defaultLabel.setText(Localization.getString("GroovyEditor.byDefault") + ":");
             defaultTransitionCombo = new Combo(bottomComposite, SWT.READ_ONLY);
+            defaultTransitionCombo.add(Localization.getString(NO_TRANSITION_BY_DEFAULT));
+            defaultTransitionCombo.select(0);
             for (String trName : transitionNames) {
                 defaultTransitionCombo.add(trName);
             }
