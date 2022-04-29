@@ -229,11 +229,24 @@ public class ExportParWizardPage extends ExportWizardPage {
                 }
             } catch (Throwable th) {
                 PluginLogger.logErrorWithoutDialog(Localization.getString("ExportParWizardPage.error.export"), th);
-                setErrorMessage(stripSoapTrash(Throwables.getRootCause(th).getMessage()));
+                setErrorMessage(stripExceptionMessage(Throwables.getRootCause(th).getMessage()));
                 return false;
             }
         }
         return result;
+    }
+
+    private String stripExceptionMessage(String message) {
+        if (message == null) {
+            return "";
+        }
+        if (message.contains("Connection refused: connect")) {
+            return Localization.getString("ExportParWizardPage.error.simulator.start");
+        }
+        if (message.contains("Unable to acquire version using")) {
+            return Localization.getString("ExportParWizardPage.error.simulator.connect");
+        }
+        return stripSoapTrash(message);
     }
 
     private String stripSoapTrash(String trash) {
