@@ -44,7 +44,7 @@ public abstract class GraphElement extends EventSupport
         implements IPropertySource, PropertyNames, IActionFilter, VariableContainer, ProcessDefinitionAware {
     private PropertyChangeListener delegatedListener;
     private GraphElement parent;
-    private GraphElement parentContainer;
+    private GraphElement uiParentContainer;
     private final List<GraphElement> children = new ArrayList<GraphElement>();
     private Rectangle constraint;
     private String id;
@@ -60,12 +60,12 @@ public abstract class GraphElement extends EventSupport
     /**
      * @return parent container or <code>null</code> in case of {@link ProcessDefinition}
      */
-    public GraphElement getParentContainer() {
-        return parentContainer;
+    public GraphElement getUiParentContainer() {
+        return uiParentContainer;
     }
 
-    public void setParentContainer(GraphElement parentContainer) {
-        this.parentContainer = parentContainer;
+    public void setUiParentContainer(GraphElement uiParentContainer) {
+        this.uiParentContainer = uiParentContainer;
     }
 
     @Override

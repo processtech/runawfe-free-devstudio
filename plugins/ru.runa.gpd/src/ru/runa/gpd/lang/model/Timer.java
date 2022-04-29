@@ -115,7 +115,7 @@ public class Timer extends Node implements IBoundaryEvent, IBoundaryEventContain
         if (getAction() != null) {
             copy.setAction(getAction().makeCopy(parent.getProcessDefinition()));
         }
-        copy.setParentContainer(parent);
+        copy.setUiParentContainer(parent);
         return copy;
     }
 

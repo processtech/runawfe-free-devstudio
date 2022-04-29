@@ -22,11 +22,13 @@ import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.ui.custom.FileNameChecker;
 import ru.runa.gpd.util.IOUtils;
+import ru.runa.gpd.util.SwimlaneDisplayMode;
 
 public class CopyProcessDefinitionWizardPage extends WizardPage {
     private Combo projectCombo;
     private Text processText;
     private Combo languageCombo;
+    private Combo swimlaneDisplayCombo;
     private final IFolder sourceProcessFolder;
     private final ProcessDefinition sourceDefinition;
     private final List<IContainer> processContainers;
@@ -59,6 +61,7 @@ public class CopyProcessDefinitionWizardPage extends WizardPage {
         createProjectField(composite);
         createProcessNameField(composite);
         createJpdlVersionCombo(composite);
+        createBpmnDisplaySwimlaneCombo(composite);
         setControl(composite);
         Dialog.applyDialogFont(composite);
         setPageComplete(false);
@@ -107,6 +110,20 @@ public class CopyProcessDefinitionWizardPage extends WizardPage {
         languageCombo.setText(sourceDefinition.getLanguage().name());
     }
 
+    private void createBpmnDisplaySwimlaneCombo(Composite parent) {
+        Label label = new Label(parent, SWT.NONE);
+        label.setText(Localization.getString("label.bpmn.display.swimlane"));
+        swimlaneDisplayCombo = new Combo(parent, SWT.SINGLE | SWT.READ_ONLY | SWT.BORDER);
+        for (int i = 0; i < SwimlaneDisplayMode.values().length; i++) {
+            SwimlaneDisplayMode mode = SwimlaneDisplayMode.values()[i];
+            swimlaneDisplayCombo.add(mode.getLabel());
+            if (sourceDefinition.getSwimlaneDisplayMode().equals(mode)) {
+                swimlaneDisplayCombo.select(i);
+            }
+        }
+        swimlaneDisplayCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+    }
+
     private void verifyContentsValid() {
         if (projectCombo.getText().length() == 0) {
             setErrorMessage(Localization.getString("error.choose_project"));
@@ -134,8 +151,13 @@ public class CopyProcessDefinitionWizardPage extends WizardPage {
         return Language.valueOf(languageCombo.getText());
     }
 
+    public SwimlaneDisplayMode getSwimlaneDisplayMode() {
+        return SwimlaneDisplayMode.values()[swimlaneDisplayCombo.getSelectionIndex()];
+    }
+
     public IFolder getTargetProcessFolder() {
         IContainer container = processContainers.get(projectCombo.getSelectionIndex());
         return IOUtils.getProcessFolder(container, getProcessName());
     }
+
 }

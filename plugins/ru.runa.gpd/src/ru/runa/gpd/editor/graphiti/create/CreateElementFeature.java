@@ -82,7 +82,7 @@ public class CreateElementFeature extends AbstractCreateFeature implements GEFCo
         if (graphElement instanceof CatchEventNode && parent instanceof IBoundaryEventContainer) {
             ((CatchEventNode) graphElement).setEventNodeType(EventNodeType.signal);
         }
-        graphElement.setParentContainer(parent);
+        graphElement.setUiParentContainer(parent);
         Swimlane swimlane = null;
         if (parent instanceof Swimlane) {
             swimlane = (Swimlane) parent;

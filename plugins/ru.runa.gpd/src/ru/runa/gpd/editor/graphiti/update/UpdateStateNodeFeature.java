@@ -19,7 +19,7 @@ public class UpdateStateNodeFeature extends UpdateFeature {
     public IReason updateNeeded(IUpdateContext context) {
         PictogramElement pe = context.getPictogramElement();
         Node bo = (Node) getBusinessObjectForPictogramElement(pe);
-        if (bo instanceof SwimlanedNode && !(bo.getParentContainer() instanceof Swimlane)) {
+        if (bo instanceof SwimlanedNode && !(bo.getUiParentContainer() instanceof Swimlane)) {
             String swimlaneName = PropertyUtil.findTextValueRecursive(pe, GaProperty.SWIMLANE_NAME);
             if (!Objects.equal(swimlaneName, ((SwimlanedNode) bo).getSwimlaneLabel())) {
                 return Reason.createTrueReason();

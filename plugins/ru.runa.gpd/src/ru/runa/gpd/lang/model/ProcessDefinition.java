@@ -370,10 +370,10 @@ public class ProcessDefinition extends NamedGraphElement implements Describable,
     public List<GraphElement> getContainerElements(GraphElement parentContainer) {
         List<GraphElement> list = Lists.newArrayList();
         for (GraphElement graphElement : getElementsRecursive()) {
-            if (Objects.equal(parentContainer, graphElement.getParentContainer())) {
+            if (Objects.equal(parentContainer, graphElement.getUiParentContainer())) {
                 list.add(graphElement);
             }
-            if (parentContainer == this && graphElement.getParentContainer() == null) {
+            if (parentContainer == this && graphElement.getUiParentContainer() == null) {
                 list.add(graphElement);
             }
         }

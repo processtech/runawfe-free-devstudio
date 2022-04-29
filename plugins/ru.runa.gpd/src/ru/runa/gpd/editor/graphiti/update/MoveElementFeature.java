@@ -90,7 +90,7 @@ public class MoveElementFeature extends DefaultMoveShapeFeature {
         }
         if (context.getSourceContainer() != context.getTargetContainer()) {
             GraphElement parent = (GraphElement) getBusinessObjectForPictogramElement(context.getTargetContainer());
-            element.setParentContainer(parent);
+            element.setUiParentContainer(parent);
             if (element instanceof SwimlanedNode) {
                 Swimlane swimlane = null;
                 if (parent instanceof Swimlane) {

@@ -135,7 +135,7 @@ public class CreateDragAndDropElementFeature extends AbstractCreateConnectionFea
             }
             ((Action) graphElement).setName(getCreateName() + " " + (parent.getChildren(Action.class).size() + 1));
         }
-        graphElement.setParentContainer(parent);
+        graphElement.setUiParentContainer(parent);
         Swimlane swimlane = null;
         if (parent instanceof Swimlane) {
             swimlane = (Swimlane) parent;
