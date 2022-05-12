@@ -22,6 +22,7 @@ public interface PropertyNames {
     public static final String PROPERTY_SCRIPTING_NAME = "scriptingName";
     public static final String PROPERTY_FORMAT = "format";
     public static final String PROPERTY_PUBLIC_VISIBILITY = "publicVisibility";
+    public static final String PROPERTY_EDITABLE_IN_CHAT = "editableInChat";
     public static final String PROPERTY_DEFAULT_VALUE = "defaultValue";
     public static final String PROPERTY_STORE_TYPE = "storeType";
     public static final String PROPERTY_EVENT_TYPE = "eventType";

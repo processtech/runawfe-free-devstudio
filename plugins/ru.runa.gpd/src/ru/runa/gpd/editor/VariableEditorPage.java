@@ -431,6 +431,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
                 variable.setFormat(wizard.getVariable().getFormat());
                 variable.setUserType(wizard.getVariable().getUserType());
                 variable.setPublicVisibility(wizard.getVariable().isPublicVisibility());
+                variable.setEditableInChat(wizard.getVariable().isEditableInChat());
                 variable.setDefaultValue(wizard.getVariable().getDefaultValue());
                 variable.setStoreType(wizard.getVariable().getStoreType());
                 if (previousFileVariableDefaultValue != null && !EmbeddedFileUtils.isFileVariableClassName(variable.getJavaClassName())) {

@@ -25,6 +25,7 @@ public class Variable extends NamedGraphElement implements Describable {
     private String scriptingName;
     private String format;
     private boolean publicVisibility;
+    private boolean editableInChat;
     private String defaultValue;
     private VariableUserType userType;
     private VariableStoreType storeType = VariableStoreType.DEFAULT;
@@ -43,6 +44,7 @@ public class Variable extends NamedGraphElement implements Describable {
     public Variable(Variable variable) {
         this(variable.getName(), variable.getScriptingName(), variable.getFormat(), variable.getUserType());
         setPublicVisibility(variable.isPublicVisibility());
+        setEditableInChat(variable.isEditableInChat());
         setDefaultValue(variable.getDefaultValue());
         setStoreType(variable.getStoreType());
     }
@@ -50,6 +52,7 @@ public class Variable extends NamedGraphElement implements Describable {
     public Variable(String name, String scriptingName, Variable variable) {
         this(name, scriptingName, variable.getFormat(), variable.getUserType());
         setPublicVisibility(variable.isPublicVisibility());
+        setEditableInChat(variable.isEditableInChat());
         setDefaultValue(variable.getDefaultValue());
         setStoreType(variable.getStoreType());
     }
@@ -155,6 +158,16 @@ public class Variable extends NamedGraphElement implements Describable {
         firePropertyChange(PROPERTY_PUBLIC_VISIBILITY, old, this.publicVisibility);
     }
 
+    public boolean isEditableInChat() {
+        return editableInChat;
+    }
+
+    public void setEditableInChat(boolean editableInChat) {
+        boolean old = this.editableInChat;
+        this.editableInChat = editableInChat;
+        firePropertyChange(PROPERTY_EDITABLE_IN_CHAT, old, this.editableInChat);
+    }
+
     public String getDefaultValue() {
         return defaultValue;
     }
@@ -185,6 +198,7 @@ public class Variable extends NamedGraphElement implements Describable {
     protected void fillCustomPropertyDescriptors(List<IPropertyDescriptor> descriptors) {
         descriptors.add(new PropertyDescriptor(PROPERTY_FORMAT, Localization.getString("Variable.property.format")));
         descriptors.add(new PropertyDescriptor(PROPERTY_PUBLIC_VISIBILITY, Localization.getString("Variable.property.publicVisibility")));
+        descriptors.add(new PropertyDescriptor(PROPERTY_EDITABLE_IN_CHAT, Localization.getString("Variable.property.editableInChat")));
         descriptors.add(new PropertyDescriptor(PROPERTY_DEFAULT_VALUE, Localization.getString("Variable.property.defaultValue")));
         descriptors.add(new PropertyDescriptor(PROPERTY_STORE_TYPE, Localization.getString("Variable.property.storeType")));
     }
@@ -199,6 +213,9 @@ public class Variable extends NamedGraphElement implements Describable {
         }
         if (PROPERTY_PUBLIC_VISIBILITY.equals(id)) {
             return publicVisibility ? Localization.getString("yes") : Localization.getString("false");
+        }
+        if (PROPERTY_EDITABLE_IN_CHAT.equals(id)) {
+            return editableInChat ? Localization.getString("yes") : Localization.getString("false");
         }
         if (PROPERTY_DEFAULT_VALUE.equals(id)) {
             return defaultValue == null ? "" : defaultValue;
@@ -235,6 +252,7 @@ public class Variable extends NamedGraphElement implements Describable {
         copyVariable.setScriptingName(getScriptingName());
         copyVariable.setDefaultValue(getDefaultValue());
         copyVariable.setPublicVisibility(isPublicVisibility());
+        copyVariable.setEditableInChat(isEditableInChat());
         copyVariable.setStoreType(getStoreType());
         copyVariable.setGlobal(isGlobal());
         super.fillCopyCustomFields(copyVariable);
