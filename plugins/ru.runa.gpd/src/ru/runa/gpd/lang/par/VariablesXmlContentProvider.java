@@ -24,6 +24,7 @@ public class VariablesXmlContentProvider extends AuxContentProvider {
     private static final String VARIABLE = "variable";
     private static final String VARIABLES = "variables";
     private static final String PUBLIC = "public";
+    private static final String EDITABLE_IN_CHAT = "editableInChat";
     private static final String DEFAULT_VALUE = "defaultValue";
     private static final String SCRIPTING_NAME = "scriptingName";
     private static final String STORE_TYPE = "storeType";
@@ -85,6 +86,8 @@ public class VariablesXmlContentProvider extends AuxContentProvider {
                 try {
                     String publicVisibilityStr = element.attributeValue(PUBLIC);
                     boolean publicVisibility = "true".equals(publicVisibilityStr);
+                    String editableInChatStr = element.attributeValue(EDITABLE_IN_CHAT);
+                    boolean editableInChat = "true".equals(editableInChatStr);
                     String description = element.attributeValue(DESCRIPTION);
                     if ("false".equals(description)) {
                         // remove old comments due to some bug
@@ -99,6 +102,7 @@ public class VariablesXmlContentProvider extends AuxContentProvider {
                     swimlane.setScriptingName(scriptingName);
                     swimlane.setDescription(description);
                     swimlane.setPublicVisibility(publicVisibility);
+                    swimlane.setEditableInChat(editableInChat);
                     swimlane.setEditorPath(element.attributeValue(EDITOR));
                     swimlane.setStoreType(element.attributeValue(STORE_TYPE, null) != null
                             ? VariableStoreType.valueOf(element.attributeValue(STORE_TYPE).toUpperCase())
@@ -129,6 +133,7 @@ public class VariablesXmlContentProvider extends AuxContentProvider {
             format = BackCompatibilityClassNames.getClassName(format);
         }
         boolean publicVisibility = "true".equals(element.attributeValue(PUBLIC));
+        boolean editableInChat = "true".equals(element.attributeValue(EDITABLE_IN_CHAT));
         String defaultValue = element.attributeValue(DEFAULT_VALUE);
         String scriptingName = element.attributeValue(SCRIPTING_NAME, variableName);
         String description = element.attributeValue(DESCRIPTION);
@@ -143,6 +148,7 @@ public class VariablesXmlContentProvider extends AuxContentProvider {
         }
         Variable variable = new Variable(variableName, scriptingName, format, userType);
         variable.setPublicVisibility(publicVisibility);
+        variable.setEditableInChat(editableInChat);
         variable.setDefaultValue(defaultValue);
         variable.setDescription(description);
         variable.setStoreType(storeType);
@@ -196,6 +202,9 @@ public class VariablesXmlContentProvider extends AuxContentProvider {
         }
         if (variable.isPublicVisibility()) {
             element.addAttribute(PUBLIC, "true");
+        }
+        if (variable.isEditableInChat()) {
+            element.addAttribute(EDITABLE_IN_CHAT, "true");
         }
         if (!Strings.isNullOrEmpty(variable.getDescription())) {
             element.addAttribute(DESCRIPTION, variable.getDescription());

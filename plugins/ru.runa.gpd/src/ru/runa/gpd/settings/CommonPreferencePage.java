@@ -71,9 +71,10 @@ public class CommonPreferencePage extends FieldEditorPreferencePage implements I
         addField(enableUserActivityLogging);
         addField(new BooleanFieldEditor(P_INTERNAL_STORAGE_FUNCTIONALITY_ENABLED,
                 Localization.getString("pref.commons.internalStorageFunctionalityEnabled"), getFieldEditorParent()));
-
-        addField(
-                new BooleanFieldEditor(P_GLOBAL_OBJECTS_ENABLED, Localization.getString("pref.commons.enableGlobalObjects"), getFieldEditorParent()));
+        addField(new BooleanFieldEditor(P_GLOBAL_OBJECTS_ENABLED,
+                Localization.getString("pref.commons.enableGlobalObjects"), getFieldEditorParent()));
+        addField(new BooleanFieldEditor(P_CHAT_FUNCTIONALITY_ENABLED,
+                Localization.getString("pref.commons.chatFunctionalityEnabled"), getFieldEditorParent()));
     }
 
     @Override
@@ -106,6 +107,10 @@ public class CommonPreferencePage extends FieldEditorPreferencePage implements I
         return Activator.getDefault().getPreferenceStore().getBoolean(P_GLOBAL_OBJECTS_ENABLED);
     }
 
+    public static boolean isChatFunctionalityEnabled() {
+        return Activator.getDefault().getPreferenceStore().getBoolean(P_CHAT_FUNCTIONALITY_ENABLED);
+    }
+    
     @Override
     public void propertyChange(PropertyChangeEvent event) {
         super.propertyChange(event);

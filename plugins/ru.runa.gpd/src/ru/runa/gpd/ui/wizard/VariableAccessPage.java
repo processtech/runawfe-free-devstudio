@@ -1,22 +1,27 @@
 package ru.runa.gpd.ui.wizard;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.model.Variable;
+import ru.runa.gpd.settings.CommonPreferencePage;
 import ru.runa.gpd.ui.custom.ContentWizardPage;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 
 public class VariableAccessPage extends ContentWizardPage {
     private boolean publicVisibility;
+    private boolean editableInChat;
 
     public VariableAccessPage(Variable variable) {
         if (variable != null) {
             this.publicVisibility = variable.isPublicVisibility();
+            this.editableInChat = variable.isEditableInChat();
         }
     }
 
@@ -37,6 +42,18 @@ public class VariableAccessPage extends ContentWizardPage {
                 publicVisibility = combo.getSelectionIndex() == 1;
             }
         });
+
+        if (CommonPreferencePage.isChatFunctionalityEnabled()) {
+            final Button editableInChatCheckbox = new Button(composite, SWT.CHECK);
+            editableInChatCheckbox.setSelection(editableInChat);
+            editableInChatCheckbox.setText(Localization.getString("Variable.property.editableInChat"));
+            editableInChatCheckbox.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    editableInChat = editableInChatCheckbox.getSelection();
+                }
+            });
+        }
     }
 
     @Override
@@ -45,5 +62,9 @@ public class VariableAccessPage extends ContentWizardPage {
 
     public boolean isPublicVisibility() {
         return publicVisibility;
+    }
+
+    public boolean isEditableInChat() {
+        return editableInChat;
     }
 }

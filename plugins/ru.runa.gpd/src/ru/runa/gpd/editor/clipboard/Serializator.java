@@ -59,6 +59,7 @@ final class Serializator {
         out.writeObject(variable.getScriptingName());
         out.writeObject(variable.getFormat());
         out.writeBoolean(variable.isPublicVisibility());
+        out.writeBoolean(variable.isEditableInChat());
         out.writeObject(Strings.nullToEmpty(variable.getDefaultValue()));
         out.writeObject(variable.getName());
         out.writeObject(Strings.nullToEmpty(variable.getDescription()));
@@ -94,6 +95,7 @@ final class Serializator {
         variable.setScriptingName((String) in.readObject());
         variable.setFormat((String) in.readObject());
         variable.setPublicVisibility(in.readBoolean());
+        variable.setEditableInChat(in.readBoolean());
         variable.setDefaultValue((String) in.readObject());
         variable.setName((String) in.readObject());
         variable.setDescription((String) in.readObject());

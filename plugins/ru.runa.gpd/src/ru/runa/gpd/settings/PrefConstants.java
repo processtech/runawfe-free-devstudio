@@ -62,4 +62,5 @@ public interface PrefConstants {
     public static final String P_KEEP_VARIABLE_VALIDATION_ON_COMPONENT_REMOVAL = "keepVariableValidationOnComponentRemoval";
     public static final String P_INTERNAL_STORAGE_FUNCTIONALITY_ENABLED = "internalStorageFunctionalityEnabled";
     public static final String P_GLOBAL_OBJECTS_ENABLED = "globalObjectsEnabled";
+    public static final String P_CHAT_FUNCTIONALITY_ENABLED = "chatFunctionalityEnabled";
 }
