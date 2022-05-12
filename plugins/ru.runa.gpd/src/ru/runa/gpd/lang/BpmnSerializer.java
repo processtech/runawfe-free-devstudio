@@ -51,6 +51,7 @@ import ru.runa.gpd.lang.model.bpmn.DataStore;
 import ru.runa.gpd.lang.model.bpmn.DottedTransition;
 import ru.runa.gpd.lang.model.bpmn.EventNodeType;
 import ru.runa.gpd.lang.model.bpmn.ExclusiveGateway;
+import ru.runa.gpd.lang.model.bpmn.BusinessRule;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEvent;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 import ru.runa.gpd.lang.model.bpmn.ParallelGateway;
@@ -94,6 +95,7 @@ public class BpmnSerializer extends ProcessSerializer {
     private static final String SUBPROCESS = "subProcess";
     private static final String MULTI_INSTANCE = "multiInstance";
     private static final String EXCLUSIVE_GATEWAY = "exclusiveGateway";
+    private static final String BUSINESS_RULE = "businessRuleTask";
     private static final String PARALLEL_GATEWAY = "parallelGateway";
     private static final String DEFAULT_TASK_DEADLINE = "defaultTaskDeadline";
     private static final String TASK_DEADLINE = "taskDeadline";
@@ -204,6 +206,10 @@ public class BpmnSerializer extends ProcessSerializer {
         List<ExclusiveGateway> exclusiveGateways = definition.getChildren(ExclusiveGateway.class);
         for (ExclusiveGateway gateway : exclusiveGateways) {
             writeNode(processElement, gateway);
+        }
+        List<BusinessRule> businessRules = definition.getChildren(BusinessRule.class);
+        for (BusinessRule businessRule : businessRules) {
+            writeNode(processElement, businessRule);
         }
         List<TaskState> taskStates = definition.getChildren(TaskState.class);
         for (TaskState taskState : taskStates) {
@@ -831,6 +837,10 @@ public class BpmnSerializer extends ProcessSerializer {
         }
         List<Element> exclusiveGatewayElements = processElement.elements(EXCLUSIVE_GATEWAY);
         for (Element node : exclusiveGatewayElements) {
+            create(node, definition);
+        }
+        List<Element> businessRuleElements = processElement.elements(BUSINESS_RULE);
+        for (Element node : businessRuleElements) {
             create(node, definition);
         }
         List<Element> subprocessElements = processElement.elements(SUBPROCESS);

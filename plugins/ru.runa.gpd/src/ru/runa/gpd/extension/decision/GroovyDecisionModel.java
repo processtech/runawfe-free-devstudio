@@ -9,8 +9,8 @@ import java.util.regex.Pattern;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.util.VariableUtils;
 
-public class GroovyDecisionModel {
-    private final List<IfExpr> ifs = new ArrayList<IfExpr>();
+public class GroovyDecisionModel extends GroovyModel {
+    private final List<IfExpression> ifExpressions = new ArrayList<>();
     private static Pattern IF_PATTERN = Pattern.compile("if \\((.*)\\)");
     private static Pattern RETURN_PATTERN = Pattern.compile("return \"([^\"]*)\";");
 
@@ -26,9 +26,9 @@ public class GroovyDecisionModel {
             String ifContent = normalizeString(matcher.group(1));
             String[] strings = ifContent.split(" ");
             // tmp
-            String lexem1Text = "";
+            String firstVariableText = "";
             String operator;
-            String lexem2Text = "";
+            String secondVariableText = "";
             boolean isOperationDateType = false;
             if (strings.length == 1 || ifContent.indexOf("\"") > 0) {
                 // i.e. var1.equals(var2) or var1.contains(var2)
@@ -44,8 +44,8 @@ public class GroovyDecisionModel {
                     start = 1;
                     operator = "!=";
                 }
-                lexem1Text = ifContent.substring(start, ifContent.indexOf("."));
-                lexem2Text = ifContent.substring(ifContent.indexOf("(") + 1, ifContent.length() - 1);
+                firstVariableText = ifContent.substring(start, ifContent.indexOf("."));
+                secondVariableText = ifContent.substring(ifContent.indexOf("(") + 1, ifContent.length() - 1);
             } else if (strings.length > 3 && ifContent.contains(" || ") && ifContent.contains("ru.runa.wfe.commons.CalendarUtil.dateToCalendar")
                     && ifContent.endsWith(" 0")) {
                 // GroovyTypeSupport.DateType
@@ -53,25 +53,24 @@ public class GroovyDecisionModel {
                 String ifContentWithoutNullCheck = ifContent.substring(ifContent.lastIndexOf(" || ") + " || ".length());
                 String[] stringsWithoutNullCheck = ifContentWithoutNullCheck.split(" ");
                 String[] parts = stringsWithoutNullCheck[0].split("\\.compareTo\\(");
-                lexem1Text = parts[0].substring(parts[0].lastIndexOf("(") + 1, parts[0].indexOf(")"));
-                lexem2Text = parts[1].substring(parts[1].lastIndexOf("(") + 1, parts[1].indexOf(")"));
+                firstVariableText = parts[0].substring(parts[0].lastIndexOf("(") + 1, parts[0].indexOf(")"));
+                secondVariableText = parts[1].substring(parts[1].lastIndexOf("(") + 1, parts[1].indexOf(")"));
                 operator = stringsWithoutNullCheck[1];
             } else if (strings.length > 3 && ifContent.contains(" || ") && ifContent.contains("BigDecimal") && ifContent.endsWith(" 0")) {
                 // GroovyTypeSupport.BigDecimalType
-                isOperationDateType = false;
                 String ifContentWithoutNullCheck = ifContent.substring(ifContent.lastIndexOf(" || ") + " || ".length());
                 String[] stringsWithoutNullCheck = ifContentWithoutNullCheck.split(" ");
-                lexem1Text = stringsWithoutNullCheck[2];
-                lexem2Text = stringsWithoutNullCheck[6];
+                firstVariableText = stringsWithoutNullCheck[2];
+                secondVariableText = stringsWithoutNullCheck[6];
                 operator = stringsWithoutNullCheck[9];
             } else {
-                lexem1Text = strings[0];
+                firstVariableText = strings[0];
                 operator = strings[1];
                 if (strings.length == 3) {
-                    lexem2Text = strings[2];
+                    secondVariableText = strings[2];
                 } else {
                     for (int i = 2; i < strings.length; i++) {
-                        lexem2Text += " " + strings[i];
+                        secondVariableText += " " + strings[i];
                     }
                 }
             }
@@ -82,44 +81,44 @@ public class GroovyDecisionModel {
             } else {
                 throw new RuntimeException("unparsed");
             }
-            if (lexem1Text.indexOf(".") > 0 && !isOperationDateType) {
-                // Java names doesn't allowed use of point in variable name
-                lexem1Text = lexem1Text.substring(0, lexem1Text.lastIndexOf("."));
+            if (firstVariableText.indexOf(".") > 0 && !isOperationDateType) {
+                // Java names doesn't allow use of point in variable name
+                firstVariableText = firstVariableText.substring(0, firstVariableText.lastIndexOf("."));
             }
-            Variable variable1 = VariableUtils.getVariableByScriptingName(variables, lexem1Text);
-            if (variable1 == null) {
+            Variable firstVariable = VariableUtils.getVariableByScriptingName(variables, firstVariableText);
+            if (firstVariable == null) {
                 // variable deleted
                 continue;
             }
-            GroovyTypeSupport typeSupport = GroovyTypeSupport.get(variable1.getJavaClassName());
+            GroovyTypeSupport typeSupport = GroovyTypeSupport.get(firstVariable.getJavaClassName());
             Operation operation = Operation.getByOperator(operator, typeSupport);
             if (operation == null) {
                 throw new RuntimeException("Operation not found for operator: " + operator);
             }
-            Object lexem2;
-            if (lexem2Text.indexOf(".") > 0 && !isOperationDateType) {
+            Object secondVariable;
+            if (secondVariableText.indexOf(".") > 0 && !isOperationDateType) {
                 try {
-                    Double.parseDouble(lexem2Text);
+                    Double.parseDouble(secondVariableText);
                 } catch (NumberFormatException e) {
-                    // Java names doesn't allowed use of point in variable name
-                    lexem2Text = lexem2Text.substring(0, lexem2Text.lastIndexOf("."));
+                    // Java names doesn't allow use of point in variable name
+                    secondVariableText = secondVariableText.substring(0, secondVariableText.lastIndexOf("."));
                 }
             }
-            Variable variable2 = VariableUtils.getVariableByScriptingName(variables, lexem2Text);
-            if (variable2 != null) {
-                lexem2 = variable2;
-            } else if (Operation.VOID.equals(lexem2Text) || Operation.NULL.equals(lexem2Text)) {
-                lexem2 = "null";
+            Variable variable = VariableUtils.getVariableByScriptingName(variables, secondVariableText);
+            if (variable != null) {
+                secondVariable = variable;
+            } else if (Operation.VOID.equals(secondVariableText) || Operation.NULL.equals(secondVariableText)) {
+                secondVariable = "null";
             } else {
-                lexem2 = typeSupport.unwrapValue(lexem2Text);
+                secondVariable = typeSupport.unwrapValue(secondVariableText);
             }
-            IfExpr ifExpr = new IfExpr(transition, variable1, lexem2, operation);
-            addIfExpr(ifExpr);
+            IfExpression ifExpression = new IfExpression(transition, firstVariable, secondVariable, operation);
+            addIfExpression(ifExpression);
         }
         if (returnMatcher.find(startReturnSearch)) {
             String defaultTransition = returnMatcher.group(1);
-            IfExpr ifExpr = new IfExpr(defaultTransition);
-            addIfExpr(ifExpr);
+            IfExpression ifExpression = new IfExpression(defaultTransition);
+            addIfExpression(ifExpression);
         }
     }
 
@@ -134,44 +133,34 @@ public class GroovyDecisionModel {
     }
 
     public List<String> getTransitionNames() {
-        List<String> transitionNames = new ArrayList<String>();
-        for (IfExpr ifExpr : ifs) {
-            transitionNames.add(ifExpr.getTransition());
+        List<String> transitionNames = new ArrayList<>();
+        for (IfExpression ifExpression : ifExpressions) {
+            transitionNames.add(ifExpression.getTransition());
         }
         return transitionNames;
     }
 
     public String getDefaultTransitionName() {
-        for (IfExpr ifExpr : ifs) {
-            if (ifExpr.isByDefault()) {
-                return ifExpr.getTransition();
+        for (IfExpression ifExpression : ifExpressions) {
+            if (ifExpression.isByDefault()) {
+                return ifExpression.getTransition();
             }
         }
         return "";
     }
 
-    private static String normalizeString(String str) {
-        while (str.charAt(0) == ' ') {
-            str = str.substring(1);
-        }
-        while (str.charAt(str.length() - 1) == ' ') {
-            str = str.substring(0, str.length() - 1);
-        }
-        return str;
+    public void addIfExpression(IfExpression ifExpression) {
+        ifExpressions.add(ifExpression);
     }
 
-    public void addIfExpr(IfExpr ifExpr) {
-        ifs.add(ifExpr);
+    public List<IfExpression> getIfExpressions() {
+        return ifExpressions;
     }
 
-    public List<IfExpr> getIfExprs() {
-        return ifs;
-    }
-
-    public IfExpr getIfExpr(String transitionName) {
-        for (IfExpr ifExpr : ifs) {
-            if (transitionName.equals(ifExpr.getTransition())) {
-                return ifExpr;
+    public IfExpression getIfExpression(String transitionName) {
+        for (IfExpression ifExpression : ifExpressions) {
+            if (transitionName.equals(ifExpression.getTransition())) {
+                return ifExpression;
             }
         }
         return null;
@@ -180,12 +169,12 @@ public class GroovyDecisionModel {
     @Override
     public String toString() {
         StringBuffer buffer = new StringBuffer();
-        IfExpr defaultIf = null;
-        for (IfExpr ifExpr : ifs) {
-            if (!ifExpr.isByDefault()) {
-                buffer.append(ifExpr.generateCode());
+        IfExpression defaultIf = null;
+        for (IfExpression ifExpression : ifExpressions) {
+            if (!ifExpression.isByDefault()) {
+                buffer.append(ifExpression.generateCode());
             } else {
-                defaultIf = ifExpr;
+                defaultIf = ifExpression;
             }
         }
         if (defaultIf != null) {
@@ -194,59 +183,47 @@ public class GroovyDecisionModel {
         return buffer.toString();
     }
 
-    public static class IfExpr {
-        private Variable variable1;
-        private Object lexem2;
+    public static class IfExpression {
+        private Variable firstVariable;
+        private Object secondVariable;
         private final Operation operation;
         private final String transition;
         private boolean byDefault;
 
-        public IfExpr(String transition) {
+        public IfExpression(String transition) {
             this.transition = transition;
             this.byDefault = true;
-            this.variable1 = null;
-            this.lexem2 = null;
+            this.firstVariable = null;
+            this.secondVariable = null;
             this.operation = null;
         }
 
-        public IfExpr(String transition, Variable variable, Object lexem2, Operation operation) {
+        public IfExpression(String transition, Variable firstVariable, Object secondVariable, Operation operation) {
             this.transition = transition;
-            this.variable1 = variable;
-            this.lexem2 = lexem2;
+            this.firstVariable = firstVariable;
+            this.secondVariable = secondVariable;
             this.operation = operation;
         }
 
         public String generateCode() {
-            return "if ( " + operation.generateCode(variable1, lexem2) + " ) {\n\treturn \"" + transition + "\";\n};\n";
+            return "if ( " + operation.generateCode(firstVariable, secondVariable) + " ) {\n\treturn \"" + transition + "\";\n};\n";
         }
 
-        public Variable getVariable1() {
-            return variable1;
-        }
-
-        public void setVariable1(Variable variable) {
-            this.variable1 = variable;
-        }
-
-        public Object getLexem2() {
-            return lexem2;
-        }
-
-        public void setLexem2(Object lexem2) {
-            this.lexem2 = lexem2;
+        public Variable getFirstVariable() {
+            return firstVariable;
         }
 
         public boolean isByDefault() {
             return byDefault;
         }
 
-        public String getLexem2TextValue() {
-            if (lexem2 instanceof Variable) {
-                return ((Variable) lexem2).getScriptingName();
-            } else if (lexem2 instanceof String) {
-                return (String) lexem2;
+        public String getSecondVariableTextValue() {
+            if (secondVariable instanceof Variable) {
+                return ((Variable) secondVariable).getScriptingName();
+            } else if (secondVariable instanceof String) {
+                return (String) secondVariable;
             } else {
-                throw new IllegalArgumentException("lexem2 class is " + lexem2.getClass().getName());
+                throw new IllegalArgumentException("secondVariable class is " + secondVariable.getClass().getName());
             }
         }
 
