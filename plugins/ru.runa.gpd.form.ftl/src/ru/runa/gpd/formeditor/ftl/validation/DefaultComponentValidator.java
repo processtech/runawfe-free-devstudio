@@ -15,7 +15,8 @@ public class DefaultComponentValidator implements IComponentValidator {
         List<ValidationError> list = Lists.newArrayList();
         if (component.isExcessiveParametersFound()) {
             list.add(ValidationError.createWarning(formNode,
-                    Messages.getString("validation.excessiveComponentParameters", component.getType().getLabel())));
+                    Messages.getString("validation.excessiveComponentParameters", component.getType().getLabel()),
+                    new ComponentValidationErrorDetails(formNode, component)));
         }
         for (ComponentParameter parameter : component.getType().getParameters()) {
             list.addAll(parameter.getType().getValidator().validate(formNode, component, parameter));

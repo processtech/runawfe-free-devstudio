@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.List;
+import java.util.Map;
 
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
@@ -11,15 +12,16 @@ import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableStoreType;
 import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.gpd.util.VariableUtils;
+import ru.runa.gpd.validation.ValidatorConfig;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
 /**
  * Recursive serialization for {@link org.eclipse.swt.dnd.Clipboard}.
- * 
+ *
  * @author KuchmaMA
- * 
+ *
  */
 final class Serializator {
 
@@ -37,10 +39,27 @@ final class Serializator {
         read(in, (Variable) swimlane, processDefinition);
     }
 
+    @SuppressWarnings("unchecked")
+    static void read(ObjectInputStream in, ValidatorConfig validatorConfig,  ProcessDefinition processDefinition) throws IOException, ClassNotFoundException {
+        validatorConfig.setType((String) in.readObject());
+        validatorConfig.setMessage((String) in.readObject());
+        Map<String, String> params = validatorConfig.getParams();
+        params.putAll((Map<String, String>) in.readObject());
+        validatorConfig.getTransitionNames().addAll((List<String>) in.readObject());
+    }
+
+    static void write(ObjectOutputStream out, ValidatorConfig validatorConfig) throws IOException {
+        out.writeObject(validatorConfig.getType());
+        out.writeObject(validatorConfig.getMessage());
+        out.writeObject(validatorConfig.getParams());
+        out.writeObject(validatorConfig.getTransitionNames());
+    }
+
     static void write(ObjectOutputStream out, Variable variable) throws IOException {
         out.writeObject(variable.getScriptingName());
         out.writeObject(variable.getFormat());
         out.writeBoolean(variable.isPublicVisibility());
+        out.writeBoolean(variable.isEditableInChat());
         out.writeObject(Strings.nullToEmpty(variable.getDefaultValue()));
         out.writeObject(variable.getName());
         out.writeObject(Strings.nullToEmpty(variable.getDescription()));
@@ -76,6 +95,7 @@ final class Serializator {
         variable.setScriptingName((String) in.readObject());
         variable.setFormat((String) in.readObject());
         variable.setPublicVisibility(in.readBoolean());
+        variable.setEditableInChat(in.readBoolean());
         variable.setDefaultValue((String) in.readObject());
         variable.setName((String) in.readObject());
         variable.setDescription((String) in.readObject());

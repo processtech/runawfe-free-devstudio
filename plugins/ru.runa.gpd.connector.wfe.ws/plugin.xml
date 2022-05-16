@@ -4,7 +4,7 @@
    <extension
          point="ru.runa.gpd.wfeServerConnectors">
       <connector
-            class="ru.runa.gpd.connector.wfe.ws.WildflyWebServiceWfeServerConnector"
+            class="ru.runa.gpd.connector.wfe.ws.WebServiceWfeServerConnector"
             description="%wildfly.ws.connector.description"
             id="wildfly.ws"
             name="%wildfly.ws.connector.name">

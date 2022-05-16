@@ -20,6 +20,7 @@ import ru.runa.gpd.editor.graphiti.TransitionUtil;
 import ru.runa.gpd.lang.model.ActionImpl;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.Describable;
+import ru.runa.gpd.lang.model.EmbeddedSubprocess;
 import ru.runa.gpd.lang.model.EndState;
 import ru.runa.gpd.lang.model.EndTokenState;
 import ru.runa.gpd.lang.model.EndTokenSubprocessDefinitionBehavior;
@@ -50,6 +51,7 @@ import ru.runa.gpd.lang.model.bpmn.DataStore;
 import ru.runa.gpd.lang.model.bpmn.DottedTransition;
 import ru.runa.gpd.lang.model.bpmn.EventNodeType;
 import ru.runa.gpd.lang.model.bpmn.ExclusiveGateway;
+import ru.runa.gpd.lang.model.bpmn.BusinessRule;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEvent;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 import ru.runa.gpd.lang.model.bpmn.ParallelGateway;
@@ -61,6 +63,7 @@ import ru.runa.gpd.util.Duration;
 import ru.runa.gpd.util.MultiinstanceParameters;
 import ru.runa.gpd.util.SwimlaneDisplayMode;
 import ru.runa.gpd.util.VariableMapping;
+import ru.runa.gpd.util.VariableUtils;
 import ru.runa.gpd.util.XmlUtil;
 import ru.runa.wfe.definition.ProcessDefinitionAccessType;
 import ru.runa.wfe.lang.AsyncCompletionMode;
@@ -92,6 +95,7 @@ public class BpmnSerializer extends ProcessSerializer {
     private static final String SUBPROCESS = "subProcess";
     private static final String MULTI_INSTANCE = "multiInstance";
     private static final String EXCLUSIVE_GATEWAY = "exclusiveGateway";
+    private static final String BUSINESS_RULE = "businessRuleTask";
     private static final String PARALLEL_GATEWAY = "parallelGateway";
     private static final String DEFAULT_TASK_DEADLINE = "defaultTaskDeadline";
     private static final String TASK_DEADLINE = "taskDeadline";
@@ -126,6 +130,7 @@ public class BpmnSerializer extends ProcessSerializer {
     private static final String EVENT_TYPE = "eventType";
     private static final String PROPERTY_USE_EXTERNAL_STORAGE_OUT = "useExternalStorageOut";
     private static final String PROPERTY_USE_EXTERNAL_STORAGE_IN = "useExternalStorageIn";
+    private static final String EMBEDDED = "embedded";
 
     @Override
     public boolean isSupported(Document document) {
@@ -177,7 +182,7 @@ public class BpmnSerializer extends ProcessSerializer {
         if (definition.getDefaultNodeAsyncExecution() != NodeAsyncExecution.DEFAULT) {
             processProperties.put(NODE_ASYNC_EXECUTION, definition.getDefaultNodeAsyncExecution().getValue());
         }
-        if (definition.isUseGlobals()) {
+        if (definition.isUsingGlobalVars()) {
             processProperties.put(USE_GLOBALS, "true");
         }
         writeExtensionElements(processElement, processProperties);
@@ -201,6 +206,10 @@ public class BpmnSerializer extends ProcessSerializer {
         List<ExclusiveGateway> exclusiveGateways = definition.getChildren(ExclusiveGateway.class);
         for (ExclusiveGateway gateway : exclusiveGateways) {
             writeNode(processElement, gateway);
+        }
+        List<BusinessRule> businessRules = definition.getChildren(BusinessRule.class);
+        for (BusinessRule businessRule : businessRules) {
+            writeNode(processElement, businessRule);
         }
         List<TaskState> taskStates = definition.getChildren(TaskState.class);
         for (TaskState taskState : taskStates) {
@@ -247,6 +256,9 @@ public class BpmnSerializer extends ProcessSerializer {
             }
             if (subprocess.isValidateAtStart()) {
                 properties.put(VALIDATE_AT_START, true);
+            }
+            if (subprocess.isDisableCascadingSuspension()) {
+                properties.put(DISABLE_CASCADING_SUSPENSION, true);
             }
             if (subprocess.isAsync()) {
                 properties.put(ASYNC, Boolean.TRUE.toString());
@@ -383,10 +395,6 @@ public class BpmnSerializer extends ProcessSerializer {
         }
         writeBaseProperties(parentElement, timer);
         Element eventDefinitionElement = parentElement.addElement(timer.getTypeDefinition().getBpmnElementName());
-        // TODO bc
-        // if (!Strings.isNullOrEmpty(timer.getDescription())) {
-        // eventDefinitionElement.addElement(DOCUMENTATION).addCDATA(timer.getDescription());
-        // }
         writeNodeAsyncExecution(eventDefinitionElement, timer);
         TimerAction timerAction = timer.getAction();
         if (timerAction != null) {
@@ -420,22 +428,19 @@ public class BpmnSerializer extends ProcessSerializer {
 
     private void writeEventNodeContent(Element processElement, Element eventElement, AbstractEventNode eventNode) {
         eventElement.addAttribute(RUNA_PREFIX + ":" + TYPE, eventNode.getEventNodeType().name());
-        // setAttribute(eventDefinitionElement, ID, eventNode.getId());
         if (eventNode instanceof ISendMessageNode) {
             eventElement.addAttribute(RUNA_PREFIX + ":" + TIME_DURATION, eventNode.getTtlDuration().getDuration());
         }
         writeVariables(eventElement, eventNode.getVariableMappings());
         writeNodeAsyncExecution(eventElement, eventNode);
         writeTransitions(processElement, eventNode);
-        // Element eventDefinitionElement =
-        // eventElement.addElement(eventNode.getEventNodeType().getXmlElementName());
     }
 
     private Element writeElement(Element parent, GraphElement graphElement) {
         String bpmnElementName;
         if (graphElement instanceof EndTokenState) {
             bpmnElementName = END_EVENT;
-        } else if (graphElement instanceof MultiSubprocess) {
+        } else if (graphElement instanceof MultiSubprocess || graphElement instanceof EmbeddedSubprocess) {
             bpmnElementName = SUBPROCESS;
         } else {
             bpmnElementName = graphElement.getTypeDefinition().getBpmnElementName();
@@ -615,6 +620,8 @@ public class BpmnSerializer extends ProcessSerializer {
             bpmnElementName = "endTokenEvent";
         } else if (properties.containsKey(MULTI_INSTANCE)) {
             bpmnElementName = "multiProcess";
+        } else if (properties.containsKey(EMBEDDED)) {
+            bpmnElementName = "embeddedProcess";
         } else {
             bpmnElementName = node.getName();
             if (SEND_TASK.equals(bpmnElementName)) {
@@ -735,7 +742,7 @@ public class BpmnSerializer extends ProcessSerializer {
             definition.setDefaultNodeAsyncExecution(NodeAsyncExecution.getByValueNotNull(processProperties.get(NODE_ASYNC_EXECUTION)));
         }
         if (processProperties.containsKey(USE_GLOBALS)) {
-            definition.setUseGlobals("true".equals(processProperties.get(USE_GLOBALS)));
+            definition.setUsingGlobalVars("true".equals(processProperties.get(USE_GLOBALS)));
         }
         String swimlaneDisplayModeName = processProperties.get(SHOW_SWIMLANE);
         if (swimlaneDisplayModeName != null) {
@@ -746,15 +753,13 @@ public class BpmnSerializer extends ProcessSerializer {
         if (swimlaneSetElement != null) {
             List<Element> swimlanes = swimlaneSetElement.elements(LANE);
             for (Element swimlaneElement : swimlanes) {
-                if (!"true".equals(parseExtensionProperties(swimlaneElement).get(GLOBAL))) {
-                    Swimlane swimlane = create(swimlaneElement, definition);
-                    List<Element> flowNodeRefElements = swimlaneElement.elements(FLOW_NODE_REF);
-                    List<String> flowNodeIds = Lists.newArrayList();
-                    for (Element flowNodeRefElement : flowNodeRefElements) {
-                        flowNodeIds.add(flowNodeRefElement.getTextTrim());
-                    }
-                    swimlaneElementIds.put(swimlane, flowNodeIds);
+                Swimlane swimlane = create(swimlaneElement, definition);
+                List<Element> flowNodeRefElements = swimlaneElement.elements(FLOW_NODE_REF);
+                List<String> flowNodeIds = Lists.newArrayList();
+                for (Element flowNodeRefElement : flowNodeRefElements) {
+                    flowNodeIds.add(flowNodeRefElement.getTextTrim());
                 }
+                swimlaneElementIds.put(swimlane, flowNodeIds);
             }
         }
         List<Element> startStates = processElement.elements(START_EVENT);
@@ -834,6 +839,10 @@ public class BpmnSerializer extends ProcessSerializer {
         for (Element node : exclusiveGatewayElements) {
             create(node, definition);
         }
+        List<Element> businessRuleElements = processElement.elements(BUSINESS_RULE);
+        for (Element node : businessRuleElements) {
+            create(node, definition);
+        }
         List<Element> subprocessElements = processElement.elements(SUBPROCESS);
         for (Element subprocessElement : subprocessElements) {
             Subprocess subprocess = create(subprocessElement, definition);
@@ -852,6 +861,9 @@ public class BpmnSerializer extends ProcessSerializer {
             }
             if (properties.containsKey(VALIDATE_AT_START)) {
                 subprocess.setValidateAtStart(Boolean.parseBoolean(properties.get(VALIDATE_AT_START)));
+            }
+            if (properties.containsKey(DISABLE_CASCADING_SUSPENSION)) {
+                subprocess.setDisableCascadingSuspension(Boolean.parseBoolean(properties.get(DISABLE_CASCADING_SUSPENSION)));
             }
             String async = properties.get(ASYNC);
             if (async != null) {
@@ -890,7 +902,7 @@ public class BpmnSerializer extends ProcessSerializer {
             String parentNodeId = boundaryEventElement.attributeValue(ATTACHED_TO_REF);
             GraphElement parent = definition.getGraphElementByIdNotNull(parentNodeId);
             IBoundaryEvent boundaryEvent = (IBoundaryEvent) parseEventElement(definition, parent, boundaryEventElement);
-            ((GraphElement) boundaryEvent).setParentContainer(parent);
+            ((GraphElement) boundaryEvent).setUiParentContainer(parent);
             String interrupting = boundaryEventElement.attributeValue(CANCEL_ACTIVITY);
             if (!Strings.isNullOrEmpty(interrupting)) {
                 boundaryEvent.setInterruptingBoundaryEvent(Boolean.parseBoolean(interrupting));
@@ -938,7 +950,7 @@ public class BpmnSerializer extends ProcessSerializer {
         definition.getChildren(ExclusiveGateway.class).stream().forEach(eg -> TransitionUtil.setDefaultFlow(eg, eg.getDelegationConfiguration()));
         for (Map.Entry<Swimlane, List<String>> entry : swimlaneElementIds.entrySet()) {
             for (String nodeId : entry.getValue()) {
-                definition.getGraphElementByIdNotNull(nodeId).setParentContainer(entry.getKey());
+                definition.getGraphElementByIdNotNull(nodeId).setUiParentContainer(entry.getKey());
             }
         }
 

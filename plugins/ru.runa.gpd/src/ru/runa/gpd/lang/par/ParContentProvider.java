@@ -1,27 +1,18 @@
 package ru.runa.gpd.lang.par;
 
-import com.google.common.collect.Sets;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 import org.dom4j.Document;
 import org.dom4j.io.OutputFormat;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.ltk.core.refactoring.Change;
-import org.eclipse.ltk.core.refactoring.CompositeChange;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
-import ru.runa.gpd.lang.model.Variable;
-import ru.runa.gpd.lang.model.VariableUserType;
-import ru.runa.gpd.ltk.RenameUserTypeAttributeRefactoring;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.XmlUtil;
 import ru.runa.gpd.validation.FormNodeValidation;
@@ -38,6 +29,7 @@ public class ParContentProvider {
     public static final String PROCESS_INSTANCE_START_IMAGE_FILE_NAME = "start.png";
     public static final String REGULATIONS_XML_FILE_NAME = "regulations.xml";
     public static final String REGULATIONS_HTML_FILE_NAME = "regulations.html";
+    public static final String COMMENTS_FILE_NAME = "comments.xml";
     private static final FormsXmlContentProvider FORMS_XML_CONTENT_PROVIDER = new FormsXmlContentProvider();
     private static final List<AuxContentProvider> CONTENT_PROVIDERS = new ArrayList<AuxContentProvider>();
     static {
@@ -55,20 +47,32 @@ public class ParContentProvider {
     public static void readAuxInfo(IFile definitionFile, ProcessDefinition definition) throws Exception {
         IFolder folder = (IFolder) definitionFile.getParent();
         for (AuxContentProvider contentProvider : CONTENT_PROVIDERS) {
-            String fileName = contentProvider.getFileName();
-            if (definition instanceof SubprocessDefinition) {
-                if (!contentProvider.isSupportedForEmbeddedSubprocess()) {
-                    continue;
-                }
-                fileName = definition.getId() + "." + fileName;
-            }
-            IFile file = folder.getFile(fileName);
-            if (!file.exists()) {
-                continue;
-            }
-            Document document = XmlUtil.parseWithoutValidation(file.getContents(true));
-            contentProvider.read(document, definition);
+            processContent(contentProvider, definition, folder);
         }
+    }
+    
+    private static void processContent(AuxContentProvider contentProvider, ProcessDefinition definition, IFolder folder) throws Exception {
+        String fileName = contentProvider.getFileName();
+        if (definition instanceof SubprocessDefinition) {
+            if (!contentProvider.isSupportedForEmbeddedSubprocess()) {
+                return;
+            }
+            fileName = definition.getId() + "." + fileName;
+        }
+        IFile file = folder.getFile(fileName);
+        if (!file.exists()) {
+            return;
+        }
+        InputStream is = file.getContents(true);
+        Document document = null;
+        try {
+            document = XmlUtil.parseWithoutValidation(is);
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            is.close();
+        }
+        contentProvider.read(document, definition);
     }
 
     public static void saveAuxInfo(IFile definitionFile, ProcessDefinition definition) {
@@ -91,51 +95,29 @@ public class ParContentProvider {
         }
     }
 
-    public static List<FormNode> getFormsWhereVariableUsed(IFile definitionFile, ProcessDefinition definition, String variableName) {
-        List<FormNode> result = new ArrayList<FormNode>();
-        List<FormNode> allNodes = definition.getChildren(FormNode.class);
-        for (FormNode formNode : allNodes) {
-            if (formNode.hasFormValidation()) {
-                FormNodeValidation validation = formNode.getValidation(definitionFile);
-                if (validation.getVariableNames().contains(variableName)) {
-                    result.add(formNode);
-                }
-            }
-        }
-        return result;
-    }
-
-    public static List<FormNode> getFormsWhereUserTypeAttributeUsed(IFile definitionFile, ProcessDefinition definition, VariableUserType type,
-            Variable attribute) {
-        Set<String> affectedFormNames = Sets.newHashSet();
-        try {
-            String newVariableName = UUID.randomUUID().toString();
-            RenameUserTypeAttributeRefactoring refactoring = new RenameUserTypeAttributeRefactoring(definitionFile, definition, type, attribute,
-                    newVariableName, newVariableName);
-            refactoring.checkInitialConditions(null);
-            for (Change change : refactoring.createChange(null).getChildren()) {
-                if (change instanceof CompositeChange) {
-                    affectedFormNames.add(change.getName());
-                }
-            }
-        } catch (CoreException e) {
-            PluginLogger.logError(e);
-        }
-        return definition.getChildren(FormNode.class).stream().filter(formNode -> affectedFormNames.contains(formNode.getName()))
-                .collect(Collectors.toList());
-    }
-
-    public static void rewriteFormValidationsRemoveVariable(IFile definitionFile, List<FormNode> formNodes, String variableName) {
+    public static void rewriteFormValidationsRemoveVariable(Collection<FormNode> formNodes, String variableName) {
         for (FormNode formNode : formNodes) {
             if (formNode.hasFormValidation()) {
-                IFile validationFile = IOUtils.getAdjacentFile(definitionFile, formNode.getValidationFileName());
+                IFile validationFile = IOUtils.getAdjacentFile(formNode.getProcessDefinition().getFile(), formNode.getValidationFileName());
                 FormNodeValidation validation = formNode.getValidation(validationFile);
+                int initialSize = validation.getFieldConfigs().size();
                 validation.getFieldConfigs().remove(variableName);
-                ValidatorParser.writeValidation(validationFile, formNode, validation);
+                if (initialSize != validation.getFieldConfigs().size()) {
+                    ValidatorParser.writeValidation(validationFile, formNode, validation, true);
+                }
             }
         }
     }
 
+    public static void rewriteVersionCommentXml(IFile definitionFile, ProcessDefinition definition) throws Exception {
+        IFolder folder = (IFolder) definitionFile.getParent();
+        for (AuxContentProvider contentProvider : CONTENT_PROVIDERS) {
+            if (contentProvider instanceof VersionCommentXmlContentProvider) {
+                processContent(contentProvider, definition, folder);
+            }
+        }
+    }
+    
     private static void saveAuxInfo(AuxContentProvider contentProvider, IFolder definitionFolder, ProcessDefinition definition) throws Exception {
         String fileName = contentProvider.getFileName();
         if (definition instanceof SubprocessDefinition) {

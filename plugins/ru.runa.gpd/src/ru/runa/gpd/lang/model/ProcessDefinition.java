@@ -1,23 +1,22 @@
 package ru.runa.gpd.lang.model;
 
-import com.google.common.base.Objects;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.eclipse.core.resources.IContainer;
+import java.util.stream.Collectors;
+
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.views.properties.ComboBoxPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
+
+import com.google.common.base.Objects;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
@@ -35,31 +34,29 @@ import ru.runa.gpd.util.SwimlaneDisplayMode;
 import ru.runa.gpd.util.VariableUtils;
 import ru.runa.wfe.InternalApplicationException;
 import ru.runa.wfe.definition.ProcessDefinitionAccessType;
+import ru.runa.wfe.var.format.ListFormat;
 
 @SuppressWarnings("unchecked")
-public class ProcessDefinition extends NamedGraphElement implements Describable {
-    private Language language;
-    private NodeAsyncExecution defaultNodeAsyncExecution = NodeAsyncExecution.DEFAULT;
-    private boolean dirty;
-    private boolean showActions;
-    private boolean showGrid;
-    private Duration defaultTaskTimeoutDelay = new Duration();
-    private boolean invalid;
-    // may be there is no concurrency but if any this is very important variable
-    private final AtomicInteger nextNodeIdCounter = new AtomicInteger();
-    private SwimlaneDisplayMode swimlaneDisplayMode = SwimlaneDisplayMode.none;
-    private final Map<String, SubprocessDefinition> embeddedSubprocesses = Maps.newHashMap();
-    private ProcessDefinitionAccessType accessType = ProcessDefinitionAccessType.Process;
-    private final List<VariableUserType> types = Lists.newArrayList();
-    private final IFile file;
-    private boolean useGlobals;
-    private List<Swimlane> globalSwimlanes;
+public class ProcessDefinition extends NamedGraphElement implements Describable, GlobalObjectAware {
+    protected Language language;
+    protected NodeAsyncExecution defaultNodeAsyncExecution = NodeAsyncExecution.DEFAULT;
+    protected boolean dirty;
+    protected boolean showActions;
+    protected boolean showGrid;
+    protected Duration defaultTaskTimeoutDelay = new Duration();
+    protected boolean invalid; // may be there is no concurrency but if any this is very important variable
+    protected final AtomicInteger nextNodeIdCounter = new AtomicInteger();
+    protected SwimlaneDisplayMode swimlaneDisplayMode = SwimlaneDisplayMode.none;
+    protected final Map<String, SubprocessDefinition> embeddedSubprocesses = Maps.newHashMap();
+    protected ProcessDefinitionAccessType accessType = ProcessDefinitionAccessType.Process;
+    protected final List<VariableUserType> types = Lists.newArrayList();
+    protected final IFile file;
+    protected boolean usingGlobalVars;
 
-    private final ArrayList<VersionInfo> versionInfoList;
+    protected final ArrayList<VersionInfo> versionInfoList = new ArrayList<>();
 
     public ProcessDefinition(IFile file) {
         this.file = file;
-        versionInfoList = new ArrayList<>();
     }
 
     public IFile getFile() {
@@ -187,15 +184,15 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
         }
     }
 
-    public boolean isUseGlobals() {
-        return useGlobals;
+    public boolean isUsingGlobalVars() {
+        return usingGlobalVars;
     }
 
-    public void setUseGlobals(boolean useGlobals) {
-        boolean stateChanged = this.useGlobals != useGlobals;
+    public void setUsingGlobalVars(boolean usingGlobalVars) {
+        boolean stateChanged = this.usingGlobalVars != usingGlobalVars;
         if (stateChanged) {
-            this.useGlobals = useGlobals;
-            firePropertyChange(PROPERTY_USE_GLOBALS, !this.useGlobals, this.useGlobals);
+            this.usingGlobalVars = usingGlobalVars;
+            firePropertyChange(PROPERTY_USE_GLOBALS, !this.usingGlobalVars, this.usingGlobalVars);
             setDirty();
         }
     }
@@ -228,7 +225,6 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
         for (GraphElement graphElement : getChildrenRecursive(GraphElement.class)) {
             String nodeId = graphElement.getId();
             if (nodeId == null) {
-                // variables do not have this property
                 continue;
             }
             try {
@@ -304,9 +300,6 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
                 }
             }
         }
-        if (includeSwimlanes && useGlobals) {
-            variables.addAll(getGlobalSwimlanes(true));
-        }
         List<Variable> result = Lists.newArrayList();
         for (Variable variable : variables) {
             if (VariableFormatRegistry.isApplicable(variable, typeClassNameFilters)) {
@@ -318,14 +311,6 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
 
     public List<Swimlane> getSwimlanes() {
         List<Swimlane> swimlanes = getChildren(Swimlane.class);
-        for (Iterator<Swimlane> i = swimlanes.iterator(); i.hasNext();) {
-            if (i.next().isGlobal()) {
-                i.remove();
-            }
-        }
-        if (useGlobals) {
-            swimlanes.addAll(getGlobalSwimlanes(true));
-        }
         return swimlanes;
     }
 
@@ -335,18 +320,6 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
         }
         List<Swimlane> swimlanes = getSwimlanes();
         for (Swimlane swimlane : swimlanes) {
-            if (name.equals(swimlane.getName())) {
-                return swimlane;
-            }
-        }
-        return null;
-    }
-
-    public Swimlane getGlobalSwimlaneByName(String name) {
-        if (name == null) {
-            return null;
-        }
-        for (Swimlane swimlane : getGlobalSwimlanes(true)) {
             if (name.equals(swimlane.getName())) {
                 return swimlane;
             }
@@ -397,10 +370,10 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
     public List<GraphElement> getContainerElements(GraphElement parentContainer) {
         List<GraphElement> list = Lists.newArrayList();
         for (GraphElement graphElement : getElementsRecursive()) {
-            if (Objects.equal(parentContainer, graphElement.getParentContainer())) {
+            if (Objects.equal(parentContainer, graphElement.getUiParentContainer())) {
                 list.add(graphElement);
             }
-            if (parentContainer == this && graphElement.getParentContainer() == null) {
+            if (parentContainer == this && graphElement.getUiParentContainer() == null) {
                 list.add(graphElement);
             }
         }
@@ -417,15 +390,16 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
         } else {
             descriptors.add(new StartImagePropertyDescriptor("startProcessImage", Localization.getString("ProcessDefinition.property.startImage")));
             descriptors.add(new PropertyDescriptor(PROPERTY_LANGUAGE, Localization.getString("ProcessDefinition.property.language")));
-            descriptors.add(new DurationPropertyDescriptor(PROPERTY_TASK_DEADLINE, this, getDefaultTaskTimeoutDelay(), Localization
-                    .getString("default.task.deadline")));
+            descriptors.add(new DurationPropertyDescriptor(PROPERTY_TASK_DEADLINE, this, getDefaultTaskTimeoutDelay(),
+                    Localization.getString("default.task.deadline")));
             String[] array = { Localization.getString("ProcessDefinition.property.accessType.Process"),
                     Localization.getString("ProcessDefinition.property.accessType.OnlySubprocess") };
-            descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_ACCESS_TYPE, Localization.getString("ProcessDefinition.property.accessType"),
-                    array));
-            descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_NODE_ASYNC_EXECUTION, Localization
-                    .getString("ProcessDefinition.property.nodeAsyncExecution"), NodeAsyncExecution.LABELS));
-            descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_USE_GLOBALS, Localization.getString("ProcessDefinition.property.useGlobals"), new String[] {"false", "true"}));
+            descriptors.add(
+                    new ComboBoxPropertyDescriptor(PROPERTY_ACCESS_TYPE, Localization.getString("ProcessDefinition.property.accessType"), array));
+            descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_NODE_ASYNC_EXECUTION,
+                    Localization.getString("ProcessDefinition.property.nodeAsyncExecution"), NodeAsyncExecution.LABELS));
+            descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_USE_GLOBALS, Localization.getString("ProcessDefinition.property.useGlobals"),
+                    new String[] { "false", "true" }));
         }
     }
 
@@ -447,7 +421,7 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
             return defaultNodeAsyncExecution.ordinal();
         }
         if (PROPERTY_USE_GLOBALS.equals(id)) {
-            return useGlobals ? 1 : 0;
+            return usingGlobalVars ? 1 : 0;
         }
         return super.getPropertyValue(id);
     }
@@ -462,7 +436,7 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
         } else if (PROPERTY_NODE_ASYNC_EXECUTION.equals(id)) {
             setDefaultNodeAsyncExecution(NodeAsyncExecution.values()[(Integer) value]);
         } else if (PROPERTY_USE_GLOBALS.equals(id)) {
-            setUseGlobals(((int) value) == 1);
+            setUsingGlobalVars(((int) value) == 1);
         } else {
             super.setPropertyValue(id, value);
         }
@@ -495,8 +469,20 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
         firePropertyChange(PROPERTY_USER_TYPES_CHANGED, null, type);
     }
 
-    public VariableUserType getVariableUserType(String name) {
+    public VariableUserType getTypeByName(String name) {
+        if (name == null) {
+            return null;
+        }
         for (VariableUserType type : types) {
+            if (name.equals(type.getName())) {
+                return type;
+            }
+        }
+        return null;
+    }
+
+    public VariableUserType getVariableUserType(String name) {
+        for (VariableUserType type : getVariableUserTypes()) {
             if (Objects.equal(name, type.getName())) {
                 return type;
             }
@@ -557,49 +543,133 @@ public class ProcessDefinition extends NamedGraphElement implements Describable 
         versionInfoList.set(index, versionInfo);
     }
 
-    public List<Swimlane> getGlobalSwimlanes(boolean force) {
-        if (globalSwimlanes == null || force) {
-            globalSwimlanes = getGlobalSwimlanes(getFile(), new ArrayList<Swimlane>());
+    public Swimlane getGlobalSwimlaneByName(String name) {
+        if (name == null) {
+            return null;
         }
-        return globalSwimlanes;
+        for (Swimlane swimlane : getChildren(Swimlane.class, s -> s.isGlobal())) {
+            if (name.equals(swimlane.getName())) {
+                return swimlane;
+            }
+        }
+        return null;
     }
 
-    private List<Swimlane> getGlobalSwimlanes(IResource resource, List<Swimlane> swimlanes) {
-        IContainer parent = resource.getParent();
-        if (parent == null) {
-            return swimlanes;
-        } else {
-            try {
-                for (IResource r : parent.members()) {
-                    if (!r.getName().equals(resource.getName()) && r.getName().startsWith(".") && r.getType() == IResource.FOLDER) {
-                        IFile definitionFile = (IFile) ((IFolder) r).findMember(ParContentProvider.PROCESS_DEFINITION_FILE_NAME);
-                        if (definitionFile != null) {
-                            List<Swimlane> globalSwimlanes = ProcessCache.getProcessDefinition(definitionFile).getChildren(Swimlane.class);
-                            for (Swimlane swimlane : globalSwimlanes) {
-                                Swimlane copy = new Swimlane();
-                                copy.setName(Swimlane.GLOBAL_ROLE_REF_PREFIX + swimlane.getName());
-                                if (!swimlanes.contains(copy)) {
-                                    copy.setScriptingName(Swimlane.GLOBAL_ROLE_REF_PREFIX + swimlane.getScriptingName());
-                                    copy.setDescription(swimlane.getDescription());
-                                    copy.setDefaultValue(swimlane.getDefaultValue());
-                                    copy.setFormat(swimlane.getFormat());
-                                    copy.setDelegationClassName(swimlane.getDelegationClassName());
-                                    copy.setDelegationConfiguration(swimlane.getDelegationConfiguration());
-                                    copy.setPublicVisibility(swimlane.isPublicVisibility());
-                                    copy.setStoreType(swimlane.getStoreType());
-                                    copy.setGlobal(true);
-                                    swimlanes.add(copy);
-                                }
-                            }
-                        }
-                    }
-                }
-            } catch (CoreException e) {
-                PluginLogger.logError(e);
-                return swimlanes;
-            }
-            return getGlobalSwimlanes(parent, swimlanes);
+    public Variable getGlobalVariableByName(String name) {
+        if (name == null) {
+            return null;
         }
+        for (Variable variable : getChildren(Variable.class, v -> v.isGlobal())) {
+            if (name.equals(variable.getName())) {
+                return variable;
+            }
+        }
+        return null;
+    }
+
+    public VariableUserType getGlobalUserTypeByName(String name) {
+        if (name == null) {
+            return null;
+        }
+        for (VariableUserType type : types) {
+            if (name.equals(type.getName())) {
+                return type;
+            }
+        }
+        return null;
+    }
+
+    public List<Swimlane> getGlobalSwimlanes() {
+        return getChildren(Swimlane.class, s -> s.isGlobal());
+    }
+
+    public List<Variable> getGlobalVariables() {
+        List<Variable> globalVariables = getChildren(Variable.class, v -> v.isGlobal());
+        ;
+        globalVariables.removeAll(getSwimlanes());
+        return globalVariables;
+
+    }
+
+    public List<VariableUserType> getGlobalTypes() {
+        return types.stream().filter(t -> t.isGlobal()).collect(Collectors.toList());
+    }
+
+    public void addGlobalSwimlane(Swimlane swimlane) {
+        if (getSwimlaneByName(swimlane.getName()) == null) {
+            addChild(swimlane);
+        }
+    }
+
+    public void addGlobalVariable(Variable variable) {
+        VariableUserType type = variable.getUserType();
+        if (type != null) {
+            addGlobalType(type);
+        }
+        String variableFormat = variable.getFormatClassName();
+        if (ListFormat.class.getName().equals(variableFormat)) {
+            String typeName = variable.getFormat();
+            int leng = typeName.length();
+            typeName = typeName.substring(IOUtils.GLOBAL_OBJECT_PREFIX.length() + 1, leng - 1).substring((variableFormat.length()));
+            VariableUserType userType = ProcessCache.getGlobalProcessDefinition(this).getVariableUserType(typeName);
+            if (userType != null) {
+                userType.setName(IOUtils.GLOBAL_OBJECT_PREFIX + typeName);
+                addGlobalType(userType);
+            }
+        }
+        addChild(variable);
+
+    }
+
+    public void addGlobalType(VariableUserType type) {
+        for (Variable variable : type.getAttributes()) {
+            if (variable.isComplex()) {
+                addGlobalType(variable.getUserType());
+            }
+        }
+        VariableUserType typeToAdd = type.getCopy();
+        if (!typeToAdd.getName().startsWith(IOUtils.GLOBAL_OBJECT_PREFIX)) {
+            typeToAdd.setName(IOUtils.GLOBAL_OBJECT_PREFIX + type.getName());
+        }
+        typeToAdd.setGlobal(true);
+        if (!types.contains(typeToAdd)) {
+            types.add(typeToAdd);
+            firePropertyChange(PROPERTY_USER_TYPES_CHANGED, null, typeToAdd);
+        }
+    }
+
+    public void updateGlobalObjects() {
+        GlobalSectionDefinition globalDefinition = ProcessCache.getGlobalProcessDefinition(this);
+
+        List<Swimlane> globalSwimlanes = getGlobalSwimlanes();
+        for (Swimlane swimlane : globalSwimlanes) {
+            Swimlane swimlaneFromGlobalSection = globalDefinition.getGlobalSwimlaneByName(swimlane.getName());
+            if (swimlaneFromGlobalSection == null) {
+                swimlane.setGlobal(false);
+            } else
+                swimlane.updateFromGlobalPartition(swimlaneFromGlobalSection);
+
+        }
+        // order of updating is important : we should update usertypes BEFORE usertype's variables
+        for (VariableUserType userType : getGlobalTypes()) {
+            VariableUserType userTypeFromGlobalPartition = globalDefinition.getGlobalUserTypeByName(userType.getName());
+            if (userTypeFromGlobalPartition == null) {
+                userType.setGlobal(false);
+            } else {
+                userType.updateFromGlobalPartition(userTypeFromGlobalPartition);
+            }
+        }
+
+        List<Variable> globalVariables = getGlobalVariables();
+        for (Variable variable : globalVariables) {
+            Variable variableFromGlobalPartition = globalDefinition.getGlobalVariableByName(variable.getName());
+            if (variableFromGlobalPartition == null) {
+                variable.setGlobal(false);
+            } else {
+                variable.updateFromGlobalPartition(variableFromGlobalPartition);
+            }
+        }
+
     }
 
 }

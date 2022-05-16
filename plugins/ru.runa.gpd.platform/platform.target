@@ -37,7 +37,7 @@
 			<unit id="org.eclipse.babel.nls_eclipse_ru.feature.group" version="4.10.0.v20200113113258"/>
 			<unit id="org.eclipse.babel.nls_modeling.graphiti_ru.feature.group" version="4.10.0.v20200113113258"/>
 			<unit id="org.eclipse.babel.nls_tools.gef_ru.feature.group" version="4.10.0.v20200113113258"/>
-			<repository location="https://download.eclipse.org/technology/babel/update-site/R0.17.1/2018-12/"/>
+			<repository location="https://archive.eclipse.org/technology/babel/update-site/R0.17.1/2018-12/"/>
 		</location>
 	</locations>
 	<targetJRE path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk-11.0.3x64"/>

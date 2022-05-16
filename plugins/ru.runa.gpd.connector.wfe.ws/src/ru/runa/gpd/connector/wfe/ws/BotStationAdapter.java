@@ -1,10 +1,8 @@
 package ru.runa.gpd.connector.wfe.ws;
 
-import java.util.List;
-
-import ru.runa.wfe.bot.BotStation;
-
 import com.google.common.collect.Lists;
+import java.util.List;
+import ru.runa.wfe.bot.BotStation;
 
 public class BotStationAdapter {
 
@@ -16,7 +14,6 @@ public class BotStationAdapter {
         result.setId(botStation.getId());
         result.setCreateDate(DateAdapter.toDTO(botStation.getCreateDate()));
         result.setVersion(botStation.getVersion());
-        result.setAddress(botStation.getAddress());
         result.setName(botStation.getName());
         return result;
     }
@@ -34,7 +31,6 @@ public class BotStationAdapter {
         result.setId(botStation.getId());
         result.setCreateDate(DateAdapter.toJAXB(botStation.getCreateDate()));
         result.setVersion(botStation.getVersion());
-        result.setAddress(botStation.getAddress());
         result.setName(botStation.getName());
         return result;
     }

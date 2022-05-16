@@ -3,12 +3,12 @@ package ru.runa.gpd.util.docx;
 import java.util.ArrayList;
 import java.util.Map;
 import ru.runa.wfe.lang.ProcessDefinition;
-import ru.runa.wfe.var.IVariableProvider;
 import ru.runa.wfe.var.UserType;
 import ru.runa.wfe.var.VariableDoesNotExistException;
+import ru.runa.wfe.var.VariableProvider;
 import ru.runa.wfe.var.dto.WfVariable;
 
-public class VariableConsumer implements IVariableProvider {
+public class VariableConsumer implements VariableProvider {
 
     private Map<String, Integer> variablesMap;
     private boolean scriptParseMode;

@@ -49,7 +49,7 @@ import ru.runa.gpd.settings.PrefConstants;
 import ru.runa.gpd.util.EmbeddedFileUtils;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.XmlUtil;
-import ru.runa.wfe.definition.IFileDataProvider;
+import ru.runa.wfe.definition.FileDataProvider;
 
 public class DeleteElementFeature extends DefaultDeleteFeature implements CustomUndoRedoFeature {
 
@@ -297,7 +297,7 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements Custom
             for (Element inputElement : (List<Element>) document.getRootElement().elements("input")) {
                 String path = inputElement.attributeValue("path");
                 if (EmbeddedFileUtils.isProcessFile(path)) {
-                    String fileName = path.substring(IFileDataProvider.PROCESS_FILE_PROTOCOL.length());
+                    String fileName = path.substring(FileDataProvider.PROCESS_FILE_PROTOCOL.length());
                     IPath removedPath = removeFile(processDefinitionFile, fileName, true);
                     if (removedPath != null) {
                         processFilePaths.add(removedPath);

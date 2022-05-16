@@ -67,15 +67,7 @@ public class TargetProcessSetDateVariableHandlerProvider extends SetDateVariable
 
     @Override
     protected boolean validateResultVariable(Delegable delegable, String resultVariableName) {
-        if (Strings.isNullOrEmpty(resultVariableName)) {
-            return false;
-        }
-        if (VariableUtils.isVariableNameWrapped(resultVariableName)) {
-            if (!delegable.getVariableNames(false, String.class.getName()).contains(VariableUtils.unwrapVariableName(resultVariableName))) {
-                return false;
-            }
-        }
-        return true;
+        return !Strings.isNullOrEmpty(resultVariableName);
     }
 
     @Override

@@ -9,5 +9,4 @@ spz-devstudio-pom.xml
 .settings
 *.iml
 .idea
-plugins/workspace
-
+/.project

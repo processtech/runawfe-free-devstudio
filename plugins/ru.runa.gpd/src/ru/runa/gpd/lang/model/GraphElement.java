@@ -1,6 +1,7 @@
 package ru.runa.gpd.lang.model;
 
 import com.google.common.base.Objects;
+import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import java.beans.PropertyChangeListener;
@@ -8,6 +9,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.draw2d.geometry.Rectangle;
@@ -47,7 +50,7 @@ public abstract class GraphElement extends EventSupport
         implements IPropertySource, PropertyNames, IActionFilter, VariableContainer, ProcessDefinitionAware {
     private PropertyChangeListener delegatedListener;
     private GraphElement parent;
-    private GraphElement parentContainer;
+    private GraphElement uiParentContainer;
     private final List<GraphElement> children = new ArrayList<GraphElement>();
     private Rectangle constraint;
     private String id;
@@ -63,12 +66,12 @@ public abstract class GraphElement extends EventSupport
     /**
      * @return parent container or <code>null</code> in case of {@link ProcessDefinition}
      */
-    public GraphElement getParentContainer() {
-        return parentContainer;
+    public GraphElement getUiParentContainer() {
+        return uiParentContainer;
     }
 
-    public void setParentContainer(GraphElement parentContainer) {
-        this.parentContainer = parentContainer;
+    public void setUiParentContainer(GraphElement uiParentContainer) {
+        this.uiParentContainer = uiParentContainer;
     }
 
     @Override
@@ -247,15 +250,17 @@ public abstract class GraphElement extends EventSupport
             firePropertyChange(PROPERTY_CHILDREN_CHANGED, old, before + 1);
         }
     }
-
+    
     public <T extends GraphElement> List<T> getChildren(Class<T> type) {
-        List<T> items = new ArrayList<T>();
-        for (GraphElement element : children) {
-            if (type.isAssignableFrom(element.getClass())) {
-                items.add((T) element);
-            }
+        return getChildren(type, null);
+    }
+
+    public <T extends GraphElement> List<T> getChildren(Class<T> type, Predicate<T> predicate) {
+        Stream<GraphElement> stream = children.stream().filter(e -> type.isAssignableFrom(e.getClass()));
+        if (predicate != null) {
+            stream = stream.filter(e -> predicate.apply((T) e));
         }
-        return items;
+        return (List<T>) stream.collect(Collectors.toList());
     }
 
     public List<Node> getNodes() {

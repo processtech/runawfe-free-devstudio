@@ -17,6 +17,7 @@ public class Component extends EventSupport implements IPropertySource {
     private final ComponentType type;
     private final List<Object> parameterValues = Lists.newArrayList();
     private boolean excessiveParametersFound = false;
+    private int numberOnFormValidation;
 
     public Component(ComponentType type, int id) {
         this.type = type;
@@ -42,6 +43,14 @@ public class Component extends EventSupport implements IPropertySource {
 
     public boolean isExcessiveParametersFound() {
         return excessiveParametersFound;
+    }
+
+    public int getNumberOnFormValidation() {
+        return numberOnFormValidation;
+    }
+
+    public void setNumberOnFormValidation(int numberOnFormValidation) {
+        this.numberOnFormValidation = numberOnFormValidation;
     }
 
     public Object getParameterValue(ComponentParameter parameter) {

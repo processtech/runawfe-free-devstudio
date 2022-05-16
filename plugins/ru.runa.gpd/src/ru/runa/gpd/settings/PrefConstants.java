@@ -41,6 +41,7 @@ public interface PrefConstants {
     public static final String P_WFE_SERVER_CONNECTOR_HOST_SUFFIX = "host";
     public static final String P_WFE_SERVER_CONNECTOR_PORT_SUFFIX = "port";
     public static final String P_WFE_SERVER_CONNECTOR_PROTOCOL_SUFFIX = "protocol";
+    public static final String P_WFE_SERVER_CONNECTOR_ALLOW_SSL_INSECURE_SUFFIX = "allowSslInsecure";
     public static final String P_WFE_SERVER_CONNECTOR_LOAD_PROCESS_DEFINITIONS_HISTORY_SUFFIX = "loadProcessDefinitionsHistory";
     public static final String P_WFE_SERVER_CONNECTOR_ALLOW_UPDATE_LAST_VERSION_BY_KEY_BINDING_SUFFIX = "allowUpdateLastVersionByKeyBinding";
     public static final String P_LDAP_CONNECTION_LOGIN = "ldapLogin";
@@ -53,12 +54,15 @@ public interface PrefConstants {
     public static final String P_DATE_FORMAT_PATTERN = "dateFormat";
     public static final String P_ENABLE_REGULATIONS_MENU_ITEMS = "enabledRegulationsMenuItems";
     public static final String P_ENABLE_EXPORT_WITH_SCALING = "enabledExportWithScaling";
+    public static final String P_ENABLE_EDITING_COMMENT_HISTORY_XML = "enabledEditingCommentHistoryXml";
     public static final String P_CONFIRM_DELETION = "confirmDeletion";
     public static final String P_PROCESS_SAVE_HISTORY = "processSaveHistory";
     public static final String P_PROCESS_SAVEPOINT_NUMBER = "processSavepointNumber";
     public static final String P_ENABLE_USER_ACTIVITY_LOGGING = "enableUserActivityLogging";
     public static final String P_KEEP_VARIABLE_VALIDATION_ON_COMPONENT_REMOVAL = "keepVariableValidationOnComponentRemoval";
     public static final String P_INTERNAL_STORAGE_FUNCTIONALITY_ENABLED = "internalStorageFunctionalityEnabled";
+    public static final String P_GLOBAL_OBJECTS_ENABLED = "globalObjectsEnabled";
+    public static final String P_CHAT_FUNCTIONALITY_ENABLED = "chatFunctionalityEnabled";
     public static final String P_ENABLE_USE_BOT_CONFIG_WITHOUT_PARAMETERS_OPTION = "useBotConfigurationWithoutParametersOption";
     public static final String P_SHOW_XML_BOT_CONFIG = "showXmlBotConfig";
     public static final String P_DISABLE_DOCX_TEMPLATE_VALIDATION = "disableDocxTemplateValidation";

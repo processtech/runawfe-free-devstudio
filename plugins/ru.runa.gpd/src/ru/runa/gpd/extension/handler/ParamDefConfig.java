@@ -3,6 +3,7 @@ package ru.runa.gpd.extension.handler;
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +15,7 @@ import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dom4j.io.OutputFormat;
+import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.handler.ParamDef.Presentation;
 import ru.runa.gpd.lang.ValidationError;
@@ -21,7 +23,6 @@ import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.util.VariableUtils;
 import ru.runa.gpd.util.XmlUtil;
-import ru.runa.gpd.Localization;
 
 @SuppressWarnings("unchecked")
 public class ParamDefConfig {
@@ -234,13 +235,13 @@ public class ParamDefConfig {
         return value != null && value.trim().length() > 0;
     }
 
-    public String toConfiguration(List<String> variableNames, Map<String, String> properties) {
+    public String toConfiguration(Collection<String> variableNames, Map<String, String> properties) {
         OutputFormat format = OutputFormat.createPrettyPrint();
         format.setSuppressDeclaration(true);
         return XmlUtil.toString(toConfigurationXml(variableNames, properties), format);
     }
 
-    public Document toConfigurationXml(List<String> variableNames, Map<String, String> properties) {
+    public Document toConfigurationXml(Collection<String> variableNames, Map<String, String> properties) {
         Document doc = DocumentHelper.createDocument();
         doc.add(DocumentHelper.createElement(name));
         Element root = doc.getRootElement();
@@ -271,7 +272,7 @@ public class ParamDefConfig {
                 if (param.getXmlNodeType() == ParamDef.XML_TYPE_ATTR) {
                     paramElement = DocumentHelper.createElement("param");
                     paramElement.addAttribute("name", paramName);
-                    if (param.isUseVariable()) {
+                    if (param.isUseVariable() && variableNames.contains(value)) {
                         paramElement.addAttribute("variable", value);
                     } else {
                         paramElement.addAttribute("value", value);

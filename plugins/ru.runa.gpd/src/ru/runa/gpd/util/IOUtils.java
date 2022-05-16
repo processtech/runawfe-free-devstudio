@@ -49,6 +49,7 @@ import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.ProcessProjectNature;
 import ru.runa.gpd.form.FormType;
 import ru.runa.gpd.form.FormTypeProvider;
+import ru.runa.gpd.globalsection.GlobalSectionUtils;
 import ru.runa.gpd.lang.model.BotTask;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.ProcessDefinition;
@@ -56,6 +57,7 @@ import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.par.ParContentProvider;
 
 public class IOUtils {
+    public static final String GLOBAL_OBJECT_PREFIX = "Global_";
     private static final ByteArrayInputStream EMPTY_STREAM = new ByteArrayInputStream(new byte[0]);
     private static final List<String> formExtensions = new ArrayList<String>();
     static {
@@ -484,7 +486,7 @@ public class IOUtils {
                 result.add(definitionFile);
                 return;
             }
-            if (folder.getName().startsWith(".")) {
+            if (GlobalSectionUtils.isGlobalSectionName(folder.getName())) {
                 return;
             }
             if (folder.getName().equals("bin")) {
@@ -514,7 +516,7 @@ public class IOUtils {
             if (isProcessDefinitionFolder(folder)) {
                 return;
             }
-            if (folder.getName().startsWith(".")) {
+            if (GlobalSectionUtils.isGlobalSectionName(folder.getName())) {
                 return;
             }
         }
@@ -564,7 +566,7 @@ public class IOUtils {
     }
 
     public static boolean isProcessDefinitionFolder(IFolder folder) {
-        return getProcessDefinitionFile(folder).exists();
+        return !GlobalSectionUtils.isGlobalSectionName(folder.getName()) && getProcessDefinitionFile(folder).exists();
     }
 
     public static IFile getProcessDefinitionFile(IFolder folder) {
@@ -694,6 +696,10 @@ public class IOUtils {
                 }
             }
         }
+    }
+
+    public static boolean isDotXMLFolder(IFolder folder) {
+        return folder.getName().equals(".xml");
     }
 
 }

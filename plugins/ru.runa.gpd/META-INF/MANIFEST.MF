@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: RunaWFE Developer Studio core plugin
 Bundle-SymbolicName: ru.runa.gpd; singleton:=true
-Bundle-Version: 4.4.0.qualifier
+Bundle-Version: 4.4.3.qualifier
 Bundle-Activator: ru.runa.gpd.Activator
 Bundle-Vendor: Runa
 Bundle-Localization: plugin
@@ -303,13 +303,10 @@ Export-Package: antlr,
  ru.runa.wfe.commons.bc.legacy,
  ru.runa.wfe.commons.cache,
  ru.runa.wfe.commons.dao,
- ru.runa.wfe.commons.dbpatch,
- ru.runa.wfe.commons.dbpatch.impl,
  ru.runa.wfe.commons.email,
  ru.runa.wfe.commons.ftl,
  ru.runa.wfe.commons.hibernate,
  ru.runa.wfe.commons.logic,
- ru.runa.wfe.commons.sqltask,
  ru.runa.wfe.commons.web,
  ru.runa.wfe.commons.xml,
  ru.runa.wfe.datasource,

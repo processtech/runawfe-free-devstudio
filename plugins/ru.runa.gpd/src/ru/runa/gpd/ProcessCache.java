@@ -12,7 +12,11 @@ import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
+
+import ru.runa.gpd.globalsection.GlobalSectionUtils;
 import ru.runa.gpd.lang.NodeRegistry;
+import ru.runa.gpd.lang.model.GlobalSectionDefinition;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.par.ParContentProvider;
@@ -184,4 +188,27 @@ public class ProcessCache {
         }
         return null;
     }
+
+    public static GlobalSectionDefinition getGlobalProcessDefinition(ProcessDefinition processDefinition) {
+
+        GlobalSectionDefinition definitionToReturn = null;
+        int maxLength = 0;
+        for (ProcessDefinition definition : getAllProcessDefinitions()) {
+            if (definition instanceof GlobalSectionDefinition) {
+                IPath globalSectionPath = definition.getFile().getProjectRelativePath();
+                IPath processPath = processDefinition.getFile().getProjectRelativePath();
+                if (maxLength == 0 && globalSectionPath.toString().startsWith(".")) {
+                    definitionToReturn = (GlobalSectionDefinition) definition;
+                }
+                int length = globalSectionPath.matchingFirstSegments(processPath);
+                if (length > maxLength) {
+                    maxLength = length;
+                    definitionToReturn = (GlobalSectionDefinition) definition;
+                }
+
+            }
+        }
+        return definitionToReturn;
+    }
+
 }

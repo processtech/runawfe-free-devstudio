@@ -29,6 +29,7 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
     private boolean async;
     private boolean transactional;
     protected boolean validateAtStart;
+    private boolean disableCascadingSuspension;
     private AsyncCompletionMode asyncCompletionMode = AsyncCompletionMode.ON_MAIN_PROCESS_END;
     public static List<String> PLACEHOLDERS = Lists.newArrayList(VariableUtils.CURRENT_PROCESS_ID, VariableUtils.CURRENT_PROCESS_DEFINITION_NAME,
             VariableUtils.CURRENT_NODE_ID, VariableUtils.CURRENT_NODE_NAME);
@@ -143,9 +144,12 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
         if (isEmbedded()) {
             descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_TRANSACTIONAL, Localization.getString("Subprocess.Transactional"),
                     YesNoComboBoxTransformer.LABELS));
-        }
-        descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_VALIDATE_AT_START, Localization.getString("Subprocess.ValidateAtStart"),
+        } else {
+            descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_VALIDATE_AT_START, Localization.getString("Subprocess.ValidateAtStart"),
                 YesNoComboBoxTransformer.LABELS));
+            descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_DISABLE_CASCADING_SUSPENSION,
+                Localization.getString("Subprocess.DisableCascadingSuspension"), YesNoComboBoxTransformer.LABELS));
+        }
     }
 
     @Override
@@ -160,8 +164,15 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
                 return Integer.valueOf(1);
             }
         }
-        else if (PROPERTY_VALIDATE_AT_START.equals(id)) {
+        if (PROPERTY_VALIDATE_AT_START.equals(id)) {
             if (validateAtStart) {
+                return Integer.valueOf(0);
+            } else {
+                return Integer.valueOf(1);
+            }
+        }
+        if (PROPERTY_DISABLE_CASCADING_SUSPENSION.equals(id)) {
+            if (disableCascadingSuspension) {
                 return Integer.valueOf(0);
             } else {
                 return Integer.valueOf(1);
@@ -249,6 +260,8 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
             setTransactional(YesNoComboBoxTransformer.setPropertyValue(value));
         } else if (PROPERTY_VALIDATE_AT_START.equals(id)) {
             setValidateAtStart(YesNoComboBoxTransformer.setPropertyValue(value));
+        } else if (PROPERTY_DISABLE_CASCADING_SUSPENSION.equals(id)) {
+            setDisableCascadingSuspension(YesNoComboBoxTransformer.setPropertyValue(value));
         } else {
             super.setPropertyValue(id, value);
         }
@@ -268,4 +281,13 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
         firePropertyChange(PROPERTY_VALIDATE_AT_START, old, this.validateAtStart);
     }
 
+    public boolean isDisableCascadingSuspension() {
+        return disableCascadingSuspension;
+    }
+
+    public void setDisableCascadingSuspension(boolean disableCascadingSuspension) {
+        boolean old = this.disableCascadingSuspension;
+        this.disableCascadingSuspension = disableCascadingSuspension;
+        firePropertyChange(PROPERTY_DISABLE_CASCADING_SUSPENSION, old, this.disableCascadingSuspension);
+    }
 }

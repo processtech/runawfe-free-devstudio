@@ -1,10 +1,7 @@
 package ru.runa.gpd.editor;
 
-import com.google.common.base.Function;
-import com.google.common.base.Joiner;
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import java.beans.PropertyChangeEvent;
+import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -32,11 +29,17 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
+
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.clipboard.VariableTransfer;
-import ru.runa.gpd.editor.gef.command.ProcessDefinitionRemoveVariablesCommand;
+import ru.runa.gpd.globalsection.GlobalSectionUtils;
 import ru.runa.gpd.lang.model.FormNode;
+import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableUserType;
@@ -46,6 +49,7 @@ import ru.runa.gpd.ltk.RenameVariableRefactoring;
 import ru.runa.gpd.search.ElementMatch;
 import ru.runa.gpd.search.MultiVariableSearchQuery;
 import ru.runa.gpd.search.SearchResult;
+import ru.runa.gpd.settings.CommonPreferencePage;
 import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.ui.custom.DragAndDropAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
@@ -54,12 +58,14 @@ import ru.runa.gpd.ui.dialog.ChooseUserTypeDialog;
 import ru.runa.gpd.ui.dialog.ChooseVariableDialog;
 import ru.runa.gpd.ui.dialog.ErrorDialog;
 import ru.runa.gpd.ui.dialog.UpdateVariableNameDialog;
+import ru.runa.gpd.ui.wizard.ChooseGlobalVariableWizard;
 import ru.runa.gpd.ui.wizard.CompactWizardDialog;
 import ru.runa.gpd.ui.wizard.VariableWizard;
 import ru.runa.gpd.util.EmbeddedFileUtils;
 import ru.runa.gpd.util.VariableUtils;
 import ru.runa.gpd.util.VariablesUsageXlsExporter;
 import ru.runa.gpd.util.WorkspaceOperations;
+import ru.runa.wfe.var.format.FileFormat;
 
 public class VariableEditorPage extends EditorPartBase<Variable> {
 
@@ -71,8 +77,11 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
     private Button changeButton;
     private Button deleteButton;
     private Button copyButton;
+    private Button importGlobalButton;
     private Button moveToTypeAttributeButton;
     private Button usageReportButton;
+    private Button pasteButton;
+    private Button makeLocalButton;
 
     private static Function<Variable, String> joinVariableNamesFunction = new Function<Variable, String>() {
 
@@ -126,8 +135,12 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
         renameButton = addButton(buttonsBar, "button.rename", new RenameVariableSelectionListener(), true);
         changeButton = addButton(buttonsBar, "button.change", new ChangeVariableSelectionListener(), true);
         copyButton = addButton(buttonsBar, "button.copy", new CopyVariableSelectionListener(), true);
-        addButton(buttonsBar, "button.paste", new PasteVariableSelectionListener(), true);
+        pasteButton = addButton(buttonsBar, "button.paste", new PasteVariableSelectionListener(), true);
         searchButton = addButton(buttonsBar, "button.search", new SearchVariableUsageSelectionListener(), true);
+        if (CommonPreferencePage.isGlobalObjectsEnabled()) {
+            importGlobalButton = addButton(buttonsBar, "button.importGlobal", new ImportGlobalVariableSelectionListener(), true);
+            makeLocalButton = addButton(buttonsBar, "button.makeLocal", new MakeLocalVariableListener(), true);
+        }
         usageReportButton = addButton(buttonsBar, "button.report", new ReportUsageSelectionListener(), true);
         usageReportButton.setToolTipText(Localization.getString("DesignerVariableEditorPage.report.variablesUsage.tooltip"));
         moveUpButton = addButton(buttonsBar, "button.up", new MoveVariableSelectionListener(true), true);
@@ -160,17 +173,31 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
 
     @Override
     protected void updateUI() {
+
         List<?> variables = (List<?>) tableViewer.getInput();
         List<?> selected = ((IStructuredSelection) tableViewer.getSelection()).toList();
+        boolean isWithoutGlobalVars = isWithoutGlobalVars(selected);
+        boolean isGlobalSection = isGlobalSection();
+        boolean isUsingGlobals = isUsingGlobals();
         enableAction(searchButton, selected.size() == 1);
-        enableAction(changeButton, selected.size() == 1);
-        enableAction(moveUpButton, selected.size() == 1 && variables.indexOf(selected.get(0)) > 0);
-        enableAction(moveDownButton, selected.size() == 1 && variables.indexOf(selected.get(0)) < variables.size() - 1);
+        enableAction(changeButton, isWithoutGlobalVars && selected.size() == 1);
+        enableAction(moveUpButton, isWithoutGlobalVars && selected.size() == 1 && variables.indexOf(selected.get(0)) > 0);
+        enableAction(moveDownButton, isWithoutGlobalVars && selected.size() == 1 && variables.indexOf(selected.get(0)) < variables.size() - 1);
         enableAction(deleteButton, selected.size() > 0);
-        enableAction(renameButton, selected.size() == 1);
-        enableAction(copyButton, selected.size() > 0);
-        enableAction(moveToTypeAttributeButton, selected.size() == 1);
+        enableAction(renameButton, isWithoutGlobalVars && selected.size() == 1);
+        enableAction(copyButton, isWithoutGlobalVars && selected.size() > 0);
+        enableAction(moveToTypeAttributeButton, isWithoutGlobalVars && selected.size() == 1);
         enableAction(usageReportButton, variables.size() > 0);
+        enableAction(pasteButton, isWithoutGlobalVars);
+        if (CommonPreferencePage.isGlobalObjectsEnabled()) {
+            enableAction(makeLocalButton, !isWithoutGlobalVars && selected.size() == 1 && !isGlobalSection && isUsingGlobals);
+            enableAction(importGlobalButton, (selected.size() >= 0 && !isGlobalSection && isUsingGlobals));
+        }
+
+    }
+
+    private boolean isWithoutGlobalVars(List<?> variables) {
+        return variables.stream().filter(v -> v instanceof Variable).noneMatch(v -> ((Variable) v).isGlobal());
     }
 
     private void updateViewer() {
@@ -180,6 +207,17 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
             variable.addPropertyChangeListener(this);
         }
         updateUI();
+    }
+
+    private boolean isGlobalSection() {
+        if (GlobalSectionUtils.isGlobalSectionName(getDefinition().getName())) {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isUsingGlobals() {
+        return getDefinition().isUsingGlobalVars();
     }
 
     private class MoveVariableSelectionListener extends LoggingSelectionAdapter {
@@ -218,7 +256,8 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
     private class RenameVariableSelectionListener extends LoggingSelectionAdapter {
         @Override
         protected void onSelection(SelectionEvent e) throws Exception {
-            Variable variable = getSelection();
+            IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
+            Variable variable = (Variable) selection.getFirstElement();
             UpdateVariableNameDialog dialog = new UpdateVariableNameDialog(variable);
             int result = dialog.open();
             if (result != IDialogConstants.OK_ID) {
@@ -277,15 +316,20 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
     }
 
     private class DeleteVariableSelectionListener extends LoggingSelectionAdapter {
+        @SuppressWarnings("unchecked")
         @Override
         protected void onSelection(SelectionEvent e) throws Exception {
-            IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
-            @SuppressWarnings("unchecked")
-            List<Variable> variables = selection.toList();
+            final IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
+            final List<Variable> variables = selection.toList();
+            final ProcessDefinition definition = getDefinition();
             for (Variable variable : variables) {
-                delete(variable);
+                definition.removeGlobalVariableInAllProcesses(variable, definition.getFile().getParent().getParent());
+                if (!isGlobalSection()) {
+                    delete(variable);
+                }
             }
         }
+
     }
 
     private IFile getDefaultValueAsFile(Variable variable) {
@@ -303,56 +347,40 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
     }
 
     private void delete(Variable variable) {
-        List<FormNode> nodesWithVar = ParContentProvider.getFormsWhereVariableUsed(editor.getDefinitionFile(), getDefinition(), variable.getName());
-        StringBuilder confirmationInfo = new StringBuilder();
-        boolean confirmationRequired = false;
-        if (nodesWithVar.size() > 0) {
-            confirmationInfo.append(Localization.getString("Variable.ExistInForms")).append("\n");
-            for (FormNode node : nodesWithVar) {
-                confirmationInfo.append(" - ").append(node.getName()).append("\n");
-            }
-            confirmationInfo.append(Localization.getString("Variable.WillBeRemovedFromFormAuto")).append("\n\n");
-            confirmationRequired = true;
-        }
-
-        List<Variable> result = Lists.newArrayList();
-        result.add(variable);
+        List<FormNode> formNodes = new ArrayList<>();
+        List<String> confirmationInfo = new ArrayList<>();
+        List<Variable> variablesToBeRemoved = Lists.newArrayList();
+        variablesToBeRemoved.add(variable);
         if (variable.isComplex()) {
-            result.addAll(VariableUtils.expandComplexVariable(variable, variable));
+            variablesToBeRemoved.addAll(VariableUtils.expandComplexVariable(variable, variable));
         }
-        String searchText = Joiner.on(", ").join(Lists.transform(result, joinVariableNamesFunction));
-        MultiVariableSearchQuery query = new MultiVariableSearchQuery(searchText, editor.getDefinitionFile(), getDefinition(), result);
+        String searchText = Joiner.on(", ").join(Lists.transform(variablesToBeRemoved, joinVariableNamesFunction));
+        MultiVariableSearchQuery query = new MultiVariableSearchQuery(searchText, editor.getDefinitionFile(), getDefinition(), variablesToBeRemoved);
         NewSearchUI.runQueryInForeground(PlatformUI.getWorkbench().getActiveWorkbenchWindow(), query);
         SearchResult searchResult = query.getSearchResult();
         if (searchResult.getMatchCount() > 0) {
-            confirmationInfo.append(Localization.getString("Variable.ExistInProcess")).append("\n");
-            for (Object element : searchResult.getElements()) {
-                confirmationInfo.append(" - ").append(element instanceof ElementMatch ? ((ElementMatch) element).toString(searchResult) : element)
-                        .append("\n");
+            confirmationInfo.add(Localization.getString("UsagesFoundFor", variable.getName()) + ":\n");
+            for (Object object : searchResult.getElements()) {
+                ElementMatch elementMatch = (ElementMatch) object;
+                confirmationInfo.add(" * " + elementMatch.toString(searchResult));
+                if (elementMatch.getGraphElement() instanceof FormNode) {
+                    formNodes.add((FormNode) elementMatch.getGraphElement());
+                }
             }
-            confirmationRequired = true;
         }
-
-        if (!confirmationRequired || Dialogs.confirm(Localization.getString("confirm.delete"), confirmationInfo.toString())) {
-            // TODO remove variable from form validations in
-            // EmbeddedSubprocesses
-            ParContentProvider.rewriteFormValidationsRemoveVariable(editor.getDefinitionFile(), nodesWithVar, variable.getName());
-            // remove variable from definition
-            ProcessDefinitionRemoveVariablesCommand command = new ProcessDefinitionRemoveVariablesCommand();
-            command.setProcessDefinition(getDefinition());
-            command.setVariable(variable);
-            // TODO Ctrl+Z support (form validation)
-            // editor.getCommandStack().execute(command);
-
-            // Warning: You can't undo delete operation for file variable with default value
-            // because of next code deletes the file
-            IFile file = getDefaultValueAsFile(variable);
-            if (null != file) {
-                EmbeddedFileUtils.deleteProcessFile(file);
-            }
-
-            command.execute();
+        if (!confirmationInfo.isEmpty()
+                && !Dialogs.confirm(Localization.getString("deletion.allEditorsWillBeSaved") + "\n\n" + Localization.getString("confirm.delete"),
+                        Joiner.on("\n").join(confirmationInfo))) {
+            return;
         }
+        ParContentProvider.rewriteFormValidationsRemoveVariable(formNodes, variable.getName());
+        IFile file = getDefaultValueAsFile(variable);
+        if (null != file) {
+            EmbeddedFileUtils.deleteProcessFile(file);
+        }
+        getDefinition().removeChild(variable);
+        IResource projectRoot = editor.getDefinitionFile().getParent();
+        IDE.saveAllEditors(new IResource[] { projectRoot }, false);
     }
 
     private class CreateVariableSelectionListener extends LoggingSelectionAdapter {
@@ -368,6 +396,29 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
         }
     }
 
+    private class ImportGlobalVariableSelectionListener extends LoggingSelectionAdapter {
+        @Override
+        protected void onSelection(SelectionEvent e) throws Exception {
+            IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
+            ChooseGlobalVariableWizard wizard = new ChooseGlobalVariableWizard(getDefinition(), selection);
+            CompactWizardDialog dialog = new CompactWizardDialog(wizard);
+            if (dialog.open() == Window.OK) {
+
+            }
+            updateViewer();
+        }
+    }
+
+    private class MakeLocalVariableListener extends LoggingSelectionAdapter {
+        @Override
+        protected void onSelection(SelectionEvent e) throws Exception {
+            IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
+            Variable variable = (Variable) selection.getFirstElement();
+            variable.setGlobal(false);
+            updateViewer();
+        }
+    }
+
     private class ChangeVariableSelectionListener extends LoggingSelectionAdapter {
         @Override
         protected void onSelection(SelectionEvent e) throws Exception {
@@ -380,6 +431,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
                 variable.setFormat(wizard.getVariable().getFormat());
                 variable.setUserType(wizard.getVariable().getUserType());
                 variable.setPublicVisibility(wizard.getVariable().isPublicVisibility());
+                variable.setEditableInChat(wizard.getVariable().isEditableInChat());
                 variable.setDefaultValue(wizard.getVariable().getDefaultValue());
                 variable.setStoreType(wizard.getVariable().getStoreType());
                 if (previousFileVariableDefaultValue != null && !EmbeddedFileUtils.isFileVariableClassName(variable.getJavaClassName())) {
@@ -538,7 +590,9 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
             case 1:
                 return variable.getFormatLabel();
             case 2:
-                return Strings.nullToEmpty(variable.getDefaultValue());
+                return FileFormat.class.getName().equals(variable.getFormatClassName()) && !Strings.isNullOrEmpty(variable.getDefaultValue())
+                        ? EmbeddedFileUtils.getProcessFileName(variable.getDefaultValue())
+                        : Strings.nullToEmpty(variable.getDefaultValue());
             case 3:
                 return variable.getStoreType().getDescription();
             default:

@@ -83,6 +83,7 @@ public class VariableWizard extends Wizard {
             boolean publicVisibility = accessPage != null ? accessPage.isPublicVisibility() : false;
             variable = new Variable(name, scriptingName, format, formatPage.getUserType());
             variable.setPublicVisibility(publicVisibility);
+            variable.setEditableInChat(accessPage != null && accessPage.isEditableInChat());
             variable.setDefaultValue(defaultValue == null || defaultValue.isEmpty() ? null : defaultValue);
             variable.setDescription(description);
             variable.setStoreType(storeTypePage.getStoreType());

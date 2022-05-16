@@ -22,6 +22,7 @@ public interface PropertyNames {
     public static final String PROPERTY_SCRIPTING_NAME = "scriptingName";
     public static final String PROPERTY_FORMAT = "format";
     public static final String PROPERTY_PUBLIC_VISIBILITY = "publicVisibility";
+    public static final String PROPERTY_EDITABLE_IN_CHAT = "editableInChat";
     public static final String PROPERTY_DEFAULT_VALUE = "defaultValue";
     public static final String PROPERTY_STORE_TYPE = "storeType";
     public static final String PROPERTY_EVENT_TYPE = "eventType";
@@ -76,5 +77,6 @@ public interface PropertyNames {
     public static final String PROPERTY_GLOBAL = "global";
     public static final String PROPERTY_VALIDATE_AT_START = "validateAtStart";
     public static final String PROPERTY_STORE_IN_EXTERNAL_STORAGE = "storeInExternalStorage";
+    public static final String PROPERTY_DISABLE_CASCADING_SUSPENSION = "disableCascadingSuspension";
 
 }

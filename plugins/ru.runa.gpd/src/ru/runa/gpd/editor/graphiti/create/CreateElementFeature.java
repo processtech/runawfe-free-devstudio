@@ -31,6 +31,8 @@ import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.SwimlanedNode;
 import ru.runa.gpd.lang.model.Transition;
+import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
+import ru.runa.gpd.lang.model.bpmn.EventNodeType;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
 
@@ -93,7 +95,10 @@ public class CreateElementFeature extends AbstractCreateFeature implements GEFCo
             }
             ((Action) graphElement).setName(getCreateName() + " " + (parent.getChildren(Action.class).size() + 1));
         }
-        graphElement.setParentContainer(parent);
+        if (graphElement instanceof CatchEventNode && parent instanceof IBoundaryEventContainer) {
+            ((CatchEventNode) graphElement).setEventNodeType(EventNodeType.signal);
+        }
+        graphElement.setUiParentContainer(parent);
         Swimlane swimlane = null;
         if (parent instanceof Swimlane) {
             swimlane = (Swimlane) parent;

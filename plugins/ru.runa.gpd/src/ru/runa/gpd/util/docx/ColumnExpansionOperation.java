@@ -3,7 +3,7 @@ package ru.runa.gpd.util.docx;
 import java.util.List;
 import java.util.Map;
 import ru.runa.gpd.ui.enhancement.DocxDialogEnhancementMode;
-import ru.runa.wfe.var.IVariableProvider;
+import ru.runa.wfe.var.VariableProvider;
 import ru.runa.wfe.var.dto.WfVariable;
 
 public class ColumnExpansionOperation extends AbstractIteratorOperation {
@@ -26,7 +26,7 @@ public class ColumnExpansionOperation extends AbstractIteratorOperation {
         }
     }
 
-    public String getStringValue(DocxConfig config, IVariableProvider variableProvider, Object key) {
+    public String getStringValue(DocxConfig config, VariableProvider variableProvider, Object key) {
         if (iterateBy == IterateBy.indexes) {
             // modify original algorithm
             // return String.valueOf(key);

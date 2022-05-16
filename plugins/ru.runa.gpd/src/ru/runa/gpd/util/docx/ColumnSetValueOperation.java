@@ -1,11 +1,11 @@
 package ru.runa.gpd.util.docx;
 
-import ru.runa.wfe.var.IVariableProvider;
+import ru.runa.wfe.var.VariableProvider;
 
 public class ColumnSetValueOperation extends ColumnExpansionOperation {
 
     @Override
-    public String getStringValue(DocxConfig config, IVariableProvider variableProvider, Object key) {
+    public String getStringValue(DocxConfig config, VariableProvider variableProvider, Object key) {
         final Object value = getContainerValue();
         if (value == null) {
             return "";

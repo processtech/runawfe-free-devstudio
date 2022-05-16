@@ -52,6 +52,7 @@ import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.util.Duration;
 import ru.runa.gpd.util.MultiinstanceParameters;
 import ru.runa.gpd.util.VariableMapping;
+import ru.runa.gpd.util.VariableUtils;
 import ru.runa.gpd.util.XmlUtil;
 import ru.runa.wfe.commons.BackCompatibilityClassNames;
 import ru.runa.wfe.definition.ProcessDefinitionAccessType;
@@ -137,7 +138,7 @@ public class JpdlSerializer extends ProcessSerializer {
         if (definition.getDefaultNodeAsyncExecution() != NodeAsyncExecution.DEFAULT) {
             root.addAttribute(NODE_ASYNC_EXECUTION, definition.getDefaultNodeAsyncExecution().getValue());
         }
-        if (definition.isUseGlobals()) {
+        if (definition.isUsingGlobalVars()) {
             root.addAttribute(USE_GLOBALS, "true");
         }
         if (!Strings.isNullOrEmpty(definition.getDescription())) {
@@ -248,6 +249,9 @@ public class JpdlSerializer extends ProcessSerializer {
             }
             if (subprocess.isValidateAtStart()) {
                 setAttribute(processStateElement, VALIDATE_AT_START, Boolean.TRUE.toString());
+            }
+            if (subprocess.isDisableCascadingSuspension()) {
+                setAttribute(processStateElement, DISABLE_CASCADING_SUSPENSION, Boolean.TRUE.toString());
             }
         }
         List<SendMessageNode> sendMessageNodes = definition.getChildren(SendMessageNode.class);
@@ -514,9 +518,7 @@ public class JpdlSerializer extends ProcessSerializer {
             definition.setDefaultNodeAsyncExecution(NodeAsyncExecution.getByValueNotNull(nodeAsyncExecutionValue));
         }
         String useGlobals = root.attributeValue(USE_GLOBALS);
-        if (!Strings.isNullOrEmpty(useGlobals)) {
-            definition.setUseGlobals("true".equals(useGlobals));
-        }
+        definition.setUsingGlobalVars("true".equals(useGlobals));
         List<Element> swimlanes = root.elements(SWIMLANE);
         for (Element node : swimlanes) {
             if (!"true".equals(node.attributeValue(GLOBAL))) {
@@ -528,6 +530,13 @@ public class JpdlSerializer extends ProcessSerializer {
                         swimlane.setDelegationConfiguration(className + "(" + orgFunctionParts[1]);
                     }
                 }
+            } else {
+                String swimlaneName = node.getName();
+                Swimlane globSwimlane = new Swimlane();
+                globSwimlane.setName(swimlaneName);
+                globSwimlane.setScriptingName(VariableUtils.generateNameForScripting(definition, swimlaneName, globSwimlane));
+                globSwimlane.setGlobal(true);
+                definition.addGlobalSwimlane(globSwimlane);
             }
         }
         List<Element> startStates = root.elements(START_STATE);
@@ -594,8 +603,8 @@ public class JpdlSerializer extends ProcessSerializer {
             }
             if (state instanceof MultiTaskState) {
                 MultiTaskState multiTaskState = (MultiTaskState) state;
-                multiTaskState.setCreationMode(MultiTaskCreationMode.valueOf(node.attributeValue(PropertyNames.PROPERTY_MULTI_TASK_CREATION_MODE,
-                        MultiTaskCreationMode.BY_EXECUTORS.name())));
+                multiTaskState.setCreationMode(MultiTaskCreationMode
+                        .valueOf(node.attributeValue(PropertyNames.PROPERTY_MULTI_TASK_CREATION_MODE, MultiTaskCreationMode.BY_EXECUTORS.name())));
                 multiTaskState.setSynchronizationMode(MultiTaskSynchronizationMode.valueOf(node.attributeValue(TASK_EXECUTION_MODE)));
                 multiTaskState.setDiscriminatorUsage(node.attributeValue(TASK_EXECUTORS_USAGE, MultiTaskState.USAGE_DEFAULT));
                 multiTaskState.setDiscriminatorValue(node.attributeValue(TASK_EXECUTORS_VALUE));
@@ -740,6 +749,7 @@ public class JpdlSerializer extends ProcessSerializer {
                     subprocess.setSubProcessName(childNode.attributeValue(NAME));
                     subprocess.setEmbedded(Boolean.parseBoolean(childNode.attributeValue(EMBEDDED, "false")));
                     subprocess.setValidateAtStart(Boolean.parseBoolean(childNode.attributeValue(VALIDATE_AT_START, "false")));
+                    subprocess.setDisableCascadingSuspension(Boolean.parseBoolean(childNode.attributeValue(DISABLE_CASCADING_SUSPENSION, "false")));
                 }
                 if (VARIABLE.equals(childNode.getName())) {
                     VariableMapping variable = new VariableMapping();

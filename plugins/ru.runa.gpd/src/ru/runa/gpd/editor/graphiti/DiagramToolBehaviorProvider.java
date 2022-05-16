@@ -35,6 +35,7 @@ import ru.runa.gpd.editor.graphiti.create.CreateDragAndDropElementFeature;
 import ru.runa.gpd.editor.graphiti.create.CreateElementFeature;
 import ru.runa.gpd.editor.graphiti.create.CreateStartNodeFeature;
 import ru.runa.gpd.editor.graphiti.create.CreateSwimlaneFeature;
+import ru.runa.gpd.editor.graphiti.create.CreateTransitionFeature;
 import ru.runa.gpd.editor.graphiti.update.ChangeEventTypeFeature;
 import ru.runa.gpd.editor.graphiti.update.OpenSubProcessFeature;
 import ru.runa.gpd.extension.HandlerArtifact;
@@ -51,6 +52,7 @@ import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
+import ru.runa.gpd.lang.model.bpmn.DottedTransition;
 import ru.runa.gpd.lang.model.bpmn.EventNodeType;
 import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
 import ru.runa.gpd.settings.PrefConstants;
@@ -97,8 +99,8 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
         boolean allowTargetNodeCreation = (element instanceof Node) && ((Node) element).canAddLeavingTransition();
         //
         ContainerShape targetContainer;
-        if (element.getParentContainer() instanceof Swimlane) {
-            targetContainer = (ContainerShape) getFeatureProvider().getPictogramElementForBusinessObject(element.getParentContainer());
+        if (element.getUiParentContainer() instanceof Swimlane) {
+            targetContainer = (ContainerShape) getFeatureProvider().getPictogramElementForBusinessObject(element.getUiParentContainer());
         } else {
             targetContainer = getFeatureProvider().getDiagramTypeProvider().getDiagram();
         }
@@ -126,13 +128,14 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
         createTransitionButton.setIconId(transitionDefinition.getPaletteIcon());
         ICreateConnectionFeature[] features = getFeatureProvider().getCreateConnectionFeatures();
         for (ICreateConnectionFeature feature : features) {
-            if (!(feature instanceof CreateDottedTransitionFeature) && feature.isAvailable(createConnectionContext)
-                    && feature.canStartConnection(createConnectionContext)) {
+            if (feature.isAvailable(createConnectionContext) && feature.canStartConnection(createConnectionContext)
+                    && feature instanceof CreateTransitionFeature) {
                 createTransitionButton.addDragAndDropFeature(feature);
             }
         }
+
         //
-        
+
         if (allowTargetNodeCreation) {
             ContextButtonEntry createElementButton = null;
             if (!expandContextButtonPad) {
@@ -174,6 +177,30 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
                 data.getDomainSpecificContextButtons().add(createTransitionButton.getDragAndDropFeatures().size(), createTransitionButton);
             }
         }
+
+        if (Activator.getPrefBoolean(PrefConstants.P_INTERNAL_STORAGE_FUNCTIONALITY_ENABLED)) {
+            ContextButtonEntry createDottedTransitionButton = new ContextButtonEntry(null, context);
+            NodeTypeDefinition dottedTransitionDefinition = NodeRegistry.getNodeTypeDefinition(DottedTransition.class);
+            createDottedTransitionButton.setText(dottedTransitionDefinition.getLabel());
+            createDottedTransitionButton.setIconId(dottedTransitionDefinition.getPaletteIcon());
+
+            for (ICreateConnectionFeature feature : features) {
+                if (feature.isAvailable(createConnectionContext) && feature.canStartConnection(createConnectionContext)
+                        && feature instanceof CreateDottedTransitionFeature) {
+                    createDottedTransitionButton.addDragAndDropFeature(feature);
+                }
+            }
+
+            if (createDottedTransitionButton.getDragAndDropFeatures().size() > 0) {
+                if (expandContextButtonPad) {
+                    data.getDomainSpecificContextButtons().add(createDottedTransitionButton);
+                } else {
+                    data.getDomainSpecificContextButtons().add(createDottedTransitionButton.getDragAndDropFeatures().size(),
+                            createDottedTransitionButton);
+                }
+            }
+        }
+
         if (element instanceof MessageNode) {
             ContextButtonEntry changeEventTypeButton = new ContextButtonEntry(null, null);
             changeEventTypeButton.setText(Localization.getString("event.type.label"));

@@ -8,9 +8,14 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -21,6 +26,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.custom.VerifyKeyListener;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -41,6 +48,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PropertyNames;
+import ru.runa.gpd.editor.clipboard.GlobalValidatorTransfer;
 import ru.runa.gpd.extension.decision.GroovyTypeSupport;
 import ru.runa.gpd.extension.decision.GroovyValidationModel;
 import ru.runa.gpd.extension.decision.GroovyValidationModel.Expr;
@@ -68,9 +76,12 @@ import ru.runa.gpd.validation.ValidatorDefinitionRegistry;
 import ru.runa.wfe.execution.dto.WfProcess;
 
 public class GlobalValidatorsPage extends Composite implements PropertyChangeListener {
+    private static final Log log = LogFactory.getLog(GlobalValidatorsPage.class);
+
     private final FormNode formNode;
     private TableViewer validatorsTableViewer;
     private Button deleteButton;
+    private Button copyButton;
     private ValidatorInfoControl infoGroup;
     private List<ValidatorConfig> validatorConfigs;
     private List<Variable> variables;
@@ -144,7 +155,7 @@ public class GlobalValidatorsPage extends Composite implements PropertyChangeLis
         valComposite.setLayoutData(valGridData);
         valComposite.setLayout(new GridLayout(2, false));
 
-        validatorsTableViewer = new TableViewer(valComposite, SWT.BORDER | SWT.FULL_SELECTION);
+        validatorsTableViewer = new TableViewer(valComposite, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI);
         GridData data = new GridData(GridData.FILL_BOTH);
         data.minimumHeight = 100;
         validatorsTableViewer.getControl().setLayoutData(data);
@@ -163,6 +174,7 @@ public class GlobalValidatorsPage extends Composite implements PropertyChangeLis
                     validatorChanging = true;
                     ValidatorConfig config = (ValidatorConfig) ((IStructuredSelection) validatorsTableViewer.getSelection()).getFirstElement();
                     deleteButton.setEnabled(config != null);
+                    copyButton.setEnabled(config != null);
                     infoGroup.setConfig(ValidatorConfig.GLOBAL_FIELD_ID, globalDefinition, config);
                 } finally {
                     validatorChanging = false;
@@ -198,18 +210,25 @@ public class GlobalValidatorsPage extends Composite implements PropertyChangeLis
 
         deleteButton = addButton(buttonsBar, "button.delete", new LoggingSelectionAdapter() {
             @Override
+            @SuppressWarnings({ "unchecked" })
             protected void onSelection(SelectionEvent event) throws Exception {
-                ValidatorConfig config = (ValidatorConfig) ((IStructuredSelection) validatorsTableViewer.getSelection()).getFirstElement();
-                if (config == null) {
+                  List<ValidatorConfig> selected = ((IStructuredSelection) validatorsTableViewer.getSelection()).toList();
+                if (selected.isEmpty()) {
                     infoGroup.setVisible(false);
                     return;
                 }
-                validatorConfigs.remove(config);
+                for(ValidatorConfig config : selected) {
+                    validatorConfigs.remove(config);
+                }
                 validatorsTableViewer.refresh(true);
                 setDirty(true);
             }
         });
+        copyButton = addButton(buttonsBar, "button.copy", new CopySelectionListener());
+        addButton(buttonsBar, "button.paste", new PasteSelectionListener());
+
         deleteButton.setEnabled(false);
+        copyButton.setEnabled(false);
 
         Composite bottomComposite = new Composite(mainComposite, SWT.NONE);
         bottomComposite.setLayout(new GridLayout(1, false));
@@ -289,11 +308,7 @@ public class GlobalValidatorsPage extends Composite implements PropertyChangeLis
         @Override
         protected boolean enableUI(String variableName, ValidatorDefinition definition, ValidatorConfig config) {
             if (config != null) {
-                if (config.getTransitionNames().isEmpty()) {
-                    for (Transition transition : formNode.getLeavingTransitions()) {
-                        config.getTransitionNames().add(transition.getName());
-                    }
-                }
+                adjustTransitions(config);
                 for (Map.Entry<String, Button> entry : transitionButtons.entrySet()) {
                     entry.getValue().setSelection(config.getTransitionNames().contains(entry.getKey()));
                 }
@@ -558,5 +573,60 @@ public class GlobalValidatorsPage extends Composite implements PropertyChangeLis
             }
         }
     }
+
+    private class CopySelectionListener extends LoggingSelectionAdapter {
+        @Override
+        protected void onSelection(SelectionEvent e) throws Exception {
+            Clipboard clipboard = new Clipboard(getDisplay());
+            @SuppressWarnings("unchecked")
+            List<ValidatorConfig> list = ((IStructuredSelection) validatorsTableViewer.getSelection()).toList();
+            clipboard.setContents(new Object[] { list }, new Transfer[] { GlobalValidatorTransfer.getInstance() });
+        }
+    }
+
+    private class PasteSelectionListener extends LoggingSelectionAdapter {
+        @Override
+        protected void onSelection(SelectionEvent e) throws Exception {
+            Clipboard clipboard = new Clipboard(getDisplay());
+            @SuppressWarnings("unchecked")
+            List<ValidatorConfig> data = (List<ValidatorConfig>) clipboard.getContents(GlobalValidatorTransfer.getInstance());
+            if (data != null) {
+                for (ValidatorConfig config : data) {
+                    config.getTransitionNames().clear();
+                    adjustTransitions(config);
+                    validatorConfigs.add(config);
+                }
+                validatorsTableViewer.refresh(true);
+                setDirty(true);
+            }
+        }
+    }
+
+    private void adjustTransitions(ValidatorConfig config) {
+        List<String> transitions = new ArrayList<>();
+        List<String> configTransitions = config.getTransitionNames();
+        Set<String> allTransitions = new HashSet<>();
+        for(Transition t : formNode.getLeavingTransitions()) {
+            allTransitions.add(t.getName());
+        }
+
+        for (String t : configTransitions) {
+            if (allTransitions.contains(t)) {
+                transitions.add(t);
+            } else {
+                log.info(String.format("Transition '%s' does not exists", t));
+            }
+        }
+
+        if (transitions.isEmpty()) {
+            for (Transition transition : formNode.getLeavingTransitions()) {
+                transitions.add(transition.getName());
+            }
+        }
+        configTransitions.clear();
+        configTransitions.addAll(transitions);
+
+    }
+
 
 }

@@ -23,7 +23,7 @@ import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTR;
 import ru.runa.wfe.commons.ClassLoaderUtil;
 import ru.runa.wfe.commons.GroovyScriptExecutor;
 import ru.runa.wfe.commons.TypeConversionUtil;
-import ru.runa.wfe.var.IVariableProvider;
+import ru.runa.wfe.var.VariableProvider;
 import ru.runa.wfe.var.dto.WfVariable;
 import ru.runa.wfe.var.file.FileVariable;
 import ru.runa.wfe.var.format.UserTypeFormat;
@@ -521,7 +521,7 @@ public class DocxUtils {
         return value;
     }
 
-    private static Object executeGroovy(IVariableProvider variableProvider, String script) {
+    private static Object executeGroovy(VariableProvider variableProvider, String script) {
         script = script.substring(GROOVY.length());
         GroovyScriptExecutor executor = new GroovyScriptExecutor();
         return executor.evaluateScript(variableProvider, script);
@@ -539,7 +539,7 @@ public class DocxUtils {
         t++;
     }
 
-    public static char[] getValue(DocxConfig config, IVariableProvider variableProvider, Object listItem, String containerSelector) {
+    public static char[] getValue(DocxConfig config, VariableProvider variableProvider, Object listItem, String containerSelector) {
         // TODO Auto-generated method stub
         int t = 0;
         t++;

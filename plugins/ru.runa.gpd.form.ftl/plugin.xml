@@ -1269,7 +1269,7 @@
          </param>
       </component>
       <component
-            enabled="false"
+            enabled="true"
             id="SelectFromInternalStorage"
             imageProvider="ru.runa.gpd.formeditor.ftl.image.VariableComponentImageProvider"
             name="%Method.SelectFromInternalStorage"
@@ -1312,6 +1312,26 @@
                optional="false"
                type="dbusertypevarlistcombo"
                variableAccess="WRITE">
+         </param>
+      </component>
+      <component
+              enabled="true"
+              id="EdsInteraction"
+              imageProvider="ru.runa.gpd.formeditor.ftl.image.VariableComponentImageProvider"
+              name="%Method.EdsInteraction"
+              order="-77">
+         <param
+                 name="%Param.Variable"
+                 type="varfinder"
+                 variableAccess="WRITE"
+                 variableTypeFilter="ru.runa.wfe.var.UserTypeMap">
+         </param>
+         <param
+                 name="%Param.FileVariable"
+                 optional="true"
+                 type="varfinder"
+                 variableAccess="WRITE"
+                 variableTypeFilter="ru.runa.wfe.var.file.FileVariable">
          </param>
       </component>
    </extension>

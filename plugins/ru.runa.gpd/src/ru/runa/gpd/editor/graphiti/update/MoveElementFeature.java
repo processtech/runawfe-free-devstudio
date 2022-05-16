@@ -111,6 +111,17 @@ public class MoveElementFeature extends DefaultMoveShapeFeature implements Custo
         }
         reconnectToParent(context, element);
 
+        if (context.getSourceContainer() != context.getTargetContainer()) {
+            GraphElement parent = (GraphElement) getBusinessObjectForPictogramElement(context.getTargetContainer());
+            element.setUiParentContainer(parent);
+            if (element instanceof SwimlanedNode) {
+                Swimlane swimlane = null;
+                if (parent instanceof Swimlane) {
+                    swimlane = (Swimlane) parent;
+                }
+                ((SwimlanedNode) element).setSwimlane(swimlane);
+            }
+        }
         // move definition with point
         if (element instanceof HasTextDecorator) {
             HasTextDecorator withDefinition = (HasTextDecorator) element;
@@ -207,7 +218,7 @@ public class MoveElementFeature extends DefaultMoveShapeFeature implements Custo
     private void reconnectToParent(IMoveShapeContext workContext, GraphElement element) {
         if (workContext.getSourceContainer() != workContext.getTargetContainer()) {
             GraphElement parent = (GraphElement) getBusinessObjectForPictogramElement(workContext.getTargetContainer());
-            element.setParentContainer(parent);
+            element.setUiParentContainer(parent);
             if (element instanceof SwimlanedNode) {
                 Swimlane swimlane = null;
                 if (parent instanceof Swimlane) {

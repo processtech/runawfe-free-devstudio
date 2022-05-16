@@ -23,6 +23,13 @@
           name="GraphitiEditor">
     </editor>
     <editor
+          class="ru.runa.gpd.editor.graphiti.GraphitiGlobalSectionEditor"
+          contributorClass="ru.runa.gpd.editor.graphiti.DiagramActionBarContributor"
+          icon="icons/bpmn/community_icon.png"
+          id="ru.runa.gpd.GraphitiGlobalSectionEditor"
+          name="GraphitiGlobalSectionEditor">
+    </editor>
+    <editor
           class="ru.runa.gpd.editor.gef.GEFProcessEditor"
           contributorClass="ru.runa.gpd.editor.gef.GEFActionBarContributor"
           icon="icons/process.gif"
@@ -148,6 +155,13 @@
           adaptable="false"
           id="synchronizable.async"
           objectClass="ru.runa.gpd.lang.model.Synchronizable">
+        <visibility>
+            <not>
+                <objectClass
+                        name="ru.runa.gpd.lang.model.EmbeddedSubprocess">
+                </objectClass>
+            </not>
+        </visibility>
        <action
              class="ru.runa.gpd.lang.action.AsyncFeatureDelegate"
              id="feature.async"
@@ -512,22 +526,45 @@
     </objectContribution>
     <objectContribution
           adaptable="false"
-          id="subprocess.mapping"
-          objectClass="ru.runa.gpd.lang.model.Subprocess">
+          id="businessRule.compactview"
+          objectClass="ru.runa.gpd.lang.model.bpmn.BusinessRule">
        <action
-             class="ru.runa.gpd.lang.action.SubprocessDelegate"
-             id="subprocess"
-             label="%label.action.subprocess"
-             menubarPath="additions"
-             style="push"
-             />
+             class="ru.runa.gpd.lang.action.CompactViewFeatureDelegate"
+             id="feature.compactView"
+             label="%label.action.feature.compactView"
+             menubarPath="features/sp1">
+       </action>
+    </objectContribution>
+    <objectContribution
+          adaptable="false"
+          id="embeddedSubprocess.mapping"
+          objectClass="ru.runa.gpd.lang.model.EmbeddedSubprocess">
        <action
              class="ru.runa.gpd.lang.action.EmbeddedSubprocessActionsDelegate"
              id="embeddedSubprocessActions"
              label="%label.action.embeddedSubprocessActions"
              menubarPath="additions"
-             style="pulldown"
-             />
+             style="pulldown">
+       </action>
+    </objectContribution>
+    <objectContribution
+          adaptable="false"
+          id="externalSubprocess.mapping"
+          objectClass="ru.runa.gpd.lang.model.Subprocess">
+        <visibility>
+            <not>
+                <objectClass
+                        name="ru.runa.gpd.lang.model.EmbeddedSubprocess">
+                </objectClass>
+            </not>
+        </visibility>
+       <action
+             class="ru.runa.gpd.lang.action.SubprocessDelegate"
+             id="subprocess"
+             label="%label.action.subprocess"
+             menubarPath="additions"
+             style="push">
+       </action>
     </objectContribution>
     <objectContribution
           adaptable="false"
@@ -1187,6 +1224,24 @@
          </graphiti>
       </element>
       <element
+            bpmn="businessRuleTask"
+            enabledInRegulationsByDefault="false"
+            icon="business-rule.png"
+            label="%label.element.businessRule"
+            model="ru.runa.gpd.lang.model.bpmn.BusinessRule"
+            type="node">
+         <graphiti
+               add="ru.runa.gpd.editor.graphiti.add.AddBusinessRuleNodeFeature"
+               create="ru.runa.gpd.editor.graphiti.create.CreateElementFeature"
+               doubleClick="ru.runa.gpd.editor.graphiti.update.DoubleClickDelegableFeature"
+               fixedSize="false"
+               height="10"
+               layout="ru.runa.gpd.editor.graphiti.layout.LayoutStateNodeFeature"
+               update="ru.runa.gpd.editor.graphiti.update.UpdateStateNodeFeature"
+               width="15">
+         </graphiti>
+      </element>
+      <element
             bpmn="actionHandler"
             hasPreferencePage="false"
             icon="action.png"
@@ -1234,6 +1289,19 @@
          </gef>
       </element>
       <element
+            bpmn="process"
+            hasPreferencePage="false"
+            jpdl="process-definition"
+            label="%label.globalSectionDefinition"
+            model="ru.runa.gpd.lang.model.GlobalSectionDefinition"
+            type="definition">
+         <gef 
+            figure="ru.runa.gpd.editor.gef.figure.GridSupportLayer"
+            graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.ProcessDefinitionGraphicalEditPart"
+            treeEditPart="ru.runa.gpd.editor.gef.part.tree.ProcessDefinitionTreeEditPart">
+         </gef>
+      </element>
+      <element
             bpmn="subProcess"
             icon="subprocess.png"
             jpdl="process-state"
@@ -1244,6 +1312,28 @@
             figure="ru.runa.gpd.editor.gef.figure.SubprocessFigure"
             graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.SubprocessGraphicalEditPart"
             treeEditPart="ru.runa.gpd.editor.gef.part.tree.NodeTreeEditPart">
+         </gef>
+         <graphiti
+               add="ru.runa.gpd.editor.graphiti.add.AddSubProcessFeature"
+               create="ru.runa.gpd.editor.graphiti.create.CreateElementFeature"
+               fixedSize="false"
+               height="10"
+               layout="ru.runa.gpd.editor.graphiti.layout.LayoutSubprocessNodeFeature"
+               update="ru.runa.gpd.editor.graphiti.update.UpdateSubprocessNodeFeature"
+               width="15">
+         </graphiti>
+      </element>
+      <element
+            bpmn="embeddedProcess"
+            icon="subprocess_composition.png"
+            jpdl="process-state"
+            label="%label.element.embeddedSubprocess"
+            model="ru.runa.gpd.lang.model.EmbeddedSubprocess"
+            type="artifact">
+         <gef
+               figure="ru.runa.gpd.editor.gef.figure.SubprocessFigure"
+               graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.SubprocessGraphicalEditPart"
+               treeEditPart="ru.runa.gpd.editor.gef.part.tree.NodeTreeEditPart">
          </gef>
          <graphiti
                add="ru.runa.gpd.editor.graphiti.add.AddSubProcessFeature"
@@ -2125,6 +2215,16 @@
             enabled="true"
             label="%ru.runa.wf.logic.bot.DoNothingTaskHandler">
       </handler>
+      <handler
+            actionHandler="true"
+            assignmentHandler="false"
+            botTaskHandler="false"
+            cellEditorProvider="ru.runa.gpd.extension.businessRule.BusinessRuleProvider"
+            className="ru.runa.wfe.extension.handler.var.BusinessRuleHandler"
+            decisionHandler="false"
+            enabled="false"
+            label="%label.element.businessRule">
+      </handler>
    </extension>
    <extension
          point="ru.runa.gpd.swimlaneElements">
@@ -2603,6 +2703,16 @@
                style="push"
                toolbarPath="normal/processes"
                tooltip="%tooltip.menu.newProcess"/>
+        <action
+               class="ru.runa.gpd.ui.action.NewGlobalSectionAction"
+               definitionId="ru.runa.gpd.commands.new.global.section"
+               icon="icons/glb.gif"
+               id="ru.runa.gpd.newGlobalSection"
+               label="%label.menu.newGlobalSection"
+               menubarPath="file/newFile/common"
+               style="push"
+               toolbarPath="normal/processes"
+               tooltip="%tooltip.menu.newGlobalSection"/>
          <action
                class="ru.runa.gpd.ui.action.NewProjectAction"
                icon="icons/new_project16x16.gif"
@@ -2701,6 +2811,23 @@
                toolbarPath="normal/syncbots"
                tooltip="%tooltip.menu.importBotElement"/>
          <action
+               class="ru.runa.gpd.ui.action.ExportGlobalSectionAction"
+               icon="icons/export_glb.gif"
+               id="ru.runa.gpd.exportGlobalSection"
+               label="%label.menu.export.global.section"
+               menubarPath="file/export"
+               style="push"
+               toolbarPath="normal/syncproc"
+               tooltip="%tooltip.menu.export.global.section"/>
+         <action
+               class="ru.runa.gpd.ui.action.ImportGlobalSectionAction"
+               icon="icons/import_glb.gif"
+               id="ru.runa.gpd.importGlobalSection"
+               label="%label.menu.import.global.section"
+               menubarPath="file/export"
+               style="push"
+               toolbarPath="normal/syncproc"/>               
+         <action
                class="ru.runa.gpd.ui.action.ExportProcessAction"
                icon="icons/export_wiz.gif"
                id="ru.runa.gpd.exportProcess"
@@ -2726,7 +2853,6 @@
                menubarPath="file/export"
                style="push"
                toolbarPath="normal/syncproc"/>
-          
          <action
                class="ru.runa.gpd.ui.action.ExportProject"
                icon="icons/export_bot.gif"
@@ -2980,6 +3106,12 @@
             sequence="Ctrl+N">
       </key>
       <key
+            commandId="ru.runa.gpd.commands.new.global.section"
+            contextId="ru.runa.gpd.context.app"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="Ctrl+G">
+      </key>
+      <key
             commandId="ru.runa.gpd.commands.save"
             contextId="ru.runa.gpd.context.app"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
@@ -3014,6 +3146,10 @@
       <command
             id="ru.runa.gpd.commands.new"
             name="ru.runa.gpd.commands.new">
+      </command>
+      <command
+            id="ru.runa.gpd.commands.new.global.section"
+            name="ru.runa.gpd.commands.new.global.section">
       </command>
       <command
             id="ru.runa.gpd.commands.save"

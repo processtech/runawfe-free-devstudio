@@ -43,6 +43,7 @@ import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.aspects.UserActivity;
 import ru.runa.gpd.editor.ProcessSaveHistory;
+import ru.runa.gpd.lang.model.GlobalSectionDefinition;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.sync.WfeServerConnector;
@@ -71,7 +72,7 @@ public class ExportParWizardPage extends ExportWizardPage {
         this.definitionNameFileMap = new TreeMap<String, IFile>();
         for (IFile file : ProcessCache.getAllProcessDefinitionsMap().keySet()) {
             ProcessDefinition definition = ProcessCache.getProcessDefinition(file);
-            if (definition != null && !(definition instanceof SubprocessDefinition)) {
+            if (definition != null && !(definition instanceof SubprocessDefinition) && !(definition instanceof GlobalSectionDefinition)) {
                 definitionNameFileMap.put(getKey(file, definition), file);
             }
         }
@@ -229,11 +230,24 @@ public class ExportParWizardPage extends ExportWizardPage {
                 }
             } catch (Throwable th) {
                 PluginLogger.logErrorWithoutDialog(Localization.getString("ExportParWizardPage.error.export"), th);
-                setErrorMessage(stripSoapTrash(Throwables.getRootCause(th).getMessage()));
+                setErrorMessage(stripExceptionMessage(Throwables.getRootCause(th).getMessage()));
                 return false;
             }
         }
         return result;
+    }
+
+    private String stripExceptionMessage(String message) {
+        if (message == null) {
+            return "";
+        }
+        if (message.contains("Connection refused: connect")) {
+            return Localization.getString("ExportParWizardPage.error.simulator.start");
+        }
+        if (message.contains("Unable to acquire version using")) {
+            return Localization.getString("ExportParWizardPage.error.simulator.connect");
+        }
+        return stripSoapTrash(message);
     }
 
     private String stripSoapTrash(String trash) {

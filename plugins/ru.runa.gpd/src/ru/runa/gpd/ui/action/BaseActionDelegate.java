@@ -2,7 +2,6 @@ package ru.runa.gpd.ui.action;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.IAction;
@@ -15,8 +14,8 @@ import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.part.FileEditorInput;
-
 import ru.runa.gpd.BotStationNature;
+import ru.runa.gpd.DataSourcesNature;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.editor.BotTaskEditor;
 import ru.runa.gpd.editor.ProcessEditorBase;
@@ -77,18 +76,37 @@ public abstract class BaseActionDelegate implements IWorkbenchWindowActionDelega
     }
 
     protected boolean isBotStructuredSelection() {
+        IResource resource = getSelectedResource();
+        if (resource != null) {
+            try {
+                return resource.exists() && resource.getProject().getNature(BotStationNature.NATURE_ID) != null;
+            } catch (CoreException e) {
+                PluginLogger.logError(e);
+            }
+        }
+        return getActiveEditor() instanceof BotTaskEditor;
+    }
+
+    protected boolean isDataSourceStructuredSelection() {
+        IResource resource = getSelectedResource();
+        if (resource != null) {
+            try {
+                return resource.exists() && resource.getProject().getNature(DataSourcesNature.NATURE_ID) != null;
+            } catch (CoreException e) {
+                PluginLogger.logError(e);
+            }
+        }
+        return false;
+    }
+
+    private IResource getSelectedResource() {
         IStructuredSelection selection = getStructuredSelection();
         if (selection != null) {
             Object selectedObject = selection.getFirstElement();
             if (selectedObject instanceof IResource) {
-                IResource resource = (IResource) selectedObject;
-                try {
-                    return resource.exists() && resource.getProject().getNature(BotStationNature.NATURE_ID) != null;
-                } catch (CoreException e) {
-                    PluginLogger.logError(e);
-                }
+                return (IResource) selectedObject;
             }
         }
-        return getActiveEditor() instanceof BotTaskEditor;
+        return null;
     }
 }
