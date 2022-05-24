@@ -126,7 +126,7 @@ public class GpdXmlContentProvider extends AuxContentProvider {
             }
         }
         for (GraphElement graphElement : definition.getElementsRecursive()) {
-            GraphElement parentGraphElement = graphElement.getParentContainer();
+            GraphElement parentGraphElement = graphElement.getUiParentContainer();
             if (parentGraphElement != null && !parentGraphElement.equals(definition)) {
                 Rectangle parentConstraint = parentGraphElement.getConstraint();
                 Rectangle constraint = graphElement.getConstraint();
@@ -158,8 +158,8 @@ public class GpdXmlContentProvider extends AuxContentProvider {
             if (graphElement.getConstraint() == null) {
                 continue;
             }
-            if (definition.getLanguage() == Language.BPMN && graphElement.getParentContainer() != null
-                    && !(graphElement.getParentContainer() instanceof ProcessDefinition)) {
+            if (definition.getLanguage() == Language.BPMN && graphElement.getUiParentContainer() != null
+                    && !(graphElement.getUiParentContainer() instanceof ProcessDefinition)) {
                 continue;
             }
             Rectangle constraint = graphElement.getConstraint();
@@ -190,13 +190,13 @@ public class GpdXmlContentProvider extends AuxContentProvider {
             Element element = root.addElement(NODE);
             addAttribute(element, NAME, graphElement.getId());
             Rectangle constraint = graphElement.getConstraint().getCopy();
-            GraphElement parentGraphElement = graphElement.getParentContainer();
+            GraphElement parentGraphElement = graphElement.getUiParentContainer();
             Rectangle parentConstraint = null;
             while (parentGraphElement != null && !parentGraphElement.equals(definition)) {
                 parentConstraint = parentGraphElement.getConstraint();
                 constraint.x += parentConstraint.x;
                 constraint.y += parentConstraint.y;
-                parentGraphElement = parentGraphElement.getParentContainer();
+                parentGraphElement = parentGraphElement.getUiParentContainer();
             }
             if (constraint.isEmpty()) {
                 throw new Exception("Invalid figure size: " + constraint.getSize());

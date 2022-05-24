@@ -34,6 +34,7 @@ import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Timer;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.bpmn.ScriptTask;
+import ru.runa.gpd.lang.model.bpmn.BusinessRule;
 import ru.runa.gpd.util.VariableUtils;
 
 @SuppressWarnings("unchecked")
@@ -126,6 +127,10 @@ public class RenameVariableRefactoring extends Refactoring {
         List<Decision> decisions = processDefinition.getChildren(Decision.class);
         for (Decision decision : decisions) {
             cache.add(new DelegablePresentation(decision));
+        }
+        List<BusinessRule> businessRules = processDefinition.getChildren(BusinessRule.class);
+        for (BusinessRule businessRule : businessRules) {
+            cache.add(new DelegablePresentation(businessRule));
         }
         List<Subprocess> subprocesses = processDefinition.getChildren(Subprocess.class);
         for (Subprocess subprocess : subprocesses) {

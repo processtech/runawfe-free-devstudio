@@ -1,16 +1,13 @@
 package ru.runa.gpd.editor;
 
-import com.google.common.base.Function;
-import com.google.common.base.Joiner;
-import com.google.common.base.Objects;
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -39,12 +36,21 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.base.Objects;
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import ru.runa.gpd.Localization;
+import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.editor.clipboard.VariableTransfer;
 import ru.runa.gpd.editor.clipboard.VariableUserTypeTransfer;
+import ru.runa.gpd.globalsection.GlobalSectionUtils;
 import ru.runa.gpd.lang.model.FormNode;
+import ru.runa.gpd.lang.model.GlobalSectionDefinition;
+import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableUserType;
@@ -66,19 +72,25 @@ import ru.runa.gpd.ui.dialog.ErrorDialog;
 import ru.runa.gpd.ui.dialog.RenameUserTypeDialog;
 import ru.runa.gpd.ui.dialog.UpdateVariableNameDialog;
 import ru.runa.gpd.ui.dialog.VariableUserTypeDialog;
+import ru.runa.gpd.ui.wizard.ChooseGlobalTypeWizard;
 import ru.runa.gpd.ui.wizard.CompactWizardDialog;
 import ru.runa.gpd.ui.wizard.VariableWizard;
+import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.VariableUtils;
 import ru.runa.gpd.util.WorkspaceOperations;
 
 public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
 
     private TableViewer typeTableViewer;
-    private Button editTypeButton;
+    private Button changeTypeButton;
     private Button renameTypeButton;
     private Button moveUpTypeButton;
     private Button moveDownTypeButton;
     private Button deleteTypeButton;
+    private Button copyTypeButton;
+    private Button pasteTypeButton;
+    private Button makeLocalTypeButton;
+    private Button importGlobalButton;
 
     private TableViewer attributeTableViewer;
     private Button createAttributeButton;
@@ -90,6 +102,8 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
     private Button moveDownAttributeButton;
     private Button deleteAttributeButton;
     private Button moveToTypeAttributeButton;
+    private Button copyAttributeButton;
+    private Button pasteAttributeButton;
 
     public VariableTypeEditorPage(ProcessEditorBase editor) {
         super(editor);
@@ -129,13 +143,17 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
 
         Composite typeButtonsBar = createActionBar(leftComposite);
         addButton(typeButtonsBar, "button.create", new CreateTypeSelectionListener(), false);
-        editTypeButton = addButton(typeButtonsBar, "button.change", new EditTypeSelectionListener(), true);
+        changeTypeButton = addButton(typeButtonsBar, "button.change", new EditTypeSelectionListener(), true);
         renameTypeButton = addButton(typeButtonsBar, "button.rename", new RenameTypeSelectionListener(), true);
+        if (CommonPreferencePage.isGlobalObjectsEnabled()) {
+            importGlobalButton = addButton(typeButtonsBar, "button.importGlobal", new ImportGlobalTypeSelectionListener(), true);
+            makeLocalTypeButton = addButton(typeButtonsBar, "button.makeLocal", new MakeLocalTypeListener(), true);
+        }
         moveUpTypeButton = addButton(typeButtonsBar, "button.up", new MoveTypeSelectionListener(true), true);
         moveDownTypeButton = addButton(typeButtonsBar, "button.down", new MoveTypeSelectionListener(false), true);
         deleteTypeButton = addButton(typeButtonsBar, "button.delete", new RemoveTypeSelectionListener(), true);
-        addButton(typeButtonsBar, "button.copy", new CopyTypeSelectionListener(), true);
-        addButton(typeButtonsBar, "button.paste", new PasteTypeSelectionListener(), true);
+        copyTypeButton = addButton(typeButtonsBar, "button.copy", new CopyTypeSelectionListener(), true);
+        pasteTypeButton = addButton(typeButtonsBar, "button.paste", new PasteTypeSelectionListener(), true);
 
         Composite rightComposite = createSection(sashForm, "VariableUserType.attributes");
         rightComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -178,8 +196,8 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
         moveDownAttributeButton = addButton(attributeButtonsBar, "button.down", new MoveAttributeSelectionListener(false), true);
         deleteAttributeButton = addButton(attributeButtonsBar, "button.delete", new DeleteAttributeSelectionListener(), true);
         moveToTypeAttributeButton = addButton(attributeButtonsBar, "button.move", new MoveToTypeAttributeSelectionListener(), true);
-        addButton(attributeButtonsBar, "button.copy", new CopyAttributeSelectionListener(), true);
-        addButton(attributeButtonsBar, "button.paste", new PasteAttributeSelectionListener(), true);
+        copyAttributeButton = addButton(attributeButtonsBar, "button.copy", new CopyAttributeSelectionListener(), true);
+        pasteAttributeButton = addButton(attributeButtonsBar, "button.paste", new PasteAttributeSelectionListener(), true);
 
         updateViewer();
     }
@@ -209,29 +227,14 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
 
     @Override
     protected void updateUI() {
-        VariableUserType selectedType = getSelection();
-        enableAction(deleteTypeButton, selectedType != null);
-        enableAction(editTypeButton, selectedType != null);
-        enableAction(renameTypeButton, selectedType != null);
-        enableAction(moveUpTypeButton, selectedType != null && getDefinition().getVariableUserTypes().indexOf(selectedType) > 0);
-        enableAction(moveDownTypeButton, selectedType != null
-                && getDefinition().getVariableUserTypes().indexOf(selectedType) < getDefinition().getVariableUserTypes().size() - 1);
+        updateViewer();
+    }
 
-        enableAction(createAttributeButton, selectedType != null);
-        @SuppressWarnings("unchecked")
-        List<Variable> attributes = ((IStructuredSelection) attributeTableViewer.getSelection()).toList();
-        enableAction(changeAttributeButton, attributes.size() == 1);
-        enableAction(searchAttributeButton, attributes.size() == 1);
-        enableAction(renameAttributeButton, attributes.size() == 1);
-        enableAction(mergeAttributesButton, attributes.size() == 2);
-        enableAction(moveUpAttributeButton,
-                selectedType != null && attributes.size() == 1 && selectedType.getAttributes().indexOf(attributes.get(0)) > 0);
-        enableAction(moveDownAttributeButton, selectedType != null && attributes.size() == 1
-                && selectedType.getAttributes().indexOf(attributes.get(0)) < selectedType.getAttributes().size() - 1);
-        enableAction(deleteAttributeButton, attributes.size() > 0);
-        enableAction(moveToTypeAttributeButton, attributes.size() == 1);
-
-        updateAttributeViewer();
+    private boolean isGlobalSection() {
+        if (GlobalSectionUtils.isGlobalSectionName(getDefinition().getName())) {
+            return true;
+        }
+        return false;
     }
 
     private void updateViewer() {
@@ -241,7 +244,50 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             userType.addPropertyChangeListener(this);
         }
         updateAttributeViewer();
-        updateUI();
+        VariableUserType selectedType = getSelection();
+
+        boolean isGlobalSection = isGlobalSection();
+        enableAction(changeTypeButton, selectedType != null && !selectedType.isGlobal());
+        enableAction(copyTypeButton, selectedType != null && !selectedType.isGlobal());
+        enableAction(pasteTypeButton, selectedType != null && !selectedType.isGlobal());
+        enableAction(deleteTypeButton, selectedType != null);
+        enableAction(renameTypeButton, selectedType != null && !selectedType.isGlobal());
+        enableAction(moveUpTypeButton, selectedType != null && getDefinition().getVariableUserTypes().indexOf(selectedType) > 0);
+        if (CommonPreferencePage.isGlobalObjectsEnabled()) {
+
+            enableAction(importGlobalButton, !isGlobalSection && isUsingGlobals());
+            enableAction(makeLocalTypeButton, selectedType != null && selectedType.isGlobal());
+        }
+        enableAction(moveDownTypeButton, selectedType != null
+                && getDefinition().getVariableUserTypes().indexOf(selectedType) < getDefinition().getVariableUserTypes().size() - 1);
+        enableAction(createAttributeButton, selectedType != null);
+
+        @SuppressWarnings("unchecked")
+        List<Variable> attributes = ((IStructuredSelection) attributeTableViewer.getSelection()).toList();
+        boolean withoutGlobals = true;
+        if (!(getDefinition() instanceof GlobalSectionDefinition)) {
+            for (Variable attribute : attributes) {
+                for (VariableUserType userType : userTypes) {
+                    if (userType.getAttributes().contains(attribute) && userType.isGlobal()) {
+                        withoutGlobals = false;
+                        break;
+                    }
+                }
+            }
+        }
+        enableAction(copyAttributeButton, withoutGlobals && selectedType != null);
+        enableAction(pasteAttributeButton, withoutGlobals && selectedType != null);
+        enableAction(changeAttributeButton, attributes.size() == 1 && withoutGlobals);
+        enableAction(searchAttributeButton, attributes.size() == 1);
+        enableAction(renameAttributeButton, attributes.size() == 1 && withoutGlobals);
+        enableAction(mergeAttributesButton, attributes.size() == 2 && withoutGlobals);
+        enableAction(moveUpAttributeButton,
+                selectedType != null && attributes.size() == 1 && selectedType.getAttributes().indexOf(attributes.get(0)) > 0);
+        enableAction(moveDownAttributeButton, selectedType != null && attributes.size() == 1
+                && selectedType.getAttributes().indexOf(attributes.get(0)) < selectedType.getAttributes().size() - 1);
+        enableAction(deleteAttributeButton, attributes.size() > 0 && withoutGlobals);
+        enableAction(moveToTypeAttributeButton, attributes.size() == 1 && withoutGlobals);
+        updateAttributeViewer();
     }
 
     private Variable getAttributeSelection() {
@@ -294,7 +340,24 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             VariableUserType type = getSelection();
             RenameUserTypeDialog dialog = new RenameUserTypeDialog(getDefinition(), type);
             if (dialog.open() == Window.OK) {
+                String oldName = type.getName();
+                String newName = dialog.getName();
                 VariableUtils.renameUserType(getDefinition(), type, dialog.getName());
+                if (GlobalSectionUtils.isGlobalSectionName(editor.getPartName())) {
+                    oldName = IOUtils.GLOBAL_OBJECT_PREFIX + oldName;
+                    newName = IOUtils.GLOBAL_OBJECT_PREFIX + newName;
+                    Map<IFile, ProcessDefinition> pf = ProcessCache.getAllProcessDefinitionsMap();
+                    for (IFile file : pf.keySet()) {
+                        ProcessDefinition definition = pf.get(file);
+                        if (!(definition instanceof GlobalSectionDefinition)) {
+                            type = definition.getGlobalUserTypeByName(oldName);
+                            if (type != null) {
+                                VariableUtils.renameUserType(definition, type, newName);
+                                ProcessCache.invalidateProcessDefinition(file);
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -348,6 +411,28 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
         }
     }
 
+    private class ImportGlobalTypeSelectionListener extends LoggingSelectionAdapter {
+        @Override
+        protected void onSelection(SelectionEvent e) throws Exception {
+
+            ChooseGlobalTypeWizard wizard = new ChooseGlobalTypeWizard(getDefinition());
+            CompactWizardDialog dialog = new CompactWizardDialog(wizard);
+            if (dialog.open() == Window.OK) {
+
+            }
+            updateViewer();
+        }
+    }
+
+    private class MakeLocalTypeListener extends LoggingSelectionAdapter {
+        @Override
+        protected void onSelection(SelectionEvent e) throws Exception {
+            VariableUserType type = getSelection();
+            type.setGlobal(false);
+            updateViewer();
+        }
+    }
+
     private class MoveTypeSelectionListener extends LoggingSelectionAdapter {
         private final boolean up;
 
@@ -389,7 +474,6 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
 
             RemoveAction action = RemoveAction.OK;
             String newLine = System.getProperty("line.separator");
-
             List<Variable> variables = getDefinition().getVariables(false, false, type.getName());
             if (variables.size() > 0) {
                 for (Variable variable : variables) {
@@ -535,6 +619,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             MultiVariableSearchQuery query = new MultiVariableSearchQuery(searchText, editor.getDefinitionFile(), getDefinition(), result);
             NewSearchUI.runQueryInBackground(query);
         }
+
     }
 
     // same as VariableUtils.searchInVariables, but with expandComplexVariable
@@ -601,7 +686,6 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
                     return;
                 }
             }
-            // update attribute
             attribute.setName(newAttributeName);
             attribute.setScriptingName(newAttributeScriptingName);
 
@@ -649,9 +733,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
                     return;
                 }
             }
-            // delete attribute
             type.removeAttribute(attributes.get(1));
-
             updateAttributeViewer(attributes.get(0));
 
             if (useLtk && editor.getDefinition().getEmbeddedSubprocesses().size() > 0) {
@@ -945,6 +1027,11 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
                 }
             }
         }
+
+    }
+
+    private boolean isUsingGlobals() {
+        return getDefinition().isUsingGlobalVars();
     }
 
     private static class AttributeLabelProvider extends LabelProvider implements ITableLabelProvider {

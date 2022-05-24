@@ -1,9 +1,11 @@
 package ru.runa.gpd.util;
 
-import com.google.common.base.Strings;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.CoreException;
+
+import com.google.common.base.Strings;
+
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.BotTask;
 import ru.runa.gpd.lang.model.Delegable;

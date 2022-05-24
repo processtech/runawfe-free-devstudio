@@ -8,10 +8,14 @@ import com.google.common.collect.Maps;
 
 public class ValidatorConfig {
     public static final String GLOBAL_FIELD_ID = "";
-    private final String type;
+    private String type;
     private String message = "";
     private final Map<String, String> params = Maps.newHashMap();
     private final List<String> transitionNames = Lists.newArrayList();
+
+    public ValidatorConfig() {
+
+    }
 
     public ValidatorConfig(String validatorType) {
         this.type = validatorType;
@@ -35,6 +39,10 @@ public class ValidatorConfig {
 
     public String getType() {
         return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
 }

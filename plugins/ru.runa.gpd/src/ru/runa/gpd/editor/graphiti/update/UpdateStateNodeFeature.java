@@ -19,7 +19,7 @@ public class UpdateStateNodeFeature extends UpdateFeature {
     public IReason updateNeeded(IUpdateContext context) {
         PictogramElement pe = context.getPictogramElement();
         Node bo = (Node) getBusinessObjectForPictogramElement(pe);
-        if (bo instanceof SwimlanedNode && !(bo.getParentContainer() instanceof Swimlane)) {
+        if (bo instanceof SwimlanedNode && !(bo.getUiParentContainer() instanceof Swimlane)) {
             String swimlaneName = PropertyUtil.findTextValueRecursive(pe, GaProperty.SWIMLANE_NAME);
             if (!Objects.equal(swimlaneName, ((SwimlanedNode) bo).getSwimlaneLabel())) {
                 return Reason.createTrueReason();
@@ -29,7 +29,7 @@ public class UpdateStateNodeFeature extends UpdateFeature {
         if (!Objects.equal(nodeName, bo.getName())) {
             return Reason.createTrueReason();
         }
-        String minimazed = PropertyUtil.getPropertyValue(pe, GaProperty.MINIMAZED_VIEW);
+        String minimazed = PropertyUtil.getPropertyValue(pe, GaProperty.MINIMIZED_VIEW);
         if (!Objects.equal(minimazed, String.valueOf(bo.isMinimizedView()))) {
             return Reason.createTrueReason();
         }
@@ -51,9 +51,9 @@ public class UpdateStateNodeFeature extends UpdateFeature {
             PropertyUtil.setTextValueProperty(pe, GaProperty.SWIMLANE_NAME, ((SwimlanedNode) bo).getSwimlaneLabel());
         }
         PropertyUtil.setTextValueProperty(pe, GaProperty.NAME, bo.getName());
-        String minimazed = PropertyUtil.getPropertyValue(pe, GaProperty.MINIMAZED_VIEW);
+        String minimazed = PropertyUtil.getPropertyValue(pe, GaProperty.MINIMIZED_VIEW);
         if (!Objects.equal(minimazed, String.valueOf(bo.isMinimizedView()))) {
-            PropertyUtil.setPropertyValue(pe, GaProperty.MINIMAZED_VIEW, String.valueOf(bo.isMinimizedView()));
+            PropertyUtil.setPropertyValue(pe, GaProperty.MINIMIZED_VIEW, String.valueOf(bo.isMinimizedView()));
             layoutPictogramElement(pe);
         }
         String async = PropertyUtil.getPropertyValue(pe, GaProperty.ASYNC);

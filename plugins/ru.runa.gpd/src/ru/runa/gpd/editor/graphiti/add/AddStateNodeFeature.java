@@ -47,7 +47,7 @@ public class AddStateNodeFeature extends AddNodeFeature {
         nameText.setHorizontalAlignment(Orientation.ALIGNMENT_CENTER);
         nameText.setStyle(textStyle);
 
-        containerShape.getProperties().add(new GaProperty(GaProperty.MINIMAZED_VIEW, String.valueOf(node.isMinimizedView())));
+        containerShape.getProperties().add(new GaProperty(GaProperty.MINIMIZED_VIEW, String.valueOf(node.isMinimizedView())));
         //
         Image image = Graphiti.getGaService().createImage(main, NodeRegistry.getNodeTypeDefinition(node.getClass()).getPaletteIcon());
         image.getProperties().add(new GaProperty(GaProperty.ID, GaProperty.ICON));

@@ -8,12 +8,15 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.dnd.ByteArrayTransfer;
 import org.eclipse.swt.dnd.TransferData;
 
 import ru.runa.gpd.lang.model.ProcessDefinition;
 
 abstract class CommonTransfer<T> extends ByteArrayTransfer {
+    private static final Log log = LogFactory.getLog(CommonTransfer.class);
 
     protected ProcessDefinition processDefinition;
 
@@ -55,8 +58,8 @@ abstract class CommonTransfer<T> extends ByteArrayTransfer {
                     writeOut.flush();
                     byte[] buffer = out.toByteArray();
                     super.javaToNative(buffer, transferData);
-                } catch (IOException ignored) {
-                    // no need to catch
+                } catch (IOException e) {
+                    log.info("Transfer failed", e);
                 }
             }
         }
@@ -75,8 +78,8 @@ abstract class CommonTransfer<T> extends ByteArrayTransfer {
                         read(readIn, object);
                         data.add(object);
                     }
-                } catch (IOException | InstantiationException | IllegalAccessException | ClassNotFoundException ignored) {
-                    // no need to catch
+                } catch (IOException | InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+                    log.info("Transfer failed", e);
                 }
             }
         }

@@ -1,6 +1,7 @@
 package ru.runa.gpd.ui.wizard;
 
 import java.util.List;
+
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.jface.dialogs.Dialog;
@@ -17,6 +18,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.form.FormCSSTemplate;
@@ -170,6 +172,9 @@ public class NewProcessDefinitionWizardPage extends WizardPage {
             setPageComplete(false);
         } else if (!FileNameChecker.isValid(processText.getText())) {
             setErrorMessage(Localization.getString("error.process_name_not_valid"));
+            setPageComplete(false);
+        } else if (FileNameChecker.isFirstSymbolADot(processText.getText())) {
+            setErrorMessage(Localization.getString("error.process_name_begins_with_dot"));
             setPageComplete(false);
         } else if (isProcessExists()) {
             setErrorMessage(Localization.getString("error.process_already_exists"));

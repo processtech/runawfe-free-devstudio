@@ -1,15 +1,16 @@
 package ru.runa.gpd.editor.graphiti.create;
 
+import java.util.List;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.EditPartViewer;
 import org.eclipse.gef.SharedCursors;
-import org.eclipse.graphiti.features.context.IContext;
 import org.eclipse.graphiti.features.context.ICreateConnectionContext;
 import org.eclipse.graphiti.features.context.impl.CreateConnectionContext;
 import org.eclipse.graphiti.features.context.impl.CreateContext;
 import org.eclipse.graphiti.features.impl.AbstractCreateConnectionFeature;
 import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
+import org.eclipse.graphiti.mm.algorithms.Text;
 import org.eclipse.graphiti.mm.pictograms.AnchorContainer;
 import org.eclipse.graphiti.mm.pictograms.Connection;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
@@ -34,6 +35,14 @@ public class CreateDragAndDropElementFeature extends AbstractCreateConnectionFea
     private DiagramFeatureProvider featureProvider;
     private CreateContext createContext;
     private EditPartViewer viewer;
+    /**
+     * The 'alreadyAdded' field is necessary to correct the situation: When creating a new element using the palette, if after clicking the mouse
+     * button on the desired element in the microhelp, you do not immediately move the cursor to the point of the future placement of the element, but
+     * after describing a circle inside the microhelp field, you release the button on the same element, the element itself and its duplicate are
+     * blocked. The 'alreadyAdded' field changes its value to 'true' after the first element is created, a check is made for the possibility of
+     * creating it in 'canCreate()', and the 'create()' method is not called again.
+     */
+    private boolean alreadyAdded = false;
 
     public CreateDragAndDropElementFeature(CreateContext createContext) {
         super(null, "", "");
@@ -69,6 +78,66 @@ public class CreateDragAndDropElementFeature extends AbstractCreateConnectionFea
         return nodeDefinition;
     }
 
+    @Override
+    public boolean canCreate(ICreateConnectionContext context) {
+        boolean create = true;
+        if (viewer != null && context.getTargetPictogramElement() != null) {
+            GraphicsAlgorithm pictogramElement = context.getTargetPictogramElement().getGraphicsAlgorithm();
+            if (context.getTargetAnchor() != null || pictogramElement instanceof Text) {
+                viewer.setCursor(SharedCursors.CURSOR_TREE_MOVE);
+                create = false;
+            }
+        }
+        if (create && !alreadyAdded) {
+            viewer.setCursor(SharedCursors.CURSOR_TREE_ADD);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public Connection create(ICreateConnectionContext createConnectionContext) {
+        GraphElement parent = (GraphElement) getBusinessObjectForPictogramElement(createContext.getTargetContainer());
+        GraphElement graphElement = getNodeDefinition().createElement(getProcessDefinition(), true);
+        if (graphElement instanceof Action) {
+            if (createContext.getTargetConnection() != null) {
+                parent = (GraphElement) getBusinessObjectForPictogramElement(createContext.getTargetConnection());
+            }
+            ((Action) graphElement).setName(getCreateName() + " " + (parent.getChildren(Action.class).size() + 1));
+        }
+        graphElement.setUiParentContainer(parent);
+        Swimlane swimlane = null;
+        if (parent instanceof Swimlane) {
+            swimlane = (Swimlane) parent;
+            parent = parent.getParent();
+        }
+        if (graphElement instanceof SwimlanedNode) {
+            ((SwimlanedNode) graphElement).setSwimlane(swimlane);
+        }
+        if ((!(parent instanceof IBoundaryEventContainer) || parent.getChildren(graphElement.getClass()).size() < 1)) {
+            parent.addChild(graphElement);
+            setLocationAndSize(graphElement, createContext, (CreateConnectionContext) createConnectionContext);
+            PictogramElement element = addGraphicalRepresentation(createContext, graphElement);
+            if (createConnectionContext != null && graphElement instanceof Node) {
+                ((CreateConnectionContext) createConnectionContext).setTargetPictogramElement(element);
+                ((CreateConnectionContext) createConnectionContext).setTargetAnchor(Graphiti.getPeService().getChopboxAnchor((AnchorContainer) element));
+                CreateTransitionFeature createTransitionFeature = new CreateTransitionFeature();
+                createTransitionFeature.setFeatureProvider(featureProvider);
+                createTransitionFeature.create(createConnectionContext);
+            }
+        }
+        alreadyAdded = true;
+        if (viewer != null) {
+            viewer.setCursor(null);
+        }
+        return null;
+    }
+
+    @Override
+    public boolean canStartConnection(ICreateConnectionContext context) {
+        return false;
+    }
+
     protected ProcessDefinition getProcessDefinition() {
         return getFeatureProvider().getCurrentProcessDefinition();
     }
@@ -96,13 +165,28 @@ public class CreateDragAndDropElementFeature extends AbstractCreateConnectionFea
                     }
                     context.setLocation(parentElement.getGraphicsAlgorithm().getX() - xDelta, yBottom + shift);
                 } else {
+                    GraphElement parent = (GraphElement) getBusinessObjectForPictogramElement(context.getTargetContainer());
+                    List<GraphElement> childrenList = parent.getChildrenRecursive(GraphElement.class);
                     int xRight = sourceElement.getGraphicsAlgorithm().getX() + sourceElement.getGraphicsAlgorithm().getWidth();
                     int yDelta = (defaultSize.height - sourceElement.getGraphicsAlgorithm().getHeight()) / 2;
                     GraphicsAlgorithm container = context.getTargetContainer().getGraphicsAlgorithm();
                     if (container.getWidth() < xRight + shift + defaultSize.width) {
                         shift = 2 * GRID_SIZE;
                     }
-                    context.setLocation(xRight + shift, sourceElement.getGraphicsAlgorithm().getY() - yDelta);
+                    int x = xRight + shift;
+                    int y = sourceElement.getGraphicsAlgorithm().getY() - yDelta;
+                    boolean available = false;
+                    while (!available) {
+                        available = true;
+                        for (GraphElement children : childrenList) {
+                            if (children.getConstraint() != null && children.getConstraint().x == x && children.getConstraint().y == y) {
+                                y = y + children.getConstraint().height;
+                                available = false;
+                                break;
+                            }
+                        }
+                    }
+                    context.setLocation(x, y);
                 }
             } else {
                 context.setLocation(connectionContext.getTargetLocation().getX() - context.getWidth() / 2,
@@ -110,61 +194,6 @@ public class CreateDragAndDropElementFeature extends AbstractCreateConnectionFea
             }
         }
         element.setConstraint(new Rectangle(context.getX(), context.getY(), context.getWidth(), context.getHeight()));
-    }
-
-    @Override
-    public boolean canExecute(IContext context) {
-        if (viewer != null) {
-            viewer.setCursor(SharedCursors.CURSOR_TREE_ADD);
-        }
-        return true;
-    }
-
-    @Override
-    public boolean canCreate(ICreateConnectionContext context) {
-        return false;
-    }
-
-    @Override
-    public Connection create(ICreateConnectionContext createConnectionContext) {
-        GraphElement parent = (GraphElement) getBusinessObjectForPictogramElement(createContext.getTargetContainer());
-        GraphElement graphElement = getNodeDefinition().createElement(getProcessDefinition(), true);
-        if (graphElement instanceof Action) {
-            if (createContext.getTargetConnection() != null) {
-                parent = (GraphElement) getBusinessObjectForPictogramElement(createContext.getTargetConnection());
-            }
-            ((Action) graphElement).setName(getCreateName() + " " + (parent.getChildren(Action.class).size() + 1));
-        }
-        graphElement.setParentContainer(parent);
-        Swimlane swimlane = null;
-        if (parent instanceof Swimlane) {
-            swimlane = (Swimlane) parent;
-            parent = parent.getParent();
-        }
-        if (graphElement instanceof SwimlanedNode) {
-            ((SwimlanedNode) graphElement).setSwimlane(swimlane);
-        }
-        if (!(parent instanceof IBoundaryEventContainer) || parent.getChildren(graphElement.getClass()).size() < 1) {
-            parent.addChild(graphElement);
-            setLocationAndSize(graphElement, createContext, (CreateConnectionContext) createConnectionContext);
-            PictogramElement element = addGraphicalRepresentation(createContext, graphElement);
-            if (createConnectionContext != null && graphElement instanceof Node) {
-                ((CreateConnectionContext) createConnectionContext).setTargetPictogramElement(element);
-                ((CreateConnectionContext) createConnectionContext).setTargetAnchor(Graphiti.getPeService().getChopboxAnchor((AnchorContainer) element));
-                CreateTransitionFeature createTransitionFeature = new CreateTransitionFeature();
-                createTransitionFeature.setFeatureProvider(featureProvider);
-                createTransitionFeature.create(createConnectionContext);
-            }
-        }
-        if (viewer != null) {
-            viewer.setCursor(null);
-        }
-        return null;
-    }
-
-    @Override
-    public boolean canStartConnection(ICreateConnectionContext context) {
-        return false;
     }
 
 }

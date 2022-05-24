@@ -23,6 +23,7 @@ import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.ui.custom.VariableNameChecker;
+import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.VariableUtils;
 
 public class UpdateSwimlaneNameDialog extends Dialog {
@@ -30,8 +31,6 @@ public class UpdateSwimlaneNameDialog extends Dialog {
     private final ProcessDefinition processDefinition;
     private final boolean createMode;
     private final Swimlane swimlane;
-    private Button renameInVarButton;
-    private boolean proceedRefactoring;
     private Text scriptingNameField;
     private String scriptingName;
 
@@ -80,18 +79,6 @@ public class UpdateSwimlaneNameDialog extends Dialog {
                 scriptingNameField.setText(scriptingName);
             }
         });
-        if (!createMode) {
-            renameInVarButton = new Button(area, SWT.CHECK);
-            renameInVarButton.setLayoutData(new GridData());
-            renameInVarButton.setText(Localization.getString("SwimlaneWizard.renameInVariables"));
-            renameInVarButton.setSelection(true);
-            renameInVarButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    updateButtons();
-                }
-            });
-        }
         if (createMode) {
             nameField.selectAll();
         }
@@ -136,27 +123,15 @@ public class UpdateSwimlaneNameDialog extends Dialog {
         return scriptingName;
     }
 
-    public boolean isProceedRefactoring() {
-        return proceedRefactoring;
-    }
-
     @Override
     protected void okPressed() {
-        proceedRefactoring = renameInVarButton != null ? renameInVarButton.getSelection() : false;
         super.okPressed();
     }
 
 }
 
 class SwimlaneNameChecker extends VariableNameChecker {
-
     public static boolean isValid(String string, ProcessDefinition processDefinition) {
-        if (VariableNameChecker.isValid(string)) {
-            if (processDefinition.getName().startsWith(".") || !string.toLowerCase().startsWith(Swimlane.GLOBAL_ROLE_REF_PREFIX.toLowerCase())) {
-                return true;
-            }
-        }
-        return false;
+        return VariableNameChecker.isValid(string) && !string.toLowerCase().startsWith(IOUtils.GLOBAL_OBJECT_PREFIX.toLowerCase());
     }
-
 }

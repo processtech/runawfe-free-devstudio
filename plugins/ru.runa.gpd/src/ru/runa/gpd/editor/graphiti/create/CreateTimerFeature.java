@@ -14,6 +14,6 @@ public class CreateTimerFeature extends CreateElementFeature {
         }
         GraphElement parentObject = (GraphElement) getBusinessObjectForPictogramElement(context.getTargetContainer());
         return parentObject instanceof ITimed && parentObject.getChildrenRecursive(Timer.class).isEmpty()
-                && !(parentObject.getParentContainer() instanceof IBoundaryEventContainer);
+                && !(parentObject.getUiParentContainer() instanceof IBoundaryEventContainer);
     }
 }
