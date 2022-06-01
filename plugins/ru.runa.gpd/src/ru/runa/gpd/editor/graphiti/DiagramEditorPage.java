@@ -15,6 +15,7 @@ import org.eclipse.gef.LayerConstants;
 import org.eclipse.gef.commands.CommandStack;
 import org.eclipse.gef.editparts.LayerManager;
 import org.eclipse.gef.editparts.ScalableFreeformRootEditPart;
+import org.eclipse.gef.palette.PaletteRoot;
 import org.eclipse.graphiti.features.IAddFeature;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.IUpdateFeature;
@@ -400,5 +401,9 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
             }
         });
         getDiagramBehavior().refresh();
+    }
+
+    public PaletteRoot paletteRoot() {
+    	return super.getPaletteRoot();
     }
 }
