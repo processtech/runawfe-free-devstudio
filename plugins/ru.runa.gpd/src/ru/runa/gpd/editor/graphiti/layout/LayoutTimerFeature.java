@@ -5,8 +5,6 @@ import org.eclipse.graphiti.features.context.ILayoutContext;
 import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.services.Graphiti;
-
-import ru.runa.gpd.lang.model.ITimed;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.Timer;
 
@@ -18,9 +16,9 @@ public class LayoutTimerFeature extends LayoutElementFeature {
         GraphicsAlgorithm ga = containerShape.getGraphicsAlgorithm();
 
         Timer node = (Timer) getBusinessObjectForPictogramElement(containerShape);
-        if (node.getParent() instanceof ITimed) {
+        if (node.isBoundaryEvent()) {
             Rectangle parentRectangle = ((Node) node.getParent()).getConstraint();
-            Graphiti.getGaService().setLocation(ga, 1, parentRectangle.height - 2 * GRID_SIZE);
+            Graphiti.getGaService().setLocation(ga, 1, parentRectangle.height - node.getConstraint().height);
         }
         return true;
     }

@@ -17,7 +17,7 @@ import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
 import ru.runa.gpd.lang.model.bpmn.DataStore;
-import ru.runa.gpd.lang.model.bpmn.IBoundaryEvent;
+import ru.runa.gpd.lang.model.bpmn.IBoundaryEventCapable;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 import ru.runa.gpd.settings.CommonPreferencePage;
 import ru.runa.gpd.util.Duration;
@@ -109,7 +109,7 @@ public abstract class Node extends NamedGraphElement implements Describable {
         super.populateCustomPropertyDescriptors(descriptors);
         descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_NODE_ASYNC_EXECUTION, Localization.getString("Node.property.asyncExecution"),
                 NodeAsyncExecution.LABELS));
-        if (this instanceof IBoundaryEvent && getParent() instanceof Node) {
+        if (this instanceof IBoundaryEventCapable && getParent() instanceof Node) {
             descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_INTERRUPTING_BOUNDARY_EVENT, Localization.getString("property.interrupting"),
                     YesNoComboBoxTransformer.LABELS));
         }
@@ -174,7 +174,7 @@ public abstract class Node extends NamedGraphElement implements Describable {
     public void validate(List<ValidationError> errors, IFile definitionFile) {
         super.validate(errors, definitionFile);
         if (!(this instanceof StartState) && !(this instanceof Timer && getParent() instanceof ITimed)
-                && !(this instanceof IBoundaryEvent && getParent() instanceof IBoundaryEventContainer) && !(this instanceof DataStore)) {
+                && !(this instanceof IBoundaryEventCapable && getParent() instanceof IBoundaryEventContainer) && !(this instanceof DataStore)) {
             if (getArrivingTransitions().size() == 0) {
                 errors.add(ValidationError.createLocalizedError(this, "noInputTransitions"));
             }

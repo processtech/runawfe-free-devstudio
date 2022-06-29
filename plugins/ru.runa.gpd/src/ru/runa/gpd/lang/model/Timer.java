@@ -8,16 +8,20 @@ import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.lang.ValidationError;
-import ru.runa.gpd.lang.model.bpmn.IBoundaryEvent;
+import ru.runa.gpd.lang.model.bpmn.IBoundaryEventCapable;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 import ru.runa.gpd.property.DurationPropertyDescriptor;
 import ru.runa.gpd.property.TimerActionPropertyDescriptor;
 import ru.runa.gpd.util.Duration;
 import ru.runa.gpd.util.VariableUtils;
 
-public class Timer extends Node implements IBoundaryEvent, IBoundaryEventContainer {
+public class Timer extends Node implements IBoundaryEventCapable, IBoundaryEventContainer {
     private Duration duration = new Duration();
     private TimerAction action;
+
+    public static boolean isBoundaryEventInParent(GraphElement parent) {
+        return parent instanceof ITimed;
+    }
 
     public Duration getDelay() {
         return duration;
@@ -59,8 +63,8 @@ public class Timer extends Node implements IBoundaryEvent, IBoundaryEventContain
     @Override
     public void populateCustomPropertyDescriptors(List<IPropertyDescriptor> descriptors) {
         super.populateCustomPropertyDescriptors(descriptors);
-        descriptors.add(new DurationPropertyDescriptor(PROPERTY_TIMER_DELAY, getProcessDefinition(), getDelay(), Localization
-                .getString("property.duration")));
+        descriptors.add(new DurationPropertyDescriptor(PROPERTY_TIMER_DELAY, getProcessDefinition(), getDelay(),
+                Localization.getString("property.duration")));
         descriptors.add(new TimerActionPropertyDescriptor(PROPERTY_TIMER_ACTION, Localization.getString("Timer.action"), this));
     }
 
@@ -146,5 +150,16 @@ public class Timer extends Node implements IBoundaryEvent, IBoundaryEventContain
         Duration newDuration = new Duration(duration);
         newDuration.setVariableName(variableName);
         setDelay(newDuration);
+    }
+
+    @Override
+    public void updateBoundaryEventConstraint() {
+        getConstraint().setX(1);
+        getConstraint().setY(getParent().getConstraint().height - getConstraint().height);
+    }
+
+    @Override
+    public boolean isBoundaryEvent() {
+        return isBoundaryEventInParent(getParent());
     }
 }

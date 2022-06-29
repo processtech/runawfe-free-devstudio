@@ -5,10 +5,8 @@ import org.eclipse.graphiti.features.context.ILayoutContext;
 import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.services.Graphiti;
-
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
-import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 
 public class LayoutCatchEventNodeFeature extends LayoutElementFeature {
 
@@ -18,9 +16,10 @@ public class LayoutCatchEventNodeFeature extends LayoutElementFeature {
         GraphicsAlgorithm ga = containerShape.getGraphicsAlgorithm();
 
         CatchEventNode node = (CatchEventNode) getBusinessObjectForPictogramElement(containerShape);
-        if (node.getParent() instanceof IBoundaryEventContainer) {
+        if (node.isBoundaryEvent()) {
             Rectangle parentRectangle = ((Node) node.getParent()).getConstraint();
-            Graphiti.getGaService().setLocation(ga, parentRectangle.width - 2 * GRID_SIZE, parentRectangle.height - 2 * GRID_SIZE);
+            Graphiti.getGaService().setLocation(ga, parentRectangle.width - node.getConstraint().width,
+                    parentRectangle.height - node.getConstraint().height);
         }
         return true;
     }

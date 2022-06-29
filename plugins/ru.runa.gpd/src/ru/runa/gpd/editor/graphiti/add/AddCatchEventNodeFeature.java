@@ -11,14 +11,12 @@ import org.eclipse.graphiti.mm.pictograms.Shape;
 import org.eclipse.graphiti.services.Graphiti;
 import org.eclipse.graphiti.services.IGaService;
 import org.eclipse.graphiti.services.IPeCreateService;
-
 import ru.runa.gpd.editor.GEFConstants;
 import ru.runa.gpd.editor.graphiti.GaProperty;
 import ru.runa.gpd.editor.graphiti.StyleUtil;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
-import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 
 public class AddCatchEventNodeFeature extends AddEventNodeFeature implements GEFConstants {
 
@@ -27,22 +25,18 @@ public class AddCatchEventNodeFeature extends AddEventNodeFeature implements GEF
         if (super.canAdd(context)) {
             return true;
         }
-
         GraphElement container = (GraphElement) getBusinessObjectForPictogramElement(context.getTargetContainer());
-        GraphElement containerParent = container.getParent();
-        return container instanceof IBoundaryEventContainer && !(containerParent instanceof IBoundaryEventContainer);
+        return CatchEventNode.isBoundaryEventInParent(container);
     }
 
     @Override
     public PictogramElement add(IAddContext context) {
-        GraphElement container = (GraphElement) getBusinessObjectForPictogramElement(context.getTargetContainer());
-        GraphElement containerParent = container.getParent();
-        if (container instanceof IBoundaryEventContainer && !(containerParent instanceof IBoundaryEventContainer)) {
-            CatchEventNode catchEventNode = (CatchEventNode) context.getNewObject();
+        GraphElement parent = (GraphElement) getBusinessObjectForPictogramElement(context.getTargetContainer());
+        CatchEventNode catchEventNode = (CatchEventNode) context.getNewObject();
+        if (CatchEventNode.isBoundaryEventInParent(parent)) {
             Dimension bounds = getBounds(context);
-            ((LocationContext) context).setX(((Node) container).getConstraint().width - 2 * GRID_SIZE);
-            ((LocationContext) context).setY(((Node) container).getConstraint().height - 2 * GRID_SIZE);
-            bounds.scale(0.5);
+            ((LocationContext) context).setX(((Node) parent).getConstraint().width - catchEventNode.getConstraint().width / 2);
+            ((LocationContext) context).setY(((Node) parent).getConstraint().height - catchEventNode.getConstraint().height / 2);
             ContainerShape parentShape = context.getTargetContainer();
             IPeCreateService createService = Graphiti.getPeCreateService();
             IGaService gaService = Graphiti.getGaService();

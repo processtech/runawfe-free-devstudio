@@ -26,7 +26,7 @@ import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.SwimlanedNode;
-import ru.runa.gpd.lang.model.bpmn.IBoundaryEvent;
+import ru.runa.gpd.lang.model.bpmn.IBoundaryEventCapable;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 
 public class CreateDragAndDropElementFeature extends AbstractCreateConnectionFeature implements GEFConstants {
@@ -143,7 +143,7 @@ public class CreateDragAndDropElementFeature extends AbstractCreateConnectionFea
     }
 
     private void setLocationAndSize(GraphElement element, CreateContext context, CreateConnectionContext connectionContext) {
-        Dimension defaultSize = element.getTypeDefinition().getGraphitiEntry().getDefaultSize();
+        Dimension defaultSize = element.getTypeDefinition().getGraphitiEntry().getDefaultSize(element);
         if (context.getHeight() < defaultSize.height) {
             context.setHeight(defaultSize.height);
         }
@@ -155,7 +155,7 @@ public class CreateDragAndDropElementFeature extends AbstractCreateConnectionFea
                 PictogramElement sourceElement = connectionContext.getSourcePictogramElement();
                 GraphElement sourceGraphElement = (GraphElement) getBusinessObjectForPictogramElement(sourceElement);
                 int shift = 5 * GRID_SIZE;
-                if (sourceGraphElement instanceof IBoundaryEvent && !(sourceGraphElement.getParent() instanceof ProcessDefinition)) {
+                if (sourceGraphElement instanceof IBoundaryEventCapable && !(sourceGraphElement.getParent() instanceof ProcessDefinition)) {
                     PictogramElement parentElement = Graphiti.getPeService().getPictogramElementParent(sourceElement);
                     int yBottom = parentElement.getGraphicsAlgorithm().getY() + parentElement.getGraphicsAlgorithm().getHeight();
                     int xDelta = (defaultSize.width - parentElement.getGraphicsAlgorithm().getWidth()) / 2;
