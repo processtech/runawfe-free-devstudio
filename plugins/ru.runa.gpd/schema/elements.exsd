@@ -248,6 +248,20 @@
                </documentation>
             </annotation>
          </attribute>
+         <attribute name="boundaryEventWidth" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="boundaryEventHeight" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
       </complexType>
    </element>
 
@@ -271,6 +285,15 @@
 
    <annotation>
       <appinfo>
+         <meta.section type="apiInfo"/>
+      </appinfo>
+      <documentation>
+         [Enter API information here.]
+      </documentation>
+   </annotation>
+
+   <annotation>
+      <appinfo>
          <meta.section type="implementation"/>
       </appinfo>
       <documentation>
@@ -278,14 +301,5 @@
       </documentation>
    </annotation>
 
-
-   <annotation>
-      <appinfo>
-         <meta.section type="apiInfo"/>
-      </appinfo>
-      <documentation>
-         [Enter API information here.]
-      </documentation>
-   </annotation>
 
 </schema>

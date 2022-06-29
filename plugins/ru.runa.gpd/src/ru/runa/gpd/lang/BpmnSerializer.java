@@ -45,14 +45,14 @@ import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.TransitionColor;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.bpmn.AbstractEventNode;
+import ru.runa.gpd.lang.model.bpmn.BusinessRule;
 import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
 import ru.runa.gpd.lang.model.bpmn.ConnectableViaDottedTransition;
 import ru.runa.gpd.lang.model.bpmn.DataStore;
 import ru.runa.gpd.lang.model.bpmn.DottedTransition;
 import ru.runa.gpd.lang.model.bpmn.EventNodeType;
 import ru.runa.gpd.lang.model.bpmn.ExclusiveGateway;
-import ru.runa.gpd.lang.model.bpmn.BusinessRule;
-import ru.runa.gpd.lang.model.bpmn.IBoundaryEvent;
+import ru.runa.gpd.lang.model.bpmn.IBoundaryEventCapable;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 import ru.runa.gpd.lang.model.bpmn.ParallelGateway;
 import ru.runa.gpd.lang.model.bpmn.ScriptTask;
@@ -63,7 +63,6 @@ import ru.runa.gpd.util.Duration;
 import ru.runa.gpd.util.MultiinstanceParameters;
 import ru.runa.gpd.util.SwimlaneDisplayMode;
 import ru.runa.gpd.util.VariableMapping;
-import ru.runa.gpd.util.VariableUtils;
 import ru.runa.gpd.util.XmlUtil;
 import ru.runa.wfe.definition.ProcessDefinitionAccessType;
 import ru.runa.wfe.lang.AsyncCompletionMode;
@@ -901,7 +900,7 @@ public class BpmnSerializer extends ProcessSerializer {
         for (Element boundaryEventElement : boundaryEventElements) {
             String parentNodeId = boundaryEventElement.attributeValue(ATTACHED_TO_REF);
             GraphElement parent = definition.getGraphElementByIdNotNull(parentNodeId);
-            IBoundaryEvent boundaryEvent = (IBoundaryEvent) parseEventElement(definition, parent, boundaryEventElement);
+            IBoundaryEventCapable boundaryEvent = (IBoundaryEventCapable) parseEventElement(definition, parent, boundaryEventElement);
             ((GraphElement) boundaryEvent).setUiParentContainer(parent);
             String interrupting = boundaryEventElement.attributeValue(CANCEL_ACTIVITY);
             if (!Strings.isNullOrEmpty(interrupting)) {

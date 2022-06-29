@@ -28,6 +28,8 @@ import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.NodeRegistry;
 import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.lang.ValidationError;
+import ru.runa.gpd.lang.model.bpmn.IBoundaryEventCapable;
+import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 import ru.runa.gpd.lang.model.bpmn.TextAnnotation;
 import ru.runa.gpd.lang.model.jpdl.ActionContainer;
 import ru.runa.gpd.property.DelegableClassPropertyDescriptor;
@@ -118,6 +120,14 @@ public abstract class GraphElement extends EventSupport
             Rectangle oldConstraint = this.constraint;
             this.constraint = newConstraint;
             firePropertyChange(NODE_BOUNDS_RESIZED, oldConstraint, newConstraint);
+            if (this.constraint != null && this instanceof IBoundaryEventContainer) {
+                for (GraphElement element : children) {
+                    if (element.getConstraint() != null && element instanceof IBoundaryEventCapable
+                            && ((IBoundaryEventCapable) element).isBoundaryEvent()) {
+                        ((IBoundaryEventCapable) element).updateBoundaryEventConstraint();
+                    }
+                }
+            }
         }
     }
 

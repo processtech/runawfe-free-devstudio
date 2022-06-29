@@ -1,7 +1,6 @@
 package ru.runa.gpd.editor.gef.figure;
 
 import java.util.List;
-
 import org.eclipse.draw2d.Border;
 import org.eclipse.draw2d.ConnectionAnchor;
 import org.eclipse.draw2d.Figure;
@@ -21,7 +20,6 @@ import org.eclipse.draw2d.text.PageFlowLayout;
 import org.eclipse.draw2d.text.TextFlow;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
-
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.editor.GEFConstants;
@@ -71,7 +69,7 @@ public abstract class NodeFigure<T extends GraphElement> extends Figure implemen
     }
 
     public Dimension getDefaultSize() {
-        return model.getTypeDefinition().getGefEntry().getDefaultSize().getCopy();
+        return model.getTypeDefinition().getGefEntry().getDefaultSize(model).getCopy();
     }
 
     @Override

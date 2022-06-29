@@ -6,7 +6,6 @@ import org.eclipse.graphiti.features.context.IResizeShapeContext;
 import org.eclipse.graphiti.features.context.impl.ResizeContext;
 import org.eclipse.graphiti.features.impl.DefaultResizeShapeFeature;
 import org.eclipse.graphiti.mm.pictograms.Shape;
-
 import ru.runa.gpd.editor.GEFConstants;
 import ru.runa.gpd.lang.model.GraphElement;
 
