@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import org.dom4j.Document;
 import org.dom4j.Element;
+import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 import ru.runa.gpd.editor.graphiti.HasTextDecorator;
@@ -20,6 +21,7 @@ import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.bpmn.ConnectableViaDottedTransition;
 import ru.runa.gpd.lang.model.bpmn.DottedTransition;
+import ru.runa.gpd.lang.model.bpmn.IBoundaryEventCapable;
 import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
 import ru.runa.gpd.util.XmlUtil;
 
@@ -132,6 +134,15 @@ public class GpdXmlContentProvider extends AuxContentProvider {
                 Rectangle constraint = graphElement.getConstraint();
                 constraint.x -= parentConstraint.x;
                 constraint.y -= parentConstraint.y;
+                if (graphElement instanceof IBoundaryEventCapable && ((IBoundaryEventCapable) graphElement).isBoundaryEvent()) {
+                    // fix boundary event constraints, code can be removed in 2023
+                    Dimension defaultSize = graphElement.getTypeDefinition().getGraphitiEntry().getDefaultSize(graphElement);
+                    constraint.setWidth(defaultSize.width);
+                    constraint.setHeight(defaultSize.height);
+                    if (graphElement.getParent() != null && graphElement.getParent().getConstraint() != null) {
+                        ((IBoundaryEventCapable) graphElement).updateBoundaryEventConstraint();
+                    }
+                }
             }
         }
     }

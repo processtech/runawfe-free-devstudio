@@ -6,7 +6,6 @@ import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.gef.EditPart;
 import org.eclipse.jface.preference.IPreferenceStore;
-
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.editor.gef.figure.GridSupportLayer;
@@ -16,6 +15,7 @@ import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.ProcessDefinition;
+import ru.runa.gpd.lang.model.bpmn.IBoundaryEventCapable;
 import ru.runa.gpd.settings.LanguageElementPreferenceNode;
 import ru.runa.gpd.settings.PrefConstants;
 
@@ -25,6 +25,7 @@ public abstract class Entry implements GEFConstants {
     protected final IConfigurationElement element;
     protected final Dimension defaultSystemSize;
     protected final Dimension defaultSize;
+    protected final Dimension defaultBoundaryEventSize;
     protected final boolean fixedSize;
 
     public Entry(NodeTypeDefinition nodeTypeDefinition, IConfigurationElement element) {
@@ -33,8 +34,12 @@ public abstract class Entry implements GEFConstants {
         String attribute;
         this.defaultSystemSize = new Dimension(Integer.parseInt((attribute = element.getAttribute("width")) != null ? attribute : "10"),
                 Integer.parseInt((attribute = element.getAttribute("height")) != null ? attribute : "6"));
+        Dimension defaultBoundaryEventSystemSize = new Dimension(
+                Integer.parseInt((attribute = element.getAttribute("boundaryEventWidth")) != null ? attribute : "2"),
+                Integer.parseInt((attribute = element.getAttribute("boundaryEventHeight")) != null ? attribute : "2"));
         this.defaultSize = this.defaultSystemSize.getScaled(GRID_SIZE);
         this.fixedSize = Boolean.parseBoolean(element.getAttribute("fixedSize"));
+        this.defaultBoundaryEventSize = defaultBoundaryEventSystemSize.getScaled(GRID_SIZE);
     }
 
     protected abstract Language getLanguage();
@@ -85,7 +90,10 @@ public abstract class Entry implements GEFConstants {
         return defaultSystemSize;
     }
 
-    public Dimension getDefaultSize() {
+    public Dimension getDefaultSize(GraphElement graphElement) {
+        if (graphElement instanceof IBoundaryEventCapable && ((IBoundaryEventCapable) graphElement).isBoundaryEvent()) {
+            return defaultBoundaryEventSize.getCopy();
+        }
         if (!fixedSize) {
             IPreferenceStore store = Activator.getDefault().getPreferenceStore();
             String key = LanguageElementPreferenceNode.getId(nodeTypeDefinition, getLanguage()) + '.' + PrefConstants.P_LANGUAGE_NODE_WIDTH;

@@ -1114,7 +1114,9 @@
                layout="ru.runa.gpd.editor.graphiti.layout.LayoutTimerFeature"
                update="ru.runa.gpd.editor.graphiti.update.UpdateTimerFeature"
                doubleClick="ru.runa.gpd.editor.graphiti.update.DoubleClickTimerFeature"
-               width="4">
+               width="4"
+               boundaryEventWidth="2"
+               boundaryEventHeight="2">
          </graphiti>
       </element>
       <element
@@ -1437,7 +1439,9 @@
                layout="ru.runa.gpd.editor.graphiti.layout.LayoutCatchEventNodeFeature"
                update="ru.runa.gpd.editor.graphiti.update.UpdateCatchEventNodeFeature"
                doubleClick="ru.runa.gpd.editor.graphiti.update.DoubleClickEventNodeFeature"
-               width="4">
+               width="4"
+               boundaryEventWidth="2"
+               boundaryEventHeight="2">
          </graphiti>
       </element>
       <element

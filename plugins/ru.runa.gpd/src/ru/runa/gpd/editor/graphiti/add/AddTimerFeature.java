@@ -11,11 +11,10 @@ import org.eclipse.graphiti.mm.pictograms.Shape;
 import org.eclipse.graphiti.services.Graphiti;
 import org.eclipse.graphiti.services.IGaService;
 import org.eclipse.graphiti.services.IPeCreateService;
-
 import ru.runa.gpd.editor.GEFConstants;
 import ru.runa.gpd.editor.graphiti.GaProperty;
 import ru.runa.gpd.editor.graphiti.StyleUtil;
-import ru.runa.gpd.lang.model.ITimed;
+import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.Timer;
 
@@ -26,19 +25,18 @@ public class AddTimerFeature extends AddNodeWithImageFeature implements GEFConst
             return true;
         }
         Object parentObject = getBusinessObjectForPictogramElement(context.getTargetContainer());
-        return parentObject instanceof ITimed;
+        return Timer.isBoundaryEventInParent((GraphElement) parentObject);
     }
 
     @Override
     public PictogramElement add(IAddContext context) {
-        Object parent = getBusinessObjectForPictogramElement(context.getTargetContainer());
-        if (parent instanceof ITimed) {
-            Timer timer = (Timer) context.getNewObject();
+        GraphElement parent = (GraphElement) getBusinessObjectForPictogramElement(context.getTargetContainer());
+        Timer timer = (Timer) context.getNewObject();
+        if (Timer.isBoundaryEventInParent(parent)) {
             String imageName = "boundary_" + timer.getTypeDefinition().getIcon();
             Dimension bounds = getBounds(context);
             ((LocationContext) context).setX(1);
-            ((LocationContext) context).setY(((Node) parent).getConstraint().height - 2 * GRID_SIZE);
-            bounds.scale(0.5);
+            ((LocationContext) context).setY(((Node) parent).getConstraint().height - timer.getConstraint().height);
             ContainerShape parentShape = context.getTargetContainer();
             IPeCreateService createService = Graphiti.getPeCreateService();
             IGaService gaService = Graphiti.getGaService();
