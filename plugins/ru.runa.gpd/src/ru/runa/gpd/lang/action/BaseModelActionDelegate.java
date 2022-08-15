@@ -14,8 +14,8 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.views.contentoutline.ContentOutline;
 
 import ru.runa.gpd.PluginLogger;
-import ru.runa.gpd.editor.OutlineViewer;
 import ru.runa.gpd.editor.ProcessEditorBase;
+import ru.runa.gpd.editor.outline.OutlineViewer;
 import ru.runa.gpd.lang.model.GraphElement;
 
 public abstract class BaseModelActionDelegate implements IObjectActionDelegate {

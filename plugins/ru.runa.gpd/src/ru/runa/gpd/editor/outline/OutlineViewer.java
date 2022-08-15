@@ -1,4 +1,4 @@
-package ru.runa.gpd.editor;
+package ru.runa.gpd.editor.outline;
 
 import org.eclipse.draw2d.LightweightSystem;
 import org.eclipse.draw2d.MarginBorder;
@@ -24,17 +24,11 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.part.PageBook;
-
 import ru.runa.gpd.SharedImages;
-import ru.runa.gpd.editor.gef.GefEntry;
-import ru.runa.gpd.editor.gef.part.tree.ElementTreeEditPart;
-import ru.runa.gpd.editor.gef.part.tree.GroupElementTreeEditPart;
-import ru.runa.gpd.editor.gef.part.tree.OutlineRootTreeEditPart;
-import ru.runa.gpd.editor.gef.part.tree.VariableTreeEditPart;
+import ru.runa.gpd.editor.ProcessEditorBase;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.GroupElement;
 import ru.runa.gpd.lang.model.ProcessDefinition;
-import ru.runa.gpd.lang.model.Variable;
 
 public class OutlineViewer extends ContentOutlinePage implements ISelectionListener {
     private final ProcessEditorBase editor;
@@ -44,10 +38,12 @@ public class OutlineViewer extends ContentOutlinePage implements ISelectionListe
     private Thumbnail thumbnail;
     private IAction showOverviewAction;
     private IAction showTreeviewAction;
+    private TreeViewer treeViewer;
 
     public OutlineViewer(ProcessEditorBase editor) {
-        super(new TreeViewer());
+        super(new FilteredTreeViewer(editor));
         this.editor = editor;
+        this.treeViewer = new TreeViewer();
     }
 
     @Override
@@ -151,12 +147,14 @@ public class OutlineViewer extends ContentOutlinePage implements ISelectionListe
     private void createTreeview(Composite parent) {
         treeview = getViewer().createControl(parent);
         getSite().setSelectionProvider(getViewer());
-        getViewer().setEditDomain(editor.getEditDomain());
-        getViewer().setEditPartFactory(new GPDEditPartFactory());
-        getViewer().setContents(editor.getDefinition());
+        treeViewer.createControl(parent);
+        treeViewer.setEditDomain(editor.getEditDomain());
+        treeViewer.setEditPartFactory(new ElementEditPartFactory());
+        treeViewer.setContents(editor.getDefinition());
+        getViewer().setContents(treeViewer.getContents());
     }
 
-    private static class GPDEditPartFactory implements EditPartFactory {
+    private static class ElementEditPartFactory implements EditPartFactory {
         private boolean firstTime = true;
 
         @Override
@@ -168,17 +166,10 @@ public class OutlineViewer extends ContentOutlinePage implements ISelectionListe
                 return rootEditPart;
             }
             GraphElement element = (GraphElement) model;
-            if (element instanceof Variable) {
-                return new VariableTreeEditPart((Variable) element);
-            }
             if (element instanceof GroupElement) {
                 return new GroupElementTreeEditPart((GroupElement) element);
             }
-            GefEntry gefEntry = element.getTypeDefinition().getGefEntry();
-            if (gefEntry != null) {
-                return gefEntry.createTreeEditPart(element);
-            }
-            return new ElementTreeEditPart(element);
+            return element.getTypeDefinition().createOutlineTreeEditPart(element);
         }
     }
 

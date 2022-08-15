@@ -3,7 +3,6 @@ package ru.runa.gpd.editor.gef;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.gef.EditPart;
-
 import ru.runa.gpd.editor.Entry;
 import ru.runa.gpd.editor.gef.figure.GridSupportLayer;
 import ru.runa.gpd.editor.gef.figure.NodeFigure;
@@ -19,6 +18,7 @@ public class GefEntry extends Entry {
         super(nodeTypeDefinition, element);
     }
 
+    @Override
     protected Language getLanguage() {
         return Language.JPDL;
     }
@@ -31,14 +31,12 @@ public class GefEntry extends Entry {
         return editPart;
     }
 
+    @Override
     public EditPart createGraphicalEditPart(GraphElement element) {
         return createEditPart("graphicalEditPart", element);
     }
 
-    public EditPart createTreeEditPart(GraphElement element) {
-        return createEditPart("treeEditPart", element);
-    }
-
+    @Override
     public <T extends IFigure> T createFigure(ProcessDefinition definition) {
         T figure = createExecutableExtension("figure");
         if (figure instanceof NodeFigure) {
