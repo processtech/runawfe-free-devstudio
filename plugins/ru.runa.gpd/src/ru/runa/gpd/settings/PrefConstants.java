@@ -63,4 +63,8 @@ public interface PrefConstants {
     public static final String P_INTERNAL_STORAGE_FUNCTIONALITY_ENABLED = "internalStorageFunctionalityEnabled";
     public static final String P_GLOBAL_OBJECTS_ENABLED = "globalObjectsEnabled";
     public static final String P_CHAT_FUNCTIONALITY_ENABLED = "chatFunctionalityEnabled";
+    public static final String P_EDITOR_PART_NAME_MODE = "editorPartNameMode";
+    public static final String P_EDITOR_PART_NAME_MODE_SHORT = "short";
+    public static final String P_EDITOR_PART_NAME_MODE_NON_DUPLICATED = "nonDuplicated";
+    public static final String P_EDITOR_PART_NAME_MODE_LONG = "long";
 }

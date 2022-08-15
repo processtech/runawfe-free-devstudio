@@ -57,9 +57,11 @@ import ru.runa.gpd.lang.par.ProcessDefinitionValidator;
 import ru.runa.gpd.ui.view.ValidationErrorsView;
 import ru.runa.gpd.util.EditorUtils;
 import ru.runa.gpd.util.IOUtils;
+import ru.runa.gpd.util.UiUtil;
 import ru.runa.gpd.util.WorkspaceOperations;
 
-public abstract class ProcessEditorBase extends MultiPageEditorPart implements ISelectionListener, IResourceChangeListener, PropertyChangeListener {
+public abstract class ProcessEditorBase extends MultiPageEditorPart
+        implements ISelectionListener, IResourceChangeListener, PropertyChangeListener, ConfigurableTitleEditorPart {
 
     protected ProcessDefinition definition;
     protected IFile definitionFile;
@@ -81,8 +83,17 @@ public abstract class ProcessEditorBase extends MultiPageEditorPart implements I
         definition = ProcessCache.getProcessDefinition(definitionFile);
         definition.setDirty(false);
         definition.addPropertyChangeListener(this);
+        setPartName(UiUtil.getPartName(definition));
+    }
 
-        setPartName(definition.getName());
+    @Override
+    public Object getPartNameInput() {
+        return definition;
+    }
+
+    @Override
+    public void setPartName(String partName) {
+        super.setPartName(partName);
     }
 
     @Override

@@ -15,6 +15,7 @@ import org.eclipse.ui.part.MultiPageEditorPart;
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
+import ru.runa.gpd.editor.ConfigurableTitleEditorPart;
 import ru.runa.gpd.jointformeditor.resources.Messages;
 import ru.runa.gpd.jseditor.JavaScriptEditor;
 import ru.runa.gpd.lang.model.FormNode;
@@ -26,10 +27,11 @@ import ru.runa.gpd.settings.PrefConstants;
 import ru.runa.gpd.ui.control.FieldValidatorsPage;
 import ru.runa.gpd.ui.control.GlobalValidatorsPage;
 import ru.runa.gpd.util.IOUtils;
+import ru.runa.gpd.util.UiUtil;
 import ru.runa.gpd.validation.FormNodeValidation;
 import ru.runa.gpd.validation.ValidationUtil;
 
-public class JointQuickFormEditor extends MultiPageEditorPart {
+public class JointQuickFormEditor extends MultiPageEditorPart implements ConfigurableTitleEditorPart {
 
     public static final String ID = "ru.runa.gpd.quickjointformeditor";
 
@@ -59,7 +61,7 @@ public class JointQuickFormEditor extends MultiPageEditorPart {
         for (FormNode formNode : processDefinition.getChildren(FormNode.class)) {
             if (input.getName().equals(formNode.getFormFileName())) {
                 this.formNode = formNode;
-                setPartName(formNode.getName());
+                setPartName(UiUtil.getPartName(formNode));
                 break;
             }
         }
@@ -67,6 +69,16 @@ public class JointQuickFormEditor extends MultiPageEditorPart {
             throw new IllegalStateException(input.getName() + " not found in form nodes");
         }
         validation = formNode.getValidation(formFile);
+    }
+
+    @Override
+    public Object getPartNameInput() {
+        return formNode;
+    }
+
+    @Override
+    public void setPartName(String partName) {
+        super.setPartName(partName);
     }
 
     @Override
