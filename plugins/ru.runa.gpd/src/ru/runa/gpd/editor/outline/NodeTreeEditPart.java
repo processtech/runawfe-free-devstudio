@@ -24,9 +24,6 @@ public class NodeTreeEditPart extends ElementTreeEditPart {
         if (getNode() instanceof ActionContainer) {
             result.addAll(((ActionContainer) getNode()).getActions());
         }
-        // if (result.isEmpty()) {
-        // return super.getModelChildren();
-        // }
         return result;
     }
 
