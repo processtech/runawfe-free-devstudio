@@ -213,11 +213,11 @@ public abstract class GraphElement extends EventSupport
         children.add(index, child);
         child.setParent(this);
         child.setDelegatedListener(delegatedListener);
-        firePropertyChange(NODE_ADDED, null, child);
-        firePropertyChange(PROPERTY_CHILDREN_CHANGED, null, child);
         if (child.getId() == null && !Variable.class.equals(child.getClass())) {
             child.setId(getProcessDefinition().getNextNodeId());
         }
+        firePropertyChange(NODE_ADDED, null, child);
+        firePropertyChange(PROPERTY_CHILDREN_CHANGED, null, child);
     }
 
     public void swapChildren(GraphElement child1, GraphElement child2) {

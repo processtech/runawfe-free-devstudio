@@ -1,22 +1,15 @@
-package ru.runa.gpd.editor.gef.part.tree;
+package ru.runa.gpd.editor.outline;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-
 import org.eclipse.gef.editparts.AbstractTreeEditPart;
-
 import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.lang.model.GraphElement;
+import ru.runa.gpd.util.EventSupport;
 
 public class ElementTreeEditPart extends AbstractTreeEditPart implements PropertyChangeListener, PropertyNames {
 
-    public ElementTreeEditPart() {
-
-    }
-
-    public ElementTreeEditPart(GraphElement element) {
-        setModel(element);
-    }
+    private final EventSupport eventSupport = new EventSupport();
 
     @Override
     public GraphElement getModel() {
@@ -50,8 +43,10 @@ public class ElementTreeEditPart extends AbstractTreeEditPart implements Propert
         String messageId = evt.getPropertyName();
         if (PROPERTY_CHILDREN_CHANGED.equals(messageId)) {
             refreshChildren();
-        } else if (PROPERTY_NAME.equals(messageId)) {
+            eventSupport.firePropertyChange(PROPERTY_EDIT_PART_UPDATED, evt.getOldValue(), evt.getNewValue());
+        } else if (PROPERTY_NAME.equals(messageId) || PROPERTY_DESCRIPTION.equals(messageId)) {
             refreshVisuals();
+            eventSupport.firePropertyChange(PROPERTY_EDIT_PART_UPDATED, null, null);
         }
     }
 
@@ -65,6 +60,14 @@ public class ElementTreeEditPart extends AbstractTreeEditPart implements Propert
             }
         }
         return super.getAdapter(key);
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        eventSupport.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        eventSupport.removePropertyChangeListener(listener);
     }
 
 }

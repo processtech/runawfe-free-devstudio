@@ -44,6 +44,7 @@ import ru.runa.gpd.editor.gef.GEFImageHelper;
 import ru.runa.gpd.editor.gef.GEFProcessEditor;
 import ru.runa.gpd.editor.gef.part.graph.ElementGraphicalEditPart;
 import ru.runa.gpd.editor.graphiti.DiagramEditorPage;
+import ru.runa.gpd.editor.outline.OutlineViewer;
 import ru.runa.gpd.extension.regulations.ui.RegulationsNotesView;
 import ru.runa.gpd.extension.regulations.ui.RegulationsSequenceView;
 import ru.runa.gpd.lang.model.FormNode;
