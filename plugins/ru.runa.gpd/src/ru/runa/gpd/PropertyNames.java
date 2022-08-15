@@ -67,7 +67,7 @@ public interface PropertyNames {
     public static final String PROPERTY_RELATION_PARAMETER = "relationParameter";
     public static final String PROPERTY_RELATION_INVERSED = "relationInversed";
     public static final String PROPERTY_EDITOR_PATH = "editorPath";
-    public static final String PROPERTY_END_TOKEN_BEHAVIOR = "endTokenBehavior";
+    public static final String PROPERTY_BEHAVIOR = "behavior";
     public static final String PROPERTY_PROCESS_VERSION_NUMBER = "versionNumber";
     public static final String PROPERTY_PROCESS_VERSION_DATE = "versionDate";
     public static final String PROPERTY_PROCESS_VERSION_COMMENT = "versionComment";
