@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.CoreException;
@@ -41,6 +42,7 @@ import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.model.SwimlanedNode;
 import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Timer;
+import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.VariableMapping;
@@ -62,14 +64,19 @@ public class VariableSearchVisitor {
     private final Matcher matcherByVariable;
     private final Matcher scriptMatcherByVariable;
     private final Matcher scriptMatcherByScriptingVariable;
+    private final String regexScriptVariableWithCheckAfterDot;
 
     public VariableSearchVisitor(VariableSearchQuery query) {
         this.query = query;
         this.status = new MultiStatus(NewSearchUI.PLUGIN_ID, IStatus.OK, SearchMessages.TextSearchEngine_statusMessage, null);
-        this.scriptMatcherByVariable = Pattern.compile(String.format(REGEX_SCRIPT_VARIABLE, Pattern.quote(query.getSearchText()))).matcher("");
-        this.scriptMatcherByScriptingVariable = Pattern.compile(String.format(REGEX_SCRIPT_VARIABLE, query.getVariable().getScriptingName()))
+        regexScriptVariableWithCheckAfterDot = "[\"'{(,\\s=]%s(\"|'|}|\\)|,|;|\\s|=|(.(?!"
+                + getSearchedVariablesScriptingNames(query.getVariable()) + ")))";
+        this.scriptMatcherByVariable = Pattern.compile(String.format(regexScriptVariableWithCheckAfterDot, Pattern.quote(query.getSearchText())))
                 .matcher("");
-        this.matcherByVariable = Pattern.compile(Pattern.quote(query.getSearchText())).matcher("");
+        this.scriptMatcherByScriptingVariable = Pattern
+                .compile(String.format(regexScriptVariableWithCheckAfterDot, query.getVariable().getScriptingName()))
+                .matcher("");
+        this.matcherByVariable = Pattern.compile("(\"|>)" + Pattern.quote(query.getSearchText()) + "(<|\")").matcher("");
     }
 
     public IStatus search(SearchResult searchResult, IProgressMonitor monitor) {
@@ -314,7 +321,7 @@ public class VariableSearchVisitor {
                 }
                 for (ValidatorConfig config : validation.getGlobalConfigs()) {
                     String groovyCode = config.getParams().get(ValidatorDefinition.EXPRESSION_PARAM_NAME);
-                    if (groovyCode != null && groovyCode.contains(query.getVariable().getScriptingName())) {
+                    if (groovyCode != null && scriptMatcherByScriptingVariable.reset(groovyCode).find()) {
                         matchesCount++;
                     }
                 }
@@ -425,4 +432,14 @@ public class VariableSearchVisitor {
         return matchesCount;
     }
 
+    private String getSearchedVariablesScriptingNames(Variable variable) {
+        List<Variable> variables = new ArrayList<>();
+        if (variable.isComplex()) {
+            variables.addAll(VariableUtils.expandComplexVariable(variable, variable));
+        } else {
+            variables.add(variable);
+        }
+        String result = variables.stream().map(Variable::getScriptingName).collect(Collectors.joining("|"));
+        return result.replaceAll("\\.", "|");
+    }
 }
