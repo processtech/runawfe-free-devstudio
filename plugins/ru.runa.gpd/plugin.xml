@@ -914,14 +914,14 @@
       <element
           type="connection"
             model="ru.runa.gpd.lang.model.Transition"
+            outlineTreeEditPart="ru.runa.gpd.editor.outline.TransitionTreeEditPart"
             jpdl="transition"
             bpmn="sequenceFlow"
             icon="transition.png"
             label="%label.element.transition">
          <gef
             figure="ru.runa.gpd.editor.gef.figure.TransitionFigure"
-            graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.TransitionGraphicalEditPart"
-            treeEditPart="ru.runa.gpd.editor.gef.part.tree.TransitionTreeEditPart">
+            graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.TransitionGraphicalEditPart">
          </gef>
          <graphiti
                add="ru.runa.gpd.editor.graphiti.add.AddTransitionFeature"
@@ -1000,10 +1000,8 @@
             jpdl="swimlane"
             label="%default.swimlane.name"
             model="ru.runa.gpd.lang.model.Swimlane"
+            outlineTreeEditPart="ru.runa.gpd.editor.outline.SwimlaneTreeEditPart"
             type="artifact">
-         <gef 
-            treeEditPart="ru.runa.gpd.editor.gef.part.tree.SwimlaneTreeEditPart">
-         </gef>
          <graphiti
                add="ru.runa.gpd.editor.graphiti.add.AddSwimlaneFeature"
                create="ru.runa.gpd.editor.graphiti.create.CreateSwimlaneFeature"
@@ -1017,14 +1015,14 @@
       <element
           type="node"
             model="ru.runa.gpd.lang.model.StartState"
+            outlineTreeEditPart="ru.runa.gpd.editor.outline.StartStateTreeEditPart"
             jpdl="start-state"
             bpmn="startEvent"
             icon="start.png"
             label="%label.element.startState">
          <gef 
             figure="ru.runa.gpd.editor.gef.figure.StartStateFigure"
-            graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.SwimlaneNodeEditPart"
-            treeEditPart="ru.runa.gpd.editor.gef.part.tree.StartStateTreeEditPart">
+            graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.SwimlaneNodeEditPart">
          </gef>
          <graphiti
                add="ru.runa.gpd.editor.graphiti.add.AddStartNodeFeature"
@@ -1045,8 +1043,7 @@
             label="%label.element.state">
          <gef 
             figure="ru.runa.gpd.editor.gef.figure.TaskStateFigure"
-            graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.TaskStateGraphicalEditPart"
-            treeEditPart="ru.runa.gpd.editor.gef.part.tree.NodeTreeEditPart">
+            graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.TaskStateGraphicalEditPart">
          </gef>
          <graphiti
                add="ru.runa.gpd.editor.graphiti.add.AddTaskStateNodeFeature"
@@ -1103,8 +1100,7 @@
             type="node">
          <gef 
             figure="ru.runa.gpd.editor.gef.figure.WaitStateFigure"
-            graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.LabeledNodeGraphicalEditPart"
-            treeEditPart="ru.runa.gpd.editor.gef.part.tree.NodeTreeEditPart">
+            graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.LabeledNodeGraphicalEditPart">
          </gef>
          <graphiti
                add="ru.runa.gpd.editor.graphiti.add.AddTimerFeature"
@@ -1121,15 +1117,14 @@
       </element>
       <element
             bpmn="multiTask"
-      type="node"
+            type="node"
             model="ru.runa.gpd.lang.model.MultiTaskState"
             jpdl="multi-task-node"
             icon="multitaskstate.png"
             label="%label.element.multitaskstate">
          <gef 
             figure="ru.runa.gpd.editor.gef.figure.MultiTaskStateFigure"
-            graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.TaskStateGraphicalEditPart"
-            treeEditPart="ru.runa.gpd.editor.gef.part.tree.NodeTreeEditPart">
+            graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.TaskStateGraphicalEditPart">
          </gef>
          <graphiti
                add="ru.runa.gpd.editor.graphiti.add.AddMultiTaskFeature"
@@ -1151,8 +1146,7 @@
             type="node">
          <gef 
             figure="ru.runa.gpd.editor.gef.figure.ForkJoinFigure"
-            graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.NodeGraphicalEditPart"
-            treeEditPart="ru.runa.gpd.editor.gef.part.tree.NodeTreeEditPart">
+            graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.NodeGraphicalEditPart">
          </gef>
       </element>
       <element
@@ -1164,8 +1158,7 @@
             type="node">
          <gef 
             figure="ru.runa.gpd.editor.gef.figure.ForkJoinFigure"
-            graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.NodeGraphicalEditPart"
-            treeEditPart="ru.runa.gpd.editor.gef.part.tree.NodeTreeEditPart">
+            graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.NodeGraphicalEditPart">
          </gef>
       </element>
       <element
@@ -1177,8 +1170,7 @@
             type="node">
          <gef
             figure="ru.runa.gpd.editor.gef.figure.DecisionFigure"
-            graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.DecisionGraphicalEditPart"
-            treeEditPart="ru.runa.gpd.editor.gef.part.tree.NodeTreeEditPart">
+            graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.DecisionGraphicalEditPart">
          </gef>
       </element>
       <element
@@ -1190,8 +1182,7 @@
             type="node">
          <gef
             figure="ru.runa.gpd.editor.gef.figure.ConjunctionFigure"
-            graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.ConjunctionGraphicalEditPart"
-            treeEditPart="ru.runa.gpd.editor.gef.part.tree.NodeTreeEditPart">
+            graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.ConjunctionGraphicalEditPart">
          </gef>
       </element>
       <element
@@ -1250,11 +1241,11 @@
             jpdl="action"
             label="%label.element.action"
             model="ru.runa.gpd.lang.model.ActionImpl"
+            outlineTreeEditPart="ru.runa.gpd.editor.outline.ActionTreeEditPart"
             type="artifact">
          <gef 
             figure="ru.runa.gpd.editor.gef.figure.ActionFigure"
-            graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.ActionGraphicalEditPart"
-            treeEditPart="ru.runa.gpd.editor.gef.part.tree.ActionTreeEditPart">
+            graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.ActionGraphicalEditPart">
          </gef>
          <graphiti
                create="ru.runa.gpd.editor.graphiti.create.CreateActionFeature"
@@ -1272,10 +1263,8 @@
             jpdl="variable"
             label="%default.variable.name"
             model="ru.runa.gpd.lang.model.Variable"
+            outlineTreeEditPart="ru.runa.gpd.editor.outline.VariableTreeEditPart"
             type="artifact">
-         <gef
-               treeEditPart="ru.runa.gpd.editor.gef.part.tree.VariableTreeEditPart">
-         </gef>
       </element>
       <element
             bpmn="process"
@@ -1283,11 +1272,11 @@
             jpdl="process-definition"
             label="%label.processDefinition"
             model="ru.runa.gpd.lang.model.ProcessDefinition"
+            outlineTreeEditPart="ru.runa.gpd.editor.outline.ProcessDefinitionTreeEditPart"
             type="definition">
          <gef 
             figure="ru.runa.gpd.editor.gef.figure.GridSupportLayer"
-            graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.ProcessDefinitionGraphicalEditPart"
-            treeEditPart="ru.runa.gpd.editor.gef.part.tree.ProcessDefinitionTreeEditPart">
+            graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.ProcessDefinitionGraphicalEditPart">
          </gef>
       </element>
       <element
@@ -1296,11 +1285,11 @@
             jpdl="process-definition"
             label="%label.globalSectionDefinition"
             model="ru.runa.gpd.lang.model.GlobalSectionDefinition"
+            outlineTreeEditPart="ru.runa.gpd.editor.outline.ProcessDefinitionTreeEditPart"
             type="definition">
          <gef 
             figure="ru.runa.gpd.editor.gef.figure.GridSupportLayer"
-            graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.ProcessDefinitionGraphicalEditPart"
-            treeEditPart="ru.runa.gpd.editor.gef.part.tree.ProcessDefinitionTreeEditPart">
+            graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.ProcessDefinitionGraphicalEditPart">
          </gef>
       </element>
       <element
@@ -1312,8 +1301,7 @@
             type="node">
          <gef 
             figure="ru.runa.gpd.editor.gef.figure.SubprocessFigure"
-            graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.SubprocessGraphicalEditPart"
-            treeEditPart="ru.runa.gpd.editor.gef.part.tree.NodeTreeEditPart">
+            graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.SubprocessGraphicalEditPart">
          </gef>
          <graphiti
                add="ru.runa.gpd.editor.graphiti.add.AddSubProcessFeature"
@@ -1334,8 +1322,7 @@
             type="artifact">
          <gef
                figure="ru.runa.gpd.editor.gef.figure.SubprocessFigure"
-               graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.SubprocessGraphicalEditPart"
-               treeEditPart="ru.runa.gpd.editor.gef.part.tree.NodeTreeEditPart">
+               graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.SubprocessGraphicalEditPart">
          </gef>
          <graphiti
                add="ru.runa.gpd.editor.graphiti.add.AddSubProcessFeature"
@@ -1356,8 +1343,7 @@
             type="node">
          <gef 
             figure="ru.runa.gpd.editor.gef.figure.MultiSubprocessFigure"
-            graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.MultiInstanceGraphicalEditPart"
-            treeEditPart="ru.runa.gpd.editor.gef.part.tree.NodeTreeEditPart">
+            graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.MultiInstanceGraphicalEditPart">
          </gef>
          <graphiti
                add="ru.runa.gpd.editor.graphiti.add.AddMultiSubprocessFeature"
@@ -1378,8 +1364,7 @@
             type="node">
          <gef 
             figure="ru.runa.gpd.editor.gef.figure.SendMessageFigure"
-            graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.SendMessageGraphicalEditPart"
-            treeEditPart="ru.runa.gpd.editor.gef.part.tree.NodeTreeEditPart">
+            graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.SendMessageGraphicalEditPart">
          </gef>
          <onVariableRenamed
                provider="ru.runa.gpd.ltk.MessageNodeRenameProvider">
@@ -1414,8 +1399,7 @@
             type="node">
          <gef
             figure="ru.runa.gpd.editor.gef.figure.ReceiveMessageFigure"
-            graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.ReceiveMessageGraphicalEditPart"
-            treeEditPart="ru.runa.gpd.editor.gef.part.tree.NodeTreeEditPart">
+            graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.ReceiveMessageGraphicalEditPart">
          </gef>
          <onVariableRenamed
                provider="ru.runa.gpd.ltk.MessageNodeRenameProvider">
@@ -1452,8 +1436,7 @@
             type="deprecated">
          <gef
                figure="ru.runa.gpd.editor.gef.figure.ActionNodeFigure"
-               graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.ActionNodeGraphicalEditPart"
-               treeEditPart="ru.runa.gpd.editor.gef.part.tree.NodeTreeEditPart">
+               graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.ActionNodeGraphicalEditPart">
          </gef>
       </element>
       <element
@@ -1465,8 +1448,7 @@
             type="node">
          <gef
             figure="ru.runa.gpd.editor.gef.figure.EndTokenStateFigure"
-            graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.LabeledNodeGraphicalEditPart"
-            treeEditPart="ru.runa.gpd.editor.gef.part.tree.NodeTreeEditPart">
+            graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.LabeledNodeGraphicalEditPart">
          </gef>
          <graphiti
                add="ru.runa.gpd.editor.graphiti.add.AddEndNodeFeature"
@@ -1486,8 +1468,7 @@
             label="%label.element.end">
          <gef
             figure="ru.runa.gpd.editor.gef.figure.EndStateFigure"
-            graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.LabeledNodeGraphicalEditPart"
-            treeEditPart="ru.runa.gpd.editor.gef.part.tree.NodeTreeEditPart">
+            graphicalEditPart="ru.runa.gpd.editor.gef.part.graph.LabeledNodeGraphicalEditPart">
          </gef>
          <graphiti
                add="ru.runa.gpd.editor.graphiti.add.AddEndNodeFeature"
@@ -1561,6 +1542,11 @@
                ratio="0.2"
                relationship="stack"
                relative="ru.runa.gpd.botExplorerView"/>
+         <view
+               id="ru.runa.gpd.searchResultView"
+               ratio="0.2"
+               relationship="stack"
+               relative="ru.runa.gpd.botExplorerView"/>      
          <viewShortcut id="ru.runa.gpd.explorerView"/>
          <newWizardShortcut id="wizard.new.process.definition"/>
          <newWizardShortcut id="wizard.new.project"/>
@@ -1621,6 +1607,13 @@
             icon="icons/data_sources.png"
             id="ru.runa.gpd.dataSourceExplorerView"
             name="%label.view.dataSourceDesignerExplorer">
+      </view>
+      <view
+            category="ru.runa.gpd.view.category"
+            class="ru.runa.gpd.ui.view.SearchResultView"
+            icon="icons/search.gif"
+            id="ru.runa.gpd.searchResultView"
+            name="%label.view.searchResults">
       </view>
    </extension>
    <extension
@@ -2944,6 +2937,13 @@
                menubarPath="window/additions"
                style="push"/>
          <action
+               class="ru.runa.gpd.ui.action.OpenSearchResult"
+               icon="icons/search.gif"
+               id="openSearchResult"
+               label="%label.menu.view.properties"
+               menubarPath="window/additions"
+               style="push"/>      
+         <action
                id="installSoftware"
                label="%Install.command"
                menubarPath="properties/updates"
@@ -3055,10 +3055,11 @@
                style="push"/>
          <action
                class="ru.runa.gpd.ui.action.FindElementAction"
+               definitionId="ru.runa.gpd.commands.find.element"
                id="findElement"
                label="%label.action.findElement"
                menubarPath="view/additions"
-               style="push"/>
+               style="push" />
       </actionSet>
    </extension>
 
@@ -3139,6 +3140,12 @@
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="CTRL+D">
       </key>
+      <key
+            commandId="ru.runa.gpd.commands.find.element"
+            contextId="org.eclipse.graphiti.ui.diagramEditor"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="CTRL+F">
+      </key>
    </extension>
    <extension
          point="org.eclipse.ui.commands">
@@ -3161,6 +3168,10 @@
       <command
             id="ru.runa.gpd.commands.delete"
             name="ru.runa.gpd.commands.delete">
+      </command>
+      <command
+            id="ru.runa.gpd.commands.find.element"
+            name="ru.runa.gpd.commands.find.element">
       </command>
       <command
             defaultHandler="ru.runa.gpd.extension.regulations.ui.EditNodeRegulationsPropertiesHandler"

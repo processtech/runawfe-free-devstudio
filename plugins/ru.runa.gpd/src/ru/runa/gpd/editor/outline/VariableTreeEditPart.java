@@ -1,12 +1,8 @@
-package ru.runa.gpd.editor.gef.part.tree;
+package ru.runa.gpd.editor.outline;
 
 import ru.runa.gpd.lang.model.Variable;
 
 public class VariableTreeEditPart extends ElementTreeEditPart {
-
-    public VariableTreeEditPart(Variable variable) {
-        setModel(variable);
-    }
 
     @Override
     public Variable getModel() {

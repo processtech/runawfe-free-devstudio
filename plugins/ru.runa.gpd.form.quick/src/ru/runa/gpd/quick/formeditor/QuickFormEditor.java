@@ -56,6 +56,7 @@ import org.osgi.framework.Bundle;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.PropertyNames;
+import ru.runa.gpd.editor.ConfigurableTitleEditorPart;
 import ru.runa.gpd.extension.Artifact;
 import ru.runa.gpd.formeditor.ftl.ComponentType;
 import ru.runa.gpd.formeditor.ftl.ComponentTypeRegistry;
@@ -87,6 +88,7 @@ import ru.runa.gpd.ui.custom.TableViewerLocalDragAndDropSupport;
 import ru.runa.gpd.ui.wizard.CompactWizardDialog;
 import ru.runa.gpd.util.EditorUtils;
 import ru.runa.gpd.util.IOUtils;
+import ru.runa.gpd.util.UiUtil;
 import ru.runa.gpd.util.VariableMapping;
 import ru.runa.gpd.util.VariableUtils;
 import ru.runa.wfe.InternalApplicationException;
@@ -96,7 +98,8 @@ import ru.runa.wfe.var.MapVariableProvider;
 import ru.runa.wfe.var.VariableDefinition;
 import ru.runa.wfe.var.dto.WfVariable;
 
-public class QuickFormEditor extends EditorPart implements ISelectionListener, IResourceChangeListener, PropertyChangeListener {
+public class QuickFormEditor extends EditorPart
+        implements ISelectionListener, IResourceChangeListener, PropertyChangeListener, ConfigurableTitleEditorPart {
     public static final int CLOSED = 198;
     public static final int SAVED = 257;
     public static final String ID = "ru.runa.gpd.quick.formeditor.QuickFormEditor";
@@ -135,7 +138,7 @@ public class QuickFormEditor extends EditorPart implements ISelectionListener, I
         for (FormNode formNode : processDefinition.getChildren(FormNode.class)) {
             if (formFile.getName().equals(formNode.getFormFileName())) {
                 this.formNode = formNode;
-                setPartName(formNode.getName());
+                setPartName(UiUtil.getPartName(formNode));
                 break;
             }
         }
@@ -174,6 +177,16 @@ public class QuickFormEditor extends EditorPart implements ISelectionListener, I
             }
         });
         formNode.setFormEditorOpened(true);
+    }
+
+    @Override
+    public Object getPartNameInput() {
+        return formNode;
+    }
+
+    @Override
+    public void setPartName(String partName) {
+        super.setPartName(partName);
     }
 
     @Override
@@ -318,8 +331,8 @@ public class QuickFormEditor extends EditorPart implements ISelectionListener, I
                 QuickFormGpdVariable row = (QuickFormGpdVariable) selection.getFirstElement();
                 for (QuickFormGpdVariable variableDef : quickForm.getVariables()) {
                     if (variableDef.getName().equals(row.getName())) {
-                        QuickFormVariableWizard wizard = new QuickFormVariableWizard(formNode, quickForm.getVariables(), quickForm.getVariables()
-                                .indexOf(variableDef));
+                        QuickFormVariableWizard wizard = new QuickFormVariableWizard(formNode, quickForm.getVariables(),
+                                quickForm.getVariables().indexOf(variableDef));
                         CompactWizardDialog dialog = new CompactWizardDialog(wizard);
                         if (dialog.open() == Window.OK) {
                             setTableInput();

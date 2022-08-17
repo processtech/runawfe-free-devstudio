@@ -77,6 +77,16 @@
                </restriction>
             </simpleType>
          </attribute>
+         <attribute name="outlineTreeEditPart" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appinfo>
+                  <meta.attribute kind="java" basedOn="org.eclipse.gef.EditPart"/>
+               </appinfo>
+            </annotation>
+         </attribute>
          <attribute name="bpmn" type="string">
             <annotation>
                <documentation>
@@ -138,16 +148,6 @@
    <element name="gef">
       <complexType>
          <attribute name="graphicalEditPart" type="string">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-               <appinfo>
-                  <meta.attribute kind="java" basedOn="org.eclipse.gef.EditPart"/>
-               </appinfo>
-            </annotation>
-         </attribute>
-         <attribute name="treeEditPart" type="string">
             <annotation>
                <documentation>
                   

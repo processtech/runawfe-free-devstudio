@@ -1,12 +1,11 @@
 package ru.runa.gpd.connector.wfe.ws;
 
+import com.google.common.collect.Lists;
 import java.util.List;
-
 import ru.runa.wfe.definition.ProcessDefinition;
 import ru.runa.wfe.definition.ProcessDefinitionVersion;
 import ru.runa.wfe.definition.dto.WfDefinition;
-
-import com.google.common.collect.Lists;
+import ru.runa.wfe.user.Actor;
 
 public class WfDefinitionAdapter {
 
@@ -20,6 +19,9 @@ public class WfDefinitionAdapter {
         dv.setDefinition(d);
         dv.setId(definition.getVersionId());
         dv.setCreateDate(DateAdapter.toDTO(definition.getCreateDate()));
+        dv.setCreateActor(actorToDTO(definition.getCreateActor()));
+        dv.setUpdateDate(DateAdapter.toDTO(definition.getUpdateDate()));
+        dv.setUpdateActor(actorToDTO(definition.getUpdateActor()));
         dv.setVersion(definition.getVersion());
         return new WfDefinition(d, dv);
     }
@@ -31,4 +33,8 @@ public class WfDefinitionAdapter {
         }
         return result;
     }
+
+	private static Actor actorToDTO(ru.runa.wfe.webservice.Actor wsActor) {
+		return wsActor == null ? null : new Actor(wsActor.getName(), "");
+	}
 }

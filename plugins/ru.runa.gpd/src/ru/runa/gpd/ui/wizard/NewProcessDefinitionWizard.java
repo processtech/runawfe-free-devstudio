@@ -1,20 +1,21 @@
 package ru.runa.gpd.ui.wizard;
 
+import com.google.common.collect.Maps;
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
-
 import org.dom4j.Document;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.gef.EditPart;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
-
+import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
@@ -25,13 +26,12 @@ import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.ProcessSerializer;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.par.ParContentProvider;
+import ru.runa.gpd.settings.PrefConstants;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.SwimlaneDisplayMode;
 import ru.runa.gpd.util.WorkspaceOperations;
 import ru.runa.gpd.util.XmlUtil;
 import ru.runa.wfe.definition.ProcessDefinitionAccessType;
-
-import com.google.common.collect.Maps;
 
 public class NewProcessDefinitionWizard extends Wizard implements INewWizard {
     private IStructuredSelection selection;
@@ -147,6 +147,8 @@ public class NewProcessDefinitionWizard extends Wizard implements INewWizard {
                 properties.put(BpmnSerializer.SHOW_SWIMLANE, SwimlaneDisplayMode.none.name());
                 properties.put(ProcessSerializer.ID, ParContentProvider.SUBPROCESS_DEFINITION_PREFIX + subprocessIndex);
                 properties.put(ProcessSerializer.ACCESS_TYPE, accessType.name());
+                IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+                properties.put(BpmnSerializer.BEHAVIOR, store.getString(PrefConstants.P_EMBEDDED_SUBPROCESS_BEHAVIOR));
                 Document document = parentProcessDefinition.getLanguage().getSerializer()
                         .getInitialProcessDefinitionDocument(processName, properties);
                 byte[] bytes = XmlUtil.writeXml(document);

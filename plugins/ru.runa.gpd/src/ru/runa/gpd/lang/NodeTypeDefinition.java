@@ -3,6 +3,7 @@ package ru.runa.gpd.lang;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.gef.EditPart;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
@@ -12,9 +13,12 @@ import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.editor.gef.GefEntry;
 import ru.runa.gpd.editor.graphiti.GraphitiEntry;
+import ru.runa.gpd.editor.outline.ElementTreeEditPart;
+import ru.runa.gpd.editor.outline.NodeTreeEditPart;
 import ru.runa.gpd.lang.model.EndState;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.NamedGraphElement;
+import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.StartState;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.TaskState;
@@ -210,4 +214,14 @@ public class NodeTypeDefinition {
             return null;
         }
     }
+
+    public EditPart createOutlineTreeEditPart(GraphElement element) {
+        EditPart editPart = createExecutableExtension("outlineTreeEditPart");
+        if (editPart == null) {
+            editPart = element instanceof Node ? new NodeTreeEditPart() : new ElementTreeEditPart();
+        }
+        editPart.setModel(element);
+        return editPart;
+    }
+
 }

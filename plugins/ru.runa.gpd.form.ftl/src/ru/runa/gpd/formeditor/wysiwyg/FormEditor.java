@@ -56,6 +56,7 @@ import ru.runa.gpd.Activator;
 import ru.runa.gpd.EditorsPlugin;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
+import ru.runa.gpd.editor.ConfigurableTitleEditorPart;
 import ru.runa.gpd.editor.DirtyDependentActions;
 import ru.runa.gpd.formeditor.WebServerUtils;
 import ru.runa.gpd.formeditor.ftl.Component;
@@ -81,6 +82,7 @@ import ru.runa.gpd.settings.PrefConstants;
 import ru.runa.gpd.ui.view.SelectionProvider;
 import ru.runa.gpd.util.EditorUtils;
 import ru.runa.gpd.util.IOUtils;
+import ru.runa.gpd.util.UiUtil;
 import ru.runa.gpd.util.VariableUtils;
 import ru.runa.wfe.InternalApplicationException;
 
@@ -88,7 +90,7 @@ import ru.runa.wfe.InternalApplicationException;
  * org.eclipse.ui.texteditor.BasicTextEditorActionContributor
  * </p>
  */
-public class FormEditor extends MultiPageEditorPart implements IResourceChangeListener, IComponentDropTarget {
+public class FormEditor extends MultiPageEditorPart implements IResourceChangeListener, IComponentDropTarget, ConfigurableTitleEditorPart {
 
     public static final String ID = "ru.runa.gpd.wysiwyg.WYSIWYGHTMLEditor";
     public static final int CLOSED = 197;
@@ -150,7 +152,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
         for (FormNode formNode : processDefinition.getChildren(FormNode.class)) {
             if (editorInput.getName().equals(formNode.getFormFileName())) {
                 this.formNode = formNode;
-                setPartName(formNode.getName());
+                setPartName(UiUtil.getPartName(formNode));
                 break;
             }
         }
@@ -189,6 +191,16 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
                 }
             }
         });
+    }
+
+    @Override
+    public Object getPartNameInput() {
+        return formNode;
+    }
+
+    @Override
+    public void setPartName(String partName) {
+        super.setPartName(partName);
     }
 
     public Map<String, Variable> getVariables() {
@@ -418,7 +430,6 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
             setDirty(false, !(this instanceof JointFormEditor));
         }
     }
-
 
     @Override
     public boolean isSaveAsAllowed() {

@@ -60,6 +60,7 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
 
     private final ProcessEditorBase editor;
     private DiagramCreator diagramCreator;
+    private DiagramBehavior diagramBehavior;
 
     public DiagramEditorPage(ProcessEditorBase editor) {
         this.editor = editor;
@@ -160,7 +161,11 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
 
     @Override
     protected DiagramBehavior createDiagramBehavior() {
-        return new CustomDiagramBehavior(this);
+        if (diagramBehavior == null) {
+            super.getDiagramBehavior();
+        }
+        diagramBehavior = new CustomDiagramBehavior(this);
+        return diagramBehavior;
     }
 
     @Override

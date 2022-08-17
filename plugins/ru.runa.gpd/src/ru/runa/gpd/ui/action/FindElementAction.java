@@ -1,15 +1,14 @@
 package ru.runa.gpd.ui.action;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
-
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.window.Window;
 import org.eclipse.ui.IEditorPart;
-
+import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
 import ru.runa.gpd.editor.graphiti.DiagramEditorPage;
 import ru.runa.gpd.editor.graphiti.GraphitiProcessEditor;
 import ru.runa.gpd.lang.model.GraphElement;
@@ -17,7 +16,9 @@ import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Subprocess;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.ui.dialog.FindElementDialog;
-import ru.runa.gpd.util.WorkspaceOperations;
+import ru.runa.gpd.ui.view.SearchResultContentProvider;
+import ru.runa.gpd.ui.view.SearchResultView;
+import ru.runa.wfe.InternalApplicationException;
 
 public class FindElementAction extends BaseActionDelegate {
 
@@ -80,129 +81,104 @@ public class FindElementAction extends BaseActionDelegate {
 
         FindElementDialog findElementDlg = new FindElementDialog();
         if (Window.OK == findElementDlg.open()) {
-            String elementIds = findElementDlg.getUserInput();
-            String[] ss = elementIds.split("\\.");
-            List<String> elmPath = Arrays.stream(ss).map((s) -> s.trim().toLowerCase()).collect(Collectors.toList());
-            if (elmPath.size() == 0) {
-                elmPath.add(elementIds.trim().toLowerCase());
-            }
-
+            
+            String elementId = findElementDlg.getUserInputID();
+            String elementName = findElementDlg.getUserInputName();
+            
             List<GraphElement> lstRoots = new ArrayList<GraphElement>(1);
-            lstRoots.add(procDef);
+            lstRoots.add(getRootProcessDefinition(procDef));
 
             for (GraphElement rootElement : lstRoots) {
                 List<Subprocess> subProcesses = new ArrayList<Subprocess>();
-                GraphElement elementFounded = findElement(rootElement, elmPath, subProcesses);
-                if (elementFounded != null) {
-
+                List<GraphElement> lstFounded = new ArrayList<>();
+                findElement(rootElement, elementId, elementName, subProcesses, lstFounded);
+                 
+                if (lstFounded.size() > 0) {
+                    SearchResultContentProvider.foundResults(lstFounded);
+                } else {
+                    SearchResultContentProvider.clearResults();
+                    
                     if (subProcesses.size() == 0) {
-                        diaPage.select(elementFounded);
+                        diaPage.select(null);
                     } else {
-                        for (Subprocess subProcess : subProcesses) {
-                            WorkspaceOperations.openSubprocessDefinition(subProcess);
-                        }
-
                         IEditorPart subPart = this.getActiveEditor();
                         DiagramEditorPage subPage = ((GraphitiProcessEditor) subPart).getDiagramEditorPage();
-                        subPage.select(elementFounded);
+                        subPage.select(null);
                     }
                 }
             }
+
+            try {
+                IViewPart part = window.getActivePage().showView(SearchResultView.ID, null, IWorkbenchPage.VIEW_VISIBLE);
+                if (part instanceof SearchResultView) {
+                    ((SearchResultView) part).refreshContent();
+                }
+            } catch (PartInitException e) {
+                throw new InternalApplicationException(e);
+            }
         }
 
     }
 
-    private String extractId(String fullId) {
-        int n = fullId.indexOf('.');
-        if (n >= 0) {
-            return fullId.substring(n + 1);
-        } else {
-            return fullId;
+    private void findElement(GraphElement rootElement, String elementId, String elementName, List<Subprocess> subProcesses, List<GraphElement> dest) {
+        if (elementId == null && elementName == null) {
+            return;
         }
-    }
-
-    private String extractSub(String fullId) {
-        int n = fullId.indexOf('.');
-        if (n >= 0) {
-            return fullId.substring(0, n);
-        } else {
-            return fullId;
-        }
-    }
-
-    private GraphElement findElement(GraphElement rootElement, List<String> elmPath, List<Subprocess> subProcesses) {
-        if (elmPath.size() == 0) {
-            return null;
-        } else if (elmPath.size() == 1) {
-            return findElementFlat(rootElement, elmPath.get(0), subProcesses);
-        } else {
-            return findElementHier(rootElement, elmPath, subProcesses);
-        }
-    }
-
-    private GraphElement findElementFlat(GraphElement rootElement, String elmId, List<Subprocess> subProcesses) {
-        if (elmId.equalsIgnoreCase(rootElement.getId())) {
-            return rootElement;
-        }
-
         List<GraphElement> lstAllElements = rootElement.getChildrenRecursive(GraphElement.class);
-        GraphElement elementFounded = lstAllElements.stream().filter((e) -> safeEqualsName(elmId, e)).findAny().orElse(null);
-        return elementFounded;
-    }
+        lstAllElements.stream().filter((e) -> safeEqualsName(elementId, elementName, e)).forEach(e -> {
+            dest.add(e);
+        });
 
-    private GraphElement findElementHier(GraphElement rootElement, List<String> elmPath, List<Subprocess> subProcesses) {
-        GraphElement actualRootElement = null;
-        if (elmPath.get(0).equalsIgnoreCase(rootElement.getId())) {
-            actualRootElement = rootElement;
-        } else {
-            actualRootElement = rootElement.getChildren(GraphElement.class).stream().filter((e) -> safeEqualsName(elmPath.get(0), e)).findAny()
-                    .orElse(null);
-        }
-        if (actualRootElement == null) {
-            return null;
-        }
-
-        if (actualRootElement instanceof Subprocess) {
-            Subprocess subProcess = (Subprocess) actualRootElement;
+        rootElement.getChildren(Subprocess.class).stream().forEach(subProcess -> {
             subProcesses.add(subProcess);
-            return findElement(subProcess.getEmbeddedSubprocess(), elmPath.subList(1, elmPath.size()), subProcesses);
-        } else {
-            return null;
-        }
+            if (subProcess.isEmbedded()) {
+                SubprocessDefinition def = subProcess.getEmbeddedSubprocess();
+                if (def != null) {
+                    findElement(def, elementId, elementName, subProcesses, dest);
+                }
+            } else {
+                findElement(subProcess, elementId, elementName, subProcesses, dest);
+            }
+        });
     }
 
-    private boolean safeEqualsName(String name, GraphElement element) {
-        String elmName = element.getId();
-        if (elmName == null) {
+    private boolean safeEqualsName(final String ids, final String name, GraphElement element) {
+        if (ids == null && name == null) {
             return false;
         }
+        return ((ids == null)?true:safeEqualsIds(ids, element)) && ((name == null)?true:safeEqualsLabel(name, element));
+    }
 
-        elmName = extractId(elmName);
-        if (name.equalsIgnoreCase(elmName)) {
+    private boolean safeEqualsLabel(final String name, GraphElement element) {
+        if (element.getLabel() == null) {
+            return false;
+        }
+        if (element.getLabel().toLowerCase().contains(name.toLowerCase())) {
             return true;
         }
+        return false;
+    }    
 
-        if (element instanceof Subprocess) {
-            SubprocessDefinition subDef = ((Subprocess) element).getEmbeddedSubprocess();
-            if (subDef == null) {
-                return false;
-            }
-
-            elmName = extractId(subDef.getId());
-            if (name.equalsIgnoreCase(elmName)) {
-                return true;
-            }
-
-            elmName = extractSub(subDef.getId());
-            if (name.equalsIgnoreCase(elmName)) {
-                return true;
-            }
-
-            elmName = subDef.getName();
-            if (name.equalsIgnoreCase(elmName)) {
-                return true;
-            }
+    private boolean safeEqualsIds(final String elementId, GraphElement element) {
+        if (element.getId() == null) {
+            return false;
+        }
+        if (elementId.toLowerCase().equals(element.getId().toLowerCase())) {
+            return true;
         }
         return false;
+    }
+
+    private ProcessDefinition getRootProcessDefinition(ProcessDefinition processDefinition) {
+        GraphElement parent = processDefinition.getParent();
+        if (processDefinition instanceof SubprocessDefinition && parent != null && checkActualParent(processDefinition, (ProcessDefinition) parent)) {
+            processDefinition = getRootProcessDefinition((ProcessDefinition) parent);
+        }
+        return processDefinition;
+    }
+
+    private boolean checkActualParent(ProcessDefinition processDefinition, ProcessDefinition parent) {
+        return parent.getChildren(Subprocess.class).stream().filter(Subprocess::isEmbedded)
+                .anyMatch(subProcess -> subProcess.getEmbeddedSubprocess().getId().equals(processDefinition.getId()));
     }
 }
