@@ -24,6 +24,7 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.custom.VerifyKeyListener;
 import org.eclipse.swt.dnd.Clipboard;
@@ -271,11 +272,21 @@ public class GlobalValidatorsPage extends Composite implements PropertyChangeLis
             });
             if (formNode.getLeavingTransitions().size() > 1) {
                 Group transitionsGroup = new Group(this, SWT.BORDER);
+                transitionsGroup.setLayout(new GridLayout(1, false));
                 transitionsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-                transitionsGroup.setLayout(new GridLayout(3, false));
                 transitionsGroup.setText(Localization.getString("FieldValidatorsWizardPage.TransitionContext"));
+                
+                ScrolledComposite scrolledComposite = new ScrolledComposite(transitionsGroup, SWT.H_SCROLL);
+                scrolledComposite.setExpandHorizontal(true);
+                scrolledComposite.setLayout(new GridLayout(1, false));
+                scrolledComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
+                
+                Group transitionChoisesGroup = new Group(scrolledComposite, SWT.BORDER);
+                transitionChoisesGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+                transitionChoisesGroup.setLayout(new GridLayout(3, false));
+                
                 for (Transition transition : formNode.getLeavingTransitions()) {
-                    final Button button = new Button(transitionsGroup, SWT.CHECK);
+                    final Button button = new Button(transitionChoisesGroup, SWT.CHECK);
                     button.setText(transition.getName());
                     button.addSelectionListener(new LoggingSelectionAdapter() {
 
@@ -291,6 +302,9 @@ public class GlobalValidatorsPage extends Composite implements PropertyChangeLis
                     });
                     transitionButtons.put(transition.getName(), button);
                 }
+                transitionChoisesGroup.setSize(transitionChoisesGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+                scrolledComposite.setContent(transitionChoisesGroup);
+                scrolledComposite.setMinSize(transitionChoisesGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
             }
 
             parametersComposite = new GroovyParamsComposite(this, SWT.BORDER);
