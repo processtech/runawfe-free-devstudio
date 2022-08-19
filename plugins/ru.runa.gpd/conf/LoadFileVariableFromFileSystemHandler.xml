@@ -1,8 +1,8 @@
 <config>
   <input>
-    <param name="path" filter="java.lang.String" label.key="Param.FilePath" />
+    <param name="path" formatFilter="java.lang.String" label.key="Param.FilePath" />
   </input>
   <output>
-    <param name="result" filter="ru.runa.wfe.var.FileVariable" label.key="Param.Result" />
+    <param name="result" formatFilter="ru.runa.wfe.var.FileVariable" label.key="Param.Result" />
   </output>
 </config>

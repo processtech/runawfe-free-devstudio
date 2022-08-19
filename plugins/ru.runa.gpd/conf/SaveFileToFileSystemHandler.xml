@@ -1,7 +1,7 @@
 <config>
   <input>
-    <param name="file" filter="ru.runa.wfe.var.FileVariable" label.key="Param.Variable" />
-    <param name="path" filter="java.lang.String" label.key="Param.FilePath" />
-    <param name="override" filter="java.lang.Boolean" variable="false" label.key="Param.OverrideAllowed" />
+    <param name="file" formatFilter="ru.runa.wfe.var.FileVariable" label.key="Param.Variable" />
+    <param name="path" formatFilter="java.lang.String" label.key="Param.FilePath" />
+    <param name="override" formatFilter="java.lang.Boolean" variable="false" label.key="Param.OverrideAllowed" />
   </input>
 </config>
