@@ -9,3 +9,4 @@ spz-devstudio-pom.xml
 .settings
 .idea
 /.project
+plugins/workspace
