@@ -42,10 +42,10 @@
    </plugins>
 
    <features>
-      <feature id="ru.runa.gpd.eclipse.feature" version="4.4.0.qualifier"/>
-      <feature id="ru.runa.gpd.babel.nls_p2_ru.feature" version="4.4.0.qualifier"/>
-      <feature id="ru.runa.gpd.feature" version="4.4.0.qualifier"/>
-      <feature id="ru.runa.gpd.form.quick.feature" version="4.4.0.qualifier"/>
+      <feature id="ru.runa.gpd.babel.nls_p2_ru.feature" installMode="root"/>
+      <feature id="ru.runa.gpd.eclipse.feature" installMode="root"/>
+      <feature id="ru.runa.gpd.feature" installMode="root"/>
+      <feature id="ru.runa.gpd.form.quick.feature" installMode="root"/>
    </features>
 
    <configurations>
