@@ -38,7 +38,7 @@ public class CatchEventNode extends AbstractEventNode implements IReceiveMessage
 	public void validate(List<ValidationError> errors, IFile definitionFile) {
 		super.validate(errors, definitionFile);
 		if (getParent() instanceof IBoundaryEvent && getArrivingTransitions().size() > 0) {
-			errors.add(ValidationError.createLocalizedError(this, "unresolved Arriving Transition"));
+			errors.add(ValidationError.createLocalizedError(this, "unresolvedArrivingTransition"));
 		}
 	}
 }
