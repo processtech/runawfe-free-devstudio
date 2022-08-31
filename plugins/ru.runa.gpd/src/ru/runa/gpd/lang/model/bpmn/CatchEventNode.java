@@ -1,9 +1,7 @@
 package ru.runa.gpd.lang.model.bpmn;
 
 import java.util.List;
-
 import org.eclipse.core.resources.IFile;
-
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.IReceiveMessageNode;
 import ru.runa.gpd.lang.model.Node;
@@ -24,21 +22,20 @@ public class CatchEventNode extends AbstractEventNode implements IReceiveMessage
         }
         super.validateOnEmptyRules(errors);
     }
-    
-	@Override
-	protected boolean allowArrivingTransition(Node source, List<Transition> transitions) {
-		if (getParent() instanceof IBoundaryEvent) {
-			// boundary event
-			return false;
-		}
-		return super.allowArrivingTransition(source, transitions);
-	}
 
-	@Override
-	public void validate(List<ValidationError> errors, IFile definitionFile) {
-		super.validate(errors, definitionFile);
-		if (getParent() instanceof IBoundaryEvent && getArrivingTransitions().size() > 0) {
-			errors.add(ValidationError.createLocalizedError(this, "unresolvedArrivingTransition"));
-		}
-	}
+    @Override
+    protected boolean allowArrivingTransition(Node source, List<Transition> transitions) {
+        if (getParent() instanceof IBoundaryEvent) {
+            return false;
+        }
+        return super.allowArrivingTransition(source, transitions);
+    }
+
+    @Override
+    public void validate(List<ValidationError> errors, IFile definitionFile) {
+        super.validate(errors, definitionFile);
+        if (getParent() instanceof IBoundaryEvent && getArrivingTransitions().size() > 0) {
+            errors.add(ValidationError.createLocalizedError(this, "unresolvedArrivingTransition"));
+        }
+    }
 }
