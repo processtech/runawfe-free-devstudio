@@ -10,3 +10,4 @@ spz-devstudio-pom.xml
 *.iml
 .idea
 /.project
+plugins/workspace

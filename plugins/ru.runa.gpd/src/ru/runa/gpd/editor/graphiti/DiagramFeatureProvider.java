@@ -49,6 +49,7 @@ import ru.runa.gpd.editor.graphiti.update.ResizeElementFeature;
 import ru.runa.gpd.lang.BpmnSerializer;
 import ru.runa.gpd.lang.NodeRegistry;
 import ru.runa.gpd.lang.NodeTypeDefinition;
+import ru.runa.gpd.lang.model.EmbeddedSubprocess.Behavior;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
@@ -79,7 +80,8 @@ public class DiagramFeatureProvider extends DefaultFeatureProvider {
             if (definition.getGraphitiEntry() != null && !Strings.isNullOrEmpty(definition.getBpmnElementName())) {
                 if (NodeTypeDefinition.TYPE_NODE.equals(definition.getType())) {
                     if ("endEvent".equals(definition.getBpmnElementName())) {
-                        if (processDefinition instanceof SubprocessDefinition) {
+                        if ((processDefinition instanceof SubprocessDefinition
+                                && ((SubprocessDefinition) processDefinition).getBehavior() == Behavior.GraphPart)) {
                             continue;
                         }
                     }

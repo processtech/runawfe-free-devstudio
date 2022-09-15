@@ -8,6 +8,7 @@ import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.editor.graphiti.StyleUtil;
 import ru.runa.gpd.lang.Language;
+import ru.runa.gpd.lang.model.EmbeddedSubprocess.Behavior;
 import ru.runa.gpd.sync.WfeServerConnectorSettings;
 
 /**
@@ -57,6 +58,6 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer impleme
         store.setDefault(P_ENABLE_USE_BOT_CONFIG_WITHOUT_PARAMETERS_OPTION, false);
         store.setDefault(P_SHOW_XML_BOT_CONFIG, false);
         store.setDefault(P_DISABLE_DOCX_TEMPLATE_VALIDATION, false);
-
+        store.setDefault(P_EMBEDDED_SUBPROCESS_BEHAVIOR, Behavior.GraphPart.name());
     }
 }

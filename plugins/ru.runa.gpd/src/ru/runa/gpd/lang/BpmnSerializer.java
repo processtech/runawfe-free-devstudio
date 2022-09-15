@@ -21,6 +21,7 @@ import ru.runa.gpd.lang.model.ActionImpl;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.Describable;
 import ru.runa.gpd.lang.model.EmbeddedSubprocess;
+import ru.runa.gpd.lang.model.EmbeddedSubprocess.Behavior;
 import ru.runa.gpd.lang.model.EndState;
 import ru.runa.gpd.lang.model.EndTokenState;
 import ru.runa.gpd.lang.model.EndTokenSubprocessDefinitionBehavior;
@@ -45,14 +46,14 @@ import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.TransitionColor;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.bpmn.AbstractEventNode;
+import ru.runa.gpd.lang.model.bpmn.BusinessRule;
 import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
 import ru.runa.gpd.lang.model.bpmn.ConnectableViaDottedTransition;
 import ru.runa.gpd.lang.model.bpmn.DataStore;
 import ru.runa.gpd.lang.model.bpmn.DottedTransition;
 import ru.runa.gpd.lang.model.bpmn.EventNodeType;
 import ru.runa.gpd.lang.model.bpmn.ExclusiveGateway;
-import ru.runa.gpd.lang.model.bpmn.BusinessRule;
-import ru.runa.gpd.lang.model.bpmn.IBoundaryEvent;
+import ru.runa.gpd.lang.model.bpmn.IBoundaryEventCapable;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 import ru.runa.gpd.lang.model.bpmn.ParallelGateway;
 import ru.runa.gpd.lang.model.bpmn.ScriptTask;
@@ -63,7 +64,6 @@ import ru.runa.gpd.util.Duration;
 import ru.runa.gpd.util.MultiinstanceParameters;
 import ru.runa.gpd.util.SwimlaneDisplayMode;
 import ru.runa.gpd.util.VariableMapping;
-import ru.runa.gpd.util.VariableUtils;
 import ru.runa.gpd.util.XmlUtil;
 import ru.runa.wfe.definition.ProcessDefinitionAccessType;
 import ru.runa.wfe.lang.AsyncCompletionMode;
@@ -173,6 +173,9 @@ public class BpmnSerializer extends ProcessSerializer {
         }
         processProperties.put(ACCESS_TYPE, definition.getAccessType().name());
         processProperties.put(VERSION, Application.getVersion().toString());
+        if (definition instanceof SubprocessDefinition) {
+            processProperties.put(BEHAVIOR, ((SubprocessDefinition) definition).getBehavior().name());
+        }
         if (definition.isInvalid()) {
             processElement.addAttribute(EXECUTABLE, "false");
         }
@@ -285,7 +288,7 @@ public class BpmnSerializer extends ProcessSerializer {
             Element element = writeNode(processElement, endTokenState);
             Map<String, String> properties = Maps.newLinkedHashMap();
             properties.put(TOKEN, "true");
-            if (definition instanceof SubprocessDefinition) {
+            if (definition instanceof SubprocessDefinition && ((SubprocessDefinition) definition).getBehavior() == Behavior.GraphPart) {
                 properties.put(BEHAVIOR, endTokenState.getSubprocessDefinitionBehavior().name());
             }
             writeExtensionElements(element, properties);
@@ -744,6 +747,12 @@ public class BpmnSerializer extends ProcessSerializer {
         if (processProperties.containsKey(USE_GLOBALS)) {
             definition.setUsingGlobalVars("true".equals(processProperties.get(USE_GLOBALS)));
         }
+        if (definition instanceof SubprocessDefinition) {
+            String behaviorString = processProperties.get(BEHAVIOR);
+            if (behaviorString != null) {
+                ((SubprocessDefinition) definition).setBehavior(Behavior.valueOf(behaviorString));
+            }
+        }
         String swimlaneDisplayModeName = processProperties.get(SHOW_SWIMLANE);
         if (swimlaneDisplayModeName != null) {
             definition.setSwimlaneDisplayMode(SwimlaneDisplayMode.valueOf(swimlaneDisplayModeName));
@@ -901,7 +910,7 @@ public class BpmnSerializer extends ProcessSerializer {
         for (Element boundaryEventElement : boundaryEventElements) {
             String parentNodeId = boundaryEventElement.attributeValue(ATTACHED_TO_REF);
             GraphElement parent = definition.getGraphElementByIdNotNull(parentNodeId);
-            IBoundaryEvent boundaryEvent = (IBoundaryEvent) parseEventElement(definition, parent, boundaryEventElement);
+            IBoundaryEventCapable boundaryEvent = (IBoundaryEventCapable) parseEventElement(definition, parent, boundaryEventElement);
             ((GraphElement) boundaryEvent).setUiParentContainer(parent);
             String interrupting = boundaryEventElement.attributeValue(CANCEL_ACTIVITY);
             if (!Strings.isNullOrEmpty(interrupting)) {

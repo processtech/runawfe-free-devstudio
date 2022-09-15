@@ -22,6 +22,7 @@ public interface PrefConstants {
     public static final String P_LANGUAGE_SWIMLANE_PERFORMER = "reassignSwimlaneToTaskPerformer";
     public static final String P_LANGUAGE_TASK_STATE_ASYNC_INPUT_DATA = "inputDataAllowedInAsyncTaskNode";
     public static final String P_LANGUAGE_SUB_PROCESS_ASYNC_INPUT_DATA = "inputDataAllowedInAsyncSubprocess";
+    public static final String P_EMBEDDED_SUBPROCESS_BEHAVIOR = "EmbeddedSubprocess.behavior";
     public static final String P_FORM_WEB_SERVER_PORT = "editorWebPort";
     public static final String P_FORM_USE_EXTERNAL_EDITOR = "useExternalEditor";
     public static final String P_FORM_EXTERNAL_EDITOR_PATH = "externalEditorPath";
@@ -66,4 +67,8 @@ public interface PrefConstants {
     public static final String P_ENABLE_USE_BOT_CONFIG_WITHOUT_PARAMETERS_OPTION = "useBotConfigurationWithoutParametersOption";
     public static final String P_SHOW_XML_BOT_CONFIG = "showXmlBotConfig";
     public static final String P_DISABLE_DOCX_TEMPLATE_VALIDATION = "disableDocxTemplateValidation";
+    public static final String P_EDITOR_PART_NAME_MODE = "editorPartNameMode";
+    public static final String P_EDITOR_PART_NAME_MODE_SHORT = "short";
+    public static final String P_EDITOR_PART_NAME_MODE_NON_DUPLICATED = "nonDuplicated";
+    public static final String P_EDITOR_PART_NAME_MODE_LONG = "long";
 }

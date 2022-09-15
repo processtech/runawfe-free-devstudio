@@ -1,4 +1,4 @@
-package ru.runa.gpd.editor.gef.part.tree;
+package ru.runa.gpd.editor.outline;
 
 import ru.runa.gpd.lang.model.Swimlane;
 

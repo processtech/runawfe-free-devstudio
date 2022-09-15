@@ -119,15 +119,19 @@ public abstract class EditorDialog<T extends GroovyModel> extends Dialog {
         codeTab.setText(Localization.getString("GroovyEditor.title.code"));
         codeTab.setControl(sourceView);
         createConstructorView();
-        if (initialModel != null && initialValue.equals(initialModel.toString())) {
-            initializeConstructorView();
-        } else {
-            if (this.initialValue.length() > 0) {
-                tabFolder.setSelection(1);
+        try {
+            if (initialModel != null && initialValue.equals(initialModel.toString())) {
+                initializeConstructorView();
+            } else {
+                if (this.initialValue.length() > 0) {
+                    tabFolder.setSelection(1);
+                }
+                if (initialErrorMessage != null) {
+                    setErrorLabelText(initialErrorMessage);
+                }
             }
-            if (initialErrorMessage != null) {
-                setErrorLabelText(initialErrorMessage);
-            }
+        } catch (RuntimeException e) {
+            tabFolder.setSelection(1); // initialModel.toString() throws an exception https://redmine.mikhe.ru/issues/9564 
         }
         return tabFolder;
     }

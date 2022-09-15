@@ -31,7 +31,7 @@ import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Subprocess;
 import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.TransitionColor;
-import ru.runa.gpd.lang.model.bpmn.IBoundaryEvent;
+import ru.runa.gpd.lang.model.bpmn.IBoundaryEventCapable;
 import ru.runa.gpd.settings.LanguageElementPreferenceNode;
 import ru.runa.gpd.settings.PrefConstants;
 
@@ -46,7 +46,7 @@ public class StyleUtil implements PrefConstants {
         return findOrCreateStyle(diagram, bpmnName + "OuterRectangle", new StateNodeOuterRectangleStyleInitializer(bpmnName));
     }
 
-    public static Style getStateNodeBoundaryEventEllipseStyle(Diagram diagram, IBoundaryEvent boundaryEvent) {
+    public static Style getStateNodeBoundaryEventEllipseStyle(Diagram diagram, IBoundaryEventCapable boundaryEvent) {
         String bpmnName = ((GraphElement) boundaryEvent).getParent().getTypeDefinition().getBpmnElementName();
         return findOrCreateStyle(diagram, bpmnName + "BoundaryEventEllipse", new StateNodeBoundaryEventEllipseStyleInitializer(bpmnName));
     }

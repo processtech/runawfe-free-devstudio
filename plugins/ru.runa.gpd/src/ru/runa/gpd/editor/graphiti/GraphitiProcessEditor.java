@@ -2,6 +2,7 @@ package ru.runa.gpd.editor.graphiti;
 
 import java.beans.PropertyChangeEvent;
 import org.eclipse.gef.EditPart;
+import org.eclipse.gef.palette.PaletteRoot;
 import org.eclipse.gef.ui.parts.GraphicalEditor;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.jface.viewers.ISelection;
@@ -68,9 +69,11 @@ public class GraphitiProcessEditor extends ProcessEditorBase {
         if (PropertyNames.PROPERTY_SHOW_ACTIONS.equals(evt.getPropertyName())) {
             getDiagramEditorPage().getDiagramBehavior().refreshPalette();
             getDiagramEditorPage().refreshActions();
-            // getDiagramEditorPage().getContentEditPart().refresh();
-            // getRootFigure().getUpdateManager().performUpdate();
             getDiagramEditorPage().getDiagramBehavior().refreshContent();
+            PaletteRoot paletteRoot = getDiagramEditorPage().paletteRoot();
+            if (paletteRoot instanceof CustomPaletteRoot) {
+            	((CustomPaletteRoot) paletteRoot).updatePaletteEntries();
+            }
         }
     }
 

@@ -14,6 +14,7 @@ import org.eclipse.emf.transaction.util.TransactionUtil;
 import org.eclipse.gef.LayerConstants;
 import org.eclipse.gef.editparts.LayerManager;
 import org.eclipse.gef.editparts.ScalableFreeformRootEditPart;
+import org.eclipse.gef.palette.PaletteRoot;
 import org.eclipse.graphiti.features.IAddFeature;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.IUpdateFeature;
@@ -60,6 +61,7 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
 
     private final ProcessEditorBase editor;
     private DiagramCreator diagramCreator;
+    private DiagramBehavior diagramBehavior;
 
     public DiagramEditorPage(ProcessEditorBase editor) {
         this.editor = editor;
@@ -166,7 +168,11 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
 
     @Override
     protected DiagramBehavior createDiagramBehavior() {
-        return new CustomDiagramBehavior(this);
+        if (diagramBehavior == null) {
+            super.getDiagramBehavior();
+        }
+        diagramBehavior = new CustomDiagramBehavior(this);
+        return diagramBehavior;
     }
 
     @Override
@@ -401,5 +407,9 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
             }
         });
         getDiagramBehavior().refresh();
+    }
+
+    public PaletteRoot paletteRoot() {
+    	return super.getPaletteRoot();
     }
 }

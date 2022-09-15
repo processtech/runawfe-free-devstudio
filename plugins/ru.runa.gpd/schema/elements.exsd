@@ -77,6 +77,16 @@
                </restriction>
             </simpleType>
          </attribute>
+         <attribute name="outlineTreeEditPart" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appinfo>
+                  <meta.attribute kind="java" basedOn="org.eclipse.gef.EditPart"/>
+               </appinfo>
+            </annotation>
+         </attribute>
          <attribute name="bpmn" type="string">
             <annotation>
                <documentation>
@@ -138,16 +148,6 @@
    <element name="gef">
       <complexType>
          <attribute name="graphicalEditPart" type="string">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-               <appinfo>
-                  <meta.attribute kind="java" basedOn="org.eclipse.gef.EditPart"/>
-               </appinfo>
-            </annotation>
-         </attribute>
-         <attribute name="treeEditPart" type="string">
             <annotation>
                <documentation>
                   
@@ -248,6 +248,20 @@
                </documentation>
             </annotation>
          </attribute>
+         <attribute name="boundaryEventWidth" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="boundaryEventHeight" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
       </complexType>
    </element>
 
@@ -271,6 +285,15 @@
 
    <annotation>
       <appinfo>
+         <meta.section type="apiInfo"/>
+      </appinfo>
+      <documentation>
+         [Enter API information here.]
+      </documentation>
+   </annotation>
+
+   <annotation>
+      <appinfo>
          <meta.section type="implementation"/>
       </appinfo>
       <documentation>
@@ -278,14 +301,5 @@
       </documentation>
    </annotation>
 
-
-   <annotation>
-      <appinfo>
-         <meta.section type="apiInfo"/>
-      </appinfo>
-      <documentation>
-         [Enter API information here.]
-      </documentation>
-   </annotation>
 
 </schema>

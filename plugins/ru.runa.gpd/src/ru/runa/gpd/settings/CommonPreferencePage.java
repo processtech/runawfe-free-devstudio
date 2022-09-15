@@ -1,7 +1,9 @@
 package ru.runa.gpd.settings;
 
+import com.google.common.base.Strings;
 import java.text.SimpleDateFormat;
 import org.eclipse.jface.preference.BooleanFieldEditor;
+import org.eclipse.jface.preference.ComboFieldEditor;
 import org.eclipse.jface.preference.FieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IntegerFieldEditor;
@@ -15,6 +17,7 @@ import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.aspects.UserActivity;
 import ru.runa.gpd.lang.Language;
+import ru.runa.gpd.util.UiUtil;
 
 public class CommonPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage, PrefConstants {
 
@@ -55,10 +58,11 @@ public class CommonPreferencePage extends FieldEditorPreferencePage implements I
                 new String[][] { { Localization.getString("disable"), Localization.getString("disable") },
                         { Localization.getString("enable"), Localization.getString("enable") } },
                 getFieldEditorParent()));
-        addField(new RadioGroupFieldEditor(P_ENABLE_EDITING_COMMENT_HISTORY_XML, Localization.getString("pref.commons.enableEditingCommentHistoryXml"), 2,
-                new String[][] { { Localization.getString("disable"), Localization.getString("disable") },
-                        { Localization.getString("enable"), Localization.getString("enable") } },
-                getFieldEditorParent()));
+        addField(
+                new RadioGroupFieldEditor(P_ENABLE_EDITING_COMMENT_HISTORY_XML, Localization.getString("pref.commons.enableEditingCommentHistoryXml"),
+                        2, new String[][] { { Localization.getString("disable"), Localization.getString("disable") },
+                                { Localization.getString("enable"), Localization.getString("enable") } },
+                        getFieldEditorParent()));
         addField(new BooleanFieldEditor(P_CONFIRM_DELETION, Localization.getString("pref.commons.confirmDeletion"), getFieldEditorParent()));
         addField(new BooleanFieldEditor(P_PROCESS_SAVE_HISTORY, Localization.getString("pref.commons.processSaveHistory"), getFieldEditorParent()));
         savepointNumberEditor = new IntegerFieldEditor(P_PROCESS_SAVEPOINT_NUMBER, Localization.getString("pref.commons.processSavepointNumber"),
@@ -71,22 +75,42 @@ public class CommonPreferencePage extends FieldEditorPreferencePage implements I
         addField(enableUserActivityLogging);
         addField(new BooleanFieldEditor(P_INTERNAL_STORAGE_FUNCTIONALITY_ENABLED,
                 Localization.getString("pref.commons.internalStorageFunctionalityEnabled"), getFieldEditorParent()));
-        addField(new BooleanFieldEditor(P_GLOBAL_OBJECTS_ENABLED,
-                Localization.getString("pref.commons.enableGlobalObjects"), getFieldEditorParent()));
-        addField(new BooleanFieldEditor(P_CHAT_FUNCTIONALITY_ENABLED,
-                Localization.getString("pref.commons.chatFunctionalityEnabled"), getFieldEditorParent()));
+        addField(
+                new BooleanFieldEditor(P_GLOBAL_OBJECTS_ENABLED, Localization.getString("pref.commons.enableGlobalObjects"), getFieldEditorParent()));
+        addField(new BooleanFieldEditor(P_CHAT_FUNCTIONALITY_ENABLED, Localization.getString("pref.commons.chatFunctionalityEnabled"),
+                getFieldEditorParent()));
         addField(new BooleanFieldEditor(P_DISABLE_DOCX_TEMPLATE_VALIDATION, Localization.getString("pref.commons.disableDocxTemplateValidation"),
                 getFieldEditorParent()));
+        String[][] comboOptions = new String[3][];
+        comboOptions[0] = new String[] { 
+                Localization.getString("pref.commons." + P_EDITOR_PART_NAME_MODE + "." + P_EDITOR_PART_NAME_MODE_SHORT),
+                P_EDITOR_PART_NAME_MODE_SHORT };
+        comboOptions[1] = new String[] {
+                Localization.getString("pref.commons." + P_EDITOR_PART_NAME_MODE + "." + P_EDITOR_PART_NAME_MODE_NON_DUPLICATED),
+                P_EDITOR_PART_NAME_MODE_NON_DUPLICATED };
+        comboOptions[2] = new String[] { 
+                Localization.getString("pref.commons." + P_EDITOR_PART_NAME_MODE + "." + P_EDITOR_PART_NAME_MODE_LONG),
+                P_EDITOR_PART_NAME_MODE_LONG };
+        addField(new ComboFieldEditor(P_EDITOR_PART_NAME_MODE, Localization.getString("pref.commons." + P_EDITOR_PART_NAME_MODE), 
+                comboOptions, getFieldEditorParent()));
+    }
+
+    @Override
+    protected void performApply() {
+        super.performApply();
+        UiUtil.updateEditorPartNames(false);
     }
 
     @Override
     public boolean performOk() {
+        boolean result = super.performOk();
         if (enableUserActivityLogging.getBooleanValue()) {
             UserActivity.startLogging();
         } else {
             UserActivity.stopLogging();
         }
-        return super.performOk();
+        UiUtil.updateEditorPartNames(false);
+        return result;
     }
 
     public static boolean isRegulationsMenuItemsEnabled() {
@@ -96,7 +120,7 @@ public class CommonPreferencePage extends FieldEditorPreferencePage implements I
     public static boolean isExportWithScalingEnabled() {
         return Activator.getDefault().getPreferenceStore().getString(P_ENABLE_EXPORT_WITH_SCALING).equals(Localization.getString("enable"));
     }
-    
+
     public static boolean isEditingCommentHistoryXmlEnabled() {
         return Activator.getDefault().getPreferenceStore().getString(P_ENABLE_EDITING_COMMENT_HISTORY_XML).equals(Localization.getString("enable"));
     }
@@ -112,7 +136,12 @@ public class CommonPreferencePage extends FieldEditorPreferencePage implements I
     public static boolean isChatFunctionalityEnabled() {
         return Activator.getDefault().getPreferenceStore().getBoolean(P_CHAT_FUNCTIONALITY_ENABLED);
     }
-    
+
+    public static String getEditorPartNameMode() {
+        String mode = Activator.getDefault().getPreferenceStore().getString(P_EDITOR_PART_NAME_MODE);
+        return Strings.isNullOrEmpty(mode) ? P_EDITOR_PART_NAME_MODE_SHORT : mode;
+    }
+
     @Override
     public void propertyChange(PropertyChangeEvent event) {
         super.propertyChange(event);

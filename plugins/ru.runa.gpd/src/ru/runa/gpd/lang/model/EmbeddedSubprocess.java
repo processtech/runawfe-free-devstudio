@@ -5,4 +5,8 @@ public class EmbeddedSubprocess extends Subprocess {
         setEmbedded(true);
     }
 
+    public static enum Behavior {
+        GraphPart,
+        SeparateSubprocess
+    }
 }

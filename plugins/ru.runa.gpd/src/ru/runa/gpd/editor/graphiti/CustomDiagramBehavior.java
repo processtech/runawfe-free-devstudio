@@ -27,6 +27,7 @@ import ru.runa.gpd.editor.gef.GEFActionBarContributor;
 
 public class CustomDiagramBehavior extends DiagramBehavior {
     private KeyHandler keyHandler;
+    private CustomPaletteBehavior paletteBehavior;
 
     public CustomDiagramBehavior(DiagramEditor diagramEditor) {
         super(diagramEditor);
@@ -112,13 +113,22 @@ public class CustomDiagramBehavior extends DiagramBehavior {
 
     @Override
     protected DefaultPaletteBehavior createPaletteBehaviour() {
-        return new CustomPaletteBehavior(this);
+        paletteBehavior = new CustomPaletteBehavior(this);
+        return paletteBehavior;
     }
 
     @Override
     protected void initConfigurationProvider(IDiagramTypeProvider diagramTypeProvider) {
         super.initConfigurationProvider(diagramTypeProvider);
         getEditDomain().setCommandStack(new CustomCommandStack(getConfigurationProvider(), getEditingDomain()));
+    }
+
+    @Override
+    protected DefaultPaletteBehavior getPaletteBehavior() {
+        if (paletteBehavior == null) {
+            return super.getPaletteBehavior();
+        }
+        return paletteBehavior;
     }
 
 }

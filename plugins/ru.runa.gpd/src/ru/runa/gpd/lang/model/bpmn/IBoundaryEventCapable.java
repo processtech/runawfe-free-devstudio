@@ -1,6 +1,10 @@
 package ru.runa.gpd.lang.model.bpmn;
 
-public interface IBoundaryEvent {
+public interface IBoundaryEventCapable {
+
+    public boolean isBoundaryEvent();
+
+    public void updateBoundaryEventConstraint();
 
     public boolean isInterruptingBoundaryEvent();
 

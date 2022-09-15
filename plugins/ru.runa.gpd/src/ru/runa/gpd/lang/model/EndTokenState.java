@@ -4,6 +4,7 @@ import java.util.List;
 import org.eclipse.ui.views.properties.ComboBoxPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import ru.runa.gpd.Localization;
+import ru.runa.gpd.lang.model.EmbeddedSubprocess.Behavior;
 import ru.runa.gpd.lang.model.bpmn.AbstractEndTextDecorated;
 
 public class EndTokenState extends AbstractEndTextDecorated {
@@ -13,15 +14,16 @@ public class EndTokenState extends AbstractEndTextDecorated {
     @Override
     protected void populateCustomPropertyDescriptors(List<IPropertyDescriptor> descriptors) {
         super.populateCustomPropertyDescriptors(descriptors);
-        if (getProcessDefinition() instanceof SubprocessDefinition) {
-            descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_END_TOKEN_BEHAVIOR, Localization.getString("EndTokenState.property.behaviour"),
+        if (getProcessDefinition() instanceof SubprocessDefinition
+                && ((SubprocessDefinition) getProcessDefinition()).getBehavior() == Behavior.GraphPart) {
+            descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_BEHAVIOR, Localization.getString("EndTokenState.property.behaviour"),
                     EndTokenSubprocessDefinitionBehavior.getLabels()));
         }
     }
 
     @Override
     public Object getPropertyValue(Object id) {
-        if (PROPERTY_END_TOKEN_BEHAVIOR.equals(id)) {
+        if (PROPERTY_BEHAVIOR.equals(id)) {
             return subprocessDefinitionBehavior.ordinal();
         }
         return super.getPropertyValue(id);
@@ -29,7 +31,7 @@ public class EndTokenState extends AbstractEndTextDecorated {
 
     @Override
     public void setPropertyValue(Object id, Object value) {
-        if (PROPERTY_END_TOKEN_BEHAVIOR.equals(id)) {
+        if (PROPERTY_BEHAVIOR.equals(id)) {
             setSubprocessDefinitionBehavior(EndTokenSubprocessDefinitionBehavior.values()[(Integer) value]);
         } else {
             super.setPropertyValue(id, value);
@@ -43,7 +45,7 @@ public class EndTokenState extends AbstractEndTextDecorated {
     public void setSubprocessDefinitionBehavior(EndTokenSubprocessDefinitionBehavior subprocessDefinitionBehavior) {
         EndTokenSubprocessDefinitionBehavior old = this.subprocessDefinitionBehavior;
         this.subprocessDefinitionBehavior = subprocessDefinitionBehavior;
-        firePropertyChange(PROPERTY_END_TOKEN_BEHAVIOR, old, this.subprocessDefinitionBehavior);
+        firePropertyChange(PROPERTY_BEHAVIOR, old, this.subprocessDefinitionBehavior);
     }
 
     @Override

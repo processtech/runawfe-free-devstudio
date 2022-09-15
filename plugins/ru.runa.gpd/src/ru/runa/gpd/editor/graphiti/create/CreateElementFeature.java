@@ -33,6 +33,7 @@ import ru.runa.gpd.lang.model.SwimlanedNode;
 import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
 import ru.runa.gpd.lang.model.bpmn.EventNodeType;
+import ru.runa.gpd.lang.model.bpmn.IBoundaryEventCapable;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
 
@@ -125,7 +126,7 @@ public class CreateElementFeature extends AbstractCreateFeature implements GEFCo
     }
 
     private void setLocationAndSize(GraphElement element, CreateContext context, CreateConnectionContext connectionContext) {
-        Dimension defaultSize = element.getTypeDefinition().getGraphitiEntry().getDefaultSize();
+        Dimension defaultSize = element.getTypeDefinition().getGraphitiEntry().getDefaultSize(element);
         if (connectionContext != null) {
             PictogramElement sourceElement = connectionContext.getSourcePictogramElement();
             int xRight = sourceElement.getGraphicsAlgorithm().getX() + sourceElement.getGraphicsAlgorithm().getWidth();
@@ -144,6 +145,9 @@ public class CreateElementFeature extends AbstractCreateFeature implements GEFCo
             context.setWidth(defaultSize.width);
         }
         element.setConstraint(new Rectangle(context.getX(), context.getY(), context.getWidth(), context.getHeight()));
+        if (element instanceof IBoundaryEventCapable) {
+            ((IBoundaryEventCapable) element).updateBoundaryEventConstraint();
+        }
     }
 
     @Override

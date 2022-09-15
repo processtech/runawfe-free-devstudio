@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -55,7 +56,9 @@ import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.files.ParFileImporter;
 import ru.runa.gpd.util.files.ProcessDefinitionImportInfo;
+import ru.runa.wfe.commons.CalendarUtil;
 import ru.runa.wfe.definition.dto.WfDefinition;
+import ru.runa.wfe.user.Actor;
 
 public class ImportParWizardPage extends ImportWizardPage {
     private Button importFromFileButton;
@@ -485,6 +488,25 @@ public class ImportParWizardPage extends ImportWizardPage {
             return label;
         }
 
+        private String getHistoryDefinitionLabel(WfDefinition definition) {
+            String dateString = "-";
+            String actorString = "-";
+            String sign = definition.getUpdateDate() != null ? "*" : "";
+            Date date = definition.getUpdateDate();
+            Actor actor = definition.getUpdateActor();
+            if (date == null) {
+                date = definition.getCreateDate();
+                actor = definition.getCreateActor();
+            }
+            if (date != null) {
+                dateString = CalendarUtil.formatDateTime(date);
+            }
+            if (actor != null) {
+                actorString = actor.getName();
+            }
+            return String.format("%d%s (%s) - %s", definition.getVersion(), sign, dateString, actorString);
+        }
+
         private List<DefinitionTreeNode> getChildren() {
             if (groupNode && historyNode && children.isEmpty()) {
                 Shell shell = Display.getCurrent() != null ? Display.getCurrent().getActiveShell() : null;
@@ -502,8 +524,8 @@ public class ImportParWizardPage extends ImportWizardPage {
                                 children.add(historyDefinitionNode);
                             }
                             for (WfDefinition definition : list) {
-                                DefinitionTreeNode historyDefinitionNode = new DefinitionTreeNode(path, String.valueOf(definition.getVersion()),
-                                        definition, false, true);
+                                String label = getHistoryDefinitionLabel(definition);
+                                DefinitionTreeNode historyDefinitionNode = new DefinitionTreeNode(path, label, definition, false, true);
                                 children.add(historyDefinitionNode);
                             }
                             monitor.done();

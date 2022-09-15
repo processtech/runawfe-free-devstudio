@@ -1,8 +1,7 @@
-package ru.runa.gpd.editor.gef.part.tree;
+package ru.runa.gpd.editor.outline;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.NodeRegistry;
 import ru.runa.gpd.lang.NodeTypeDefinition;
@@ -33,6 +32,7 @@ public class ProcessDefinitionTreeEditPart extends ElementTreeEditPart {
                 continue;
             }
             List<? extends GraphElement> elements = getModel().getChildren(type.getModelClass());
+            elements.removeIf(element -> element.getClass() != type.getModelClass());
             if (elements.size() > 0) {
                 result.add(new GroupElement(getModel(), type));
             }

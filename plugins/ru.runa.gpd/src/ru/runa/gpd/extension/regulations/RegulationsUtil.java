@@ -44,6 +44,7 @@ import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Timer;
 import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.bpmn.Conjunction;
+import ru.runa.gpd.lang.model.bpmn.DataStore;
 import ru.runa.gpd.lang.model.bpmn.ParallelGateway;
 import ru.runa.gpd.lang.model.bpmn.ScriptTask;
 import ru.runa.gpd.lang.model.jpdl.Fork;
@@ -315,6 +316,8 @@ public class RegulationsUtil {
                 sb.append("Запуск мультидействия");
             } else if (nodeClass == ScriptTask.class) {
                 sb.append("Выполнение сценария");
+            } else if (nodeClass == DataStore.class) {
+                sb.append("Взаимодействие с источником данных");
             } else {
                 sb.append(node.getTypeDefinition().getLabel());
             }
@@ -327,7 +330,7 @@ public class RegulationsUtil {
     private static String getTransitionsInfo(Node node) {
         StringBuilder sb = new StringBuilder();
         Class nodeClass = node.getClass();
-        if (nodeClass != EndTokenState.class && nodeClass != EndState.class) {
+        if (nodeClass != EndTokenState.class && nodeClass != EndState.class && nodeClass != DataStore.class) {
             List<Transition> leavingTransitions = node.getLeavingTransitions();
             Node targetNode = leavingTransitions.get(0).getTarget();
             sb.append("<div class=\"transition\">");
@@ -401,7 +404,11 @@ public class RegulationsUtil {
                     errors.add(ValidationError.createLocalizedWarning(node, "regulations.nextPreviousNodeMismatch", nextNode, node));
                 }
             }
-            if (!(node instanceof StartState) && !(node instanceof EndState) && !(node instanceof EndTokenState)) {
+            if (node instanceof DataStore) {
+                if (((DataStore) node).getLeavingDottedTransitions().size() == 0 && ((DataStore) node).getArrivingDottedTransitions().size() == 0) {
+                    errors.add(ValidationError.createLocalizedWarning(node, "regulations.nodeHasNotLeavingOrArrivingTransitions", node));
+                }
+            } else if (!(node instanceof StartState) && !(node instanceof EndState) && !(node instanceof EndTokenState)) {
                 if (node.getLeavingTransitions().size() == 0 || node.getArrivingTransitions().size() == 0) {
                     errors.add(ValidationError.createLocalizedWarning(node, "regulations.nodeHasNotLeavingOrArrivingTransitions", node));
                 }

@@ -10,6 +10,7 @@ import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.FontFieldEditor;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.IntegerFieldEditor;
+import org.eclipse.jface.preference.RadioGroupFieldEditor;
 import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
@@ -23,6 +24,8 @@ import ru.runa.gpd.editor.graphiti.GraphitiProcessEditor;
 import ru.runa.gpd.editor.graphiti.StyleUtil;
 import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.NodeTypeDefinition;
+import ru.runa.gpd.lang.model.EmbeddedSubprocess;
+import ru.runa.gpd.lang.model.EmbeddedSubprocess.Behavior;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.Subprocess;
@@ -82,6 +85,15 @@ public class LanguageElementPreferencePage extends FieldEditorPreferencePage imp
         if (element instanceof Subprocess) {
             addField(new BooleanFieldEditor(getKey(P_LANGUAGE_SUB_PROCESS_ASYNC_INPUT_DATA),
                     Localization.getString("Subprocess.inputDataAllowedInAsyncSubprocess"), getFieldEditorParent()));
+        }
+        if (element instanceof EmbeddedSubprocess) {
+            addField(
+                    new RadioGroupFieldEditor(P_EMBEDDED_SUBPROCESS_BEHAVIOR, Localization.getString(P_EMBEDDED_SUBPROCESS_BEHAVIOR), 2,
+                    new String[][] {
+                        { Localization.getString(P_EMBEDDED_SUBPROCESS_BEHAVIOR + "." + Behavior.GraphPart), Behavior.GraphPart.name() }, 
+                        { Localization.getString(P_EMBEDDED_SUBPROCESS_BEHAVIOR + "." + Behavior.SeparateSubprocess), Behavior.SeparateSubprocess.name() } 
+                    },
+                    getFieldEditorParent()));
         }
         if (language == Language.BPMN) {
             switch (definition.getBpmnElementName()) {

@@ -21,14 +21,11 @@ import ru.runa.gpd.editor.graphiti.TextDecoratorEmulation;
 import ru.runa.gpd.lang.model.AbstractTransition;
 import ru.runa.gpd.lang.model.Action;
 import ru.runa.gpd.lang.model.GraphElement;
-import ru.runa.gpd.lang.model.ITimed;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.SwimlanedNode;
-import ru.runa.gpd.lang.model.Timer;
-import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
-import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
+import ru.runa.gpd.lang.model.bpmn.IBoundaryEventCapable;
 import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
 
 public class MoveElementFeature extends DefaultMoveShapeFeature implements CustomUndoRedoFeature {
@@ -51,10 +48,7 @@ public class MoveElementFeature extends DefaultMoveShapeFeature implements Custo
         if (element instanceof Action) {
             return false;
         }
-        if (element instanceof Timer && element.getParent() instanceof ITimed) {
-            return false;
-        }
-        if (element instanceof CatchEventNode && element.getParent() instanceof IBoundaryEventContainer) {
+        if (element instanceof IBoundaryEventCapable && ((IBoundaryEventCapable) element).isBoundaryEvent()) {
             return false;
         }
         Object parentObject = getBusinessObjectForPictogramElement(context.getTargetContainer());

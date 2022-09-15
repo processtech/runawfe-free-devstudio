@@ -10,7 +10,6 @@ import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableStoreType;
 import ru.runa.gpd.lang.model.VariableUserType;
-import ru.runa.gpd.settings.CommonPreferencePage;
 import ru.runa.gpd.util.VariableUtils;
 import ru.runa.gpd.util.XmlUtil;
 import ru.runa.wfe.commons.BackCompatibilityClassNames;
@@ -121,7 +120,6 @@ public class VariablesXmlContentProvider extends AuxContentProvider {
 
     private Variable parse(Element element, ProcessDefinition processDefinition) {
         String variableName = element.attributeValue(NAME);
-        PluginLogger.logErrorWithoutDialog(variableName + "_No swimlane", null);
         String format;
         String userTypeName = element.attributeValue(USER_TYPE);
         VariableUserType userType = null;
