@@ -2,7 +2,7 @@
 <feature
       id="ru.runa.gpd.eclipse.feature"
       label="Eclipse Framework Feature"
-      version="4.4.3.qualifier"
+      version="4.5.0.qualifier"
       provider-name="Process Technologies Ltd.">
 
    <description url="http://www.example.com/description">
