@@ -1,22 +1,20 @@
 package ru.runa.gpd.lang.model;
 
+import com.google.common.base.Objects;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.views.properties.ComboBoxPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
-
-import com.google.common.base.Objects;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
@@ -25,6 +23,7 @@ import ru.runa.gpd.extension.VariableFormatRegistry;
 import ru.runa.gpd.extension.regulations.RegulationsRegistry;
 import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.ValidationError;
+import ru.runa.gpd.lang.model.bpmn.IBoundaryEventCapable;
 import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.property.DurationPropertyDescriptor;
 import ru.runa.gpd.property.StartImagePropertyDescriptor;
@@ -267,6 +266,12 @@ public class ProcessDefinition extends NamedGraphElement implements Describable,
         if (startStates.size() == 0) {
             errors.add(ValidationError.createLocalizedError(this, "startState.doesNotExist"));
         }
+        for (Node unconnectedNode : findUnconnectedNodes()) {
+            if (unconnectedNode.getArrivingTransitions().size() != 0) {
+                errors.add(ValidationError.createLocalizedError(unconnectedNode, "unconnectedNodeIsPresent"));
+                break;
+            }
+        }
         if (startStates.size() > 1) {
             errors.add(ValidationError.createLocalizedError(this, "multipleStartStatesNotAllowed"));
         }
@@ -280,6 +285,31 @@ public class ProcessDefinition extends NamedGraphElement implements Describable,
         if (this.invalid != invalid) {
             this.invalid = invalid;
             setDirty(true);
+        }
+    }
+
+    public List<Node> findUnconnectedNodes() {
+        Map<Node, Boolean> nodeIsConnectedMap = new HashMap<>();
+        List<Node> startNodes = new ArrayList<>();
+        for (Node node : getNodesRecursive()) {
+            if (node instanceof IBoundaryEventCapable && ((IBoundaryEventCapable) node).isBoundaryEvent()) {
+                startNodes.add(node);
+            }
+            nodeIsConnectedMap.put(node, false);
+        }
+        startNodes.addAll(getChildren(StartState.class));
+        for (Node node : startNodes) {
+            markNodeAsConnected(nodeIsConnectedMap, node);
+        }
+        return nodeIsConnectedMap.entrySet().stream().filter(e -> !e.getValue()).map(e -> e.getKey()).collect(Collectors.toList());
+    }
+
+    public void markNodeAsConnected(Map<Node, Boolean> nodeIsConnectedMap, Node node) {
+        nodeIsConnectedMap.put(node, true);
+        for (Transition transition : node.getLeavingTransitions()) {
+            if (!nodeIsConnectedMap.get(transition.getTarget())) {
+                markNodeAsConnected(nodeIsConnectedMap, transition.getTarget());
+            }
         }
     }
 
