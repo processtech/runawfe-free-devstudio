@@ -2,6 +2,8 @@ package ru.runa.gpd.office.excel;
 
 import java.util.List;
 
+import org.dom4j.Document;
+import org.dom4j.Element;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.ModifyEvent;
@@ -19,9 +21,13 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 
+import com.google.common.base.Strings;
+
 import ru.runa.gpd.PluginLogger;
+import ru.runa.gpd.extension.bot.IBotFileSupportProvider;
 import ru.runa.gpd.extension.handler.XmlBasedConstructorProvider;
 import ru.runa.gpd.lang.ValidationError;
+import ru.runa.gpd.lang.model.BotTask;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.office.FilesSupplierMode;
@@ -32,8 +38,9 @@ import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.custom.SwtUtils;
 import ru.runa.gpd.util.EmbeddedFileUtils;
+import ru.runa.gpd.util.XmlUtil;
 
-public abstract class BaseExcelHandlerCellEditorProvider extends XmlBasedConstructorProvider<ExcelModel> {
+public abstract class BaseExcelHandlerCellEditorProvider extends XmlBasedConstructorProvider<ExcelModel> implements IBotFileSupportProvider {
     protected abstract FilesSupplierMode getMode();
 
     @Override
@@ -67,7 +74,44 @@ public abstract class BaseExcelHandlerCellEditorProvider extends XmlBasedConstru
             PluginLogger.logErrorWithoutDialog("Template file deletion", e);
         }
     }
+    @Override
+    public String getEmbeddedFileName(BotTask botTask) {
+        String xml = botTask.getDelegationConfiguration();
+        if (!XmlUtil.isXml(xml)) {
+            return null;
+        }
+        Document document = XmlUtil.parseWithoutValidation(xml);
+        Element root = document.getRootElement();
+        Element inputElement = root.element("input");
+        if (inputElement != null) {
+            String path = inputElement.attributeValue("path");
+            if (EmbeddedFileUtils.isBotTaskFile(path)) {
+                return EmbeddedFileUtils.getBotTaskFileName(path);
+            }
+        }
+        return null;
+    }
 
+    @Override
+    public void taskRenamed(BotTask botTask, String oldName, String newName) {
+        String xml = botTask.getDelegationConfiguration();
+        Document document = XmlUtil.parseWithoutValidation(xml);
+        Element root = document.getRootElement();
+        Element inputElement = root.element("input");
+        String oldPath = inputElement.attributeValue("path");
+        if (!Strings.isNullOrEmpty(oldPath) && EmbeddedFileUtils.isBotTaskFile(oldPath)) {
+            String oldEmbeddedFileName = EmbeddedFileUtils.getBotTaskFileName(oldPath);
+            if (EmbeddedFileUtils.isBotTaskFileName(oldEmbeddedFileName, botTask.getName())) {
+                oldName = EmbeddedFileUtils.generateBotTaskEmbeddedFileName(oldName);
+                String newEmbeddedFileName = EmbeddedFileUtils.generateBotTaskEmbeddedFileName(newName)
+                        + oldEmbeddedFileName.substring(oldName.length());
+                String newPath = EmbeddedFileUtils.getBotTaskFilePath(newEmbeddedFileName);
+                inputElement.addAttribute("path", newPath);
+            }
+        }
+        String newXml = XmlUtil.toString(document);
+        botTask.setDelegationConfiguration(newXml);
+    }
     private class ConstructorView extends ConstructorComposite {
 
         public ConstructorView(Composite parent, Delegable delegable, ExcelModel model) {
