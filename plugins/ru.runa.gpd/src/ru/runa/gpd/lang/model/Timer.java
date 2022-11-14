@@ -155,7 +155,9 @@ public class Timer extends Node implements IBoundaryEventCapable, IBoundaryEvent
     @Override
     public void updateBoundaryEventConstraint() {
         getConstraint().setX(1);
-        getConstraint().setY(getParent().getConstraint().height - getConstraint().height);
+        if (getParent() != null && getParent().getConstraint() != null) {
+            getConstraint().setY(getParent().getConstraint().height - getConstraint().height);
+        }
     }
 
     @Override

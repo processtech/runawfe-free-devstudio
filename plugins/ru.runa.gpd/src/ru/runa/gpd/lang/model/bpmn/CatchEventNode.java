@@ -27,8 +27,10 @@ public class CatchEventNode extends AbstractEventNode implements IReceiveMessage
 
     @Override
     public void updateBoundaryEventConstraint() {
-        getConstraint().setX(getParent().getConstraint().width - getConstraint().width);
-        getConstraint().setY(getParent().getConstraint().height - getConstraint().height);
+        if (getParent() != null && getParent().getConstraint() != null) {
+            getConstraint().setX(getParent().getConstraint().width - getConstraint().width);
+            getConstraint().setY(getParent().getConstraint().height - getConstraint().height);
+        }
     }
 
     @Override
