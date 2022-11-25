@@ -36,7 +36,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 public class VariablesUsageXlsExporter {
-    
+
     private static List<Variable> variables;
     private static Set<Variable> usedVariables = Sets.newHashSet();
     private static Map<String, String[]> componentParamAccess = Maps.newHashMap();
@@ -61,18 +61,18 @@ public class VariablesUsageXlsExporter {
             PluginLogger.logError("Unable to load FTL components", th);
         }
     }
-    
+
     public static void go(ProcessDefinition definition, String filePath) throws Exception {
         try (OutputStream os = new FileOutputStream(filePath)) {
             go(definition, os);
         }
     }
-    
+
     public static void go(ProcessDefinition definition, OutputStream os) throws Exception {
         fillBook(definition).write(os);
         os.flush();
     }
-    
+
     private static HSSFWorkbook fillBook(ProcessDefinition pd) throws Exception {
         variables = pd.getVariables(true, false);
         Collections.sort(variables);
@@ -80,7 +80,7 @@ public class VariablesUsageXlsExporter {
         fillSheet(book, pd);
         List<Subprocess> external = new ArrayList<>();
         for (Subprocess sp : pd.getChildren(Subprocess.class)) {
-             if (!sp.isEmbedded()) {
+            if (!sp.isEmbedded()) {
                 external.add(sp);
             }
         }
@@ -109,7 +109,7 @@ public class VariablesUsageXlsExporter {
         }
         return book;
     }
-    
+
     private static String asSortValue(String phrase) {
         // #9-9A-A.9-9A-A.9-9A-A. AAAAA...
         phrase = phrase.trim();
@@ -205,10 +205,12 @@ public class VariablesUsageXlsExporter {
         int colNum = 2;
         for (FormNode form : formNodes) {
             cell = row.createCell(colNum++);
-            cell.setCellValue((form instanceof StartState && Strings.isNullOrEmpty(form.getName()) ?
-                    Localization.getString("DesignerVariableEditorPage.report.variablesUsage.start") : "") + form.getLabel());
+            cell.setCellValue((form instanceof StartState && Strings.isNullOrEmpty(form.getName())
+                    ? Localization.getString("DesignerVariableEditorPage.report.variablesUsage.start")
+                    : "") + form.getLabel());
             cell.setCellStyle(style);
-            forms.add(IOUtils.readStream(ge.getProcessDefinition().getFile().getParent().getFolder(null).getFile(form.getFormFileName()).getContents()));
+            forms.add(IOUtils
+                    .readStream(ge.getProcessDefinition().getFile().getParent().getFolder(null).getFile(form.getFormFileName()).getContents()));
         }
         return forms;
     }
@@ -274,7 +276,7 @@ public class VariablesUsageXlsExporter {
         sheet.autoSizeColumn(0);
         sheet.autoSizeColumn(1);
     }
-    
+
     private static void fillSheet(HSSFWorkbook book, List<Subprocess> subprocesses) throws Exception {
         HSSFSheet sheet = book.createSheet(Localization.getString("DesignerVariableEditorPage.report.variablesUsage.subprocesses"));
         HSSFRow row = sheet.createRow(0);
@@ -298,12 +300,13 @@ public class VariablesUsageXlsExporter {
             cell.setCellStyle(style);
         }
         int rowNum = 1;
+        style = book.createCellStyle();
+        style.setAlignment(CellStyle.ALIGN_CENTER);
         for (Variable variable : variables) {
             row = sheet.createRow(rowNum++);
             cell = row.createCell(0);
             cell.setCellValue(variable.getName());
-            style = book.createCellStyle();
-            style.setAlignment(CellStyle.ALIGN_CENTER);
+            cell.setCellStyle(style);
         }
         for (int i = 0; i < variables.size(); i++) {
             Variable variable = variables.get(i);
@@ -322,5 +325,5 @@ public class VariablesUsageXlsExporter {
         sheet.autoSizeColumn(0);
         sheet.autoSizeColumn(1);
     }
-    
+
 }
