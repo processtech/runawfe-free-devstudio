@@ -54,22 +54,6 @@
         point="org.eclipse.ui.popupMenus">
      <objectContribution
            adaptable="false"
-           id="bpmn.transition.handlers"
-           objectClass="ru.runa.gpd.lang.model.Transition">
-        <filter
-              name="language"
-              value="bpmn">
-        </filter>
-        <action
-              class="ru.runa.gpd.lang.action.RenameTransitionDelegate"
-              id="graph.actions.rename.transition"
-              label="%button.rename"
-              menubarPath="additions"
-              style="push">
-        </action>
-     </objectContribution>
-     <objectContribution
-           adaptable="false"
            id="jpdl.transition.handlers"
            objectClass="ru.runa.gpd.lang.model.Transition">
         <filter
@@ -82,13 +66,6 @@
              label="%label.action.actions"
              menubarPath="additions"
              style="pulldown">
-       </action>
-       <action
-             class="ru.runa.gpd.lang.action.RenameTransitionDelegate"
-             id="graph.actions.rename.transition"
-             label="%button.rename"
-             menubarPath="additions"
-             style="push">
        </action>
     </objectContribution>
     <objectContribution
@@ -103,6 +80,16 @@
                 name="sp1">
           </separator>
        </menu>
+    </objectContribution>
+    <objectContribution
+          adaptable="false"
+          id="namedGraphElement.features"
+          objectClass="ru.runa.gpd.lang.model.NamedGraphElement">
+       <action
+             class="ru.runa.gpd.lang.action.RenameAction"
+             id="renameAction"
+             label="%button.rename">
+       </action>
     </objectContribution>
     <objectContribution
            adaptable="false"
@@ -713,26 +700,6 @@
              label="%label.menu.generateRegulationData">
        </action>
      </objectContribution>
-    <objectContribution
-          adaptable="false"
-          id="ru.runa.gpd.rename.node.startstate.action"
-          objectClass="ru.runa.gpd.lang.model.FormNode">
-       <action
-             class="ru.runa.gpd.lang.action.RenameAction"
-             id="Rename"
-             label="%button.rename">
-       </action>
-    </objectContribution>
-    <objectContribution
-          adaptable="false"
-          id="ru.runa.gpd.rename.abstractendtextdecorated.action"
-          objectClass="ru.runa.gpd.lang.model.bpmn.AbstractEndTextDecorated">
-       <action
-             class="ru.runa.gpd.lang.action.RenameAction"
-             id="Rename"
-             label="%button.rename">
-       </action>
-    </objectContribution>
   </extension>
  <extension
        point="org.eclipse.ui.menus">
