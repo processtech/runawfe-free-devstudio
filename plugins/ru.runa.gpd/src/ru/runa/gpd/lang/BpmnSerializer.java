@@ -476,7 +476,9 @@ public class BpmnSerializer extends ProcessSerializer {
             String sourceNodeId = transition.getSource().getId();
             String targetNodeId = transition.getTarget().getId();
             if (Objects.equal(sourceNodeId, targetNodeId)) {
-                throw new IllegalArgumentException("Invalid transition " + transition);
+                if (!(node instanceof TaskState && node.getArrivingTransitions().size() > 0)) {
+                    throw new IllegalArgumentException("Invalid transition " + transition);
+                }
             }
             transitionElement.addAttribute(SOURCE_REF, sourceNodeId);
             transitionElement.addAttribute(TARGET_REF, targetNodeId);
