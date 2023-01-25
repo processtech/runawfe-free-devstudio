@@ -126,53 +126,55 @@ public class WorkspaceOperations {
                 } else {
                     throw new IllegalArgumentException("Unexpected " + resource);
                 }
-                if (Dialogs.confirm(Localization.getString(messageKey, resource.getName()))) {
-                    List<IFile> tmpFiles = new ArrayList<IFile>();
-                    if (projectResource) {
-                        tmpFiles.addAll(IOUtils.getProcessDefinitionFiles((IProject) resource));
-                    } else if (folderResource) {
-                        if (IOUtils.isProcessDefinitionFolder((IFolder) resource)) {
-                            tmpFiles.add(IOUtils.getProcessDefinitionFile((IFolder) resource));
+                if (resource.isAccessible()) {
+                    if (Dialogs.confirm(Localization.getString(messageKey, resource.getName()))) {
+                        List<IFile> tmpFiles = new ArrayList<IFile>();
+                        if (projectResource) {
+                            tmpFiles.addAll(IOUtils.getProcessDefinitionFiles((IProject) resource));
+                        } else if (folderResource) {
+                            if (IOUtils.isProcessDefinitionFolder((IFolder) resource)) {
+                                tmpFiles.add(IOUtils.getProcessDefinitionFile((IFolder) resource));
+                            } else {
+                                tmpFiles.addAll(IOUtils.getProcessDefinitionFiles((IFolder) resource));
+                            }
                         } else {
-                            tmpFiles.addAll(IOUtils.getProcessDefinitionFiles((IFolder) resource));
-                        }
-                    } else {
-                        IFile definitionFile = (IFile) resource;
-                        try {
-                            SubprocessDefinition subprocessDefinition = (SubprocessDefinition) ProcessCache.getProcessDefinition(definitionFile);
-                            subprocessDefinition.getParent().getEmbeddedSubprocesses().remove(subprocessDefinition.getId());
-                            for (Subprocess sp : subprocessDefinition.getParent().getChildren(Subprocess.class)) {
-                                if (!sp.getSubProcessName().equals(subprocessDefinition.getName())) {
-                                    continue;
+                            IFile definitionFile = (IFile) resource;
+                            try {
+                                SubprocessDefinition subprocessDefinition = (SubprocessDefinition) ProcessCache.getProcessDefinition(definitionFile);
+                                subprocessDefinition.getParent().getEmbeddedSubprocesses().remove(subprocessDefinition.getId());
+                                for (Subprocess sp : subprocessDefinition.getParent().getChildren(Subprocess.class)) {
+                                    if (!sp.getSubProcessName().equals(subprocessDefinition.getName())) {
+                                        continue;
+                                    }
+                                    sp.setSubProcessName("");
+                                    break;
                                 }
-                                sp.setSubProcessName("");
-                                break;
+                                subprocessDefinition.setName("");
+                            } catch (Exception e) {
+                                PluginLogger.logErrorWithoutDialog("Unable to deregister embedded subprocess", e);
                             }
-                            subprocessDefinition.setName("");
-                        } catch (Exception e) {
-                            PluginLogger.logErrorWithoutDialog("Unable to deregister embedded subprocess", e);
-                        }
-                        int index = definitionFile.getName().indexOf(ParContentProvider.PROCESS_DEFINITION_FILE_NAME);
-                        Preconditions.checkArgument(index != -1, "not a subprocess definition file");
-                        String subprocessFileStart = definitionFile.getName().substring(0, index);
-                        tmpFiles.add(definitionFile);
-                        for (IResource testResource : definitionFile.getParent().members()) {
-                            if (testResource.getName().startsWith(subprocessFileStart)) {
-                                testResource.delete(true, null);
+                            int index = definitionFile.getName().indexOf(ParContentProvider.PROCESS_DEFINITION_FILE_NAME);
+                            Preconditions.checkArgument(index != -1, "not a subprocess definition file");
+                            String subprocessFileStart = definitionFile.getName().substring(0, index);
+                            tmpFiles.add(definitionFile);
+                            for (IResource testResource : definitionFile.getParent().members()) {
+                                if (testResource.getName().startsWith(subprocessFileStart)) {
+                                    testResource.delete(true, null);
+                                }
                             }
                         }
-                    }
-                    if (folderResource && IOUtils.isProcessDefinitionFolder((IFolder) resource)) {
-                        ProcessSaveHistory.clear((IFolder) resource);
+                        if (folderResource && IOUtils.isProcessDefinitionFolder((IFolder) resource)) {
+                            ProcessSaveHistory.clear((IFolder) resource);
 
-                    }
-                    if (projectResource) {
-                        IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-                        page.closeAllEditors(false);
-                    }
+                        }
+                        if (projectResource) {
+                            IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+                            page.closeAllEditors(false);
+                        }
 
-                    resource.delete(true, null);
-                    deletedDefinitions.addAll(tmpFiles);
+                        resource.delete(true, null);
+                        deletedDefinitions.addAll(tmpFiles);
+                    }
                 }
             } catch (CoreException e) {
                 PluginLogger.logError("Error deleting", e);
