@@ -341,7 +341,9 @@ public class EmailConfigWizardPage extends WizardPage implements MessageDisplay 
         private class AddSelectionAdapter extends LoggingSelectionAdapter {
             @Override
             protected void onSelection(SelectionEvent e) throws Exception {
-                List<String> fileVariableNames = delegable.getVariableNames(true, FileVariable.class.getName());
+                List<String> fileVariableNames = delegable.getVariableNames(true,
+                        FileVariable.class.getName(),
+                        List.class.getName() + Variable.FORMAT_COMPONENT_TYPE_START + FileVariable.class.getName() + Variable.FORMAT_COMPONENT_TYPE_END);
                 ChooseVariableNameDialog dialog = new ChooseVariableNameDialog(fileVariableNames);
                 String variableName = dialog.openDialog();
                 if (variableName != null) {
