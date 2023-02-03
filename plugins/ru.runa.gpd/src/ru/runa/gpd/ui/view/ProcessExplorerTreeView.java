@@ -166,15 +166,17 @@ public class ProcessExplorerTreeView extends ViewPart implements ISelectionListe
     protected void fillContextMenu(IMenuManager manager) {
         final IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
         final Object selectedObject = selection.getFirstElement();
+        final List<IResource> resources = selection.toList();
+
+        final boolean menuOnProject = selectedObject instanceof IProject;
+        final boolean menuOnProcess = (selectedObject instanceof IFile) || 
+                (selectedObject instanceof IFolder && IOUtils.isProcessDefinitionFolder((IFolder) selectedObject));
+        final boolean menuOnFolder = selectedObject instanceof IFolder && !menuOnProcess;
+
         final boolean menuOnSubprocess = selectedObject instanceof IFile
                 && ((IFile) selectedObject).getName().matches("sub.*\\Q" + ParContentProvider.PROCESS_DEFINITION_FILE_NAME);
-        final List<IResource> resources = selection.toList();
-        boolean menuOnContainer = selectedObject instanceof IProject || selectedObject instanceof IFolder;
-        boolean menuOnProcess = selectedObject instanceof IFile;
-        if (selectedObject instanceof IFolder) {
-            menuOnProcess |= IOUtils.isProcessDefinitionFolder((IFolder) selectedObject);
-        }
-        //
+        final boolean menuOnGlobalSectionResource = GlobalSectionUtils.isGlobalSectionResource((IResource) selectedObject);
+
         if (menuOnProcess) {
             manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.openProcess")) {
                 @Override
@@ -191,7 +193,8 @@ public class ProcessExplorerTreeView extends ViewPart implements ISelectionListe
                 WorkspaceOperations.createNewProject();
             }
         });
-        if (menuOnContainer && !menuOnProcess) {
+
+        if ((menuOnProject || menuOnFolder) && !menuOnProcess) {
             if (IOUtils.isProjectHasProcessNature(((IContainer) selectedObject).getProject())) {
                 manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.newFolder"),
                         SharedImages.getImageDescriptor("icons/add_folder.gif")) {
@@ -203,8 +206,8 @@ public class ProcessExplorerTreeView extends ViewPart implements ISelectionListe
             }
         }
 
-        if (menuOnContainer) {
-            if (!GlobalSectionUtils.isGlobalSectionResource((IResource) selectedObject) && CommonPreferencePage.isGlobalObjectsEnabled()) {
+        if (menuOnProject || menuOnFolder) {
+            if (!menuOnGlobalSectionResource && CommonPreferencePage.isGlobalObjectsEnabled()) {
                 manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.newGlobalSection"),
                         SharedImages.getImageDescriptor("icons/glb.gif")) {
 
@@ -259,7 +262,7 @@ public class ProcessExplorerTreeView extends ViewPart implements ISelectionListe
                 }
             });
         }
-        if (!menuOnProcess && GlobalSectionUtils.isGlobalSectionResource((IResource) selectedObject)
+        if (!menuOnProcess && menuOnGlobalSectionResource
                 && CommonPreferencePage.isGlobalObjectsEnabled()) {
             manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.exportGlobalSection"),
                     SharedImages.getImageDescriptor("icons/export_glb.gif")) {
@@ -269,7 +272,7 @@ public class ProcessExplorerTreeView extends ViewPart implements ISelectionListe
                 }
             });
         }
-        if (GlobalSectionUtils.isGlobalSectionResource((IResource) selectedObject) && CommonPreferencePage.isGlobalObjectsEnabled()) {
+        if (menuOnGlobalSectionResource && CommonPreferencePage.isGlobalObjectsEnabled()) {
             manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.makeGSLocal"),
                     SharedImages.getImageDescriptor("icons/gr_to_loc.gif")) {
                 @Override
@@ -278,24 +281,24 @@ public class ProcessExplorerTreeView extends ViewPart implements ISelectionListe
                 }
             });
         }
-        if (menuOnProcess || GlobalSectionUtils.isGlobalSectionResource((IResource) selectedObject)) {
-            manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.renameProcess"),
-                    SharedImages.getImageDescriptor("icons/rename.gif")) {
-                @Override
-                public void run() {
-                    if (menuOnSubprocess) {
-                        WorkspaceOperations.renameSubProcessDefinition(selection);
-                    } else {
-                        if (GlobalSectionUtils.isGlobalSectionResource((IResource) selectedObject)) {
+        manager.add(
+                new Action(Localization.getString("ExplorerTreeView.menu.label.renameProcess"), SharedImages.getImageDescriptor("icons/rename.gif")) {
+                    @Override
+                    public void run() {
+                        if (menuOnSubprocess) {
+                            WorkspaceOperations.renameSubProcessDefinition(selection);
+                        } else if (menuOnGlobalSectionResource) {
                             WorkspaceOperations.renameGlobalDefinition(selection);
-                        } else {
+                        } else if (menuOnProcess) {
                             WorkspaceOperations.renameProcessDefinition(selection);
+                        } else if (menuOnProject) {
+                            WorkspaceOperations.renameProjectFolder(selection);
+                        } else if (menuOnFolder) {
+                            WorkspaceOperations.renameFolder(selection);
                         }
                     }
-                }
-            });
-        }
-        if (menuOnContainer) {
+                });
+        if (menuOnProject || menuOnFolder) {
             manager.add(
                     new Action(Localization.getString("ExplorerTreeView.menu.label.refresh"), SharedImages.getImageDescriptor("icons/refresh.gif")) {
                         @Override
@@ -305,7 +308,7 @@ public class ProcessExplorerTreeView extends ViewPart implements ISelectionListe
                     });
         }
 
-        if (menuOnProcess && !GlobalSectionUtils.isGlobalSectionResource((IResource) selectedObject)
+        if (menuOnProcess && !menuOnGlobalSectionResource
                 && CommonPreferencePage.isGlobalObjectsEnabled()) {
             manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.refreshGlobalObjects"),
                     SharedImages.getImageDescriptor("icons/refresh.gif")) {
