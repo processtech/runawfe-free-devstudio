@@ -1,5 +1,9 @@
 package ru.runa.gpd.editor;
 
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,11 +33,6 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
-import com.google.common.base.Function;
-import com.google.common.base.Joiner;
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.clipboard.VariableTransfer;
@@ -57,6 +56,7 @@ import ru.runa.gpd.ui.custom.TableViewerLocalDragAndDropSupport;
 import ru.runa.gpd.ui.dialog.ChooseUserTypeDialog;
 import ru.runa.gpd.ui.dialog.ChooseVariableDialog;
 import ru.runa.gpd.ui.dialog.ErrorDialog;
+import ru.runa.gpd.ui.dialog.SearchVariableDialog;
 import ru.runa.gpd.ui.dialog.UpdateVariableNameDialog;
 import ru.runa.gpd.ui.wizard.ChooseGlobalVariableWizard;
 import ru.runa.gpd.ui.wizard.CompactWizardDialog;
@@ -248,8 +248,12 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
                 result.addAll(VariableUtils.expandComplexVariable(variable, variable));
             }
             String searchText = Joiner.on(", ").join(Lists.transform(result, joinVariableNamesFunction));
-            MultiVariableSearchQuery query = new MultiVariableSearchQuery(searchText, editor.getDefinitionFile(), getDefinition(), result);
-            NewSearchUI.runQueryInBackground(query);
+            SearchVariableDialog dialog = new SearchVariableDialog(false);
+            if (dialog.open() == IDialogConstants.OK_ID) {
+                MultiVariableSearchQuery query = new MultiVariableSearchQuery(searchText, editor.getDefinitionFile(), getDefinition(), result,
+                        dialog.getSearchTypes());
+                NewSearchUI.runQueryInBackground(query);
+            }
         }
     }
 
