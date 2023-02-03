@@ -1,11 +1,10 @@
 package ru.runa.gpd.editor;
 
+import com.google.common.base.Joiner;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.gef.ui.actions.Clipboard;
@@ -28,9 +27,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
-
-import com.google.common.base.Joiner;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.PropertyNames;
@@ -55,6 +51,7 @@ import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.ui.custom.DragAndDropAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.custom.TableViewerLocalDragAndDropSupport;
+import ru.runa.gpd.ui.dialog.SearchVariableDialog;
 import ru.runa.gpd.ui.dialog.UpdateSwimlaneNameDialog;
 import ru.runa.gpd.ui.wizard.ChooseGlbSwimlaneWizard;
 import ru.runa.gpd.ui.wizard.CompactWizardDialog;
@@ -264,8 +261,11 @@ public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
         protected void onSelection(SelectionEvent e) throws Exception {
             IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
             Swimlane swimlane = (Swimlane) selection.getFirstElement();
-            VariableSearchQuery query = new VariableSearchQuery(editor.getDefinitionFile(), getDefinition(), swimlane);
-            NewSearchUI.runQueryInBackground(query);
+            SearchVariableDialog dialog = new SearchVariableDialog(true);
+            if (dialog.open() == IDialogConstants.OK_ID) {
+                VariableSearchQuery query = new VariableSearchQuery(editor.getDefinitionFile(), getDefinition(), swimlane, dialog.getSearchTypes());
+                NewSearchUI.runQueryInBackground(query);
+            }
         }
     }
 

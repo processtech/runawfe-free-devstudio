@@ -69,6 +69,7 @@ import ru.runa.gpd.ui.dialog.ChooseUserTypeDialog;
 import ru.runa.gpd.ui.dialog.ChooseVariableDialog;
 import ru.runa.gpd.ui.dialog.ErrorDialog;
 import ru.runa.gpd.ui.dialog.RenameUserTypeDialog;
+import ru.runa.gpd.ui.dialog.SearchVariableDialog;
 import ru.runa.gpd.ui.dialog.UpdateVariableNameDialog;
 import ru.runa.gpd.ui.dialog.VariableUserTypeDialog;
 import ru.runa.gpd.ui.wizard.ChooseGlobalTypeWizard;
@@ -615,8 +616,12 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
                 }
 
             }));
-            MultiVariableSearchQuery query = new MultiVariableSearchQuery(searchText, editor.getDefinitionFile(), getDefinition(), result);
-            NewSearchUI.runQueryInBackground(query);
+            SearchVariableDialog dialog = new SearchVariableDialog(false);
+            if (dialog.open() == IDialogConstants.OK_ID) {
+                MultiVariableSearchQuery query = new MultiVariableSearchQuery(searchText, editor.getDefinitionFile(), getDefinition(), result,
+                        dialog.getSearchTypes());
+                NewSearchUI.runQueryInBackground(query);
+            }
         }
 
     }
