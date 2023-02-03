@@ -50,7 +50,7 @@ public class SearchResultContentProvider implements ITreeContentProvider {
         if (itemNewParent == null) {
             itemNewParent = itemRoot.addChildren(null, null, elmSource);
         }
-        includeElement(itemNewParent, pathSource, pathStartIndex - 1);       
+        includeElement(itemNewParent, pathSource, pathStartIndex - 1);
     }
     
     public static List<GraphElement> buildPath(GraphElement source) {

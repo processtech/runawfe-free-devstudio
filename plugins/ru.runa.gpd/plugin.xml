@@ -54,22 +54,6 @@
         point="org.eclipse.ui.popupMenus">
      <objectContribution
            adaptable="false"
-           id="bpmn.transition.handlers"
-           objectClass="ru.runa.gpd.lang.model.Transition">
-        <filter
-              name="language"
-              value="bpmn">
-        </filter>
-        <action
-              class="ru.runa.gpd.lang.action.RenameTransitionDelegate"
-              id="graph.actions.rename.transition"
-              label="%button.rename"
-              menubarPath="additions"
-              style="push">
-        </action>
-     </objectContribution>
-     <objectContribution
-           adaptable="false"
            id="jpdl.transition.handlers"
            objectClass="ru.runa.gpd.lang.model.Transition">
         <filter
@@ -82,13 +66,6 @@
              label="%label.action.actions"
              menubarPath="additions"
              style="pulldown">
-       </action>
-       <action
-             class="ru.runa.gpd.lang.action.RenameTransitionDelegate"
-             id="graph.actions.rename.transition"
-             label="%button.rename"
-             menubarPath="additions"
-             style="push">
        </action>
     </objectContribution>
     <objectContribution
@@ -103,6 +80,16 @@
                 name="sp1">
           </separator>
        </menu>
+    </objectContribution>
+    <objectContribution
+          adaptable="false"
+          id="namedGraphElement.features"
+          objectClass="ru.runa.gpd.lang.model.NamedGraphElement">
+       <action
+             class="ru.runa.gpd.lang.action.RenameAction"
+             id="renameAction"
+             label="%button.rename">
+       </action>
     </objectContribution>
     <objectContribution
            adaptable="false"
@@ -713,26 +700,6 @@
              label="%label.menu.generateRegulationData">
        </action>
      </objectContribution>
-    <objectContribution
-          adaptable="false"
-          id="ru.runa.gpd.rename.node.startstate.action"
-          objectClass="ru.runa.gpd.lang.model.FormNode">
-       <action
-             class="ru.runa.gpd.lang.action.RenameAction"
-             id="Rename"
-             label="%button.rename">
-       </action>
-    </objectContribution>
-    <objectContribution
-          adaptable="false"
-          id="ru.runa.gpd.rename.abstractendtextdecorated.action"
-          objectClass="ru.runa.gpd.lang.model.bpmn.AbstractEndTextDecorated">
-       <action
-             class="ru.runa.gpd.lang.action.RenameAction"
-             id="Rename"
-             label="%button.rename">
-       </action>
-    </objectContribution>
   </extension>
  <extension
        point="org.eclipse.ui.menus">
@@ -914,7 +881,6 @@
       <element
           type="connection"
             model="ru.runa.gpd.lang.model.Transition"
-            outlineTreeEditPart="ru.runa.gpd.editor.outline.TransitionTreeEditPart"
             jpdl="transition"
             bpmn="sequenceFlow"
             icon="transition.png"
@@ -1000,7 +966,6 @@
             jpdl="swimlane"
             label="%default.swimlane.name"
             model="ru.runa.gpd.lang.model.Swimlane"
-            outlineTreeEditPart="ru.runa.gpd.editor.outline.SwimlaneTreeEditPart"
             type="artifact">
          <graphiti
                add="ru.runa.gpd.editor.graphiti.add.AddSwimlaneFeature"
@@ -1015,7 +980,6 @@
       <element
           type="node"
             model="ru.runa.gpd.lang.model.StartState"
-            outlineTreeEditPart="ru.runa.gpd.editor.outline.StartStateTreeEditPart"
             jpdl="start-state"
             bpmn="startEvent"
             icon="start.png"
@@ -1241,7 +1205,6 @@
             jpdl="action"
             label="%label.element.action"
             model="ru.runa.gpd.lang.model.ActionImpl"
-            outlineTreeEditPart="ru.runa.gpd.editor.outline.ActionTreeEditPart"
             type="artifact">
          <gef 
             figure="ru.runa.gpd.editor.gef.figure.ActionFigure"
@@ -1263,7 +1226,6 @@
             jpdl="variable"
             label="%default.variable.name"
             model="ru.runa.gpd.lang.model.Variable"
-            outlineTreeEditPart="ru.runa.gpd.editor.outline.VariableTreeEditPart"
             type="artifact">
       </element>
       <element
@@ -1272,7 +1234,6 @@
             jpdl="process-definition"
             label="%label.processDefinition"
             model="ru.runa.gpd.lang.model.ProcessDefinition"
-            outlineTreeEditPart="ru.runa.gpd.editor.outline.ProcessDefinitionTreeEditPart"
             type="definition">
          <gef 
             figure="ru.runa.gpd.editor.gef.figure.GridSupportLayer"
@@ -1285,7 +1246,6 @@
             jpdl="process-definition"
             label="%label.globalSectionDefinition"
             model="ru.runa.gpd.lang.model.GlobalSectionDefinition"
-            outlineTreeEditPart="ru.runa.gpd.editor.outline.ProcessDefinitionTreeEditPart"
             type="definition">
          <gef 
             figure="ru.runa.gpd.editor.gef.figure.GridSupportLayer"

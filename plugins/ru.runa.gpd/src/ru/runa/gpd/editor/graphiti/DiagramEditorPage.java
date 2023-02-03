@@ -71,7 +71,6 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
         super.init(site, input);
         editor.getDefinition().setDelegatedListener(this);
-
     }
 
     public ProcessDefinition getDefinition() {

@@ -1,8 +1,11 @@
 package ru.runa.gpd.ui.dialog;
 
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
@@ -21,17 +24,24 @@ import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.ui.custom.FileNameChecker;
 import ru.runa.gpd.util.IOUtils;
 
-public class RenameProcessDefinitionDialog extends Dialog {
+public class RenameProjectFolderProcessDialog extends Dialog {
+
     private String name;
-    private IFolder definitionFolder;
+    private IProject project;    
+    private IFolder folder;
     private ProcessDefinition definition;
 
-    public RenameProcessDefinitionDialog(IFolder definitionFolder) {
+    public RenameProjectFolderProcessDialog(IProject project) {
         super(Display.getDefault().getActiveShell());
-        this.definitionFolder = definitionFolder;
+        this.project = project;
     }
 
-    public RenameProcessDefinitionDialog(ProcessDefinition definition) {
+    public RenameProjectFolderProcessDialog(IFolder folder) {
+        super(Display.getDefault().getActiveShell());
+        this.folder = folder;
+    }
+
+    public RenameProjectFolderProcessDialog(ProcessDefinition definition) {
         super(Display.getDefault().getActiveShell());
         this.definition = definition;
     }
@@ -85,10 +95,26 @@ public class RenameProcessDefinitionDialog extends Dialog {
     private void updateButtons() {
     	IWorkspace workspace = ResourcesPlugin.getWorkspace();
         boolean allowCreation = FileNameChecker.isValid(name);
-        if (definitionFolder != null) {
-            allowCreation &= !IOUtils.isChildFolderExists(definitionFolder.getParent(), name);
+        if (project != null) {
+            IStatus nameStatus = workspace.validateName(name,IResource.PROJECT);
+            if (name.isEmpty() || !nameStatus.isOK() || ResourcesPlugin.getWorkspace().getRoot().getProject(name).exists()) {
+                allowCreation = false;
+            }
+        } else if (folder != null) {
+            if (folder.getFullPath().lastSegment().startsWith(".")) {
+                allowCreation &= !IOUtils.isChildFolderExists(folder.getParent(), "." + name);
+            } else {
+                allowCreation &= !IOUtils.isChildFolderExists(folder.getParent(), name);
+            }
         } else if (definition != null) {
             allowCreation &= definition.getEmbeddedSubprocessByName(name) == null;
+            allowCreation &= !definition.getName().equals(name);
+            folder = (IFolder) definition.getFile().getParent();
+            if (folder.getFullPath().lastSegment().startsWith(".")) {
+                allowCreation &= !IOUtils.isChildFolderExists(folder.getParent(), "." + name);
+            } else {
+                allowCreation &= !IOUtils.isChildFolderExists(folder.getParent(), name);
+            }
         }
         getButton(IDialogConstants.OK_ID).setEnabled(allowCreation);
     }
@@ -96,11 +122,16 @@ public class RenameProcessDefinitionDialog extends Dialog {
     @Override
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
-        newShell.setText(Localization.getString("RenameProcessDefinitionDialog.title"));
+        if (project != null) {
+            newShell.setText(Localization.getString("RenameProjectDialog.title"));
+        } else if (folder != null) {
+            newShell.setText(Localization.getString("RenameFolderDialog.title"));
+        } else if (definition != null) {
+            newShell.setText(Localization.getString("RenameProcessDefinitionDialog.title"));
+        }
     }
 
     public String getName() {
         return name;
     }
-
 }

@@ -1,5 +1,7 @@
 package ru.runa.gpd.lang.model;
 
+import org.eclipse.swt.graphics.Image;
+import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.lang.NodeTypeDefinition;
 
 public class GroupElement extends GraphElement {
@@ -14,4 +16,15 @@ public class GroupElement extends GraphElement {
     public NodeTypeDefinition getTypeDefinition() {
         return typeDefinition;
     }
+
+    @Override
+    public String getLabel() {
+        return getTypeDefinition().getLabel();
+    }
+
+    @Override
+    public Image getEntryImage() {
+        return SharedImages.getImage("icons/obj/group.gif");
+    }
+
 }
