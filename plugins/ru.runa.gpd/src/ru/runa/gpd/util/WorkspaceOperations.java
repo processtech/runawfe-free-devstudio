@@ -19,6 +19,7 @@ import org.dom4j.io.SAXReader;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.resources.WorkspaceJob;
@@ -50,7 +51,6 @@ import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.SubprocessMap;
 import ru.runa.gpd.editor.BotTaskEditor;
 import ru.runa.gpd.editor.ProcessEditorBase;
-import ru.runa.gpd.editor.GlobalSectionEditorBase;
 import ru.runa.gpd.editor.ProcessSaveHistory;
 import ru.runa.gpd.editor.gef.GEFProcessEditor;
 import ru.runa.gpd.editor.graphiti.GraphitiProcessEditor;
@@ -73,7 +73,7 @@ import ru.runa.gpd.ui.dialog.ProcessSaveHistoryDialog;
 import ru.runa.gpd.ui.dialog.RenameBotDialog;
 import ru.runa.gpd.ui.dialog.RenameBotStationDialog;
 import ru.runa.gpd.ui.dialog.RenameBotTaskDialog;
-import ru.runa.gpd.ui.dialog.RenameProcessDefinitionDialog;
+import ru.runa.gpd.ui.dialog.RenameProjectFolderProcessDialog;
 import ru.runa.gpd.ui.wizard.CompactWizardDialog;
 import ru.runa.gpd.ui.wizard.CompareProcessDefinitionWizard;
 import ru.runa.gpd.ui.wizard.CopyBotTaskWizard;
@@ -263,8 +263,8 @@ public class WorkspaceOperations {
     public static void renameProcessDefinition(IStructuredSelection selection) {
         IFolder oldDefinitionFolder = (IFolder) selection.getFirstElement();
         IFile oldDefinitionFile = IOUtils.getProcessDefinitionFile(oldDefinitionFolder);
-        RenameProcessDefinitionDialog dialog = new RenameProcessDefinitionDialog(oldDefinitionFolder);
         ProcessDefinition definition = ProcessCache.getProcessDefinition(oldDefinitionFile);
+        RenameProjectFolderProcessDialog dialog = new RenameProjectFolderProcessDialog(definition);
         String oldName = definition.getName();
         dialog.setName(oldName);
         if (dialog.open() != IDialogConstants.OK_ID) {
@@ -282,15 +282,15 @@ public class WorkspaceOperations {
                 if (e.getEditorInput() instanceof IFileEditorInput) {
                     // We get here at least if e is GraphitiProcessEditor or FormEditor.
                     IFile f = ((IFileEditorInput) e.getEditorInput()).getFile();
-                    if (f.getProject() == project && Objects.equal(f.getFullPath().segment(1), oldName)) {
+                    if (f.getProject() == project && (oldDefinitionFolder.getFullPath().isPrefixOf(f.getFullPath()))) {
                         editorRefsToClose.add(e);
                     }
                 }
             }
             if (!editorRefsToClose.isEmpty()) {
-                // Close all at once! Otherwise, for example, when ProcessEditor is closed FormEditor may take focus and initialize.
-                // 2nd parameter save=false prevents "Save changed files?" dialog: they are saved anyway.
-                page.closeEditors(editorRefsToClose.toArray(new IEditorReference[editorRefsToClose.size()]), false);
+                if (!page.closeEditors(editorRefsToClose.toArray(new IEditorReference[editorRefsToClose.size()]), true)) {
+                    return;
+                }
             }
             ProcessCache.processDefinitionWasDeleted(oldDefinitionFile);
             IPath newPath = oldDefinitionFolder.getParent().getFolder(new Path(newName)).getFullPath();
@@ -309,10 +309,94 @@ public class WorkspaceOperations {
         }
     }
 
+    public static void renameProjectFolder(IStructuredSelection selection) {
+    	IProject oldProject = (IProject) selection.getFirstElement();
+        IPath path = oldProject.getFullPath();
+        IFolder oldProjectFolder = oldProject.getFolder(path);
+
+        RenameProjectFolderProcessDialog dialog = new RenameProjectFolderProcessDialog(oldProject);
+        dialog.setName(oldProject.getName());
+        if (dialog.open() != IDialogConstants.OK_ID) {
+            return;
+        }
+        String newName = dialog.getName();
+        for (IFile oldDefinitionFile : IOUtils.getProcessDefinitionFiles(oldProject)) {
+            ProcessCache.invalidateProcessDefinition(oldDefinitionFile);
+        }
+        
+        try {
+            IProject project = oldProjectFolder.getProject();
+            IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+            IEditorReference[] editorRefs = page.getEditorReferences();
+            ArrayList<IEditorReference> editorRefsToClose = new ArrayList<IEditorReference>();
+            for (IEditorReference e : editorRefs) {
+                // Work only on IEditorReference-s since IEditorPart-s may be uninitialized and we don't want to "restore" them just to close.
+                if (e.getEditorInput() instanceof IFileEditorInput) {
+                    // We get here at least if e is GraphitiProcessEditor or FormEditor.
+                    IFile f = ((IFileEditorInput) e.getEditorInput()).getFile();
+                    if (f.getProject() == project && Objects.equal(f.getFullPath().segment(0), project.getName())) {
+                               editorRefsToClose.add(e);
+                    }
+                }
+            }
+            if (editorRefsToClose.size() != 0) {
+                if (!page.closeEditors(editorRefsToClose.toArray(new IEditorReference[editorRefsToClose.size()]), true)) {
+                    return;
+                }
+            }
+            IProjectDescription newDesc = oldProject.getDescription();
+            newDesc.setName(newName);
+            oldProject.move(newDesc, true, new NullProgressMonitor());
+        } catch (Exception e) {
+            PluginLogger.logError(e);
+        }
+    }
+
+    public static void renameFolder(IStructuredSelection selection) {
+    	IFolder oldFolder = (IFolder) selection.getFirstElement();
+
+        RenameProjectFolderProcessDialog dialog = new RenameProjectFolderProcessDialog(oldFolder);
+        dialog.setName(oldFolder.getName());
+        if (dialog.open() != IDialogConstants.OK_ID) {
+            return;
+        }
+        String newName = dialog.getName();
+        for (IFile oldDefinitionFile : IOUtils.getProcessDefinitionFiles(oldFolder)) {
+            ProcessCache.invalidateProcessDefinition(oldDefinitionFile);
+        }
+
+        try {
+            IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+            IEditorReference[] editorRefs = page.getEditorReferences();
+            ArrayList<IEditorReference> editorRefsToClose = new ArrayList<IEditorReference>();
+            IPath path = oldFolder.getFullPath();
+            for (IEditorReference e : editorRefs) {
+                // Work only on IEditorReference-s since IEditorPart-s may be uninitialized and we don't want to "restore" them just to close.
+                if (e.getEditorInput() instanceof IFileEditorInput) {
+                    // We get here at least if e is GraphitiProcessEditor or FormEditor.
+                    IFile f = ((IFileEditorInput) e.getEditorInput()).getFile();
+                    if (path.isPrefixOf(f.getFullPath())) {
+                        editorRefsToClose.add(e);
+                    }
+                }
+            }
+            if (editorRefsToClose.size() != 0) {
+                if (!page.closeEditors(editorRefsToClose.toArray(new IEditorReference[editorRefsToClose.size()]), true)) {
+                    return;
+                }
+            }
+            IPath newPath = oldFolder.getFullPath();
+            newPath = newPath.removeLastSegments(1).append(newName);
+            oldFolder.move(newPath, true, new NullProgressMonitor());
+        } catch (Exception e) {
+            PluginLogger.logError(e);
+        }
+    }
+
     public static void makeGlobalSectionLocal(IStructuredSelection selection) {
         IFolder oldDefinitionFolder = (IFolder) selection.getFirstElement();
         IFile oldDefinitionFile = IOUtils.getProcessDefinitionFile(oldDefinitionFolder);
-        RenameProcessDefinitionDialog dialog = new RenameProcessDefinitionDialog(oldDefinitionFolder);
+        RenameProjectFolderProcessDialog dialog = new RenameProjectFolderProcessDialog(oldDefinitionFolder);
         ProcessDefinition definition = ProcessCache.getProcessDefinition(oldDefinitionFile);
         String oldName = definition.getName();
         if (oldName.length() > 1) {
@@ -341,8 +425,9 @@ public class WorkspaceOperations {
             }
             if (!editorRefsToClose.isEmpty()) {
                 // Close all at once! Otherwise, for example, when ProcessEditor is closed FormEditor may take focus and initialize.
-                // 2nd parameter save=false prevents "Save changed files?" dialog: they are saved anyway.
-                page.closeEditors(editorRefsToClose.toArray(new IEditorReference[editorRefsToClose.size()]), false);
+                if (!page.closeEditors(editorRefsToClose.toArray(new IEditorReference[editorRefsToClose.size()]), true)) {
+                    return;
+                }
             }
             ProcessCache.processDefinitionWasDeleted(oldDefinitionFile);
             IPath newPath = oldDefinitionFolder.getParent().getFolder(new Path(newName)).getFullPath();
@@ -364,7 +449,7 @@ public class WorkspaceOperations {
     public static void renameGlobalDefinition(IStructuredSelection selection) {
         IFolder oldDefinitionFolder = (IFolder) selection.getFirstElement();
         IFile oldDefinitionFile = IOUtils.getProcessDefinitionFile(oldDefinitionFolder);
-        RenameProcessDefinitionDialog dialog = new RenameProcessDefinitionDialog(oldDefinitionFolder);
+        RenameProjectFolderProcessDialog dialog = new RenameProjectFolderProcessDialog(oldDefinitionFolder);
         ProcessDefinition definition = ProcessCache.getProcessDefinition(oldDefinitionFile);
         String oldName = definition.getName();
         if (oldName.length() > 1) {
@@ -392,9 +477,9 @@ public class WorkspaceOperations {
                 }
             }
             if (!editorRefsToClose.isEmpty()) {
-                // Close all at once! Otherwise, for example, when ProcessEditor is closed FormEditor may take focus and initialize.
-                // 2nd parameter save=false prevents "Save changed files?" dialog: they are saved anyway.
-                page.closeEditors(editorRefsToClose.toArray(new IEditorReference[editorRefsToClose.size()]), false);
+                if (!page.closeEditors(editorRefsToClose.toArray(new IEditorReference[editorRefsToClose.size()]), true)) {
+                    return;
+                }
             }
             ProcessCache.processDefinitionWasDeleted(oldDefinitionFile);
             IPath newPath = oldDefinitionFolder.getParent().getFolder(new Path(newName)).getFullPath();
@@ -419,7 +504,7 @@ public class WorkspaceOperations {
         SubprocessDefinition subprocessDefinition = (SubprocessDefinition) ProcessCache.getProcessDefinition(subdefinitionFile);
         ProcessDefinition definition = subprocessDefinition.getParent();
 
-        RenameProcessDefinitionDialog dialog = new RenameProcessDefinitionDialog(definition);
+        RenameProjectFolderProcessDialog dialog = new RenameProjectFolderProcessDialog(definition);
         dialog.setName(subprocessDefinition.getName());
         if (dialog.open() == IDialogConstants.OK_ID) {
             String newName = dialog.getName();
@@ -427,7 +512,9 @@ public class WorkspaceOperations {
                 IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
                 IEditorPart editor = page.findEditor(new FileEditorInput(subdefinitionFile));
                 if (editor != null) {
-                    page.closeEditor(editor, false);
+                    if (!page.closeEditor(editor, true)) {
+                        return;
+                    }
                 }
 
                 for (Subprocess sp : definition.getChildren(Subprocess.class)) {
@@ -436,7 +523,9 @@ public class WorkspaceOperations {
                         IFile definitionFile = IOUtils.getProcessDefinitionFile(definitionFolder);
                         editor = page.findEditor(new FileEditorInput(definitionFile));
                         if (editor != null) {
-                            page.closeEditor(editor, false);
+                            if (!page.closeEditor(editor, true)) {
+                                return;
+                            }
                         }
                         saveProcessDefinition(definition);
                         ProcessCache.invalidateProcessDefinition(definitionFile);
@@ -450,7 +539,9 @@ public class WorkspaceOperations {
                             IFile file = IOUtils.getFile(subdefinition.getId() + "." + ParContentProvider.PROCESS_DEFINITION_FILE_NAME);
                             editor = page.findEditor(new FileEditorInput(file));
                             if (editor != null) {
-                                page.closeEditor(editor, false);
+                                if (!page.closeEditor(editor, true)) {
+                                    return;
+                                }
                             }
                             saveProcessDefinition(subdefinition);
                             ProcessCache.invalidateProcessDefinition(file);
@@ -597,7 +688,9 @@ public class WorkspaceOperations {
                         IFile botTaskFile = (IFile) resource;
                         IEditorPart editor = page.findEditor(new FileEditorInput(botTaskFile));
                         if (editor != null) {
-                            page.closeEditor(editor, false);
+                            if (!page.closeEditor(editor, true)) {
+                                return;
+                            }
                         }
                         BotTask botTask = BotCache.getBotTaskNotNull(botTaskFile.getParent().getName(), botTaskFile.getName());
                         deleteBotTask(botTaskFile, botTask);
@@ -735,7 +828,9 @@ public class WorkspaceOperations {
                         for (IFile botTask : botTasks) {
                             IEditorPart editor = page.findEditor(new FileEditorInput(botTask));
                             if (editor != null) {
-                                page.closeEditor(editor, false);
+                                if (!page.closeEditor(editor, true)) {
+                                    return;
+                                }
                             }
                         }
                     }
@@ -767,7 +862,9 @@ public class WorkspaceOperations {
                 for (IFile botTask : botTasks) {
                     IEditorPart editor = page.findEditor(new FileEditorInput(botTask));
                     if (editor != null) {
-                        page.closeEditor(editor, false);
+                        if (!page.closeEditor(editor, true)) {
+                            return;
+                        }
                     }
                 }
                 IPath oldPath = botFolder.getFullPath();
@@ -799,7 +896,9 @@ public class WorkspaceOperations {
                 IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
                 IEditorPart editor = page.findEditor(new FileEditorInput(botTaskFile));
                 if (editor != null) {
-                    page.closeEditor(editor, true);
+                    if (!page.closeEditor(editor, true)) {
+                        return;
+                    }
                 }
                 deleteBotTaskFile(botTaskFile, botTask);
                 BotTaskUtils.copyBotTaskConfig(botTaskFile, botTask, dialog.getName(), botFolder);
@@ -946,5 +1045,4 @@ public class WorkspaceOperations {
         job.setUser(true);
         job.schedule();
     }
-
 }
