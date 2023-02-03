@@ -2,7 +2,6 @@ package ru.runa.gpd.editor.gef;
 
 import java.util.HashSet;
 import java.util.List;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.gef.ContextMenuProvider;
 import org.eclipse.gef.DefaultEditDomain;
@@ -35,7 +34,6 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.internal.ObjectActionContributorManager;
-
 import ru.runa.gpd.editor.ProcessEditorBase;
 import ru.runa.gpd.editor.ProcessEditorContributor;
 import ru.runa.gpd.editor.StructuredSelectionProvider;
@@ -131,7 +129,6 @@ public class DesignerGraphicalEditorPart extends GraphicalEditorWithFlyoutPalett
     public void select(GraphElement element) {
         GraphicalEditPart target = (GraphicalEditPart) getGraphicalViewer().getEditPartRegistry().get(element);
         if (target == null || !target.getFigure().isVisible()) {
-            editor.getOutlineViewer().select(element);
             return;
         }
         getGraphicalViewer().reveal(target);

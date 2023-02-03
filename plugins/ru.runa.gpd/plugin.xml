@@ -881,7 +881,6 @@
       <element
           type="connection"
             model="ru.runa.gpd.lang.model.Transition"
-            outlineTreeEditPart="ru.runa.gpd.editor.outline.TransitionTreeEditPart"
             jpdl="transition"
             bpmn="sequenceFlow"
             icon="transition.png"
@@ -967,7 +966,6 @@
             jpdl="swimlane"
             label="%default.swimlane.name"
             model="ru.runa.gpd.lang.model.Swimlane"
-            outlineTreeEditPart="ru.runa.gpd.editor.outline.SwimlaneTreeEditPart"
             type="artifact">
          <graphiti
                add="ru.runa.gpd.editor.graphiti.add.AddSwimlaneFeature"
@@ -982,7 +980,6 @@
       <element
           type="node"
             model="ru.runa.gpd.lang.model.StartState"
-            outlineTreeEditPart="ru.runa.gpd.editor.outline.StartStateTreeEditPart"
             jpdl="start-state"
             bpmn="startEvent"
             icon="start.png"
@@ -1208,7 +1205,6 @@
             jpdl="action"
             label="%label.element.action"
             model="ru.runa.gpd.lang.model.ActionImpl"
-            outlineTreeEditPart="ru.runa.gpd.editor.outline.ActionTreeEditPart"
             type="artifact">
          <gef 
             figure="ru.runa.gpd.editor.gef.figure.ActionFigure"
@@ -1230,7 +1226,6 @@
             jpdl="variable"
             label="%default.variable.name"
             model="ru.runa.gpd.lang.model.Variable"
-            outlineTreeEditPart="ru.runa.gpd.editor.outline.VariableTreeEditPart"
             type="artifact">
       </element>
       <element
@@ -1239,7 +1234,6 @@
             jpdl="process-definition"
             label="%label.processDefinition"
             model="ru.runa.gpd.lang.model.ProcessDefinition"
-            outlineTreeEditPart="ru.runa.gpd.editor.outline.ProcessDefinitionTreeEditPart"
             type="definition">
          <gef 
             figure="ru.runa.gpd.editor.gef.figure.GridSupportLayer"
@@ -1252,7 +1246,6 @@
             jpdl="process-definition"
             label="%label.globalSectionDefinition"
             model="ru.runa.gpd.lang.model.GlobalSectionDefinition"
-            outlineTreeEditPart="ru.runa.gpd.editor.outline.ProcessDefinitionTreeEditPart"
             type="definition">
          <gef 
             figure="ru.runa.gpd.editor.gef.figure.GridSupportLayer"
