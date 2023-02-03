@@ -1,5 +1,10 @@
 package ru.runa.gpd.editor;
 
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.base.Objects;
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -7,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -36,11 +40,6 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
-import com.google.common.base.Function;
-import com.google.common.base.Joiner;
-import com.google.common.base.Objects;
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.PropertyNames;
@@ -972,48 +971,18 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
         }
 
         private boolean isCurrentTypeAllowedForInsert(VariableUserType selectedType, VariableUserType variableType) {
-            boolean result = true;
-
             if (variableType != null) {
-                if (isEquals(selectedType, variableType)) {
-                    result = false;
+                if (Objects.equal(selectedType.getName(), variableType.getName())) {
+                    return false;
                 } else {
                     for (Variable var : variableType.getVariables(false, true)) {
-                        result = result && isCurrentTypeAllowedForInsert(selectedType, var.getUserType());
-                        if (!result) {
-                            break;
+                        if (!isCurrentTypeAllowedForInsert(selectedType, var.getUserType())) {
+                            return false;
                         }
                     }
                 }
             }
-            return result;
-        }
-
-        private boolean isEquals(VariableUserType leftType, VariableUserType rightType) {
-            boolean result = Objects.equal(leftType.getName(), rightType.getName());
-            result = result && (leftType.getAttributes() == null ? rightType.getAttributes() == null : false);
-            if (leftType.getAttributes() != null && rightType.getAttributes() != null) {
-                // XXX: fault accumulate "result &&" - wrong set "false"
-                result = leftType.getAttributes().size() == rightType.getAttributes().size();
-                if (result) {
-                    for (int i = 0; i < leftType.getAttributes().size(); i++) {
-                        Variable var1 = leftType.getAttributes().get(i);
-                        Variable var2 = rightType.getAttributes().get(i);
-                        result = result && stringEqual(var1.getName(), var2.getName());
-                        result = result && stringEqual(var1.getScriptingName(), var2.getScriptingName());
-                        result = result && stringEqual(var1.getDefaultValue(), var2.getDefaultValue());
-                        result = result && stringEqual(var1.getDescription(), var2.getDescription());
-                        if (!result) {
-                            break;
-                        }
-                    }
-                }
-            }
-            return result;
-        }
-
-        private boolean stringEqual(String left, String right) {
-            return Objects.equal(Strings.nullToEmpty(left), Strings.nullToEmpty(right));
+            return true;
         }
 
         private void copyUserTypeRecursive(VariableUserType sourceUserType) {
