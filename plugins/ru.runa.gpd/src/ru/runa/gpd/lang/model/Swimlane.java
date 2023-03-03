@@ -10,6 +10,7 @@ import ru.runa.gpd.extension.orgfunction.OrgFunctionDefinition;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.swimlane.SwimlaneInitializer;
 import ru.runa.gpd.swimlane.SwimlaneInitializerParser;
+import ru.runa.gpd.util.IOUtils;
 import ru.runa.wfe.extension.assign.DefaultAssignmentHandler;
 import ru.runa.wfe.var.format.ExecutorFormat;
 
@@ -82,11 +83,26 @@ public class Swimlane extends Variable implements Delegable {
     protected void fillCustomPropertyDescriptors(List<IPropertyDescriptor> descriptors) {
     }
 
-    public void updateFromGlobalPartition(Variable swimlaneFromGlobalSection) {
+    public void updateFromGlobalPartition(Swimlane swimlaneFromGlobalSection) {
         this.setFormat(swimlaneFromGlobalSection.getFormat());
         this.setDefaultValue(swimlaneFromGlobalSection.getDefaultValue());
         this.setPublicVisibility(swimlaneFromGlobalSection.isPublicVisibility());
         this.setStoreType(swimlaneFromGlobalSection.getStoreType());
+    }
+
+    @Override
+    public Swimlane getCopyForGlobalPartition() {
+        Swimlane swimlane = new Swimlane();
+        swimlane.setFormat(this.getFormat());
+        swimlane.setDefaultValue(this.getDefaultValue());
+        swimlane.setPublicVisibility(this.isPublicVisibility());
+        swimlane.setStoreType(this.getStoreType());
+        String name = this.getName();
+        if (name.startsWith(IOUtils.GLOBAL_OBJECT_PREFIX)) {
+            name = name.substring(IOUtils.GLOBAL_OBJECT_PREFIX.length());
+        }
+        swimlane.setName(name);
+        return swimlane;
     }
 
 }

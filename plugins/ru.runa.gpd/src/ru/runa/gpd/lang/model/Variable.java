@@ -338,4 +338,22 @@ public class Variable extends NamedGraphElement implements Describable {
         this.setPublicVisibility(variableFromGlobalSection.isPublicVisibility());
         this.setStoreType(variableFromGlobalSection.getStoreType());
     }
+
+    public Variable getCopyForGlobalPartition() {
+        Variable variable = new Variable();
+        if (this.getUserType() != null) {
+            variable.setUserType(this.getUserType());
+
+        }
+        variable.setFormat(this.getFormat());
+        variable.setDefaultValue(this.getDefaultValue());
+        variable.setPublicVisibility(this.isPublicVisibility());
+        variable.setStoreType(this.getStoreType());
+        String name = this.getName();
+        if (name.startsWith(IOUtils.GLOBAL_OBJECT_PREFIX)) {
+            name = name.substring(IOUtils.GLOBAL_OBJECT_PREFIX.length());
+        }
+        variable.setName(name);
+        return variable;
+    }
 }

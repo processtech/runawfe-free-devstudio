@@ -3,6 +3,7 @@ package ru.runa.gpd.ui.wizard;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -14,8 +15,14 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import org.dom4j.Document;
 import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
@@ -47,13 +54,23 @@ import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.internal.WorkbenchImages;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
+import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.SharedImages;
+import ru.runa.gpd.lang.BpmnSerializer;
+import ru.runa.gpd.lang.Language;
+import ru.runa.gpd.lang.model.GlobalSectionDefinition;
+import ru.runa.gpd.lang.model.ProcessDefinition;
+import ru.runa.gpd.lang.model.Swimlane;
+import ru.runa.gpd.lang.model.Variable;
+import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.gpd.sync.WfeServerConnector;
 import ru.runa.gpd.sync.WfeServerConnectorComposite;
 import ru.runa.gpd.sync.WfeServerConnectorSynchronizationCallback;
 import ru.runa.gpd.sync.WfeServerProcessDefinitionImporter;
 import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.util.IOUtils;
+import ru.runa.gpd.util.WorkspaceOperations;
+import ru.runa.gpd.util.XmlUtil;
 import ru.runa.gpd.util.files.ParFileImporter;
 import ru.runa.gpd.util.files.ProcessDefinitionImportInfo;
 import ru.runa.wfe.commons.CalendarUtil;
@@ -312,6 +329,38 @@ public class ImportParWizardPage extends ImportWizardPage {
                 if (importer.importFile(importInfo) == null) {
                     setErrorMessage(Localization.getString("ImportParWizardPage.error.processWithSameNameExists", importInfo.getPath()));
                     return false;
+                } else if (importer.getDefinition() != null) {
+                    ProcessDefinition processDefinition = importer.getDefinition();
+                    if (processDefinition.isUsingGlobalVars()) {
+                        GlobalSectionDefinition globalDefinition = ProcessCache.getGlobalProcessDefinition(processDefinition);
+                        if (globalDefinition == null) {
+                            IPath globalPath = new Path(IPath.SEPARATOR + ".global");
+                            IFolder folder = selectedProject.getFolder(globalPath);
+                            folder.create(true, true, null);
+                            IFile globalSectionFile = IOUtils.getProcessDefinitionFile(folder);
+                            String processName = "Global";
+                            Language language = processDefinition.getLanguage();
+                            Map<String, String> properties = Maps.newHashMap();
+                            if (language == Language.BPMN) {
+                                properties.put(BpmnSerializer.SHOW_SWIMLANE, processDefinition.getSwimlaneDisplayMode().name());
+                            }
+                            Document document = language.getSerializer().getInitialProcessDefinitionDocument(processName, properties);
+                            byte[] bytes = XmlUtil.writeXml(document);
+                            globalSectionFile.create(new ByteArrayInputStream(bytes), true, null);
+                            ProcessCache.newProcessDefinitionWasCreated(globalSectionFile);
+                            globalDefinition = (GlobalSectionDefinition) ProcessCache.getProcessDefinition(globalSectionFile);
+                            WorkspaceOperations.openGlobalSectionDefinition(globalSectionFile);
+                        }
+                        for (Swimlane swimlane : processDefinition.getGlobalSwimlanes()) {
+                            globalDefinition.addSwimlane(swimlane.getCopyForGlobalPartition());
+                        }
+                        for (Variable variable : processDefinition.getGlobalVariables()) {
+                            globalDefinition.addVariable(variable.getCopyForGlobalPartition());
+                        }
+                        for (VariableUserType type : processDefinition.getGlobalTypes()) {
+                            globalDefinition.addVariableUserType(type.getCopyForGlobalPartition());
+                        }
+                    }
                 }
             }
         } catch (Exception exception) {
