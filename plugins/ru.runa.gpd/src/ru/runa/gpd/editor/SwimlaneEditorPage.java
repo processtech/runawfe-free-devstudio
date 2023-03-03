@@ -32,7 +32,6 @@ import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.HandlerRegistry;
-import ru.runa.gpd.globalsection.GlobalSectionUtils;
 import ru.runa.gpd.lang.NodeRegistry;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.GlobalSectionDefinition;
@@ -117,7 +116,7 @@ public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
         copyButton = addButton(buttonsBar, "button.copy", new CopySwimlaneSelectionListener(), true);
         pasteButton = addButton(buttonsBar, "button.paste", new PasteSwimlaneSelectionListener(), true);
         searchButton = addButton(buttonsBar, "button.search", new SearchSwimlaneUsageSelectionListener(), true);
-        if (CommonPreferencePage.isGlobalObjectsEnabled()) {
+        if (CommonPreferencePage.isGlobalObjectsEnabled() && !isGlobalSection()) {
             importGlobalButton = addButton(buttonsBar, "button.importGlobal", new ImportGlobalSwimlaneSelectionListener(), true);
             makeLocalButton = addButton(buttonsBar, "button.makeLocal", new MakeLocalListener(), true);
         }
@@ -162,9 +161,9 @@ public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
         enableAction(deleteButton, swimlanesCreateDeleteEnabled && selected.size() > 0);
         enableAction(renameButton, withoutGlobals && selected.size() == 1);
         enableAction(copyButton, withoutGlobals && selected.size() > 0);
-        if (CommonPreferencePage.isGlobalObjectsEnabled()) {
-            enableAction(importGlobalButton, (selected.size() >= 0 && !isGlobalSection && isUsingGlobals));
-            enableAction(makeLocalButton, (!withoutGlobals && selected.size() == 1 && !isGlobalSection && isUsingGlobals));
+        if (CommonPreferencePage.isGlobalObjectsEnabled() && !isGlobalSection()) {
+            enableAction(importGlobalButton, (selected.size() >= 0 && isUsingGlobals));
+            enableAction(makeLocalButton, (!withoutGlobals && selected.size() == 1 && isUsingGlobals));
         }
         boolean pasteEnabled = false;
         if (Clipboard.getDefault().getContents() instanceof List) {
@@ -191,7 +190,7 @@ public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
     }
 
     private boolean isGlobalSection() {
-        return GlobalSectionUtils.isGlobalSectionName(getDefinition().getName());
+        return getDefinition() instanceof GlobalSectionDefinition;
     }
 
     private boolean isUsingGlobals() {

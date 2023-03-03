@@ -145,7 +145,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
         addButton(typeButtonsBar, "button.create", new CreateTypeSelectionListener(), false);
         changeTypeButton = addButton(typeButtonsBar, "button.change", new EditTypeSelectionListener(), true);
         renameTypeButton = addButton(typeButtonsBar, "button.rename", new RenameTypeSelectionListener(), true);
-        if (CommonPreferencePage.isGlobalObjectsEnabled()) {
+        if (CommonPreferencePage.isGlobalObjectsEnabled() && !isGlobalSection()) {
             importGlobalButton = addButton(typeButtonsBar, "button.importGlobal", new ImportGlobalTypeSelectionListener(), true);
             makeLocalTypeButton = addButton(typeButtonsBar, "button.makeLocal", new MakeLocalTypeListener(), true);
         }
@@ -231,10 +231,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
     }
 
     private boolean isGlobalSection() {
-        if (GlobalSectionUtils.isGlobalSectionName(getDefinition().getName())) {
-            return true;
-        }
-        return false;
+        return getDefinition() instanceof GlobalSectionDefinition;
     }
 
     private void updateViewer() {
@@ -253,7 +250,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
         enableAction(deleteTypeButton, selectedType != null);
         enableAction(renameTypeButton, selectedType != null && !selectedType.isGlobal());
         enableAction(moveUpTypeButton, selectedType != null && getDefinition().getVariableUserTypes().indexOf(selectedType) > 0);
-        if (CommonPreferencePage.isGlobalObjectsEnabled()) {
+        if (CommonPreferencePage.isGlobalObjectsEnabled() && !isGlobalSection()) {
 
             enableAction(importGlobalButton, !isGlobalSection && isUsingGlobals());
             enableAction(makeLocalTypeButton, selectedType != null && selectedType.isGlobal());
