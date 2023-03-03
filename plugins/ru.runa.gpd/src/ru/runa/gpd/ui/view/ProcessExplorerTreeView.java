@@ -272,15 +272,6 @@ public class ProcessExplorerTreeView extends ViewPart implements ISelectionListe
                 }
             });
         }
-        if (menuOnGlobalSectionResource && CommonPreferencePage.isGlobalObjectsEnabled()) {
-            manager.add(new Action(Localization.getString("ExplorerTreeView.menu.label.makeGSLocal"),
-                    SharedImages.getImageDescriptor("icons/gr_to_loc.gif")) {
-                @Override
-                public void run() {
-                    WorkspaceOperations.makeGlobalSectionLocal(selection);
-                }
-            });
-        }
         manager.add(
                 new Action(Localization.getString("ExplorerTreeView.menu.label.renameProcess"), SharedImages.getImageDescriptor("icons/rename.gif")) {
                     @Override

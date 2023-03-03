@@ -36,8 +36,8 @@ import org.eclipse.ui.part.FileEditorInput;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.clipboard.VariableTransfer;
-import ru.runa.gpd.globalsection.GlobalSectionUtils;
 import ru.runa.gpd.lang.model.FormNode;
+import ru.runa.gpd.lang.model.GlobalSectionDefinition;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.model.Variable;
@@ -137,7 +137,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
         copyButton = addButton(buttonsBar, "button.copy", new CopyVariableSelectionListener(), true);
         pasteButton = addButton(buttonsBar, "button.paste", new PasteVariableSelectionListener(), true);
         searchButton = addButton(buttonsBar, "button.search", new SearchVariableUsageSelectionListener(), true);
-        if (CommonPreferencePage.isGlobalObjectsEnabled()) {
+        if (CommonPreferencePage.isGlobalObjectsEnabled() && !isGlobalSection()) {
             importGlobalButton = addButton(buttonsBar, "button.importGlobal", new ImportGlobalVariableSelectionListener(), true);
             makeLocalButton = addButton(buttonsBar, "button.makeLocal", new MakeLocalVariableListener(), true);
         }
@@ -189,9 +189,9 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
         enableAction(moveToTypeAttributeButton, isWithoutGlobalVars && selected.size() == 1);
         enableAction(usageReportButton, variables.size() > 0);
         enableAction(pasteButton, isWithoutGlobalVars);
-        if (CommonPreferencePage.isGlobalObjectsEnabled()) {
-            enableAction(makeLocalButton, !isWithoutGlobalVars && selected.size() == 1 && !isGlobalSection && isUsingGlobals);
-            enableAction(importGlobalButton, (selected.size() >= 0 && !isGlobalSection && isUsingGlobals));
+        if (CommonPreferencePage.isGlobalObjectsEnabled() && !isGlobalSection()) {
+            enableAction(makeLocalButton, !isWithoutGlobalVars && selected.size() == 1 && isUsingGlobals);
+            enableAction(importGlobalButton, (selected.size() >= 0 && isUsingGlobals));
         }
 
     }
@@ -210,10 +210,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
     }
 
     private boolean isGlobalSection() {
-        if (GlobalSectionUtils.isGlobalSectionName(getDefinition().getName())) {
-            return true;
-        }
-        return false;
+        return getDefinition() instanceof GlobalSectionDefinition;
     }
 
     private boolean isUsingGlobals() {
