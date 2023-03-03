@@ -8,6 +8,7 @@ import com.google.common.collect.Lists;
 
 import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.util.EventSupport;
+import ru.runa.gpd.util.IOUtils;
 
 public class VariableUserType extends EventSupport implements VariableContainer, PropertyNames, Comparable<VariableUserType> {
     public static final String PREFIX = "usertype:";
@@ -188,6 +189,26 @@ public class VariableUserType extends EventSupport implements VariableContainer,
                 this.addAttribute(new Variable(attribute));
             }
         }
+    }
+
+    public VariableUserType getCopyForGlobalPartition() {
+        VariableUserType type = new VariableUserType();
+        type.isStoreInExternalStorage = this.isStoreInExternalStorage;
+
+        for (Variable attribute : this.getAttributes()) {
+            if (attribute.isComplex()) {
+                type.addAttribute(
+                        new Variable(attribute.getName(), attribute.getScriptingName(), attribute.getFormat(), getCopy(attribute.getUserType())));
+            } else {
+                type.addAttribute(new Variable(attribute));
+            }
+        }
+        String name = this.getName();
+        if (name.startsWith(IOUtils.GLOBAL_OBJECT_PREFIX)) {
+            name = name.substring(IOUtils.GLOBAL_OBJECT_PREFIX.length());
+        }
+        type.setName(name);
+        return type;
     }
 
 }

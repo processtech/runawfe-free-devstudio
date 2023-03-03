@@ -17,6 +17,7 @@ import ru.runa.gpd.util.IOUtils;
 public final class ParFileImporter implements FileImporter {
 
     private final IContainer container;
+    private ProcessDefinition definition;
 
     public ParFileImporter(IContainer container) {
         this.container = container;
@@ -31,7 +32,7 @@ public final class ParFileImporter implements FileImporter {
         IOUtils.createFolder(processFolder);
         IOUtils.extractArchiveToFolder(file.getInputStream(), processFolder);
         final IFile definitionFile = IOUtils.getProcessDefinitionFile(processFolder);
-        final ProcessDefinition definition = ProcessCache.newProcessDefinitionWasCreated(definitionFile);
+        definition = ProcessCache.newProcessDefinitionWasCreated(definitionFile);
         if (definition != null && !Objects.equal(definition.getName(), processFolder.getName())) {
             // if par name differs from definition name
             final IPath destination = IOUtils.getProcessFolder(container, definition.getName()).getFullPath();
@@ -44,6 +45,10 @@ public final class ParFileImporter implements FileImporter {
             ProcessCache.invalidateProcessDefinition(definitionFile);
         }
         return processFolder;
+    }
+
+    public ProcessDefinition getDefinition() {
+        return definition;
     }
 
 }

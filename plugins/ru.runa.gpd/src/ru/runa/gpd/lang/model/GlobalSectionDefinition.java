@@ -14,6 +14,7 @@ import ru.runa.gpd.globalsection.GlobalSectionUtils;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.util.IOUtils;
+import ru.runa.gpd.util.VariableUtils;
 
 public class GlobalSectionDefinition extends ProcessDefinition {
 
@@ -186,5 +187,30 @@ public class GlobalSectionDefinition extends ProcessDefinition {
 
     @Override
     public void validate(List<ValidationError> errors, IFile definitionFile) {
+    }
+
+    @Override
+    public void addVariableUserType(VariableUserType type) {
+        if (getTypeByName(type.getName()) == null) {
+            super.addVariableUserType(type);
+        }
+    }
+
+    public void addSwimlane(Swimlane swimlane) {
+        if (getSwimlaneByName(swimlane.getName()) == null) {
+            addChild(swimlane);
+        }
+    }
+
+    public void addVariable(Variable variable) {
+        if (!VariableUtils.variableExists(variable.getName(), this)) {
+
+            if (variable.getUserType() != null) {
+                VariableUserType type = variable.getUserType().getCopyForGlobalPartition();
+                addVariableUserType(type);
+                variable.setUserType(type);
+            }
+            addChild(variable);
+        }
     }
 }
