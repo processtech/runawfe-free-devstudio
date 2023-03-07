@@ -22,6 +22,7 @@ public class Variable extends NamedGraphElement implements Describable {
     public static final String FORMAT_COMPONENT_TYPE_START = "(";
     public static final String FORMAT_COMPONENT_TYPE_END = ")";
     public static final String FORMAT_COMPONENT_TYPE_CONCAT = ", ";
+    private static final String ID_NAME = "id";
     private String scriptingName;
     private String format;
     private boolean publicVisibility;
@@ -287,6 +288,9 @@ public class Variable extends NamedGraphElement implements Describable {
         super.validate(errors, definitionFile);
         Map<String, String> undeclaredTypesMap = new TreeMap<String, String>();
         checkVariableType(this, getVariables(true, true), undeclaredTypesMap);
+        if (getName().equals(ID_NAME)) {
+            errors.add(ValidationError.createLocalizedError(this, "variable.invalidIdName"));
+        }
         undeclaredTypesMap.entrySet().stream()
                 .forEach(entry -> errors.add(ValidationError.createLocalizedError(this, "unknown.variableType", entry.getValue(), entry.getKey())));
     }
