@@ -661,8 +661,4 @@ public class IOUtils {
         }
     }
 
-    public static boolean isDotXMLFolder(IFolder folder) {
-        return folder.getName().equals(".xml");
-    }
-
 }

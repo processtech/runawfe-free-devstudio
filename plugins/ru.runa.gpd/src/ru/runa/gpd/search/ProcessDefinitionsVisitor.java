@@ -2,7 +2,6 @@ package ru.runa.gpd.search;
 
 import java.text.MessageFormat;
 import java.util.Map;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -13,7 +12,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.search.internal.ui.SearchMessages;
 import org.eclipse.search.ui.NewSearchUI;
-
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 
@@ -34,7 +32,7 @@ public abstract class ProcessDefinitionsVisitor {
         progressMonitor = monitor == null ? new NullProgressMonitor() : monitor;
         numberOfScannedElements = 0;
         numberOfElementsToScan = ProcessCache.getAllProcessDefinitions().size();
-        Job monitorUpdateJob = new Job(SearchMessages.TextSearchVisitor_progress_updating_job) {
+        Job monitorUpdateJob = new Job("Searching") {
             private int lastNumberOfScannedElements = 0;
 
             @Override

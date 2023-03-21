@@ -3,8 +3,10 @@
  */
 package ru.runa.gpd.ui.view;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import java.util.List;
-
+import java.util.Set;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -13,14 +15,12 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
-
-import com.google.common.collect.Lists;
-
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.util.IOUtils;
 
 public class ProcessExplorerContentProvider implements ITreeContentProvider {
+	private static final Set<String> IGNORED_FOLDERS = Sets.newHashSet(".xml", ".settings");
 
     @Override
     public Object[] getChildren(Object parentElement) {
@@ -52,9 +52,10 @@ public class ProcessExplorerContentProvider implements ITreeContentProvider {
             for (IResource resource : container.members()) {
                 if (resource instanceof IFolder) {
                     IFolder folder = (IFolder) resource;
-                    if (!IOUtils.isDotXMLFolder(folder)) {
-                        result.add(folder);
+                    if (IGNORED_FOLDERS.contains(folder.getName())) {
+                        continue;
                     }
+                    result.add(folder);
                 }
             }
         } catch (CoreException e) {
