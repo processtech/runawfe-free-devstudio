@@ -97,7 +97,7 @@ public class VariableSearchVisitor {
         }
         progressMonitor = monitor == null ? new NullProgressMonitor() : monitor;
         numberOfScannedElements = 0;
-        Job monitorUpdateJob = new Job(SearchMessages.TextSearchVisitor_progress_updating_job) {
+        Job monitorUpdateJob = new Job("Searching") {
             private int lastNumberOfScannedElements = 0;
 
             @Override
