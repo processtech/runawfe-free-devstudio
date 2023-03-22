@@ -6,7 +6,9 @@ import com.google.common.collect.Lists;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.eclipse.core.resources.IFile;
@@ -44,7 +46,8 @@ import ru.runa.gpd.util.VariableUtils;
 @SuppressWarnings("unchecked")
 public abstract class GraphElement extends EventSupport
         implements IPropertySource, PropertyNames, IActionFilter, VariableContainer, ProcessDefinitionAware {
-    private PropertyChangeListener delegatedListener;
+	// TODO rm3004
+    private final Set<PropertyChangeListener> delegatedListeners = new HashSet<>();
     private GraphElement parent;
     private GraphElement uiParentContainer;
     private final List<GraphElement> children = new ArrayList<GraphElement>();
@@ -85,8 +88,8 @@ public abstract class GraphElement extends EventSupport
     }
 
     public void setDelegatedListener(PropertyChangeListener delegatedListener) {
-        this.delegatedListener = delegatedListener;
         if (delegatedListener != null) {
+            this.delegatedListeners.add(delegatedListener);
             addPropertyChangeListener(delegatedListener);
             for (GraphElement child : getChildren(GraphElement.class)) {
                 child.setDelegatedListener(delegatedListener);
@@ -100,8 +103,8 @@ public abstract class GraphElement extends EventSupport
             for (GraphElement child : getChildren(GraphElement.class)) {
                 child.unsetDelegatedListener(delegatedListener);
             }
+            this.delegatedListeners.remove(delegatedListener);
         }
-        this.delegatedListener = null;
     }
 
     public Rectangle getConstraint() {
@@ -191,8 +194,8 @@ public abstract class GraphElement extends EventSupport
         children.remove(child);
         firePropertyChange(NODE_REMOVED, child, null);
         firePropertyChange(PROPERTY_CHILDREN_CHANGED, child, null);
-        if (child.delegatedListener != null) {
-            child.removePropertyChangeListener(child.delegatedListener);
+        for (PropertyChangeListener delegatedListener : child.delegatedListeners) {
+            child.removePropertyChangeListener(delegatedListener);
         }
         if (child instanceof Node) {
             ((Node) child).updateRegulationsPropertiesOnDelete();
@@ -212,7 +215,9 @@ public abstract class GraphElement extends EventSupport
     public void addChild(GraphElement child, int index) {
         children.add(index, child);
         child.setParent(this);
-        child.setDelegatedListener(delegatedListener);
+        for (PropertyChangeListener delegatedListener : delegatedListeners) {
+            child.setDelegatedListener(delegatedListener);
+        }
         if (child.getId() == null && !Variable.class.equals(child.getClass())) {
             child.setId(getProcessDefinition().getNextNodeId());
         }
