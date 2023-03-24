@@ -3373,6 +3373,12 @@
       <method
             label="validator.getValidatorContext().addFieldError(variableName, message)">
       </method>
+      <method
+            label="nodeLog.info(string)">
+      </method>
+      <method
+            label="nodeLog.debug(string)">
+      </method>
       <constant
             label="null">
       </constant>
