@@ -2865,6 +2865,12 @@
             <separator name="updates"/>
          </menu>
          <action
+               class="ru.runa.gpd.ui.action.UpdateScriptTaskNames"
+               id="updateScriptTaskNames"
+               label="%label.menu.properties.updateScriptTaskNames"
+               menubarPath="view/additions"
+               style="push"/>
+         <action
                class="ru.runa.gpd.ui.action.ShowActionsAction"
                id="enableActionsInGraph"
                label="%label.menu.properties.enableActionsInGraph"
