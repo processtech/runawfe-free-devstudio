@@ -22,7 +22,11 @@ public interface PrefConstants {
     public static final String P_LANGUAGE_SWIMLANE_PERFORMER = "reassignSwimlaneToTaskPerformer";
     public static final String P_LANGUAGE_TASK_STATE_ASYNC_INPUT_DATA = "inputDataAllowedInAsyncTaskNode";
     public static final String P_LANGUAGE_SUB_PROCESS_ASYNC_INPUT_DATA = "inputDataAllowedInAsyncSubprocess";
+    public static final String P_LANGUAGE_SCRIPT_TASK_DEFAULT_LABEL = "scriptTaskDefaultLabel";
+    public static final String P_LANGUAGE_SCRIPT_TASK_HANDLER_CLASS_LABEL = "scriptTaskHandlerClassLabel";
+    public static final String P_LANGUAGE_SCRIPT_TASK_HANDLER_LABEL = "scriptTaskHandlerLabel";
     public static final String P_EMBEDDED_SUBPROCESS_BEHAVIOR = "EmbeddedSubprocess.behavior";
+    public static final String P_SCRIPT_TASK_NAME_BEHAVIOR = "scriptTaskName.behavior";
     public static final String P_FORM_WEB_SERVER_PORT = "editorWebPort";
     public static final String P_FORM_USE_EXTERNAL_EDITOR = "useExternalEditor";
     public static final String P_FORM_EXTERNAL_EDITOR_PATH = "externalEditorPath";
