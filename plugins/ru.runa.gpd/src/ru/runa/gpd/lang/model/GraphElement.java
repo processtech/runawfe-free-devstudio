@@ -26,6 +26,7 @@ import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.GEFConstants;
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.HandlerRegistry;
+import ru.runa.gpd.lang.CycleDetector;
 import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.NodeRegistry;
 import ru.runa.gpd.lang.NodeTypeDefinition;
@@ -33,6 +34,7 @@ import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEventCapable;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 import ru.runa.gpd.lang.model.bpmn.TextAnnotation;
+import ru.runa.gpd.lang.model.bpmn.ExclusiveGateway;
 import ru.runa.gpd.lang.model.jpdl.ActionContainer;
 import ru.runa.gpd.property.DelegableClassPropertyDescriptor;
 import ru.runa.gpd.property.DelegableConfPropertyDescriptor;
@@ -46,6 +48,9 @@ import ru.runa.gpd.ui.enhancement.DocxDialogEnhancementMode;
 import ru.runa.gpd.util.EmbeddedFileUtils;
 import ru.runa.gpd.util.EventSupport;
 import ru.runa.gpd.util.VariableUtils;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Display;
 
 @SuppressWarnings("unchecked")
 public abstract class GraphElement extends EventSupport
@@ -56,6 +61,7 @@ public abstract class GraphElement extends EventSupport
     private final List<GraphElement> children = new ArrayList<GraphElement>();
     private Rectangle constraint;
     private String id;
+    private boolean isCycleDetectorEnabled = false;
 
     public String getId() {
         return id;
@@ -236,14 +242,26 @@ public abstract class GraphElement extends EventSupport
     }
 
     public void addChild(GraphElement child, int index) {
-        children.add(index, child);
-        child.setParent(this);
-        child.setDelegatedListener(delegatedListener);
-        if (child.getId() == null && !Variable.class.equals(child.getClass())) {
-            child.setId(getProcessDefinition().getNextNodeId());
+        boolean isCycle = false;
+
+        if (isCycleDetectorEnabled && child instanceof AbstractTransition) {
+            CycleDetector cycleDetector = new CycleDetector();
+            isCycle = cycleDetector.hasCycle(this, (AbstractTransition) child);
         }
-        firePropertyChange(NODE_ADDED, null, child);
-        firePropertyChange(PROPERTY_CHILDREN_CHANGED, null, child);
+        
+        if (!isCycle) {
+            children.add(index, child);
+            child.setParent(this);
+            child.setDelegatedListener(delegatedListener);
+            if (child.getId() == null && !Variable.class.equals(child.getClass())) {
+                child.setId(getProcessDefinition().getNextNodeId());
+            }
+            firePropertyChange(NODE_ADDED, null, child);
+            firePropertyChange(PROPERTY_CHILDREN_CHANGED, null, child);
+        } else {
+            MessageDialog.openError(Display.getCurrent().getActiveShell(), "Ошибка", "Cyclicity is noticed!");
+            throw new IllegalArgumentException("Cyclicity is noticed!");
+        }
     }
 
     public void swapChildren(GraphElement child1, GraphElement child2) {
