@@ -5,8 +5,7 @@ import java.util.HashSet;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.AbstractTransition;
-import ru.runa.gpd.lang.model.bpmn.ExclusiveGateway;
-import ru.runa.gpd.lang.model.jpdl.Fork;
+import ru.runa.gpd.lang.model.Decision;
 
 
 public class CycleDetector {
@@ -14,7 +13,7 @@ public class CycleDetector {
   private Set<GraphElement> visited;
   private Set<GraphElement> onStack;
 
-  private boolean goThroughExclusiveGateway = false;
+  private boolean goThroughDecision = false;
 
   public CycleDetector() {
     visited = new HashSet<>();
@@ -25,18 +24,22 @@ public class CycleDetector {
     visited.add(child);
     onStack.add(child);
 
-    if (child instanceof ExclusiveGateway || child instanceof Fork) {
-      goThroughExclusiveGateway = true;
+    if (child instanceof Decision) {
+      goThroughDecision = true;
     }
 
+    if (transition.getTarget()==null) {
+    	return false;
+    }
+    
     for (AbstractTransition leavingTransitions : transition.getTarget().getLeavingTransitions()) {
       Node targetNode = leavingTransitions.getTarget();
-      if (!visited.contains(targetNode)) {
+      if (targetNode != null && !visited.contains(targetNode)) {
         if (hasCycle(leavingTransitions.getTarget(), leavingTransitions)) {
-          return true && goThroughExclusiveGateway;
+          return true && goThroughDecision;
         }
       } else if (onStack.contains(targetNode)) {
-        return true && goThroughExclusiveGateway;
+        return true && goThroughDecision;
       }
     }
 

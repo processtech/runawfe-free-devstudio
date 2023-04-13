@@ -34,7 +34,6 @@ import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEventCapable;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 import ru.runa.gpd.lang.model.bpmn.TextAnnotation;
-import ru.runa.gpd.lang.model.bpmn.ExclusiveGateway;
 import ru.runa.gpd.lang.model.jpdl.ActionContainer;
 import ru.runa.gpd.property.DelegableClassPropertyDescriptor;
 import ru.runa.gpd.property.DelegableConfPropertyDescriptor;
@@ -246,7 +245,7 @@ public abstract class GraphElement extends EventSupport
 
         if (isCycleDetectorEnabled && child instanceof AbstractTransition) {
             CycleDetector cycleDetector = new CycleDetector();
-            isCycle = cycleDetector.hasCycle(this, (AbstractTransition) child);
+             isCycle = cycleDetector.hasCycle(this, (AbstractTransition) child);
         }
         
         if (!isCycle) {
