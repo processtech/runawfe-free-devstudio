@@ -3047,6 +3047,13 @@
                style="push">
          </action>
          <action
+               class="ru.runa.gpd.ui.action.CycleDetectorAction"
+               id="ru.runa.gpd.cycleDetectorAction"
+               label="%label.menu.cycleDetector"
+               menubarPath="file/command"
+               style="push">
+         </action>
+         <action
                class="ru.runa.gpd.ui.action.HelpAboutAction"
                id="ru.runa.gpd.help"
                label="%label.menu.helpAbout"
