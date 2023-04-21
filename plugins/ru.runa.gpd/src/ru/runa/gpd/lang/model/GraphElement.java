@@ -49,7 +49,7 @@ import ru.runa.gpd.util.VariableUtils;
 
 @SuppressWarnings("unchecked")
 public abstract class GraphElement extends EventSupport
-        implements IPropertySource, PropertyNames, IActionFilter, VariableContainer, ProcessDefinitionAware {
+    implements IPropertySource, PropertyNames, IActionFilter, VariableContainer, ProcessDefinitionAware {
     private PropertyChangeListener delegatedListener;
     private GraphElement parent;
     private GraphElement uiParentContainer;
@@ -129,7 +129,7 @@ public abstract class GraphElement extends EventSupport
             if (this.constraint != null && this instanceof IBoundaryEventContainer) {
                 for (GraphElement element : children) {
                     if (element.getConstraint() != null && element instanceof IBoundaryEventCapable
-                            && ((IBoundaryEventCapable) element).isBoundaryEvent()) {
+                        && ((IBoundaryEventCapable) element).isBoundaryEvent()) {
                         ((IBoundaryEventCapable) element).updateBoundaryEventConstraint();
                     }
                 }
@@ -173,14 +173,14 @@ public abstract class GraphElement extends EventSupport
                         List<String> docxErrors = Lists.newArrayList();
                         List<Delegable> docxErrorSources = Lists.newArrayList();
                         DocxDialogEnhancement.checkScriptTaskParametersWithDocxTemplate(delegable,
-                                EmbeddedFileUtils.getProcessFileName(embeddedDocxTemplateFileName), docxErrors, docxErrorSources, null);
+                            EmbeddedFileUtils.getProcessFileName(embeddedDocxTemplateFileName), docxErrors, docxErrorSources, null);
                         if (docxErrors.size() > 0 && docxErrors.size() == docxErrorSources.size()) {
                             ListIterator<String> iterator = docxErrors.listIterator();
                             ListIterator<Delegable> iterator2 = docxErrorSources.listIterator();
                             while (iterator.hasNext()) {
                                 Delegable delegable2 = iterator2.next();
                                 errors.add(ValidationError.createError(delegable2 instanceof GraphElement ? (GraphElement) delegable2 : this,
-                                        iterator.next()));
+                                    iterator.next()));
                             }
                         }
                     }
@@ -260,7 +260,7 @@ public abstract class GraphElement extends EventSupport
             firePropertyChange(PROPERTY_CHILDREN_CHANGED, old, before + 1);
         }
     }
-    
+
     public <T extends GraphElement> List<T> getChildren(Class<T> type) {
         return getChildren(type, null);
     }
@@ -411,19 +411,19 @@ public abstract class GraphElement extends EventSupport
         }
         if (this instanceof Describable) {
             descriptors
-                    .add(new DescribablePropertyDescriptor(PROPERTY_DESCRIPTION, Localization.getString("property.description"), (Describable) this));
+                .add(new DescribablePropertyDescriptor(PROPERTY_DESCRIPTION, Localization.getString("property.description"), (Describable) this));
         }
         if (isDelegable()) {
             Delegable delegable = (Delegable) this;
             descriptors.add(new DelegableClassPropertyDescriptor(PROPERTY_CLASS, Localization.getString("property.delegation.class"), delegable));
             descriptors.add(new DelegableConfPropertyDescriptor(PROPERTY_CONFIGURATION, (Delegable) this,
-                    Localization.getString("property.delegation.configuration")));
+                Localization.getString("property.delegation.configuration")));
         }
         if (this instanceof ITimed && getProcessDefinition().getLanguage() == Language.JPDL) {
             Timer timer = ((ITimed) this).getTimer();
             if (timer != null) {
                 descriptors.add(new DurationPropertyDescriptor(PROPERTY_TIMER_DELAY, timer.getProcessDefinition(), timer.getDelay(),
-                        Localization.getString("property.duration")));
+                    Localization.getString("property.duration")));
                 descriptors.add(new TimerActionPropertyDescriptor(PROPERTY_TIMER_ACTION, Localization.getString("Timer.action"), timer));
             }
         }
