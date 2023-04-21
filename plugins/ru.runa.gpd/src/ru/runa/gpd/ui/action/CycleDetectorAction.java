@@ -47,11 +47,17 @@ public class CycleDetectorAction extends BaseActionDelegate {
         @Override
         public void selectionChanged (IAction action, ISelection selection){
             ProcessEditorBase editor = getActiveDesignerEditor();
+
+            // add to check if StartState exist in process
+            List<StartState> startNodes = null;
+            if (editor != null) {
+                startNodes = editor.getDefinition().getChildren(StartState.class);
+            }
             List<ExclusiveGateway> nodes = null;
             if (editor != null) {
                 nodes = editor.getDefinition().getChildren(ExclusiveGateway.class);
             }
-            action.setEnabled(nodes != null && !nodes.isEmpty());
+            action.setEnabled(nodes != null && startNodes!=null && !nodes.isEmpty() && !startNodes.isEmpty());
         }
 
         private IEditorPart[] getDirtyEditors () {
