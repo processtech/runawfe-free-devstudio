@@ -2689,6 +2689,13 @@
             <separator name="common"/>
             <separator name="additions"/>
          </menu>
+
+        <menu
+              id="checkProcess"
+              label="%label.menu.checkProcess"
+              path="file/command">
+          <separator name="command"/>
+        </menu>
          
          <action
                class="ru.runa.gpd.ui.action.NewProcessAction"
@@ -3050,7 +3057,7 @@
                class="ru.runa.gpd.ui.action.CycleDetectorAction"
                id="ru.runa.gpd.cycleDetectorAction"
                label="%label.menu.cycleDetector"
-               menubarPath="file/command"
+               menubarPath="file/checkProcess/cycle"
                style="push">
          </action>
          <action
