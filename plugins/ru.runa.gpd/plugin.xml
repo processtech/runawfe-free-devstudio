@@ -3050,7 +3050,7 @@
                class="ru.runa.gpd.ui.action.CheckUnlimitedTokenAction"
                id="ru.runa.gpd.checkUnlimitedToken"
                label="%label.menu.checkingTokens"
-               menubarPath="file/command"
+               menubarPath="file/checkProcess/unlimitedToken"
                style="push">
          </action>
          <action
