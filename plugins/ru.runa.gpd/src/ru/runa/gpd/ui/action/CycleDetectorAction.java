@@ -11,11 +11,9 @@ import org.eclipse.ui.part.FileEditorInput;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.editor.ProcessEditorBase;
-import ru.runa.gpd.lang.Language;
-import ru.runa.gpd.lang.model.Node;
+import ru.runa.gpd.lang.model.bpmn.ScriptTask;
 import ru.runa.gpd.lang.model.StartState;
 import ru.runa.gpd.lang.model.ProcessDefinition;
-import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.bpmn.ExclusiveGateway;
 import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.algorithms.CycleDetector;
@@ -36,31 +34,40 @@ public class CycleDetectorAction extends BaseActionDelegate {
                 boolean isCycle = cycleDetector.hasCycle(startNode);
 
                 if (isCycle) {
-                    Dialogs.warning(Localization.getString("CycleDetectorAction.CycleExist.Message"));
+                    Dialogs.warning(
+                        Localization.getString("CycleDetectorAction.CycleExist.Message"));
                 } else {
-                    Dialogs.information(Localization.getString("CycleDetectorAction.CycleNotExist.Message"));
+                    Dialogs.information(
+                        Localization.getString("CycleDetectorAction.CycleNotExist.Message"));
                 }
             }
         }
     }
 
-        @Override
-        public void selectionChanged (IAction action, ISelection selection){
-            ProcessEditorBase editor = getActiveDesignerEditor();
+    @Override
+    public void selectionChanged(IAction action, ISelection selection) {
+        ProcessEditorBase editor = getActiveDesignerEditor();
 
-            // add to check if StartState exist in process
-            List<StartState> startNodes = null;
-            if (editor != null) {
-                startNodes = editor.getDefinition().getChildren(StartState.class);
-            }
-            List<ExclusiveGateway> nodes = null;
-            if (editor != null) {
-                nodes = editor.getDefinition().getChildren(ExclusiveGateway.class);
-            }
-            action.setEnabled(nodes != null && startNodes!=null && !nodes.isEmpty() && !startNodes.isEmpty());
+        List<StartState> startNodes = null;
+        if (editor != null) {
+            startNodes = editor.getDefinition().getChildren(StartState.class);
+        }
+        List<ExclusiveGateway> nodes = null;
+        if (editor != null) {
+            nodes = editor.getDefinition().getChildren(ExclusiveGateway.class);
         }
 
-        private IEditorPart[] getDirtyEditors () {
-            return window.getActivePage().getDirtyEditors();
+        List<ScriptTask> scriptNodes = null;
+        if (editor != null) {
+            scriptNodes = editor.getDefinition().getChildren(ScriptTask.class);
         }
+
+        action.setEnabled(
+            startNodes != null && !startNodes.isEmpty() && (nodes != null && !nodes.isEmpty()
+                || scriptNodes != null && !scriptNodes.isEmpty()));
     }
+
+    private IEditorPart[] getDirtyEditors() {
+        return window.getActivePage().getDirtyEditors();
+    }
+}

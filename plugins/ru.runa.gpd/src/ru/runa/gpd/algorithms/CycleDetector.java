@@ -7,6 +7,7 @@ import java.util.Set;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.AbstractTransition;
 import ru.runa.gpd.lang.model.Decision;
+import ru.runa.gpd.lang.model.bpmn.ScriptTask;
 
 
 public class CycleDetector {
@@ -25,8 +26,8 @@ public class CycleDetector {
         queue.add(startNode);
         while (!queue.isEmpty()) {
             Node currentNode = queue.poll();
-            if (currentNode instanceof Decision) {
-                boolean isCycle = traverseDecision((Decision) currentNode, new HashSet<>());
+            if (currentNode instanceof Decision || currentNode instanceof ScriptTask) {
+                boolean isCycle = traverseNode(currentNode, new HashSet<>());
                 if (isCycle) {
                     return true;
                 }
@@ -41,21 +42,22 @@ public class CycleDetector {
         return false;
     }
 
-    private boolean traverseDecision(Decision decision, Set<Decision> visited) {
-        visited.add(decision);
-        for (AbstractTransition outgoingNode : decision.getLeavingTransitions()) {
-            if (outgoingNode.getTarget() instanceof Decision) {
-                Decision nextDecision = (Decision) outgoingNode.getTarget();
-                if (visited.contains(nextDecision)) {
+    private boolean traverseNode(Node node, Set<Node> visited) {
+        visited.add(node);
+        for (AbstractTransition outgoingNode : node.getLeavingTransitions()) {
+            if (outgoingNode.getTarget() instanceof Decision
+                || outgoingNode.getTarget() instanceof ScriptTask) {
+                Node nextNode = outgoingNode.getTarget();
+                if (visited.contains(nextNode)) {
                     return true;
                 }
-                boolean isCycle = traverseDecision(nextDecision, visited);
+                boolean isCycle = traverseNode(nextNode, visited);
                 if (isCycle) {
                     return true;
                 }
             }
         }
-        visited.remove(decision);
+        visited.remove(node);
         return false;
     }
 }
