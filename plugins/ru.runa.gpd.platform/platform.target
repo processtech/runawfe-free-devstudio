@@ -32,8 +32,8 @@
       <repository location="http://download.eclipse.org/releases/2022-12"/>
     </location>
     <location includeMode="planner" includeAllPlatforms="false" includeSource="false" includeConfigurePhase="true" type="InstallableUnit">
-      <unit id="org.eclipse.ajdt.feature.group" version="2.2.4.202202111622"/>
-      <unit id="org.eclipse.equinox.weaving.sdk.feature.group" version="1.2.0.202202111622"/>
+      <unit id="org.eclipse.ajdt.feature.group" version="2.2.4.202304111524"/>
+      <unit id="org.eclipse.equinox.weaving.sdk.feature.group" version="1.2.0.202304111524"/>
       <repository location="http://download.eclipse.org/tools/ajdt/410/dev/update"/>
     </location>
     <location includeMode="planner" includeAllPlatforms="false" includeSource="false" includeConfigurePhase="true" type="InstallableUnit">
