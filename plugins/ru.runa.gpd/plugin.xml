@@ -2689,6 +2689,13 @@
             <separator name="common"/>
             <separator name="additions"/>
          </menu>
+
+        <menu
+              id="checkProcess"
+              label="%label.menu.checkProcess"
+              path="file/command">
+          <separator name="command"/>
+        </menu>
          
          <action
                class="ru.runa.gpd.ui.action.NewProcessAction"
@@ -3043,7 +3050,14 @@
                class="ru.runa.gpd.ui.action.CheckUnlimitedTokenAction"
                id="ru.runa.gpd.checkUnlimitedToken"
                label="%label.menu.checkingTokens"
-               menubarPath="file/command"
+               menubarPath="file/checkProcess/unlimitedToken"
+               style="push">
+         </action>
+         <action
+               class="ru.runa.gpd.ui.action.CycleDetectorAction"
+               id="ru.runa.gpd.cycleDetectorAction"
+               label="%label.menu.cycleDetector"
+               menubarPath="file/checkProcess/cycle"
                style="push">
          </action>
          <action
