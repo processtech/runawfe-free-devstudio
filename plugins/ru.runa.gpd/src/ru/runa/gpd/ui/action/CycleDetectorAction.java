@@ -13,6 +13,7 @@ import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.editor.ProcessEditorBase;
 import ru.runa.gpd.lang.model.bpmn.ScriptTask;
 import ru.runa.gpd.lang.model.StartState;
+import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.bpmn.ExclusiveGateway;
 import ru.runa.gpd.ui.custom.Dialogs;
@@ -46,28 +47,23 @@ public class CycleDetectorAction extends BaseActionDelegate {
 
     @Override
     public void selectionChanged(IAction action, ISelection selection) {
-        ProcessEditorBase editor = getActiveDesignerEditor();
-
-        List<StartState> startNodes = null;
-        if (editor != null) {
-            startNodes = editor.getDefinition().getChildren(StartState.class);
-        }
-        List<ExclusiveGateway> nodes = null;
-        if (editor != null) {
-            nodes = editor.getDefinition().getChildren(ExclusiveGateway.class);
-        }
-
-        List<ScriptTask> scriptNodes = null;
-        if (editor != null) {
-            scriptNodes = editor.getDefinition().getChildren(ScriptTask.class);
-        }
-
         action.setEnabled(
-            startNodes != null && !startNodes.isEmpty() && (nodes != null && !nodes.isEmpty()
-                || scriptNodes != null && !scriptNodes.isEmpty()));
+            hasElements(StartState.class) && (hasElements(ExclusiveGateway.class) || hasElements(
+                ScriptTask.class)));
     }
 
     private IEditorPart[] getDirtyEditors() {
         return window.getActivePage().getDirtyEditors();
+    }
+
+    private <T extends Node> boolean hasElements(Class<T> type) {
+        ProcessEditorBase editor = getActiveDesignerEditor();
+
+        List<T> nodes = null;
+        if (editor != null) {
+            nodes = editor.getDefinition().getChildren(type);
+        }
+
+        return nodes != null && !nodes.isEmpty();
     }
 }

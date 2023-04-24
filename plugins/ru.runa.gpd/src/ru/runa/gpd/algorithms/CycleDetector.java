@@ -8,6 +8,7 @@ import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.AbstractTransition;
 import ru.runa.gpd.lang.model.Decision;
 import ru.runa.gpd.lang.model.bpmn.ScriptTask;
+import ru.runa.gpd.lang.model.bpmn.ParallelGateway;
 
 
 public class CycleDetector {
@@ -26,8 +27,9 @@ public class CycleDetector {
         queue.add(startNode);
         while (!queue.isEmpty()) {
             Node currentNode = queue.poll();
-            if (currentNode instanceof Decision || currentNode instanceof ScriptTask) {
-                boolean isCycle = traverseNode(currentNode, new HashSet<>());
+            if (currentNode instanceof Decision || currentNode instanceof ScriptTask
+                || currentNode instanceof ParallelGateway) {
+                boolean isCycle = traverseNode(currentNode);
                 if (isCycle) {
                     return true;
                 }
@@ -42,22 +44,28 @@ public class CycleDetector {
         return false;
     }
 
-    private boolean traverseNode(Node node, Set<Node> visited) {
-        visited.add(node);
-        for (AbstractTransition outgoingNode : node.getLeavingTransitions()) {
-            if (outgoingNode.getTarget() instanceof Decision
-                || outgoingNode.getTarget() instanceof ScriptTask) {
-                Node nextNode = outgoingNode.getTarget();
-                if (visited.contains(nextNode)) {
-                    return true;
-                }
-                boolean isCycle = traverseNode(nextNode, visited);
-                if (isCycle) {
-                    return true;
+    private boolean traverseNode(Node startNode) {
+        Queue<Node> queue = new PriorityQueue<>();
+        Set<Node> visited = new HashSet<>();
+        queue.add(startNode);
+        while (!queue.isEmpty()) {
+            Node node = queue.poll();
+            if (visited.contains(node)) {
+                return true;
+            }
+            visited.add(node);
+            for (AbstractTransition outgoingNode : node.getLeavingTransitions()) {
+                if (outgoingNode.getTarget() instanceof Decision
+                    || outgoingNode.getTarget() instanceof ScriptTask
+                    || outgoingNode.getTarget() instanceof ParallelGateway) {
+                    queue.add(outgoingNode.getTarget());
+                } else {
+                    if (node instanceof ParallelGateway) {
+                        return false;
+                    }
                 }
             }
         }
-        visited.remove(node);
         return false;
     }
 }
