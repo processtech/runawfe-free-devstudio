@@ -1,5 +1,7 @@
 package ru.runa.gpd.quick.tag;
 
+import com.google.common.base.Objects;
+import com.google.common.collect.Maps;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -7,10 +9,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import ru.runa.wfe.InternalApplicationException;
 import ru.runa.wfe.commons.CalendarUtil;
 import ru.runa.wfe.commons.web.WebHelper;
@@ -39,11 +37,7 @@ import ru.runa.wfe.var.format.VariableDisplaySupport;
 import ru.runa.wfe.var.format.VariableFormat;
 import ru.runa.wfe.var.format.VariableFormatContainer;
 
-import com.google.common.base.Objects;
-import com.google.common.collect.Maps;
-
 public class ViewUtil {
-    private static final Log log = LogFactory.getLog(ViewUtil.class);
 
     public static String createExecutorSelect(User user, WfVariable variable) {
         return createExecutorSelect(user, variable.getDefinition().getName(), variable.getDefinition().getFormatClassName(), variable.getValue(),
@@ -329,7 +323,6 @@ public class ViewUtil {
                 return format.format(variable.getValue());
             }
         } catch (Exception e) {
-            log.debug("Unable to format value " + variable + " in " + processId + ": " + e.getMessage());
             if (variable.getValue() != null && variable.getValue().getClass().isArray()) {
                 return Arrays.toString((Object[]) variable.getValue());
             } else {
