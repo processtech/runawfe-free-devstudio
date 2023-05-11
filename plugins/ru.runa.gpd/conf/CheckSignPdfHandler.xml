@@ -1,0 +1,9 @@
+<config>
+  <input>
+    <param name="file" formatFilter="ru.runa.wfe.var.FileVariable" label.key="Param.SignedFile" />
+    <param name="signer" formatFilter="ru.runa.wfe.user.Executor" label.key="Param.Signer" />
+  </input>
+  <output>
+    <param name="isSigned" formatFilter="java.lang.Boolean" label.key="Param.SignIsValid" />
+  </output>
+</config>
