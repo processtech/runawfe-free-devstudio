@@ -21,12 +21,13 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 
+import com.google.common.base.Throwables;
+
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.globalsection.GlobalSectionUtils;
 import ru.runa.gpd.lang.model.ProcessDefinition;
-import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.ui.custom.ContentWizardPage;
@@ -160,6 +161,16 @@ public class ChooseGlobalTypeWizardPage extends ContentWizardPage {
             return false;
         }
         final List<VariableUserType> types = selection.toList();
+        try {
+            for (VariableUserType type : types) {
+                if (definition.getVariableUserType(type.getName()) != null) {
+                    throw new Exception(Localization.getString("ChooseGlobalType.error.typeIsAlreadyPresent" + type.getName()));
+                }
+            }
+        } catch (Exception exception) {
+            setErrorMessage(Throwables.getRootCause(exception).getMessage());
+            return false;
+        }
         for (VariableUserType type : types) {
             definition.addGlobalType(type);
         }

@@ -23,7 +23,8 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
+
+import com.google.common.base.Throwables;
 
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.ProcessCache;
@@ -31,7 +32,6 @@ import ru.runa.gpd.globalsection.GlobalSectionUtils;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.Variable;
-import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.ui.custom.ContentWizardPage;
 import ru.runa.gpd.util.IOUtils;
@@ -210,10 +210,23 @@ public class ChooseGlobalVariableWizardPage extends ContentWizardPage {
 
     public boolean finish() {
         final IStructuredSelection selection = (IStructuredSelection) globalVariableViewer.getSelection();
-        final List<Variable> Variables = selection.toList();
-        for (Variable variable : Variables) {
-            definition.addGlobalVariable(variable);
+        final List<Variable> variables = selection.toList();
+        try {
+            for (Variable variable : variables) {
+                if (definition.getVariableNames(true, false).contains(variable.getName())) {
+                    throw new Exception(Localization.getString("ChooseGlobalVariable.error.variableIsAlreadyPresent") + variable.getName());
+                }
+                if (variable.isComplex() && definition.getVariableUserType(variable.getUserType().getName()) != null) {
+                    throw new Exception(Localization.getString("ChooseGlobalType.error.typeIsAlreadyPresent") + variable.getUserType().getName());
+                }
+            }
+        } catch (Exception exception) {
+            setErrorMessage(Throwables.getRootCause(exception).getMessage());
+            return false;
         }
+        for (Variable variable : variables) {
+            definition.addGlobalVariable(variable);
+        }    
         return true;
     }
 
