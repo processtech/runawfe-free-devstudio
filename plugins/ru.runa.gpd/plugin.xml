@@ -2182,6 +2182,26 @@
             enabled="false"
             label="%label.element.businessRule">
       </handler>
+      <handler
+            actionHandler="true"
+            assignmentHandler="false"
+            botTaskHandler="true"
+            cellEditorProvider="ru.runa.gpd.extension.handler.ConfigBasedProvider"
+            className="ru.runa.wfe.extension.handler.sign.SignPdfHandler"
+            decisionHandler="false"
+            enabled="true"
+            label="%ru.runa.wfe.extension.handler.sign.SignPdfHandler">
+      </handler>
+      <handler
+            actionHandler="true"
+            assignmentHandler="false"
+            botTaskHandler="true"
+            cellEditorProvider="ru.runa.gpd.extension.handler.ConfigBasedProvider"
+            className="ru.runa.wfe.extension.handler.sign.CheckSignPdfHandler"
+            decisionHandler="false"
+            enabled="true"
+            label="%ru.runa.wfe.extension.handler.sign.CheckSignPdfHandler">
+      </handler>
    </extension>
    <extension
          point="ru.runa.gpd.swimlaneElements">
