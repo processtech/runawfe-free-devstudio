@@ -25,14 +25,18 @@ public class FormsXmlContentProvider extends AuxContentProvider {
     public String getFileName() {
         return XML_FILE_NAME;
     }
-    
+
     @Override
     public void read(Document document, ProcessDefinition definition) throws Exception {
         @SuppressWarnings("unchecked")
         List<Element> formElementsList = document.getRootElement().elements(FORM_ELEMENT_NAME);
         for (Element formElement : formElementsList) {
             String stateId = formElement.attributeValue(STATE_ATTRIBUTE_NAME);
-            FormNode formNode = definition.getGraphElementByIdNotNull(stateId);
+            FormNode formNode = definition.getGraphElementById(stateId);
+            if (formNode == null) {
+                // rm2964: some use-cases does not save data properly
+                continue;
+            }
             String typeName = formElement.attributeValue(TYPE_ATTRIBUTE_NAME);
             if (!Strings.isNullOrEmpty(typeName)) {
                 formNode.setFormType(typeName);

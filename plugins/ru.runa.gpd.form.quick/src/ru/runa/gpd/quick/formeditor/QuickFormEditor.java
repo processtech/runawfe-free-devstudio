@@ -176,7 +176,6 @@ public class QuickFormEditor extends EditorPart
                 }
             }
         });
-        formNode.setFormEditorOpened(true);
     }
 
     @Override
@@ -759,7 +758,6 @@ public class QuickFormEditor extends EditorPart
         firePropertyChange(CLOSED);
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
         super.dispose();
-        formNode.setFormEditorOpened(false);
     }
 
     public boolean isEmpty() {
