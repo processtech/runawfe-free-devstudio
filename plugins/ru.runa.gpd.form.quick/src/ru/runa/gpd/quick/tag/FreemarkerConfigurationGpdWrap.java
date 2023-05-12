@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.apache.commons.logging.LogFactory;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.eclipse.core.runtime.Platform;
@@ -69,7 +68,6 @@ public class FreemarkerConfigurationGpdWrap {
                         defaultTagName = name;
                     }
                 } catch (Throwable e) {
-                    LogFactory.getLog(getClass()).warn("Unable to create freemarker tag " + name, e);
                 }
             }
         }

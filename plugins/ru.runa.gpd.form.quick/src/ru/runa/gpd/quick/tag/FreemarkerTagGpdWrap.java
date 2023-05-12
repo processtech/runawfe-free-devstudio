@@ -6,7 +6,6 @@ import freemarker.template.TemplateModel;
 import freemarker.template.TemplateModelException;
 import java.io.Serializable;
 import java.util.List;
-import org.apache.commons.logging.LogFactory;
 import ru.runa.wfe.commons.TypeConversionUtil;
 import ru.runa.wfe.commons.web.WebHelper;
 import ru.runa.wfe.user.User;
@@ -38,7 +37,6 @@ public abstract class FreemarkerTagGpdWrap implements TemplateMethodModelEx, Ser
             this.arguments = arguments;
             return executeTag();
         } catch (Throwable th) {
-            LogFactory.getLog(getClass()).error(arguments.toString(), th);
             return "<div style=\"background-color: #ffb0b0; border: 1px solid red; padding: 3px;\">" + th.getMessage() + "</div>";
         }
     }
