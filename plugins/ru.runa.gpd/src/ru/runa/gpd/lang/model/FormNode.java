@@ -33,7 +33,6 @@ public abstract class FormNode extends SwimlanedNode {
     private String formType;
     private boolean useJSValidation;
     private String templateFileName;
-    private boolean formEditorOpened;
     protected Boolean reassignSwimlaneToTaskPerformer = null;
 
     @Override
@@ -113,14 +112,6 @@ public abstract class FormNode extends SwimlanedNode {
         return templateFileName != null && templateFileName.length() > 0;
     }
     
-    public boolean isFormEditorOpened() {
-        return formEditorOpened;
-    }
-    
-    public void setFormEditorOpened(boolean formEditorOpened) { 
-        this.formEditorOpened = formEditorOpened; 
-    }
-
     public Boolean isReassignSwimlaneToTaskPerformer() {
         return reassignSwimlaneToTaskPerformer;
     }
