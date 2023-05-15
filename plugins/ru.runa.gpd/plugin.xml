@@ -1555,6 +1555,11 @@
             id="ru.runa.gpd.propertiesView"
             name="%label.view.properties"/>
       <view
+            class="org.eclipse.ui.views.properties.PropertySheet"
+            icon="icons/properties_view.gif"
+            id="org.eclipse.ui.propertiesView"
+            name="%label.view.properties"/>
+      <view
             category="ru.runa.gpd.view.category"
             class="ru.runa.gpd.ui.view.BotExplorerTreeView"
             icon="icons/bot_station.gif"
@@ -2906,7 +2911,7 @@
                class="ru.runa.gpd.ui.action.OpenSearchResult"
                icon="icons/search.gif"
                id="openSearchResult"
-               label="%label.menu.view.properties"
+               label="%label.menu.view.searchresult"
                menubarPath="window/additions"
                style="push"/>      
          <action

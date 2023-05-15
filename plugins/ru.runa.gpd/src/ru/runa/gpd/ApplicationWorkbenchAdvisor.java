@@ -17,7 +17,6 @@ import ru.runa.gpd.settings.LanguageElementPreferenceNode;
 import ru.runa.gpd.settings.PrefConstants;
 import ru.runa.gpd.settings.WfeServerConnectorPreferenceNode;
 import ru.runa.gpd.settings.WfeServerConnectorsPreferenceNode;
-import ru.runa.gpd.ui.view.PropertiesView;
 
 public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor implements PrefConstants {
     private static final String PERSPECTIVE_ID = "ru.runa.gpd.perspective";
@@ -73,7 +72,6 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor implements Pre
             }
             preferenceManager.remove(preferenceNode.getId());
         }
-        PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(PropertiesView.ID);
     }
 
     @Override
