@@ -1,12 +1,12 @@
 package ru.runa.gpd.lang.action;
 
 import org.eclipse.jface.action.IAction;
-
 import ru.runa.gpd.lang.model.Delegable;
+import ru.runa.gpd.lang.model.bpmn.ScriptTask;
 import ru.runa.gpd.ui.dialog.ChooseHandlerClassDialog;
 
 public class ChooseDelegableHandlerAction extends BaseModelActionDelegate {
-    
+
     @Override
     public void run(IAction action) {
         Delegable delegable = (Delegable) getSelection();
@@ -15,6 +15,9 @@ public class ChooseDelegableHandlerAction extends BaseModelActionDelegate {
         if (className != null) {
             delegable.setDelegationConfiguration(null);
             delegable.setDelegationClassName(className);
+            if (delegable instanceof ScriptTask) {
+                ((ScriptTask) delegable).resetNameToDefault();
+            }
         }
     }
 }

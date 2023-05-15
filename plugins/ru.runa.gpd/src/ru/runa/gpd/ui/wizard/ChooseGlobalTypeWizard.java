@@ -1,11 +1,8 @@
 package ru.runa.gpd.ui.wizard;
 
-import java.util.List;
-
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 
 import ru.runa.gpd.lang.model.ProcessDefinition;
@@ -28,8 +25,7 @@ public class ChooseGlobalTypeWizard extends Wizard {
     }
 
     @Override
-    public boolean performFinish() {     	
-    	mainPage.finish();
-    	return true;
+    public boolean performFinish() {
+        return mainPage.finish();
     }
 }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="RunaWFE Developer Studio" uid="product" id="ru.runa.gpd.app.product" application="ru.runa.gpd.application" version="4.4.0" useFeatures="true" includeLaunchers="true" autoIncludeRequirements="true">
+<product name="RunaWFE Developer Studio" uid="product" id="ru.runa.gpd.app.product" application="ru.runa.gpd.application" version="4.6.0" useFeatures="true" includeLaunchers="true" autoIncludeRequirements="true">
 
    <aboutInfo>
       <text>

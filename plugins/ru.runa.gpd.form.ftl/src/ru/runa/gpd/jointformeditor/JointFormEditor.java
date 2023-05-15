@@ -84,7 +84,6 @@ public class JointFormEditor extends FormEditor {
             }
         });
         setActivePage(currentPageIndex);
-        formNode.setFormEditorOpened(true);
     }
 
     @Override
@@ -120,7 +119,6 @@ public class JointFormEditor extends FormEditor {
         fieldValidatorsPage.dispose();
         globalValidatorsPage.dispose();
         super.dispose();
-        formNode.setFormEditorOpened(false);
     }
 
 }

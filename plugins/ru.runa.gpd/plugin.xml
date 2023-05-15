@@ -1555,6 +1555,11 @@
             id="ru.runa.gpd.propertiesView"
             name="%label.view.properties"/>
       <view
+            class="org.eclipse.ui.views.properties.PropertySheet"
+            icon="icons/properties_view.gif"
+            id="org.eclipse.ui.propertiesView"
+            name="%label.view.properties"/>
+      <view
             category="ru.runa.gpd.view.category"
             class="ru.runa.gpd.ui.view.BotExplorerTreeView"
             icon="icons/bot_station.gif"
@@ -2885,6 +2890,12 @@
             <separator name="updates"/>
          </menu>
          <action
+               class="ru.runa.gpd.ui.action.UpdateScriptTaskNames"
+               id="updateScriptTaskNames"
+               label="%label.menu.properties.updateScriptTaskNames"
+               menubarPath="view/additions"
+               style="push"/>
+         <action
                class="ru.runa.gpd.ui.action.ShowActionsAction"
                id="enableActionsInGraph"
                label="%label.menu.properties.enableActionsInGraph"
@@ -2920,7 +2931,7 @@
                class="ru.runa.gpd.ui.action.OpenSearchResult"
                icon="icons/search.gif"
                id="openSearchResult"
-               label="%label.menu.view.properties"
+               label="%label.menu.view.searchresult"
                menubarPath="window/additions"
                style="push"/>      
          <action
@@ -3392,6 +3403,12 @@
       </method>
       <method
             label="validator.getValidatorContext().addFieldError(variableName, message)">
+      </method>
+      <method
+            label="nodeLog.info(string)">
+      </method>
+      <method
+            label="nodeLog.debug(string)">
       </method>
       <constant
             label="null">

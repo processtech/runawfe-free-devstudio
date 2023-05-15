@@ -632,15 +632,14 @@ public class ProcessDefinition extends NamedGraphElement implements Describable,
     }
 
     public void addGlobalVariable(Variable variable) {
-        VariableUserType type = variable.getUserType();
-        if (type != null) {
-            addGlobalType(type);
+        if (variable.isComplex()) {
+            addGlobalType(variable.getUserType());
         }
         String variableFormat = variable.getFormatClassName();
         if (ListFormat.class.getName().equals(variableFormat)) {
             String typeName = variable.getFormat();
-            int leng = typeName.length();
-            typeName = typeName.substring(IOUtils.GLOBAL_OBJECT_PREFIX.length() + 1, leng - 1).substring((variableFormat.length()));
+            int length = typeName.length();
+            typeName = typeName.substring(IOUtils.GLOBAL_OBJECT_PREFIX.length() + 1, length - 1).substring((variableFormat.length()));
             VariableUserType userType = ProcessCache.getGlobalProcessDefinition(this).getVariableUserType(typeName);
             if (userType != null) {
                 userType.setName(IOUtils.GLOBAL_OBJECT_PREFIX + typeName);

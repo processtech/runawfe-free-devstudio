@@ -100,20 +100,10 @@ public class NodeRegulationsPropertyDescriptor extends PropertyDescriptor {
         protected void updateContents(Object value) {
             NodeRegulationsProperties properties = (NodeRegulationsProperties) value;
             enabledLabel.setImage(SharedImages.getImage(properties.isEnabled() ? "icons/checked.gif" : "icons/unchecked.gif"));
-            if (properties.getPreviousNode() != null) {
-                previousNodeLabel.setText(Localization.getString("Node.property.previousNodeInRegulations") + ": "
-                        + RegulationsUtil.getNodeLabel(properties.getPreviousNode()));
-            } else {
-                previousNodeLabel.setText(Localization.getString("Node.property.previousNodeInRegulations") + ": "
-                        + Localization.getString("Node.property.previousNodeInRegulations.notSet"));
-            }
-            if (properties.getNextNode() != null) {
-                nextNodeLabel.setText(Localization.getString("Node.property.nextNodeInRegulations") + ": "
-                        + RegulationsUtil.getNodeLabel(properties.getNextNode()));
-            } else {
-                nextNodeLabel.setText(Localization.getString("Node.property.nextNodeInRegulations") + ": "
-                        + Localization.getString("Node.property.nextNodeInRegulations.notSet"));
-            }
+            previousNodeLabel.setText(Localization.getString("Node.property.previousNodeInRegulations") + ": "
+                    + RegulationsUtil.getNodeLabel(properties.getPreviousNode()));
+            nextNodeLabel.setText(Localization.getString("Node.property.nextNodeInRegulations") + ": "
+                    + RegulationsUtil.getNodeLabel(properties.getNextNode()));
         }
     }
 }

@@ -7,6 +7,7 @@ import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.bpmn.ExclusiveGateway;
+import ru.runa.gpd.lang.model.bpmn.ScriptTask;
 import ru.runa.gpd.ui.dialog.ChooseHandlerClassDialog;
 
 public class DoubleClickDelegableFeature extends DoubleClickElementFeature {
@@ -25,6 +26,9 @@ public class DoubleClickDelegableFeature extends DoubleClickElementFeature {
             if (className != null) {
                 delegable.setDelegationConfiguration(null);
                 delegable.setDelegationClassName(className);
+                if (delegable instanceof ScriptTask) {
+                    ((ScriptTask) delegable).resetNameToDefault();
+                }
             }
         } else {
             DelegableProvider provider = HandlerRegistry.getProvider(delegable.getDelegationClassName());

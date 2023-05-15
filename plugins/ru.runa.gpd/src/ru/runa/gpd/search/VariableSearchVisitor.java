@@ -76,8 +76,8 @@ public class VariableSearchVisitor {
     public VariableSearchVisitor(VariableSearchQuery query, Set<VariableSearchTarget> searchTargets) {
         this.query = query;
         this.status = new MultiStatus(NewSearchUI.PLUGIN_ID, IStatus.OK, SearchMessages.TextSearchEngine_statusMessage, null);
-        regexScriptVariableWithCheckAfterDot = "[\"'{(,\\s=]%s(\"|'|}|\\)|,|;|\\s|=|(.(?!"
-                + getSearchedVariablesScriptingNames(query.getVariable()) + ")))";
+        this.regexScriptVariableWithCheckAfterDot = "(^|!|[\"'{(,\\s=])%s(\"|'|}|\\)|,|;|\\s|=|(\\.(?!"
+                + getSearchedVariablesScriptingNames(query.getVariable()) + "))|$)";
         this.scriptMatcherByVariable = Pattern.compile(String.format(regexScriptVariableWithCheckAfterDot, Pattern.quote(query.getSearchText())))
                 .matcher("");
         this.scriptMatcherByScriptingVariable = Pattern
