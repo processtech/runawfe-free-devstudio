@@ -3,6 +3,7 @@ package ru.runa.gpd.editor.graphiti;
 import org.eclipse.graphiti.features.context.IContext;
 import org.eclipse.graphiti.features.context.ICustomContext;
 import ru.runa.gpd.lang.model.Delegable;
+import ru.runa.gpd.lang.model.bpmn.ScriptTask;
 
 public class ChangeDelegationClassNameFeature extends ChangePropertyFeature<Delegable, String> {
 
@@ -27,6 +28,9 @@ public class ChangeDelegationClassNameFeature extends ChangePropertyFeature<Dele
     public void execute(ICustomContext context) {
         target.setDelegationClassName(newValue);
         target.setDelegationConfiguration(null);
+        if (target instanceof ScriptTask) {
+            ((ScriptTask) target).resetNameToDefault();
+        }
     }
 
 }

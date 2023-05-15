@@ -7,6 +7,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -28,6 +29,7 @@ import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.extension.handler.ParamDefConfig;
 import ru.runa.gpd.form.FormVariableAccess;
 import ru.runa.gpd.lang.model.BotTask;
+import ru.runa.gpd.lang.model.BotTaskLink;
 import ru.runa.gpd.lang.model.BotTaskType;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.FormNode;
@@ -39,10 +41,14 @@ import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Subprocess;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
+import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.SwimlanedNode;
 import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Timer;
 import ru.runa.gpd.lang.model.Variable;
+import ru.runa.gpd.lang.model.bpmn.BusinessRule;
+import ru.runa.gpd.lang.model.bpmn.ExclusiveGateway;
+import ru.runa.gpd.lang.model.bpmn.ScriptTask;
 import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.VariableMapping;
@@ -65,18 +71,20 @@ public class VariableSearchVisitor {
     private final Matcher scriptMatcherByVariable;
     private final Matcher scriptMatcherByScriptingVariable;
     private final String regexScriptVariableWithCheckAfterDot;
+    private Set<VariableSearchTarget> searchTargets;
 
-    public VariableSearchVisitor(VariableSearchQuery query) {
+    public VariableSearchVisitor(VariableSearchQuery query, Set<VariableSearchTarget> searchTargets) {
         this.query = query;
         this.status = new MultiStatus(NewSearchUI.PLUGIN_ID, IStatus.OK, SearchMessages.TextSearchEngine_statusMessage, null);
-        regexScriptVariableWithCheckAfterDot = "[\"'{(,\\s=]%s(\"|'|}|\\)|,|;|\\s|=|(.(?!"
-                + getSearchedVariablesScriptingNames(query.getVariable()) + ")))";
+        this.regexScriptVariableWithCheckAfterDot = "(^|!|[\"'{(,\\s=])%s(\"|'|}|\\)|,|;|\\s|=|(\\.(?!"
+                + getSearchedVariablesScriptingNames(query.getVariable()) + "))|$)";
         this.scriptMatcherByVariable = Pattern.compile(String.format(regexScriptVariableWithCheckAfterDot, Pattern.quote(query.getSearchText())))
                 .matcher("");
         this.scriptMatcherByScriptingVariable = Pattern
                 .compile(String.format(regexScriptVariableWithCheckAfterDot, query.getVariable().getScriptingName()))
                 .matcher("");
         this.matcherByVariable = Pattern.compile("(\"|>)" + Pattern.quote(query.getSearchText()) + "(<|\")").matcher("");
+        this.searchTargets = searchTargets;
     }
 
     public IStatus search(SearchResult searchResult, IProgressMonitor monitor) {
@@ -150,16 +158,17 @@ public class VariableSearchVisitor {
             if (graphElement instanceof Delegable) {
                 processDelegableNode(definitionFile, (Delegable) graphElement);
             }
-            if (graphElement instanceof ITimed) {
+            if (graphElement instanceof ITimed && searchTargets.contains(VariableSearchTarget.TIMER)) {
                 processTimedNode(definitionFile, (ITimed) graphElement);
             }
-            if (graphElement instanceof Timer) {
+            if (graphElement instanceof Timer && searchTargets.contains(VariableSearchTarget.TIMER)) {
                 processTimer(definitionFile, (Timer) graphElement, graphElement);
             }
             if (graphElement instanceof Subprocess) {
                 processSubprocessNode(definitionFile, (Subprocess) graphElement);
             }
-            if (graphElement instanceof MessageNode) {
+            if (graphElement instanceof MessageNode
+                    && searchTargets.contains(VariableSearchTarget.MESSAGING_NODE)) {
                 processMessagingNode(definitionFile, (MessageNode) graphElement);
             }
             if (graphElement instanceof TaskState) {
@@ -168,7 +177,8 @@ public class VariableSearchVisitor {
             if (graphElement instanceof MultiTaskState) {
                 processMultiTaskNode(definitionFile, (MultiTaskState) graphElement);
             }
-            if (graphElement instanceof ProcessDefinition) {
+            if (graphElement instanceof ProcessDefinition
+                    && searchTargets.contains(VariableSearchTarget.FORM_SCRIPT)) {
                 processProcessDefinitionNode(definitionFile, (ProcessDefinition) graphElement);
             }
         } catch (Exception e) {
@@ -197,26 +207,40 @@ public class VariableSearchVisitor {
         }
     }
 
+    private boolean isNotPredefinedSearchTarget(Delegable delegable) {
+        return !(delegable instanceof ScriptTask || delegable instanceof ExclusiveGateway || delegable instanceof Swimlane
+                || delegable instanceof BotTask || delegable instanceof BusinessRule);
+    };
+
     private void processDelegableNode(IFile definitionFile, Delegable delegable) throws Exception {
-        Matcher delegableMatcher;
-        if (HandlerRegistry.SCRIPT_HANDLER_CLASS_NAMES.contains(delegable.getDelegationClassName())) {
-            delegableMatcher = scriptMatcherByScriptingVariable;
-        } else {
-            delegableMatcher = scriptMatcherByVariable;
-        }
-        String conf = delegable.getDelegationConfiguration();
-        ElementMatch elementMatch = new ElementMatch((GraphElement) delegable, definitionFile);
-        List<Match> matches = findInString(elementMatch, "(" + conf + ")", delegableMatcher);
-        elementMatch.setPotentialMatchesCount(matches.size());
-        for (Match match : matches) {
-            query.getSearchResult().addMatch(match);
-        }
-        if (matches.isEmpty() && !HandlerRegistry.SCRIPT_HANDLER_CLASS_NAMES.contains(delegable.getDelegationClassName())
-                && !query.getVariable().getName().equals(query.getVariable().getScriptingName())) {
-            matches = findInString(elementMatch, "(" + conf + ")", scriptMatcherByScriptingVariable);
+        if (delegable instanceof ScriptTask && searchTargets.contains(VariableSearchTarget.SCRIPT_TASK)
+                || delegable instanceof ExclusiveGateway
+                        && searchTargets.contains(VariableSearchTarget.EXCLUSIVE_GATEWAY)
+                || delegable instanceof Swimlane && searchTargets.contains(VariableSearchTarget.SWIMLANE)
+                || (delegable instanceof BotTask || delegable instanceof BotTaskLink)
+                        && searchTargets.contains(VariableSearchTarget.BOT_TASK)
+                || delegable instanceof BusinessRule && searchTargets.contains(VariableSearchTarget.BUSINESS_RULE)
+                || isNotPredefinedSearchTarget(delegable)) {
+            Matcher delegableMatcher;
+            if (HandlerRegistry.SCRIPT_HANDLER_CLASS_NAMES.contains(delegable.getDelegationClassName())) {
+                delegableMatcher = scriptMatcherByScriptingVariable;
+            } else {
+                delegableMatcher = scriptMatcherByVariable;
+            }
+            String conf = delegable.getDelegationConfiguration();
+            ElementMatch elementMatch = new ElementMatch((GraphElement) delegable, definitionFile);
+            List<Match> matches = findInString(elementMatch, "(" + conf + ")", delegableMatcher);
             elementMatch.setPotentialMatchesCount(matches.size());
             for (Match match : matches) {
                 query.getSearchResult().addMatch(match);
+            }
+            if (matches.isEmpty() && !HandlerRegistry.SCRIPT_HANDLER_CLASS_NAMES.contains(delegable.getDelegationClassName())
+                    && !query.getVariable().getName().equals(query.getVariable().getScriptingName())) {
+                matches = findInString(elementMatch, "(" + conf + ")", scriptMatcherByScriptingVariable);
+                elementMatch.setPotentialMatchesCount(matches.size());
+                for (Match match : matches) {
+                    query.getSearchResult().addMatch(match);
+                }
             }
         }
     }
@@ -294,7 +318,7 @@ public class VariableSearchVisitor {
     private void processFormNode(IFile definitionFile, FormNode formNode) throws Exception {
         try {
             ElementMatch nodeElementMatch = new ElementMatch(formNode, definitionFile, ElementMatch.CONTEXT_SWIMLANE);
-            if (formNode.hasForm()) {
+            if (formNode.hasForm() && searchTargets.contains(VariableSearchTarget.FORM_FILE)) {
                 IFile file = IOUtils.getAdjacentFile(definitionFile, formNode.getFormFileName());
                 Map<String, FormVariableAccess> formVariables = formNode.getFormVariables((IFolder) definitionFile.getParent());
                 ElementMatch elementMatch = new ElementMatch(formNode, file, ElementMatch.CONTEXT_FORM);
@@ -310,7 +334,7 @@ public class VariableSearchVisitor {
                     query.getSearchResult().addMatch(match);
                 }
             }
-            if (formNode.hasFormValidation()) {
+            if (formNode.hasFormValidation() && searchTargets.contains(VariableSearchTarget.FORM_VALIDATION)) {
                 IFile file = IOUtils.getAdjacentFile(definitionFile, formNode.getValidationFileName());
                 FormNodeValidation validation = formNode.getValidation(definitionFile.getParent());
                 ElementMatch elementMatch = new ElementMatch(formNode, file, ElementMatch.CONTEXT_FORM_VALIDATION);
@@ -330,7 +354,7 @@ public class VariableSearchVisitor {
                     query.getSearchResult().addMatch(new Match(elementMatch, 0, 0));
                 }
             }
-            if (formNode.hasFormScript()) {
+            if (formNode.hasFormScript() && searchTargets.contains(VariableSearchTarget.FORM_SCRIPT)) {
                 IFile file = IOUtils.getAdjacentFile(definitionFile, formNode.getScriptFileName());
                 ElementMatch elementMatch = new ElementMatch(formNode, file, ElementMatch.CONTEXT_FORM_SCRIPT);
                 elementMatch.setParent(nodeElementMatch);
@@ -345,13 +369,13 @@ public class VariableSearchVisitor {
                 }
             }
             String swimlaneName = ((SwimlanedNode) formNode).getSwimlaneName();
-            if (query.getSearchText().equals(swimlaneName)) {
+            if (query.getSearchText().equals(swimlaneName) && searchTargets.contains(VariableSearchTarget.TASK_ROLE)) {
                 nodeElementMatch.setMatchesCount(1);
                 query.getSearchResult().addMatch(new Match(nodeElementMatch, 0, 0));
             }
             if (formNode instanceof TaskState) {
                 TaskState taskState = (TaskState) formNode;
-                if (taskState.getBotTaskLink() != null) {
+                if (taskState.getBotTaskLink() != null && searchTargets.contains(VariableSearchTarget.BOT_TASK)) {
                     ElementMatch elementMatch = new ElementMatch(taskState, null, ElementMatch.CONTEXT_BOT_TASK_LINK);
                     elementMatch.setParent(nodeElementMatch);
                     Map<String, String> parameters = ParamDefConfig.getAllParameters(taskState.getBotTaskLink().getDelegationConfiguration());
@@ -366,7 +390,7 @@ public class VariableSearchVisitor {
                     if (botName != null) {
                         // if bot task exists with same as task name
                         BotTask botTask = BotCache.getBotTask(botName, taskState.getName());
-                        if (botTask != null && botTask.getType() == BotTaskType.SIMPLE) {
+                        if (botTask != null && botTask.getType() == BotTaskType.SIMPLE && searchTargets.contains(VariableSearchTarget.BOT_TASK)) {
                             ElementMatch elementMatch = new ElementMatch(taskState, BotCache.getBotTaskFile(botTask), ElementMatch.CONTEXT_BOT_TASK);
                             elementMatch.setParent(nodeElementMatch);
                             List<Match> matches = findInString(elementMatch, botTask.getDelegationConfiguration(), scriptMatcherByVariable);

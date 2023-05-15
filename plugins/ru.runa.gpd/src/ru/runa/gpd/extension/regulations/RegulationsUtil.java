@@ -64,6 +64,9 @@ public class RegulationsUtil {
     private static final Configuration configuration = new Configuration(Configuration.VERSION_2_3_23);
 
     public static String getNodeLabel(Node node) {
+        if (node == null) {
+            return Localization.getString("Node.property.regulations.notSet");
+        }
         if (Strings.isNullOrEmpty(node.getName())) {
             return node.getTypeDefinition().getLabel() + " [" + node.getId() + "]";
         }

@@ -262,6 +262,10 @@ public abstract class ProcessEditorBase extends MultiPageEditorPart
         if (PropertyNames.PROPERTY_SHOW_GRID.equals(evt.getPropertyName())) {
             updateGridLayerVisibility(definition.isShowGrid());
         }
+        if (PropertyNames.PROPERTY_CHILDREN_CHANGED.equals(evt.getPropertyName()) && !definition.equals(definition.getMainProcessDefinition())
+                || PropertyNames.PROPERTY_NAME.equals(evt.getPropertyName())) {
+            EditorUtils.updateOutlineOfParentProcesses(definition, getSite().getPage());
+        }
     }
 
     @Override

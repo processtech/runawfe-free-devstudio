@@ -11,12 +11,15 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.eclipse.ui.views.properties.IPropertySource;
+import org.eclipse.ui.views.properties.IPropertySourceProvider;
+import org.eclipse.ui.views.properties.PropertySheetPage;
 import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.ProcessEditorBase;
 import ru.runa.gpd.lang.model.GraphElement;
 
-public class GraphitiProcessEditor extends ProcessEditorBase {
+public class GraphitiProcessEditor extends ProcessEditorBase implements IPropertySourceProvider {
     public final static String ID = "ru.runa.gpd.GraphitiProcessEditor";
 
     public static void refreshAllActiveEditors() {
@@ -38,6 +41,32 @@ public class GraphitiProcessEditor extends ProcessEditorBase {
     @Override
     protected void selectGraphElement(GraphElement model) {
         ((DiagramEditorPage) graphPage).select(model);
+    }
+
+    @Override
+    public Object getAdapter(Class type) {
+        if (type == IPropertySheetPage.class) {
+            // prevent TabbedPropertySheetPage creation
+            PropertySheetPage page = new PropertySheetPage();
+            page.setPropertySourceProvider(this);
+            return page;
+        }
+        return super.getAdapter(type);
+    }
+
+    @Override
+    public IPropertySource getPropertySource(Object object) {
+        if (object instanceof EditPart) {
+            EditPart editPart = (EditPart) object;
+            if (editPart.getModel() instanceof PictogramElement) {
+                PictogramElement pe = (PictogramElement) editPart.getModel();
+                object = ((DiagramEditorPage) graphPage).getDiagramTypeProvider().getFeatureProvider().getBusinessObjectForPictogramElement(pe);
+            }
+        }
+        if (object instanceof IPropertySource) {
+            return (IPropertySource) object;
+        }
+        return null;
     }
 
     public IPropertySource translateSelection(ISelection selection) {

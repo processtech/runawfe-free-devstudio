@@ -31,6 +31,7 @@ import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.Subprocess;
 import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Transition;
+import ru.runa.gpd.lang.model.bpmn.ScriptTask;
 
 public class LanguageElementPreferencePage extends FieldEditorPreferencePage implements PrefConstants {
     private static final String OVERRIDE_LOCALIZATION_SUFFIX = "override";
@@ -81,18 +82,22 @@ public class LanguageElementPreferencePage extends FieldEditorPreferencePage imp
                     Localization.getString("Swimlane.reassignSwimlaneToTaskPerformer"), getFieldEditorParent()));
             addField(new BooleanFieldEditor(getKey(P_LANGUAGE_TASK_STATE_ASYNC_INPUT_DATA),
                     Localization.getString("TaskNode.inputDataAllowedInAsyncMode"), getFieldEditorParent()));
-        }
-        if (element instanceof Subprocess) {
+        } else if (element instanceof Subprocess) {
             addField(new BooleanFieldEditor(getKey(P_LANGUAGE_SUB_PROCESS_ASYNC_INPUT_DATA),
                     Localization.getString("Subprocess.inputDataAllowedInAsyncSubprocess"), getFieldEditorParent()));
-        }
-        if (element instanceof EmbeddedSubprocess) {
-            addField(
-                    new RadioGroupFieldEditor(P_EMBEDDED_SUBPROCESS_BEHAVIOR, Localization.getString(P_EMBEDDED_SUBPROCESS_BEHAVIOR), 2,
+        } else if (element instanceof EmbeddedSubprocess) {
+            addField(new RadioGroupFieldEditor(P_EMBEDDED_SUBPROCESS_BEHAVIOR, Localization.getString(P_EMBEDDED_SUBPROCESS_BEHAVIOR), 2,
+                    new String[][] { { Localization.getString(P_EMBEDDED_SUBPROCESS_BEHAVIOR + "." + Behavior.GraphPart), Behavior.GraphPart.name() },
+                            { Localization.getString(P_EMBEDDED_SUBPROCESS_BEHAVIOR + "." + Behavior.SeparateSubprocess),
+                                    Behavior.SeparateSubprocess.name() } },
+                    getFieldEditorParent()));
+        } else if (element instanceof ScriptTask) {
+            addField(new RadioGroupFieldEditor(P_SCRIPT_TASK_NAME_BEHAVIOR, Localization.getString("pref.language.bpmn.scriptTaskLabel.behavior"), 3,
                     new String[][] {
-                        { Localization.getString(P_EMBEDDED_SUBPROCESS_BEHAVIOR + "." + Behavior.GraphPart), Behavior.GraphPart.name() }, 
-                        { Localization.getString(P_EMBEDDED_SUBPROCESS_BEHAVIOR + "." + Behavior.SeparateSubprocess), Behavior.SeparateSubprocess.name() } 
-                    },
+                            { Localization.getString("pref.language.bpmn.scriptTaskByPattern"), getKey(P_LANGUAGE_SCRIPT_TASK_DEFAULT_LABEL) },
+                            { Localization.getString("pref.language.bpmn.scriptTaskHandlerClassLabel"),
+                                    getKey(P_LANGUAGE_SCRIPT_TASK_HANDLER_CLASS_LABEL) },
+                            { Localization.getString("pref.language.bpmn.scriptTaskHandlerLabel"), getKey(P_LANGUAGE_SCRIPT_TASK_HANDLER_LABEL) } },
                     getFieldEditorParent()));
         }
         if (language == Language.BPMN) {

@@ -311,22 +311,21 @@ public class CopyGraphCommand extends Command {
     }
 
     private void adjustLocation(GraphElement ge) {
-        if (!targetEditor.toString().equals(copyBuffer.getEditorId())) {
-            Rectangle constraint = ge.getConstraint();
-            int deltaX = GEFConstants.GRID_SIZE + copyBuffer.getViewportLocation().x() - targetViewportLocation.x();
-            int deltaY = GEFConstants.GRID_SIZE + copyBuffer.getViewportLocation().y() - targetViewportLocation.y();
-            if (constraint != null) {
-                Rectangle rect = constraint.getCopy();
-                rect.setX(constraint.x() - deltaX);
-                rect.setY(constraint.y() - deltaY);
-                ge.setConstraint(rect);
-            }
-            if (ge instanceof Transition) {
-                List<Point> bendPoints = ((Transition) ge).getBendpoints();
-                for (Point bendPoint : bendPoints) {
-                    bendPoint.setX(bendPoint.x() - deltaX);
-                    bendPoint.setY(bendPoint.y() - deltaY);
-                }
+        int shiftInCaseOfTheSameDiagram = targetEditor.toString().equals(copyBuffer.getEditorId()) ? -GEFConstants.GRID_SIZE : 0;
+        Rectangle constraint = ge.getConstraint();
+        int deltaX = shiftInCaseOfTheSameDiagram + copyBuffer.getViewportLocation().x() - targetViewportLocation.x();
+        int deltaY = shiftInCaseOfTheSameDiagram + copyBuffer.getViewportLocation().y() - targetViewportLocation.y();
+        if (constraint != null) {
+            Rectangle rect = constraint.getCopy();
+            rect.setX(constraint.x() - deltaX);
+            rect.setY(constraint.y() - deltaY);
+            ge.setConstraint(rect);
+        }
+        if (ge instanceof Transition) {
+            List<Point> bendPoints = ((Transition) ge).getBendpoints();
+            for (Point bendPoint : bendPoints) {
+                bendPoint.setX(bendPoint.x() - deltaX);
+                bendPoint.setY(bendPoint.y() - deltaY);
             }
         }
     }

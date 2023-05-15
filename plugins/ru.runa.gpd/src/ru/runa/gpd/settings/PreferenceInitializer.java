@@ -59,5 +59,6 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer impleme
         store.setDefault(P_SHOW_XML_BOT_CONFIG, false);
         store.setDefault(P_DISABLE_DOCX_TEMPLATE_VALIDATION, false);
         store.setDefault(P_EMBEDDED_SUBPROCESS_BEHAVIOR, Behavior.GraphPart.name());
+        store.setDefault(P_PROPERTIES_VIEW_ID, PROPERTIES_VIEW_LEGACY);
     }
 }

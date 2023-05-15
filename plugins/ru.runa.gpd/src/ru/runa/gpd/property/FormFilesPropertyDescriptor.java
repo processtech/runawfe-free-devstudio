@@ -9,7 +9,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.form.FormTypeProvider;
@@ -47,6 +46,7 @@ public class FormFilesPropertyDescriptor extends PropertyDescriptor {
         protected void doSetValue(Object value) {
         }
 
+        @Override
         protected Control createControl(Composite parent) {
             Font font = parent.getFont();
             Color bg = parent.getBackground();

@@ -37,13 +37,12 @@ import org.eclipse.ui.internal.views.properties.PropertiesMessages;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
-import ru.runa.gpd.editor.graphiti.GraphitiProcessEditor;
 import ru.runa.gpd.editor.graphiti.GraphitiGlobalSectionEditor;
+import ru.runa.gpd.editor.graphiti.GraphitiProcessEditor;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.util.UiUtil;
 
 public class PropertiesView extends ViewPart implements ISelectionListener, PropertyChangeListener, IPartListener {
-    public static final String ID = "ru.runa.gpd.propertiesView";
     public static final String CELL_EDITOR_KEY = "CellEditor";
     public static final String CELL_EDITOR_LISTENER_KEY = "CellEditorListener";
     private static final String TREE_EDITOR_KEY = "TreeEditor";

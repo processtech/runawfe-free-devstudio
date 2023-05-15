@@ -299,12 +299,13 @@ public class VariablesUsageXlsExporter {
             cell.setCellStyle(style);
         }
         int rowNum = 1;
+        style = book.createCellStyle();
+        style.setAlignment(HorizontalAlignment.CENTER);
         for (Variable variable : variables) {
             row = sheet.createRow(rowNum++);
             cell = row.createCell(0);
             cell.setCellValue(variable.getName());
-            style = book.createCellStyle();
-            style.setAlignment(HorizontalAlignment.CENTER);
+            cell.setCellStyle(style);
         }
         for (int i = 0; i < variables.size(); i++) {
             Variable variable = variables.get(i);

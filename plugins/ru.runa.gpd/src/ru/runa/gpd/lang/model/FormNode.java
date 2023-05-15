@@ -33,7 +33,6 @@ public abstract class FormNode extends SwimlanedNode {
     private String formType;
     private boolean useJSValidation;
     private String templateFileName;
-    private boolean formEditorOpened;
     protected Boolean reassignSwimlaneToTaskPerformer = null;
 
     @Override
@@ -113,14 +112,6 @@ public abstract class FormNode extends SwimlanedNode {
         return templateFileName != null && templateFileName.length() > 0;
     }
     
-    public boolean isFormEditorOpened() {
-        return formEditorOpened;
-    }
-    
-    public void setFormEditorOpened(boolean formEditorOpened) { 
-        this.formEditorOpened = formEditorOpened; 
-    }
-
     public Boolean isReassignSwimlaneToTaskPerformer() {
         return reassignSwimlaneToTaskPerformer;
     }
@@ -140,7 +131,17 @@ public abstract class FormNode extends SwimlanedNode {
     @Override
     public Object getPropertyValue(Object id) {
         if ("formFiles".equals(id)) {
-            return this;
+            String value = Localization.getString("FormNode.property.formFile") + ": ";
+            if (hasForm()) {
+                value += FormTypeProvider.getFormType(getFormType()).getName();
+            } else {
+                value += Localization.getString("no");
+            }
+            value += ", " + Localization.getString("FormNode.property.formValidation") + ": ";
+            value += hasFormValidation() ? Localization.getString("yes") : Localization.getString("no");
+            value += ", " + Localization.getString("FormNode.property.formScript") + ": ";
+            value += hasFormScript() ? Localization.getString("yes") : Localization.getString("no");
+            return value;
         }
         return super.getPropertyValue(id);
     }

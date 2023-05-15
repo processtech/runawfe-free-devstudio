@@ -1,5 +1,6 @@
 package ru.runa.gpd.search;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IContributionItem;
@@ -21,7 +22,9 @@ import ru.runa.gpd.editor.BotTaskEditor;
 import ru.runa.gpd.editor.ProcessEditorBase;
 import ru.runa.gpd.form.FormTypeProvider;
 import ru.runa.gpd.lang.model.FormNode;
+import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.TaskState;
+import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.util.BotTaskUtils;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.WorkspaceOperations;
@@ -68,7 +71,7 @@ public class SearchPage extends AbstractTextSearchViewPage {
         ElementMatch elementMatch = (ElementMatch) match.getElement();
         IEditorPart editor = null;
         if (ElementMatch.CONTEXT_FORM.equals(elementMatch.getContext())) {
-        	selectFormNode(elementMatch);
+            selectFormNode(elementMatch);
             try {
                 FormNode formNode = (FormNode) elementMatch.getGraphElement();
                 editor = FormTypeProvider.getFormType(formNode.getFormType()).openForm(elementMatch.getFile(), formNode);
@@ -76,7 +79,7 @@ public class SearchPage extends AbstractTextSearchViewPage {
                 PluginLogger.logError(e);
             }
         } else if (ElementMatch.CONTEXT_FORM_VALIDATION.equals(elementMatch.getContext())) {
-        	selectFormNode(elementMatch);
+            selectFormNode(elementMatch);
             try {
                 FormNode formNode = (FormNode) elementMatch.getGraphElement();
                 editor = FormTypeProvider.getFormType(formNode.getFormType())
@@ -86,9 +89,15 @@ public class SearchPage extends AbstractTextSearchViewPage {
             }
         } else if (ElementMatch.CONTEXT_FORM_SCRIPT.equals(elementMatch.getContext())) {
             try {
-                FormNode formNode = (FormNode) elementMatch.getGraphElement();
-                editor = FormTypeProvider.getFormType(formNode.getFormType())
-                        .openForm(IOUtils.getAdjacentFile(elementMatch.getFile(), formNode.getFormFileName()), formNode);
+                if (elementMatch.getGraphElement() instanceof FormNode) {
+                    FormNode formNode = (FormNode) elementMatch.getGraphElement();
+                    editor = FormTypeProvider.getFormType(formNode.getFormType())
+                            .openForm(IOUtils.getAdjacentFile(elementMatch.getFile(), formNode.getFormFileName()), formNode);
+                } else if (elementMatch.getGraphElement() instanceof ProcessDefinition) {
+                    IFile formJsFile = IOUtils.getAdjacentFile(((ProcessDefinition) elementMatch.getGraphElement()).getFile(),
+                            ParContentProvider.FORM_JS_FILE_NAME);
+                    IDE.openEditor(getSite().getPage(), formJsFile, true);
+                }
             } catch (CoreException e) {
                 PluginLogger.logError(e);
             }

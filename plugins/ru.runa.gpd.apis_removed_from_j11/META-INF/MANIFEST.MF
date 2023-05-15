@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Apis_removed_from_j11
 Bundle-SymbolicName: ru.runa.gpd.apis_removed_from_j11
-Bundle-Version: 4.4.3.qualifier
+Bundle-Version: 4.5.0.qualifier
 Automatic-Module-Name: ru.runa.gpd.apis_removed_from_j11
 Bundle-ClassPath: lib/gmbal-4.0.1.jar,
  lib/istack-commons-runtime-3.0.8.jar,

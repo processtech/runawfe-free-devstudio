@@ -31,6 +31,7 @@ import ru.runa.gpd.util.IOUtils;
 public class BotCache {
     public final static String CONFIGURATION_FILE_EXTENSION = "conf";
     public final static String WORD_TEMPLATE_FILE_EXTENSION = "docx";
+    public final static String EXCEL_TEMPLATE_FILE_EXTENSION = "xlsx";
     private static final Map<String, Set<String>> BOT_STATION_BOTS = Maps.newHashMap();
     private static final Map<String, List<BotTask>> BOT_TASKS = Maps.newHashMap();
     private static final Map<BotTask, IFile> BOT_TASK_FILES = Maps.newHashMap();

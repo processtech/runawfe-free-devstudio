@@ -6,6 +6,10 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.part.FileEditorInput;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.FormNode;
@@ -19,11 +23,13 @@ public class DeleteFormFilesAction extends BaseModelActionDelegate {
     public void selectionChanged(IAction action, ISelection selection) {
         super.selectionChanged(action, selection);
         FormNode formNode = getSelection();
-        if (formNode != null) {
-            if (formNode.isFormEditorOpened()) {
+        action.setEnabled(formNode.hasForm() || formNode.hasFormValidation() || formNode.hasFormScript());
+        if (formNode.hasForm()) {
+            IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+            IEditorPart editor = page.findEditor(new FileEditorInput(
+                    IOUtils.getAdjacentFile(formNode.getProcessDefinition().getFile(), formNode.getFormFileName())));
+            if (editor != null) {
                 action.setEnabled(false);
-            } else {
-                action.setEnabled(formNode.hasForm() || formNode.hasFormValidation() || formNode.hasFormScript());
             }
         }
     }

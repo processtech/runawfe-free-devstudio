@@ -49,6 +49,9 @@ public abstract class AbstractTransition extends NamedGraphElement {
         if (this.target != null) {
             this.target.firePropertyChange(NODE_ARRIVING_TRANSITION_ADDED, null, this);
         }
+        if(getParent().equals(target) && target.getConstraint() != null) {
+            addBendpoint(0, new Point(target.getConstraint().x() + target.getConstraint().width + 30, target.getConstraint().y() +  target.getConstraint().height/2));
+        }
     }
 
     @Override

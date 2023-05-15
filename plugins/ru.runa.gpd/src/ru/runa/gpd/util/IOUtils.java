@@ -425,7 +425,8 @@ public class IOUtils {
             for (int i = 0; i < resources.length; i++) {
                 if (resources[i] instanceof IFile && (Strings.isNullOrEmpty(resources[i].getFileExtension())
                         || !(resources[i].getFileExtension().equals(BotCache.CONFIGURATION_FILE_EXTENSION)
-                                || resources[i].getFileExtension().equals(BotCache.WORD_TEMPLATE_FILE_EXTENSION)))) {
+                        || resources[i].getFileExtension().equals(BotCache.WORD_TEMPLATE_FILE_EXTENSION)
+                        || resources[i].getFileExtension().equals(BotCache.EXCEL_TEMPLATE_FILE_EXTENSION)))) {
                     fileList.add((IFile) resources[i]);
                 }
             }
