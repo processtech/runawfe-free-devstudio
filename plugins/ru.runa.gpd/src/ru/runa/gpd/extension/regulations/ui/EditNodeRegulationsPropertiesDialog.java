@@ -1,9 +1,10 @@
 package ru.runa.gpd.extension.regulations.ui;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
-
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -25,7 +26,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.osgi.framework.Bundle;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.regulations.NodeRegulationsProperties;
@@ -35,9 +35,6 @@ import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
-
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
 
 public class EditNodeRegulationsPropertiesDialog extends Dialog {
     private static boolean ERROR_ABOUT_BROWSER_LOGGED = false;
@@ -75,7 +72,7 @@ public class EditNodeRegulationsPropertiesDialog extends Dialog {
             @Override
             public String apply(Node node) {
                 if (node == null) {
-                    return Localization.getString("EditNodeRegulationsPropertiesDialog.text.notSet");
+                    return Localization.getString("Node.property.regulations.notSet");
                 }
                 return RegulationsUtil.getNodeLabel(node);
             }

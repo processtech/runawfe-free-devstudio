@@ -131,7 +131,17 @@ public abstract class FormNode extends SwimlanedNode {
     @Override
     public Object getPropertyValue(Object id) {
         if ("formFiles".equals(id)) {
-            return this;
+            String value = Localization.getString("FormNode.property.formFile") + ": ";
+            if (hasForm()) {
+                value += FormTypeProvider.getFormType(getFormType()).getName();
+            } else {
+                value += Localization.getString("no");
+            }
+            value += ", " + Localization.getString("FormNode.property.formValidation") + ": ";
+            value += hasFormValidation() ? Localization.getString("yes") : Localization.getString("no");
+            value += ", " + Localization.getString("FormNode.property.formScript") + ": ";
+            value += hasFormScript() ? Localization.getString("yes") : Localization.getString("no");
+            return value;
         }
         return super.getPropertyValue(id);
     }

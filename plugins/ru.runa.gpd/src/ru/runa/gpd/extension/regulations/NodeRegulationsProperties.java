@@ -1,14 +1,14 @@
 package ru.runa.gpd.extension.regulations;
 
+import com.google.common.base.Objects;
+import com.google.common.base.Strings;
+import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.NodeRegistry;
 import ru.runa.gpd.lang.model.EndState;
 import ru.runa.gpd.lang.model.EndTokenState;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.StartState;
-
-import com.google.common.base.Objects;
-import com.google.common.base.Strings;
 
 public class NodeRegulationsProperties {
     private final GraphElement parent;
@@ -118,5 +118,17 @@ public class NodeRegulationsProperties {
             return true;
         }
         return super.equals(obj);
+    }
+
+    @Override
+    public String toString() {
+        if (!enabled) {
+            return Localization.getString("Node.property.regulations.notSet");
+        }
+        String value = Localization.getString("Node.property.previousNodeInRegulations") + ": ";
+        value += RegulationsUtil.getNodeLabel(getPreviousNode());
+        value += ", " + Localization.getString("Node.property.nextNodeInRegulations") + ": ";
+        value += RegulationsUtil.getNodeLabel(getNextNode());
+        return value;
     }
 }
