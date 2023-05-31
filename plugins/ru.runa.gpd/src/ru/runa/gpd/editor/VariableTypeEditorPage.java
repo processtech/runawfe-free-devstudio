@@ -44,6 +44,7 @@ import ru.runa.gpd.Localization;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.SharedImages;
+import ru.runa.gpd.editor.EditorPartBase.TableColumnDescription;
 import ru.runa.gpd.editor.clipboard.VariableTransfer;
 import ru.runa.gpd.editor.clipboard.VariableUserTypeTransfer;
 import ru.runa.gpd.globalsection.GlobalSectionUtils;
@@ -111,6 +112,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
 
     @Override
     public void createPartControl(Composite parent) {
+        final int internalStorageColumn;
         SashForm sashForm = createSashForm(parent, SWT.HORIZONTAL, "VariableUserType.collection.desc");
 
         Composite leftComposite = createSection(sashForm, "VariableUserType.collection");
@@ -126,20 +128,43 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             }
         });
 
-        final List<TableColumnDescription> descriptions = Lists.newArrayList(new TableColumnDescription("property.name", 250, SWT.LEFT));
+        final List<TableColumnDescription> descriptions = Lists.newArrayList(new TableColumnDescription("property.name", 190, SWT.LEFT));
         if (CommonPreferencePage.isInternalStorageFunctionalityEnabled()) {
-            descriptions.add(new TableColumnDescription("UserDefinedVariableType.storeInExternalStorage", 100, SWT.LEFT, false));
+            descriptions.add(new TableColumnDescription("UserDefinedVariableType.storeInExternalStorage", 80, SWT.LEFT));
+            internalStorageColumn = 1;
+        } else {
+            internalStorageColumn = 0; // zero when not used
         }
+        if (CommonPreferencePage.isGlobalObjectsEnabled() && !isGlobalSection()) {
+            descriptions.add(new TableColumnDescription("Variable.property.isGlobal", 30, SWT.LEFT));
+        }
+
         createTable(typeTableViewer, new DataViewerComparator<>(new ValueComparator<VariableUserType>() {
             @Override
             public int compare(VariableUserType o1, VariableUserType o2) {
                 int result = 0;
                 if (getColumn() == 0) {
                     result = o1.getName().compareTo(o2.getName());
+                } else if (getColumn() == internalStorageColumn) {
+                    if (o1.isStoreInExternalStorage() == o2.isStoreInExternalStorage()) {
+                        result = 0;
+                    } else if (o1.isStoreInExternalStorage() && !o2.isStoreInExternalStorage()) {
+                        result = 1;
+                    } else {
+                        result = -1;
+                    }
+                } else if ((getColumn() == 1 + internalStorageColumn)) {
+                    if (o1.isGlobal() == o2.isGlobal()) {
+                        result = 0;
+                    } else if (o1.isGlobal() && !o2.isGlobal()) {
+                        result = 1;
+                    } else {
+                        result = -1;
+                    }
                 }
                 return result;
             }
-        }), descriptions.toArray(new TableColumnDescription[] {}));
+        }), descriptions.toArray(new TableColumnDescription[descriptions.size()]));
 
         Composite typeButtonsBar = createActionBar(leftComposite);
         addButton(typeButtonsBar, "button.create", new CreateTypeSelectionListener(), false);
@@ -231,10 +256,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
     }
 
     private boolean isGlobalSection() {
-        if (GlobalSectionUtils.isGlobalSectionName(getDefinition().getName())) {
-            return true;
-        }
-        return false;
+        return GlobalSectionUtils.isGlobalSectionName(getDefinition().getName());
     }
 
     private void updateViewer() {
@@ -548,6 +570,8 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             case 0:
                 return type.getName();
             case 1:
+                    return "";
+            case 2:
                 return "";
             default:
                 return "unknown " + index;
@@ -561,8 +585,14 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
 
         @Override
         public Image getColumnImage(Object element, int columnIndex) {
-            if (columnIndex == 1) {
+            if (CommonPreferencePage.isInternalStorageFunctionalityEnabled()) {
+                if (columnIndex == 1) {
                 return SharedImages.getImage(((VariableUserType) element).isStoreInExternalStorage() ? "icons/checked.gif" : "icons/unchecked.gif");
+                } else if (columnIndex == 2) {
+                    return SharedImages.getImage(((VariableUserType) element).isGlobal() ? "icons/checked.gif" : "icons/unchecked.gif");
+                }
+            } else if (columnIndex == 1) {
+                return SharedImages.getImage(((VariableUserType) element).isGlobal() ? "icons/checked.gif" : "icons/unchecked.gif");
             }
             return null;
         }
