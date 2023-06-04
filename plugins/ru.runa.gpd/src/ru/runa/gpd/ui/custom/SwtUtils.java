@@ -54,7 +54,6 @@ public class SwtUtils {
     public static Button createButton(Composite parent, String label, LoggingSelectionAdapter selectionAdapter) {
         Button button = new Button(parent, SWT.PUSH);
         button.setText(label);
-        // button.setFont(JFaceResources.getDialogFont());
         if (selectionAdapter != null) {
             button.addSelectionListener(selectionAdapter);
         }
