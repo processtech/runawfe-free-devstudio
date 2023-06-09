@@ -11,7 +11,7 @@
 		<module>ru.runa.gpd.alfresco</module>
 		<module>ru.runa.gpd.app</module>
 		<module>ru.runa.gpd.maven</module>
-		<module>ru.runa.gpd.connector.wfe.ws</module>
+		<module>ru.runa.gpd.connector.wfe.rest</module>
 		<module>ru.runa.gpd.form.ftl</module>
 		<module>ru.runa.gpd.form.quick</module>
 		<module>ru.runa.gpd.office</module>
