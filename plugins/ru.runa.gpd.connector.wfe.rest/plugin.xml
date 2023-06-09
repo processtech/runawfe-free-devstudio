@@ -4,11 +4,10 @@
    <extension
          point="ru.runa.gpd.wfeServerConnectors">
       <connector
-            class="ru.runa.gpd.connector.wfe.ws.WebServiceWfeServerConnector"
+            class="ru.runa.gpd.connector.wfe.rest.RestWfeServerConnector"
             description="%wildfly.ws.connector.description"
             id="wildfly.ws"
             name="%wildfly.ws.connector.name">
       </connector>
    </extension>
-
 </plugin>

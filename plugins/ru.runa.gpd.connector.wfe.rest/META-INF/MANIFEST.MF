@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 1
+Bundle-Name: RunaWFE Developer Studio Server integration through RestAPI
+Bundle-SymbolicName: ru.runa.gpd.connector.wfe.rest;singleton:=true
+Bundle-Version: 4.6.0.qualifier
+Bundle-Activator: ru.runa.gpd.connector.wfe.rest.Activator
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ ru.runa.gpd
+Bundle-ActivationPolicy: lazy
+Bundle-ClassPath: lib/wfe-restapi-client.jar,
+ lib/httpcore-4.4.16.jar,
+ lib/httpclient-4.5.13.jar,
+ .
+Bundle-Vendor: Runa
+Import-Package: ru.runa.gpd

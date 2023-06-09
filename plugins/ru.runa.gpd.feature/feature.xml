@@ -59,7 +59,7 @@
          unpack="false"/>
 
    <plugin
-         id="ru.runa.gpd.connector.wfe.ws"
+         id="ru.runa.gpd.connector.wfe.rest"
          download-size="0"
          install-size="0"
          version="0.0.0"
