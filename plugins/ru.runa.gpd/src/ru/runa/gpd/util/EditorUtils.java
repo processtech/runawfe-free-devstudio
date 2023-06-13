@@ -74,13 +74,13 @@ public class EditorUtils {
     public static ProcessEditorBase getCurrentEditor() {
         IWorkbenchWindow activeWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
         if (activeWindow == null) {
-            return null;
+            throw new IllegalArgumentException("activeWindow is null");
         }
         IEditorPart editorPart = activeWindow.getActivePage().getActiveEditor();
         if (editorPart instanceof ProcessEditorBase) {
             return (ProcessEditorBase) editorPart;
         }
-        return null;
+        throw new IllegalArgumentException("editorPart is not instanceof ProcessEditorBase: " + editorPart);
     }
 
     public static IViewPart showView(String viewId) {

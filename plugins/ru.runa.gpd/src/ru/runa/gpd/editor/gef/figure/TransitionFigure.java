@@ -2,7 +2,6 @@ package ru.runa.gpd.editor.gef.figure;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.eclipse.draw2d.Bendpoint;
 import org.eclipse.draw2d.Connection;
 import org.eclipse.draw2d.ConnectionEndpointLocator;
@@ -13,7 +12,6 @@ import org.eclipse.draw2d.PolygonDecoration;
 import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.draw2d.RoutingListener;
 import org.eclipse.swt.SWT;
-
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.editor.gef.ActionGraphUtils;
@@ -78,7 +76,7 @@ public class TransitionFigure extends PolylineConnection {
                 @Override
                 public void postRoute(Connection connection) {
                     //if (getParent() == null) return;
-                    multipleFigure.setLocation(ActionGraphUtils.getActionFigureLocation(TransitionFigure.this, 0, 0, false));
+                    multipleFigure.setLocation(ActionGraphUtils.getActionFigureLocation(TransitionFigure.this, 0, false));
                 }
 
                 @Override

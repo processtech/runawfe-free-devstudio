@@ -61,11 +61,11 @@ public class JointFormEditor extends FormEditor {
         }
         setPageText(getPageCount() - 1, Messages.getString("editor.tab_name.script"));
 
-        fieldValidatorsPage = new FieldValidatorsPage(getContainer(), formNode, validation, p -> setDirty(p));
+        fieldValidatorsPage = new FieldValidatorsPage(getContainer(), formNode, validation, p -> setDirty());
         addPage(fieldValidatorsPage);
         setPageText(getPageCount() - 1, Messages.getString("editor.tab_name.field_validators"));
 
-        globalValidatorsPage = new GlobalValidatorsPage(getContainer(), formNode, validation, p -> setDirty(p));
+        globalValidatorsPage = new GlobalValidatorsPage(getContainer(), formNode, validation, p -> setDirty());
         addPage(globalValidatorsPage);
         setPageText(getPageCount() - 1, Messages.getString("editor.tab_name.global_validators"));
 
@@ -94,7 +94,7 @@ public class JointFormEditor extends FormEditor {
         fieldValidatorsPage.doSave();
         globalValidatorsPage.doSave();
         ValidationUtil.rewriteValidation(formFile, formNode, validation);
-        setDirty(false);
+        setDirty();
         ProcessDefinitionValidator.validateDefinition(formNode.getProcessDefinition());
     }
 
@@ -110,7 +110,7 @@ public class JointFormEditor extends FormEditor {
                 || (globalValidatorsPage != null && globalValidatorsPage.isDirty());
     }
 
-    private void setDirty(boolean dirty) {
+    private void setDirty() {
         firePropertyChange(IEditorPart.PROP_DIRTY);
     }
 

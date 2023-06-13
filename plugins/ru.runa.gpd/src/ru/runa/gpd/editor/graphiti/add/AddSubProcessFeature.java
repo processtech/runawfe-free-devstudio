@@ -7,7 +7,6 @@ import org.eclipse.graphiti.mm.algorithms.Image;
 import org.eclipse.graphiti.mm.algorithms.RoundedRectangle;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.services.Graphiti;
-
 import ru.runa.gpd.editor.graphiti.GaProperty;
 import ru.runa.gpd.editor.graphiti.PropertyUtil;
 import ru.runa.gpd.editor.graphiti.StyleUtil;
@@ -43,10 +42,10 @@ public class AddSubProcessFeature extends AddStateNodeFeature {
         }
 
         Graphiti.getGaService().setLocation(image, node.getConstraint().width / 2 - 7, node.getConstraint().height - 3 * GRID_SIZE);
-        addAsyncImage(node, context, container, containerShape);
+        addAsyncImage(node, container, containerShape);
     }
 
-    private void addAsyncImage(Node node, IAddContext context, GraphicsAlgorithmContainer container, ContainerShape containerShape) {
+    private void addAsyncImage(Node node, GraphicsAlgorithmContainer container, ContainerShape containerShape) {
         Image asyncImage = Graphiti.getGaService().createImage(container, "graph/async.png");
         asyncImage.getProperties().add(new GaProperty(GaProperty.ID, GaProperty.ASYNC));
         Graphiti.getGaService().setLocation(asyncImage, node.getConstraint().width - 2 * GRID_SIZE, node.getConstraint().height - 2 * GRID_SIZE - 1);

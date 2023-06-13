@@ -1,10 +1,10 @@
 package ru.runa.gpd.extension.regulations.ui;
 
+import com.google.common.base.Throwables;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.Map;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.wizard.WizardPage;
@@ -21,16 +21,12 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.editor.ProcessEditorBase;
-import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.util.EditorUtils;
 import ru.runa.gpd.util.IOUtils;
-
-import com.google.common.base.Throwables;
 
 public class ImportRegulationsWizardPage extends WizardPage {
     private Composite fileSelectionArea;
@@ -94,7 +90,6 @@ public class ImportRegulationsWizardPage extends WizardPage {
             try {
                 ProcessEditorBase editor = EditorUtils.getCurrentEditor();
                 IFile definitionFile = editor.getDefinitionFile();
-                ProcessDefinition definition = editor.getDefinition();
                 Map<String, byte[]> files = IOUtils.getArchiveFiles(new FileInputStream(selectedFile), true);
                 if (!files.containsKey(ParContentProvider.REGULATIONS_XML_FILE_NAME)) {
                     throw new Exception("regulations.xml not found");

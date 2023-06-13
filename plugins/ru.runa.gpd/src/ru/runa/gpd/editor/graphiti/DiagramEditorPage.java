@@ -134,8 +134,7 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
     @Override
     protected void setInput(IEditorInput input) {
         diagramCreator = new DiagramCreator(editor.getDefinitionFile());
-        input = diagramCreator.createDiagram(null);
-        super.setInput(input);
+        super.setInput(diagramCreator.createDiagram(null));
         importDiagram();
     }
 

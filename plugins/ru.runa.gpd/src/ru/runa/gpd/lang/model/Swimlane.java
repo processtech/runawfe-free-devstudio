@@ -52,9 +52,7 @@ public class Swimlane extends Variable implements Delegable {
         try {
             if (DEFAULT_DELEGATION_CLASS_NAME.equals(getDelegationClassName())) {
                 SwimlaneInitializer swimlaneInitializer = SwimlaneInitializerParser.parse(getDelegationConfiguration());
-                if (swimlaneInitializer != null) {
-                    swimlaneInitializer.validate(this, errors);
-                }
+                swimlaneInitializer.validate(this, errors);
             }
         } catch (RuntimeException e) {
             if (e.getMessage() != null && e.getMessage().startsWith(OrgFunctionDefinition.MISSED_DEFINITION)) {
@@ -82,6 +80,7 @@ public class Swimlane extends Variable implements Delegable {
     protected void fillCustomPropertyDescriptors(List<IPropertyDescriptor> descriptors) {
     }
 
+    @Override
     public void updateFromGlobalPartition(Variable swimlaneFromGlobalSection) {
         this.setFormat(swimlaneFromGlobalSection.getFormat());
         this.setDefaultValue(swimlaneFromGlobalSection.getDefaultValue());
