@@ -53,12 +53,12 @@ public class OutlineViewer extends ContentOutlinePage implements PropertyChangeL
     public void createControl(Composite parent) {
         createToolBar();
         createPageBook(parent);
-        editor.getDefinition().setDelegatedListener(this);
+        editor.getDefinition().addDelegatedListener(this);
     }
 
     @Override
     public void dispose() {
-        editor.getDefinition().unsetDelegatedListener(this);
+        editor.getDefinition().removeDelegatedListener(this);
         if (null != thumbnail) {
             thumbnail.deactivate();
         }

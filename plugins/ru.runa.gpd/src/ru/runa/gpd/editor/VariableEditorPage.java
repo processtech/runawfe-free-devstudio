@@ -151,14 +151,6 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
     }
 
     @Override
-    public void dispose() {
-        for (Variable variable : getDefinition().getVariables(false, false)) {
-            variable.removePropertyChangeListener(this);
-        }
-        super.dispose();
-    }
-
-    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         String type = evt.getPropertyName();
         if (PropertyNames.PROPERTY_CHILDREN_CHANGED.equals(type)) {
@@ -203,9 +195,6 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
     private void updateViewer() {
         List<Variable> variables = getDefinition().getVariables(false, false);
         tableViewer.setInput(variables);
-        for (Variable variable : variables) {
-            variable.addPropertyChangeListener(this);
-        }
         updateUI();
     }
 

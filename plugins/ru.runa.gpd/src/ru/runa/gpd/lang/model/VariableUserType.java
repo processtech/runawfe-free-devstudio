@@ -1,11 +1,11 @@
 package ru.runa.gpd.lang.model;
 
-import java.util.List;
-
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
-
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.List;
 import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.util.EventSupport;
 
@@ -40,10 +40,13 @@ public class VariableUserType extends EventSupport implements VariableContainer,
     }
 
     @Override
-    public void firePropertyChange(String propName, Object old, Object newValue) {
-        super.firePropertyChange(propName, old, newValue);
+    protected void firePropertyChange(PropertyChangeEvent event) {
+        super.firePropertyChange(event);
         if (processDefinition != null) {
             processDefinition.setDirty();
+            for (PropertyChangeListener delegatedListener : processDefinition.delegatedListeners) {
+                delegatedListener.propertyChange(event);
+            }
         }
     }
 
