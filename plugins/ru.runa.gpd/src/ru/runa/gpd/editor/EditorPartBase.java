@@ -53,12 +53,12 @@ public abstract class EditorPartBase<T> extends EditorPart implements PropertyCh
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
         setSite(site);
         setInput(input);
-        editor.getDefinition().addPropertyChangeListener(this);
+        editor.getDefinition().addDelegatedListener(this);
     }
 
     @Override
     public void dispose() {
-        editor.getDefinition().removePropertyChangeListener(this);
+        editor.getDefinition().removeDelegatedListener(this);
         super.dispose();
     }
 

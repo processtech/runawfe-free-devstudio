@@ -146,14 +146,6 @@ public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
     }
 
     @Override
-    public void dispose() {
-        for (Swimlane swimlane : getDefinition().getSwimlanes()) {
-            swimlane.removePropertyChangeListener(this);
-        }
-        super.dispose();
-    }
-
-    @Override
     public void propertyChange(PropertyChangeEvent event) {
         String type = event.getPropertyName();
         if (PropertyNames.PROPERTY_CHILDREN_CHANGED.equals(type)) {
@@ -197,13 +189,9 @@ public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
         return swimlanes.stream().noneMatch(Swimlane::isGlobal);
     }
 
-    @SuppressWarnings("unchecked")
     private void updateViewer() {
         List<Swimlane> swimlanes = getDefinition().getSwimlanes();
         tableViewer.setInput(swimlanes);
-        for (Swimlane swimlane : swimlanes) {
-            swimlane.addPropertyChangeListener(this);
-        }
         updateUI();
     }
 

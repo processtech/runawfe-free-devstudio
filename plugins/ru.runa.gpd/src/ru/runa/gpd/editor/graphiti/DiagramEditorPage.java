@@ -70,7 +70,7 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
     @Override
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
         super.init(site, input);
-        editor.getDefinition().setDelegatedListener(this);
+        editor.getDefinition().addDelegatedListener(this);
     }
 
     public ProcessDefinition getDefinition() {
@@ -124,7 +124,7 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
 
     @Override
     public void dispose() {
-        editor.getDefinition().unsetDelegatedListener(this);
+        editor.getDefinition().removeDelegatedListener(this);
         if (diagramCreator != null) {
             diagramCreator.disposeDiagram();
         }

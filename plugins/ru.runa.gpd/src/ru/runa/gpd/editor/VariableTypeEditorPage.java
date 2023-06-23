@@ -228,14 +228,6 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
     }
 
     @Override
-    public void dispose() {
-        for (VariableUserType userType : getDefinition().getVariableUserTypes()) {
-            userType.removePropertyChangeListener(this);
-        }
-        super.dispose();
-    }
-
-    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         String type = evt.getPropertyName();
         if (PropertyNames.PROPERTY_USER_TYPES_CHANGED.equals(type)) {
@@ -262,9 +254,6 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
     private void updateViewer() {
         List<VariableUserType> userTypes = getDefinition().getVariableUserTypes();
         typeTableViewer.setInput(userTypes);
-        for (VariableUserType userType : userTypes) {
-            userType.addPropertyChangeListener(this);
-        }
         updateAttributeViewer();
         VariableUserType selectedType = getSelection();
 

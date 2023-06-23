@@ -133,10 +133,7 @@ public class FieldValidatorsPage extends Composite implements PropertyChangeList
 
     @Override
     public void dispose() {
-        for (Variable variable : formNode.getVariables(false, true)) {
-            variable.removePropertyChangeListener(this);
-        }
-        processDefinition.removePropertyChangeListener(this);
+        processDefinition.removeDelegatedListener(this);
         super.dispose();
     }
 
@@ -375,10 +372,7 @@ public class FieldValidatorsPage extends Composite implements PropertyChangeList
         warningLabel.setText(warningMessage);
         mainComposite.pack(true);
 
-        for (Variable variable : formNode.getVariables(false, true)) {
-            variable.addPropertyChangeListener(this);
-        }
-        processDefinition.addPropertyChangeListener(this);
+        processDefinition.addDelegatedListener(this);
 
         variablesTableViewer.refresh(true);
         swimlanesTableViewer.refresh(true);
