@@ -504,7 +504,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
         if (ftlFormat) {
             components.clear();
             try {
-                html = TemplateProcessor.process(formFile.getFullPath().toString(), html, new EditorHashModel(this));
+                html = TemplateProcessor.process(html, new EditorHashModel(this));
             } catch (Exception e) {
                 EditorsPlugin.logError("ftl WYSIWYGHTMLEditor.syncEditor2Browser()", e);
             }
@@ -637,7 +637,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
             String html = (String) arguments[0];
             if (ftlFormat) {
                 try {
-                    html = DesignUtils.transformFromHtml(html, getVariables(), components);
+                    html = DesignUtils.transformFromHtml(html, components);
                     Matcher matcher = HTML_CONTENT_PATTERN.matcher(html);
                     if (matcher.find()) {
                         html = matcher.group(3);

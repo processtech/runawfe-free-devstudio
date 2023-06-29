@@ -15,6 +15,7 @@ If the variable name (or value) has space symbol < > then it should be enclosed 
 date(date) - Cleans time info in java.util.Date.
 time(date) - Cleans date info in java.util.Date.
 hours_round_up(number) - round number (minutes value) to hours.
+random() - returns a pseudo-random floating point number in the range [0, 1), that is, from 0 (inclusive) to 1 (but not including 1), which can then be scaled to the desired range.
 round(number) or round(number, accuracy).
 round_up(number) or round_up(number, accuracy).
 round_down(number) or round_down(number, accuracy).

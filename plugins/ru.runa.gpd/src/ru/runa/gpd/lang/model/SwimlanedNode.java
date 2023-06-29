@@ -1,19 +1,16 @@
 package ru.runa.gpd.lang.model;
 
+import com.google.common.base.Objects;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.ui.views.properties.ComboBoxPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.util.SwimlaneDisplayMode;
 import ru.runa.gpd.util.VariableUtils;
-
-import com.google.common.base.Objects;
 
 public abstract class SwimlanedNode extends Node implements PropertyChangeListener {
     private Swimlane swimlane;
@@ -53,6 +50,9 @@ public abstract class SwimlanedNode extends Node implements PropertyChangeListen
 
     public void setSwimlane(Swimlane swimlane) {
         Swimlane old = this.swimlane;
+        if (Objects.equal(swimlane, old)) {
+            return;
+        }
         if (old != null) {
             old.removePropertyChangeListener(this);
         }
@@ -110,9 +110,7 @@ public abstract class SwimlanedNode extends Node implements PropertyChangeListen
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         String propertyName = evt.getPropertyName();
-        if (PROPERTY_NAME.equals(propertyName) && evt.getSource() instanceof Swimlane) {
-            setSwimlane((Swimlane) evt.getSource());
-        } else if (NODE_REMOVED.equals(propertyName) && Objects.equal(evt.getOldValue(), getSwimlane())) {
+        if (NODE_REMOVED.equals(propertyName) && Objects.equal(evt.getOldValue(), getSwimlane())) {
             setSwimlane(null);
         }
     }

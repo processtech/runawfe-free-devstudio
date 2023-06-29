@@ -1,66 +1,31 @@
 package ru.runa.gpd.editor;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import org.eclipse.core.internal.resources.ResourceException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
-import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.draw2d.IFigure;
-import org.eclipse.gef.EditDomain;
-import org.eclipse.gef.EditPart;
-import org.eclipse.gef.GraphicalViewer;
-import org.eclipse.gef.commands.CommandStack;
-import org.eclipse.gef.ui.actions.ActionRegistry;
-import org.eclipse.gef.ui.parts.GraphicalEditor;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.ISelectionListener;
-import org.eclipse.ui.IViewPart;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.part.FileEditorInput;
-import org.eclipse.ui.part.MultiPageEditorPart;
-import org.eclipse.ui.views.contentoutline.ContentOutline;
-import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
-import ru.runa.gpd.PropertyNames;
-import ru.runa.gpd.editor.gef.GEFImageHelper;
-import ru.runa.gpd.editor.gef.GEFProcessEditor;
-import ru.runa.gpd.editor.gef.part.graph.ElementGraphicalEditPart;
-import ru.runa.gpd.editor.graphiti.DiagramEditorPage;
-import ru.runa.gpd.extension.regulations.ui.RegulationsNotesView;
-import ru.runa.gpd.extension.regulations.ui.RegulationsSequenceView;
-import ru.runa.gpd.lang.model.FormNode;
-import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
-import ru.runa.gpd.lang.model.Swimlane;
-import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.lang.par.ProcessDefinitionValidator;
-import ru.runa.gpd.ui.view.ValidationErrorsView;
-import ru.runa.gpd.util.EditorUtils;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.WorkspaceOperations;
 
 public abstract class GlobalSectionEditorBase extends ProcessEditorBase {
-
+    // TODO seems copy-paste with parent class (fields), method init - also duplicated
     protected ProcessDefinition definition;
     protected IFile definitionFile;
     protected SwimlaneEditorPage swimlanePage;

@@ -2,7 +2,6 @@ package ru.runa.gpd.editor.graphiti;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.graphiti.mm.algorithms.styles.AdaptedGradientColoredAreas;
 import org.eclipse.graphiti.mm.algorithms.styles.Color;
@@ -24,7 +23,6 @@ import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.RGB;
-
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.GraphElement;
@@ -116,7 +114,7 @@ public class StyleUtil implements PrefConstants {
         return Graphiti.getGaService().manageColor(diagram, new ColorConstant(colorPref.red, colorPref.green, colorPref.blue));
     }
 
-    private static int getInt(Diagram diagram, String bpmnName, String propertyName) {
+    private static int getInt(String bpmnName, String propertyName) {
         String fullPropertyName = LanguageElementPreferenceNode.getBpmnPropertyName(bpmnName, propertyName);
         if (!Activator.getDefault().getPreferenceStore().contains(fullPropertyName)) {
             fullPropertyName = LanguageElementPreferenceNode.getBpmnDefaultPropertyName(propertyName);
@@ -146,7 +144,7 @@ public class StyleUtil implements PrefConstants {
         @Override
         public void init(Diagram diagram, Style style) {
             initColors(diagram, style, bpmnName);
-            style.setLineWidth(getInt(diagram, bpmnName, P_BPMN_LINE_WIDTH));
+            style.setLineWidth(getInt(bpmnName, P_BPMN_LINE_WIDTH));
             Graphiti.getGaService().setRenderingStyle(style, getDefaultEventColor(diagram, style.getBackground()));
         }
 
@@ -159,8 +157,7 @@ public class StyleUtil implements PrefConstants {
             EList<GradientColoredArea> gcas = defaultGradientColoredAreas.getGradientColor();
             Color colorEnd = Graphiti.getGaService().manageColor(diagram,
                     new ColorConstant(Math.max(0, color.getRed() - 1), Math.max(0, color.getGreen() - 1), Math.max(0, color.getBlue() - 1)));
-            addGradientColoredArea(gcas, color, 0, LocationType.LOCATION_TYPE_ABSOLUTE_START, colorEnd, 0, LocationType.LOCATION_TYPE_ABSOLUTE_END,
-                    diagram);
+            addGradientColoredArea(gcas, color, 0, LocationType.LOCATION_TYPE_ABSOLUTE_START, colorEnd, 0, LocationType.LOCATION_TYPE_ABSOLUTE_END);
             agca.getAdaptedGradientColoredAreas().add(IPredefinedRenderingStyle.STYLE_ADAPTATION_DEFAULT, defaultGradientColoredAreas);
             GradientColoredAreas primarySelectedGradientColoredAreas = StylesFactory.eINSTANCE.createGradientColoredAreas();
             primarySelectedGradientColoredAreas.setStyleAdaption(IPredefinedRenderingStyle.STYLE_ADAPTATION_DEFAULT);
@@ -199,7 +196,7 @@ public class StyleUtil implements PrefConstants {
         }
 
         private void addGradientColoredArea(EList<GradientColoredArea> gcas, Color startColor, int locationValueStart,
-                LocationType locationTypeStart, Color endColor, int locationValueEnd, LocationType locationTypeEnd, Diagram diagram) {
+                LocationType locationTypeStart, Color endColor, int locationValueEnd, LocationType locationTypeEnd) {
             GradientColoredArea gca = StylesFactory.eINSTANCE.createGradientColoredArea();
             gcas.add(gca);
             gca.setStart(StylesFactory.eINSTANCE.createGradientColoredLocation());
@@ -224,7 +221,7 @@ public class StyleUtil implements PrefConstants {
         public void init(Diagram diagram, Style style) {
             style.setFilled(Boolean.FALSE);
             style.setForeground(getColor(diagram, bpmnName, P_BPMN_FOREGROUND_COLOR));
-            style.setLineWidth(getInt(diagram, bpmnName, P_BPMN_LINE_WIDTH));
+            style.setLineWidth(getInt(bpmnName, P_BPMN_LINE_WIDTH));
             style.setLineStyle(LineStyle.DASH);
         }
 
@@ -241,7 +238,7 @@ public class StyleUtil implements PrefConstants {
         public void init(Diagram diagram, Style style) {
             style.setFilled(false);
             style.setForeground(getColor(diagram, bpmnName, P_BPMN_FOREGROUND_COLOR));
-            style.setLineWidth(getInt(diagram, bpmnName, P_BPMN_LINE_WIDTH));
+            style.setLineWidth(getInt(bpmnName, P_BPMN_LINE_WIDTH));
         }
 
     }
@@ -300,7 +297,7 @@ public class StyleUtil implements PrefConstants {
             Color color = getColor(diagram, TRANSITION_BPMN_NAME, P_BPMN_FOREGROUND_COLOR);
             style.setForeground(color);
             style.setBackground(color);
-            style.setLineWidth(getInt(diagram, TRANSITION_BPMN_NAME, P_BPMN_LINE_WIDTH));
+            style.setLineWidth(getInt(TRANSITION_BPMN_NAME, P_BPMN_LINE_WIDTH));
         }
     }
 
@@ -319,7 +316,7 @@ public class StyleUtil implements PrefConstants {
         @Override
         public void init(Diagram diagram, Style style) {
             style.setForeground(getColor(diagram, TEXT_ANNOTATION_BPMN_NAME, P_BPMN_FOREGROUND_COLOR));
-            style.setLineWidth(getInt(diagram, TEXT_ANNOTATION_BPMN_NAME, P_BPMN_LINE_WIDTH));
+            style.setLineWidth(getInt(TEXT_ANNOTATION_BPMN_NAME, P_BPMN_LINE_WIDTH));
         }
 
     }

@@ -1,7 +1,7 @@
 package ru.runa.gpd.quick.tag;
 
-import ru.runa.wfe.var.dto.WfVariable;
 import freemarker.template.TemplateModelException;
+import ru.runa.wfe.var.dto.WfVariable;
 
 public class DisplayVariableTag extends FreemarkerTagGpdWrap {
     private static final long serialVersionUID = 1L;

@@ -2,7 +2,6 @@ package ru.runa.gpd.editor.gef.policy;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.eclipse.draw2d.Cursors;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.ImageFigure;
@@ -20,7 +19,6 @@ import org.eclipse.gef.editpolicies.OrderedLayoutEditPolicy;
 import org.eclipse.gef.handles.NonResizableHandleKit;
 import org.eclipse.gef.requests.CreateRequest;
 import org.eclipse.gef.requests.DropRequest;
-
 import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.editor.gef.ActionGraphUtils;
 import ru.runa.gpd.editor.gef.command.AddActionCommand;
@@ -145,8 +143,7 @@ public class ActionContainerLayoutEditPolicy extends OrderedLayoutEditPolicy {
         if (epIndex == -1) {
             epIndex = getHost().getChildren().size();
         }
-        Point feedbackPoint = ActionGraphUtils.getActionFigureLocation(((GraphicalEditPart) getHost()).getFigure(), epIndex, getHost().getChildren()
-                .size(), true);
+        Point feedbackPoint = ActionGraphUtils.getActionFigureLocation(((GraphicalEditPart) getHost()).getFigure(), epIndex, true);
         getFeedbackFigure().setLocation(feedbackPoint);
         addFeedback(getFeedbackFigure());
     }

@@ -245,6 +245,7 @@ public class Variable extends NamedGraphElement implements Describable {
 
     @Override
     protected void fillCopyCustomFields(GraphElement copy) {
+        super.fillCopyCustomFields(copy);
         Variable copyVariable = (Variable) copy;
         copyVariable.setFormat(getFormat());
         if (getUserType() != null) {
@@ -256,7 +257,6 @@ public class Variable extends NamedGraphElement implements Describable {
         copyVariable.setEditableInChat(isEditableInChat());
         copyVariable.setStoreType(getStoreType());
         copyVariable.setGlobal(isGlobal());
-        super.fillCopyCustomFields(copyVariable);
     }
 
     public boolean isGlobal() {

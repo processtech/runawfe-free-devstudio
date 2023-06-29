@@ -1,28 +1,22 @@
 package ru.runa.gpd.formeditor.ftl.conv;
 
+import com.google.common.base.Charsets;
+import com.google.common.collect.Lists;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.List;
 import java.util.Map;
-
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
-
 import ru.runa.gpd.formeditor.BaseHtmlFormType;
-import ru.runa.gpd.formeditor.WebServerUtils;
 import ru.runa.gpd.formeditor.ftl.Component;
-import ru.runa.gpd.lang.model.Variable;
-
-import com.google.common.base.Charsets;
-import com.google.common.collect.Lists;
 
 public class DesignUtils {
     public static final String PARAMETERS_DELIM = "|";
@@ -35,7 +29,7 @@ public class DesignUtils {
         return "ftl_component";
     }
 
-    public static String transformFromHtml(String html, Map<String, Variable> variables, Map<Integer, Component> components) throws Exception {
+    public static String transformFromHtml(String html, Map<Integer, Component> components) throws Exception {
         if (html.length() == 0) {
             return html;
         }

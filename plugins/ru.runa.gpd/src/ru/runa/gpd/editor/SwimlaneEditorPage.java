@@ -1,6 +1,8 @@
 package ru.runa.gpd.editor;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
+
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +32,8 @@ import org.eclipse.ui.ide.IDE;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.PropertyNames;
+import ru.runa.gpd.SharedImages;
+import ru.runa.gpd.editor.EditorPartBase.TableColumnDescription;
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.lang.NodeRegistry;
@@ -39,6 +43,7 @@ import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.SwimlanedNode;
+import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.ltk.RenameRefactoringWizard;
 import ru.runa.gpd.ltk.RenameVariableRefactoring;
@@ -94,7 +99,11 @@ public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
                 editor.getDefinition().changeChildIndex(swimlane, beforeElement);
             }
         });
-
+        final List<TableColumnDescription> descriptions = Lists.newArrayList(new TableColumnDescription("property.name", 200, SWT.LEFT));
+        descriptions.add(new TableColumnDescription("swimlane.initializer", 400, SWT.LEFT));
+        if (CommonPreferencePage.isGlobalObjectsEnabled() && !isGlobalSection()) {
+            descriptions.add(new TableColumnDescription("Variable.property.isGlobal", 30, SWT.CENTER));
+        }
         createTable(tableViewer, new DataViewerComparator<>(new ValueComparator<Swimlane>() {
             @Override
             public int compare(Swimlane o1, Swimlane o2) {
@@ -103,10 +112,18 @@ public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
                 case 0:
                     result = o1.getName().compareTo(o2.getName());
                     break;
+                case 2:
+                    if (o1.isGlobal() == o2.isGlobal()) {
+                        result = 0;
+                    } else if (o1.isGlobal() && !o2.isGlobal()) {
+                        result = 1;
+                    } else {
+                        result = -1;
+                    }
                 }
                 return result;
             }
-        }), new TableColumnDescription("property.name", 200, SWT.LEFT), new TableColumnDescription("swimlane.initializer", 400, SWT.LEFT));
+        }), descriptions.toArray(new TableColumnDescription[descriptions.size()]));
 
         Composite buttonsBar = createActionBar(allSwimlanesComposite);
         createButton = addButton(buttonsBar, "button.create", new CreateSwimlaneSelectionListener(), false);
@@ -125,14 +142,6 @@ public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
         deleteButton = addButton(buttonsBar, "button.delete", new RemoveSwimlaneSelectionListener(), true);
 
         updateViewer();
-    }
-
-    @Override
-    public void dispose() {
-        for (Swimlane swimlane : getDefinition().getSwimlanes()) {
-            swimlane.removePropertyChangeListener(this);
-        }
-        super.dispose();
     }
 
     @Override
@@ -156,8 +165,8 @@ public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
         boolean isUsingGlobals = isUsingGlobals();
         enableAction(searchButton, selected.size() == 1);
         enableAction(changeButton, withoutGlobals && selected.size() == 1);
-        enableAction(moveUpButton, withoutGlobals && selected.size() == 1 && swimlanes.indexOf(selected.get(0)) > 0);
-        enableAction(moveDownButton, withoutGlobals && selected.size() == 1 && swimlanes.indexOf(selected.get(0)) < swimlanes.size() - 1);
+        enableAction(moveUpButton, selected.size() == 1 && swimlanes.indexOf(selected.get(0)) > 0);
+        enableAction(moveDownButton, selected.size() == 1 && swimlanes.indexOf(selected.get(0)) < swimlanes.size() - 1);
         enableAction(deleteButton, swimlanesCreateDeleteEnabled && selected.size() > 0);
         enableAction(renameButton, withoutGlobals && selected.size() == 1);
         enableAction(copyButton, withoutGlobals && selected.size() > 0);
@@ -179,13 +188,9 @@ public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
         return swimlanes.stream().noneMatch(Swimlane::isGlobal);
     }
 
-    @SuppressWarnings("unchecked")
     private void updateViewer() {
         List<Swimlane> swimlanes = getDefinition().getSwimlanes();
         tableViewer.setInput(swimlanes);
-        for (Swimlane swimlane : swimlanes) {
-            swimlane.addPropertyChangeListener(this);
-        }
         updateUI();
     }
 
@@ -438,6 +443,8 @@ public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
                 return swimlane.getName();
             } else if (index == 1) {
                 return swimlane.getDelegationConfiguration();
+            } else if (index == 2) {
+                return "";
             } else {
                 return "unknown " + index;
             }
@@ -451,6 +458,9 @@ public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
 
         @Override
         public Image getColumnImage(Object element, int columnIndex) {
+            if (columnIndex == 2) {
+                return SharedImages.getImage(((Swimlane) element).isGlobal() ? "icons/checked.gif" : "icons/unchecked.gif");
+            }
             return null;
         }
     }

@@ -23,14 +23,18 @@ public class DeleteFormFilesAction extends BaseModelActionDelegate {
     public void selectionChanged(IAction action, ISelection selection) {
         super.selectionChanged(action, selection);
         FormNode formNode = getSelection();
-        action.setEnabled(formNode.hasForm() || formNode.hasFormValidation() || formNode.hasFormScript());
-        if (formNode.hasForm()) {
-            IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-            IEditorPart editor = page.findEditor(new FileEditorInput(
-                    IOUtils.getAdjacentFile(formNode.getProcessDefinition().getFile(), formNode.getFormFileName())));
-            if (editor != null) {
-                action.setEnabled(false);
+        if (formNode != null) {
+            action.setEnabled(formNode.hasForm() || formNode.hasFormValidation() || formNode.hasFormScript());
+            if (formNode.hasForm()) {
+                IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+                IEditorPart editor = page.findEditor(
+                        new FileEditorInput(IOUtils.getAdjacentFile(formNode.getProcessDefinition().getFile(), formNode.getFormFileName())));
+                if (editor != null) {
+                    action.setEnabled(false);
+                }
             }
+        } else {
+            action.setEnabled(false);
         }
     }
 

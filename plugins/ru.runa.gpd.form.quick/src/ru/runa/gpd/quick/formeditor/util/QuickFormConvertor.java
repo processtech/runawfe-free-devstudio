@@ -86,7 +86,7 @@ public final class QuickFormConvertor {
         MapDelegableVariableProvider variableProvider = new MapDelegableVariableProvider(variables, null);
         FormHashModelGpdWrap model = new FormHashModelGpdWrap(null, variableProvider, null);
 
-        String out = TemplateProcessor.process(formNode.getProcessDefinition().getName() + formNode.getId(), templateHtml, model);
+        String out = TemplateProcessor.process(templateHtml, model);
         ByteArrayInputStream stream = new ByteArrayInputStream(out.getBytes());
         converterSource.getQuickFormFile().setContents(stream, true, true, null);
     }
@@ -95,7 +95,6 @@ public final class QuickFormConvertor {
         File file = converterSource.getQuickFormFile().getRawLocation().makeAbsolute().toFile();
         renameFileExtension(file.getAbsolutePath(), "ftl");
         String newFileName = converterSource.getFormNode().getFormFileName().replaceAll(QuickFormType.TYPE, FtlFormType.TYPE);
-        IFolder processFolder = (IFolder) converterSource.getQuickFormFile().getParent();
         converterSource.getFormNode().setFormFileName(newFileName);
         converterSource.getFormNode().setFormType("ftl");
         converterSource.getFormNode().setTemplateFileName(null);

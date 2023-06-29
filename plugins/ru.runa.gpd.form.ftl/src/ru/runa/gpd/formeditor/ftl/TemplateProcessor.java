@@ -25,11 +25,11 @@ public class TemplateProcessor {
         configuration.setTemplateExceptionHandler(new CustomTemplateExceptionHandler());
     }
 
-    public static String process(String templateName, byte[] templateData, TemplateModel model) {
-        return process(templateName, new String(templateData), model);
+    public static String process(byte[] templateData, TemplateModel model) {
+        return process(new String(templateData), model);
     }
 
-    public static String process(String templateName, String templateData, TemplateModel model) {
+    public static String process(String templateData, TemplateModel model) {
         if (Strings.isNullOrEmpty(templateData)) {
             return templateData;
         }
