@@ -68,6 +68,7 @@ public class VariableSearchVisitor {
     private GraphElement currentElement = null;
     private final MultiStatus status;
     private final Matcher matcherByVariable;
+    private final Matcher matcherByScriptingVariable;
     private final Matcher scriptMatcherByVariable;
     private final Matcher scriptMatcherByScriptingVariable;
     private final String regexScriptVariableWithCheckAfterDot;
@@ -84,6 +85,7 @@ public class VariableSearchVisitor {
                 .compile(String.format(regexScriptVariableWithCheckAfterDot, query.getVariable().getScriptingName()))
                 .matcher("");
         this.matcherByVariable = Pattern.compile("(\"|>)" + Pattern.quote(query.getSearchText()) + "(<|\")").matcher("");
+        this.matcherByScriptingVariable = Pattern.compile(Pattern.quote(query.getVariable().getScriptingName())).matcher("");
         this.searchTargets = searchTargets;
     }
 
@@ -329,6 +331,7 @@ public class VariableSearchVisitor {
                 }
                 elementMatch.setMatchesCount(matchesCount);
                 List<Match> matches = findInFile(elementMatch, file, matcherByVariable);
+                matches.addAll(findInFile(elementMatch, file, matcherByScriptingVariable));
                 elementMatch.setPotentialMatchesCount(matches.size() - matchesCount);
                 for (Match match : matches) {
                     query.getSearchResult().addMatch(match);
