@@ -131,7 +131,7 @@ public abstract class EditorDialog<T extends GroovyModel> extends Dialog {
                 }
             }
         } catch (RuntimeException e) {
-            tabFolder.setSelection(1); // initialModel.toString() throws an exception https://redmine.mikhe.ru/issues/9564 
+            tabFolder.setSelection(1);
         }
         return tabFolder;
     }

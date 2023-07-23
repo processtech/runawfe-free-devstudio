@@ -67,7 +67,7 @@ public class OutlineViewer extends ContentOutlinePage implements PropertyChangeL
 
     @Override
     public void propertyChange(PropertyChangeEvent event) {
-        if (PROPERTY_NAMES_TO_REFRESH.contains(event.getPropertyName())) {
+        if (PROPERTY_NAMES_TO_REFRESH.contains(event.getPropertyName()) && event.getSource() instanceof GraphElement) {
             ((FilteredTreeViewer) getViewer()).refresh((GraphElement) event.getSource());
         }
     }

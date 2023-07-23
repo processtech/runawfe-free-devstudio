@@ -1,8 +1,6 @@
 package ru.runa.gpd.ui.wizard;
 
-import com.github.difflib.DiffUtils;
-import com.github.difflib.UnifiedDiffUtils;
-import com.github.difflib.patch.Patch;
+import com.cloudbees.diff.Diff;
 import com.google.common.base.Objects;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
@@ -11,6 +9,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -40,6 +39,7 @@ import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
@@ -61,6 +61,7 @@ public class CompareProcessDefinitionWizardPage extends WizardPage {
     private ListViewer firstListViewer;
     private ListViewer secondListViewer;
     private Spinner numContextLinesSpinner;
+    private Button ignoreSpacesCheckbox;
 
     private static final Set<String> EXTENSIONS = Sets.newHashSet("xml", "ftl", "quick", "html", "css", "js");
 
@@ -148,21 +149,27 @@ public class CompareProcessDefinitionWizardPage extends WizardPage {
         secondListViewer = new ListViewer(secondProcessViewerGroup, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
         createViewer(secondListViewer);
 
-        Group numContextLinesGroup = new Group(pageControl, SWT.NONE);
-        numContextLinesGroup.setLayout(new GridLayout(2, false));
-        numContextLinesGroup.setLayoutData(new GridData(SWT.BEGINNING));
-        Font font = parent.getFont();
+        Group settingsGroup = new Group(pageControl, SWT.NONE);
+        settingsGroup.setLayout(new GridLayout(2, false));
 
-        Label destinationLabel = new Label(numContextLinesGroup, SWT.NONE);
+        Font font = parent.getFont();
+        Label destinationLabel = new Label(settingsGroup, SWT.NONE);
         destinationLabel.setText(Localization.getString("CompareProcessDefinitionWizardPage.page.numContextLines"));
         destinationLabel.setFont(font);
 
-        numContextLinesSpinner = new Spinner(numContextLinesGroup, SWT.BORDER);
+        numContextLinesSpinner = new Spinner(settingsGroup, SWT.BORDER);
         numContextLinesSpinner.setFont(font);
         numContextLinesSpinner.setMinimum(1);
         numContextLinesSpinner.setSelection(3);
         numContextLinesSpinner.setIncrement(1);
         setControl(pageControl);
+
+        Label ignoreSpacesLabel = new Label(settingsGroup, SWT.NONE);
+        ignoreSpacesLabel.setText(Localization.getString("CompareProcessDefinitionWizardPage.page.ignoreSpaces"));
+        ignoreSpacesLabel.setFont(font);
+
+        ignoreSpacesCheckbox = new Button(settingsGroup, SWT.CHECK);
+        ignoreSpacesCheckbox.setSelection(true);
     }
 
     public boolean performFinish() {
@@ -205,14 +212,15 @@ public class CompareProcessDefinitionWizardPage extends WizardPage {
                     }
                 }
 
-                Patch<String> diff = DiffUtils.diff(content1StringList, content2StringList);
-                if (diff.getDeltas().isEmpty()) {
+
+                Diff diff = Diff.diff(content1StringList, content2StringList, ignoreSpacesCheckbox.getSelection());
+                if (diff.isEmpty()) {
                     continue;
                 }
-                List<String> unifiedDiff = UnifiedDiffUtils.generateUnifiedDiff(firstProcessPath + "/" + fileName,
-                        secondProcessPath + "/" + fileName, //
-                        content1StringList, diff, numContextLinesSpinner.getSelection());
-                result += String.join("\n", unifiedDiff) + "\n";
+                String unifiedDiff = diff.toUnifiedDiff(firstProcessPath + "/" + fileName, secondProcessPath + "/" + fileName, //
+                        new StringReader(String.join("\n", content1StringList)), new StringReader(String.join("\n", content2StringList)),
+                        numContextLinesSpinner.getSelection());
+                result += unifiedDiff + "\n";
             }
 
             IStorage storage = new DiffStorage(result,

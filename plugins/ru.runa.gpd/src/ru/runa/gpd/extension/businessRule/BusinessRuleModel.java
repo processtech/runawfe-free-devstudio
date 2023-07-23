@@ -13,8 +13,8 @@ import ru.runa.gpd.util.VariableUtils;
 
 public class BusinessRuleModel extends GroovyModel {
     private final List<IfExpression> ifExpressions = new ArrayList<>();
-    private static Pattern RETURN_PATTERN = Pattern.compile("return '''(.*?)''';", Pattern.DOTALL);
     private static Pattern LOGIC_PATTERN = Pattern.compile("(\\|\\||&&)");
+    private static Pattern RETURN_PATTERN = Pattern.compile("return \"(.*?)\";");
     private String defaultFunction;
 
     public BusinessRuleModel() {
@@ -31,9 +31,11 @@ public class BusinessRuleModel extends GroovyModel {
             List<Object> secondVariables = new ArrayList<>();
             List<Operation> operations = new ArrayList<>();
             List<String> logicExpressions = new ArrayList<>();
+            List<int[]> brackets = new ArrayList<>();
             String[] ifContents = matcher.group(1).split("(\\|\\||&&)");
             boolean bigDecimalContentExist = false;
             ArrayList<Integer> indexes = new ArrayList<>();
+
             if (matcher.group(1).contains("BigDecimal") || matcher.group(1).contains("ru.runa.wfe.commons.CalendarUtil.dateToCalendar")) {
                 bigDecimalContentExist = true;
                 for (int i = 0; i < ifContents.length; i++) {
@@ -42,23 +44,28 @@ public class BusinessRuleModel extends GroovyModel {
                     }
                 }
             }
-
             for (int i = 0; i < ifContents.length; i++) {
                 if (logicMatcher.find() && (!indexes.contains(i + 1) && !indexes.contains(i + 2))) {
                     if (logicMatcher.group().equals("||")) {
-                        logicExpressions.add(BusinessRuleEditorDialog.OR_LOGIC_EXPRESSION);
+                        logicExpressions.add(LogicComposite.OR_LOGIC_EXPRESSION);
                     }
                     if (logicMatcher.group().equals("&&")) {
-                        logicExpressions.add(BusinessRuleEditorDialog.AND_LOGIC_EXPRESSION);
+                        logicExpressions.add(LogicComposite.AND_LOGIC_EXPRESSION);
                     }
                 }
             }
 
-            for (int j = 0; j < ifContents.length; j++) {
-                if (bigDecimalContentExist && (indexes.contains(j + 1) || indexes.contains(j + 2))) {
+            for (int i = 0; i < ifContents.length; i++) {
+                int[] bracket = new int[2];
+                brackets.add(bracket);
+
+                String ifContent = normalizeString(ifContents[i]);
+                ifContent = trimBrackets(ifContent, brackets.get(firstVariables.size()));
+
+                if (bigDecimalContentExist && (indexes.contains(i + 1) || indexes.contains(i + 2))) {
                     continue;
                 }
-                String ifContent = normalizeString(ifContents[j]);
+
                 String[] lexems = ifContent.split(" ");
                 String firstVariableText = "";
                 String operator;
@@ -102,8 +109,8 @@ public class BusinessRuleModel extends GroovyModel {
                     if (lexems.length == 3) {
                         secondVariableText = lexems[2];
                     } else {
-                        for (int i = 2; i < lexems.length; i++) {
-                            secondVariableText += " " + lexems[i];
+                        for (int j = 2; j < lexems.length; j++) {
+                            secondVariableText += " " + lexems[j];
                         }
                     }
                 }
@@ -143,13 +150,45 @@ public class BusinessRuleModel extends GroovyModel {
                 secondVariables.add(secondVariable);
                 operations.add(operation);
             }
-            logicExpressions.add(BusinessRuleEditorDialog.NULL_LOGIC_EXPRESSION);
-            IfExpression ifExpression = new IfExpression(function, firstVariables, secondVariables, operations, logicExpressions);
+            logicExpressions.add(LogicComposite.NULL_LOGIC_EXPRESSION);
+            if (function.contains("\\\"")) {
+                function = function.replaceAll("\\\\\"", "\"");
+            }
+            IfExpression ifExpression = new IfExpression(function, firstVariables, secondVariables, operations, logicExpressions, brackets);
             addIfExpression(ifExpression);
         }
         if (returnMatcher.find(startReturnSearch)) {
             defaultFunction = returnMatcher.group(1);
+            if (defaultFunction.contains("\\\"")) {
+                defaultFunction = defaultFunction.replaceAll("\\\\\"", "\"");
+            }
         }
+    }
+
+    public String trimBrackets(String str, int[] bracketsCount) {
+        while (str.charAt(0) == '(' && (str.charAt(1) == '(' || str.charAt(1) == ' ')) {
+            if (str.charAt(1) == '(') {
+                bracketsCount[0]++;
+                str = str.substring(1);
+            }
+            if (str.charAt(1) == ' ') {
+                bracketsCount[0]++;
+                str = str.substring(2);
+                break;
+            }
+        }
+        while (str.charAt(str.length() - 1) == ')' && (str.charAt(str.length() - 2) == ')' || str.charAt(str.length() - 2) == ' ')) {
+            if (str.charAt(str.length() - 2) == ')') {
+                bracketsCount[1]++;
+                str = str.substring(0, str.length() - 1);
+            }
+            if (str.charAt(str.length() - 2) == ' ') {
+                bracketsCount[1]++;
+                str = str.substring(0, str.length() - 2);
+                break;
+            }
+        }
+        return str;
     }
 
     public List<String> getFunctionNames() {
@@ -175,9 +214,16 @@ public class BusinessRuleModel extends GroovyModel {
             buffer.append(ifExpression.generateCode());
         }
         if (!Strings.isNullOrEmpty(defaultFunction)) {
-            buffer.append("\nreturn '''" + defaultFunction + "''';\n");
+            buffer.append("\nreturn \"" + normalizeReturnString(defaultFunction) + "\";\n");
         }
         return buffer.toString();
+    }
+
+    public static String normalizeReturnString(String returnStr) {
+        if (returnStr.contains("\"")) {
+            return returnStr.replaceAll("\"", "\\\\\"");
+        }
+        return returnStr;
     }
 
     public String getDefaultFunction() {
@@ -193,32 +239,50 @@ public class BusinessRuleModel extends GroovyModel {
         private List<Object> secondVariables;
         private List<String> logicExpressions;
         private final List<Operation> operations;
+        private List<int[]> brackets;
         private final String function;
 
         public IfExpression(String function, List<Variable> firstVariables, List<Object> secondVariables, List<Operation> operations,
-                List<String> logicExpressions) {
+                List<String> logicExpressions, List<int[]> brackets) {
             this.function = function;
             this.firstVariables = firstVariables;
             this.secondVariables = secondVariables;
             this.operations = operations;
             this.logicExpressions = logicExpressions;
+            this.brackets = brackets;
         }
 
         public String generateCode() {
             StringBuffer buffer = new StringBuffer();
             buffer.append("if ( ");
             for (int i = 0; i < firstVariables.size(); i++) {
+
+                for (int j = 0; j < brackets.get(i)[0]; j++) {
+                    buffer.append("(");
+                }
+                if (brackets.get(i)[0] != 0) {
+                    buffer.append(" ");
+                }
+
                 buffer.append(operations.get(i).generateCode(firstVariables.get(i), secondVariables.get(i)));
-                if (!logicExpressions.get(i).equals(BusinessRuleEditorDialog.NULL_LOGIC_EXPRESSION)) {
-                    if (logicExpressions.get(i).equals(BusinessRuleEditorDialog.OR_LOGIC_EXPRESSION)) {
+
+                if (brackets.get(i)[1] != 0) {
+                    buffer.append(" ");
+                }
+                for (int j = 0; j < brackets.get(i)[1]; j++) {
+                    buffer.append(")");
+                }
+
+                if (!logicExpressions.get(i).equals(LogicComposite.NULL_LOGIC_EXPRESSION)) {
+                    if (logicExpressions.get(i).equals(LogicComposite.OR_LOGIC_EXPRESSION)) {
                         buffer.append(" " + "||" + " ");
                     }
-                    if (logicExpressions.get(i).equals(BusinessRuleEditorDialog.AND_LOGIC_EXPRESSION)) {
+                    if (logicExpressions.get(i).equals(LogicComposite.AND_LOGIC_EXPRESSION)) {
                         buffer.append(" " + "&&" + " ");
                     }
                 }
             }
-            buffer.append(" ) {\n\treturn '''" + function + "''';\n};\n");
+            buffer.append(" ) {\n\treturn \"" + normalizeReturnString(function) + "\";\n};\n");
             return buffer.toString();
         }
 
@@ -250,6 +314,10 @@ public class BusinessRuleModel extends GroovyModel {
 
         public String getFunction() {
             return function;
+        }
+
+        public List<int[]> getBrackets() {
+            return brackets;
         }
     }
 }
