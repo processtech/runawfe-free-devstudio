@@ -44,6 +44,7 @@ import ru.runa.gpd.lang.NodeRegistry;
 import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.lang.model.Action;
 import ru.runa.gpd.lang.model.Delegable;
+import ru.runa.gpd.lang.model.EmbeddedSubprocess;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.MessageNode;
 import ru.runa.gpd.lang.model.Node;
@@ -52,6 +53,7 @@ import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
+import ru.runa.gpd.lang.model.bpmn.CycleType;
 import ru.runa.gpd.lang.model.bpmn.DottedTransition;
 import ru.runa.gpd.lang.model.bpmn.EventNodeType;
 import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
@@ -201,7 +203,7 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
             }
         }
 
-        if (element instanceof MessageNode) {
+        if ((element instanceof MessageNode) || (element instanceof EmbeddedSubprocess)) {
             ContextButtonEntry changeEventTypeButton = new ContextButtonEntry(null, null);
             changeEventTypeButton.setText(Localization.getString("event.type.label"));
             changeEventTypeButton.setDescription(Localization.getString("event.type.description"));
@@ -209,12 +211,19 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
             data.getDomainSpecificContextButtons().add(changeEventTypeButton);
             PictogramElement pes[] = { pe };
             ICustomContext customContext = new CustomContext(pes);
-            for (int i = 0; i < EventNodeType.LABELS.length; i++) {
-                EventNodeType et = EventNodeType.values()[i];
-                ContextButtonEntry createButton = new ContextButtonEntry(new ChangeEventTypeFeature(getFeatureProvider(), et), customContext);
-                createButton.setIconId("graph/" + et.getImageName(element instanceof CatchEventNode, false));
-                createButton.setText(EventNodeType.LABELS[i]);
-                changeEventTypeButton.addContextButtonMenuEntry(createButton);
+            if (element instanceof MessageNode) {
+	            for (int i = 0; i < EventNodeType.LABELS.length; i++) {
+	                EventNodeType et = EventNodeType.values()[i];
+	                ContextButtonEntry createButton = new ContextButtonEntry(new ChangeEventTypeFeature(getFeatureProvider(), et), customContext);
+	                createButton.setIconId("graph/" + et.getImageName(element instanceof CatchEventNode, false));
+	                createButton.setText(EventNodeType.LABELS[i]);
+	                changeEventTypeButton.addContextButtonMenuEntry(createButton);
+	            }
+            } else {
+            	for (int i = 0; i < CycleType.LABELS.length; i++) {
+            		CycleType ct = CycleType.values()[i];
+            		// Create button
+            	}
             }
         }
         return data;
