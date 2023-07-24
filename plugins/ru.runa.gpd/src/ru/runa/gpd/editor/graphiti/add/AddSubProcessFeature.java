@@ -16,7 +16,7 @@ import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.Subprocess;
 import ru.runa.gpd.lang.model.Synchronizable;
 
-public class AddSubProcessFeature extends AddStateNodeFeature {
+public class AddSubprocessFeature extends AddStateNodeFeature {
     @Override
     protected void addCustomGraphics(Node node, IAddContext context, GraphicsAlgorithmContainer container, ContainerShape containerShape) {
         Image image = Graphiti.getGaService().createImage(container, "graph/subprocess.png");

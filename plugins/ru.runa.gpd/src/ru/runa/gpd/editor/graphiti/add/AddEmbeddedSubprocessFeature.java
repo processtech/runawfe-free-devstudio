@@ -9,12 +9,16 @@ import org.eclipse.graphiti.services.Graphiti;
 import ru.runa.gpd.editor.graphiti.GaProperty;
 import ru.runa.gpd.lang.model.Node;
 
-public class AddMultiSubprocessFeature extends AddSubprocessFeature {
-    @Override
+<<<<<<< HEAD
+public class AddEmbeddedSubprocessFeature extends AddSubprocessFeature {
+=======
+public class AddEmbeddedSubprocessFeature extends AddSubProcessFeature {
+>>>>>>> 6086b6774437415f2ce38ad3f8e65dbbc2f979f1
+	@Override
     protected void addCustomGraphics(Node node, IAddContext context, GraphicsAlgorithmContainer container, ContainerShape containerShape) {
         super.addCustomGraphics(node, context, container, containerShape);
-        Image image = Graphiti.getGaService().createImage(container, "graph/multiinstance.png");
+        Image image = Graphiti.getGaService().createImage(container, "graph/embedded_subprocess.png");
         image.getProperties().add(new GaProperty(GaProperty.ID, GaProperty.MULTIPLE_INSTANCES));
-        Graphiti.getGaService().setLocation(image, node.getConstraint().width - 3 * GRID_SIZE, node.getConstraint().height - 2 * GRID_SIZE);
+        Graphiti.getGaService().setLocation(image, node.getConstraint().width / 2 - 5, node.getConstraint().height - 3 * GRID_SIZE);
     }
 }
