@@ -62,6 +62,8 @@ public class AddStartNodeFeature extends AddNodeWithImageFeature {
         textDefinition.setFeatureProvider((DiagramFeatureProvider) getFeatureProvider());
         textDefinition.add(myAddContext);
 
+        updatePictogramElement(containerShape);
+
         return containerShape;
     }
 }

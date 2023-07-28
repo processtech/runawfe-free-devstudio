@@ -232,7 +232,17 @@ public class WorkspaceOperations {
     }
 
     public static ProcessDefinition createNewProcessDefinition(IStructuredSelection selection, ProcessDefinitionAccessType accessType) {
-        NewProcessDefinitionWizard wizard = new NewProcessDefinitionWizard(accessType);
+        NewProcessDefinitionWizard wizard = new NewProcessDefinitionWizard(accessType, false);
+        wizard.init(PlatformUI.getWorkbench(), selection);
+        WizardDialog dialog = new WizardDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), wizard);
+        if (dialog.open() == Window.OK) {
+            return ProcessCache.getProcessDefinition(wizard.getDefinitionFile());
+        }
+        return null;
+    }
+
+    public static ProcessDefinition createNewEventSubprocessDefinition(IStructuredSelection selection) {
+        NewProcessDefinitionWizard wizard = new NewProcessDefinitionWizard(ProcessDefinitionAccessType.EmbeddedSubprocess, true);
         wizard.init(PlatformUI.getWorkbench(), selection);
         WizardDialog dialog = new WizardDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), wizard);
         if (dialog.open() == Window.OK) {

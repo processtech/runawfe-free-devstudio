@@ -21,7 +21,7 @@ public class CatchEventNode extends AbstractEventNode implements IReceiveMessage
     }
 
     @Override
-    protected void validateOnEmptyRules(List<ValidationError> errors) {
+    public void validateOnEmptyRules(List<ValidationError> errors) {
         if (getEventNodeType() == EventNodeType.error && getParent() instanceof IBoundaryEventContainer) {
             return;
         }

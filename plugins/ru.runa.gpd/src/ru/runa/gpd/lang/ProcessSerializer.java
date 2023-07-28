@@ -24,6 +24,7 @@ public abstract class ProcessSerializer {
     public static final String TRANSACTIONAL = "transactional";
     public static final String NODE_ASYNC_EXECUTION = "asyncExecution";
     public static final String BEHAVIOR = "behavior";
+    public static final String TRIGGERED_BY_EVENT = "triggeredByEvent";
     protected static final String USE_GLOBALS = "useGlobals";
     protected static final String GLOBAL = "global";
     protected static final String VALIDATE_AT_START = "validateAtStart";

@@ -275,6 +275,12 @@
              label="%label.action.deleteFormFiles"
              menubarPath="formdata/sp2">
        </action>
+       <visibility>
+          <objectState
+               name="isEventTypeDefined"
+               value="false">
+          </objectState>
+       </visibility>
     </objectContribution>
     <objectContribution
           adaptable="false"
@@ -700,6 +706,23 @@
              label="%label.menu.generateRegulationData">
        </action>
      </objectContribution>
+     <objectContribution
+          adaptable="false"
+          id="start.configuration"
+          objectClass="ru.runa.gpd.lang.model.StartState">
+       <action
+             class="ru.runa.gpd.lang.action.StartConfAction"
+             id="start.configuration"
+             label="%label.action.editConfiguration"
+             menubarPath="additions">
+       </action>
+       <visibility>
+          <objectState
+               name="isEventTypeDefined"
+               value="true">
+          </objectState>
+       </visibility>
+    </objectContribution>
   </extension>
  <extension
        point="org.eclipse.ui.menus">
@@ -992,7 +1015,7 @@
                add="ru.runa.gpd.editor.graphiti.add.AddStartNodeFeature"
                create="ru.runa.gpd.editor.graphiti.create.CreateStartNodeFeature"
                update="ru.runa.gpd.editor.graphiti.update.UpdateStartNodeFeature"
-               doubleClick="ru.runa.gpd.editor.graphiti.update.DoubleClickFormNodeFeature"
+               doubleClick="ru.runa.gpd.editor.graphiti.update.DoubleClickStartNodeFeature"
                fixedSize="true"
                height="4"
                width="4">
@@ -1312,6 +1335,22 @@
                height="10"
                layout="ru.runa.gpd.editor.graphiti.layout.LayoutStateNodeFeature"
                update="ru.runa.gpd.editor.graphiti.update.UpdateStateNodeFeature"
+               width="15">
+         </graphiti>
+      </element>
+      <element
+            bpmn="eventSubprocess"
+            icon="event_subprocess.png"
+            label="%label.element.eventsubprocess"
+            model="ru.runa.gpd.lang.model.EventSubprocess"
+            type="node">
+         <graphiti
+               add="ru.runa.gpd.editor.graphiti.add.AddSubProcessFeature"
+               create="ru.runa.gpd.editor.graphiti.create.CreateEventSubprocessFeature"
+               fixedSize="false"
+               height="10"
+               layout="ru.runa.gpd.editor.graphiti.layout.LayoutSubprocessNodeFeature"
+               update="ru.runa.gpd.editor.graphiti.update.UpdateSubprocessNodeFeature"
                width="15">
          </graphiti>
       </element>

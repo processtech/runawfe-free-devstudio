@@ -40,10 +40,12 @@ public class NewProcessDefinitionWizard extends Wizard implements INewWizard {
     private IFolder parentProcessDefinitionFolder;
     private ProcessDefinition parentProcessDefinition;
     private IFile definitionFile;
+    private boolean triggeredByEvent;
 
-    public NewProcessDefinitionWizard(ProcessDefinitionAccessType accessType) {
+    public NewProcessDefinitionWizard(ProcessDefinitionAccessType accessType, boolean triggeredByEvent) {
         setWindowTitle(Localization.getString("NewProcessDefinitionWizard.wizard.title"));
         this.accessType = accessType;
+        this.triggeredByEvent = triggeredByEvent;
     }
 
     @Override
@@ -149,6 +151,9 @@ public class NewProcessDefinitionWizard extends Wizard implements INewWizard {
                 properties.put(ProcessSerializer.ACCESS_TYPE, accessType.name());
                 IPreferenceStore store = Activator.getDefault().getPreferenceStore();
                 properties.put(BpmnSerializer.BEHAVIOR, store.getString(PrefConstants.P_EMBEDDED_SUBPROCESS_BEHAVIOR));
+                if (triggeredByEvent) {
+                    properties.put(ProcessSerializer.TRIGGERED_BY_EVENT, "true");
+                }
                 Document document = parentProcessDefinition.getLanguage().getSerializer()
                         .getInitialProcessDefinitionDocument(processName, properties);
                 byte[] bytes = XmlUtil.writeXml(document);
