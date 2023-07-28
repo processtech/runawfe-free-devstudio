@@ -53,8 +53,8 @@ import ru.runa.gpd.editor.BotTaskEditor;
 import ru.runa.gpd.editor.ProcessEditorBase;
 import ru.runa.gpd.editor.ProcessSaveHistory;
 import ru.runa.gpd.editor.gef.GEFProcessEditor;
-import ru.runa.gpd.editor.graphiti.GraphitiProcessEditor;
 import ru.runa.gpd.editor.graphiti.GraphitiGlobalSectionEditor;
+import ru.runa.gpd.editor.graphiti.GraphitiProcessEditor;
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.extension.bot.IBotFileSupportProvider;
@@ -81,19 +81,19 @@ import ru.runa.gpd.ui.wizard.CopyProcessDefinitionWizard;
 import ru.runa.gpd.ui.wizard.ExportBotElementWizardPage;
 import ru.runa.gpd.ui.wizard.ExportBotWizard;
 import ru.runa.gpd.ui.wizard.ExportDataSourceWizard;
-import ru.runa.gpd.ui.wizard.ExportParWizard;
 import ru.runa.gpd.ui.wizard.ExportGlbWizard;
+import ru.runa.gpd.ui.wizard.ExportParWizard;
 import ru.runa.gpd.ui.wizard.ImportBotElementWizardPage;
 import ru.runa.gpd.ui.wizard.ImportBotWizard;
 import ru.runa.gpd.ui.wizard.ImportDataSourceWizard;
-import ru.runa.gpd.ui.wizard.ImportParWizard;
 import ru.runa.gpd.ui.wizard.ImportGlbWizard;
+import ru.runa.gpd.ui.wizard.ImportParWizard;
 import ru.runa.gpd.ui.wizard.NewBotStationWizard;
 import ru.runa.gpd.ui.wizard.NewBotTaskWizard;
 import ru.runa.gpd.ui.wizard.NewBotWizard;
 import ru.runa.gpd.ui.wizard.NewFolderWizard;
-import ru.runa.gpd.ui.wizard.NewProcessDefinitionWizard;
 import ru.runa.gpd.ui.wizard.NewGlobalSectionDefinitionWizard;
+import ru.runa.gpd.ui.wizard.NewProcessDefinitionWizard;
 import ru.runa.gpd.ui.wizard.NewProcessProjectWizard;
 import ru.runa.wfe.InternalApplicationException;
 import ru.runa.wfe.datasource.DataSourceStuff;
@@ -232,7 +232,17 @@ public class WorkspaceOperations {
     }
 
     public static ProcessDefinition createNewProcessDefinition(IStructuredSelection selection, ProcessDefinitionAccessType accessType) {
-        NewProcessDefinitionWizard wizard = new NewProcessDefinitionWizard(accessType);
+        NewProcessDefinitionWizard wizard = new NewProcessDefinitionWizard(accessType, false);
+        wizard.init(PlatformUI.getWorkbench(), selection);
+        WizardDialog dialog = new WizardDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), wizard);
+        if (dialog.open() == Window.OK) {
+            return ProcessCache.getProcessDefinition(wizard.getDefinitionFile());
+        }
+        return null;
+    }
+
+    public static ProcessDefinition createNewEventSubprocessDefinition(IStructuredSelection selection) {
+        NewProcessDefinitionWizard wizard = new NewProcessDefinitionWizard(ProcessDefinitionAccessType.EmbeddedSubprocess, true);
         wizard.init(PlatformUI.getWorkbench(), selection);
         WizardDialog dialog = new WizardDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), wizard);
         if (dialog.open() == Window.OK) {
@@ -583,10 +593,10 @@ public class WorkspaceOperations {
             if (editorPart instanceof ProcessEditorBase) {
                 return (ProcessEditorBase) editorPart;
             }
+            throw new IllegalArgumentException("editorPart is not instanceof ProcessEditorBase: " + editorPart);
         } catch (PartInitException e) {
-            PluginLogger.logError("Unable open diagram", e);
+            throw new RuntimeException("Unable open diagram", e);
         }
-        return null;
     }
 
     public static ProcessEditorBase openGlobalSectionDefinition(IFile definitionFile) {
@@ -603,10 +613,10 @@ public class WorkspaceOperations {
             if (editorPart instanceof ProcessEditorBase) {
                 return (ProcessEditorBase) editorPart;
             }
+            throw new IllegalArgumentException("editorPart is not instanceof ProcessEditorBase: " + editorPart);
         } catch (PartInitException e) {
-            PluginLogger.logError("Unable open diagram", e);
+            throw new RuntimeException("Unable open diagram", e);
         }
-        return null;
     }
 
     /**

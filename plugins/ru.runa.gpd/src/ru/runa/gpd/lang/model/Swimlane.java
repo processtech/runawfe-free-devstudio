@@ -10,6 +10,7 @@ import ru.runa.gpd.extension.orgfunction.OrgFunctionDefinition;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.swimlane.SwimlaneInitializer;
 import ru.runa.gpd.swimlane.SwimlaneInitializerParser;
+import ru.runa.gpd.util.IOUtils;
 import ru.runa.wfe.extension.assign.DefaultAssignmentHandler;
 import ru.runa.wfe.var.format.ExecutorFormat;
 
@@ -52,9 +53,7 @@ public class Swimlane extends Variable implements Delegable {
         try {
             if (DEFAULT_DELEGATION_CLASS_NAME.equals(getDelegationClassName())) {
                 SwimlaneInitializer swimlaneInitializer = SwimlaneInitializerParser.parse(getDelegationConfiguration());
-                if (swimlaneInitializer != null) {
-                    swimlaneInitializer.validate(this, errors);
-                }
+                swimlaneInitializer.validate(this, errors);
             }
         } catch (RuntimeException e) {
             if (e.getMessage() != null && e.getMessage().startsWith(OrgFunctionDefinition.MISSED_DEFINITION)) {
@@ -82,11 +81,27 @@ public class Swimlane extends Variable implements Delegable {
     protected void fillCustomPropertyDescriptors(List<IPropertyDescriptor> descriptors) {
     }
 
+    @Override
     public void updateFromGlobalPartition(Variable swimlaneFromGlobalSection) {
         this.setFormat(swimlaneFromGlobalSection.getFormat());
         this.setDefaultValue(swimlaneFromGlobalSection.getDefaultValue());
         this.setPublicVisibility(swimlaneFromGlobalSection.isPublicVisibility());
         this.setStoreType(swimlaneFromGlobalSection.getStoreType());
+    }
+
+    @Override
+    public Swimlane getCopyForGlobalPartition() {
+        Swimlane swimlane = new Swimlane();
+        swimlane.setFormat(this.getFormat());
+        swimlane.setDefaultValue(this.getDefaultValue());
+        swimlane.setPublicVisibility(this.isPublicVisibility());
+        swimlane.setStoreType(this.getStoreType());
+        String name = this.getName();
+        if (name.startsWith(IOUtils.GLOBAL_OBJECT_PREFIX)) {
+            name = name.substring(IOUtils.GLOBAL_OBJECT_PREFIX.length());
+        }
+        swimlane.setName(name);
+        return swimlane;
     }
 
 }

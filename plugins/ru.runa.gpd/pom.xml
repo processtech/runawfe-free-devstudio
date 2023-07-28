@@ -5,13 +5,13 @@
   <parent>
     <groupId>ru.runa.gpd</groupId>
     <artifactId>gpd</artifactId>
-    <version>4.5.0-SNAPSHOT</version>
+    <version>4.6.0-SNAPSHOT</version>
   </parent>
   <groupId>ru.runa.gpd</groupId>
   <artifactId>ru.runa.gpd</artifactId>
   <packaging>eclipse-plugin</packaging>
 	<properties>
-		<aspectj.runtime.version>1.9.2</aspectj.runtime.version>
+		<aspectj.runtime.version>1.9.5</aspectj.runtime.version>
 	</properties>
 
 	<dependencies>
@@ -26,9 +26,9 @@
 		<plugins>
 
 			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
+				<groupId>com.nickwongdev</groupId>
 				<artifactId>aspectj-maven-plugin</artifactId>
-				<version>1.11</version>
+				<version>1.12.1</version>
 				<configuration>
 					<complianceLevel>1.8</complianceLevel>
 					<source>1.8</source>

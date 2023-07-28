@@ -1,13 +1,11 @@
 package ru.runa.gpd.editor.gef;
 
 import java.util.List;
-
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.PointList;
 import org.eclipse.draw2d.geometry.Rectangle;
-
 import ru.runa.gpd.editor.gef.figure.NodeFigure;
 import ru.runa.gpd.editor.gef.figure.TransitionFigure;
 
@@ -16,7 +14,7 @@ public class ActionGraphUtils {
     public static final int ACTION_DELIM = 3;
 
     @SuppressWarnings("unchecked")
-	public static Point getActionFigureLocation(IFigure figure, int actionIndex, int size, boolean feedback) {
+    public static Point getActionFigureLocation(IFigure figure, int actionIndex, boolean feedback) {
         int addPixels = feedback ? ACTION_SIZE/2 : ACTION_SIZE;
         if (figure instanceof TransitionFigure) {
             int shift = actionIndex*(ACTION_SIZE+ACTION_DELIM) + addPixels;

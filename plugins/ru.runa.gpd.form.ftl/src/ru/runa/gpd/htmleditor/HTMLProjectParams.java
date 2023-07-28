@@ -222,10 +222,10 @@ public class HTMLProjectParams {
 		this.detectTaskTag = false;
 		
 		String[] dim = javaScripts.split("\n");
-		List list = new ArrayList();
-		for(int i=0;i<dim.length;i++){
-			if(dim[i].trim().length()!=0){
-				list.add(dim[i]);
+		List<String> list = new ArrayList<>();
+		for (String s : dim) {
+			if (s.trim().length() != 0) {
+				list.add(s);
 			}
 		}
 		this.javaScripts = (String[])list.toArray(new String[list.size()]);

@@ -154,6 +154,7 @@ public class FormulaCellEditorProvider extends DelegableProvider {
             functions.add("date(d1)");
             functions.add("time(d1)");
             functions.add("hours_round_up(n1)");
+            functions.add("random()");
             functions.add("round(n1)");
             functions.add("round(n1, n2)");
             functions.add("round_down(n1)");

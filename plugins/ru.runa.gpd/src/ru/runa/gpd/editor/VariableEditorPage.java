@@ -35,9 +35,11 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PropertyNames;
+import ru.runa.gpd.SharedImages;
+import ru.runa.gpd.editor.EditorPartBase.TableColumnDescription;
 import ru.runa.gpd.editor.clipboard.VariableTransfer;
-import ru.runa.gpd.globalsection.GlobalSectionUtils;
 import ru.runa.gpd.lang.model.FormNode;
+import ru.runa.gpd.lang.model.GlobalSectionDefinition;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.model.Variable;
@@ -111,6 +113,13 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
                 editor.getDefinition().changeChildIndex(variable, beforeElement);
             }
         });
+        final List<TableColumnDescription> descriptions = Lists.newArrayList(new TableColumnDescription("property.name", 200, SWT.LEFT));
+        descriptions.add(new TableColumnDescription("Variable.property.format", 200, SWT.LEFT));
+        descriptions.add(new TableColumnDescription("Variable.property.defaultValue", 200, SWT.LEFT, false));
+        descriptions.add(new TableColumnDescription("Variable.property.storeType", 200, SWT.LEFT));
+        if (CommonPreferencePage.isGlobalObjectsEnabled() && !isGlobalSection()) {
+            descriptions.add(new TableColumnDescription("Variable.property.isGlobal", 30, SWT.CENTER));
+        }
 
         createTable(tableViewer, new DataViewerComparator<>(new ValueComparator<Variable>() {
             @Override
@@ -123,12 +132,20 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
                 case 1:
                     result = o1.getFormatLabel().compareTo(o2.getFormatLabel());
                     break;
+                case 4:
+                    if (o1.isGlobal() == o2.isGlobal()) {
+                        result = 0;
+                    } else if (o1.isGlobal() && !o2.isGlobal()) {
+                        result = 1;
+                    } else {
+                        result = -1;
+                    }
+                    break;
                 }
                 return result;
             }
-        }), new TableColumnDescription("property.name", 200, SWT.LEFT), new TableColumnDescription("Variable.property.format", 200, SWT.LEFT),
-                new TableColumnDescription("Variable.property.defaultValue", 200, SWT.LEFT, false),
-                new TableColumnDescription("Variable.property.storeType", 200, SWT.LEFT));
+        }), descriptions.toArray(new TableColumnDescription[descriptions.size()])
+        );
 
         Composite buttonsBar = createActionBar(allVariablesComposite);
         addButton(buttonsBar, "button.create", new CreateVariableSelectionListener(), false);
@@ -137,7 +154,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
         copyButton = addButton(buttonsBar, "button.copy", new CopyVariableSelectionListener(), true);
         pasteButton = addButton(buttonsBar, "button.paste", new PasteVariableSelectionListener(), true);
         searchButton = addButton(buttonsBar, "button.search", new SearchVariableUsageSelectionListener(), true);
-        if (CommonPreferencePage.isGlobalObjectsEnabled()) {
+        if (CommonPreferencePage.isGlobalObjectsEnabled() && !isGlobalSection()) {
             importGlobalButton = addButton(buttonsBar, "button.importGlobal", new ImportGlobalVariableSelectionListener(), true);
             makeLocalButton = addButton(buttonsBar, "button.makeLocal", new MakeLocalVariableListener(), true);
         }
@@ -148,14 +165,6 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
         deleteButton = addButton(buttonsBar, "button.delete", new DeleteVariableSelectionListener(), true);
         moveToTypeAttributeButton = addButton(buttonsBar, "button.move", new MoveToTypeAttributeSelectionListener(), true);
         updateViewer();
-    }
-
-    @Override
-    public void dispose() {
-        for (Variable variable : getDefinition().getVariables(false, false)) {
-            variable.removePropertyChangeListener(this);
-        }
-        super.dispose();
     }
 
     @Override
@@ -181,17 +190,17 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
         boolean isUsingGlobals = isUsingGlobals();
         enableAction(searchButton, selected.size() == 1);
         enableAction(changeButton, isWithoutGlobalVars && selected.size() == 1);
-        enableAction(moveUpButton, isWithoutGlobalVars && selected.size() == 1 && variables.indexOf(selected.get(0)) > 0);
-        enableAction(moveDownButton, isWithoutGlobalVars && selected.size() == 1 && variables.indexOf(selected.get(0)) < variables.size() - 1);
+        enableAction(moveUpButton, selected.size() == 1 && variables.indexOf(selected.get(0)) > 0);
+        enableAction(moveDownButton, selected.size() == 1 && variables.indexOf(selected.get(0)) < variables.size() - 1);
         enableAction(deleteButton, selected.size() > 0);
         enableAction(renameButton, isWithoutGlobalVars && selected.size() == 1);
         enableAction(copyButton, isWithoutGlobalVars && selected.size() > 0);
         enableAction(moveToTypeAttributeButton, isWithoutGlobalVars && selected.size() == 1);
         enableAction(usageReportButton, variables.size() > 0);
         enableAction(pasteButton, isWithoutGlobalVars);
-        if (CommonPreferencePage.isGlobalObjectsEnabled()) {
-            enableAction(makeLocalButton, !isWithoutGlobalVars && selected.size() == 1 && !isGlobalSection && isUsingGlobals);
-            enableAction(importGlobalButton, (selected.size() >= 0 && !isGlobalSection && isUsingGlobals));
+        if (CommonPreferencePage.isGlobalObjectsEnabled() && !isGlobalSection()) {
+            enableAction(makeLocalButton, !isWithoutGlobalVars && selected.size() == 1 && isUsingGlobals);
+            enableAction(importGlobalButton, (selected.size() >= 0 && isUsingGlobals));
         }
 
     }
@@ -203,17 +212,11 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
     private void updateViewer() {
         List<Variable> variables = getDefinition().getVariables(false, false);
         tableViewer.setInput(variables);
-        for (Variable variable : variables) {
-            variable.addPropertyChangeListener(this);
-        }
         updateUI();
     }
 
     private boolean isGlobalSection() {
-        if (GlobalSectionUtils.isGlobalSectionName(getDefinition().getName())) {
-            return true;
-        }
-        return false;
+        return getDefinition() instanceof GlobalSectionDefinition;
     }
 
     private boolean isUsingGlobals() {
@@ -599,6 +602,8 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
                         : Strings.nullToEmpty(variable.getDefaultValue());
             case 3:
                 return variable.getStoreType().getDescription();
+            case 4:
+                return "";
             default:
                 return "unknown " + index;
             }
@@ -611,8 +616,12 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
 
         @Override
         public Image getColumnImage(Object element, int columnIndex) {
+            if (columnIndex == 4) {
+                return SharedImages.getImage(((Variable) element).isGlobal() ? "icons/checked.gif" : "icons/unchecked.gif");
+            }
             return null;
         }
+
     }
 
 }

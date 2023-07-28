@@ -35,6 +35,9 @@
 				alertError(e, "setHTML");
 			}
         }
+		function onLoadCallbackDeferred() {
+			onLoadCallback();
+		}
 		</script>
 	</head>
 	<body style="margin: 0px; padding: 0px;">
@@ -45,7 +48,7 @@
 				contentsCss: "regulations.css",
 				extraPlugins: ""
 			});
-			onLoadCallback();
+			setTimeout(onLoadCallbackDeferred, 1000);
 		} catch (e) {
 			alertError(e, "CKEDITOR.replace");
 		}

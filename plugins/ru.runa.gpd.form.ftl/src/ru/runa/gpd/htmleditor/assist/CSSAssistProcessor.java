@@ -44,7 +44,7 @@ import com.steadystate.css.parser.CSSOMParser;
  */
 public class CSSAssistProcessor {
 	
-	private HashMap rules = new HashMap();
+	private HashMap<String, ArrayList<String>> rules = new HashMap<>();
 	private IFile file;
 	
 	/**
@@ -156,13 +156,13 @@ public class CSSAssistProcessor {
 								}
 								if(cond instanceof AttributeCondition){
 									AttributeCondition attrCond = (AttributeCondition)cond;
-									if(rules.get(tagName)==null){
-										ArrayList classes = new ArrayList();
+									if(rules.get(tagName)==null) {
+										ArrayList<String> classes = new ArrayList<>();
 //										classes.add(new AssistInfo(attrCond.getValue()));
 										classes.add(attrCond.getValue());
 										rules.put(tagName,classes);
 									} else {
-										ArrayList classes = (ArrayList)rules.get(tagName);
+										ArrayList<String> classes = rules.get(tagName);
 //										classes.add(new AssistInfo(attrCond.getValue()));
 										classes.add(attrCond.getValue());
 									}
@@ -191,17 +191,17 @@ public class CSSAssistProcessor {
 				value = "";
 			}
 			
-			ArrayList assists = new ArrayList();
-			ArrayList all = (ArrayList)rules.get("*");
+			ArrayList<String> assists = new ArrayList<>();
+			ArrayList<String> all = rules.get("*");
 			if(all!=null){
 				assists.addAll(all);
 			}
-			if(rules.get(tagName.toLowerCase())!=null){
-				ArrayList list = (ArrayList)rules.get(tagName.toLowerCase());
+			if(rules.get(tagName.toLowerCase()) != null) {
+				ArrayList<String> list = rules.get(tagName.toLowerCase());
 				assists.addAll(list);
 			}
 			AssistInfo[] info = new AssistInfo[assists.size()];
-			for(int i=0;i<assists.size();i++){
+			for (int i=0; i<assists.size(); i++) {
 				String keyword = (String)assists.get(i);
 				info[i] = new AssistInfo(value + keyword,keyword);
 			}

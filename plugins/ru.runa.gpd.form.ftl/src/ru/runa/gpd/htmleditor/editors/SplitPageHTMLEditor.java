@@ -1,7 +1,5 @@
 package ru.runa.gpd.htmleditor.editors;
 
-import java.util.ArrayList;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -188,8 +186,6 @@ public class SplitPageHTMLEditor extends EditorPart implements IResourceChangeLi
 		
 		private HTMLSourceEditor editor;
 		private IEditorSite site;
-		private ArrayList menuExtenders;
-
 		
 		public SplitEditorSite(HTMLSourceEditor editor, IEditorSite site){
 			this.editor = editor;

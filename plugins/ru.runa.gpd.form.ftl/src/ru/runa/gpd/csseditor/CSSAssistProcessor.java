@@ -26,7 +26,7 @@ public class CSSAssistProcessor implements IContentAssistProcessor {
 		String text = getSource(viewer).substring(0, offset);
 		String word = getLastWord(text);
 		
-		ArrayList list = new ArrayList();
+		ArrayList<ICompletionProposal> list = new ArrayList<>();
 		if(word!=null){
 			for(int i=0;i<CSSDefinition.CSS_KEYWORDS.length;i++){
 				if(CSSDefinition.CSS_KEYWORDS[i].getReplaceString().startsWith(word)){

@@ -25,6 +25,7 @@ import ru.runa.gpd.lang.model.EmbeddedSubprocess.Behavior;
 import ru.runa.gpd.lang.model.EndState;
 import ru.runa.gpd.lang.model.EndTokenState;
 import ru.runa.gpd.lang.model.EndTokenSubprocessDefinitionBehavior;
+import ru.runa.gpd.lang.model.EventSubprocess;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.ISendMessageNode;
 import ru.runa.gpd.lang.model.ITimed;
@@ -57,6 +58,7 @@ import ru.runa.gpd.lang.model.bpmn.IBoundaryEventCapable;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 import ru.runa.gpd.lang.model.bpmn.ParallelGateway;
 import ru.runa.gpd.lang.model.bpmn.ScriptTask;
+import ru.runa.gpd.lang.model.bpmn.StartEventType;
 import ru.runa.gpd.lang.model.bpmn.TextAnnotation;
 import ru.runa.gpd.lang.model.bpmn.ThrowEventNode;
 import ru.runa.gpd.ui.custom.Dialogs;
@@ -128,6 +130,8 @@ public class BpmnSerializer extends ProcessSerializer {
     public static final String END_TEXT_DECORATION = "endTextDecoration";
     private static final String ACTION_HANDLER = "actionHandler";
     private static final String EVENT_TYPE = "eventType";
+    private static final String TIME_DATE = "timeDate";
+    private static final String TIME_CYCLE = "timeCycle";
     private static final String PROPERTY_USE_EXTERNAL_STORAGE_OUT = "useExternalStorageOut";
     private static final String PROPERTY_USE_EXTERNAL_STORAGE_IN = "useExternalStorageIn";
     private static final String EMBEDDED = "embedded";
@@ -175,6 +179,9 @@ public class BpmnSerializer extends ProcessSerializer {
         processProperties.put(VERSION, Application.getVersion().toString());
         if (definition instanceof SubprocessDefinition) {
             processProperties.put(BEHAVIOR, ((SubprocessDefinition) definition).getBehavior().name());
+            if (((SubprocessDefinition) definition).isTriggeredByEvent()) {
+                processProperties.put(TRIGGERED_BY_EVENT, "true");
+            }
         }
         if (definition.isInvalid()) {
             processElement.addAttribute(EXECUTABLE, "false");
@@ -201,9 +208,23 @@ public class BpmnSerializer extends ProcessSerializer {
                 }
             }
         }
-        StartState startState = definition.getFirstChild(StartState.class);
-        if (startState != null) {
-            writeTaskState(processElement, startState);
+        for (StartState startState : definition.getChildren(StartState.class)) {
+            Element element = writeTaskState(processElement, startState);
+            if (startState.isStartByEvent()) {
+                element.addAttribute(RUNA_PREFIX + ":" + TYPE, startState.getEventType().name());
+                if (startState.isStartByTimer()) {
+                    if (!Strings.isNullOrEmpty(startState.getTimerEventDefinition())) {
+                        element.addElement(TIMER_EVENT_DEFINITION).addElement(timeElement(startState)).addText(startState.getTimerEventDefinition());
+                    }
+                } else {
+                    List<VariableMapping> variableMappings = startState.getVariableMappings();
+                    Map<String, Object> properties = Maps.newLinkedHashMap();
+                    if (variableMappings != null && variableMappings.size() > 0) {
+                        properties.put(VARIABLES, variableMappings);
+                    }
+                    writeExtensionElements(element, properties);
+                }
+            }
             writeTransitions(processElement, startState);
         }
         List<ExclusiveGateway> exclusiveGateways = definition.getChildren(ExclusiveGateway.class);
@@ -254,6 +275,9 @@ public class BpmnSerializer extends ProcessSerializer {
             if (subprocess.isEmbedded()) {
                 properties.put(EMBEDDED, true);
             }
+            if (subprocess instanceof EventSubprocess) {
+                properties.put(TRIGGERED_BY_EVENT, true);
+            }
             if (subprocess.isTransactional()) {
                 properties.put(TRANSACTIONAL, true);
             }
@@ -289,7 +313,11 @@ public class BpmnSerializer extends ProcessSerializer {
             Map<String, String> properties = Maps.newLinkedHashMap();
             properties.put(TOKEN, "true");
             if (definition instanceof SubprocessDefinition && ((SubprocessDefinition) definition).getBehavior() == Behavior.GraphPart) {
-                properties.put(BEHAVIOR, endTokenState.getSubprocessDefinitionBehavior().name());
+                if (((SubprocessDefinition) definition).isTriggeredByEvent()) {
+                    properties.put(BEHAVIOR, EndTokenSubprocessDefinitionBehavior.TERMINATE.name());
+                } else {
+                    properties.put(BEHAVIOR, endTokenState.getSubprocessDefinitionBehavior().name());
+                }
             }
             writeExtensionElements(element, properties);
         }
@@ -625,6 +653,8 @@ public class BpmnSerializer extends ProcessSerializer {
             bpmnElementName = "endTokenEvent";
         } else if (properties.containsKey(MULTI_INSTANCE)) {
             bpmnElementName = "multiProcess";
+        } else if (properties.containsKey(TRIGGERED_BY_EVENT)) {
+            bpmnElementName = "eventSubprocess";
         } else if (properties.containsKey(EMBEDDED)) {
             bpmnElementName = "embeddedProcess";
         } else {
@@ -754,6 +784,9 @@ public class BpmnSerializer extends ProcessSerializer {
             if (behaviorString != null) {
                 ((SubprocessDefinition) definition).setBehavior(Behavior.valueOf(behaviorString));
             }
+            if (processProperties.containsKey(TRIGGERED_BY_EVENT)) {
+                ((SubprocessDefinition) definition).setTriggeredByEvent(true);
+            }
         }
         String swimlaneDisplayModeName = processProperties.get(SHOW_SWIMLANE);
         if (swimlaneDisplayModeName != null) {
@@ -774,15 +807,26 @@ public class BpmnSerializer extends ProcessSerializer {
             }
         }
         List<Element> startStates = processElement.elements(START_EVENT);
-        if (startStates.size() > 0) {
-            if (startStates.size() > 1) {
-                Dialogs.error(Localization.getString("model.validation.multipleStartStatesNotAllowed"));
-            }
-            Element startStateElement = startStates.get(0);
+        if (startStates.size() > 1 && (!(definition instanceof SubprocessDefinition) || !((SubprocessDefinition) definition).isTriggeredByEvent())) {
+            Dialogs.error(Localization.getString("model.validation.multipleStartStatesNotAllowed"));
+        }
+        for (Element startStateElement : startStates) {
             StartState startState = create(startStateElement, definition);
-            String swimlaneName = parseExtensionProperties(startStateElement).get(LANE);
-            Swimlane swimlane = definition.getSwimlaneByName(swimlaneName);
-            startState.setSwimlane(swimlane);
+            if (startStateElement.attributeValue(TYPE) != null) {
+                startState.setEventType(StartEventType.valueOf(startStateElement.attributeValue(TYPE)));
+                if (startState.isStartByTimer()) {
+                    Element timerEventDefinitionElement = startStateElement.element(TIMER_EVENT_DEFINITION);
+                    if (timerEventDefinitionElement != null) {
+                        startState.setTimerEventDefinition(((Element) timerEventDefinitionElement.elements().get(0)).getTextTrim());
+                    }
+                } else {
+                    startState.setVariableMappings(parseVariableMappings(startStateElement));
+                }
+            } else {
+                String swimlaneName = parseExtensionProperties(startStateElement).get(LANE);
+                Swimlane swimlane = definition.getSwimlaneByName(swimlaneName);
+                startState.setSwimlane(swimlane);
+            }
         }
         List<Element> taskStateElements = new ArrayList<Element>(processElement.elements(USER_TASK));
         taskStateElements.addAll(processElement.elements(MULTI_TASK));
@@ -1011,6 +1055,17 @@ public class BpmnSerializer extends ProcessSerializer {
             }
             eventNode.setVariableMappings(parseVariableMappings(eventElement));
             return eventNode;
+        }
+    }
+
+    private String timeElement(StartState startState) {
+        String timerEventDefinition = startState.getTimerEventDefinition();
+        if (timerEventDefinition.startsWith("R")) {
+            return TIME_CYCLE;
+        } else if (timerEventDefinition.indexOf("P") >= 0) {
+            return TIME_DURATION;
+        } else {
+            return TIME_DATE;
         }
     }
 

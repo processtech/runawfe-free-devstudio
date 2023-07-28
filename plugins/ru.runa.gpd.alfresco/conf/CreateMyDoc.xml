@@ -1,6 +1,6 @@
 <config>
   <input>
-    <param name="file" formatFilter="ru.runa.wfe.var.FileVariable" label="File content for Alfresco" />
+    <param name="file" formatFilter="ru.runa.wfe.var.file.file.FileVariable" label="File content for Alfresco" />
   </input>
   <output>
     <param name="uuid" label="Alfresco object ID" />

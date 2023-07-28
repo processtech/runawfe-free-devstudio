@@ -2,7 +2,6 @@ package ru.runa.gpd.editor.gef.part.graph;
 
 import java.util.Collection;
 import java.util.List;
-
 import org.eclipse.draw2d.Connection;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.PolylineConnection;
@@ -12,7 +11,6 @@ import org.eclipse.gef.EditPart;
 import org.eclipse.gef.EditPolicy;
 import org.eclipse.gef.Request;
 import org.eclipse.gef.tools.DragEditPartsTracker;
-
 import ru.runa.gpd.editor.gef.ActionGraphUtils;
 import ru.runa.gpd.editor.gef.policy.ActionComponentEditPolicy;
 import ru.runa.gpd.lang.model.Action;
@@ -59,7 +57,8 @@ public class ActionGraphicalEditPart extends ElementGraphicalEditPart {
                         return;
                     }
                     int index = ((ActionContainer) getParent().getModel()).getActions().indexOf(getModel());
-                    getFigure().setLocation(ActionGraphUtils.getActionFigureLocation(((TransitionGraphicalEditPart) getParent()).getConnectionFigure(), index, 0, false));
+                    getFigure().setLocation(ActionGraphUtils
+                            .getActionFigureLocation(((TransitionGraphicalEditPart) getParent()).getConnectionFigure(), index, false));
                     refreshVisuals();
                 }
 

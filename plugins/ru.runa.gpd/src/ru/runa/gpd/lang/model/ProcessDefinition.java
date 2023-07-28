@@ -3,10 +3,13 @@ package ru.runa.gpd.lang.model;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import org.eclipse.core.resources.IFile;
@@ -24,6 +27,7 @@ import ru.runa.gpd.extension.regulations.RegulationsRegistry;
 import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEventCapable;
+import ru.runa.gpd.lang.model.bpmn.StartEventType;
 import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.property.DurationPropertyDescriptor;
 import ru.runa.gpd.property.StartImagePropertyDescriptor;
@@ -51,7 +55,7 @@ public class ProcessDefinition extends NamedGraphElement implements Describable,
     protected final List<VariableUserType> types = Lists.newArrayList();
     protected final IFile file;
     protected boolean usingGlobalVars;
-
+    protected final Set<PropertyChangeListener> delegatedListeners = new HashSet<>();
     protected final ArrayList<VersionInfo> versionInfoList = new ArrayList<>();
 
     public ProcessDefinition(IFile file) {
@@ -64,6 +68,14 @@ public class ProcessDefinition extends NamedGraphElement implements Describable,
 
     public ProcessDefinitionAccessType getAccessType() {
         return accessType;
+    }
+
+    public void addDelegatedListener(PropertyChangeListener delegatedListener) {
+        this.delegatedListeners.add(delegatedListener);
+    }
+
+    public void removeDelegatedListener(PropertyChangeListener delegatedListener) {
+        this.delegatedListeners.remove(delegatedListener);
     }
 
     @Override
@@ -166,7 +178,6 @@ public class ProcessDefinition extends NamedGraphElement implements Describable,
         this.showActions = showActions;
         if (stateChanged) {
             firePropertyChange(PROPERTY_SHOW_ACTIONS, !this.showActions, this.showActions);
-            setDirty();
         }
     }
 
@@ -179,7 +190,6 @@ public class ProcessDefinition extends NamedGraphElement implements Describable,
         if (stateChanged) {
             this.showGrid = showGrid;
             firePropertyChange(PROPERTY_SHOW_GRID, !this.showGrid, this.showGrid);
-            setDirty();
         }
     }
 
@@ -192,7 +202,6 @@ public class ProcessDefinition extends NamedGraphElement implements Describable,
         if (stateChanged) {
             this.usingGlobalVars = usingGlobalVars;
             firePropertyChange(PROPERTY_USE_GLOBALS, !this.usingGlobalVars, this.usingGlobalVars);
-            setDirty();
         }
     }
 
@@ -265,15 +274,14 @@ public class ProcessDefinition extends NamedGraphElement implements Describable,
         List<StartState> startStates = getChildren(StartState.class);
         if (startStates.size() == 0) {
             errors.add(ValidationError.createLocalizedError(this, "startState.doesNotExist"));
+        } else if (startStates.size() > 1 && (!(this instanceof SubprocessDefinition) || !((SubprocessDefinition) this).isTriggeredByEvent())) {
+            errors.add(ValidationError.createLocalizedError(this, "multipleStartStatesNotAllowed"));
         }
         for (Node unconnectedNode : findUnconnectedNodes()) {
             if (unconnectedNode.getArrivingTransitions().size() != 0) {
                 errors.add(ValidationError.createLocalizedError(unconnectedNode, "unconnectedNodeIsPresent"));
                 break;
             }
-        }
-        if (startStates.size() > 1) {
-            errors.add(ValidationError.createLocalizedError(this, "multipleStartStatesNotAllowed"));
         }
         boolean invalid = false;
         for (ValidationError validationError : errors) {
@@ -675,8 +683,9 @@ public class ProcessDefinition extends NamedGraphElement implements Describable,
             Swimlane swimlaneFromGlobalSection = globalDefinition.getGlobalSwimlaneByName(swimlane.getName());
             if (swimlaneFromGlobalSection == null) {
                 swimlane.setGlobal(false);
-            } else
+            } else {
                 swimlane.updateFromGlobalPartition(swimlaneFromGlobalSection);
+            }
 
         }
         // order of updating is important : we should update usertypes BEFORE usertype's variables
@@ -699,6 +708,39 @@ public class ProcessDefinition extends NamedGraphElement implements Describable,
             }
         }
 
+    }
+
+    public StartState getDefaultStartNode() {
+        for (StartState startNode : getChildren(StartState.class)) {
+            if (!startNode.isStartByEvent()) {
+                return startNode;
+            }
+        }
+        return null;
+    }
+
+    public void setDefaultStartNode(StartState theStartNode) {
+        StartEventType oldEventType = StartEventType.signal;
+        List<StartState> startNodes = getChildren(StartState.class);
+        for (StartState startNode : startNodes) {
+            if (startNode == theStartNode) {
+                oldEventType = startNode.getEventType();
+                startNode.setEventType(StartEventType.blank);
+                break;
+            }
+        }
+        Swimlane oldSwimlane = null;
+        for (StartState startNode : startNodes) {
+            if (startNode != theStartNode && !startNode.isStartByEvent()) {
+                oldSwimlane = startNode.getSwimlane();
+                startNode.setSwimlane(null);
+                startNode.setEventType(oldEventType);
+                break;
+            }
+        }
+        if (oldSwimlane != null) {
+            theStartNode.setSwimlane(oldSwimlane);
+        }
     }
 
 }

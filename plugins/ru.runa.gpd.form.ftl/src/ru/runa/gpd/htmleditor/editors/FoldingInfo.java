@@ -75,15 +75,15 @@ public class FoldingInfo {
 		return count;
 	}
 	
-	public static void applyModifiedAnnotations(ProjectionAnnotationModel model, List list){
+	public static void applyModifiedAnnotations(ProjectionAnnotationModel model, List<FoldingInfo> list) {
 		// apply only modified annotations
 		Iterator ite = model.getAnnotationIterator();
-		while(ite.hasNext()){
+		while (ite.hasNext()) {
 			ProjectionAnnotation annotation = (ProjectionAnnotation)ite.next();
 			Position pos = model.getPosition(annotation);
 			boolean remove = true;
 			for(int i=0;i<list.size();i++){
-				FoldingInfo info = (FoldingInfo)list.get(i);
+				FoldingInfo info = list.get(i);
 				if(info.getStart() == pos.offset && info.getEnd() == pos.offset + pos.length){
 					remove = false;
 					list.remove(info);
@@ -96,7 +96,7 @@ public class FoldingInfo {
 		}
 		
 		for(int i=0;i<list.size();i++){
-			FoldingInfo info = (FoldingInfo)list.get(i);
+			FoldingInfo info = list.get(i);
 			Position pos = new Position(info.getStart(),info.getEnd() - info.getStart());
 			model.addAnnotation(new ProjectionAnnotation(), pos);
 		}

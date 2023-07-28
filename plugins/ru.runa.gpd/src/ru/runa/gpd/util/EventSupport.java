@@ -1,38 +1,42 @@
 package ru.runa.gpd.util;
 
+import com.google.common.base.Objects;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
+import java.util.HashSet;
+import java.util.Set;
 
 public class EventSupport {
-    private final Object sourceBean;
-    private PropertyChangeSupport listeners;
-
-    public EventSupport(Object sourceBean) {
-        this.sourceBean = sourceBean;
-        initPropertyChangeSupport();
-    }
+    private final Object source;
+    private final Set<PropertyChangeListener> listeners = new HashSet<>();
 
     public EventSupport() {
-        this.sourceBean = this;
-        initPropertyChangeSupport();
+        this.source = this;
     }
 
-    private void initPropertyChangeSupport() {
-        listeners = new PropertyChangeSupport(sourceBean);
-    }
-
-    public void firePropertyChange(String propName, Object old, Object newValue) {
-        listeners.firePropertyChange(propName, old, newValue);
+    public EventSupport(Object source) {
+        this.source = source;
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
-        // duplicates
-        removePropertyChangeListener(listener);
-        listeners.addPropertyChangeListener(listener);
+        listeners.add(listener);
     }
 
     public void removePropertyChangeListener(PropertyChangeListener listener) {
-        listeners.removePropertyChangeListener(listener);
+        listeners.remove(listener);
     }
 
+    public void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
+        if (Objects.equal(oldValue, newValue)) {
+            return;
+        }
+        PropertyChangeEvent event = new PropertyChangeEvent(source, propertyName, oldValue, newValue);
+        firePropertyChange(event);
+    }
+
+    protected void firePropertyChange(PropertyChangeEvent event) {
+        for (PropertyChangeListener listener : listeners) {
+            listener.propertyChange(event);
+        }
+    }
 }

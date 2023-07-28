@@ -4,14 +4,14 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>ru.runa.gpd</groupId>
 	<artifactId>gpd</artifactId>
-	<version>4.5.0-SNAPSHOT</version>
+	<version>4.6.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<modules>
 		<module>ru.runa.gpd</module>
 		<module>ru.runa.gpd.alfresco</module>
 		<module>ru.runa.gpd.app</module>
 		<module>ru.runa.gpd.maven</module>
-		<module>ru.runa.gpd.connector.wfe.ws</module>
+		<module>ru.runa.gpd.connector.wfe.rest</module>
 		<module>ru.runa.gpd.form.ftl</module>
 		<module>ru.runa.gpd.form.quick</module>
 		<module>ru.runa.gpd.office</module>
@@ -28,7 +28,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
-		<tycho.version>1.5.1</tycho.version>
+		<tycho.version>1.6.0</tycho.version>
 	</properties>
 
 	<profiles>
@@ -62,17 +62,7 @@
 								<environment>
 									<os>linux</os>
 									<ws>gtk</ws>
-									<arch>x86</arch>
-								</environment>
-								<environment>
-									<os>linux</os>
-									<ws>gtk</ws>
 									<arch>x86_64</arch>
-								</environment>
-								<environment>
-									<os>win32</os>
-									<ws>win32</ws>
-									<arch>x86</arch>
 								</environment>
 								<environment>
 									<os>win32</os>
@@ -83,6 +73,11 @@
 									<os>macosx</os>
 									<ws>cocoa</ws>
 									<arch>x86_64</arch>
+								</environment>
+								<environment>
+									<os>linux</os>
+									<ws>gtk</ws>
+									<arch>aarch64</arch>
 								</environment>
 							</environments>
 							<target>

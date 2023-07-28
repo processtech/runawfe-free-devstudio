@@ -99,6 +99,9 @@
 				selectionChangeListenerIsEmpty = true;
 			}
 		}
+		function onLoadCallbackDeferred() {
+			onLoadCallback();
+		}
 		</script>
 	</head>
 	<body style="margin: 0px; padding: 0px;" class="taskform">
@@ -106,13 +109,13 @@
 		<script type="text/javascript">
 		try {
 			var editor = CKEDITOR.replace("editor");
-			onLoadCallback();
 			editor.on("change", function() {
 				onModification();
 			});
 			editor.on("afterPaste", function(event) {
 				refreshViewCallback();
 			});
+			setTimeout(onLoadCallbackDeferred, 1);
 		} catch (e) {
 			alertError(e, "CKEDITOR.replace");
 		}

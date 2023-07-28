@@ -56,4 +56,9 @@ public class FormNodeValidation {
         return fieldConfigs.entrySet().stream().filter(e -> e.getValue().isEmpty()).map(e -> e.getKey()).collect(Collectors.toList());
     }
 
+    public Collection<String> getRequiredVariableNames() {
+        return fieldConfigs.entrySet().stream().filter(e -> e.getValue().containsKey(ValidatorDefinition.REQUIRED_VALIDATOR_NAME))
+                .map(e -> e.getKey()).collect(Collectors.toList());
+    }
+
 }

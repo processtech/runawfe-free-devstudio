@@ -107,22 +107,10 @@ public class SearchPage extends AbstractTextSearchViewPage {
             IDE.openEditor(getSite().getPage(), elementMatch.getFile(), BotTaskEditor.ID);
         } else if (ElementMatch.CONTEXT_PROCESS_DEFINITION.equals(elementMatch.getContext())) {
             ProcessEditorBase processEditor = WorkspaceOperations.openProcessDefinition(elementMatch.getFile());
-            if (processEditor != null) {
-                processEditor.select(elementMatch.getGraphElement());
-            }
-            // } else if (elementMatch.getGraphElement().isDelegable()) {
-            // Delegable delegable = (Delegable) elementMatch.getGraphElement();
-            // DelegableProvider provider =
-            // HandlerRegistry.getProvider(delegable.getDelegationClassName());
-            // String newConfig = provider.showConfigurationDialog(delegable);
-            // if (newConfig != null) {
-            // delegable.setDelegationConfiguration(newConfig);
-            // }
+            processEditor.select(elementMatch.getGraphElement());
         } else if (elementMatch.getGraphElement() != null) {
             ProcessEditorBase processEditor = WorkspaceOperations.openProcessDefinition(elementMatch.getFile());
-            if (processEditor != null) {
-                processEditor.select(elementMatch.getGraphElement());
-            }
+            processEditor.select(elementMatch.getGraphElement());
         }
         if (editor == null) {
             return;
@@ -157,8 +145,6 @@ public class SearchPage extends AbstractTextSearchViewPage {
 	
     private void selectFormNode(ElementMatch elementMatch) {
         ProcessEditorBase processEditor = WorkspaceOperations.openProcessDefinition(elementMatch.getParent().getFile());
-        if (processEditor != null) {
-            processEditor.select(elementMatch.getParent().getGraphElement());
-        }
+        processEditor.select(elementMatch.getParent().getGraphElement());
     }
 }

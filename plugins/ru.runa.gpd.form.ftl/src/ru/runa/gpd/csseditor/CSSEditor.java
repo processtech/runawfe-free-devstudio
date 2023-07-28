@@ -172,7 +172,7 @@ public class CSSEditor extends TextEditor {
 		}
 		if(ProjectionAnnotationModel.class.equals(adapter) && fProjectionSupport!=null){
 			Object obj = fProjectionSupport.getAdapter(getSourceViewer(), adapter); 
-			if (obj != null){
+			if (obj != null) {
 				return obj; 
 			}
 		}
@@ -197,7 +197,7 @@ public class CSSEditor extends TextEditor {
 				return;
 			}
 			
-			ArrayList list = new ArrayList();
+			ArrayList<FoldingInfo> list = new ArrayList<>();
 			IDocument doc = getDocumentProvider().getDocument(getEditorInput());
 			String source = doc.get();
 			

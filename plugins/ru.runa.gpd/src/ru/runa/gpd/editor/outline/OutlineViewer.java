@@ -53,12 +53,12 @@ public class OutlineViewer extends ContentOutlinePage implements PropertyChangeL
     public void createControl(Composite parent) {
         createToolBar();
         createPageBook(parent);
-        editor.getDefinition().setDelegatedListener(this);
+        editor.getDefinition().addDelegatedListener(this);
     }
 
     @Override
     public void dispose() {
-        editor.getDefinition().unsetDelegatedListener(this);
+        editor.getDefinition().removeDelegatedListener(this);
         if (null != thumbnail) {
             thumbnail.deactivate();
         }
@@ -67,7 +67,7 @@ public class OutlineViewer extends ContentOutlinePage implements PropertyChangeL
 
     @Override
     public void propertyChange(PropertyChangeEvent event) {
-        if (PROPERTY_NAMES_TO_REFRESH.contains(event.getPropertyName())) {
+        if (PROPERTY_NAMES_TO_REFRESH.contains(event.getPropertyName()) && event.getSource() instanceof GraphElement) {
             ((FilteredTreeViewer) getViewer()).refresh((GraphElement) event.getSource());
         }
     }

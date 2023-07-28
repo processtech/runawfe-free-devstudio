@@ -4,13 +4,12 @@ import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.eclipse.core.resources.IFile;
@@ -51,8 +50,6 @@ import ru.runa.gpd.util.VariableUtils;
 @SuppressWarnings("unchecked")
 public abstract class GraphElement extends EventSupport
         implements IPropertySource, PropertyNames, IActionFilter, VariableContainer, ProcessDefinitionAware {
-	// TODO rm3004
-    private final Set<PropertyChangeListener> delegatedListeners = new HashSet<>();
     private GraphElement parent;
     private GraphElement uiParentContainer;
     private final List<GraphElement> children = new ArrayList<GraphElement>();
@@ -90,26 +87,6 @@ public abstract class GraphElement extends EventSupport
             return Objects.equal(value, String.valueOf(CommonPreferencePage.isRegulationsMenuItemsEnabled()));
         }
         return false;
-    }
-
-    public void setDelegatedListener(PropertyChangeListener delegatedListener) {
-        if (delegatedListener != null) {
-            this.delegatedListeners.add(delegatedListener);
-            addPropertyChangeListener(delegatedListener);
-            for (GraphElement child : getChildren(GraphElement.class)) {
-                child.setDelegatedListener(delegatedListener);
-            }
-        }
-    }
-
-    public void unsetDelegatedListener(PropertyChangeListener delegatedListener) {
-        if (delegatedListener != null) {
-            removePropertyChangeListener(delegatedListener);
-            for (GraphElement child : getChildren(GraphElement.class)) {
-                child.unsetDelegatedListener(delegatedListener);
-            }
-            this.delegatedListeners.remove(delegatedListener);
-        }
     }
 
     public Rectangle getConstraint() {
@@ -219,9 +196,6 @@ public abstract class GraphElement extends EventSupport
         children.remove(child);
         firePropertyChange(NODE_REMOVED, child, null);
         firePropertyChange(PROPERTY_CHILDREN_CHANGED, child, null);
-        for (PropertyChangeListener delegatedListener : child.delegatedListeners) {
-            child.removePropertyChangeListener(delegatedListener);
-        }
         if (child instanceof Node) {
             ((Node) child).updateRegulationsPropertiesOnDelete();
         }
@@ -240,9 +214,6 @@ public abstract class GraphElement extends EventSupport
     public void addChild(GraphElement child, int index) {
         children.add(index, child);
         child.setParent(this);
-        for (PropertyChangeListener delegatedListener : delegatedListeners) {
-            child.setDelegatedListener(delegatedListener);
-        }
         if (child.getId() == null && !Variable.class.equals(child.getClass())) {
             child.setId(getProcessDefinition().getNextNodeId());
         }
@@ -375,11 +346,15 @@ public abstract class GraphElement extends EventSupport
     }
 
     @Override
-    public void firePropertyChange(String propName, Object old, Object newValue) {
-        super.firePropertyChange(propName, old, newValue);
-        if (!PROPERTY_DIRTY.equals(propName)) {
-            if (!Objects.equal(old, newValue)) {
-                setDirty();
+    protected void firePropertyChange(PropertyChangeEvent event) {
+        super.firePropertyChange(event);
+        if (!PROPERTY_DIRTY.equals(event.getPropertyName())) {
+            setDirty();
+        }
+        ProcessDefinition processDefinition = getProcessDefinition();
+        if (processDefinition != null) {
+            for (PropertyChangeListener delegatedListener : processDefinition.delegatedListeners) {
+                delegatedListener.propertyChange(event);
             }
         }
     }

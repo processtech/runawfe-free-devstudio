@@ -1,5 +1,6 @@
 package ru.runa.gpd;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -195,17 +196,20 @@ public class ProcessCache {
         int maxLength = 0;
         for (ProcessDefinition definition : getAllProcessDefinitions()) {
             if (definition instanceof GlobalSectionDefinition) {
-                IPath globalSectionPath = definition.getFile().getProjectRelativePath();
-                IPath processPath = processDefinition.getFile().getProjectRelativePath();
-                if (maxLength == 0 && globalSectionPath.toString().startsWith(".")) {
-                    definitionToReturn = (GlobalSectionDefinition) definition;
+                // check whether the definition is in the same project with global section
+                if (Objects.equal(definition.getFile().getParent().getParent(), 
+                        processDefinition.getFile().getParent().getParent())) {
+            	    IPath globalSectionPath = definition.getFile().getProjectRelativePath();
+                    IPath processPath = processDefinition.getFile().getProjectRelativePath();
+                    if (maxLength == 0 && globalSectionPath.toString().startsWith(".")) {
+                        definitionToReturn = (GlobalSectionDefinition) definition;
+                    }
+                    int length = globalSectionPath.matchingFirstSegments(processPath);
+                    if (length > maxLength) {
+                        maxLength = length;
+                        definitionToReturn = (GlobalSectionDefinition) definition;
+                    }
                 }
-                int length = globalSectionPath.matchingFirstSegments(processPath);
-                if (length > maxLength) {
-                    maxLength = length;
-                    definitionToReturn = (GlobalSectionDefinition) definition;
-                }
-
             }
         }
         return definitionToReturn;

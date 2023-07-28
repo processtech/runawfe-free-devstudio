@@ -11,8 +11,8 @@ import java.util.regex.Pattern;
  */
 public class JavaScriptModel implements JavaScriptContext {
 	
-	private List children = new ArrayList();
-	private List comments = new ArrayList();
+	private List<JavaScriptElement> children = new ArrayList<>();
+	private List<JavaScriptComment> comments = new ArrayList<>();
 	private JavaScriptContext context;
 	private int endOffset;
 	
@@ -86,8 +86,7 @@ public class JavaScriptModel implements JavaScriptContext {
 						i++;
 						nc = source.charAt(i+1);
 					}
-					comments.add(new JavaScriptComment(start, i+1,
-							source.substring(start, i+1)));
+					comments.add(new JavaScriptComment(start, i+1, source.substring(start, i+1)));
 				}
 				if(nc == '*'){
 					int start = i;
@@ -95,8 +94,7 @@ public class JavaScriptModel implements JavaScriptContext {
 					if(i==-1){
 						break;
 					}
-					comments.add(new JavaScriptComment(start, i+2,
-							source.substring(start, i+2)));
+					comments.add(new JavaScriptComment(start, i+2, source.substring(start, i+2)));
 				}
 			}
 			// var
@@ -174,7 +172,7 @@ public class JavaScriptModel implements JavaScriptContext {
 	}
 	
 	public JavaScriptElement[] getChildren(){
-		return (JavaScriptElement[])this.children.toArray(new JavaScriptElement[this.children.size()]);
+		return this.children.toArray(new JavaScriptElement[this.children.size()]);
 	}
 	
 	public JavaScriptElement[] getVisibleElements(){
@@ -186,7 +184,6 @@ public class JavaScriptModel implements JavaScriptContext {
 	}
 	
 	public JavaScriptComment[] getComments(){
-		return (JavaScriptComment[])this.comments.toArray(new JavaScriptComment[this.comments.size()]);
-	}
-	
+		return this.comments.toArray(new JavaScriptComment[this.comments.size()]);
+	}	
 }

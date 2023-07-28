@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="RunaWFE Developer Studio" uid="product" id="ru.runa.gpd.app.product" application="ru.runa.gpd.application" version="4.5.0" useFeatures="true" includeLaunchers="true">
+<product name="RunaWFE Developer Studio" uid="product" id="ru.runa.gpd.app.product" application="ru.runa.gpd.application" version="4.6.0" useFeatures="true" includeLaunchers="true" autoIncludeRequirements="true">
 
    <aboutInfo>
       <text>
@@ -42,10 +42,10 @@
    </plugins>
 
    <features>
-      <feature id="ru.runa.gpd.eclipse.feature" version="4.5.0.qualifier"/>
-      <feature id="ru.runa.gpd.babel.nls_p2_ru.feature" version="4.5.0.qualifier"/>
-      <feature id="ru.runa.gpd.feature" version="4.5.0.qualifier"/>
-      <feature id="ru.runa.gpd.form.quick.feature" version="4.5.0.qualifier"/>
+      <feature id="ru.runa.gpd.eclipse.feature"/>
+      <feature id="ru.runa.gpd.babel.nls_p2_ru.feature"/>
+      <feature id="ru.runa.gpd.feature" installMode="root"/>
+      <feature id="ru.runa.gpd.form.quick.feature" installMode="root"/>
    </features>
 
    <configurations>

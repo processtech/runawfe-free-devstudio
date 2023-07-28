@@ -30,7 +30,7 @@ import com.steadystate.css.parser.CSSOMParser;
 public class CSSOutlinePage extends ContentOutlinePage {
 	
 	private CSSEditor editor;
-	private ArrayList selectors = new ArrayList();
+	private ArrayList<String> selectors = new ArrayList<>();
 	
 	public CSSOutlinePage(CSSEditor editor) {
 		super();

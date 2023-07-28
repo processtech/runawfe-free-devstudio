@@ -8,6 +8,7 @@ import java.util.Map;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
@@ -263,6 +264,24 @@ public abstract class FormNode extends SwimlanedNode {
             PluginLogger.logError(e);
         }
         return result;
+    }
+
+    public void deleteFiles() {
+        try {
+            if (hasForm()) {
+                setFormType(FormNode.EMPTY);
+                setFormFileName(FormNode.EMPTY);
+                setTemplateFileName(FormNode.EMPTY);
+            }
+            if (hasFormValidation()) {
+                IOUtils.getAdjacentFile(getProcessDefinition().getFile(), getValidationFileName()).delete(true, null);
+            }
+            if (hasFormScript()) {
+                IOUtils.getAdjacentFile(getProcessDefinition().getFile(), getScriptFileName()).delete(true, null);
+            }
+        } catch (CoreException e) {
+            PluginLogger.logError(e);
+        }
     }
 
 }

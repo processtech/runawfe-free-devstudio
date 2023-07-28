@@ -40,11 +40,10 @@ import ru.runa.wfe.var.format.VariableFormatContainer;
 public class ViewUtil {
 
     public static String createExecutorSelect(User user, WfVariable variable) {
-        return createExecutorSelect(user, variable.getDefinition().getName(), variable.getDefinition().getFormatClassName(), variable.getValue(),
-                true);
+        return createExecutorSelect(variable.getDefinition().getName(), variable.getDefinition().getFormatClassName(), variable.getValue(), true);
     }
 
-    private static String createExecutorSelect(User user, String variableName, String formatClassName, Object value, boolean enabled) {
+    private static String createExecutorSelect(String variableName, String formatClassName, Object value, boolean enabled) {
         BatchPresentation batchPresentation;
         int sortColumn = 0;
         boolean javaSort = false;
@@ -183,7 +182,7 @@ public class ViewUtil {
         }
         if (ActorFormat.class.getName().equals(formatClassName) || ExecutorFormat.class.getName().equals(formatClassName)
                 || GroupFormat.class.getName().equals(formatClassName)) {
-            html = ViewUtil.createExecutorSelect(user, variableName, formatClassName, value, true);
+            html = ViewUtil.createExecutorSelect(variableName, formatClassName, value, true);
         }
         return html;
     }
@@ -249,7 +248,7 @@ public class ViewUtil {
         }
         if (ActorFormat.class.getName().equals(formatClassName) || ExecutorFormat.class.getName().equals(formatClassName)
                 || GroupFormat.class.getName().equals(formatClassName)) {
-            html = ViewUtil.createExecutorSelect(user, variableName, formatClassName, value, false);
+            html = ViewUtil.createExecutorSelect(variableName, formatClassName, value, false);
         }
         return html;
     }

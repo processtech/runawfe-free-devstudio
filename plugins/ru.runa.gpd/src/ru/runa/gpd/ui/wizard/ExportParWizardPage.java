@@ -301,9 +301,7 @@ public class ExportParWizardPage extends ExportWizardPage {
                     zos.write(readBuffer, 0, n);
                 }
             } finally {
-                if (cos != null) {
-                    cos.close();
-                }
+                cos.close();
             }
             zos.closeEntry();
         }
