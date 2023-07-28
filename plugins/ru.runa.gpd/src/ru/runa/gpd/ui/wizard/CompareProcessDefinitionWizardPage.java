@@ -28,14 +28,19 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ListViewer;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -44,6 +49,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Spinner;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IPersistableElement;
 import org.eclipse.ui.IStorageEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
@@ -62,6 +68,9 @@ public class CompareProcessDefinitionWizardPage extends WizardPage {
     private ListViewer secondListViewer;
     private Spinner numContextLinesSpinner;
     private Button ignoreSpacesCheckbox;
+    private Text filterText;
+    private ISelection firstSelection = null;
+    private ISelection secondSelection = null;
 
     private static final Set<String> EXTENSIONS = Sets.newHashSet("xml", "ftl", "quick", "html", "css", "js");
 
@@ -116,6 +125,13 @@ public class CompareProcessDefinitionWizardPage extends WizardPage {
                 setPageComplete(!event.getSelection().isEmpty());
             }
         });
+        listViewer.addFilter(new ViewerFilter() {
+            @Override
+            public boolean select(Viewer viewer, Object parentElement, Object element) {
+                String elementText = element.toString();
+                return elementText.toLowerCase().contains(filterText.getText().toLowerCase());
+            }
+        });
     }
 
     public boolean isValid() {
@@ -129,6 +145,27 @@ public class CompareProcessDefinitionWizardPage extends WizardPage {
         Composite pageControl = new Composite(parent, SWT.NONE);
         pageControl.setLayout(new GridLayout(1, false));
         pageControl.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        filterText = new Text(pageControl, SWT.BORDER);
+        filterText.setMessage(Localization.getString("filter"));
+        filterText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        filterText.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                if (!firstListViewer.getSelection().equals(StructuredSelection.EMPTY)) {
+                    firstSelection = firstListViewer.getSelection();
+                }
+                firstListViewer.refresh();
+                firstListViewer.setSelection(firstSelection);
+                
+                if (!secondListViewer.getSelection().equals(StructuredSelection.EMPTY)) {
+                    secondSelection = secondListViewer.getSelection();
+                }
+                secondListViewer.refresh();
+                secondListViewer.setSelection(secondSelection);
+            }
+        });
+
         SashForm sashForm = new SashForm(pageControl, SWT.HORIZONTAL);
         sashForm.setLayoutData(new GridData(GridData.FILL_BOTH));
 
@@ -211,7 +248,6 @@ public class CompareProcessDefinitionWizardPage extends WizardPage {
                         throw Throwables.propagate(e);
                     }
                 }
-
 
                 Diff diff = Diff.diff(content1StringList, content2StringList, ignoreSpacesCheckbox.getSelection());
                 if (diff.isEmpty()) {
