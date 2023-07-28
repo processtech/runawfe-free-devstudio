@@ -30,6 +30,9 @@ public class VariableUtils {
     public static final String CURRENT_NODE_NAME = "${currentNodeName}";
     public static final String CURRENT_NODE_ID = "${currentNodeId}";
 
+    public static final List<String> SELECTOR_SPECIAL_NAMES = Lists.newArrayList(VariableUtils.CURRENT_PROCESS_ID,
+            VariableUtils.CURRENT_PROCESS_DEFINITION_NAME, VariableUtils.CURRENT_NODE_NAME, VariableUtils.CURRENT_NODE_ID);
+
     @Deprecated
     public static final String getListVariableComponentFormat(Variable variable) {
         return variable.getFormatComponentClassNames()[0];

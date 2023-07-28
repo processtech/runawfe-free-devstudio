@@ -3,6 +3,7 @@ package ru.runa.gpd.editor.graphiti;
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import org.eclipse.graphiti.dt.IDiagramTypeProvider;
 import org.eclipse.graphiti.features.ICreateConnectionFeature;
@@ -37,6 +38,7 @@ import ru.runa.gpd.editor.graphiti.create.CreateStartNodeFeature;
 import ru.runa.gpd.editor.graphiti.create.CreateSwimlaneFeature;
 import ru.runa.gpd.editor.graphiti.create.CreateTransitionFeature;
 import ru.runa.gpd.editor.graphiti.update.ChangeEventTypeFeature;
+import ru.runa.gpd.editor.graphiti.update.ChangeStartEventTypeFeature;
 import ru.runa.gpd.editor.graphiti.update.OpenSubProcessFeature;
 import ru.runa.gpd.extension.HandlerArtifact;
 import ru.runa.gpd.extension.HandlerRegistry;
@@ -47,13 +49,16 @@ import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.MessageNode;
 import ru.runa.gpd.lang.model.Node;
+import ru.runa.gpd.lang.model.StartState;
 import ru.runa.gpd.lang.model.Subprocess;
+import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
 import ru.runa.gpd.lang.model.bpmn.DottedTransition;
 import ru.runa.gpd.lang.model.bpmn.EventNodeType;
+import ru.runa.gpd.lang.model.bpmn.StartEventType;
 import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
 import ru.runa.gpd.settings.PrefConstants;
 
@@ -175,6 +180,28 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
                 data.getDomainSpecificContextButtons().add(createTransitionButton);
             } else {
                 data.getDomainSpecificContextButtons().add(createTransitionButton.getDragAndDropFeatures().size(), createTransitionButton);
+            }
+        }
+
+        if ((element instanceof StartState) && (element.getProcessDefinition() instanceof SubprocessDefinition)
+                && ((SubprocessDefinition) element.getProcessDefinition()).isTriggeredByEvent()) {
+            ContextButtonEntry changeEventTypeButton = new ContextButtonEntry(null, null);
+            changeEventTypeButton.setText(Localization.getString("event.type.label"));
+            changeEventTypeButton.setDescription(Localization.getString("event.type.description"));
+            changeEventTypeButton.setIconId("wrench.png");
+            data.getDomainSpecificContextButtons().add(changeEventTypeButton);
+            PictogramElement pes[] = { pe };
+            ICustomContext customContext = new CustomContext(pes);
+            for (int i = 0; i < StartEventType.LABELS.length; i++) {
+                StartEventType et = StartEventType.values()[i];
+                if (et.equals(StartEventType.timer) && element.getProcessDefinition().getChildren(StartState.class).stream()
+                        .filter(startState -> !Objects.equals(startState.getId(), element.getId())).anyMatch(StartState::isStartByTimer)) {
+                    continue;
+                }
+                ContextButtonEntry createButton = new ContextButtonEntry(new ChangeStartEventTypeFeature(getFeatureProvider(), et), customContext);
+                createButton.setIconId("graph/" + et.getImageName());
+                createButton.setText(StartEventType.LABELS[i]);
+                changeEventTypeButton.addContextButtonMenuEntry(createButton);
             }
         }
 

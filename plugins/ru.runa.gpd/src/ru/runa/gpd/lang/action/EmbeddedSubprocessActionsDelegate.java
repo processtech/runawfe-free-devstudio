@@ -17,6 +17,7 @@ import org.eclipse.ui.part.FileEditorInput;
 
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.model.EmbeddedSubprocess;
+import ru.runa.gpd.lang.model.EventSubprocess;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Subprocess;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
@@ -53,13 +54,15 @@ public class EmbeddedSubprocessActionsDelegate extends BaseModelDropDownActionDe
      */
     @Override
     protected void fillMenu(Menu menu) {
-        if (subprocess.getClass() != EmbeddedSubprocess.class) {
+        if (!(subprocess instanceof EmbeddedSubprocess)) {
             return;
         }
         List<String> allNames = Lists.newArrayList();
         ProcessDefinition mainProcessDefinition = definition.getMainProcessDefinition();
         for (SubprocessDefinition subprocessDefinition : mainProcessDefinition.getEmbeddedSubprocesses().values()) {
-            allNames.add(subprocessDefinition.getName());
+            if (subprocessDefinition.isTriggeredByEvent() == subprocess instanceof EventSubprocess) {
+                allNames.add(subprocessDefinition.getName());
+            }
         }
         List<String> usedNames = Lists.newArrayList();
         usedNames.add(definition.getName());
@@ -89,7 +92,11 @@ public class EmbeddedSubprocessActionsDelegate extends BaseModelDropDownActionDe
         new MenuItem(menu, SWT.SEPARATOR);
         Action action;
         ActionContributionItem item;
-        action = new CreateEmbeddedSubprocessAction();
+        if (subprocess instanceof EventSubprocess) {
+            action = new CreateEventSubprocessAction();
+        } else {
+            action = new CreateEmbeddedSubprocessAction();
+        }
         item = new ActionContributionItem(action);
         item.fill(menu, -1);
     }
@@ -97,6 +104,14 @@ public class EmbeddedSubprocessActionsDelegate extends BaseModelDropDownActionDe
     private void createEmbeddedSubprocess() {
         IStructuredSelection selection = new StructuredSelection(definitionFile.getParent());
         ProcessDefinition created = WorkspaceOperations.createNewProcessDefinition(selection, ProcessDefinitionAccessType.EmbeddedSubprocess);
+        if (created != null) {
+            setEmbeddedSubprocess(created.getName());
+        }
+    }
+
+    private void createEventSubprocess() {
+        IStructuredSelection selection = new StructuredSelection(definitionFile.getParent());
+        ProcessDefinition created = WorkspaceOperations.createNewEventSubprocessDefinition(selection);
         if (created != null) {
             setEmbeddedSubprocess(created.getName());
         }
@@ -124,6 +139,17 @@ public class EmbeddedSubprocessActionsDelegate extends BaseModelDropDownActionDe
         @Override
         public void run() {
             createEmbeddedSubprocess();
+        }
+    }
+
+    private class CreateEventSubprocessAction extends Action {
+        public CreateEventSubprocessAction() {
+            setText(Localization.getString("ExplorerTreeView.menu.label.newEmbeddedSubprocess"));
+        }
+
+        @Override
+        public void run() {
+            createEventSubprocess();
         }
     }
 

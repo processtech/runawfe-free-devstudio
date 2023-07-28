@@ -13,16 +13,16 @@ import ru.runa.gpd.util.Duration;
 import ru.runa.gpd.util.VariableMapping;
 import ru.runa.gpd.util.VariableUtils;
 
-public abstract class MessageNode extends Node {
+public abstract class MessageNode extends Node implements VariableMappingsValidator {
     protected final List<VariableMapping> variableMappings = new ArrayList<VariableMapping>();
-    private static final List<String> SELECTOR_SPECIAL_NAMES = Lists.newArrayList(VariableUtils.CURRENT_PROCESS_ID,
-            VariableUtils.CURRENT_PROCESS_DEFINITION_NAME, VariableUtils.CURRENT_NODE_NAME, VariableUtils.CURRENT_NODE_ID);
     private Duration ttlDuration = new Duration("0 minutes");
 
+    @Override
     public List<VariableMapping> getVariableMappings() {
         return variableMappings;
     }
 
+    @Override
     public void setVariableMappings(List<VariableMapping> variablesList) {
         this.variableMappings.clear();
         this.variableMappings.addAll(variablesList);
@@ -81,7 +81,7 @@ public abstract class MessageNode extends Node {
                 if (!JavaIdentifierChecker.isValid(mapping.getName())) {
                     errors.add(ValidationError.createLocalizedError(this, "message.invalidSelectorName", mapping.getName()));
                 }
-                if (SELECTOR_SPECIAL_NAMES.contains(mapping.getMappedName())) {
+                if (VariableUtils.SELECTOR_SPECIAL_NAMES.contains(mapping.getMappedName())) {
                     continue;
                 }
                 if (VariableUtils.isVariableNameWrapped(mapping.getMappedName())) {
@@ -111,7 +111,8 @@ public abstract class MessageNode extends Node {
         }
     }
 
-    protected void validateOnEmptyRules(List<ValidationError> errors) {
+    @Override
+    public void validateOnEmptyRules(List<ValidationError> errors) {
         errors.add(ValidationError.createLocalizedWarning(this, "message.selectorRulesEmpty"));
     }
 

@@ -1,4 +1,4 @@
-package ru.runa.gpd.lang.model;
+﻿package ru.runa.gpd.lang.model;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Sets;
@@ -174,12 +174,14 @@ public abstract class Node extends NamedGraphElement implements Describable {
     public void validate(List<ValidationError> errors, IFile definitionFile) {
         super.validate(errors, definitionFile);
         if (!(this instanceof StartState) && !(this instanceof Timer && getParent() instanceof ITimed)
-                && !(this instanceof IBoundaryEventCapable && getParent() instanceof IBoundaryEventContainer) && !(this instanceof DataStore)) {
+                && !(this instanceof IBoundaryEventCapable && getParent() instanceof IBoundaryEventContainer) && !(this instanceof DataStore)
+                && !(this instanceof EventSubprocess)) {
             if (getArrivingTransitions().size() == 0) {
                 errors.add(ValidationError.createLocalizedError(this, "noInputTransitions"));
             }
         }
-        if (!(this instanceof EndState) && !(this instanceof EndTokenState) && !(this instanceof DataStore)) {
+        if (!(this instanceof EndState) && !(this instanceof EndTokenState) && !(this instanceof DataStore)
+                && !(this instanceof EventSubprocess)) {
             if (getLeavingTransitions().size() == 0) {
                 if (this instanceof Timer) {
                     // for jpdl

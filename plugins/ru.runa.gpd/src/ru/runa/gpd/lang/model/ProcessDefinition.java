@@ -27,6 +27,7 @@ import ru.runa.gpd.extension.regulations.RegulationsRegistry;
 import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEventCapable;
+import ru.runa.gpd.lang.model.bpmn.StartEventType;
 import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.property.DurationPropertyDescriptor;
 import ru.runa.gpd.property.StartImagePropertyDescriptor;
@@ -273,15 +274,14 @@ public class ProcessDefinition extends NamedGraphElement implements Describable,
         List<StartState> startStates = getChildren(StartState.class);
         if (startStates.size() == 0) {
             errors.add(ValidationError.createLocalizedError(this, "startState.doesNotExist"));
+        } else if (startStates.size() > 1 && (!(this instanceof SubprocessDefinition) || !((SubprocessDefinition) this).isTriggeredByEvent())) {
+            errors.add(ValidationError.createLocalizedError(this, "multipleStartStatesNotAllowed"));
         }
         for (Node unconnectedNode : findUnconnectedNodes()) {
             if (unconnectedNode.getArrivingTransitions().size() != 0) {
                 errors.add(ValidationError.createLocalizedError(unconnectedNode, "unconnectedNodeIsPresent"));
                 break;
             }
-        }
-        if (startStates.size() > 1) {
-            errors.add(ValidationError.createLocalizedError(this, "multipleStartStatesNotAllowed"));
         }
         boolean invalid = false;
         for (ValidationError validationError : errors) {
@@ -683,8 +683,9 @@ public class ProcessDefinition extends NamedGraphElement implements Describable,
             Swimlane swimlaneFromGlobalSection = globalDefinition.getGlobalSwimlaneByName(swimlane.getName());
             if (swimlaneFromGlobalSection == null) {
                 swimlane.setGlobal(false);
-            } else
+            } else {
                 swimlane.updateFromGlobalPartition(swimlaneFromGlobalSection);
+            }
 
         }
         // order of updating is important : we should update usertypes BEFORE usertype's variables
@@ -707,6 +708,39 @@ public class ProcessDefinition extends NamedGraphElement implements Describable,
             }
         }
 
+    }
+
+    public StartState getDefaultStartNode() {
+        for (StartState startNode : getChildren(StartState.class)) {
+            if (!startNode.isStartByEvent()) {
+                return startNode;
+            }
+        }
+        return null;
+    }
+
+    public void setDefaultStartNode(StartState theStartNode) {
+        StartEventType oldEventType = StartEventType.signal;
+        List<StartState> startNodes = getChildren(StartState.class);
+        for (StartState startNode : startNodes) {
+            if (startNode == theStartNode) {
+                oldEventType = startNode.getEventType();
+                startNode.setEventType(StartEventType.blank);
+                break;
+            }
+        }
+        Swimlane oldSwimlane = null;
+        for (StartState startNode : startNodes) {
+            if (startNode != theStartNode && !startNode.isStartByEvent()) {
+                oldSwimlane = startNode.getSwimlane();
+                startNode.setSwimlane(null);
+                startNode.setEventType(oldEventType);
+                break;
+            }
+        }
+        if (oldSwimlane != null) {
+            theStartNode.setSwimlane(oldSwimlane);
+        }
     }
 
 }

@@ -41,7 +41,7 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
             errors.add(ValidationError.createLocalizedError(this, "subprocess.empty"));
             return;
         }
-        if (embedded) {
+        if (embedded && !(this instanceof EventSubprocess)) {
             if (getLeavingTransitions().size() != 1) {
                 errors.add(ValidationError.createLocalizedError(this, "subprocess.embedded.required1leavingtransition"));
             }
@@ -133,8 +133,13 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
     }
 
     @Override
+    protected boolean allowArrivingTransition(Node source, List<Transition> transitions) {
+        return !(this instanceof EventSubprocess);
+    }
+
+    @Override
     protected boolean allowLeavingTransition(List<Transition> transitions) {
-        return super.allowLeavingTransition(transitions) && transitions.size() == 0;
+        return super.allowLeavingTransition(transitions) && transitions.size() == 0 && !(this instanceof EventSubprocess);
     }
 
     @Override

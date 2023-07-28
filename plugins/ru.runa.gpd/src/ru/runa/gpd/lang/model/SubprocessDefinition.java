@@ -15,6 +15,7 @@ import ru.runa.wfe.definition.ProcessDefinitionAccessType;
 
 public class SubprocessDefinition extends ProcessDefinition {
     private Behavior behavior = Behavior.GraphPart;
+    private boolean triggeredByEvent;
 
     public SubprocessDefinition(IFile file) {
         super(file);
@@ -179,5 +180,16 @@ public class SubprocessDefinition extends ProcessDefinition {
     protected void populateCustomPropertyDescriptors(List<IPropertyDescriptor> descriptors) {
         super.populateCustomPropertyDescriptors(descriptors);
         descriptors.add(new PropertyDescriptor(PROPERTY_BEHAVIOR, Localization.getString(P_EMBEDDED_SUBPROCESS_BEHAVIOR)));
+    }
+
+    public boolean isTriggeredByEvent() {
+        return triggeredByEvent;
+    }
+
+    public void setTriggeredByEvent(boolean triggeredByEvent) {
+        if (this.triggeredByEvent != triggeredByEvent) {
+            this.triggeredByEvent = triggeredByEvent;
+            firePropertyChange(PROPERTY_EVENT_SUBPROCESS, !this.triggeredByEvent, this.triggeredByEvent);
+        }
     }
 }
