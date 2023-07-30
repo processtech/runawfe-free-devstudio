@@ -219,11 +219,7 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
 	                createButton.setText(EventNodeType.LABELS[i]);
 	                changeEventTypeButton.addContextButtonMenuEntry(createButton);
 	            }
-<<<<<<< HEAD
             } else if (element instanceof EmbeddedSubprocess){
-=======
-            } else {
->>>>>>> 6086b6774437415f2ce38ad3f8e65dbbc2f979f1
             	for (int i = 0; i < CycleType.LABELS.length; i++) {
             		CycleType ct = CycleType.values()[i];
             		// Create button

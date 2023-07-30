@@ -9,11 +9,7 @@ import org.eclipse.graphiti.services.Graphiti;
 import ru.runa.gpd.editor.graphiti.GaProperty;
 import ru.runa.gpd.lang.model.Node;
 
-<<<<<<< HEAD
 public class AddEmbeddedSubprocessFeature extends AddSubprocessFeature {
-=======
-public class AddEmbeddedSubprocessFeature extends AddSubProcessFeature {
->>>>>>> 6086b6774437415f2ce38ad3f8e65dbbc2f979f1
 	@Override
     protected void addCustomGraphics(Node node, IAddContext context, GraphicsAlgorithmContainer container, ContainerShape containerShape) {
         super.addCustomGraphics(node, context, container, containerShape);
