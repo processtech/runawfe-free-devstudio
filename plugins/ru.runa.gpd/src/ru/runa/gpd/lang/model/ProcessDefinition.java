@@ -324,7 +324,15 @@ public class ProcessDefinition extends NamedGraphElement implements Describable,
     public List<String> getVariableNames(boolean expandComplexTypes, boolean includeSwimlanes, String... typeClassNameFilters) {
         return VariableUtils.getVariableNames(getVariables(expandComplexTypes, includeSwimlanes, typeClassNameFilters));
     }
-
+    public Variable getVariableByName (String Name) {
+    	 List<Variable> variables = getChildren(Variable.class);
+    	 for (Variable variable : variables) {
+             if (variable.getName().equals(Name)) {
+                 return variable;
+             }
+         }
+    	 return null;
+    }
     @Override
     public List<Variable> getVariables(boolean expandComplexTypes, boolean includeSwimlanes, String... typeClassNameFilters) {
         List<Variable> variables = getChildren(Variable.class);
@@ -742,5 +750,5 @@ public class ProcessDefinition extends NamedGraphElement implements Describable,
             theStartNode.setSwimlane(oldSwimlane);
         }
     }
-
+    
 }
