@@ -29,18 +29,18 @@
       <unit id="org.eclipse.equinox.p2.rcp.feature.feature.group" version="1.4.1800.v20221117-1044"/>
       <unit id="org.eclipse.equinox.p2.user.ui.feature.group" version="2.4.1800.v20221117-1044"/>
       <unit id="org.eclipse.epp.package.rcp.feature.feature.group" version="4.26.0.20221201-1200"/>
-      <repository location="http://download.eclipse.org/releases/2022-12"/>
+      <repository location="https://nexus.processtech.ru/repository/download.eclipse.org-releases-2022-12"/>
     </location>
     <location includeMode="planner" includeAllPlatforms="false" includeSource="false" includeConfigurePhase="true" type="InstallableUnit">
       <unit id="org.eclipse.ajdt.feature.group" version="2.2.4.202304111524"/>
       <unit id="org.eclipse.equinox.weaving.sdk.feature.group" version="1.2.0.202304111524"/>
-      <repository location="http://download.eclipse.org/tools/ajdt/410/dev/update"/>
+      <repository location="https://nexus.processtech.ru/repository/download.eclipse.org-tools-ajdt-410-dev-update"/>
     </location>
     <location includeMode="planner" includeAllPlatforms="false" includeSource="false" includeConfigurePhase="true" type="InstallableUnit">
       <unit id="org.eclipse.babel.nls_eclipse_ru.feature.group" version="4.22.0.v20211218020001"/>
       <unit id="org.eclipse.babel.nls_modeling.graphiti_ru.feature.group" version="4.22.0.v20211218020001"/>
       <unit id="org.eclipse.babel.nls_tools.gef_ru.feature.group" version="4.22.0.v20211218020001"/>
-      <repository location="https://download.eclipse.org/technology/babel/update-site/R0.19.2/2021-12/"/>
+      <repository location="https://nexus.processtech.ru/repository/download.eclipse.org-technology-babel-update-site-R0.19.2-2021-12"/>
     </location>
   </locations>
 </target>
