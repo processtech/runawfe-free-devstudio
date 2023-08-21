@@ -16,6 +16,7 @@ public class GaProperty extends PropertyImpl {
     public static final String MINIMIZED_VIEW = "minimizedView";
     public static final String SCRIPT = "script";
     public static final String ASYNC = "async";
+    public static final String CYCLE = "cycle";
     public static final String TRANSACTIONAL = "transactional";
     public static final String ICON = "icon";
     public static final String CLASS = "class";
