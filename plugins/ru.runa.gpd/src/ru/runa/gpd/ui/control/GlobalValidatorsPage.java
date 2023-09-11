@@ -1,6 +1,5 @@
 package ru.runa.gpd.ui.control;
 
-import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import java.beans.PropertyChangeEvent;
@@ -11,9 +10,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -50,9 +49,9 @@ import org.eclipse.ui.forms.events.HyperlinkEvent;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.clipboard.GlobalValidatorTransfer;
+import ru.runa.gpd.extension.decision.GroovyCodeParser;
 import ru.runa.gpd.extension.decision.GroovyTypeSupport;
 import ru.runa.gpd.extension.decision.GroovyValidationModel;
-import ru.runa.gpd.extension.decision.GroovyValidationModel.Expr;
 import ru.runa.gpd.extension.decision.Operation;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.Transition;
@@ -552,23 +551,16 @@ public class GlobalValidatorsPage extends Composite implements PropertyChangeLis
         @Override
         protected void build(ValidatorDefinition definition, Map<String, String> configParams) {
             String textData = configParams.get(ValidatorDefinition.EXPRESSION_PARAM_NAME);
-            try {
-                Expr expr = GroovyValidationModel.fromCode(textData, variables);
-                if (expr != null) {
-                    Variable variable = expr.getVariable1();
-                    if (variableNames.contains(variable.getScriptingName())) {
-                        variable1 = variable;
-                        txtVarName1.setText(variable.getScriptingName());
-                        refreshCombos();
-                        comboBoxOp.setText(expr.getOperation().getVisibleName());
-                        varName2 = expr.getVariable2().getScriptingName();
-                        txtVarName2.setText(varName2);
-                        textData = expr.generateCode();
-                    }
-                } else if (!Strings.isNullOrEmpty(textData)) {
-                    tabFolder.setSelection(1);
-                }
-            } catch (Exception e) {
+            Optional<GroovyValidationModel> model = GroovyCodeParser.parseValidationModel(textData, variables);
+            if (model.isPresent()) {
+                variable1 = model.get().getVariable1();
+                txtVarName1.setText(variable1.getScriptingName());
+                refreshCombos();
+                comboBoxOp.setText(model.get().getOperation().getVisibleName());
+                varName2 = model.get().getVariable2().getScriptingName();
+                txtVarName2.setText(varName2);
+                textData = model.get().generateCode();
+            } else {
                 tabFolder.setSelection(1);
             }
             codeText.setText(textData != null ? textData : "");

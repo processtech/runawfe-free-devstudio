@@ -131,9 +131,6 @@ public class BusinessRuleModel extends GroovyModel {
                 }
                 GroovyTypeSupport typeSupport = GroovyTypeSupport.get(firstVariable.getJavaClassName());
                 Operation operation = Operation.getByOperator(operator, typeSupport);
-                if (operation == null) {
-                    throw new RuntimeException("Operation not found for operator: " + operator);
-                }
                 Object secondVariable;
                 if (secondVariableText.indexOf(".") > 0 && isNumericOrBooleanType) {
                     secondVariableText = secondVariableText.substring(0, secondVariableText.lastIndexOf("."));

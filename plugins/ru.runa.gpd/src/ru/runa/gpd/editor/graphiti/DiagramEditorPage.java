@@ -240,7 +240,7 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
             Transition transition = (Transition) getDiagramTypeProvider().getFeatureProvider().getBusinessObjectForPictogramElement(connection);
             if (transition != null && transition.getSource() instanceof ExclusiveGateway) {
                 ExclusiveGateway eg = (ExclusiveGateway) transition.getSource();
-                TransitionUtil.setDefaultFlow(eg, eg.getDelegationConfiguration());
+                TransitionUtil.setDefaultFlow(eg);
             }
         }
         TransactionalEditingDomain domain = TransactionUtil.getEditingDomain(diagram);
