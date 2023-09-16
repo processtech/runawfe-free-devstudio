@@ -275,12 +275,6 @@
              label="%label.action.deleteFormFiles"
              menubarPath="formdata/sp2">
        </action>
-       <visibility>
-          <objectState
-               name="isEventTypeDefined"
-               value="false">
-          </objectState>
-       </visibility>
     </objectContribution>
     <objectContribution
           adaptable="false"

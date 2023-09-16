@@ -3,14 +3,11 @@ package ru.runa.gpd.lang.model;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.ui.views.properties.ComboBoxPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.editor.graphiti.HasTextDecorator;
 import ru.runa.gpd.editor.graphiti.TextDecoratorEmulation;
@@ -18,7 +15,6 @@ import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.bpmn.StartEventType;
 import ru.runa.gpd.util.VariableMapping;
 import ru.runa.wfe.definition.ProcessDefinitionAccessType;
-import ru.runa.wfe.lang.ParsedSubprocessDefinition;
 
 public class StartState extends FormNode implements HasTextDecorator, VariableMappingsValidator {
 
