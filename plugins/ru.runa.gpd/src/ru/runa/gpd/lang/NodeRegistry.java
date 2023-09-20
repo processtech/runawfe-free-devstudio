@@ -34,6 +34,7 @@ import ru.runa.gpd.util.XmlUtil;
 public class NodeRegistry {
     private static Map<String, NodeTypeDefinition> typesByModelClass = Maps.newHashMap();
     private static List<NodeTypeDefinition> definitions = Lists.newArrayList();
+    private static boolean warningIsShown = false;
     static {
         processJpdlElements();
     }
@@ -81,7 +82,11 @@ public class NodeRegistry {
             }
         }
         if (BpmnSerializer.DATA_STORE.equals(name) || BpmnSerializer.DOTTED_TRANSITION.equals(name)) {
-            PluginLogger.logWarnWithDialog(MessageFormat.format(Localization.getString("NodeRegistry.cannot.find.internal.storage.component"), name));
+            if (!warningIsShown) {
+                PluginLogger
+                        .logWarnWithDialog(MessageFormat.format(Localization.getString("NodeRegistry.cannot.find.internal.storage.component"), name));
+                warningIsShown = true;
+            }
         }
         throw new RuntimeException("No type found by name " + name);
     }
