@@ -2800,8 +2800,7 @@
                label="%label.menu.compareProcesses"
                menubarPath="file/command"
                style="push"
-               toolbarPath="normal/syncproc"
-               tooltip="%tooltip.menu.compareProcesses"/> 
+               toolbarPath="normal/syncproc"/> 
          <action
                class="ru.runa.gpd.ui.action.ImportProcessAction"
                icon="icons/import_wiz.gif"
