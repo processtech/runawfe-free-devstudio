@@ -14,7 +14,8 @@ import ru.runa.gpd.util.VariableUtils;
 public class BusinessRuleModel extends GroovyModel {
     private final List<IfExpression> ifExpressions = new ArrayList<>();
     private static Pattern LOGIC_PATTERN = Pattern.compile("(\\|\\||&&)");
-    private static Pattern RETURN_PATTERN = Pattern.compile("return \"(.*?)\";");
+    private static Pattern RETURN_PATTERN = Pattern.compile("return \"(.*?)\";\n};\n", Pattern.DOTALL);
+    private static Pattern DEFAULT_RETURN_PATTERN = Pattern.compile("return \"(.*)(\";)+");
     private String defaultFunction;
 
     public BusinessRuleModel() {
@@ -22,6 +23,7 @@ public class BusinessRuleModel extends GroovyModel {
 
     public BusinessRuleModel(String code, List<Variable> variables) throws Exception {
         Matcher returnMatcher = RETURN_PATTERN.matcher(code);
+        Matcher defaultReturnMatcher = DEFAULT_RETURN_PATTERN.matcher(code);
         Matcher matcher = IF_PATTERN.matcher(code);
         int startReturnSearch = 0;
         while (matcher.find()) {
@@ -157,8 +159,8 @@ public class BusinessRuleModel extends GroovyModel {
             IfExpression ifExpression = new IfExpression(function, firstVariables, secondVariables, operations, logicExpressions, brackets);
             addIfExpression(ifExpression);
         }
-        if (returnMatcher.find(startReturnSearch)) {
-            defaultFunction = returnMatcher.group(1);
+        if (defaultReturnMatcher.find(startReturnSearch)) {
+            defaultFunction = defaultReturnMatcher.group(1);
             if (defaultFunction.contains("\\\"")) {
                 defaultFunction = defaultFunction.replaceAll("\\\\\"", "\"");
             }
