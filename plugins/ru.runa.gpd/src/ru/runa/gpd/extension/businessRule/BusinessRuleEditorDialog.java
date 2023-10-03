@@ -283,7 +283,7 @@ public class BusinessRuleEditorDialog extends EditorDialog<BusinessRuleModel> {
     }
 
     protected class ExpressionLine extends Composite {
-        private static final int ADD_DELL_COMPOSITE_INDEX = 4;
+        private static final int ADD_DELETE_COMPOSITE_INDEX = 4;
 
         private Composite expressionsComposite = new Composite(this, SWT.NONE);
         private Button complexExpressionButton;
@@ -539,8 +539,8 @@ public class BusinessRuleEditorDialog extends EditorDialog<BusinessRuleModel> {
         protected void swapToComplex() {
             Composite expression = (Composite) expressionsComposite.getChildren()[0];
             ((GridLayout) expression.getLayout()).numColumns = 5;
-            expression.getChildren()[ADD_DELL_COMPOSITE_INDEX].setVisible(true);
-            ((GridData) expression.getChildren()[ADD_DELL_COMPOSITE_INDEX].getLayoutData()).exclude = false;
+            expression.getChildren()[ADD_DELETE_COMPOSITE_INDEX].setVisible(true);
+            ((GridData) expression.getChildren()[ADD_DELETE_COMPOSITE_INDEX].getLayoutData()).exclude = false;
             ((GridData) logicComposites.get(0).getLayoutData()).exclude = false;
             expressionsComposite.setVisible(false);
             ((GridData) expressionsComposite.getLayoutData()).exclude = true;
@@ -553,8 +553,8 @@ public class BusinessRuleEditorDialog extends EditorDialog<BusinessRuleModel> {
             Composite expression = (Composite) expressionsComposite.getChildren()[0];
             ((GridLayout) expression.getLayout()).numColumns = 3;
             ((GridLayout) expression.getLayout()).marginLeft = 0;
-            expression.getChildren()[ADD_DELL_COMPOSITE_INDEX].setVisible(false);
-            ((GridData) expression.getChildren()[ADD_DELL_COMPOSITE_INDEX].getLayoutData()).exclude = true;
+            expression.getChildren()[ADD_DELETE_COMPOSITE_INDEX].setVisible(false);
+            ((GridData) expression.getChildren()[ADD_DELETE_COMPOSITE_INDEX].getLayoutData()).exclude = true;
             logicComposites.get(0).setVisible(false);
             ((GridData) logicComposites.get(0).getLayoutData()).exclude = true;
             expressionsComposite.setVisible(true);
@@ -605,24 +605,24 @@ public class BusinessRuleEditorDialog extends EditorDialog<BusinessRuleModel> {
                 expression.moveAbove(expressionsComposite.getChildren()[index]);
             }
 
-            Composite buttonComposite = new Composite(expression, SWT.NONE);
+            Composite addDeleteComposite = new Composite(expression, SWT.NONE);
             GridLayout layout = new GridLayout(2, true);
             layout.marginWidth = 0;
             layout.marginHeight = 0;
-            buttonComposite.setLayout(layout);
-            buttonComposite.setLayoutData(getGridData());
+            addDeleteComposite.setLayout(layout);
+            addDeleteComposite.setLayoutData(getGridData());
 
-            Button delButton = new Button(buttonComposite, SWT.PUSH);
-            delButton.setImage(deleteImage);
-            delButton.setLayoutData(new GridData());
-            delButton.addSelectionListener(new LoggingSelectionAdapter() {
+            Button deleteButton = new Button(addDeleteComposite, SWT.PUSH);
+            deleteButton.setImage(deleteImage);
+            deleteButton.setLayoutData(new GridData());
+            deleteButton.addSelectionListener(new LoggingSelectionAdapter() {
                 @Override
                 protected void onSelection(SelectionEvent e) throws Exception {
                     dellExpression(logicComposites.indexOf(logicComposite));
                 }
             });
 
-            Button addButton = new Button(buttonComposite, SWT.PUSH);
+            Button addButton = new Button(addDeleteComposite, SWT.PUSH);
             addButton.setImage(addImage);
             addButton.setLayoutData(new GridData());
             addButton.addSelectionListener(new LoggingSelectionAdapter() {

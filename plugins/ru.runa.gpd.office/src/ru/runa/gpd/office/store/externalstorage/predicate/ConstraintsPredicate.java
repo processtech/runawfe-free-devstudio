@@ -8,6 +8,7 @@ public abstract class ConstraintsPredicate<X, Y> {
     protected PredicateOperationType type;
     protected Y right;
     protected ConstraintsPredicate<?, ?> parent;
+    protected int[] brackets = new int[2];
 
     public ConstraintsPredicate() {
     }
@@ -21,6 +22,14 @@ public abstract class ConstraintsPredicate<X, Y> {
     public ConstraintsPredicate(X left, PredicateOperationType type, Y right, ConstraintsPredicate<?, ?> parent) {
         this(left, type, right);
         this.parent = parent;
+    }
+    
+    public void setBrackets(int[] brackets) {
+        this.brackets = brackets;    
+    }
+    
+    public int[] getBrackets() {
+        return brackets;
     }
 
     public X getLeft() {
