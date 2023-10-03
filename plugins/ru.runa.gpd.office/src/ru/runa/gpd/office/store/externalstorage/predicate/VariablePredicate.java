@@ -31,6 +31,12 @@ class VariablePredicate extends ConstraintsPredicate<Variable, Variable> {
     @Override
     public String toString() {
         final StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < brackets[0]; i++) {
+            builder.append("(");
+        }
+        if(builder.length() > 0) {
+            builder.append(' ');
+        }
         if (left != null) {
             builder.append('[');
             builder.append(left.getName());
@@ -45,6 +51,9 @@ class VariablePredicate extends ConstraintsPredicate<Variable, Variable> {
             builder.append('@');
             builder.append(right.getScriptingName());
             builder.append(' ');
+        }
+        for (int i = 0; i < brackets[1]; i++) {
+            builder.append(")");
         }
         return builder.toString();
     }

@@ -261,3 +261,4 @@ public class LogicComposite extends Composite {
         this.brackets = brackets;
     }
 }
+
