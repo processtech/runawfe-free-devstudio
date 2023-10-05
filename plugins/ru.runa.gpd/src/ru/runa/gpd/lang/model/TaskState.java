@@ -25,6 +25,7 @@ import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 import ru.runa.gpd.lang.model.jpdl.ActionContainer;
+import ru.runa.gpd.property.BooleanPropertyDescriptor;
 import ru.runa.gpd.property.DurationPropertyDescriptor;
 import ru.runa.gpd.property.EscalationActionPropertyDescriptor;
 import ru.runa.gpd.settings.LanguageElementPreferenceNode;
@@ -44,7 +45,7 @@ public class TaskState extends FormNode implements ActionContainer, ITimed, Sync
     private AsyncCompletionMode asyncCompletionMode = AsyncCompletionMode.ON_MAIN_PROCESS_END;
     private BotTaskLink botTaskLink;
     private Duration timeOutDelay = new Duration();
-    protected Boolean reassignSwimlaneToInitializer = null;
+    private Boolean reassignSwimlaneToInitializer = null;
 
     @Override
     public Timer getTimer() {
@@ -58,7 +59,7 @@ public class TaskState extends FormNode implements ActionContainer, ITimed, Sync
     public void setReassignSwimlaneToInitializer(Boolean reassignSwimlaneToInitializer) {
         Boolean old = this.reassignSwimlaneToInitializer;
         this.reassignSwimlaneToInitializer = reassignSwimlaneToInitializer;
-        firePropertyChange(PROPERTY_SWIMLANE_REASSIGN, old, this.reassignSwimlaneToInitializer);
+        firePropertyChange(PROPERTY_SWIMLANE_REASSIGN_TO_INITIALIZER, old, this.reassignSwimlaneToInitializer);
     }
 
     public String getTimeOutDueDate() {
@@ -219,6 +220,8 @@ public class TaskState extends FormNode implements ActionContainer, ITimed, Sync
             descriptors.add(new PropertyDescriptor(PROPERTY_BOT_TASK_NAME, Localization.getString("property.botTaskName")));
         }
         descriptors.add(new PropertyDescriptor(PROPERTY_ASYNC, Localization.getString("property.execution.async")));
+        descriptors.add(new BooleanPropertyDescriptor(PROPERTY_SWIMLANE_REASSIGN_TO_INITIALIZER,
+                Localization.getString("Swimlane.reassignSwimlaneToInitializer")));
     }
 
     @Override
@@ -248,6 +251,9 @@ public class TaskState extends FormNode implements ActionContainer, ITimed, Sync
         if (PROPERTY_BOT_TASK_NAME.equals(id)) {
             return botTaskLink == null ? "" : botTaskLink.getBotTaskName();
         }
+        if (PROPERTY_SWIMLANE_REASSIGN_TO_INITIALIZER.equals(id)) {
+            return BooleanPropertyDescriptor.Enum.getByValueNotNull(reassignSwimlaneToInitializer).ordinal();
+        }
         return super.getPropertyValue(id);
     }
 
@@ -263,6 +269,8 @@ public class TaskState extends FormNode implements ActionContainer, ITimed, Sync
                 return;
             }
             setTimeOutDelay((Duration) value);
+        } else if (PROPERTY_SWIMLANE_REASSIGN_TO_INITIALIZER.equals(id)) {
+            setReassignSwimlaneToInitializer(BooleanPropertyDescriptor.Enum.values()[(Integer) value].getValue());
         } else {
             super.setPropertyValue(id, value);
         }
@@ -283,7 +291,6 @@ public class TaskState extends FormNode implements ActionContainer, ITimed, Sync
         }
         copy.setIgnoreSubstitutionRules(ignoreSubstitutionRules);
         copy.setReassignSwimlaneToInitializer(reassignSwimlaneToInitializer);
-        copy.setReassignSwimlaneToTaskPerformer(reassignSwimlaneToTaskPerformer);
         if (getTimeOutDelay() != null) {
             copy.setTimeOutDelay(new Duration(getTimeOutDelay()));
         }

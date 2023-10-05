@@ -7,7 +7,8 @@ public interface PropertyNames {
     public static final String PROPERTY_CLASS = "class";
     public static final String PROPERTY_CONFIGURATION = "configuration";
     public static final String PROPERTY_SWIMLANE = "swimlane";
-    public static final String PROPERTY_SWIMLANE_REASSIGN = "swimlaneReassignment";
+    public static final String PROPERTY_SWIMLANE_REASSIGN_TO_INITIALIZER = "swimlaneReassignToInitializer";
+    public static final String PROPERTY_SWIMLANE_REASSIGN_TO_TASK_PERFORMER = "swimlaneReassignToTaskPerformer";
     public static final String PROPERTY_MULTIPROCESS = "multiProcess";
     public static final String PROPERTY_MINIMAZED_VIEW = "minimazedView";
     public static final String PROPERTY_USE_EXTERNAL_STORAGE_OUT = "useExternalStorageOut";
