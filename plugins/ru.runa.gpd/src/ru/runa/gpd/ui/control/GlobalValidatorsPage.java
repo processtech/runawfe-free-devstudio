@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -595,6 +594,7 @@ public class GlobalValidatorsPage extends Composite implements PropertyChangeLis
             @SuppressWarnings("unchecked")
             List<ValidatorConfig> list = ((IStructuredSelection) validatorsTableViewer.getSelection()).toList();
             clipboard.setContents(new Object[] { list }, new Transfer[] { GlobalValidatorTransfer.getInstance() });
+            clipboard.dispose();
         }
     }
 
@@ -604,6 +604,7 @@ public class GlobalValidatorsPage extends Composite implements PropertyChangeLis
             Clipboard clipboard = new Clipboard(getDisplay());
             @SuppressWarnings("unchecked")
             List<ValidatorConfig> data = (List<ValidatorConfig>) clipboard.getContents(GlobalValidatorTransfer.getInstance());
+            clipboard.dispose();
             if (data != null) {
                 for (ValidatorConfig config : data) {
                     config.getTransitionNames().clear();

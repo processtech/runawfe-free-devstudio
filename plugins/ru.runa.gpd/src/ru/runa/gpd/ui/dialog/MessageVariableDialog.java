@@ -3,6 +3,7 @@ package ru.runa.gpd.ui.dialog;
 import com.google.common.base.Strings;
 import java.util.List;
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -76,6 +77,7 @@ public class MessageVariableDialog extends Dialog {
                 @Override
                 protected void onTextChanged(ModifyEvent e) throws Exception {
                     variable = variableText.getText();
+                    updateButtons();
                 }
 
             });
@@ -129,6 +131,12 @@ public class MessageVariableDialog extends Dialog {
         return area;
     }
 
+    @Override
+    protected void createButtonsForButtonBar(Composite parent) {
+        super.createButtonsForButtonBar(parent);
+        updateButtons();
+    }
+
     public String getVariable() {
         return variable;
     }
@@ -136,4 +144,9 @@ public class MessageVariableDialog extends Dialog {
     public String getAlias() {
         return alias;
     }
+
+    private void updateButtons() {
+        getButton(IDialogConstants.OK_ID).setEnabled(!variable.isEmpty());
+    }
+
 }

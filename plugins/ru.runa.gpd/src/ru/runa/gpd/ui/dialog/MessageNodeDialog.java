@@ -1,5 +1,8 @@
 package ru.runa.gpd.ui.dialog;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
@@ -17,6 +20,9 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
@@ -30,6 +36,7 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.PlatformUI;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.model.ProcessDefinition;
+import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.ui.custom.DragAndDropAdapter;
 import ru.runa.gpd.ui.custom.DropDownButton;
 import ru.runa.gpd.ui.custom.LoggingDoubleClickAdapter;
@@ -39,12 +46,14 @@ import ru.runa.gpd.ui.custom.SwtUtils;
 import ru.runa.gpd.ui.custom.TableViewerLocalDragAndDropSupport;
 import ru.runa.gpd.util.VariableMapping;
 import ru.runa.gpd.util.VariableUtils;
-
-import static org.eclipse.swt.events.SelectionListener.widgetSelectedAdapter;
+import ru.runa.wfe.commons.ClassLoaderUtil;
+import ru.runa.wfe.var.format.VariableFormat;
 
 public class MessageNodeDialog extends Dialog {
-
-    private final static List<VariableMapping> clipboard = new ArrayList<>();
+    /**
+     * paste operation is supported in application instance scope only
+     */
+    private static boolean isPasteButtonEnabled;
 
     private final ProcessDefinition definition;
     private final List<VariableMapping> variableMappings;
@@ -357,7 +366,7 @@ public class MessageNodeDialog extends Dialog {
     private void updateCopyPasteButtons() {
         if (pasteButton != null) {
             copyButton.setEnabled(!(selectorTableViewer.getSelection().isEmpty() && dataTableViewer.getSelection().isEmpty()));
-            pasteButton.setEnabled(clipboard.size() > 0);
+            pasteButton.setEnabled(isPasteButtonEnabled);
         }
     }
 
@@ -407,31 +416,78 @@ public class MessageNodeDialog extends Dialog {
     protected void createButtonsForButtonBar(Composite parent) {
         copyButton = createButton(parent, IDialogConstants.CLIENT_ID, Localization.getString("button.copy"), false);
         copyButton.setEnabled(false);
-        copyButton.addSelectionListener(widgetSelectedAdapter(event -> {
-            clipboard.clear();
-            selectorTableViewer.getStructuredSelection().toList().stream().forEach(e -> {
-                clipboard.add(((VariableMapping) e).getCopy());
-            });
-            dataTableViewer.getStructuredSelection().toList().stream().forEach(e -> {
-                clipboard.add(((VariableMapping) e).getCopy());
-            });
-            updateCopyPasteButtons();
-        }));
+        copyButton.addSelectionListener(new LoggingSelectionAdapter() {
+
+            @Override
+            protected void onSelection(SelectionEvent event) throws Exception {
+                CopyPasteModel copyPasteModel = new CopyPasteModel();
+                selectorTableViewer.getStructuredSelection().toList().stream().forEach(e -> {
+                    VariableMapping m = (VariableMapping) e;
+                    copyPasteModel.getRouting().add(new CopyPasteRow(m.getName(), m.getMappedName(), null));
+                });
+                dataTableViewer.getStructuredSelection().toList().stream().forEach(e -> {
+                    VariableMapping m = (VariableMapping) e;
+                    String type = null;
+                    Variable variable = VariableUtils.getVariableByName(definition, m.getName());
+                    if (variable != null && !variable.isComplex()) {
+                        try {
+                            VariableFormat variableFormat = ClassLoaderUtil.instantiate(variable.getFormatClassName());
+                            type = variableFormat.getName();
+                        } catch (Exception ex) {
+                            // leave type undefined
+                        }
+                    }
+                    copyPasteModel.getPayload().add(new CopyPasteRow(m.getMappedName(), m.getName(), type));
+                });
+                if (!copyPasteModel.isEmpty()) {
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    objectMapper.setSerializationInclusion(Include.NON_NULL);
+                    String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(copyPasteModel);
+                    Clipboard clipboard = new Clipboard(null);
+                    clipboard.setContents(new String[] { json }, new Transfer[] { TextTransfer.getInstance() });
+                    clipboard.dispose();
+                    isPasteButtonEnabled = true;
+                    updateCopyPasteButtons();
+                }
+            };
+
+        });
         pasteButton = createButton(parent, IDialogConstants.CLIENT_ID, Localization.getString("button.paste"), false);
         pasteButton.setEnabled(false);
-        pasteButton.addSelectionListener(widgetSelectedAdapter(event -> {
-            clipboard.stream().forEach(e -> {
-                for (Iterator<VariableMapping> i = variableMappings.iterator(); i.hasNext();) {
-                    if (i.next().getName().equals(e.getName())) {
-                        i.remove();
-                        break;
+        pasteButton.addSelectionListener(new LoggingSelectionAdapter() {
+
+            @Override
+            protected void onSelection(SelectionEvent event) throws Exception {
+                Clipboard clipboard = new Clipboard(null);
+                String json = (String) clipboard.getContents(TextTransfer.getInstance());
+                clipboard.dispose();
+                ObjectMapper objectMapper = new ObjectMapper();
+                CopyPasteModel copyPasteModel = objectMapper.reader().readValue(json, CopyPasteModel.class);
+                copyPasteModel.getRouting().forEach(e -> {
+                    for (Iterator<VariableMapping> i = variableMappings.iterator(); i.hasNext();) {
+                        VariableMapping m = i.next();
+                        if (m.getName().equals(e.getName()) && VariableMapping.USAGE_SELECTOR.equals(m.getUsage())) {
+                            i.remove();
+                            break;
+                        }
                     }
-                }
-                variableMappings.add(e.getCopy());
-            });
-            selectorTableViewer.refresh();
-            dataTableViewer.refresh();
-        }));
+                    variableMappings.add(new VariableMapping(e.getName(), e.getValue(), VariableMapping.USAGE_SELECTOR));
+                });
+                copyPasteModel.getPayload().forEach(e -> {
+                    for (Iterator<VariableMapping> i = variableMappings.iterator(); i.hasNext();) {
+                        VariableMapping m = i.next();
+                        if (m.getName().equals(e.getValue()) && VariableMapping.USAGE_READ.equals(m.getUsage())) {
+                            i.remove();
+                            break;
+                        }
+                    }
+                    variableMappings.add(new VariableMapping(e.getValue(), e.getName(), VariableMapping.USAGE_READ));
+                });
+                selectorTableViewer.refresh();
+                dataTableViewer.refresh();
+            };
+
+        });
         Button spacer = createButton(parent, IDialogConstants.CLIENT_ID, "", false); // spacer
         spacer.setVisible(false);
         ((GridData) spacer.getLayoutData()).grabExcessHorizontalSpace = true;
@@ -511,5 +567,63 @@ public class MessageNodeDialog extends Dialog {
         public void dispose() {
             // do nothing.
         }
+    }
+
+    public static class CopyPasteModel {
+        private final List<CopyPasteRow> routing = new ArrayList<>();
+        private final List<CopyPasteRow> payload = new ArrayList<>();
+
+        public List<CopyPasteRow> getRouting() {
+            return routing;
+        }
+
+        public List<CopyPasteRow> getPayload() {
+            return payload;
+        }
+
+        @JsonIgnore
+        public boolean isEmpty() {
+            return routing.isEmpty() && payload.isEmpty();
+        }
+    }
+
+    public static class CopyPasteRow {
+        private String name;
+        private String value;
+        private String type;
+
+        public CopyPasteRow() {
+        }
+
+        public CopyPasteRow(String name, String value, String type) {
+            this.name = name;
+            this.value = value;
+            this.type = type;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public void setValue(String value) {
+            this.value = value;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
     }
 }

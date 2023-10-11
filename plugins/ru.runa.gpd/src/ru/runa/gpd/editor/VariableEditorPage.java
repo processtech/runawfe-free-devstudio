@@ -36,7 +36,6 @@ import org.eclipse.ui.part.FileEditorInput;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.SharedImages;
-import ru.runa.gpd.editor.EditorPartBase.TableColumnDescription;
 import ru.runa.gpd.editor.clipboard.VariableTransfer;
 import ru.runa.gpd.globalsection.GlobalSectionUtils;
 import ru.runa.gpd.lang.model.FormNode;
@@ -459,6 +458,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
             @SuppressWarnings("unchecked")
             List<Variable> list = ((IStructuredSelection) tableViewer.getSelection()).toList();
             clipboard.setContents(new Object[] { list }, new Transfer[] { VariableTransfer.getInstance() });
+            clipboard.dispose();
         }
     }
 
@@ -468,6 +468,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
             Clipboard clipboard = new Clipboard(getDisplay());
             @SuppressWarnings("unchecked")
             List<Variable> data = (List<Variable>) clipboard.getContents(VariableTransfer.getInstance(getDefinition()));
+            clipboard.dispose();
             if (data != null) {
                 for (Variable variable : data) {
                     boolean nameAllowed = true;
