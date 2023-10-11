@@ -44,7 +44,6 @@ import ru.runa.gpd.Localization;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.SharedImages;
-import ru.runa.gpd.editor.EditorPartBase.TableColumnDescription;
 import ru.runa.gpd.editor.clipboard.VariableTransfer;
 import ru.runa.gpd.editor.clipboard.VariableUserTypeTransfer;
 import ru.runa.gpd.globalsection.GlobalSectionUtils;
@@ -390,6 +389,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             Clipboard clipboard = new Clipboard(getDisplay());
             @SuppressWarnings("unchecked")
             List<VariableUserType> data = (List<VariableUserType>) clipboard.getContents(VariableUserTypeTransfer.getInstance(getDefinition()));
+            clipboard.dispose();
             if (data != null) {
                 for (VariableUserType type : data) {
                     boolean nameAllowed = true;
@@ -406,7 +406,6 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
                     }
                 }
             }
-            clipboard.dispose();
         }
 
         private void copyUserTypeRecursive(VariableUserType sourceUserType) {
@@ -950,6 +949,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             @SuppressWarnings("unchecked")
             List<Variable> list = ((IStructuredSelection) attributeTableViewer.getSelection()).toList();
             clipboard.setContents(new Object[] { list }, new Transfer[] { VariableTransfer.getInstance() });
+            clipboard.dispose();
         }
     }
 
@@ -961,6 +961,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
                 Clipboard clipboard = new Clipboard(getDisplay());
                 @SuppressWarnings("unchecked")
                 List<Variable> data = (List<Variable>) clipboard.getContents(VariableTransfer.getInstance(getDefinition()));
+                clipboard.dispose();
                 if (data != null) {
                     for (Variable variable : data) {
                         boolean nameAllowed = true;
@@ -990,7 +991,6 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
                         attributeTableViewer.setSelection(new StructuredSelection(variable));
                     }
                 }
-                clipboard.dispose();
             }
         }
 
