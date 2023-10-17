@@ -52,7 +52,6 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.mortbay.util.MultiException;
-import ru.runa.gpd.Activator;
 import ru.runa.gpd.EditorsPlugin;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
@@ -69,6 +68,7 @@ import ru.runa.gpd.formeditor.ftl.ui.ComponentParametersDialog;
 import ru.runa.gpd.formeditor.ftl.ui.FormComponentsView;
 import ru.runa.gpd.formeditor.ftl.ui.IComponentDropTarget;
 import ru.runa.gpd.formeditor.resources.Messages;
+import ru.runa.gpd.formeditor.settings.PreferencePage;
 import ru.runa.gpd.formeditor.vartag.VarTagUtil;
 import ru.runa.gpd.htmleditor.editors.HTMLConfiguration;
 import ru.runa.gpd.htmleditor.editors.HTMLSourceEditor;
@@ -78,7 +78,6 @@ import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.gpd.lang.par.ParContentProvider;
-import ru.runa.gpd.settings.PrefConstants;
 import ru.runa.gpd.ui.view.SelectionProvider;
 import ru.runa.gpd.util.EditorUtils;
 import ru.runa.gpd.util.IOUtils;
@@ -273,31 +272,33 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
     @Override
     protected void createPages() {
         int pageNumber = 0;
-        try {
-            browser = new Browser(getContainer(), SWT.NULL);
-            if (EditorsPlugin.DEBUG) {
-                PluginLogger.logInfo("Browser type = " + browser.getBrowserType());
-            }
-            browser.addOpenWindowListener(new BrowserWindowHelper(getContainer().getDisplay()));
-            new GetHTMLCallbackFunction(browser);
-            new OnLoadCallbackFunction(browser);
-            new MarkEditorDirtyCallbackFunction(browser);
-            new RefreshViewCallbackFunction(browser);
-            new LogErrorCallbackFunction(browser);
-            browser.addProgressListener(new ProgressAdapter() {
-                @Override
-                public void completed(ProgressEvent event) {
-                    if (EditorsPlugin.DEBUG) {
-                        PluginLogger.logInfo("completed " + event);
-                    }
+        if (EditorsPlugin.getDefault().getPreferenceStore().getBoolean(PreferencePage.P_DESIGN_PAGE_ENABLED)) {
+            try {
+                browser = new Browser(getContainer(), SWT.NULL);
+                if (EditorsPlugin.DEBUG) {
+                    PluginLogger.logInfo("Browser type = " + browser.getBrowserType());
                 }
-            });
-            addPage(browser);
-            setPageText(pageNumber++, Messages.getString("wysiwyg.design.tab_name"));
-        } catch (Throwable th) {
-            if (!browserCreationErrorWasShownToUser) {
-                PluginLogger.logError(Messages.getString("wysiwyg.design.create_error"), th);
-                browserCreationErrorWasShownToUser = true;
+                browser.addOpenWindowListener(new BrowserWindowHelper(getContainer().getDisplay()));
+                new GetHTMLCallbackFunction(browser);
+                new OnLoadCallbackFunction(browser);
+                new MarkEditorDirtyCallbackFunction(browser);
+                new RefreshViewCallbackFunction(browser);
+                new LogErrorCallbackFunction(browser);
+                browser.addProgressListener(new ProgressAdapter() {
+                    @Override
+                    public void completed(ProgressEvent event) {
+                        if (EditorsPlugin.DEBUG) {
+                            PluginLogger.logInfo("completed " + event);
+                        }
+                    }
+                });
+                addPage(browser);
+                setPageText(pageNumber++, Messages.getString("wysiwyg.design.tab_name"));
+            } catch (Throwable th) {
+                if (!browserCreationErrorWasShownToUser) {
+                    PluginLogger.logError(Messages.getString("wysiwyg.design.create_error"), th);
+                    browserCreationErrorWasShownToUser = true;
+                }
             }
         }
         try {
@@ -310,7 +311,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
         }
     }
 
-    protected void startWebServerIfNotStartedYet(BrowserLoadCallback browserLoadCallback) {
+    protected void startWebServerIfNecessary(BrowserLoadCallback browserLoadCallback) {
         if (browser == null || browserLoaded) {
             return;
         }
@@ -365,7 +366,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
                         if (ex instanceof MultiException) {
                             for (Object multExc : ((MultiException) ex).getExceptions()) {
                                 if (multExc instanceof BindException) {
-                                    String port = Activator.getPrefString(PrefConstants.P_FORM_WEB_SERVER_PORT);
+                                    int port = EditorsPlugin.getDefault().getPreferenceStore().getInt(PreferencePage.P_FORM_WEB_SERVER_PORT);
                                     PluginLogger.logError(Messages.getString("wysiwyg.design.create_error_port", port), ex);
                                     break;
                                 }
@@ -458,7 +459,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
                 syncBrowser2Editor();
             }
         } else if (newPageIndex == 0) {
-            startWebServerIfNotStartedYet(() -> {
+            startWebServerIfNecessary(() -> {
                 ConnectorServletHelper.sync();
                 syncEditor2Browser();
             });
@@ -677,7 +678,8 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
                 PluginLogger.logInfo("Invoked OnLoadCallbackFunction");
             }
             setBrowserLoaded(true);
-            browser.execute("setIgnoreErrors(" + Activator.getPrefBoolean(PrefConstants.P_FORM_IGNORE_ERRORS_FROM_WEBPAGE) + ")");
+            boolean ignoreErrors = EditorsPlugin.getDefault().getPreferenceStore().getBoolean(PreferencePage.P_FORM_IGNORE_ERRORS_FROM_WEBPAGE);
+            browser.execute("setIgnoreErrors(" + ignoreErrors + ")");
             return null;
         }
     }
