@@ -52,7 +52,7 @@ public class SearchResultItem {
     }
     
     public String getLabel() {
-        return ((graphElement.getId() == null)?"":graphElement.getId()) + " " + graphElement.getLabel();
+        return graphElement.getLabel();
     }
     
     public boolean isProcDefinition() {
