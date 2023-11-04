@@ -39,14 +39,14 @@ public class StartState extends FormNode implements HasTextDecorator {
             if (getProcessDefinition() instanceof SubprocessDefinition) {
                 errors.add(ValidationError.createLocalizedError(this, "startState.formIsNotUsableInEmbeddedSubprocess"));
             } else if (getProcessDefinition().getAccessType() == ProcessDefinitionAccessType.OnlySubprocess) {
-                errors.add(ValidationError.createLocalizedError(this, "startState.formIsNotUsableInSubprocess"));
+                errors.add(ValidationError.createLocalizedWarning(this, "startState.formIsNotUsableInSubprocess"));
             }
         }
         if (hasFormScript()) {
             if (getProcessDefinition() instanceof SubprocessDefinition) {
                 errors.add(ValidationError.createLocalizedError(this, "startState.formScriptIsNotUsableInEmbeddedSubprocess"));
             } else if (getProcessDefinition().getAccessType() == ProcessDefinitionAccessType.OnlySubprocess) {
-                errors.add(ValidationError.createLocalizedError(this, "startState.formScriptIsNotUsableInSubprocess"));
+                errors.add(ValidationError.createLocalizedWarning(this, "startState.formScriptIsNotUsableInSubprocess"));
             }
         }
         if (hasFormValidation() && getProcessDefinition() instanceof SubprocessDefinition) {
