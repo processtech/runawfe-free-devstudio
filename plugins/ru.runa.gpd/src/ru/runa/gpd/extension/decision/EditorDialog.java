@@ -7,6 +7,8 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
@@ -82,13 +84,18 @@ public abstract class EditorDialog<T extends GroovyModel> extends Dialog {
         ScrolledComposite scrolledComposite = new ScrolledComposite(constructorView, SWT.V_SCROLL | SWT.BORDER);
         scrolledComposite.setExpandHorizontal(true);
         scrolledComposite.setExpandVertical(true);
-        scrolledComposite.setMinHeight(200);
         scrolledComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
         constructor = new Composite(scrolledComposite, SWT.NONE);
         scrolledComposite.setContent(constructor);
         GridLayout gridLayout = new GridLayout();
         gridLayout.numColumns = 5;
         constructor.setLayout(gridLayout);
+        scrolledComposite.addControlListener(new ControlAdapter() {
+            @Override
+            public void controlResized(ControlEvent e) {
+                scrolledComposite.setMinSize(constructor.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+            }
+        });
         constructor.setLayoutData(new GridData(GridData.FILL_BOTH));
         Composite sourceView = new Composite(tabFolder, SWT.NONE);
         sourceView.setLayout(new GridLayout());
