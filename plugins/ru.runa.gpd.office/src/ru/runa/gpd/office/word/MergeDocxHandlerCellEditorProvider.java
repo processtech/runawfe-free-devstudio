@@ -1,7 +1,7 @@
 package ru.runa.gpd.office.word;
 
+import com.google.common.base.Strings;
 import java.util.List;
-
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.eclipse.core.resources.IFolder;
@@ -19,7 +19,6 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.bot.IBotFileSupportProvider;
@@ -33,8 +32,6 @@ import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.custom.SwtUtils;
 import ru.runa.gpd.util.EmbeddedFileUtils;
 import ru.runa.gpd.util.XmlUtil;
-
-import com.google.common.base.Strings;
 
 public class MergeDocxHandlerCellEditorProvider extends XmlBasedConstructorProvider<DocxModel> implements IBotFileSupportProvider {
 
@@ -75,27 +72,23 @@ public class MergeDocxHandlerCellEditorProvider extends XmlBasedConstructorProvi
     }
 
     @Override
-    public void onCopy(IFolder sourceFolder, Delegable source, String sourceName, IFolder targetFolder, Delegable target, String targetName) {
-        super.onCopy(sourceFolder, source, sourceName, targetFolder, target, targetName);
+    public void onCopy(IFolder sourceFolder, Delegable source, IFolder targetFolder, Delegable target) {
+        super.onCopy(sourceFolder, source, targetFolder, target);
         try {
             MergeDocxModel model = (MergeDocxModel) fromXml(source.getDelegationConfiguration());
             MergeInputOutputModel inOutModel = (MergeInputOutputModel) model.getInOutModel();
             int index = 0;
             for (String inputPath : inOutModel.getInputPathList()) {
                 if (EmbeddedFileUtils.isProcessFile(inputPath)) {
-                    sourceName = EmbeddedFileUtils.getProcessFileName(inputPath);
-                    targetName = EmbeddedFileUtils.generateEmbeddedFileName(target, sourceName.replaceAll(".+\\.", ""));
-                    EmbeddedFileUtils.copyProcessFile(sourceFolder, inputPath, sourceName, targetName);
-                    inOutModel.getInputPathList().set(index++, EmbeddedFileUtils.getProcessFilePath(targetName));
+                    inOutModel.getInputPathList().set(index++,
+                            EmbeddedFileUtils.copyProcessFile(sourceFolder, source, inputPath, targetFolder, target));
                 } else {
                     ++index;
                 }
             }
             target.setDelegationConfiguration(model.toString());
-            PluginLogger.logInfo("Not supported for multi imput" + source.getDelegationClassName());
-
         } catch (Exception e) {
-            PluginLogger.logErrorWithoutDialog("Failed to copy embedded file in " + source.getDelegationClassName(), e);
+            PluginLogger.logErrorWithoutDialog("Failed to copy embedded file for " + target, e);
         }
     }
 
