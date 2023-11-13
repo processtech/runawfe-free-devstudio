@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import org.apache.commons.logging.Log;
@@ -29,7 +28,6 @@ import org.eclipse.swt.custom.VerifyKeyListener;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.VerifyEvent;
@@ -37,22 +35,14 @@ import org.eclipse.swt.events.VerifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.TabFolder;
-import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.clipboard.GlobalValidatorTransfer;
-import ru.runa.gpd.extension.decision.GroovyCodeParser;
-import ru.runa.gpd.extension.decision.GroovyTypeSupport;
-import ru.runa.gpd.extension.decision.GroovyValidationModel;
-import ru.runa.gpd.extension.decision.Operation;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.Variable;
@@ -66,6 +56,7 @@ import ru.runa.gpd.ui.custom.LoggingSelectionChangedAdapter;
 import ru.runa.gpd.ui.custom.SwtUtils;
 import ru.runa.gpd.ui.dialog.ChooseGroovyStuffDialog;
 import ru.runa.gpd.ui.dialog.ChooseVariableNameDialog;
+import ru.runa.gpd.ui.dialog.GlobalValidatorExpressionConstructorDialog;
 import ru.runa.gpd.util.GroovyStuff;
 import ru.runa.gpd.util.GroovyStuff.Item;
 import ru.runa.gpd.util.VariableUtils;
@@ -90,7 +81,6 @@ public class GlobalValidatorsPage extends Composite implements PropertyChangeLis
     private final ValidatorDefinition globalDefinition = ValidatorDefinitionRegistry.getGlobalDefinition();
     private boolean dirty;
     private Consumer<Boolean> dirtyCallback;
-    private boolean validatorChanging;
 
     public GlobalValidatorsPage(Composite parent, FormNode formNode, FormNodeValidation validation, Consumer<Boolean> dirtyCallback) {
         super(parent, SWT.NONE);
@@ -171,13 +161,11 @@ public class GlobalValidatorsPage extends Composite implements PropertyChangeLis
             @Override
             protected void onSelectionChanged(SelectionChangedEvent event) throws Exception {
                 try {
-                    validatorChanging = true;
                     ValidatorConfig config = (ValidatorConfig) ((IStructuredSelection) validatorsTableViewer.getSelection()).getFirstElement();
                     deleteButton.setEnabled(config != null);
                     copyButton.setEnabled(config != null);
                     infoGroup.setConfig(ValidatorConfig.GLOBAL_FIELD_ID, globalDefinition, config);
                 } finally {
-                    validatorChanging = false;
                 }
             }
         });
@@ -212,12 +200,12 @@ public class GlobalValidatorsPage extends Composite implements PropertyChangeLis
             @Override
             @SuppressWarnings({ "unchecked" })
             protected void onSelection(SelectionEvent event) throws Exception {
-                  List<ValidatorConfig> selected = ((IStructuredSelection) validatorsTableViewer.getSelection()).toList();
+                List<ValidatorConfig> selected = ((IStructuredSelection) validatorsTableViewer.getSelection()).toList();
                 if (selected.isEmpty()) {
                     infoGroup.setVisible(false);
                     return;
                 }
-                for(ValidatorConfig config : selected) {
+                for (ValidatorConfig config : selected) {
                     validatorConfigs.remove(config);
                 }
                 validatorsTableViewer.refresh(true);
@@ -274,16 +262,16 @@ public class GlobalValidatorsPage extends Composite implements PropertyChangeLis
                 transitionsGroup.setLayout(new GridLayout(1, false));
                 transitionsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
                 transitionsGroup.setText(Localization.getString("FieldValidatorsWizardPage.TransitionContext"));
-                
+
                 ScrolledComposite scrolledComposite = new ScrolledComposite(transitionsGroup, SWT.H_SCROLL);
                 scrolledComposite.setExpandHorizontal(true);
                 scrolledComposite.setLayout(new GridLayout(1, false));
                 scrolledComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
-                
+
                 Group transitionChoisesGroup = new Group(scrolledComposite, SWT.BORDER);
                 transitionChoisesGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
                 transitionChoisesGroup.setLayout(new GridLayout(3, false));
-                
+
                 for (Transition transition : formNode.getLeavingTransitions()) {
                     final Button button = new Button(transitionChoisesGroup, SWT.CHECK);
                     button.setText(transition.getName());
@@ -308,7 +296,6 @@ public class GlobalValidatorsPage extends Composite implements PropertyChangeLis
 
             parametersComposite = new GroovyParamsComposite(this, SWT.BORDER);
             parametersComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
-            parametersComposite.setLayout(new GridLayout(1, true));
             errorMessageText.addModifyListener(new LoggingModifyTextAdapter() {
                 @Override
                 protected void onTextChanged(ModifyEvent e) throws Exception {
@@ -332,94 +319,30 @@ public class GlobalValidatorsPage extends Composite implements PropertyChangeLis
 
     public class GroovyParamsComposite extends ParametersComposite {
         private final StyledText codeText;
-        private Variable variable1;
-        private final Combo comboBoxOp;
-        private List<String> varNames = new ArrayList<>();
-        private String varName2;
-        private final TabFolder tabFolder;
-
-        private Text txtVarName1;
-        private Text txtVarName2;
 
         public GroovyParamsComposite(ValidatorInfoControl parent, int style) {
             super(parent, style);
-
-            tabFolder = new TabFolder(this, SWT.NULL);
-            tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
-            tabFolder.addSelectionListener(new LoggingSelectionAdapter() {
-                @Override
-                protected void onSelection(SelectionEvent event) throws Exception {
-                    if (tabFolder.getSelectionIndex() == 1) {
-                        toCode();
-                    }
-                }
-            });
-            TabItem[] tabs = new TabItem[2];
-            tabs[0] = new TabItem(tabFolder, SWT.NULL);
-            tabs[0].setText(Localization.getString("GroovyEditor.title.constructor"));
-            Composite constrComposite = new Composite(tabFolder, SWT.BORDER);
-            constrComposite.setLayout(new GridLayout(3, false));
-            constrComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
-            tabs[0].setControl(constrComposite);
-
-            Composite varComposite1 = new Composite(constrComposite, SWT.NONE);
-            varComposite1.setLayoutData(getComboGridData());
-            varComposite1.setLayout(new GridLayout(2, false));
-            txtVarName1 = new Text(varComposite1, SWT.READ_ONLY | SWT.BORDER);
-            txtVarName1.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            Button selectButton1 = new Button(varComposite1, SWT.PUSH);
-            selectButton1.setText("...");
-            selectButton1.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-            selectButton1.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    String result = new ChooseVariableNameDialog(variableNames).openDialog();
-                    if (result != null) {
-                        variable1 = VariableUtils.getVariableByScriptingName(variables, result);
-                        txtVarName1.setText(variable1.getScriptingName());
-                        refreshCombos();
-                        setDirty(true);
-                    }
-                }
-            });
-
-            comboBoxOp = new Combo(constrComposite, SWT.READ_ONLY);
-            comboBoxOp.setLayoutData(getComboGridData());
-            comboBoxOp.addModifyListener(new ModifyListener() {
-                @Override
-                public void modifyText(ModifyEvent e) {
-                    if (!validatorChanging) {
-                        setDirty(true);
-                    }
-                }
-            });
-
-            Composite varComposite2 = new Composite(constrComposite, SWT.NONE);
-            varComposite2.setLayoutData(getComboGridData());
-            varComposite2.setLayout(new GridLayout(2, false));
-            txtVarName2 = new Text(varComposite2, SWT.READ_ONLY | SWT.BORDER);
-            txtVarName2.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            Button selectButton2 = new Button(varComposite2, SWT.PUSH);
-            selectButton2.setText("...");
-            selectButton2.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-            selectButton2.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    String result = new ChooseVariableNameDialog(varNames).openDialog();
-                    if (result != null) {
-                        varName2 = result;
-                        txtVarName2.setText(varName2);
-                        setDirty(true);
-                    }
-                }
-            });
-
-            tabs[1] = new TabItem(tabFolder, SWT.NULL);
-            tabs[1].setText(Localization.getString("GroovyEditor.title.code"));
-            Composite codeComposite = new Composite(tabFolder, SWT.BORDER);
-            codeComposite.setLayout(new GridLayout(5, false));
+            GridLayout layout = new GridLayout(1, true);
+            layout.marginHeight = 0;
+            layout.marginWidth = 0;
+            this.setLayout(layout);
+            Composite codeComposite = new Composite(this, SWT.NONE);
+            codeComposite.setLayout(new GridLayout(6, false));
             codeComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
-            tabs[1].setControl(codeComposite);
+            SwtUtils.createLink(codeComposite, Localization.getString("GroovyEditor.title.constructor"), new LoggingHyperlinkAdapter() {
+                @Override
+                public void onLinkActivated(HyperlinkEvent e) {
+                    GlobalValidatorExpressionConstructorDialog expressionConstructorDialog = new GlobalValidatorExpressionConstructorDialog(
+                            getShell(), variables);
+                    expressionConstructorDialog.initializeFromExpression(codeText.getText());
+                    if (expressionConstructorDialog.open() == org.eclipse.jface.window.Window.OK) {
+                        if (expressionConstructorDialog.isDirty()) {
+                            setDirty(true);
+                            codeText.setText(expressionConstructorDialog.getSavingAsExpression());
+                        }
+                    }
+                }
+            }).setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
             if (GroovyStuff.TYPE.getAll().size() > 0) {
                 SwtUtils.createLink(codeComposite, Localization.getString("Insert.TYPE.link"), new LoggingHyperlinkAdapter() {
                     @Override
@@ -489,9 +412,9 @@ public class GlobalValidatorsPage extends Composite implements PropertyChangeLis
                 }
             }).setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
 
-            codeText = new FeaturedStyledText(codeComposite, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL, EnumSet.of(
-                    FeaturedStyledText.Feature.LINE_NUMBER, FeaturedStyledText.Feature.UNDO_REDO));
-            codeText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 5, 1));
+            codeText = new FeaturedStyledText(codeComposite, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL,
+                    EnumSet.of(FeaturedStyledText.Feature.LINE_NUMBER, FeaturedStyledText.Feature.UNDO_REDO));
+            codeText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 6, 1));
             codeText.addLineStyleListener(new JavaHighlightTextStyling(contextVariableNames));
             codeText.addVerifyKeyListener(new VerifyKeyListener() {
                 @Override
@@ -503,47 +426,6 @@ public class GlobalValidatorsPage extends Composite implements PropertyChangeLis
             });
         }
 
-        private GridData getComboGridData() {
-            GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
-            gridData.minimumWidth = 100;
-            return gridData;
-        }
-
-        private void refreshCombos() {
-            List<Operation> operations = Operation.getAll(GroovyTypeSupport.get(variable1.getJavaClassName()));
-            comboBoxOp.setItems(new String[0]);
-            for (Operation operation : operations) {
-                comboBoxOp.add(operation.getVisibleName());
-            }
-            varNames = getCombo2VariableNames(variable1);
-        }
-
-        private List<String> getCombo2VariableNames(Variable variable1) {
-            List<String> names = new ArrayList<String>();
-            GroovyTypeSupport typeSupport1 = GroovyTypeSupport.get(variable1.getJavaClassName());
-            for (Variable variable : variables) {
-                GroovyTypeSupport typeSupport = GroovyTypeSupport.get(variable.getJavaClassName());
-                // formats are equals, variable not selected in the first combo
-                if (typeSupport1 == typeSupport && variable1 != variable && variableNames.contains(variable1.getScriptingName())) {
-                    names.add(variable.getScriptingName());
-                }
-            }
-            return names;
-        }
-
-        private void toCode() {
-            if (variable1 != null && comboBoxOp.getText().length() > 0 && varName2 != null && varName2.length() > 0) {
-                String operationName = comboBoxOp.getItem(comboBoxOp.getSelectionIndex());
-                Variable variable2 = VariableUtils.getVariableByScriptingName(variables, varName2);
-                GroovyTypeSupport typeSupport = GroovyTypeSupport.get(variable1.getJavaClassName());
-                Operation operation = Operation.getByName(operationName, typeSupport);
-                String code = operation.generateCode(variable1, variable2);
-                codeText.setText(code);
-            } else {
-                // don't change code
-            }
-        }
-
         @Override
         protected void clear() {
         }
@@ -551,26 +433,11 @@ public class GlobalValidatorsPage extends Composite implements PropertyChangeLis
         @Override
         protected void build(ValidatorDefinition definition, Map<String, String> configParams) {
             String textData = configParams.get(ValidatorDefinition.EXPRESSION_PARAM_NAME);
-            Optional<GroovyValidationModel> model = GroovyCodeParser.parseValidationModel(textData, variables);
-            if (model.isPresent()) {
-                variable1 = model.get().getVariable1();
-                txtVarName1.setText(variable1.getScriptingName());
-                refreshCombos();
-                comboBoxOp.setText(model.get().getOperation().getVisibleName());
-                varName2 = model.get().getVariable2().getScriptingName();
-                txtVarName2.setText(varName2);
-                textData = model.get().generateCode();
-            } else {
-                tabFolder.setSelection(1);
-            }
             codeText.setText(textData != null ? textData : "");
         }
 
         @Override
         protected void updateConfigParams(ValidatorDefinition definition, ValidatorConfig config) {
-            if (tabFolder.getSelectionIndex() == 0) {
-                toCode();
-            }
             String textData = codeText.getText().trim();
             if (textData.length() != 0) {
                 config.getParams().put(ValidatorDefinition.EXPRESSION_PARAM_NAME, textData);
@@ -614,7 +481,7 @@ public class GlobalValidatorsPage extends Composite implements PropertyChangeLis
         List<String> transitions = new ArrayList<>();
         List<String> configTransitions = config.getTransitionNames();
         Set<String> allTransitions = new HashSet<>();
-        for(Transition t : formNode.getLeavingTransitions()) {
+        for (Transition t : formNode.getLeavingTransitions()) {
             allTransitions.add(t.getName());
         }
 
@@ -635,6 +502,5 @@ public class GlobalValidatorsPage extends Composite implements PropertyChangeLis
         configTransitions.addAll(transitions);
 
     }
-
 
 }

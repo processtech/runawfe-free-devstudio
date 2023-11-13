@@ -91,7 +91,7 @@ public abstract class GroovyTypeSupport {
         }
     }
 
-    static class StringType extends GroovyTypeSupport {
+    public static class StringType extends GroovyTypeSupport {
         @Override
         String wrap(Object value) {
             if (value instanceof Variable) {
@@ -217,5 +217,4 @@ public abstract class GroovyTypeSupport {
             return extOperations;
         }
     }
-
 }

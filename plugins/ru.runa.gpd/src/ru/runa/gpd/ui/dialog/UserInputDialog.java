@@ -1,5 +1,6 @@
 package ru.runa.gpd.ui.dialog;
 
+import java.util.function.Predicate;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
@@ -14,7 +15,6 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
-
 import ru.runa.gpd.ui.custom.TypedUserInputCombo;
 
 public class UserInputDialog extends Dialog implements Listener, FocusListener {
@@ -89,5 +89,14 @@ public class UserInputDialog extends Dialog implements Listener, FocusListener {
 
     public String getUserInput() {
         return value;
+    }
+
+    public Predicate<String> getValidationFunction() {
+        return new Predicate<String>() {
+            @Override
+            public boolean test(String t) {
+                return validate(t);
+            }
+        };
     }
 }
