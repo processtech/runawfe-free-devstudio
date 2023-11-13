@@ -2,10 +2,7 @@ package ru.runa.gpd.extension.decision;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import ru.runa.gpd.Localization;
-import ru.runa.gpd.extension.decision.GroovyTypeSupport.DefaultType;
-import ru.runa.gpd.extension.decision.GroovyTypeSupport.StringType;
 import ru.runa.gpd.lang.model.Variable;
 
 public class Operation {
@@ -30,15 +27,6 @@ public class Operation {
             if (NULL.equals(lexem2)) {
                 return variable.getScriptingName() + " == " + NULL;
             }
-            GroovyTypeSupport typeSupport = GroovyTypeSupport.get(variable.getJavaClassName());
-            if (typeSupport instanceof StringType || typeSupport instanceof DefaultType) {
-                StringBuffer buffer = new StringBuffer();
-                buffer.append(typeSupport.wrap(variable));
-                buffer.append(".equals(");
-                buffer.append(typeSupport.wrap(lexem2));
-                buffer.append(")");
-                return buffer.toString();
-            }
             return super.generateCode(variable, lexem2);
         }
     }
@@ -53,15 +41,6 @@ public class Operation {
         public String generateCode(Variable variable, Object lexem2) {
             if (NULL.equals(lexem2)) {
                 return variable.getScriptingName() + " != " + NULL;
-            }
-            GroovyTypeSupport typeSupport = GroovyTypeSupport.get(variable.getJavaClassName());
-            if (typeSupport instanceof StringType || typeSupport instanceof DefaultType) {
-                StringBuffer buffer = new StringBuffer("!");
-                buffer.append(typeSupport.wrap(variable));
-                buffer.append(".equals(");
-                buffer.append(typeSupport.wrap(lexem2));
-                buffer.append(")");
-                return buffer.toString();
             }
             return super.generateCode(variable, lexem2);
         }
@@ -136,6 +115,6 @@ public class Operation {
                 return operation;
             }
         }
-        return null;
+        throw new RuntimeException("Operation not found for operator: " + operator);
     }
 }

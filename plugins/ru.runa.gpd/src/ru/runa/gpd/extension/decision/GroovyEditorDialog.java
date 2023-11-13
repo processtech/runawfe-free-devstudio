@@ -2,6 +2,7 @@ package ru.runa.gpd.extension.decision;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
@@ -35,11 +36,9 @@ public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
         super(definition, initialValue);
         this.transitionNames = transitionNames;
         if (this.initialValue.length() > 0) {
-            try {
-                initialModel = new GroovyDecisionModel(initialValue, variables);
-            } catch (Throwable e) {
-                initialErrorMessage = e.getMessage();
-                PluginLogger.logErrorWithoutDialog("", e);
+            Optional<GroovyDecisionModel> model = GroovyCodeParser.parseDecisionModel(initialValue, variables);
+            if (model.isPresent()) {
+                initialModel = model.get();
             }
         }
     }

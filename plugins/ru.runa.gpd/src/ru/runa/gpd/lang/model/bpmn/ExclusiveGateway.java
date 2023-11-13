@@ -17,7 +17,7 @@ public class ExclusiveGateway extends Decision {
     @Override
     public void setDelegationConfiguration(String delegationConfiguration) {
         super.setDelegationConfiguration(delegationConfiguration);
-        TransitionUtil.setDefaultFlow(this, delegationConfiguration);
+        TransitionUtil.setDefaultFlow(this);
     }
 
 }
