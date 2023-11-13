@@ -5,15 +5,12 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
-
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.CompositeChange;
 import org.eclipse.ltk.core.refactoring.Refactoring;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
-
 import ru.runa.gpd.BotCache;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
@@ -33,8 +30,8 @@ import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Timer;
 import ru.runa.gpd.lang.model.Variable;
-import ru.runa.gpd.lang.model.bpmn.ScriptTask;
 import ru.runa.gpd.lang.model.bpmn.BusinessRule;
+import ru.runa.gpd.lang.model.bpmn.ScriptTask;
 import ru.runa.gpd.util.VariableUtils;
 
 @SuppressWarnings("unchecked")
@@ -45,8 +42,8 @@ public class RenameVariableRefactoring extends Refactoring {
     private final SortedMap<Variable, Variable> variablesMap;
     private final RefactoringStatus finalStatus;
 
-    public RenameVariableRefactoring(IFile definitionFile, ProcessDefinition definition, Variable oldVariable, String newName, String newScriptingName) {
-        this.definitionFolder = (IFolder) definitionFile.getParent();
+    public RenameVariableRefactoring(ProcessDefinition definition, Variable oldVariable, String newName, String newScriptingName) {
+        this.definitionFolder = (IFolder) definition.getFile().getParent();
         this.mainProcessDefinition = definition.getMainProcessDefinition();
         this.variablesMap = new TreeMap<Variable, Variable>(new Comparator<Variable>() {
             @Override

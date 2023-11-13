@@ -279,7 +279,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
 
             String newName = dialog.getName();
             String newScriptingName = dialog.getScriptingName();
-            RenameVariableRefactoring refactoring = new RenameVariableRefactoring(editor.getDefinitionFile(), editor.getDefinition(), variable,
+            RenameVariableRefactoring refactoring = new RenameVariableRefactoring(editor.getDefinition(), variable,
                     newName, newScriptingName);
             boolean useLtk = refactoring.isUserInteractionNeeded();
             List<IFile> affectedFiles = Lists.newArrayList();
@@ -551,7 +551,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
 
                 String newName = substitutionVariable.getName() + VariableUserType.DELIM + variable.getName();
                 String newScriptingName = substitutionVariable.getScriptingName() + VariableUserType.DELIM + variable.getScriptingName();
-                RenameVariableRefactoring refactoring = new RenameVariableRefactoring(editor.getDefinitionFile(), editor.getDefinition(), variable,
+                RenameVariableRefactoring refactoring = new RenameVariableRefactoring(editor.getDefinition(), variable,
                         newName, newScriptingName);
                 useLtk = refactoring.isUserInteractionNeeded();
                 if (useLtk) {

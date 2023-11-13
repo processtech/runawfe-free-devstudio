@@ -685,8 +685,8 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
 
             String newAttributeName = dialog.getName();
             String newAttributeScriptingName = dialog.getScriptingName();
-            RenameUserTypeAttributeRefactoring refactoring = new RenameUserTypeAttributeRefactoring(editor.getDefinitionFile(),
-                    editor.getDefinition(), type, attribute, newAttributeName, newAttributeScriptingName);
+            RenameUserTypeAttributeRefactoring refactoring = new RenameUserTypeAttributeRefactoring(editor.getDefinition(), type, attribute,
+                    newAttributeName, newAttributeScriptingName);
             boolean useLtk = refactoring.isUserInteractionNeeded();
             List<IFile> affectedFiles = Lists.newArrayList();
             Change[] changes = refactoring.createChange(null).getChildren();
@@ -743,8 +743,8 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             VariableUserType type = getSelection();
             @SuppressWarnings("unchecked")
             List<Variable> attributes = ((IStructuredSelection) attributeTableViewer.getSelection()).toList();
-            RenameUserTypeAttributeRefactoring refactoring = new RenameUserTypeAttributeRefactoring(editor.getDefinitionFile(),
-                    editor.getDefinition(), type, attributes.get(1), attributes.get(0).getName(), attributes.get(0).getScriptingName());
+            RenameUserTypeAttributeRefactoring refactoring = new RenameUserTypeAttributeRefactoring(editor.getDefinition(), type, attributes.get(1),
+                    attributes.get(0).getName(), attributes.get(0).getScriptingName());
             boolean useLtk = refactoring.isUserInteractionNeeded();
             if (useLtk) {
                 RenameRefactoringWizard wizard = new RenameRefactoringWizard(refactoring);
