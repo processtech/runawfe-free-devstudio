@@ -1,7 +1,7 @@
 package ru.runa.gpd.office.word;
 
+import com.google.common.base.Strings;
 import java.util.List;
-
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.eclipse.core.resources.IFolder;
@@ -19,7 +19,6 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.bot.IBotFileSupportProvider;
@@ -37,8 +36,6 @@ import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.custom.SwtUtils;
 import ru.runa.gpd.util.EmbeddedFileUtils;
 import ru.runa.gpd.util.XmlUtil;
-
-import com.google.common.base.Strings;
 
 public class DocxHandlerCellEditorProvider extends XmlBasedConstructorProvider<DocxModel> implements IBotFileSupportProvider {
 
@@ -81,19 +78,17 @@ public class DocxHandlerCellEditorProvider extends XmlBasedConstructorProvider<D
     }
 
     @Override
-    public void onCopy(IFolder sourceFolder, Delegable source, String sourceName, IFolder targetFolder, Delegable target, String targetName) {
-        super.onCopy(sourceFolder, source, sourceName, targetFolder, target, targetName);
+    public void onCopy(IFolder sourceFolder, Delegable source, IFolder targetFolder, Delegable target) {
+        super.onCopy(sourceFolder, source, targetFolder, target);
         try {
             DocxModel model = fromXml(source.getDelegationConfiguration());
             if (EmbeddedFileUtils.isProcessFile(model.getInOutModel().inputPath)) {
-                sourceName = EmbeddedFileUtils.getProcessFileName(model.getInOutModel().inputPath);
-                targetName = EmbeddedFileUtils.generateEmbeddedFileName(target, sourceName.replaceAll(".+\\.", ""));
-                EmbeddedFileUtils.copyProcessFile(sourceFolder, model.getInOutModel().inputPath, sourceName, targetName);
-                model.getInOutModel().inputPath = EmbeddedFileUtils.getProcessFilePath(targetName);
+                model.getInOutModel().inputPath = EmbeddedFileUtils.copyProcessFile(
+                        sourceFolder, source, model.getInOutModel().inputPath, targetFolder, target);
                 target.setDelegationConfiguration(model.toString());
             }
         } catch (Exception e) {
-            PluginLogger.logErrorWithoutDialog("Failed to copy embedded file in " + source.getDelegationClassName(), e);
+            PluginLogger.logErrorWithoutDialog("Failed to copy embedded file for " + target, e);
         }
     }
 
