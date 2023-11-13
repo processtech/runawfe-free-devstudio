@@ -3,7 +3,6 @@ package ru.runa.gpd.ui.dialog;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -15,12 +14,13 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 
 public class FilterBox extends Composite {
-    
+
     private Text text;
     private Button button;
     private int selectedIndex = -1;
     private List<String> items;
     private SelectionListener selectionListener;
+    private GridLayout layout;
 
     public FilterBox(Composite parent, List<String> items) {
         this(parent, items, null);
@@ -30,7 +30,8 @@ public class FilterBox extends Composite {
         super(parent, SWT.NONE);
         setItems(items);
         setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        setLayout(new GridLayout(2, false));
+        layout = new GridLayout(2, false);
+        setLayout(layout);
         text = new Text(this, SWT.READ_ONLY | SWT.BORDER);
         text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         if (selectedItem != null) {
@@ -56,11 +57,11 @@ public class FilterBox extends Composite {
                     }
                 }
             }
-            
+
         });
     }
-    
-    public void setSelectionListener (SelectionListener listener) {
+
+    public void setSelectionListener(SelectionListener listener) {
         selectionListener = listener;
     }
 
@@ -80,13 +81,13 @@ public class FilterBox extends Composite {
         text.setText(selectedItem);
         selectedIndex = items.indexOf(selectedItem);
     }
-    
+
     public String getSelectedItem() {
         return text.getText();
     }
 
     public void select(int index) {
-        if (items != null && index >=0 && items.size() > index) {
+        if (items != null && index >= 0 && items.size() > index) {
             selectedIndex = index;
             text.setText(items.get(index));
         }
@@ -136,5 +137,17 @@ public class FilterBox extends Composite {
     public void setEnabled(boolean enabled) {
         button.setEnabled(enabled);
         super.setEnabled(enabled);
+    }
+
+    public void setMarginHeight(int value) {
+        layout.marginHeight = value;
+    }
+
+    public void setMarginWidth(int value) {
+        layout.marginWidth = value;
+    }
+
+    public void setMarginRight(int value) {
+        layout.marginRight = value;
     }
 }
