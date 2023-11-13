@@ -13,8 +13,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
-
-import ru.runa.gpd.globalsection.GlobalSectionUtils;
 import ru.runa.gpd.lang.NodeRegistry;
 import ru.runa.gpd.lang.model.GlobalSectionDefinition;
 import ru.runa.gpd.lang.model.ProcessDefinition;
@@ -60,7 +58,7 @@ public class ProcessCache {
         findSubProcessFiles(file.getParent(), subprocessFiles);
         for (IFile subprocessFile : subprocessFiles) {
             try {
-                cacheProcessDefinition(subprocessFile, NodeRegistry.parseProcessDefinition(subprocessFile));
+                definition.addEmbeddedSubprocess((SubprocessDefinition) getProcessDefinition(subprocessFile));
             } catch (Exception e) {
                 PluginLogger.logErrorWithoutDialog("parsing subprocess " + subprocessFile, e);
             }
@@ -113,10 +111,7 @@ public class ProcessCache {
         if (definition != null) {
             CACHE_BY_NAME.remove(definition.getName());
             if (file.exists()) {
-                ProcessDefinition parsedDefinition = getProcessDefinition(file);
-                if (!(definition instanceof SubprocessDefinition)) {
-                    parsedDefinition.getEmbeddedSubprocesses().putAll(definition.getEmbeddedSubprocesses());
-                }
+                getProcessDefinition(file);
             }
         }
     }
