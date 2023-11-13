@@ -1,7 +1,7 @@
 package ru.runa.gpd.ui.wizard;
 
+import com.google.common.collect.Maps;
 import java.util.Map;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -9,9 +9,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-
-import com.google.common.collect.Maps;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.extension.VariableFormatArtifact;
 import ru.runa.gpd.extension.VariableFormatRegistry;
@@ -33,7 +30,6 @@ public class VariableFormatPage extends DynaContentWizardPage {
     private VariableUserType userType;
     private String[] componentClassNames;
     private final ProcessDefinition processDefinition;
-    private final boolean editFormat;
     private static Map<String, String[]> containerFormats = Maps.newHashMap();
     static {
         containerFormats.put(ListFormat.class.getName(), new String[] { Localization.getString("VariableFormatPage.components.list.value") });
@@ -41,7 +37,7 @@ public class VariableFormatPage extends DynaContentWizardPage {
                 Localization.getString("VariableFormatPage.components.map.value") });
     }
 
-    public VariableFormatPage(ProcessDefinition processDefinition, VariableContainer variableContainer, Variable variable, boolean editFormat) {
+    public VariableFormatPage(ProcessDefinition processDefinition, VariableContainer variableContainer, Variable variable) {
         this.processDefinition = processDefinition;
         this.variableContainer = variableContainer;
         if (variable != null) {
@@ -59,7 +55,6 @@ public class VariableFormatPage extends DynaContentWizardPage {
             setTypeByFormatClassName(StringFormat.class.getName());
             componentClassNames = new String[0];
         }
-        this.editFormat = editFormat;
     }
 
     private void setTypeByFormatClassName(String formatClassName) {
@@ -74,7 +69,6 @@ public class VariableFormatPage extends DynaContentWizardPage {
     @Override
     protected void createContent(Composite composite) {
         final Combo combo = createTypeCombo(composite, false, false);
-        combo.setEnabled(editFormat);
         combo.setText(userType != null ? userType.getName() : type.getLabel());
         combo.addSelectionListener(new LoggingSelectionAdapter() {
             @Override

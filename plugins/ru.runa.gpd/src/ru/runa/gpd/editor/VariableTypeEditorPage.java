@@ -590,7 +590,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
         @Override
         protected void onSelection(SelectionEvent e) throws Exception {
             VariableUserType type = getSelection();
-            VariableWizard wizard = new VariableWizard(getDefinition(), type, null, true, true, false);
+            VariableWizard wizard = new VariableWizard(getDefinition(), type, null, true);
             CompactWizardDialog dialog = new CompactWizardDialog(wizard);
             if (dialog.open() == Window.OK) {
                 Variable variable = wizard.getVariable();
@@ -605,11 +605,13 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
         protected void onSelection(SelectionEvent e) throws Exception {
             VariableUserType type = getSelection();
             Variable variable = getAttributeSelection();
-            VariableWizard wizard = new VariableWizard(getDefinition(), type, variable, false, true, false);
+            VariableWizard wizard = new VariableWizard(getDefinition(), type, variable, false);
             CompactWizardDialog dialog = new CompactWizardDialog(wizard);
             if (dialog.open() == Window.OK) {
                 variable.setFormat(wizard.getVariable().getFormat());
                 variable.setUserType(wizard.getVariable().getUserType());
+                variable.setPublicVisibility(wizard.getVariable().isPublicVisibility());
+                variable.setEditableInChat(wizard.getVariable().isEditableInChat());
                 variable.setDefaultValue(wizard.getVariable().getDefaultValue());
                 variable.setStoreType(wizard.getVariable().getStoreType());
                 getDefinition().setDirty();

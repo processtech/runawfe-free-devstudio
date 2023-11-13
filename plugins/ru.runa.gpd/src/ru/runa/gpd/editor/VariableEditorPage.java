@@ -393,7 +393,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
     private class CreateVariableSelectionListener extends LoggingSelectionAdapter {
         @Override
         protected void onSelection(SelectionEvent e) throws Exception {
-            VariableWizard wizard = new VariableWizard(getDefinition(), null, true, true);
+            VariableWizard wizard = new VariableWizard(getDefinition(), getDefinition(), null, true);
             CompactWizardDialog dialog = new CompactWizardDialog(wizard);
             if (dialog.open() == Window.OK) {
                 Variable variable = wizard.getVariable();
@@ -432,7 +432,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
             IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
             Variable variable = (Variable) selection.getFirstElement();
             IFile previousFileVariableDefaultValue = getDefaultValueAsFile(variable);
-            VariableWizard wizard = new VariableWizard(getDefinition(), variable, false, true);
+            VariableWizard wizard = new VariableWizard(getDefinition(), getDefinition(), variable, false);
             CompactWizardDialog dialog = new CompactWizardDialog(wizard);
             if (dialog.open() == Window.OK) {
                 variable.setFormat(wizard.getVariable().getFormat());
