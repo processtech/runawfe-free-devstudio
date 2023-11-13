@@ -127,7 +127,7 @@ public abstract class EditorDialog<T extends GroovyModel> extends Dialog {
         codeTab.setControl(sourceView);
         createConstructorView();
         try {
-            if (initialModel != null && initialValue.equals(initialModel.toString())) {
+            if (initialModel != null) {
                 initializeConstructorView();
             } else {
                 if (this.initialValue.length() > 0) {

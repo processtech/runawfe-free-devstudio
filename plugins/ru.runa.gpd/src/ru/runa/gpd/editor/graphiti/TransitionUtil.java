@@ -2,7 +2,9 @@ package ru.runa.gpd.editor.graphiti;
 
 import com.google.common.base.Strings;
 import java.util.List;
+import java.util.Optional;
 import ru.runa.gpd.Activator;
+import ru.runa.gpd.extension.decision.GroovyCodeParser;
 import ru.runa.gpd.extension.decision.GroovyDecisionModel;
 import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.bpmn.ExclusiveGateway;
@@ -19,9 +21,9 @@ public abstract class TransitionUtil {
                 .getPrefBoolean(LanguageElementPreferenceNode.getBpmnPropertyName(exclusiveGateway, PrefConstants.P_BPMN_MARK_DEFAULT_TRANSITION));
     }
 
-    public static void setDefaultFlow(ExclusiveGateway eg, String newConfiguration) {
+    public static void setDefaultFlow(ExclusiveGateway eg) {
         List<Transition> leavingTransitions = eg.getLeavingTransitions();
-        if (leavingTransitions.size() > 1 && !Strings.isNullOrEmpty(newConfiguration)) {
+        if (leavingTransitions.size() > 1 && !Strings.isNullOrEmpty(eg.getDelegationConfiguration())) {
             boolean defaultTransition = false;
             String defaultTransitionNames = Activator.getPrefString(
                     LanguageElementPreferenceNode.getBpmnPropertyName(exclusiveGateway, PrefConstants.P_BPMN_DEFAULT_TRANSITION_NAMES));
@@ -64,12 +66,10 @@ public abstract class TransitionUtil {
                 }
             }
             if (!defaultTransition) {
-                try {
-                    String defaultTransitionName = new GroovyDecisionModel(newConfiguration, eg.getProcessDefinition().getVariables(true, true))
-                            .getDefaultTransitionName();
+                Optional<GroovyDecisionModel> model = GroovyCodeParser.parseDecisionModel(eg);
+                if (model.isPresent()) {
+                    String defaultTransitionName = model.get().getDefaultTransitionName();
                     leavingTransitions.stream().forEach(t -> t.setDefaultFlow(defaultTransitionName.equals(t.getName())));
-                } catch (Exception e) {
-                    // do nothing
                 }
             }
         } else {

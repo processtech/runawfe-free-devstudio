@@ -16,7 +16,6 @@ import ru.runa.gpd.Application;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.PropertyNames;
-import ru.runa.gpd.editor.graphiti.TransitionUtil;
 import ru.runa.gpd.lang.model.ActionImpl;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.Describable;
@@ -958,7 +957,6 @@ public class BpmnSerializer extends ProcessSerializer {
             }
             source.addLeavingTransition(transition);
         }
-        definition.getChildren(ExclusiveGateway.class).stream().forEach(eg -> TransitionUtil.setDefaultFlow(eg, eg.getDelegationConfiguration()));
         for (Map.Entry<Swimlane, List<String>> entry : swimlaneElementIds.entrySet()) {
             for (String nodeId : entry.getValue()) {
                 definition.getGraphElementByIdNotNull(nodeId).setUiParentContainer(entry.getKey());

@@ -1,14 +1,15 @@
 package ru.runa.gpd.extension.decision;
 
+import com.google.common.collect.Lists;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.eclipse.jface.window.Window;
-import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.HandlerArtifact;
 import ru.runa.gpd.lang.ValidationError;
@@ -18,7 +19,6 @@ import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.Variable;
-import com.google.common.collect.Lists;
 import ru.runa.gpd.search.VariableSearchVisitor;
 
 public class GroovyDecisionProvider extends DelegableProvider implements IDecisionProvider {
@@ -54,22 +54,19 @@ public class GroovyDecisionProvider extends DelegableProvider implements IDecisi
     }
 
     @Override
-    public Set<String> getTransitionNames(Decision decision) {
-        try {
-            return GroovyDecisionModel.getTransitionNames(decision.getDelegationConfiguration());
-        } catch (Exception e) {
-            PluginLogger.logErrorWithoutDialog("getTransitionNames", e);
-            return null;
+    public Collection<String> getTransitionNames(Decision decision) {
+        Optional<GroovyDecisionModel> model = GroovyCodeParser.parseDecisionModel(decision);
+        if (model.isPresent()) {
+            return model.get().getTransitionNames();
         }
+        return null;
     }
 
     @Override
     public String getDefaultTransitionName(Decision decision) {
-        try {
-            List<Variable> variables = decision.getProcessDefinition().getVariables(true, true);
-            GroovyDecisionModel model = new GroovyDecisionModel(decision.getDelegationConfiguration(), variables);
-            return model.getDefaultTransitionName();
-        } catch (Exception e) {
+        Optional<GroovyDecisionModel> model = GroovyCodeParser.parseDecisionModel(decision);
+        if (model.isPresent()) {
+            return model.get().getDefaultTransitionName();
         }
         return null;
     }
