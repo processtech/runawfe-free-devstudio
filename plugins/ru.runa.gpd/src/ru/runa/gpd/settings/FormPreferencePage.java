@@ -4,8 +4,6 @@ import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.FileFieldEditor;
-import org.eclipse.jface.preference.RadioGroupFieldEditor;
-import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
@@ -33,9 +31,6 @@ public class FormPreferencePage extends FieldEditorPreferencePage implements IWo
         boolean enabled = Activator.getPrefBoolean(P_FORM_USE_EXTERNAL_EDITOR);
         formExternalPathEditor.setEnabled(enabled, getFieldEditorParent());
         addField(formExternalPathEditor);
-        addField(new StringFieldEditor(P_FORM_WEB_SERVER_PORT, Localization.getString("pref.connection.wfe.port"), getFieldEditorParent()));
-        addField(new BooleanFieldEditor(P_FORM_IGNORE_ERRORS_FROM_WEBPAGE, Localization.getString("pref.form.ignoreErrorsFromWebPage"),
-                getFieldEditorParent()));
         addField(new BooleanFieldEditor(P_KEEP_VARIABLE_VALIDATION_ON_COMPONENT_REMOVAL,
                 Localization.getString("pref.commons.keepVariableValidationOnComponentRemoval"),
                 getFieldEditorParent()));

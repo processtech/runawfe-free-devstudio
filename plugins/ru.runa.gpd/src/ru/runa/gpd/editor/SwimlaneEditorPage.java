@@ -2,7 +2,6 @@ package ru.runa.gpd.editor;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
-
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +32,6 @@ import ru.runa.gpd.Localization;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.SharedImages;
-import ru.runa.gpd.editor.EditorPartBase.TableColumnDescription;
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.lang.NodeRegistry;
@@ -43,7 +41,6 @@ import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.SwimlanedNode;
-import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.ltk.RenameRefactoringWizard;
 import ru.runa.gpd.ltk.RenameVariableRefactoring;
@@ -306,12 +303,11 @@ public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
             if (renameDialog.open() != IDialogConstants.OK_ID) {
                 return;
             }
-            IResource projectRoot = editor.getDefinitionFile().getParent();
-            IDE.saveAllEditors(new IResource[] { projectRoot }, false); // https://rm.processtech.ru/issues/1825#note-196
+            IDE.saveAllEditors(new IResource[] { editor.getDefinitionFile().getParent() }, false);
             String newName = renameDialog.getName();
             String oldName = swimlane.getName();
             String newScriptingName = renameDialog.getScriptingName();
-            renameSwimlane(oldName, newName, newScriptingName, editor.getDefinitionFile(), editor.getDefinition(), swimlane);
+            renameSwimlane(oldName, newName, newScriptingName, editor.getDefinition(), swimlane);
             if (isGlobalSection()) {
                 oldName = IOUtils.GLOBAL_OBJECT_PREFIX + oldName;
                 newName = IOUtils.GLOBAL_OBJECT_PREFIX + newName;
@@ -322,7 +318,7 @@ public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
                     if (!(definition instanceof GlobalSectionDefinition)) {
                         Swimlane sw = definition.getGlobalSwimlaneByName(oldName);
                         if (sw != null) {
-                            renameSwimlane(oldName, newName, newScriptingName, file, definition, sw);
+                            renameSwimlane(oldName, newName, newScriptingName, definition, sw);
                             ProcessCache.invalidateProcessDefinition(file);
                         }
                     }
@@ -330,9 +326,9 @@ public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
             }
         }
 
-        private void renameSwimlane(String oldName, String newName, String newScriptingName, IFile definitionFile, ProcessDefinition definition,
-                Swimlane swimlane) throws Exception {
-            RenameVariableRefactoring ref = new RenameVariableRefactoring(definitionFile, definition, swimlane, newName, newScriptingName);
+        private void renameSwimlane(String oldName, String newName, String newScriptingName, ProcessDefinition definition, Swimlane swimlane)
+                throws Exception {
+            RenameVariableRefactoring ref = new RenameVariableRefactoring(definition, swimlane, newName, newScriptingName);
             if (ref.isUserInteractionNeeded()) {
                 RenameRefactoringWizard wizard = new RenameRefactoringWizard(ref);
                 wizard.setDefaultPageTitle(Localization.getString("Refactoring.variable.name"));
@@ -341,14 +337,13 @@ public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
                 if (result != IDialogConstants.OK_ID) {
                     return;
                 }
-                if (definition.getEmbeddedSubprocesses().size() > 0) {
-                    for (SubprocessDefinition subprocessDefinition : definition.getEmbeddedSubprocesses().values()) {
-                        WorkspaceOperations.saveProcessDefinition(subprocessDefinition);
-                    }
-                }
             }
             swimlane.setName(newName);
             swimlane.setScriptingName(newScriptingName);
+            IDE.saveAllEditors(new IResource[] { definition.getFile().getParent() }, false);
+            for (SubprocessDefinition subprocessDefinition : definition.getEmbeddedSubprocesses().values()) {
+                WorkspaceOperations.saveProcessDefinition(subprocessDefinition);
+            }
         }
     }
 

@@ -16,6 +16,7 @@ import ru.runa.gpd.form.FormType;
 import ru.runa.gpd.form.FormTypeProvider;
 import ru.runa.gpd.form.FormVariableAccess;
 import ru.runa.gpd.lang.ValidationError;
+import ru.runa.gpd.property.BooleanPropertyDescriptor;
 import ru.runa.gpd.property.FormFilesPropertyDescriptor;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.VariableUtils;
@@ -34,7 +35,7 @@ public abstract class FormNode extends SwimlanedNode {
     private String formType;
     private boolean useJSValidation;
     private String templateFileName;
-    protected Boolean reassignSwimlaneToTaskPerformer = null;
+    private Boolean reassignSwimlaneToTaskPerformer = null;
 
     @Override
     public boolean testAttribute(Object target, String name, String value) {
@@ -120,13 +121,15 @@ public abstract class FormNode extends SwimlanedNode {
     public void setReassignSwimlaneToTaskPerformer(Boolean reassignSwimlaneToTaskPerformer) {
         Boolean old = this.reassignSwimlaneToTaskPerformer;
         this.reassignSwimlaneToTaskPerformer = reassignSwimlaneToTaskPerformer;
-        firePropertyChange(PROPERTY_SWIMLANE_REASSIGN, old, this.reassignSwimlaneToTaskPerformer);
+        firePropertyChange(PROPERTY_SWIMLANE_REASSIGN_TO_TASK_PERFORMER, old, this.reassignSwimlaneToTaskPerformer);
     }
      
     @Override
     protected void populateCustomPropertyDescriptors(List<IPropertyDescriptor> descriptors) {
         super.populateCustomPropertyDescriptors(descriptors);
         descriptors.add(new FormFilesPropertyDescriptor("formFiles", Localization.getString("FormNode.property.formFiles"), this));
+        descriptors.add(new BooleanPropertyDescriptor(PROPERTY_SWIMLANE_REASSIGN_TO_TASK_PERFORMER,
+                Localization.getString("Swimlane.reassignSwimlaneToTaskPerformer")));
     }
 
     @Override
@@ -144,7 +147,19 @@ public abstract class FormNode extends SwimlanedNode {
             value += hasFormScript() ? Localization.getString("yes") : Localization.getString("no");
             return value;
         }
+        if (PROPERTY_SWIMLANE_REASSIGN_TO_TASK_PERFORMER.equals(id)) {
+            return BooleanPropertyDescriptor.Enum.getByValueNotNull(reassignSwimlaneToTaskPerformer).ordinal();
+        }
         return super.getPropertyValue(id);
+    }
+
+    @Override
+    public void setPropertyValue(Object id, Object value) {
+        if (PROPERTY_SWIMLANE_REASSIGN_TO_TASK_PERFORMER.equals(id)) {
+            setReassignSwimlaneToTaskPerformer(BooleanPropertyDescriptor.Enum.values()[(Integer) value].getValue());
+        } else {
+            super.setPropertyValue(id, value);
+        }
     }
 
     @Override
@@ -247,6 +262,7 @@ public abstract class FormNode extends SwimlanedNode {
             copy.setTemplateFileName(getTemplateFileName());
         }
         copy.setUseJSValidation(isUseJSValidation());
+        copy.setReassignSwimlaneToTaskPerformer(reassignSwimlaneToTaskPerformer);
     }
 
     @Override

@@ -36,7 +36,6 @@ import org.eclipse.ui.part.FileEditorInput;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.SharedImages;
-import ru.runa.gpd.editor.EditorPartBase.TableColumnDescription;
 import ru.runa.gpd.editor.clipboard.VariableTransfer;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.GlobalSectionDefinition;
@@ -276,7 +275,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
 
             String newName = dialog.getName();
             String newScriptingName = dialog.getScriptingName();
-            RenameVariableRefactoring refactoring = new RenameVariableRefactoring(editor.getDefinitionFile(), editor.getDefinition(), variable,
+            RenameVariableRefactoring refactoring = new RenameVariableRefactoring(editor.getDefinition(), variable,
                     newName, newScriptingName);
             boolean useLtk = refactoring.isUserInteractionNeeded();
             List<IFile> affectedFiles = Lists.newArrayList();
@@ -456,6 +455,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
             @SuppressWarnings("unchecked")
             List<Variable> list = ((IStructuredSelection) tableViewer.getSelection()).toList();
             clipboard.setContents(new Object[] { list }, new Transfer[] { VariableTransfer.getInstance() });
+            clipboard.dispose();
         }
     }
 
@@ -465,6 +465,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
             Clipboard clipboard = new Clipboard(getDisplay());
             @SuppressWarnings("unchecked")
             List<Variable> data = (List<Variable>) clipboard.getContents(VariableTransfer.getInstance(getDefinition()));
+            clipboard.dispose();
             if (data != null) {
                 for (Variable variable : data) {
                     boolean nameAllowed = true;
@@ -548,7 +549,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
 
                 String newName = substitutionVariable.getName() + VariableUserType.DELIM + variable.getName();
                 String newScriptingName = substitutionVariable.getScriptingName() + VariableUserType.DELIM + variable.getScriptingName();
-                RenameVariableRefactoring refactoring = new RenameVariableRefactoring(editor.getDefinitionFile(), editor.getDefinition(), variable,
+                RenameVariableRefactoring refactoring = new RenameVariableRefactoring(editor.getDefinition(), variable,
                         newName, newScriptingName);
                 useLtk = refactoring.isUserInteractionNeeded();
                 if (useLtk) {
