@@ -1,12 +1,12 @@
 package ru.runa.gpd.lang.model.bpmn;
 
 import ru.runa.gpd.editor.graphiti.UIContainer;
-import ru.runa.gpd.lang.model.NamedGraphElement;
+import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Node;
 import org.eclipse.graphiti.mm.algorithms.Text;
 import org.eclipse.graphiti.mm.algorithms.styles.Font;
 
-public abstract class TextDecorationNode extends NamedGraphElement {
+public abstract class TextDecorationNode extends GraphElement {
 
     protected Node target;
     private UIContainer uiContainer;
