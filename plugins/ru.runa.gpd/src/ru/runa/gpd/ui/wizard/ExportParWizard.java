@@ -10,6 +10,7 @@ import ru.runa.gpd.Localization;
 
 public class ExportParWizard extends Wizard implements IExportWizard {
     private ExportParWizardPage page;
+    private IStructuredSelection selection;
 
     public ExportParWizard() {
         IDialogSettings workbenchSettings = Activator.getDefault().getDialogSettings();
@@ -23,11 +24,12 @@ public class ExportParWizard extends Wizard implements IExportWizard {
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         setWindowTitle(Localization.getString("ExportParWizard.wizard.title"));
+        this.selection = selection;
     }
 
     @Override
     public void addPages() {
-        page = new ExportParWizardPage();
+        page = new ExportParWizardPage(selection);
         addPage(page);
     }
 
