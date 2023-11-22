@@ -199,6 +199,10 @@ public class ExportParWizardPage extends ExportWizardPage {
                             return Optional.empty();
                         }
                         final String outputFileName = getDestinationValue() + definition.getName() + ".par";
+                        if (new File(outputFileName).exists() && !Dialogs
+                                .confirm(Localization.getString("ImportProjectWizard.page.override.exist", outputFileName))) {
+                            return Optional.empty();
+                        }
                         return Optional
                                 .of(new FileResourcesExportOperation(resourcesToExport, new ZipFileExporter(new FileOutputStream(outputFileName))));
                     } else {
