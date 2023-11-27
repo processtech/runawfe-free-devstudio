@@ -9,20 +9,19 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 
 public abstract class ExportWizardPage extends WizardPage {
-    protected Text destinationValueText;
+    protected Label destinationValueText;
     protected Button browseButton;
 
     public ExportWizardPage(Class<? extends ExportWizardPage> clazz) {
         super(clazz.getSimpleName());
     }
 
-    protected void createDestinationDirectoryGroup(Composite parent) {
+    protected void createDestinationDirectoryGroup(Composite parent, boolean destinationIsDirectory) {
         Font font = parent.getFont();
         Composite destinationSelectionGroup = new Composite(parent, SWT.NONE);
         GridLayout layout = new GridLayout();
@@ -31,9 +30,10 @@ public abstract class ExportWizardPage extends WizardPage {
         destinationSelectionGroup.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.VERTICAL_ALIGN_FILL));
         destinationSelectionGroup.setFont(font);
         Label destinationLabel = new Label(destinationSelectionGroup, SWT.NONE);
-        destinationLabel.setText(Localization.getString("label.destination.file"));
+        String label = destinationIsDirectory ? "label.destination.folder" : "label.destination.file";
+        destinationLabel.setText(Localization.getString(label));
         destinationLabel.setFont(font);
-        destinationValueText = new Text(destinationSelectionGroup, SWT.READ_ONLY | SWT.BORDER);
+        destinationValueText = new Label(destinationSelectionGroup, SWT.READ_ONLY | SWT.BORDER);
         GridData data = new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL);
         data.widthHint = 250;
         destinationValueText.setLayoutData(data);
@@ -60,6 +60,8 @@ public abstract class ExportWizardPage extends WizardPage {
 
     protected void setDestinationValue(String value) {
         destinationValueText.setText(value);
+        // User able to see full long path in tooltip
+        destinationValueText.setToolTipText(value);
     }
 
     protected String getDestinationValue() {

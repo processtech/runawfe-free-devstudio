@@ -78,7 +78,7 @@ public abstract class ExportBotElementWizardPage extends ExportWizardPage {
                 onExportModeChanged();
             }
         });
-        createDestinationDirectoryGroup(exportGroup);
+        createDestinationDirectoryGroup(exportGroup, false);
         exportToServerButton = new Button(exportGroup, SWT.RADIO);
         exportToServerButton.setText(Localization.getString("button.exportToServer"));
         serverConnectorComposite = new WfeServerConnectorComposite(exportGroup, WfeServerBotImporter.getInstance(), null);
