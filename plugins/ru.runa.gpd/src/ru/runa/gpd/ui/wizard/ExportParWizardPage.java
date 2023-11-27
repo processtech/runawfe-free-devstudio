@@ -103,7 +103,7 @@ public class ExportParWizardPage extends ExportWizardPage {
         exportToFileButton = new Button(exportGroup, SWT.RADIO);
         exportToFileButton.setText(Localization.getString("button.exportToFile"));
         exportToFileButton.setSelection(true);
-        createDestinationDirectoryGroup(exportGroup);
+        createDestinationDirectoryGroup(exportGroup, true);
         exportToServerButton = new Button(exportGroup, SWT.RADIO);
         exportToServerButton.setText(Localization.getString("button.exportToServer"));
         updateLatestVersionButton = new Button(exportGroup, SWT.CHECK);
@@ -184,7 +184,7 @@ public class ExportParWizardPage extends ExportWizardPage {
             return false;
         }
         if (exportToFile && Strings.isNullOrEmpty(getDestinationValue())) {
-            setErrorMessage(Localization.getString("error.selectDestinationPath"));
+            setErrorMessage(Localization.getString("error.selectDestinationFolder"));
             return false;
         }
         if (!exportToFile && WfeServerProcessDefinitionImporter.getInstance().getData() == null) {

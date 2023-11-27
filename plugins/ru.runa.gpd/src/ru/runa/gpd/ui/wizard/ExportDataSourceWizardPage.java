@@ -105,7 +105,7 @@ public class ExportDataSourceWizardPage extends ExportWizardPage {
                 onExportModeChanged();
             }
         });
-        createDestinationDirectoryGroup(exportGroup);
+        createDestinationDirectoryGroup(exportGroup, false);
         exportToServerButton = new Button(exportGroup, SWT.RADIO);
         exportToServerButton.setText(Localization.getString("button.exportToServer"));
         serverConnectorComposite = new WfeServerConnectorComposite(exportGroup, WfeServerProcessDefinitionImporter.getInstance(), null);
