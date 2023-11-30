@@ -1,5 +1,8 @@
 package ru.runa.gpd.lang.model;
 
+import com.google.common.base.Strings;
+import org.eclipse.jface.dialogs.IInputValidator;
+import ru.runa.gpd.Localization;
 import ru.runa.gpd.settings.PrefConstants;
 
 public abstract class NamedGraphElement extends GraphElement implements Comparable<NamedGraphElement>, PrefConstants {
@@ -24,6 +27,21 @@ public abstract class NamedGraphElement extends GraphElement implements Comparab
 
     protected boolean canNameBeSetFromProperties() {
         return true;
+    }
+
+    public IInputValidator nameValidator() {
+        return (String name) -> {
+            if (name != null) {
+                name = name.trim();
+            }
+            if (Strings.isNullOrEmpty(name)) {
+                return Localization.getString("VariableNamePage.error.empty", name);
+            }
+            if (name.equals(getName())) {
+                return Localization.getString("RenameAction.error.new.name.equals.old", name);
+            }
+            return null;
+        };
     }
 
     @Override

@@ -2,14 +2,17 @@ package ru.runa.gpd.lang.model;
 
 import java.util.List;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
+import ru.runa.gpd.Localization;
 import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.extension.HandlerArtifact;
 import ru.runa.gpd.extension.orgfunction.OrgFunctionDefinition;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.swimlane.SwimlaneInitializer;
 import ru.runa.gpd.swimlane.SwimlaneInitializerParser;
+import ru.runa.gpd.ui.dialog.SwimlaneNameChecker;
 import ru.runa.wfe.extension.assign.DefaultAssignmentHandler;
 import ru.runa.wfe.var.format.ExecutorFormat;
 
@@ -38,9 +41,10 @@ public class Swimlane extends Variable implements Delegable {
         return HandlerArtifact.ASSIGNMENT;
     }
 
+
     @Override
     public void setName(String name) {
-        if (getProcessDefinition() != null && getProcessDefinition().getSwimlaneByName(name) != null) {
+        if (getProcessDefinition() != null && nameValidator().isValid(name) != null) {
             return;
         }
         super.setName(name);
@@ -87,5 +91,22 @@ public class Swimlane extends Variable implements Delegable {
         this.setPublicVisibility(swimlaneFromGlobalSection.isPublicVisibility());
         this.setStoreType(swimlaneFromGlobalSection.getStoreType());
     }
+
+    @Override
+    public IInputValidator nameValidator() {
+        return (String name) -> {
+            String parentError = super.nameValidator().isValid(name);
+            if (parentError != null) {
+                return parentError;
+            }
+            if (!SwimlaneNameChecker.isValid(name, getProcessDefinition())) {
+                return Localization.getString("model.validation.invalidNameCharacters");
+            }
+            if (getProcessDefinition().getSwimlaneByName(name) != null) {
+                return Localization.getString("model.validation.swimlaneExist", name);
+            } 
+            return null;
+        };
+    };
 
 }
