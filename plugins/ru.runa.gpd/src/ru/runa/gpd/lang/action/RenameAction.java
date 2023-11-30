@@ -13,16 +13,8 @@ public class RenameAction extends BaseModelActionDelegate {
     public void run(IAction action) {
         NamedGraphElement element = getSelection();
         String currentName = element.getName();
-        InputDialog renameNodeDialog = new InputDialog(Display.getDefault().getActiveShell(), null, Localization.getString("InputValue"), currentName,
-                (String value) -> {
-                    value = value.trim();
-                    if (value.isEmpty()) {
-                        return Localization.getString("VariableNamePage.error.empty", value);
-                    } else if (value.equals(currentName)) {
-                        return Localization.getString("RenameAction.error.new.name.equals.old", value);
-                    }
-                    return null;
-                });
+        InputDialog renameNodeDialog = new InputDialog(Display.getDefault().getActiveShell(), Localization.getString("RenameAction.title"),
+                Localization.getString("InputValue"), currentName, element.nameValidator());
         try {
             if (renameNodeDialog.open() == InputDialog.OK) {
                 element.setName(renameNodeDialog.getValue().trim());
