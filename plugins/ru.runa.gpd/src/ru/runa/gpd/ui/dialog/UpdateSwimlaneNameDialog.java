@@ -5,25 +5,17 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-
-import com.google.common.base.Strings;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
-import ru.runa.gpd.ui.custom.VariableNameChecker;
-import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.VariableUtils;
 
 public class UpdateSwimlaneNameDialog extends Dialog {
@@ -98,8 +90,7 @@ public class UpdateSwimlaneNameDialog extends Dialog {
     }
 
     private void updateButtons() {
-        boolean allowCreation = !Strings.isNullOrEmpty(name) && !processDefinition.getVariableNames(true).contains(name)
-                && SwimlaneNameChecker.isValid(name, processDefinition);
+        boolean allowCreation = swimlane.nameValidator().isValid(name) == null;
         getButton(IDialogConstants.OK_ID).setEnabled(allowCreation);
     }
 
@@ -130,8 +121,4 @@ public class UpdateSwimlaneNameDialog extends Dialog {
 
 }
 
-class SwimlaneNameChecker extends VariableNameChecker {
-    public static boolean isValid(String string, ProcessDefinition processDefinition) {
-        return VariableNameChecker.isValid(string) && !string.toLowerCase().startsWith(IOUtils.GLOBAL_OBJECT_PREFIX.toLowerCase());
-    }
-}
+

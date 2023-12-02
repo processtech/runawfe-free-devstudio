@@ -49,6 +49,7 @@ import ru.runa.gpd.lang.model.Action;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
+import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.SwimlanedNode;
 import ru.runa.gpd.lang.model.TaskState;
@@ -72,6 +73,9 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
         super.init(site, input);
         UndoRedoUtil.watch(editor.getDefinition());
         editor.getDefinition().addDelegatedListener(this);
+        if (editor.getDefinition() instanceof SubprocessDefinition) {
+            ((SubprocessDefinition) editor.getDefinition()).getParent().addDelegatedListener(this);
+        }
     }
 
     public ProcessDefinition getDefinition() {
@@ -80,6 +84,21 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
 
     @Override
     public void propertyChange(PropertyChangeEvent event) {
+        if (event.getSource() instanceof Swimlane && PropertyNames.PROPERTY_NAME.equals(event.getPropertyName())) {
+            for (SwimlanedNode swimlanedNode : editor.getDefinition().getChildren(SwimlanedNode.class)) {
+                if (Objects.equal(swimlanedNode.getSwimlane(), event.getSource())) {
+                    PictogramElement pe = getDiagramTypeProvider().getFeatureProvider().getPictogramElementForBusinessObject(swimlanedNode);
+                    if (pe != null) {
+                        BOUpdateContext context = new BOUpdateContext(pe, swimlanedNode);
+                        getDiagramTypeProvider().getFeatureProvider().updateIfPossibleAndNeeded(context);
+                    }
+                }
+            }
+            if (editor.getDefinition() instanceof SubprocessDefinition) {
+                // we should not react on another element changes
+                return;
+            }
+        }
         PictogramElement pe = getDiagramTypeProvider().getFeatureProvider().getPictogramElementForBusinessObject(event.getSource());
         // TODO unify event propagation to interested parties
         if (pe != null) {
@@ -91,16 +110,6 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
             if (PropertyNames.NODE_BOUNDS_RESIZED.equals(event.getPropertyName())) {
                 LayoutContext layoutContext = new LayoutContext(pe);
                 getDiagramTypeProvider().getFeatureProvider().layoutIfPossible(layoutContext);
-            }
-        } else if (event.getSource() instanceof Swimlane && PropertyNames.PROPERTY_NAME.equals(event.getPropertyName())) {
-            for (SwimlanedNode swimlanedNode : editor.getDefinition().getChildren(SwimlanedNode.class)) {
-                if (Objects.equal(swimlanedNode.getSwimlane(), event.getSource())) {
-                    pe = getDiagramTypeProvider().getFeatureProvider().getPictogramElementForBusinessObject(swimlanedNode);
-                    if (pe != null) {
-                        BOUpdateContext context = new BOUpdateContext(pe, swimlanedNode);
-                        getDiagramTypeProvider().getFeatureProvider().updateIfPossibleAndNeeded(context);
-                    }
-                }
             }
         }
         if (event.getSource() instanceof Node) {
@@ -130,6 +139,9 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
 
     @Override
     public void dispose() {
+        if (editor.getDefinition() instanceof SubprocessDefinition) {
+            ((SubprocessDefinition) editor.getDefinition()).getParent().removeDelegatedListener(this);
+        }
         editor.getDefinition().removeDelegatedListener(this);
         if (diagramCreator != null) {
             diagramCreator.disposeDiagram();
@@ -242,7 +254,7 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
             Transition transition = (Transition) getDiagramTypeProvider().getFeatureProvider().getBusinessObjectForPictogramElement(connection);
             if (transition != null && transition.getSource() instanceof ExclusiveGateway) {
                 ExclusiveGateway eg = (ExclusiveGateway) transition.getSource();
-                TransitionUtil.setDefaultFlow(eg, eg.getDelegationConfiguration());
+                TransitionUtil.setDefaultFlow(eg);
             }
         }
         TransactionalEditingDomain domain = TransactionUtil.getEditingDomain(diagram);

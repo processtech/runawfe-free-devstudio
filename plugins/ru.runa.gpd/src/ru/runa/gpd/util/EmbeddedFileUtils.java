@@ -53,19 +53,15 @@ public class EmbeddedFileUtils {
         }
     }
 
-    public static String copyProcessFile(IFolder sourceFolder, String path, String oldName, String newName) {
-        String fileName = EmbeddedFileUtils.getProcessFileName(path);
-        IFile file = IOUtils.getFile(sourceFolder, fileName);
+    public static String copyProcessFile(IFolder sourceFolder, Delegable source, String path, IFolder targetFolder, Delegable target)
+            throws Exception {
+        String sourceFileName = EmbeddedFileUtils.getProcessFileName(path);
+        IFile file = IOUtils.getFile(sourceFolder, sourceFileName);
         if (file.exists()) {
-            fileName = fileName.replace(oldName, newName);
-            path = EmbeddedFileUtils.getProcessFilePath(fileName);
-            IFile newFile = EmbeddedFileUtils.getProcessFile(path);
-            try {
-                file.copy(newFile.getFullPath(), true, null);
-                return path;
-            } catch (CoreException e) {
-                PluginLogger.logError("Unable to copy file " + file + " from process definition", e);
-            }
+            String targetFileName = sourceFileName.replaceAll(((GraphElement) source).getId(), ((GraphElement) target).getId());
+            IFile targetFile = IOUtils.getFile(targetFolder, targetFileName);
+            file.copy(targetFile.getFullPath(), true, null);
+            return EmbeddedFileUtils.getProcessFilePath(targetFileName);
         }
         return null;
     }

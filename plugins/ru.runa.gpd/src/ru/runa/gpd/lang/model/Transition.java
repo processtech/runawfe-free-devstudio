@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.ui.views.properties.ComboBoxPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
@@ -71,11 +72,8 @@ public class Transition extends AbstractTransition implements ActionContainer {
         if (source == null) {
             return;
         }
-        List<Transition> list = source.getLeavingTransitions();
-        for (Transition transition : list) {
-            if (Objects.equal(newName, transition.getName())) {
-                return;
-            }
+        if (nameValidator().isValid(newName) != null) {
+            return;
         }
         super.setName(newName);
         if (oldName != null && source instanceof Decision) {
@@ -240,4 +238,24 @@ public class Transition extends AbstractTransition implements ActionContainer {
             errors.add(ValidationError.createLocalizedError(this, "nameNotDefined"));
         }
     }
+
+    @Override
+    public IInputValidator nameValidator() {
+        return (String name) -> {
+            String parentError = super.nameValidator().isValid(name);
+            if (parentError != null) {
+                return parentError;
+            }
+            List<Transition> list = getSource().getLeavingTransitions();
+            for (Transition transition : list) {
+                if (Objects.equal(name, transition.getName())) {
+                    return Localization.getString("error.transition_already_exists", name);
+                }
+            }
+            ;
+            return null;
+        };
+
+    }
+
 }

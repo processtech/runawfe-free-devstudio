@@ -14,20 +14,14 @@ public class VariableWizard extends Wizard {
     private final VariableStoreTypePage storeTypePage;
     private Variable variable;
 
-    public VariableWizard(ProcessDefinition processDefinition, Variable variable, boolean showNamePage, boolean editFormat) {
-        this(processDefinition, processDefinition, variable, showNamePage, editFormat, true);
-    }
-
-    public VariableWizard(ProcessDefinition processDefinition, VariableContainer variableContainer, Variable variable, boolean showNamePage,
-            boolean editFormat, boolean showAccessPage) {
+    public VariableWizard(ProcessDefinition processDefinition, VariableContainer variableContainer, Variable variable, boolean showNamePage) {
         if (showNamePage) {
             namePage = new VariableNamePage(variableContainer, variable);
         }
-        formatPage = new VariableFormatPage(processDefinition, variableContainer, variable, editFormat);
+        formatPage = new VariableFormatPage(processDefinition, variableContainer, variable);
         defaultValuePage = new VariableDefaultValuePage(variable);
-        if (showAccessPage) {
-            accessPage = new VariableAccessPage(variable);
-        }
+        accessPage = new VariableAccessPage(variable);
+        accessPage.setPublicVisibilityComboEnabled(variableContainer instanceof ProcessDefinition);
         storeTypePage = new VariableStoreTypePage(variable);
         setWindowTitle(showNamePage ? Localization.getString("VariableWizard.create") : Localization.getString("VariableWizard.edit"));
     }
@@ -90,4 +84,5 @@ public class VariableWizard extends Wizard {
             return true;
         }
     }
+
 }

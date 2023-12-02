@@ -418,7 +418,7 @@ public class CopyGraphCommand extends Command {
         @Override
         public void execute() throws CoreException {
             DelegableProvider provider = HandlerRegistry.getProvider(source.getDelegationClassName());
-            provider.onCopy(sourceFolder, (Delegable) source, source.getId(), targetFolder, (Delegable) target, target.getId());
+            provider.onCopy(sourceFolder, (Delegable) source, targetFolder, (Delegable) target);
         }
 
         @Override

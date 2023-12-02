@@ -95,19 +95,17 @@ public class DocxHandlerCellEditorProvider extends XmlBasedConstructorProvider<D
     }
 
     @Override
-    public void onCopy(IFolder sourceFolder, Delegable source, String sourceName, IFolder targetFolder, Delegable target, String targetName) {
-        super.onCopy(sourceFolder, source, sourceName, targetFolder, target, targetName);
+    public void onCopy(IFolder sourceFolder, Delegable source, IFolder targetFolder, Delegable target) {
+        super.onCopy(sourceFolder, source, targetFolder, target);
         try {
             DocxModel model = fromXml(source.getDelegationConfiguration());
             if (EmbeddedFileUtils.isProcessFile(model.getInOutModel().inputPath)) {
-                sourceName = EmbeddedFileUtils.getProcessFileName(model.getInOutModel().inputPath);
-                targetName = EmbeddedFileUtils.generateEmbeddedFileName(target, sourceName.replaceAll(".+\\.", ""));
-                EmbeddedFileUtils.copyProcessFile(sourceFolder, model.getInOutModel().inputPath, sourceName, targetName);
-                model.getInOutModel().inputPath = EmbeddedFileUtils.getProcessFilePath(targetName);
+                model.getInOutModel().inputPath = EmbeddedFileUtils.copyProcessFile(
+                        sourceFolder, source, model.getInOutModel().inputPath, targetFolder, target);
                 target.setDelegationConfiguration(model.toString());
             }
         } catch (Exception e) {
-            PluginLogger.logErrorWithoutDialog("Failed to copy embedded file in " + source.getDelegationClassName(), e);
+            PluginLogger.logErrorWithoutDialog("Failed to copy embedded file for " + target, e);
         }
     }
 

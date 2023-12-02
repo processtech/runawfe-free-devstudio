@@ -12,11 +12,10 @@ import org.mortbay.http.handler.ResourceHandler;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.servlet.WebApplicationContext;
 import org.mortbay.util.InetAddrPort;
-import ru.runa.gpd.Activator;
 import ru.runa.gpd.EditorsPlugin;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.formeditor.resources.Messages;
-import ru.runa.gpd.settings.PrefConstants;
+import ru.runa.gpd.formeditor.settings.PreferencePage;
 import ru.runa.gpd.util.IOUtils;
 
 public class WebServerUtils {
@@ -70,7 +69,7 @@ public class WebServerUtils {
             applicationContext.addHandler(new ResourceHandler());
             server.addContext(applicationContext);
             try {
-                SERVER_PORT = Integer.parseInt(Activator.getPrefString(PrefConstants.P_FORM_WEB_SERVER_PORT));
+                SERVER_PORT = EditorsPlugin.getDefault().getPreferenceStore().getInt(PreferencePage.P_FORM_WEB_SERVER_PORT);
             } catch (Exception e) {
                 PluginLogger.logErrorWithoutDialog("SERVER_PORT: " + e);
                 SERVER_PORT = 48780;

@@ -3,7 +3,6 @@ package ru.runa.gpd.ltk;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import java.util.List;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.ltk.core.refactoring.CompositeChange;
@@ -17,7 +16,6 @@ import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.gpd.util.VariableUtils;
 
 public class RenameUserTypeAttributeRefactoring extends Refactoring {
-    private final IFile definitionFile;
     private final ProcessDefinition processDefinition;
     private final VariableUserType type;
     private final Variable oldAttribute;
@@ -26,9 +24,8 @@ public class RenameUserTypeAttributeRefactoring extends Refactoring {
     private final List<RenameVariableRefactoring> refactorings = Lists.newArrayList();
     private final RefactoringStatus finalStatus;
 
-    public RenameUserTypeAttributeRefactoring(IFile definitionFile, ProcessDefinition processDefinition, VariableUserType type,
+    public RenameUserTypeAttributeRefactoring(ProcessDefinition processDefinition, VariableUserType type,
             Variable oldAttribute, String newAttributeName, String newAttributeScriptingName) {
-        this.definitionFile = definitionFile;
         this.processDefinition = processDefinition;
         this.type = type;
         this.oldAttribute = oldAttribute;
@@ -48,8 +45,7 @@ public class RenameUserTypeAttributeRefactoring extends Refactoring {
                             VariableUserType.DELIM + newAttributeName);
                     String newScriptingName = variable.getScriptingName().replace(VariableUserType.DELIM + oldAttribute.getScriptingName(),
                             VariableUserType.DELIM + newAttributeScriptingName);
-                    RenameVariableRefactoring refactoring = new RenameVariableRefactoring(definitionFile, processDefinition, variable, newName,
-                            newScriptingName);
+                    RenameVariableRefactoring refactoring = new RenameVariableRefactoring(processDefinition, variable, newName, newScriptingName);
                     status.merge(refactoring.checkInitialConditions(progressMonitor));
                     refactorings.add(refactoring);
                 }

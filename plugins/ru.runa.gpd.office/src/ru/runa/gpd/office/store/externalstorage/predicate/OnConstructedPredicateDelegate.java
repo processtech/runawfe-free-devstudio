@@ -100,5 +100,15 @@ public class OnConstructedPredicateDelegate<X, Y> extends ConstraintsPredicate<X
     public boolean isComplete() {
         return delegate.isComplete();
     }
+    
+    @Override
+    public void setBrackets(int[] brackets) {
+        delegate.setBrackets(brackets);   
+        produceConstructed();
+    }
 
+    @Override
+    public int[] getBrackets() {
+        return delegate.getBrackets();
+    }
 }

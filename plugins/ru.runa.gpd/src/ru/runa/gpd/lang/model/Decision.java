@@ -2,9 +2,7 @@ package ru.runa.gpd.lang.model;
 
 import java.util.Collection;
 import java.util.List;
-
 import org.eclipse.core.resources.IFile;
-
 import ru.runa.gpd.extension.HandlerArtifact;
 import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.extension.decision.IDecisionProvider;
@@ -33,9 +31,9 @@ public class Decision extends Node implements Delegable {
                         errors.add(ValidationError.createLocalizedWarning(this, "decision.unreachableTransition", transition.getName()));
                     }
                 }
-            }
-            for (String modelTransitionName : modelTransitionNames) {
-                errors.add(ValidationError.createLocalizedError(this, "decision.transitionDoesNotExist", modelTransitionName));
+                for (String modelTransitionName : modelTransitionNames) {
+                    errors.add(ValidationError.createLocalizedError(this, "decision.transitionDoesNotExist", modelTransitionName));
+                }
             }
         }
     }

@@ -389,6 +389,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             Clipboard clipboard = new Clipboard(getDisplay());
             @SuppressWarnings("unchecked")
             List<VariableUserType> data = (List<VariableUserType>) clipboard.getContents(VariableUserTypeTransfer.getInstance(getDefinition()));
+            clipboard.dispose();
             if (data != null) {
                 for (VariableUserType type : data) {
                     boolean nameAllowed = true;
@@ -405,7 +406,6 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
                     }
                 }
             }
-            clipboard.dispose();
         }
 
         private void copyUserTypeRecursive(VariableUserType sourceUserType) {
@@ -590,7 +590,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
         @Override
         protected void onSelection(SelectionEvent e) throws Exception {
             VariableUserType type = getSelection();
-            VariableWizard wizard = new VariableWizard(getDefinition(), type, null, true, true, false);
+            VariableWizard wizard = new VariableWizard(getDefinition(), type, null, true);
             CompactWizardDialog dialog = new CompactWizardDialog(wizard);
             if (dialog.open() == Window.OK) {
                 Variable variable = wizard.getVariable();
@@ -605,11 +605,13 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
         protected void onSelection(SelectionEvent e) throws Exception {
             VariableUserType type = getSelection();
             Variable variable = getAttributeSelection();
-            VariableWizard wizard = new VariableWizard(getDefinition(), type, variable, false, true, false);
+            VariableWizard wizard = new VariableWizard(getDefinition(), type, variable, false);
             CompactWizardDialog dialog = new CompactWizardDialog(wizard);
             if (dialog.open() == Window.OK) {
                 variable.setFormat(wizard.getVariable().getFormat());
                 variable.setUserType(wizard.getVariable().getUserType());
+                variable.setPublicVisibility(wizard.getVariable().isPublicVisibility());
+                variable.setEditableInChat(wizard.getVariable().isEditableInChat());
                 variable.setDefaultValue(wizard.getVariable().getDefaultValue());
                 variable.setStoreType(wizard.getVariable().getStoreType());
                 getDefinition().setDirty();
@@ -684,8 +686,8 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
 
             String newAttributeName = dialog.getName();
             String newAttributeScriptingName = dialog.getScriptingName();
-            RenameUserTypeAttributeRefactoring refactoring = new RenameUserTypeAttributeRefactoring(editor.getDefinitionFile(),
-                    editor.getDefinition(), type, attribute, newAttributeName, newAttributeScriptingName);
+            RenameUserTypeAttributeRefactoring refactoring = new RenameUserTypeAttributeRefactoring(editor.getDefinition(), type, attribute,
+                    newAttributeName, newAttributeScriptingName);
             boolean useLtk = refactoring.isUserInteractionNeeded();
             List<IFile> affectedFiles = Lists.newArrayList();
             Change[] changes = refactoring.createChange(null).getChildren();
@@ -742,8 +744,8 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             VariableUserType type = getSelection();
             @SuppressWarnings("unchecked")
             List<Variable> attributes = ((IStructuredSelection) attributeTableViewer.getSelection()).toList();
-            RenameUserTypeAttributeRefactoring refactoring = new RenameUserTypeAttributeRefactoring(editor.getDefinitionFile(),
-                    editor.getDefinition(), type, attributes.get(1), attributes.get(0).getName(), attributes.get(0).getScriptingName());
+            RenameUserTypeAttributeRefactoring refactoring = new RenameUserTypeAttributeRefactoring(editor.getDefinition(), type, attributes.get(1),
+                    attributes.get(0).getName(), attributes.get(0).getScriptingName());
             boolean useLtk = refactoring.isUserInteractionNeeded();
             if (useLtk) {
                 RenameRefactoringWizard wizard = new RenameRefactoringWizard(refactoring);
@@ -949,6 +951,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             @SuppressWarnings("unchecked")
             List<Variable> list = ((IStructuredSelection) attributeTableViewer.getSelection()).toList();
             clipboard.setContents(new Object[] { list }, new Transfer[] { VariableTransfer.getInstance() });
+            clipboard.dispose();
         }
     }
 
@@ -960,6 +963,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
                 Clipboard clipboard = new Clipboard(getDisplay());
                 @SuppressWarnings("unchecked")
                 List<Variable> data = (List<Variable>) clipboard.getContents(VariableTransfer.getInstance(getDefinition()));
+                clipboard.dispose();
                 if (data != null) {
                     for (Variable variable : data) {
                         boolean nameAllowed = true;
@@ -989,7 +993,6 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
                         attributeTableViewer.setSelection(new StructuredSelection(variable));
                     }
                 }
-                clipboard.dispose();
             }
         }
 

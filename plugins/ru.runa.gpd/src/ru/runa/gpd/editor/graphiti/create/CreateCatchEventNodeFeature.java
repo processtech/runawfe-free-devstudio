@@ -1,7 +1,6 @@
 package ru.runa.gpd.editor.graphiti.create;
 
 import org.eclipse.graphiti.features.context.ICreateContext;
-
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
@@ -15,6 +14,9 @@ public class CreateCatchEventNodeFeature extends CreateElementFeature {
         }
         
         GraphElement container = (GraphElement) getBusinessObjectForPictogramElement(context.getTargetContainer());
+        if (container == null) {
+            return false;
+        }
         GraphElement containerParent = container.getParent();
         return container instanceof IBoundaryEventContainer && !(containerParent instanceof IBoundaryEventContainer)
                 && container.getChildren(CatchEventNode.class).isEmpty();

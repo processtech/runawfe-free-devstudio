@@ -78,12 +78,10 @@ public class DelegableProvider {
      * 
      * @param sourceFolder
      * @param source
-     * @param sourceName
-     * @param target
      * @param targetFolder
-     * @param targetName
+     * @param target
      */
-    public void onCopy(IFolder sourceFolder, Delegable source, String sourceName, IFolder targetFolder, Delegable target, String targetName) {
+    public void onCopy(IFolder sourceFolder, Delegable source, IFolder targetFolder, Delegable target) {
         target.setDelegationClassName(source.getDelegationClassName());
         target.setDelegationConfiguration(source.getDelegationConfiguration());
     }

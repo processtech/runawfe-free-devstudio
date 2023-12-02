@@ -12,6 +12,7 @@ import org.eclipse.jface.viewers.ICellEditorValidator;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
 import org.eclipse.swt.custom.TreeEditor;
@@ -40,6 +41,7 @@ import org.eclipse.ui.views.properties.IPropertySource;
 import ru.runa.gpd.editor.graphiti.GraphitiGlobalSectionEditor;
 import ru.runa.gpd.editor.graphiti.GraphitiProcessEditor;
 import ru.runa.gpd.lang.model.GraphElement;
+import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.util.UiUtil;
 
 public class PropertiesView extends ViewPart implements ISelectionListener, PropertyChangeListener, IPartListener {
@@ -294,6 +296,17 @@ public class PropertiesView extends ViewPart implements ISelectionListener, Prop
                                 return null;
                             }
                             return "empty";
+                        }
+                    });
+                }
+                if (cellEditor instanceof TextCellEditor) {
+                    cellEditor.setValidator(new ICellEditorValidator() {
+                        @Override
+                        public String isValid(Object object) {
+                            if (source instanceof NamedGraphElement) {
+                                return ((NamedGraphElement) source).nameValidator().isValid((String) object);
+                            }
+                            return null;
                         }
                     });
                 }

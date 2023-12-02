@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -17,6 +18,7 @@ import java.util.Optional;
 import java.util.TreeMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import org.eclipse.core.internal.resources.Resource;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -64,8 +66,9 @@ public class ExportParWizardPage extends ExportWizardPage {
     private Button exportToServerButton;
     private Button updateLatestVersionButton;
     private WfeServerConnectorComposite serverConnectorComposite;
+    private StructuredSelection initialSelection;
 
-    protected ExportParWizardPage() {
+    protected ExportParWizardPage(IStructuredSelection selection) {
         super(ExportParWizardPage.class);
         setTitle(Localization.getString("ExportParWizardPage.page.title"));
         setDescription(Localization.getString("ExportParWizardPage.page.description"));
@@ -76,6 +79,10 @@ public class ExportParWizardPage extends ExportWizardPage {
                 definitionNameFileMap.put(getKey(file, definition), file);
             }
         }
+
+        Object[] selectionArray = selection.toArray();
+        initialSelection = new StructuredSelection(Arrays.stream(selectionArray).map(e -> getKey((Resource) e)).toArray());
+
     }
 
     @Override
@@ -96,7 +103,7 @@ public class ExportParWizardPage extends ExportWizardPage {
         exportToFileButton = new Button(exportGroup, SWT.RADIO);
         exportToFileButton.setText(Localization.getString("button.exportToFile"));
         exportToFileButton.setSelection(true);
-        createDestinationDirectoryGroup(exportGroup);
+        createDestinationDirectoryGroup(exportGroup, true);
         exportToServerButton = new Button(exportGroup, SWT.RADIO);
         exportToServerButton.setText(Localization.getString("button.exportToServer"));
         updateLatestVersionButton = new Button(exportGroup, SWT.CHECK);
@@ -111,16 +118,6 @@ public class ExportParWizardPage extends ExportWizardPage {
 
         serverConnectorComposite = new WfeServerConnectorComposite(exportGroup, WfeServerProcessDefinitionImporter.getInstance(), null);
         setControl(pageControl);
-        IFile adjacentFile = IOUtils.getCurrentFile();
-        if (adjacentFile != null && adjacentFile.getParent().exists()) {
-            IFile definitionFile = IOUtils.getProcessDefinitionFile((IFolder) adjacentFile.getParent());
-            if (definitionFile.exists()) {
-                ProcessDefinition currentDefinition = ProcessCache.getProcessDefinition(definitionFile);
-                if (currentDefinition != null && !(currentDefinition instanceof SubprocessDefinition)) {
-                    definitionListViewer.setSelection(new StructuredSelection(getKey(definitionFile, currentDefinition)));
-                }
-            }
-        }
         onExportModeChanged();
     }
 
@@ -151,6 +148,7 @@ public class ExportParWizardPage extends ExportWizardPage {
         definitionListViewer.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
         definitionListViewer.setContentProvider(new ArrayContentProvider());
         definitionListViewer.setInput(definitionNameFileMap.keySet());
+        definitionListViewer.setSelection(initialSelection, true);
         definitionListViewer.addSelectionChangedListener(new ISelectionChangedListener() {
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
@@ -172,6 +170,11 @@ public class ExportParWizardPage extends ExportWizardPage {
         }
     }
 
+    private String getKey(Resource resource) {
+
+        return resource.toString().substring(resource.getTypeString().length() + 1);
+    }
+
     public boolean finish() {
         final boolean exportToFile = exportToFileButton.getSelection();
         saveDirtyEditors();
@@ -181,7 +184,7 @@ public class ExportParWizardPage extends ExportWizardPage {
             return false;
         }
         if (exportToFile && Strings.isNullOrEmpty(getDestinationValue())) {
-            setErrorMessage(Localization.getString("error.selectDestinationPath"));
+            setErrorMessage(Localization.getString("error.selectDestinationFolder"));
             return false;
         }
         if (!exportToFile && WfeServerProcessDefinitionImporter.getInstance().getData() == null) {
@@ -199,6 +202,10 @@ public class ExportParWizardPage extends ExportWizardPage {
                             return Optional.empty();
                         }
                         final String outputFileName = getDestinationValue() + definition.getName() + ".par";
+                        if (new File(outputFileName).exists() && !Dialogs
+                                .confirm(Localization.getString("ImportProjectWizard.page.override.exist", outputFileName))) {
+                            return Optional.empty();
+                        }
                         return Optional
                                 .of(new FileResourcesExportOperation(resourcesToExport, new ZipFileExporter(new FileOutputStream(outputFileName))));
                     } else {

@@ -14,12 +14,12 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
-
-import ru.runa.gpd.globalsection.GlobalSectionUtils;
+import ru.runa.gpd.editor.graphiti.TransitionUtil;
 import ru.runa.gpd.lang.NodeRegistry;
 import ru.runa.gpd.lang.model.GlobalSectionDefinition;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
+import ru.runa.gpd.lang.model.bpmn.ExclusiveGateway;
 import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.util.IOUtils;
 
@@ -52,6 +52,7 @@ public class ProcessCache {
 
     private static void cacheProcessDefinition(IFile file, ProcessDefinition definition) throws Exception {
         ParContentProvider.readAuxInfo(file, definition);
+        definition.getChildren(ExclusiveGateway.class).stream().forEach(eg -> TransitionUtil.setDefaultFlow(eg));
         CACHE_BY_FILE.put(file, definition);
         CACHE_BY_NAME.put(definition.getName(), definition);
         if (definition instanceof SubprocessDefinition) {
@@ -61,7 +62,7 @@ public class ProcessCache {
         findSubProcessFiles(file.getParent(), subprocessFiles);
         for (IFile subprocessFile : subprocessFiles) {
             try {
-                cacheProcessDefinition(subprocessFile, NodeRegistry.parseProcessDefinition(subprocessFile));
+                definition.addEmbeddedSubprocess((SubprocessDefinition) getProcessDefinition(subprocessFile));
             } catch (Exception e) {
                 PluginLogger.logErrorWithoutDialog("parsing subprocess " + subprocessFile, e);
             }
@@ -124,10 +125,7 @@ public class ProcessCache {
         if (definition != null) {
             CACHE_BY_NAME.remove(definition.getName());
             if (file.exists()) {
-                ProcessDefinition parsedDefinition = getProcessDefinition(file);
-                if (!(definition instanceof SubprocessDefinition)) {
-                    parsedDefinition.getEmbeddedSubprocesses().putAll(definition.getEmbeddedSubprocesses());
-                }
+                getProcessDefinition(file);
             }
         }
     }

@@ -1,19 +1,16 @@
 package ru.runa.gpd.extension.decision;
 
-import java.math.BigDecimal;
+import com.google.common.base.Objects;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.ui.dialog.DoubleInputDialog;
 import ru.runa.gpd.ui.dialog.UserInputDialog;
-
-import com.google.common.base.Objects;
 
 public abstract class GroovyTypeSupport {
     private static final Map<String, GroovyTypeSupport> TYPES_MAP = new HashMap<String, GroovyTypeSupport>();
@@ -23,7 +20,6 @@ public abstract class GroovyTypeSupport {
         TYPES_MAP.put(Boolean.class.getName(), new BooleanType());
         TYPES_MAP.put(Number.class.getName(), new NumberType());
         TYPES_MAP.put(Date.class.getName(), new DateType());
-        TYPES_MAP.put(BigDecimal.class.getName(), new BigDecimalType());
     }
 
     public static GroovyTypeSupport get(String className) {
@@ -95,7 +91,7 @@ public abstract class GroovyTypeSupport {
         }
     }
 
-    static class StringType extends GroovyTypeSupport {
+    public static class StringType extends GroovyTypeSupport {
         @Override
         String wrap(Object value) {
             if (value instanceof Variable) {
@@ -137,7 +133,7 @@ public abstract class GroovyTypeSupport {
         @Override
         String wrap(Object value) {
             if (value instanceof Variable) {
-                return ((Variable) value).getScriptingName() + ".booleanValue()";
+                return ((Variable) value).getScriptingName();
             } else if (value instanceof String) {
                 return (String) value;
             } else {
@@ -168,7 +164,7 @@ public abstract class GroovyTypeSupport {
         @Override
         String wrap(Object value) {
             if (value instanceof Variable) {
-                return ((Variable) value).getScriptingName() + ".doubleValue()";
+                return ((Variable) value).getScriptingName();
             } else if (value instanceof String) {
                 return (String) value;
             } else {
@@ -209,119 +205,16 @@ public abstract class GroovyTypeSupport {
             return false;
         }
 
-        class DateTypeOperation extends Operation {
-            public DateTypeOperation(String visibleName, String operator) {
-                super(visibleName, operator);
-            }
-
-            @Override
-            public String generateCode(Variable variable, Object lexem2) {
-                if (NULL.equals(lexem2)) {
-                    if (Objects.equal(Operation.EQ.getOperator(), getOperator())) {
-                        return variable.getScriptingName() + " == " + NULL;
-                    }
-                    if (Objects.equal(Operation.NOT_EQ.getOperator(), getOperator())) {
-                        return variable.getScriptingName() + " != " + NULL;
-                    }
-                }
-                boolean needZeroTime = isDateFormatVariable(variable);
-                boolean lexem2isVariable = lexem2 instanceof Variable;
-                if (!needZeroTime && lexem2isVariable) {
-                    needZeroTime = isDateFormatVariable((Variable) lexem2);
-                }
-                String var1 = wrap(variable);
-                String var2 = wrap(lexem2);
-                String code = var1 + " == null || ";
-                if (lexem2isVariable) {
-                    code += var2 + " == null || ";
-                }
-                code += toCalc(var1, needZeroTime) + ".compareTo(" + toCalc(var2, needZeroTime) + ") " + getOperator() + " 0";
-                return code;
-            }
-
-            String toCalc(String varName, boolean needZeroTime) {
-                String code = "ru.runa.wfe.commons.CalendarUtil.dateToCalendar(" + varName + ")";
-                if (needZeroTime) {
-                    code = "ru.runa.wfe.commons.CalendarUtil.getZeroTimeCalendar(" + code + ")";
-                }
-                return code;
-            }
-
-            boolean isDateFormatVariable(Variable var) {
-                return "ru.runa.wfe.var.format.DateFormat".equals(var.getFormatClassName());
-            }
-        }
-
         @Override
         List<Operation> getTypedOperations() {
             List<Operation> extOperations = new ArrayList<Operation>();
-            extOperations.add(new DateTypeOperation(Localization.getString("Groovy.Operation.later"), ">"));
-            extOperations.add(new DateTypeOperation(Localization.getString("Groovy.Operation.latereq"), ">="));
-            extOperations.add(new DateTypeOperation(Localization.getString("Groovy.Operation.earlier"), "<"));
-            extOperations.add(new DateTypeOperation(Localization.getString("Groovy.Operation.earliereq"), "<="));
-            extOperations.add(new DateTypeOperation(Operation.EQ.getVisibleName(), Operation.EQ.getOperator()));
-            extOperations.add(new DateTypeOperation(Operation.NOT_EQ.getVisibleName(), Operation.NOT_EQ.getOperator()));
+            extOperations.add(new Operation(Localization.getString("Groovy.Operation.later"), ">"));
+            extOperations.add(new Operation(Localization.getString("Groovy.Operation.latereq"), ">="));
+            extOperations.add(new Operation(Localization.getString("Groovy.Operation.earlier"), "<"));
+            extOperations.add(new Operation(Localization.getString("Groovy.Operation.earliereq"), "<="));
+            extOperations.add(new Operation(Operation.EQ.getVisibleName(), Operation.EQ.getOperator()));
+            extOperations.add(new Operation(Operation.NOT_EQ.getVisibleName(), Operation.NOT_EQ.getOperator()));
             return extOperations;
         }
     }
-
-    static class BigDecimalType extends GroovyTypeSupport {
-
-        @Override
-        String wrap(Object value) {
-            if (value instanceof Variable) {
-                return ((Variable) value).getScriptingName();
-            } else if (value instanceof String) {
-                return (String) value;
-            } else {
-                throw new IllegalArgumentException("value class is " + value.getClass().getName());
-            }
-        }
-
-        @Override
-        public UserInputDialog createUserInputDialog() {
-            return new DoubleInputDialog();
-        }
-
-        @Override
-        List<Operation> getTypedOperations() {
-            List<Operation> extOperations = new ArrayList<Operation>();
-            extOperations.add(new BigDecimalTypeOperation(Localization.getString("Groovy.Operation.more"), ">"));
-            extOperations.add(new BigDecimalTypeOperation(Localization.getString("Groovy.Operation.less"), "<"));
-            extOperations.add(new BigDecimalTypeOperation(Localization.getString("Groovy.Operation.moreeq"), ">="));
-            extOperations.add(new BigDecimalTypeOperation(Localization.getString("Groovy.Operation.lesseq"), "<="));
-            return extOperations;
-        }
-
-        class BigDecimalTypeOperation extends Operation {
-
-            public BigDecimalTypeOperation(String visibleName, String operator) {
-                super(visibleName, operator);
-            }
-
-            @Override
-            public String generateCode(Variable variable, Object lexem2) {
-                if (NULL.equals(lexem2)) {
-                    if (Objects.equal(Operation.EQ.getOperator(), getOperator())) {
-                        return variable.getScriptingName() + " == " + NULL;
-                    }
-                    if (Objects.equal(Operation.NOT_EQ.getOperator(), getOperator())) {
-                        return variable.getScriptingName() + " != " + NULL;
-                    }
-                }
-                boolean lexem2isVariable = lexem2 instanceof Variable;
-                String var1 = wrap(variable);
-                String var2 = wrap(lexem2);
-                String code = var1 + " == null || ";
-                if (lexem2isVariable) {
-                    code += var2 + " == null || ";
-                }
-                code += "new BigDecimal( " + var1 + " ).compareTo( new BigDecimal( " + var2 + " ) ) " + getOperator() + " 0";
-                return code;
-            }
-
-        }
-
-    }
-
 }
