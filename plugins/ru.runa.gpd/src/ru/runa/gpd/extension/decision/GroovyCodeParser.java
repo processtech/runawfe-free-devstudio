@@ -81,7 +81,6 @@ public class GroovyCodeParser {
             }
             return Optional.of(model);
         } catch (Exception e) {
-            PluginLogger.logErrorWithoutDialog("parseDecisionModel " + code, e);
             return Optional.empty();
         }
     }
