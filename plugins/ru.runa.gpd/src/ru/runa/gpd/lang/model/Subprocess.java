@@ -68,7 +68,11 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
             }
             Variable subprocessVariable = VariableUtils.getVariableByName(subprocessDefinition, mapping.getMappedName());
             if (subprocessVariable == null) {
-                errors.add(ValidationError.createLocalizedWarning(this, "subprocess.subProcessVariableDoesNotExist", mapping.getMappedName()));
+                if (mapping.isMultiinstanceLink() && mapping.getMappedName().isBlank()) {
+                    errors.add(ValidationError.createLocalizedWarning(this, "subprocess.subProcessVariableIsNotSelected"));
+                } else {
+                    errors.add(ValidationError.createLocalizedWarning(this, "subprocess.subProcessVariableDoesNotExist", mapping.getMappedName()));
+                }
                 continue;
             }
             if (!isCompatibleVariables(mapping, processVariable, subprocessVariable)) {
