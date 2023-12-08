@@ -1,5 +1,6 @@
 package ru.runa.gpd.ui.dialog;
 
+import com.google.common.base.Strings;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
@@ -90,7 +91,8 @@ public class UpdateSwimlaneNameDialog extends Dialog {
     }
 
     private void updateButtons() {
-        boolean allowCreation = swimlane.nameValidator().isValid(name) == null;
+        boolean allowCreation = !Strings.isNullOrEmpty(name) && !processDefinition.getVariableNames(true).contains(name)
+                && SwimlaneNameChecker.isValid(name, processDefinition);
         getButton(IDialogConstants.OK_ID).setEnabled(allowCreation);
     }
 
