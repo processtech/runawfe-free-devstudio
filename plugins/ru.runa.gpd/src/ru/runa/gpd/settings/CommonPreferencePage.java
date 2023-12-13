@@ -2,7 +2,6 @@ package ru.runa.gpd.settings;
 
 import com.google.common.base.Strings;
 import java.text.SimpleDateFormat;
-import java.util.Objects;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.ComboFieldEditor;
 import org.eclipse.jface.preference.FieldEditor;
@@ -11,12 +10,8 @@ import org.eclipse.jface.preference.IntegerFieldEditor;
 import org.eclipse.jface.preference.RadioGroupFieldEditor;
 import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.jface.util.PropertyChangeEvent;
-import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPreferencePage;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
@@ -27,12 +22,10 @@ import ru.runa.gpd.util.UiUtil;
 public class CommonPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage, PrefConstants {
     private IntegerFieldEditor savepointNumberEditor;
     private BooleanFieldEditor enableUserActivityLogging;
-    private String previousPropertiesViewId;
 
     public CommonPreferencePage() {
         super(GRID);
         setPreferenceStore(Activator.getDefault().getPreferenceStore());
-        this.previousPropertiesViewId = Activator.getDefault().getPreferenceStore().getString(PrefConstants.P_PROPERTIES_VIEW_ID);
     }
 
     @Override
@@ -96,15 +89,6 @@ public class CommonPreferencePage extends FieldEditorPreferencePage implements I
             addField(new ComboFieldEditor(P_EDITOR_PART_NAME_MODE, Localization.getString("pref.commons." + P_EDITOR_PART_NAME_MODE), comboOptions,
                     getFieldEditorParent()));
         }
-        {
-            String[][] comboOptions = new String[2][];
-            comboOptions[0] = new String[] { Localization.getString("pref.commons." + P_PROPERTIES_VIEW_ID + "." + PROPERTIES_VIEW_DEFAULT),
-                    PROPERTIES_VIEW_DEFAULT };
-            comboOptions[1] = new String[] { Localization.getString("pref.commons." + P_PROPERTIES_VIEW_ID + "." + PROPERTIES_VIEW_LEGACY),
-                    PROPERTIES_VIEW_LEGACY };
-            addField(new ComboFieldEditor(P_PROPERTIES_VIEW_ID, Localization.getString("pref.commons." + P_PROPERTIES_VIEW_ID), comboOptions,
-                    getFieldEditorParent()));
-        }
     }
 
     @Override
@@ -122,18 +106,6 @@ public class CommonPreferencePage extends FieldEditorPreferencePage implements I
             UserActivity.stopLogging();
         }
         UiUtil.updateEditorPartNames(false);
-        try {
-            String propertiesViewId = Activator.getDefault().getPreferenceStore().getString(PrefConstants.P_PROPERTIES_VIEW_ID);
-            if (!Objects.equals(previousPropertiesViewId, propertiesViewId)) {
-                IViewPart viewPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(previousPropertiesViewId);
-                if (viewPart != null) {
-                    PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().hideView(viewPart);
-                }
-                PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(propertiesViewId, null, IWorkbenchPage.VIEW_VISIBLE);
-            }
-        } catch (PartInitException e) {
-            PluginLogger.logError(e);
-        }
         return result;
     }
 
