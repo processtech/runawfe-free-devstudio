@@ -1550,11 +1550,6 @@
             id="ru.runa.gpd.sleak"
             name="%label.view.sleak"/>
       <view
-            class="ru.runa.gpd.ui.view.PropertiesView"
-            icon="icons/properties_view.gif"
-            id="ru.runa.gpd.propertiesView"
-            name="%label.view.properties"/>
-      <view
             class="org.eclipse.ui.views.properties.PropertySheet"
             icon="icons/properties_view.gif"
             id="org.eclipse.ui.propertiesView"
