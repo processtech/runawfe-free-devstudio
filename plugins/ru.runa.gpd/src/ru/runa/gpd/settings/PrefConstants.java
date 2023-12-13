@@ -70,7 +70,4 @@ public interface PrefConstants {
     public static final String P_EDITOR_PART_NAME_MODE_SHORT = "short";
     public static final String P_EDITOR_PART_NAME_MODE_NON_DUPLICATED = "nonDuplicated";
     public static final String P_EDITOR_PART_NAME_MODE_LONG = "long";
-    public static final String P_PROPERTIES_VIEW_ID = "propertiesViewId";
-    public static final String PROPERTIES_VIEW_DEFAULT = "org.eclipse.ui.propertiesView";
-    public static final String PROPERTIES_VIEW_LEGACY = "ru.runa.gpd.propertiesView";
 }

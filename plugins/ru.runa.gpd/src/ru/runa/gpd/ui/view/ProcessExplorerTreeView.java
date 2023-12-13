@@ -282,10 +282,8 @@ public class ProcessExplorerTreeView extends ViewPart implements ISelectionListe
                             WorkspaceOperations.renameGlobalDefinition(selection);
                         } else if (menuOnProcess) {
                             WorkspaceOperations.renameProcessDefinition(selection);
-                        } else if (menuOnProject) {
+                        } else if (menuOnProject || menuOnFolder) {
                             WorkspaceOperations.renameProjectFolder(selection);
-                        } else if (menuOnFolder) {
-                            WorkspaceOperations.renameFolder(selection);
                         }
                     }
                 });
