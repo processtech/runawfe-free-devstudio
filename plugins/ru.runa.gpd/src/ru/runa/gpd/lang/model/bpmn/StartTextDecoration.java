@@ -6,6 +6,7 @@ import org.eclipse.graphiti.mm.algorithms.Rectangle;
 import org.eclipse.graphiti.mm.algorithms.Text;
 import org.eclipse.graphiti.mm.algorithms.styles.Orientation;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
+import org.eclipse.graphiti.mm.pictograms.impl.DiagramImpl;
 import org.eclipse.graphiti.services.Graphiti;
 import org.eclipse.graphiti.services.IGaService;
 import org.eclipse.graphiti.ui.services.GraphitiUi;
@@ -74,15 +75,17 @@ public class StartTextDecoration extends TextDecorationNode {
             name.setValue(node.getName());
             swimlane.setValue(node.getSwimlaneLabel());
 
-            // fit definition size for new labels
-            int oldWidth = box.getWidth();
-            IDimension swimlineDim = GraphitiUi.getUiLayoutService().calculateTextSize(node.getSwimlaneLabel(), getFont(swimlane));
-            IDimension nameDim = GraphitiUi.getUiLayoutService().calculateTextSize(node.getName(), getFont(name));
-            int maxWidth = Math.max(swimlineDim.getWidth(), nameDim.getWidth());
-            box.setWidth(maxWidth);
-            box.setX(box.getX() + (oldWidth - maxWidth) / 2);
-            name.setWidth(maxWidth);
-            swimlane.setWidth(maxWidth);
+            // fit definition size for new labels if process has no swimlanes
+            if (target.getProcessDefinition().getSwimlaneDisplayMode() == SwimlaneDisplayMode.none) {
+                int oldWidth = box.getWidth();
+                IDimension swimlineDim = GraphitiUi.getUiLayoutService().calculateTextSize(node.getSwimlaneLabel(), getFont(swimlane));
+                IDimension nameDim = GraphitiUi.getUiLayoutService().calculateTextSize(node.getName(), getFont(name));
+                int maxWidth = Math.max(swimlineDim.getWidth(), nameDim.getWidth());
+                box.setWidth(maxWidth);
+                box.setX(box.getX() + (oldWidth - maxWidth) / 2);
+                name.setWidth(maxWidth);
+                swimlane.setWidth(maxWidth);
+            }
 
             getConstraint().setWidth(box.getWidth());
             getConstraint().setX(box.getX());
