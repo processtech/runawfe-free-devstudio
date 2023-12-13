@@ -16,10 +16,10 @@ import java.util.function.Consumer;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.io.SAXReader;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.resources.WorkspaceJob;
@@ -310,66 +310,21 @@ public class WorkspaceOperations {
     }
 
     public static void renameProjectFolder(IStructuredSelection selection) {
-    	IProject oldProject = (IProject) selection.getFirstElement();
-        IPath path = oldProject.getFullPath();
-        IFolder oldProjectFolder = oldProject.getFolder(path);
-
-        RenameProjectFolderProcessDialog dialog = new RenameProjectFolderProcessDialog(oldProject);
-        dialog.setName(oldProject.getName());
+        IContainer oldContainer = (IContainer) selection.getFirstElement();
+        boolean isProject = oldContainer instanceof IProject;
+        RenameProjectFolderProcessDialog dialog = isProject ? new RenameProjectFolderProcessDialog((IProject) oldContainer)
+                : new RenameProjectFolderProcessDialog((IFolder) oldContainer);
+        dialog.setName(oldContainer.getName());
         if (dialog.open() != IDialogConstants.OK_ID) {
             return;
         }
         String newName = dialog.getName();
-        for (IFile oldDefinitionFile : IOUtils.getProcessDefinitionFiles(oldProject)) {
-            ProcessCache.invalidateProcessDefinition(oldDefinitionFile);
-        }
-        
-        try {
-            IProject project = oldProjectFolder.getProject();
-            IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-            IEditorReference[] editorRefs = page.getEditorReferences();
-            ArrayList<IEditorReference> editorRefsToClose = new ArrayList<IEditorReference>();
-            for (IEditorReference e : editorRefs) {
-                // Work only on IEditorReference-s since IEditorPart-s may be uninitialized and we don't want to "restore" them just to close.
-                if (e.getEditorInput() instanceof IFileEditorInput) {
-                    // We get here at least if e is GraphitiProcessEditor or FormEditor.
-                    IFile f = ((IFileEditorInput) e.getEditorInput()).getFile();
-                    if (f.getProject() == project && Objects.equal(f.getFullPath().segment(0), project.getName())) {
-                               editorRefsToClose.add(e);
-                    }
-                }
-            }
-            if (editorRefsToClose.size() != 0) {
-                if (!page.closeEditors(editorRefsToClose.toArray(new IEditorReference[editorRefsToClose.size()]), true)) {
-                    return;
-                }
-            }
-            IProjectDescription newDesc = oldProject.getDescription();
-            newDesc.setName(newName);
-            oldProject.move(newDesc, true, new NullProgressMonitor());
-        } catch (Exception e) {
-            PluginLogger.logError(e);
-        }
-    }
-
-    public static void renameFolder(IStructuredSelection selection) {
-    	IFolder oldFolder = (IFolder) selection.getFirstElement();
-
-        RenameProjectFolderProcessDialog dialog = new RenameProjectFolderProcessDialog(oldFolder);
-        dialog.setName(oldFolder.getName());
-        if (dialog.open() != IDialogConstants.OK_ID) {
-            return;
-        }
-        String newName = dialog.getName();
-        for (IFile oldDefinitionFile : IOUtils.getProcessDefinitionFiles(oldFolder)) {
-            ProcessCache.invalidateProcessDefinition(oldDefinitionFile);
-        }
 
         try {
             IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
             IEditorReference[] editorRefs = page.getEditorReferences();
             ArrayList<IEditorReference> editorRefsToClose = new ArrayList<IEditorReference>();
-            IPath path = oldFolder.getFullPath();
+            IPath path = oldContainer.getFullPath();
             for (IEditorReference e : editorRefs) {
                 // Work only on IEditorReference-s since IEditorPart-s may be uninitialized and we don't want to "restore" them just to close.
                 if (e.getEditorInput() instanceof IFileEditorInput) {
@@ -385,9 +340,17 @@ public class WorkspaceOperations {
                     return;
                 }
             }
-            IPath newPath = oldFolder.getFullPath();
+            for (IFile oldDefinitionFile : IOUtils.getProcessDefinitionFiles(oldContainer)) {
+                ProcessCache.processDefinitionWasDeleted(oldDefinitionFile);
+            }
+            IPath newPath = oldContainer.getFullPath();
             newPath = newPath.removeLastSegments(1).append(newName);
-            oldFolder.move(newPath, true, new NullProgressMonitor());
+            oldContainer.move(newPath, true, new NullProgressMonitor());
+            IContainer newContainer = isProject ? ResourcesPlugin.getWorkspace().getRoot().getProject(newName)
+                    : ResourcesPlugin.getWorkspace().getRoot().getFolder(newPath);
+            for (IFile file : IOUtils.getProcessDefinitionFiles(newContainer)) {
+                ProcessCache.getProcessDefinition(file);
+            }
         } catch (Exception e) {
             PluginLogger.logError(e);
         }
