@@ -50,6 +50,7 @@ import ru.runa.gpd.util.WorkspaceOperations;
 import ru.runa.wfe.definition.ProcessDefinitionAccessType;
 
 public class ProcessExplorerTreeView extends ViewPart implements ISelectionListener {
+    public static final String ID = "ru.runa.gpd.explorerView";
     private TreeViewer viewer;
 
     @Override
