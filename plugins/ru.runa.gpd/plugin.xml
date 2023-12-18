@@ -3156,7 +3156,7 @@
             commandId="ru.runa.gpd.commands.exportProcessDefinitionToServer"
             contextId="ru.runa.gpd.context.app"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="CTRL+D">
+            sequence="CTRL+U">
       </key>
       <key
             commandId="ru.runa.gpd.commands.find.element"
