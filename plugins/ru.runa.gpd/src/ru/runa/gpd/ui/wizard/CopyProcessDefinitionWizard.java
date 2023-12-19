@@ -27,7 +27,6 @@ import ru.runa.gpd.util.WorkspaceOperations;
 public class CopyProcessDefinitionWizard extends Wizard implements INewWizard {
     private IStructuredSelection selection;
     private CopyProcessDefinitionWizardPage page;
-    private static final String TEXT_DECORATION = "textDecoration";
 
     public CopyProcessDefinitionWizard() {
         setWindowTitle(Localization.getString("CopyProcessDefinitionWizard.wizard.title"));
