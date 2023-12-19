@@ -1,14 +1,11 @@
 package ru.runa.gpd.ui.dialog;
 
-import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
+import java.util.Set;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -19,45 +16,45 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.ProcessCache;
-import ru.runa.gpd.SubprocessMap;
 import ru.runa.gpd.lang.model.MultiSubprocess;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Subprocess;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.model.Variable;
-import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.ui.custom.Dialogs;
 import ru.runa.gpd.ui.custom.DragAndDropAdapter;
-import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionChangedAdapter;
 import ru.runa.gpd.ui.custom.SwtUtils;
 import ru.runa.gpd.ui.custom.TableViewerLocalDragAndDropSupport;
 import ru.runa.gpd.util.MultiinstanceParameters;
+import ru.runa.gpd.util.SubprocessFinder;
 import ru.runa.gpd.util.VariableMapping;
 import ru.runa.gpd.util.VariableUtils;
 
 public class SubprocessDialog extends Dialog {
-    private Combo subprocessDefinitionCombo;
-    private String subprocessName;
     protected final Subprocess subprocess;
     protected final List<VariableMapping> variableMappings;
+    protected ProcessDefinition currentSubProcessDefinition;
+    private String subprocessName;
+    private String subprocessFolderName;
+    private Text subprocessNameText;
+    private Text subprocessFolderNameText;
     private VariablesComposite variablesComposite;
     private final boolean multiinstance;
     private Button moveUpButton;
@@ -68,8 +65,9 @@ public class SubprocessDialog extends Dialog {
     public SubprocessDialog(Subprocess subprocess) {
         super(PlatformUI.getWorkbench().getDisplay().getActiveShell());
         this.subprocess = subprocess;
-        this.variableMappings = MultiinstanceParameters.getCopyWithoutMultiinstanceLinks(subprocess.getVariableMappings());
+        this.currentSubProcessDefinition = subprocess.getSubProcessDefinition();
         this.subprocessName = subprocess.getSubProcessName();
+        this.variableMappings = MultiinstanceParameters.getCopyWithoutMultiinstanceLinks(subprocess.getVariableMappings());
         this.multiinstance = subprocess instanceof MultiSubprocess;
     }
 
@@ -89,48 +87,57 @@ public class SubprocessDialog extends Dialog {
         Composite composite = (Composite) super.createDialogArea(parent);
         composite.setLayout(new GridLayout(1, false));
         Group subprocessNameGroup = new Group(composite, SWT.NONE);
-        subprocessNameGroup.setLayout(new GridLayout());
+        subprocessNameGroup.setLayout(new GridLayout(3, false));
         subprocessNameGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         subprocessNameGroup.setText(Localization.getString("Subprocess.Name"));
 
-        subprocessDefinitionCombo = new Combo(subprocessNameGroup, SWT.BORDER | SWT.READ_ONLY);
-        subprocessDefinitionCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        subprocessDefinitionCombo.setItems(getProcessDefinitionNames());
-        subprocessDefinitionCombo.setVisibleItemCount(10);
+        GridData greedyGridData = new GridData(GridData.FILL_HORIZONTAL);
+        greedyGridData.minimumWidth = 200;
+
+        subprocessNameText = new Text(subprocessNameGroup, SWT.BORDER | SWT.READ_ONLY);
+        subprocessNameText.setLayoutData(greedyGridData);
+
+        subprocessFolderNameText = new Text(subprocessNameGroup, SWT.BORDER | SWT.READ_ONLY);
+        subprocessFolderNameText.setLayoutData(greedyGridData);
+
         if (subprocessName != null) {
-            String value = SubprocessMap.get(subprocess.getQualifiedId());
-            if (value != null) {
-                IPath subprocessPath = new Path(value);
-                if (ResourcesPlugin.getWorkspace().getRoot().exists(subprocessPath)) {
-                    String itemText = subprocessPath.lastSegment() + labelDelimiter + subprocessPath.removeLastSegments(1);
-                    subprocessDefinitionCombo.setText(itemText);
-                }
-            } else {
-                IFile subprocessFile = ProcessCache.getFirstProcessDefinitionFile(subprocessName,
-                        subprocess.getProcessDefinition().getFile().getProject().getName());
-                if (subprocessFile != null) {
-                    IPath subprocessPath = subprocessFile.getFullPath().removeLastSegments(1);
-                    String itemText = subprocessPath.lastSegment() + labelDelimiter + subprocessPath.removeLastSegments(1);
-                    subprocessDefinitionCombo.setText(itemText);
-                }
+            subprocessNameText.setText(subprocessName);
+            if (currentSubProcessDefinition != null) {
+                subprocessFolderName = currentSubProcessDefinition.getFile().getFullPath().removeLastSegments(2).toString();
+                subprocessFolderNameText.setText(subprocessFolderName);
             }
         }
-        subprocessDefinitionCombo.addSelectionListener(new LoggingSelectionAdapter() {
+        
+        Button button = new Button(subprocessNameGroup, SWT.PUSH);
+        button.setText(Localization.getString("button.change"));
+        button.addSelectionListener(new LoggingSelectionAdapter() {
 
             @Override
             protected void onSelection(SelectionEvent e) throws Exception {
-                onSubprocessChanged();
+                Set<String> items = new HashSet<>();
+                for (ProcessDefinition testProcessDefinition : ProcessCache.getAllProcessDefinitions()) {
+                    if (testProcessDefinition instanceof SubprocessDefinition) {
+                        continue;
+                    }
+                    items.add(testProcessDefinition.getName());
+                }
+                ChooseItemDialog<String> dialog = new ChooseItemDialog<>(Localization.getString("Subprocess.Name"), new ArrayList<>(items));
+                String result = dialog.openDialog();
+                if (result != null) {
+                    subprocessName = result;
+                    subprocessNameText.setText(subprocessName);
+                    currentSubProcessDefinition = SubprocessFinder.findSubProcessDefinition(subprocess.getProcessDefinition(), subprocessName);
+                    if (currentSubProcessDefinition != null) {
+                        subprocessFolderName = currentSubProcessDefinition.getFile().getParent().getParent().getFullPath().toString();
+                    } else {
+                        subprocessFolderName = "";
+                    }
+                    subprocessFolderNameText.setText(subprocessFolderName);
+                    onSubprocessChanged();
+                }
             }
         });
-        subprocessDefinitionCombo.addModifyListener(new LoggingModifyTextAdapter() {
 
-            @Override
-            protected void onTextChanged(ModifyEvent e) throws Exception {
-                onSubprocessChanged();
-            }
-        });
-
-        
         SashForm sf = new SashForm(composite, SWT.VERTICAL | SWT.SMOOTH);
         sf.setLayout(new GridLayout());
         sf.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -141,9 +148,9 @@ public class SubprocessDialog extends Dialog {
         mappingsGroup.setLayout(new GridLayout());
         mappingsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
         mappingsGroup.setText(Localization.getString("Subprocess.VariableMappings"));
-        
+
         if (sf.getChildren().length > 1) {
-            sf.setWeights(new int[] {60, 40});
+            sf.setWeights(new int[] { 60, 40 });
         }
 
         variablesComposite = new VariablesComposite(mappingsGroup);
@@ -157,21 +164,12 @@ public class SubprocessDialog extends Dialog {
     }
 
     protected void onSubprocessChanged() {
-        String text = subprocessDefinitionCombo.getText();
-        int index = text.indexOf(labelDelimiter);
-        if (index > 0) {
-            subprocessName = text.substring(0, index);
-            String subprocessFolderName = text.substring(index + labelDelimiter.length()) + "/" + subprocessName;
-            SubprocessMap.set(subprocess.getQualifiedId(), subprocessFolderName);
-            validateVariableMappings(subprocessFolderName);
-        }
+        removeNonExistingVariableMappings();
     }
 
-    private void validateVariableMappings(String subprocessFolderName) {
-        ProcessDefinition subprocess = ProcessCache.getProcessDefinition((IFile) ResourcesPlugin.getWorkspace().getRoot()
-                .findMember(subprocessFolderName + "/" + ParContentProvider.PROCESS_DEFINITION_FILE_NAME));
-        if (subprocess != null) {
-            List<String> variableNames = subprocess.getVariableNames(true, true);
+    private void removeNonExistingVariableMappings() {
+        if (currentSubProcessDefinition != null) {
+            List<String> variableNames = currentSubProcessDefinition.getVariableNames(true, true);
             for (Iterator<VariableMapping> i = variableMappings.iterator(); i.hasNext();) {
                 if (!variableNames.contains(i.next().getMappedName())) {
                     i.remove();
@@ -291,7 +289,8 @@ public class SubprocessDialog extends Dialog {
         }
 
         private void editVariableMapping(VariableMapping mapping) {
-            List<String> processVariableNames = subprocess.getProcessDefinition().getVariableNames(true);
+            ProcessDefinition definition = subprocess.getProcessDefinition();
+            List<String> processVariableNames = definition.getVariableNames(true);
             processVariableNames.addAll(Subprocess.PLACEHOLDERS);
             SubprocessVariableDialog dialog = new SubprocessVariableDialog(processVariableNames, getProcessVariablesNames(getSubprocessName()),
                     mapping);
@@ -304,8 +303,9 @@ public class SubprocessDialog extends Dialog {
                 mapping.setName(dialog.getProcessVariable());
                 mapping.setMappedName(dialog.getSubprocessVariable());
                 String usage = dialog.getAccess();
-                if (isListVariable(subprocess.getProcessDefinition().getName(), mapping.getName())
-                        && !isListVariable(getSubprocessName(), mapping.getMappedName())) {
+                if (isListVariable(VariableUtils.getVariableByName(definition, mapping.getName()))
+                        && currentSubProcessDefinition != null
+                        && !isListVariable(VariableUtils.getVariableByName(currentSubProcessDefinition, mapping.getMappedName()))) {
                     usage += "," + VariableMapping.USAGE_MULTIINSTANCE_LINK;
                 }
                 mapping.setUsage(usage);
@@ -376,39 +376,13 @@ public class SubprocessDialog extends Dialog {
         }
     }
 
-    private static final String labelDelimiter = "  \u2810  ";
-
-    private String[] getProcessDefinitionNames() {
-        List<String> names = Lists.newArrayList();
-        for (ProcessDefinition testProcessDefinition : ProcessCache.getAllProcessDefinitionsMap().values()) {
-            if (testProcessDefinition instanceof SubprocessDefinition) {
-                continue;
-            }
-            if (!names.contains(testProcessDefinition.getName())) {
-                names.add(testProcessDefinition.getName() + labelDelimiter + testProcessDefinition.getFile().getParent().getParent().getFullPath());
-            }
-        }
-        Collections.sort(names);
-        return names.toArray(new String[names.size()]);
-    }
-
     private List<String> getProcessVariablesNames(String name) {
-        ProcessDefinition definition = ProcessCache.getFirstProcessDefinition(name,
-                subprocess.getProcessDefinition().getFile().getProject().getName());
-        if (definition != null) {
-            return definition.getVariableNames(true);
-        }
-        return new ArrayList<String>();
+        return currentSubProcessDefinition == null ? new ArrayList<String>() : currentSubProcessDefinition.getVariableNames(true);
     }
 
-    private boolean isListVariable(String name, String variableName) {
-        ProcessDefinition definition = ProcessCache.getFirstProcessDefinition(name,
-                subprocess.getProcessDefinition().getFile().getProject().getName());
-        if (definition != null) {
-            Variable variable = VariableUtils.getVariableByName(definition, variableName);
-            if (variable != null) {
-                return List.class.getName().equals(variable.getJavaClassName());
-            }
+    private boolean isListVariable(Variable variable) {
+        if (variable != null) {
+            return List.class.getName().equals(variable.getJavaClassName());
         }
         return false;
     }
@@ -416,4 +390,9 @@ public class SubprocessDialog extends Dialog {
     public String getSubprocessName() {
         return subprocessName;
     }
+
+    public String getSubprocessFolderName() {
+        return subprocessFolderName;
+    }
+
 }

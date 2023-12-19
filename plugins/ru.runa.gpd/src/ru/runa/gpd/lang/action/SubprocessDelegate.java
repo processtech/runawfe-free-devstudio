@@ -3,7 +3,6 @@ package ru.runa.gpd.lang.action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.window.Window;
-
 import ru.runa.gpd.lang.model.MultiSubprocess;
 import ru.runa.gpd.lang.model.Subprocess;
 import ru.runa.gpd.ui.dialog.MultiSubprocessDialog;

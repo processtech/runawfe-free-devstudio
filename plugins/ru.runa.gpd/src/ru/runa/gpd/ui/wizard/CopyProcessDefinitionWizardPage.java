@@ -2,6 +2,7 @@ package ru.runa.gpd.ui.wizard;
 
 import java.util.List;
 import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.wizard.WizardPage;
@@ -38,7 +39,8 @@ public class CopyProcessDefinitionWizardPage extends WizardPage {
         this.sourceProcessFolder = sourceProcessFolder;
         setTitle(Localization.getString("CopyProcessDefinitionWizardPage.page.title"));
         setDescription(Localization.getString("CopyProcessDefinitionWizardPage.page.description"));
-        sourceDefinition = ProcessCache.getFirstProcessDefinition(sourceProcessFolder.getName(), sourceProcessFolder.getProject().getName());
+        IFile definitionFile = IOUtils.getProcessDefinitionFile(sourceProcessFolder);
+        sourceDefinition = ProcessCache.getProcessDefinition(definitionFile);
         if (sourceDefinition == null) {
             throw new NullPointerException("Process definition is null");
         }

@@ -1,8 +1,6 @@
 package ru.runa.gpd;
 
 import com.google.common.collect.Lists;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -24,7 +22,6 @@ import ru.runa.gpd.util.IOUtils;
 
 public class ProcessCache {
     private static Map<IFile, ProcessDefinition> CACHE_BY_FILE = new HashMap<IFile, ProcessDefinition>();
-    private static Map<String, ProcessDefinition> CACHE_BY_NAME = new HashMap<String, ProcessDefinition>();
     static {
         try {
             for (IFile file : IOUtils.getAllProcessDefinitionFiles()) {
@@ -53,7 +50,6 @@ public class ProcessCache {
         ParContentProvider.readAuxInfo(file, definition);
         definition.getChildren(ExclusiveGateway.class).stream().forEach(eg -> TransitionUtil.setDefaultFlow(eg));
         CACHE_BY_FILE.put(file, definition);
-        CACHE_BY_NAME.put(definition.getName(), definition);
         if (definition instanceof SubprocessDefinition) {
             return;
         }
@@ -83,7 +79,6 @@ public class ProcessCache {
         try {
             ProcessDefinition definition = CACHE_BY_FILE.remove(file);
             if (definition != null) {
-                CACHE_BY_NAME.remove(definition.getName());
                 if (!(definition instanceof SubprocessDefinition)) {
                     for (SubprocessDefinition subprocessDefinition : definition.getEmbeddedSubprocesses().values()) {
                         processDefinitionWasDeleted(subprocessDefinition.getFile());
@@ -96,13 +91,20 @@ public class ProcessCache {
     }
 
     public static Set<ProcessDefinition> getAllProcessDefinitions() {
-        return new HashSet<ProcessDefinition>(CACHE_BY_NAME.values());
+        return new HashSet<ProcessDefinition>(CACHE_BY_FILE.values());
     }
 
-    public static List<String> getAllProcessDefinitionNames() {
-        List<String> list = new ArrayList<String>(CACHE_BY_NAME.keySet());
-        Collections.sort(list);
-        return list;
+    public static Set<ProcessDefinition> getProcessDefinitions(String name, boolean includeSubprocessDefinitions) {
+        Set<ProcessDefinition> result = new HashSet<>();
+        for (ProcessDefinition definition : CACHE_BY_FILE.values()) {
+            if (!includeSubprocessDefinitions && definition instanceof SubprocessDefinition) {
+                continue;
+            }
+            if (name.equals(definition.getName())) {
+                result.add(definition);
+            }
+        }
+        return result;
     }
 
     public static Map<IFile, ProcessDefinition> getAllProcessDefinitionsMap() {
@@ -112,7 +114,6 @@ public class ProcessCache {
     public static void invalidateProcessDefinition(IFile file) {
         ProcessDefinition definition = CACHE_BY_FILE.remove(file);
         if (definition != null) {
-            CACHE_BY_NAME.remove(definition.getName());
             if (file.exists()) {
                 getProcessDefinition(file);
             }
@@ -131,57 +132,11 @@ public class ProcessCache {
         return CACHE_BY_FILE.get(file);
     }
 
-    public static ProcessDefinition getFirstProcessDefinition(String name, String desirableProjectName) {
-        if (!CACHE_BY_NAME.containsKey(name)) {
-            try {
-                IFile file = getFirstProcessDefinitionFile(name, desirableProjectName);
-                if (file != null) {
-                    ProcessDefinition definition = NodeRegistry.parseProcessDefinition(file);
-                    cacheProcessDefinition(file, definition);
-                }
-            } catch (Exception e) {
-                PluginLogger.logError("Parsing process definition failed: " + name, e);
-                return null;
-            }
-        }
-        return CACHE_BY_NAME.get(name);
-    }
-
-    /**
-     * Get process definition file or <code>null</code>.
-     */
-    public static IFile getFirstProcessDefinitionFile(String processName, String desirableProjectName) {
-        try {
-            IFile firstFile = null;
-            for (IFile file : IOUtils.getAllProcessDefinitionFiles()) {
-                if (processName.equals(file.getParent().getName())) {
-                    if (desirableProjectName == null) {
-                        return file;
-                    } else if (file.getProject().getName().equals(desirableProjectName)) {
-                        return file;
-                    } else {
-                        if (firstFile == null) {
-                            firstFile = file;
-                        }
-                    }
-                }
-            }
-            if (firstFile != null) {
-                return firstFile;
-            }
-            PluginLogger.logInfo("No process definition found by name: " + processName);
-        } catch (Exception e) {
-            PluginLogger.logError("Parsing process definition failed: " + processName, e);
-            return null;
-        }
-        return null;
-    }
-
     public static GlobalSectionDefinition getGlobalProcessDefinition(ProcessDefinition processDefinition) {
 
         GlobalSectionDefinition definitionToReturn = null;
         int maxLength = 0;
-        for (ProcessDefinition definition : getAllProcessDefinitions()) {
+        for (ProcessDefinition definition : CACHE_BY_FILE.values()) {
             if (definition instanceof GlobalSectionDefinition) {
                 IPath globalSectionPath = definition.getFile().getProjectRelativePath();
                 IPath processPath = processDefinition.getFile().getProjectRelativePath();
