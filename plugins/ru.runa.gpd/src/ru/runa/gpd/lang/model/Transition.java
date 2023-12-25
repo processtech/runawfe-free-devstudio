@@ -180,13 +180,6 @@ public class Transition extends AbstractTransition implements ActionContainer {
     }
 
     @Override
-    public Transition makeCopy(GraphElement parent) {
-        Transition copy = (Transition) super.makeCopy(parent);
-        ((Node) parent).onLeavingTransitionAdded(copy);
-        return copy;
-    }
-
-    @Override
     protected void fillCopyCustomFields(GraphElement aCopy) {
         super.fillCopyCustomFields(aCopy);
         Transition copy = (Transition) aCopy;
