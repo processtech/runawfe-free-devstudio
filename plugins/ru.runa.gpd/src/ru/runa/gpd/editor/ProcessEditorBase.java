@@ -210,15 +210,15 @@ public abstract class ProcessEditorBase extends MultiPageEditorPart
     }
 
     public IFigure getRootFigure() {
-        return graphPage.getAdapter(IFigure.class);
+        return (IFigure) graphPage.getAdapter(IFigure.class);
     }
 
     public GraphicalViewer getGraphicalViewer() {
-        return graphPage.getAdapter(GraphicalViewer.class);
+        return (GraphicalViewer) graphPage.getAdapter(GraphicalViewer.class);
     }
 
     public CommandStack getCommandStack() {
-        return graphPage.getAdapter(CommandStack.class);
+        return (CommandStack) graphPage.getAdapter(CommandStack.class);
     }
 
     public EditDomain getEditDomain() {
