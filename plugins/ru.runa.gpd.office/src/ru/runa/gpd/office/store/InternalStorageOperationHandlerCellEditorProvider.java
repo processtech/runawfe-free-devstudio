@@ -3,6 +3,7 @@ package ru.runa.gpd.office.store;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -127,6 +128,21 @@ public class InternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
     @Override
     protected Point getDialogInitialSize() {
         return new Point(800, 600);
+    }
+
+    @Override
+    public List<String> getUsedVariableNames(Delegable delegable) {
+        String configuration = delegable.getDelegationConfiguration();
+        if (Strings.isNullOrEmpty(configuration)) {
+            return Lists.newArrayList();
+        }
+        List<String> result = super.getUsedVariableNames(delegable);
+        for (String variableName : delegable.getVariableNames(true)) {
+            if (configuration.contains("@" + variableName + "\"")) {
+                result.add(variableName);
+            }
+        }
+        return result;
     }
 
     private class ConstructorView extends ConstructorComposite {

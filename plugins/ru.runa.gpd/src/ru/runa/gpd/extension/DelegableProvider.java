@@ -1,19 +1,17 @@
 package ru.runa.gpd.extension;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.jface.window.Window;
 import org.osgi.framework.Bundle;
-
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.Variable;
-
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
+import ru.runa.gpd.lang.model.bpmn.ScriptTask;
 
 public class DelegableProvider {
     protected Bundle bundle;
@@ -77,6 +75,10 @@ public class DelegableProvider {
     public void onCopy(IFolder sourceFolder, Delegable source, IFolder targetFolder, Delegable target) {
         target.setDelegationClassName(source.getDelegationClassName());
         target.setDelegationConfiguration(source.getDelegationConfiguration());
+        if (source instanceof ScriptTask) {
+            ((ScriptTask) target).setUseExternalStorageIn(((ScriptTask) source).isUseExternalStorageIn());
+            ((ScriptTask) target).setUseExternalStorageOut(((ScriptTask) source).isUseExternalStorageOut());
+        }
     }
 
     public List<String> getUsedVariableNames(Delegable delegable) throws Exception {
