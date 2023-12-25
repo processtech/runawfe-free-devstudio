@@ -3,11 +3,14 @@ package ru.runa.gpd.lang;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Display;
 import org.osgi.framework.Bundle;
 import ru.runa.gpd.Activator;
+import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.editor.gef.GefEntry;
@@ -172,6 +175,18 @@ public class NodeTypeDefinition {
             String name;
             if (element instanceof Swimlane) {
                 name = element.getProcessDefinition().getNextSwimlaneName();
+                InputDialog setNameDialog = new InputDialog(Display.getDefault().getActiveShell(),
+                        Localization.getString("SwimlaneWizard.create.title"), Localization.getString("SwimlaneWizard.create.message"), name,
+                        ((Swimlane) element).nameValidator());
+                try {
+                    if (setNameDialog.open() == InputDialog.OK) {
+                        name = setNameDialog.getValue().trim();
+                    } else {
+                        return null;
+                    }
+                } catch (Exception e) {
+                    PluginLogger.logError(e);
+                }
             } else {
                 name = getNamePattern(parent.getProcessDefinition().getLanguage());
                 if (!(element instanceof EndState) && !(element instanceof StartState)) {
