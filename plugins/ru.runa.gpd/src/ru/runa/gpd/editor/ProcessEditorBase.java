@@ -210,15 +210,15 @@ public abstract class ProcessEditorBase extends MultiPageEditorPart
     }
 
     public IFigure getRootFigure() {
-        return (IFigure) graphPage.getAdapter(IFigure.class);
+        return graphPage.getAdapter(IFigure.class);
     }
 
     public GraphicalViewer getGraphicalViewer() {
-        return (GraphicalViewer) graphPage.getAdapter(GraphicalViewer.class);
+        return graphPage.getAdapter(GraphicalViewer.class);
     }
 
     public CommandStack getCommandStack() {
-        return (CommandStack) graphPage.getAdapter(CommandStack.class);
+        return graphPage.getAdapter(CommandStack.class);
     }
 
     public EditDomain getEditDomain() {
@@ -274,6 +274,7 @@ public abstract class ProcessEditorBase extends MultiPageEditorPart
             WorkspaceOperations.saveProcessDefinition(definition);
             getCommandStack().markSaveLocation();
             definition.setDirty(false);
+            definition.setRegulationGenerated(false);
             ProcessSaveHistory.addSavepoint(definitionFile);
         } catch (Exception e) {
             PluginLogger.logError(e);

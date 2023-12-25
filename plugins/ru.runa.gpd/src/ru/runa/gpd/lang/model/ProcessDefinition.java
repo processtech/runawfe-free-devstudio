@@ -56,6 +56,7 @@ public class ProcessDefinition extends NamedGraphElement implements Describable,
     protected boolean usingGlobalVars;
     protected final Set<PropertyChangeListener> delegatedListeners = new HashSet<>();
     protected final ArrayList<VersionInfo> versionInfoList = new ArrayList<>();
+    protected boolean regulationGenerated = false;
 
     public ProcessDefinition(IFile file) {
         this.file = file;
@@ -102,6 +103,12 @@ public class ProcessDefinition extends NamedGraphElement implements Describable,
                 PluginLogger.logErrorWithoutDialog("testAttribute: hasFormJS", e);
                 return false;
             }
+        }
+        if ("needGeneratedRegulation".equals(name)) {
+            return Boolean.parseBoolean(value) ? this.regulationGenerated : true;
+        }
+        if ("needNotGeneratedRegulation".equals(name)) {
+            return Boolean.parseBoolean(value) ? !this.regulationGenerated : true;
         }
         return super.testAttribute(target, name, value);
     }
@@ -707,6 +714,14 @@ public class ProcessDefinition extends NamedGraphElement implements Describable,
             }
         }
 
+    }
+
+    public void setRegulationGenerated(boolean generated) {
+        this.regulationGenerated = generated;
+    }
+
+    public boolean isRegulationGenerated() {
+        return this.regulationGenerated;
     }
 
 }

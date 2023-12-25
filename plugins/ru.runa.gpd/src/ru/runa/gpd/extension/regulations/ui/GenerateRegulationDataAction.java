@@ -2,7 +2,6 @@ package ru.runa.gpd.extension.regulations.ui;
 
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
-
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.regulations.RegulationsUtil;
 import ru.runa.gpd.lang.action.BaseModelActionDelegate;
@@ -16,7 +15,8 @@ public class GenerateRegulationDataAction extends BaseModelActionDelegate {
             ProcessDefinition processDefinition = getActiveDesignerEditor().getDefinition();
             boolean success = RegulationsUtil.validate(processDefinition, true);
             if (success) {
-                RegulationsUtil.autoFillRegulationProperties(getActiveDesignerEditor().getDefinition());
+                RegulationsUtil.autoFillRegulationProperties(processDefinition);
+                processDefinition.setRegulationGenerated(true);
             }
         } catch (Exception e) {
             PluginLogger.logError(e);
