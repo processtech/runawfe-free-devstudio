@@ -193,7 +193,7 @@
 	               icon="icons/components.gif"
 	               id="ru.runa.gpd.form.ftl.openFormComponents"
 	               label="%label.view.formComponents"
-	               menubarPath="window/additions"
+	               menubarPath="gpd.window/additions"
 	               style="push"/>
          </actionSet>
    </extension>

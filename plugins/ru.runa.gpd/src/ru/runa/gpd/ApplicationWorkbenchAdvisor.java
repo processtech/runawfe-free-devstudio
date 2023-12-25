@@ -3,13 +3,17 @@ package ru.runa.gpd;
 import com.google.common.base.Strings;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.preference.IPreferenceNode;
 import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.preference.PreferenceNode;
+import org.eclipse.ui.IWorkbenchActionConstants;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchAdvisor;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
+import org.eclipse.ui.internal.WorkbenchWindow;
 import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.NodeRegistry;
 import ru.runa.gpd.lang.NodeTypeDefinition;
@@ -71,6 +75,13 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor implements Pre
                 continue;
             }
             preferenceManager.remove(preferenceNode.getId());
+        }
+        IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+        IContributionItem[] items = ((WorkbenchWindow) workbenchWindow).getMenuBarManager().getItems();
+        for (IContributionItem item : items) {
+            if (item.getId().equals(IWorkbenchActionConstants.M_WINDOW)) {
+                item.setVisible(false);
+            }
         }
     }
 
