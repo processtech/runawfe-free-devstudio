@@ -439,7 +439,7 @@ public class CopyGraphCommand extends Command {
 
         @Override
         public void execute() {
-            if (oldSwimlane == null) {
+            if (oldSwimlane == null && SwimlaneDisplayMode.none == targetDefinition.getSwimlaneDisplayMode()) {
                 addedSwimlane = (Swimlane) sourceSwimlane.makeCopy(targetDefinition);
                 adjustLocation(addedSwimlane);
             }
