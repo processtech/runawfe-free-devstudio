@@ -2243,6 +2243,16 @@
             enabled="true"
             label="%ru.runa.wfe.extension.handler.sign.CheckSignPdfHandler">
       </handler>
+       <handler
+               actionHandler="true"
+               assignmentHandler="false"
+               botTaskHandler="false"
+               cellEditorProvider="ru.runa.gpd.extension.handler.ConfigBasedProvider"
+               className="ru.runa.wfe.extension.handler.process.ModifyProcessPermissionsHandler"
+               decisionHandler="false"
+               enabled="true"
+               label="%ru.runa.wfe.extension.handler.process.ModifyProcessPermissionsHandler">
+       </handler>
    </extension>
    <extension
          point="ru.runa.gpd.swimlaneElements">
