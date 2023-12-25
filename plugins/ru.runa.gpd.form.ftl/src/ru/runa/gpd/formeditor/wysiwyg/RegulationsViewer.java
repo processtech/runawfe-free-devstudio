@@ -1,9 +1,10 @@
 package ru.runa.gpd.formeditor.wysiwyg;
 
+import com.google.common.base.Throwables;
+import com.google.common.io.Files;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -22,7 +23,6 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.MultiPageEditorPart;
-
 import ru.runa.gpd.EditorsPlugin;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
@@ -32,9 +32,6 @@ import ru.runa.gpd.formeditor.resources.Messages;
 import ru.runa.gpd.htmleditor.editors.HTMLConfiguration;
 import ru.runa.gpd.htmleditor.editors.HTMLSourceEditor;
 import ru.runa.gpd.util.EditorUtils;
-
-import com.google.common.base.Throwables;
-import com.google.common.io.Files;
 
 public class RegulationsViewer extends MultiPageEditorPart implements IResourceChangeListener {
     private HTMLSourceEditor sourceEditor;
@@ -56,6 +53,7 @@ public class RegulationsViewer extends MultiPageEditorPart implements IResourceC
     @Override
     public void resourceChanged(IResourceChangeEvent event) {
         if (sourceEditor != null && sourceEditor.getEditorInput() != null) {
+            browser.refresh();
             EditorUtils.closeEditorIfRequired(event, ((IFileEditorInput) sourceEditor.getEditorInput()).getFile(), this);
         }
     }
