@@ -672,6 +672,10 @@
              name="composition"
              value="false">
        </filter>
+       <filter
+             name="needGeneratedRegulation"
+             value="true">
+       </filter>
        <action
              class="ru.runa.gpd.extension.regulations.ui.CreateRegulationsAction"
              id="ru.runa.gpd.createRegulations"
@@ -693,6 +697,10 @@
        <filter
              name="hasExtendedRegulations"
              value="false">
+       </filter>
+       <filter
+             name="needNotGeneratedRegulation"
+             value="true">
        </filter>
        <action
              class="ru.runa.gpd.extension.regulations.ui.GenerateRegulationDataAction"
