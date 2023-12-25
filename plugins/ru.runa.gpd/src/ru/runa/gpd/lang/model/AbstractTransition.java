@@ -61,4 +61,11 @@ public abstract class AbstractTransition extends NamedGraphElement {
         }
         return getParent().toString() + " -> (" + getName() + ") -> " + target.toString();
     }
+
+    @Override
+    public AbstractTransition makeCopy(GraphElement parent) {
+        AbstractTransition copy = (AbstractTransition) super.makeCopy(parent);
+        ((Node) parent).onLeavingTransitionAdded(copy);
+        return copy;
+    }
 }

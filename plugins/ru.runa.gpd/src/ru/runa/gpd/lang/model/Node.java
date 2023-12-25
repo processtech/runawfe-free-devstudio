@@ -232,7 +232,7 @@ public abstract class Node extends NamedGraphElement implements Describable {
         onLeavingTransitionAdded(transition);
     }
 
-    public void onLeavingTransitionAdded(Transition transition) {
+    public void onLeavingTransitionAdded(AbstractTransition transition) {
         firePropertyChange(NODE_LEAVING_TRANSITION_ADDED, null, transition);
         Node target = transition.getTarget();
         if (target != null) {

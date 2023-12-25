@@ -1,22 +1,19 @@
 package ru.runa.gpd.editor;
 
+import com.google.common.collect.Lists;
 import java.util.List;
-
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.draw2d.FigureCanvas;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
 import org.eclipse.gef.ui.actions.SelectionAction;
 import org.eclipse.graphiti.ui.internal.parts.ContainerShapeEditPart;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.editor.gef.part.graph.NodeGraphicalEditPart;
 import ru.runa.gpd.lang.model.Action;
-import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.NamedGraphElement;
+import ru.runa.gpd.lang.model.bpmn.ScriptTask;
 import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
-
-import com.google.common.collect.Lists;
 
 public class CopyAction extends SelectionAction {
     private final ProcessEditorBase editor;
@@ -56,6 +53,17 @@ public class CopyAction extends SelectionAction {
             // 2. Text decoration for Start end End created automatically and don't need copy too.
             if (node != null) {
                 result.add(node);
+                // copy internal storage along with ScriptTask even if it is not selected
+                if (node instanceof ScriptTask) {
+                    ScriptTask scriptTask = (ScriptTask) node;
+                    if (scriptTask.isUseExternalStorageOut()) {
+                        result.addAll(scriptTask.getDottedTransitionTarget());
+                    }
+                    if (scriptTask.isUseExternalStorageIn()) {
+                        result.addAll(scriptTask.getDottedTransitionSource());
+                    }
+
+				}
             }
         }
         return result;

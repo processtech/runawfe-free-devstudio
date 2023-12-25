@@ -1,15 +1,17 @@
 package ru.runa.gpd.lang.model.bpmn;
 
+import com.google.common.base.Strings;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
-import com.google.common.base.Strings;
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.extension.HandlerArtifact;
 import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.lang.model.Delegable;
+import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.StorageAware;
 import ru.runa.gpd.lang.model.Transition;
@@ -145,4 +147,21 @@ public class ScriptTask extends Node implements Delegable, IBoundaryEventContain
             setName(Localization.getString("label.element.scripttask") + number);
         }
     }
+
+    public List<NamedGraphElement> getDottedTransitionTarget() {
+        List<NamedGraphElement> result = new ArrayList<>();
+        for (DottedTransition transition : getLeavingDottedTransitions()) {
+                result.add(transition.getTarget());
+            }
+            return result;
+    }
+
+    public List<NamedGraphElement> getDottedTransitionSource() {
+        List<NamedGraphElement> result = new ArrayList<>();
+        for (DottedTransition transition : getArrivingDottedTransitions()) {
+            result.add(transition.getSource());
+        }
+        return result;
+    }
+
 }
