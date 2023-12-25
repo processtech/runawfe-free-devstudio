@@ -2935,7 +2935,7 @@
                menubarPath="view/additions"
                style="push"/>
          <menu
-               id="window"
+               id="gpd.window"
                label="%label.menu.window"
                path="properties">
             <separator name="additions"/>
@@ -2945,21 +2945,21 @@
                icon="icons/thumbnail.gif"
                id="openThumbnail"
                label="%label.menu.view.thumbnail"
-               menubarPath="window/additions"
+               menubarPath="gpd.window/additions"
                style="push"/>
          <action
                class="ru.runa.gpd.ui.action.OpenProperties"
                icon="icons/prop_ps.gif"
                id="openProperties"
                label="%label.menu.view.properties"
-               menubarPath="window/additions"
+               menubarPath="gpd.window/additions"
                style="push"/>
          <action
                class="ru.runa.gpd.ui.action.OpenSearchResult"
                icon="icons/search.gif"
                id="openSearchResult"
                label="%label.menu.view.searchresult"
-               menubarPath="window/additions"
+               menubarPath="gpd.window/additions"
                style="push"/>      
          <action
                id="installSoftware"
@@ -2992,35 +2992,35 @@
                icon="icons/outline_co.gif"
                id="openOutline"
                label="%label.menu.view.outline"
-               menubarPath="window/additions"
+               menubarPath="gpd.window/additions"
                style="push"/>
          <action
                class="ru.runa.gpd.ui.action.OpenExplorer"
                icon="icons/filenav_nav.gif"
                id="openExplorer"
                label="%label.menu.view.explorer"
-               menubarPath="window/additions"
+               menubarPath="gpd.window/additions"
                style="push"/>
          <action
                class="ru.runa.gpd.ui.action.OpenBotExplorer"
                icon="icons/bot_station.gif"
                id="ru.runa.gpd.ui.action.openBotExplorer"
                label="%label.view.botDesignerExplorer"
-               menubarPath="window/additions"
+               menubarPath="gpd.window/additions"
                style="push"/>
          <action
                class="ru.runa.gpd.ui.action.OpenDataSourceExplorer"
                icon="icons/data_sources.png"
                id="ru.runa.gpd.ui.action.openDataSourcesExplorer"
                label="%label.view.dataSourceDesignerExplorer"
-               menubarPath="window/additions"
+               menubarPath="gpd.window/additions"
                style="push"/>
          <action
                class="ru.runa.gpd.ui.action.OpenValidationErrorsView"
                icon="icons/validation_error.gif"
                id="openValidationErrorsView"
                label="%label.menu.view.validationErrors"
-               menubarPath="window/additions"
+               menubarPath="gpd.window/additions"
                style="push">
          </action>
          <action
@@ -3028,14 +3028,14 @@
                icon="icons/regulations_notes.png"
                id="openRegulationsNotesView"
                label="%label.menu.view.regulationsNotes"
-               menubarPath="window/additions"
+               menubarPath="gpd.window/additions"
                style="push">
          </action>
          <action
                class="ru.runa.gpd.ui.action.OpenSleakView"
                id="openSleakView"
                label="%label.view.sleak"
-               menubarPath="window/additions"
+               menubarPath="gpd.window/additions"
                style="push">
          </action>
          <action
@@ -3043,7 +3043,7 @@
                icon="icons/error_log.gif"
                id="openLogView"
                label="%label.menu.view.errorLog"
-               menubarPath="window/additions"
+               menubarPath="gpd.window/additions"
                style="push">
          </action>
          <action
