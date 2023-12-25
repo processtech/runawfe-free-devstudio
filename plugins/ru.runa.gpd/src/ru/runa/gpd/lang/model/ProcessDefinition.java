@@ -757,4 +757,5 @@ public class ProcessDefinition extends NamedGraphElement implements Describable,
     public boolean isRegulationGenerated() {
         return this.regulationGenerated;
     }
+    
 }
