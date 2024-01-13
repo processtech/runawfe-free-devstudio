@@ -3350,7 +3350,7 @@
       </format>
       <format
             className="ru.runa.wfe.var.format.MapFormat"
-            enabled="true"
+            enabled="false"
             label="%ru.runa.wfe.var.format.MapFormat"
             javaClassName="java.util.Map">
       </format>
