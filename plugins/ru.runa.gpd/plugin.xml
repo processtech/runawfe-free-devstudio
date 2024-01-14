@@ -3246,7 +3246,7 @@
       <format
             className="ru.runa.wfe.var.format.HiddenFormat"
             label="%ru.runa.wfe.var.format.HiddenFormat"
-            enabled="true"
+            enabled="false"
             javaClassName="java.lang.String">
       </format>
       <format
