@@ -14,8 +14,14 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
@@ -72,6 +78,8 @@ public class ImportParWizardPage extends ImportWizardPage {
     private Button clearFilterButton;
     private String selectedDirFileName;
     private String[] selectedFileNames;
+    private int importInfosSize;
+    private Exception exceptionFromThreads;
 
     public ImportParWizardPage(IStructuredSelection selection) {
         super(ImportParWizardPage.class, selection);
@@ -280,6 +288,14 @@ public class ImportParWizardPage extends ImportWizardPage {
         return node.definition != null && node.definition.getName().toLowerCase().contains(searchText.trim().toLowerCase());
     }
 
+    public void setImportInfosSize(int size) {
+        this.importInfosSize = size;
+    }
+
+    int getImportInfosSize() {
+        return this.importInfosSize;
+    }
+
     public boolean performFinish() {
         List<ProcessDefinitionImportInfo> importInfos = Lists.newArrayList();
         try {
@@ -298,10 +314,64 @@ public class ImportParWizardPage extends ImportWizardPage {
                     importInfos.add(new ProcessDefinitionImportInfo(definitionName, "", new FileInputStream(fileName)));
                 }
             } else {
-                for (TreeItem treeItem : serverDefinitionViewer.getTree().getSelection()) {
-                    DefinitionTreeNode treeNode = (DefinitionTreeNode) treeItem.getData();
-                    importInfos.addAll(treeNode.toRecursiveImportInfo(""));
+                TreeItem[] selectionInTree = serverDefinitionViewer.getTree().getSelection();
+                DefinitionTreeNode[] definitionTreeNodes = new DefinitionTreeNode[selectionInTree.length];
+                int importInfosSize = 0;
+                for (int i = 0; i < selectionInTree.length; i++) {
+                    definitionTreeNodes[i] = (DefinitionTreeNode) selectionInTree[i].getData();
+                    importInfosSize += definitionTreeNodes[i].getSize();
                 }
+                this.setImportInfosSize(importInfosSize);
+                ProgressMonitorDialog monitorDialog = new ProgressMonitorDialog(Display.getCurrent().getActiveShell());
+                IRunnableWithProgress importRunnable = new IRunnableWithProgress() {
+
+                    @Override
+                    public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                        int importInfosSize = getImportInfosSize();
+                        SubMonitor subMonitor = SubMonitor.convert(monitor, importInfosSize);
+                        try {
+                            exceptionFromThreads = null;
+                            ExecutorService executorService = Executors.newSingleThreadExecutor();
+                            ExceptionListener listener = new ExceptionListener() {
+                                @Override
+                                public void exceptionThrown(Exception e) {
+                                    exceptionFromThreads = e;
+                                }
+                            };
+                            List<Future<ProcessDefinitionImportInfo>> importInfosFuture = new ArrayList<>(importInfosSize);
+                            for (int i = 0; i < selectionInTree.length; i++) {
+                                DefinitionTreeNode treeNode = definitionTreeNodes[i];
+                                importInfosFuture.addAll(treeNode.toRecursiveImportInfo("", executorService, listener));
+                            }
+                            int currentProgress = 0;
+                            while (importInfosFuture.stream().anyMatch(future -> !future.isDone())) {
+                                if (exceptionFromThreads != null) {
+                                    throw exceptionFromThreads;
+                                }
+                                if (monitor.isCanceled()) {
+                                    executorService.shutdownNow();
+                                    throw new OperationCanceledException();
+                                }
+                                int currentProgressNew = (int) importInfosFuture.stream().filter(Future::isDone).count();
+                                subMonitor.split(currentProgressNew - currentProgress);
+                                currentProgress = currentProgressNew;
+                                Thread.sleep(100);
+                            }
+                            if (exceptionFromThreads != null) {
+                                throw exceptionFromThreads;
+                            } else {
+                                for (Future<ProcessDefinitionImportInfo> future : importInfosFuture) {
+                                    importInfos.add(future.get());
+                                }
+                            }
+                        } catch (OperationCanceledException e) {
+                            throw new InterruptedException("import was cancelled by pressing cancel button");
+                        } catch (Exception e) {
+                            throw new InvocationTargetException(e);
+                        }
+                    }
+                };
+                monitorDialog.run(true, true, importRunnable);
             }
             if (importInfos.isEmpty()) {
                 setErrorMessage(Localization.getString("ImportParWizardPage.error.selectValidDefinition"));
@@ -314,6 +384,8 @@ public class ImportParWizardPage extends ImportWizardPage {
                     return false;
                 }
             }
+        } catch (InterruptedException e) {
+            return false; // import was cancelled by pressing cancel button, not exit from wizard
         } catch (Exception exception) {
             PluginLogger.logErrorWithoutDialog("import par", exception);
             setErrorMessage(Throwables.getRootCause(exception).getMessage());
@@ -357,6 +429,10 @@ public class ImportParWizardPage extends ImportWizardPage {
             rootTreeNode.addElementToTree(rootTreeNode.path, definition.getCategories(), definition);
         }
         return rootTreeNode;
+    }
+
+    interface ExceptionListener {
+        public void exceptionThrown(Exception e);
     }
 
     class ViewLabelProvider extends LabelProvider {
@@ -547,19 +623,33 @@ public class ImportParWizardPage extends ImportWizardPage {
             return children;
         }
 
-        private List<ProcessDefinitionImportInfo> toRecursiveImportInfo(String importPath) throws Exception {
-            List<ProcessDefinitionImportInfo> result = Lists.newArrayList();
+        private List<Future<ProcessDefinitionImportInfo>> toRecursiveImportInfo(String importPath, ExecutorService executorService,
+                ExceptionListener listener) throws Exception {
+            List<Future<ProcessDefinitionImportInfo>> result = Lists.newArrayList();
             if (isGroupNode() && isHistoryNode()) {
                 return result;
             }
             if (isGroupNode()) {
                 for (DefinitionTreeNode currentNode : children) {
                     if (currentNode != null) {
-                        result.addAll(currentNode.toRecursiveImportInfo(importPath + File.separator + label));
+                        result.addAll(currentNode.toRecursiveImportInfo(importPath + File.separator + label, executorService, listener));
                     }
                 }
             } else if (definition != null) {
-                result.add(toImportInfo(importPath));
+                Callable<ProcessDefinitionImportInfo> toImportInfoCallable = new Callable<ProcessDefinitionImportInfo>() {
+
+                    @Override
+                    public ProcessDefinitionImportInfo call() {
+                        try {
+                            return toImportInfo(importPath);
+                        } catch (Exception e) {
+                            listener.exceptionThrown(e);
+                            return null;
+                        }
+                    }
+                };
+                Future<ProcessDefinitionImportInfo> future = executorService.submit(toImportInfoCallable);
+                result.add(future);
             }
             return result;
         }
@@ -569,5 +659,18 @@ public class ImportParWizardPage extends ImportWizardPage {
             return new ProcessDefinitionImportInfo(definition.getName(), importPath, new ByteArrayInputStream(par));
         }
 
+        int getSize() {
+            int size = 0;
+            if (isGroupNode()) {
+                for (DefinitionTreeNode currentNode : children) {
+                    if (currentNode != null) {
+                        size += currentNode.getSize();
+                    }
+                }
+            } else if (definition != null) {
+                return 1;
+            }
+            return size;
+        }
     }
 }
