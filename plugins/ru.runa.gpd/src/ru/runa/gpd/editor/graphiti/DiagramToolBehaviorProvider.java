@@ -72,6 +72,9 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
         if (context.getPictogramElements().length == 1) {
             PictogramElement pe = context.getPictogramElements()[0];
             GraphElement element = (GraphElement) getFeatureProvider().getBusinessObjectForPictogramElement(pe);
+            if (element == null) {
+                return null;
+            }
             if (element instanceof Subprocess) {
                 return new OpenSubProcessFeature(getFeatureProvider());
             }
