@@ -9,7 +9,6 @@ import java.util.List;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
@@ -21,6 +20,7 @@ import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.formeditor.ftl.ComboOption;
 import ru.runa.gpd.formeditor.ftl.Component;
 import ru.runa.gpd.formeditor.ftl.ComponentParameter;
+import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.ui.custom.LoggingSelectionChangedAdapter;
 
 public class ComboParameter extends ParameterType {
@@ -46,39 +46,35 @@ public class ComboParameter extends ParameterType {
     }
 
     @Override
-    public PropertyDescriptor createPropertyDescriptor(Component component, ComponentParameter parameter, int propertyId) {
-        List<String> list = getOptionLabels(component, parameter);
+    public PropertyDescriptor createPropertyDescriptor(Component component, ComponentParameter parameter, int propertyId,
+            ProcessDefinition processDefinition) {
+        List<String> list = getOptionLabels(component, parameter, processDefinition);
         return new ComboBoxPropertyDescriptor(propertyId, parameter.getLabel(), list.toArray(new String[list.size()]));
     }
 
     @Override
-    public Object fromPropertyDescriptorValue(Component component, ComponentParameter parameter, Object editorValue) {
-        List<String> list = getOptionValues(component, parameter);
+    public Object fromPropertyDescriptorValue(Component component, ComponentParameter parameter, Object editorValue,
+            ProcessDefinition processDefinition) {
+        List<String> list = getOptionValues(component, parameter, processDefinition);
         int index = (Integer) editorValue;
         return index != -1 ? list.get(index) : "";
     }
 
     @Override
-    public Object toPropertyDescriptorValue(Component component, ComponentParameter parameter, Object value) {
-        List<String> list = getOptionValues(component, parameter);
+    public Object toPropertyDescriptorValue(Component component, ComponentParameter parameter, Object value, ProcessDefinition processDefinition) {
+        List<String> list = getOptionValues(component, parameter, processDefinition);
         return list.indexOf(value);
     }
 
     @Override
     public Object createEditor(Composite parent, Component component, ComponentParameter parameter, final Object oldValue,
-            final PropertyChangeListener listener) {
+            final PropertyChangeListener listener, ProcessDefinition processDefinition) {
         this.propertyChangeListener = listener;
         final ComboViewer viewer = new ComboViewer(parent, SWT.SINGLE | SWT.READ_ONLY | SWT.BORDER);
         viewer.getCombo().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         viewer.setContentProvider(ArrayContentProvider.getInstance());
-        viewer.setLabelProvider(new LabelProvider() {
-            @Override
-            public String getText(Object element) {
-                return ((ComboOption) element).getLabel();
-            }
-        });
-
-        final List<ComboOption> options = getOptions(component, parameter);
+        viewer.setLabelProvider(ComboOption.labelProvider);
+        final List<ComboOption> options = getOptions(component, parameter, processDefinition);
         viewer.setInput(options);
         if (!Strings.isNullOrEmpty((String) oldValue)) {
             viewer.setSelection(new StructuredSelection(new ComboOption((String) oldValue, null)));
@@ -104,21 +100,21 @@ public class ComboParameter extends ParameterType {
     }
 
     @Override
-    public void updateEditor(Object ui, Component component, ComponentParameter parameter) {
+    public void updateEditor(Object ui, Component component, ComponentParameter parameter, ProcessDefinition processDefinition) {
         ComboViewer viewer = (ComboViewer) ui;
-        final List<ComboOption> options = getOptions(component, parameter);
+        final List<ComboOption> options = getOptions(component, parameter, processDefinition);
         viewer.setInput(options);
         if (options.size() == 1 && autoSelectSingleOption) {
             selectValue(null, propertyChangeListener, viewer, options.get(0));
         }
     }
 
-    protected List<ComboOption> getOptions(Component component, ComponentParameter parameter) {
+    public List<ComboOption> getOptions(Component component, ComponentParameter parameter, ProcessDefinition processDefinition) {
         return parameter.getOptions();
     }
 
-    private List<String> getOptionLabels(Component component, ComponentParameter parameter) {
-        return Lists.transform(getOptions(component, parameter), new Function<ComboOption, String>() {
+    private List<String> getOptionLabels(Component component, ComponentParameter parameter, ProcessDefinition processDefinition) {
+        return Lists.transform(getOptions(component, parameter, processDefinition), new Function<ComboOption, String>() {
 
             @Override
             public String apply(ComboOption option) {
@@ -127,8 +123,8 @@ public class ComboParameter extends ParameterType {
         });
     }
 
-    private List<String> getOptionValues(Component component, ComponentParameter parameter) {
-        return Lists.transform(getOptions(component, parameter), new Function<ComboOption, String>() {
+    private List<String> getOptionValues(Component component, ComponentParameter parameter, ProcessDefinition processDefinition) {
+        return Lists.transform(getOptions(component, parameter, processDefinition), new Function<ComboOption, String>() {
 
             @Override
             public String apply(ComboOption option) {

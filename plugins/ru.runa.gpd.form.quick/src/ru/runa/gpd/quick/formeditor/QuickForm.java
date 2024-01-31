@@ -6,7 +6,7 @@ import java.util.List;
 public class QuickForm {
     private String name;
     private String delegationConfiguration = "";
-    private final List<QuickFormGpdVariable> variables = new ArrayList<QuickFormGpdVariable>();
+    private final List<QuickFormComponent> variables = new ArrayList<QuickFormComponent>();
     private final List<QuickFormGpdProperty> properties = new ArrayList<QuickFormGpdProperty>();
 
     public String getName() {
@@ -25,11 +25,11 @@ public class QuickForm {
         this.delegationConfiguration = delegationConfiguration;
     }
 
-    public List<QuickFormGpdVariable> getVariables() {
+    public List<QuickFormComponent> getVariables() {
         return variables;
     }
 
-	public List<QuickFormGpdProperty> getProperties() {
-		return properties;
-	}
+    public List<QuickFormGpdProperty> getProperties() {
+        return properties;
+    }
 }

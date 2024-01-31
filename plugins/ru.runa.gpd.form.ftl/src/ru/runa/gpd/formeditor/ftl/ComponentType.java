@@ -100,5 +100,4 @@ public class ComponentType {
     public String toString() {
         return id + " " + label + (enabled ? "" : " (disabled)");
     }
-
 }
