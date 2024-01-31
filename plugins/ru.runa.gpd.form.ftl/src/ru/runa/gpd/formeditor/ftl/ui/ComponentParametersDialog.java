@@ -35,6 +35,7 @@ import ru.runa.gpd.formeditor.ftl.ComponentType;
 import ru.runa.gpd.formeditor.ftl.ComponentTypeRegistry;
 import ru.runa.gpd.formeditor.resources.Messages;
 import ru.runa.gpd.formeditor.settings.PreferencePage;
+import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.ui.custom.SwtUtils;
 import ru.runa.gpd.ui.dialog.ChooseComponentLabelDialog;
 
@@ -42,10 +43,12 @@ public class ComponentParametersDialog extends Dialog {
 
     private Component component;
     private final Map<ComponentParameter, Object> parameterEditors = Maps.newHashMap();
+    private ProcessDefinition processDefinition;
 
-    public ComponentParametersDialog(Component component) {
+    public ComponentParametersDialog(Component component, ProcessDefinition processDefinition) {
         super(Display.getDefault().getActiveShell());
         this.component = new Component(component);
+        this.processDefinition = processDefinition;
     }
 
     @Override
@@ -106,7 +109,7 @@ public class ComponentParametersDialog extends Dialog {
                         for (ComponentType componentType : ComponentTypeRegistry.getEnabled()) {
                             if (componentType.getLabel().equals(type)) {
                                 Component previousComponent = component;
-                                component = new Component(componentType, component.getId());
+                                component = new Component(componentType, component.getId(), processDefinition);
                                 int commonParametersCount = Math.min(previousComponent.getType().getParameters().size(),
                                         component.getType().getParameters().size());
                                 for (int i = 0; i < commonParametersCount; i++) {
@@ -175,7 +178,7 @@ public class ComponentParametersDialog extends Dialog {
                                 updateDependentParameter(dependentParameter, parameterEditor);
                             }
                         }
-                    });
+                    }, this.processDefinition);
             parameterEditors.put(componentParameter, editor);
             if (component.getType().getId().equals("DisplayVariable") && editor instanceof ComboViewer) {
                 ComboViewer comboViewer = (ComboViewer) editor;
@@ -187,7 +190,7 @@ public class ComponentParametersDialog extends Dialog {
     }
 
     private void updateDependentParameter(ComponentParameter dependentParameter, Object parameterEditor) {
-        dependentParameter.getType().updateEditor(parameterEditor, component, dependentParameter);
+        dependentParameter.getType().updateEditor(parameterEditor, component, dependentParameter, processDefinition);
     }
 
     private void setDefaultDisplayFormat(ComboViewer comboViewer) {

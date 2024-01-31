@@ -9,6 +9,7 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
+import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.util.EventSupport;
 
 public class Component extends EventSupport implements IPropertySource {
@@ -18,10 +19,12 @@ public class Component extends EventSupport implements IPropertySource {
     private final List<Object> parameterValues = Lists.newArrayList();
     private boolean excessiveParametersFound = false;
     private int numberOnFormValidation;
+    private ProcessDefinition processDefinition;
 
-    public Component(ComponentType type, int id) {
+    public Component(ComponentType type, int id, ProcessDefinition processDefinition) {
         this.type = type;
         this.id = id;
+        this.processDefinition = processDefinition;
         for (ComponentParameter componentParameter : type.getParameters()) {
             parameterValues.add(componentParameter.getType().isMultiple() ? new ArrayList<String>() : "");
         }
@@ -31,6 +34,7 @@ public class Component extends EventSupport implements IPropertySource {
         this.type = component.type;
         this.id = component.id;
         parameterValues.addAll(component.parameterValues);
+        this.processDefinition = component.getProcessDefinition();
     }
 
     public ComponentType getType() {
@@ -39,6 +43,10 @@ public class Component extends EventSupport implements IPropertySource {
 
     public int getId() {
         return id;
+    }
+
+    public ProcessDefinition getProcessDefinition() {
+        return this.processDefinition;
     }
 
     public boolean isExcessiveParametersFound() {
@@ -110,7 +118,7 @@ public class Component extends EventSupport implements IPropertySource {
         IPropertyDescriptor[] descriptors = new IPropertyDescriptor[type.getParameters().size()];
         for (int i = 0; i < descriptors.length; i++) {
             ComponentParameter parameter = type.getParameters().get(i);
-            PropertyDescriptor descriptor = parameter.getType().createPropertyDescriptor(this, parameter, i);
+            PropertyDescriptor descriptor = parameter.getType().createPropertyDescriptor(this, parameter, i, processDefinition);
             descriptor.setDescription(parameter.getDescription());
             descriptors[i] = descriptor;
         }
@@ -121,7 +129,7 @@ public class Component extends EventSupport implements IPropertySource {
     public Object getPropertyValue(Object propertyId) {
         ComponentParameter parameter = type.getParameters().get((Integer) propertyId);
         Object value = getParameterValue(parameter);
-        return parameter.getType().toPropertyDescriptorValue(this, parameter, value);
+        return parameter.getType().toPropertyDescriptorValue(this, parameter, value, processDefinition);
     }
 
     @Override
@@ -139,7 +147,7 @@ public class Component extends EventSupport implements IPropertySource {
     @Override
     public void setPropertyValue(Object propertyId, Object editorValue) {
         ComponentParameter parameter = type.getParameters().get((Integer) propertyId);
-        Object value = parameter.getType().fromPropertyDescriptorValue(this, parameter, editorValue);
+        Object value = parameter.getType().fromPropertyDescriptorValue(this, parameter, editorValue, processDefinition);
         Object old = setParameterValue(parameter, value);
         firePropertyChange(propertyId.toString(), old, value);
     }
@@ -175,5 +183,28 @@ public class Component extends EventSupport implements IPropertySource {
             }
         }
         return "${" + type.getId() + "(" + Joiner.on(PARAMETERS_DELIM).join(args) + ")}";
+    }
+
+    public ComponentParameter getFirstRequiredEmptyParameter() {
+        List<ComponentParameter> componentParameters = type.getParameters();
+        int parametersNumber = componentParameters.size();
+        for (int i = 0; i < parametersNumber; i++) {
+            ComponentParameter componentParameter = componentParameters.get(i);
+            if (componentParameter.isRequired()) {
+                Object param = this.parameterValues.get(i);
+                if (param instanceof String) {
+                    String paramString = (String) param;
+                    if (paramString.isEmpty()) {
+                        return componentParameter;
+                    }
+                } else {
+                    List<String> paramList = (List<String>) param;
+                    if (paramList.isEmpty()) {
+                        return componentParameter;
+                    }
+                }
+            }
+        }
+        return null;
     }
 }

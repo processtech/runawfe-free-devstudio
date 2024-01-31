@@ -1,17 +1,14 @@
 package ru.runa.gpd.formeditor.ftl;
 
+import com.google.common.collect.Lists;
 import java.util.List;
-
 import org.eclipse.core.runtime.IConfigurationElement;
-
 import ru.runa.gpd.formeditor.ftl.parameter.ParameterType;
 import ru.runa.gpd.formeditor.ftl.parameter.UserTypeVariableListComboParameter;
 
-import com.google.common.collect.Lists;
-
 public class ComponentParameter {
     private final ParameterType type;
-    private final String label;
+    private final String name;
     private final boolean required;
     private final String description;
     private final VariableAccess variableAccess;
@@ -22,7 +19,7 @@ public class ComponentParameter {
     public ComponentParameter(IConfigurationElement element) {
         this.type = ComponentTypeRegistry.getParameterNotNull(element.getAttribute("type"));
         this.required = !Boolean.valueOf(element.getAttribute("optional"));
-        this.label = element.getAttribute("name") + (required ? " *" : "");
+        this.name = element.getAttribute("name");
         this.description = element.getAttribute("description");
         this.variableAccess = VariableAccess.valueOf(element.getAttribute("variableAccess"));
         if (type instanceof UserTypeVariableListComboParameter) {
@@ -39,8 +36,12 @@ public class ComponentParameter {
         return type;
     }
 
+    public String getName() {
+        return name;
+    }
+
     public String getLabel() {
-        return label;
+        return name + (required ? " *" : "");
     }
 
     public String getDescription() {

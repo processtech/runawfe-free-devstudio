@@ -1,16 +1,17 @@
 package ru.runa.gpd.formeditor.ftl.parameter;
 
+import com.google.common.collect.Lists;
 import java.beans.PropertyChangeListener;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
-
 import ru.runa.gpd.formeditor.ftl.Component;
 import ru.runa.gpd.formeditor.ftl.ComponentParameter;
+import ru.runa.gpd.formeditor.ftl.util.VariablesCache;
 import ru.runa.gpd.formeditor.ftl.validation.IParameterTypeValidator;
-import ru.runa.gpd.formeditor.wysiwyg.FormEditor;
+import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableUserType;
 
@@ -47,32 +48,37 @@ public abstract class ParameterType {
         this.validator = validator;
     }
 
-    public Object fromPropertyDescriptorValue(Component component, ComponentParameter parameter, Object editorValue) {
+    public Object fromPropertyDescriptorValue(Component component, ComponentParameter parameter, Object editorValue,
+            ProcessDefinition processDefinition) {
         return editorValue;
     }
 
-    public Object toPropertyDescriptorValue(Component component, ComponentParameter parameter, Object value) {
+    public Object toPropertyDescriptorValue(Component component, ComponentParameter parameter, Object value, ProcessDefinition processDefinition) {
         return value;
     }
 
-    public abstract PropertyDescriptor createPropertyDescriptor(Component component, ComponentParameter parameter, int propertyId);
+    public abstract PropertyDescriptor createPropertyDescriptor(Component component, ComponentParameter parameter, int propertyId,
+            ProcessDefinition processDefinition);
 
     public abstract Object createEditor(Composite parent, Component component, ComponentParameter parameter, Object oldValue,
-            PropertyChangeListener listener);
+            PropertyChangeListener listener, ProcessDefinition processDefinition);
 
-    public void updateEditor(Object ui, Component component, ComponentParameter parameter) {
+    public void updateEditor(Object ui, Component component, ComponentParameter parameter, ProcessDefinition processDefinition) {
 
     }
 
-    protected List<String> getVariableNames(ComponentParameter parameter) {
-        return FormEditor.getCurrent().getVariableNames(parameter.getVariableTypeFilter());
+    public List<String> getVariableNames(ComponentParameter parameter, ProcessDefinition processDefinition) {
+        Map<String, Variable> variablesMap = VariablesCache.getInstance().getVariables(parameter.getVariableTypeFilter(), processDefinition);
+        List<String> list = Lists.newArrayList(variablesMap.keySet());
+        Collections.sort(list);
+        return list;
     }
 
-    protected Map<String, Variable> getVariables(ComponentParameter parameter) {
-        return FormEditor.getCurrent().getVariables(parameter.getVariableTypeFilter());
+    protected Map<String, Variable> getVariables(ComponentParameter parameter, ProcessDefinition processDefinition) {
+        return VariablesCache.getInstance().getVariables(parameter.getVariableTypeFilter(), processDefinition);
     }
 
-    protected VariableUserType getVariableUserType(Variable variable) {
+    protected VariableUserType getVariableUserType(Variable variable, ProcessDefinition processDefinition) {
         if (variable == null) {
             return null;
         }
@@ -81,6 +87,6 @@ public abstract class ParameterType {
             return variable.getUserType();
         }
         String userTypeName = componentFormats[0];
-        return FormEditor.getCurrent().getVariableUserType(userTypeName);
+        return processDefinition.getVariableUserType(userTypeName);
     }
 }

@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 import ru.runa.gpd.formeditor.ftl.ComboOption;
 import ru.runa.gpd.formeditor.ftl.Component;
 import ru.runa.gpd.formeditor.ftl.ComponentParameter;
-import ru.runa.gpd.formeditor.wysiwyg.FormEditor;
+import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.wfe.var.format.ListFormat;
@@ -20,13 +20,13 @@ public class DbUserTypeVariableListComboParameter extends UserTypeAttributeParam
     }
 
     @Override
-    protected List<ComboOption> getOptions(Component component, ComponentParameter parameter) {
-        final VariableUserType userType = getUserType(component);
+    public List<ComboOption> getOptions(Component component, ComponentParameter parameter, ProcessDefinition processDefinition) {
+        final VariableUserType userType = getUserType(component, processDefinition);
         if (userType == null) {
             return Lists.newArrayList();
         }
 
-        Collection<Variable> values = getVariables(parameter).values();
+        Collection<Variable> values = getVariables(parameter, processDefinition).values();
         if (isSelectLists(component)) {
             return values.stream()
                     .filter(variable -> variable.getFormatClassName().equals(ListFormat.class.getName())
@@ -39,11 +39,10 @@ public class DbUserTypeVariableListComboParameter extends UserTypeAttributeParam
     }
 
     @Override
-    protected VariableUserType getUserType(Component component) {
+    protected VariableUserType getUserType(Component component, ProcessDefinition processDefinition) {
         final Optional<ComponentParameter> dbUserTypeParameter = component.getType().getParameters().stream()
                 .filter(parameter -> parameter.getType() instanceof DbUserTypeListComboParameter).findFirst();
-        return dbUserTypeParameter
-                .map(parameter -> FormEditor.getCurrent().getProcessDefinition().getVariableUserType((String) component.getParameterValue(parameter)))
+        return dbUserTypeParameter.map(parameter -> processDefinition.getVariableUserType((String) component.getParameterValue(parameter)))
                 .orElse(null);
     }
 
