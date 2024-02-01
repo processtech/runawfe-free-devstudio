@@ -29,6 +29,7 @@ public abstract class ProcessSerializer {
     protected static final String GLOBAL = "global";
     protected static final String VALIDATE_AT_START = "validateAtStart";
     protected static final String DISABLE_CASCADING_SUSPENSION = "disableCascadingSuspension";
+    protected static final String TASK_BUTTON_LABEL_BY_SINGLE_TRANSITION_NAME = "taskButtonLabelBySingleTransitionName";
 
     public abstract boolean isSupported(Document document);
 

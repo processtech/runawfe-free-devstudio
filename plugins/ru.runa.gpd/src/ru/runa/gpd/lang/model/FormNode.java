@@ -9,6 +9,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.ui.views.properties.ComboBoxPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
@@ -35,6 +36,7 @@ public abstract class FormNode extends SwimlanedNode {
     private String formType;
     private boolean useJSValidation;
     private String templateFileName;
+    private TaskStateExecutionButton executionButton = TaskStateExecutionButton.NONE;
     private Boolean reassignSwimlaneToTaskPerformer = null;
 
     @Override
@@ -114,6 +116,18 @@ public abstract class FormNode extends SwimlanedNode {
         return templateFileName != null && templateFileName.length() > 0;
     }
     
+    public TaskStateExecutionButton getExecutionButton() {
+        return executionButton;
+    }
+
+    public void setExecutionButton(TaskStateExecutionButton executionButton) {
+        TaskStateExecutionButton old = this.executionButton;
+        this.executionButton = executionButton;
+        for (Transition transition : this.getLeavingTransitions()) {
+            transition.firePropertyChange(PROPERTY_TASKSTATE_EXECUTION_BUTTON, old, this.executionButton);
+        }
+    }
+
     public Boolean isReassignSwimlaneToTaskPerformer() {
         return reassignSwimlaneToTaskPerformer;
     }
@@ -128,6 +142,10 @@ public abstract class FormNode extends SwimlanedNode {
     protected void populateCustomPropertyDescriptors(List<IPropertyDescriptor> descriptors) {
         super.populateCustomPropertyDescriptors(descriptors);
         descriptors.add(new FormFilesPropertyDescriptor("formFiles", Localization.getString("FormNode.property.formFiles"), this));
+        if (this.getLeavingTransitions().size() == 1) {
+            descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_TASKSTATE_EXECUTION_BUTTON,
+                    Localization.getString("property.customExecuteButtonName"), TaskStateExecutionButton.getLabels()));
+        }
         descriptors.add(new BooleanPropertyDescriptor(PROPERTY_SWIMLANE_REASSIGN_TO_TASK_PERFORMER,
                 Localization.getString("Swimlane.reassignSwimlaneToTaskPerformer")));
     }
@@ -147,6 +165,9 @@ public abstract class FormNode extends SwimlanedNode {
             value += hasFormScript() ? Localization.getString("yes") : Localization.getString("no");
             return value;
         }
+        if (PROPERTY_TASKSTATE_EXECUTION_BUTTON.equals(id)) {
+            return executionButton.ordinal();
+        }
         if (PROPERTY_SWIMLANE_REASSIGN_TO_TASK_PERFORMER.equals(id)) {
             return BooleanPropertyDescriptor.Enum.getByValueNotNull(reassignSwimlaneToTaskPerformer).ordinal();
         }
@@ -155,7 +176,10 @@ public abstract class FormNode extends SwimlanedNode {
 
     @Override
     public void setPropertyValue(Object id, Object value) {
-        if (PROPERTY_SWIMLANE_REASSIGN_TO_TASK_PERFORMER.equals(id)) {
+        if (PROPERTY_TASKSTATE_EXECUTION_BUTTON.equals(id)) {
+            setExecutionButton(TaskStateExecutionButton.values()[(Integer) value]);
+        }
+        else if (PROPERTY_SWIMLANE_REASSIGN_TO_TASK_PERFORMER.equals(id)) {
             setReassignSwimlaneToTaskPerformer(BooleanPropertyDescriptor.Enum.values()[(Integer) value].getValue());
         } else {
             super.setPropertyValue(id, value);
@@ -261,6 +285,7 @@ public abstract class FormNode extends SwimlanedNode {
         if (hasFormTemplate()) {
             copy.setTemplateFileName(getTemplateFileName());
         }
+        copy.setExecutionButton(getExecutionButton());
         copy.setUseJSValidation(isUseJSValidation());
         copy.setReassignSwimlaneToTaskPerformer(reassignSwimlaneToTaskPerformer);
     }

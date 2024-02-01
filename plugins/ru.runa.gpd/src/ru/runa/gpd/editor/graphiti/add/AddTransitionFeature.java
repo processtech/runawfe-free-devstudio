@@ -111,7 +111,7 @@ public class AddTransitionFeature extends AbstractAddFeature {
     private void createColorMarker(Connection connection, org.eclipse.draw2d.geometry.Point location, Transition transition) {
         if (transition.getSource() instanceof FormNode) {
             TransitionColor transitionColor = transition.getColor();
-            boolean visible = StyleUtil.isTransitionDecoratorVisible(transition);
+            boolean visible = StyleUtil.isFormNodeTransitionDecoratorVisible(transition);
 
             ConnectionDecorator colorMarkerDecorator = Graphiti.getPeCreateService().createConnectionDecorator(connection, true, 0.5, true);
             Ellipse ellipse = Graphiti.getGaService().createEllipse(colorMarkerDecorator);

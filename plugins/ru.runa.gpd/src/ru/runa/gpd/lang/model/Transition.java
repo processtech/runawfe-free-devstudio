@@ -147,36 +147,46 @@ public class Transition extends AbstractTransition implements ActionContainer {
 
     @Override
     public String getLabel() {
-        StringBuilder result = new StringBuilder();
-        if (getSource() instanceof ExclusiveGateway) {
-            if (((ExclusiveGateway) getSource()).isDecision()) {
-                result.append(getName());
+        Node source = getSource();
+        if (source instanceof ExclusiveGateway) {
+            if (((ExclusiveGateway) source).isDecision()) {
+                return getName();
             }
-        } else if (getSource() instanceof Decision) {
-            result.append(getName());
+        } else if (source instanceof Decision) {
+            return getName();
         } else if (PluginConstants.TIMER_TRANSITION_NAME.equals(getName())) {
             Timer timer = null;
-            if (getSource() instanceof Timer) {
-                timer = (Timer) getSource();
+            if (source instanceof Timer) {
+                timer = (Timer) source;
             }
-            if (getSource() instanceof ITimed) {
-                timer = ((ITimed) getSource()).getTimer();
+            if (source instanceof ITimed) {
+                timer = ((ITimed) source).getTimer();
             }
             if (timer != null) {
-                result.append(timer.getDelay().toString());
+                return timer.getDelay().toString();
             }
-        } else if (getSource() instanceof TaskState || getSource() instanceof StartState) {
-            int count = 0;
-            for (Transition transition : getSource().getLeavingTransitions()) {
-                if (!PluginConstants.TIMER_TRANSITION_NAME.equals(transition.getName())) {
-                    count++;
+        } else {
+            if (source instanceof FormNode) {
+                TaskStateExecutionButton sourceExecutionButton = ((FormNode) source).getExecutionButton();
+                if (sourceExecutionButton == TaskStateExecutionButton.BY_LEAVING_TRANSITION_NAME
+                        || sourceExecutionButton == TaskStateExecutionButton.NONE
+                                && source.getProcessDefinition().getExecutionButton() == TaskStateExecutionButton.BY_LEAVING_TRANSITION_NAME) {
+                    return getName();
                 }
             }
-            if (count > 1) {
-                result.append(getName());
+            if (source instanceof TaskState || source instanceof StartState) {
+                int count = 0;
+                for (Transition transition : source.getLeavingTransitions()) {
+                    if (!PluginConstants.TIMER_TRANSITION_NAME.equals(transition.getName())) {
+                        count++;
+                    }
+                }
+                if (count > 1) {
+                    return getName();
+                }
             }
         }
-        return result.toString();
+        return "";
     }
 
     @Override
