@@ -23,6 +23,7 @@ import ru.runa.gpd.lang.model.Describable;
 import ru.runa.gpd.lang.model.EndState;
 import ru.runa.gpd.lang.model.EndTokenState;
 import ru.runa.gpd.lang.model.EndTokenSubprocessDefinitionBehavior;
+import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.ITimed;
 import ru.runa.gpd.lang.model.MultiSubprocess;
@@ -38,6 +39,7 @@ import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.SwimlanedNode;
 import ru.runa.gpd.lang.model.Synchronizable;
 import ru.runa.gpd.lang.model.TaskState;
+import ru.runa.gpd.lang.model.TaskStateExecutionButton;
 import ru.runa.gpd.lang.model.Timer;
 import ru.runa.gpd.lang.model.TimerAction;
 import ru.runa.gpd.lang.model.Transition;
@@ -144,6 +146,10 @@ public class JpdlSerializer extends ProcessSerializer {
         if (!Strings.isNullOrEmpty(definition.getDescription())) {
             Element desc = root.addElement(DESCRIPTION);
             setNodeValue(desc, definition.getDescription());
+        }
+        TaskStateExecutionButton executionButton = definition.getExecutionButton();
+        if (executionButton != TaskStateExecutionButton.NONE) {
+            root.addAttribute(TASK_BUTTON_LABEL_BY_SINGLE_TRANSITION_NAME, executionButton.stringValueForSaving());
         }
         if (definition.getClass() != SubprocessDefinition.class) {
             List<Swimlane> swimlanes = definition.getSwimlanes();
@@ -305,6 +311,10 @@ public class JpdlSerializer extends ProcessSerializer {
         String swimlaneName = swimlanedNode.getSwimlaneName();
         if (((ProcessDefinition) swimlanedNode.getParent()).getSwimlaneByName(swimlaneName) != null) {
             setAttribute(taskElement, SWIMLANE, swimlaneName);
+        }
+        TaskStateExecutionButton executionButton = ((FormNode) swimlanedNode).getExecutionButton();
+        if (executionButton != TaskStateExecutionButton.NONE) {
+            setAttribute(taskElement, TASK_BUTTON_LABEL_BY_SINGLE_TRANSITION_NAME, executionButton.stringValueForSaving());
         }
         if (swimlanedNode instanceof TaskState) {
             TaskState taskState = (TaskState) swimlanedNode;
@@ -517,6 +527,10 @@ public class JpdlSerializer extends ProcessSerializer {
         if (!Strings.isNullOrEmpty(nodeAsyncExecutionValue)) {
             definition.setDefaultNodeAsyncExecution(NodeAsyncExecution.getByValueNotNull(nodeAsyncExecutionValue));
         }
+        String processExecutionButton = root.attributeValue(TASK_BUTTON_LABEL_BY_SINGLE_TRANSITION_NAME);
+        if (processExecutionButton != null) {
+            definition.setExecutionButton(TaskStateExecutionButton.parseFromSaving(processExecutionButton));
+        }
         String useGlobals = root.attributeValue(USE_GLOBALS);
         definition.setUsingGlobalVars("true".equals(useGlobals));
         List<Element> swimlanes = root.elements(SWIMLANE);
@@ -552,6 +566,10 @@ public class JpdlSerializer extends ProcessSerializer {
                     String swimlaneName = stateNodeChild.attributeValue(SWIMLANE);
                     Swimlane swimlane = definition.getSwimlaneByName(swimlaneName);
                     startState.setSwimlane(swimlane);
+                    String executionButton = stateNodeChild.attributeValue(TASK_BUTTON_LABEL_BY_SINGLE_TRANSITION_NAME);
+                    if (executionButton != null) {
+                        startState.setExecutionButton(TaskStateExecutionButton.parseFromSaving(executionButton));
+                    }
                 }
             }
         }
@@ -642,6 +660,10 @@ public class JpdlSerializer extends ProcessSerializer {
                     String ignore = stateNodeChild.attributeValue(IGNORE_SUBSTITUTION_RULES);
                     if (ignore != null) {
                         ((TaskState) state).setIgnoreSubstitutionRules(Boolean.parseBoolean(ignore));
+                    }
+                    String executionButton = stateNodeChild.attributeValue(TASK_BUTTON_LABEL_BY_SINGLE_TRANSITION_NAME);
+                    if (executionButton != null) {
+                        ((TaskState) state).setExecutionButton(TaskStateExecutionButton.parseFromSaving(executionButton));
                     }
                     String duedateAttr = stateNodeChild.attributeValue(DUEDATE);
                     if (!Strings.isNullOrEmpty(duedateAttr)) {

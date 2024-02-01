@@ -58,6 +58,7 @@ public class ProcessDefinition extends NamedGraphElement implements Describable,
     protected final Set<PropertyChangeListener> delegatedListeners = new HashSet<>();
     protected final ArrayList<VersionInfo> versionInfoList = new ArrayList<>();
     protected boolean regulationGenerated = false;
+    private TaskStateExecutionButton executionButton = TaskStateExecutionButton.NONE;
 
     public ProcessDefinition(IFile file) {
         this.file = file;
@@ -428,6 +429,8 @@ public class ProcessDefinition extends NamedGraphElement implements Describable,
     @Override
     protected void populateCustomPropertyDescriptors(List<IPropertyDescriptor> descriptors) {
         super.populateCustomPropertyDescriptors(descriptors);
+        descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_TASKSTATE_EXECUTION_BUTTON,
+                Localization.getString("property.customExecuteButtonName"), TaskStateExecutionButton.getLabels()));
         if (this instanceof SubprocessDefinition) {
             descriptors.add(new PropertyDescriptor(PROPERTY_LANGUAGE, Localization.getString("ProcessDefinition.property.language")));
             descriptors.add(new PropertyDescriptor(PROPERTY_TASK_DEADLINE, Localization.getString("default.task.deadline")));
@@ -468,6 +471,9 @@ public class ProcessDefinition extends NamedGraphElement implements Describable,
         if (PROPERTY_USE_GLOBALS.equals(id)) {
             return usingGlobalVars ? 1 : 0;
         }
+        if (PROPERTY_TASKSTATE_EXECUTION_BUTTON.equals(id)) {
+            return executionButton.ordinal();
+        }
         return super.getPropertyValue(id);
     }
 
@@ -482,6 +488,8 @@ public class ProcessDefinition extends NamedGraphElement implements Describable,
             setDefaultNodeAsyncExecution(NodeAsyncExecution.values()[(Integer) value]);
         } else if (PROPERTY_USE_GLOBALS.equals(id)) {
             setUsingGlobalVars(((int) value) == 1);
+        } else if (PROPERTY_TASKSTATE_EXECUTION_BUTTON.equals(id)) {
+            setExecutionButton(TaskStateExecutionButton.values()[(Integer) value]);
         } else {
             super.setPropertyValue(id, value);
         }
@@ -757,5 +765,17 @@ public class ProcessDefinition extends NamedGraphElement implements Describable,
     public boolean isRegulationGenerated() {
         return this.regulationGenerated;
     }
-    
+
+    public TaskStateExecutionButton getExecutionButton() {
+        return executionButton;
+    }
+
+    public void setExecutionButton(TaskStateExecutionButton executionButton) {
+        TaskStateExecutionButton old = this.executionButton;
+        this.executionButton = executionButton;
+        firePropertyChange(PROPERTY_TASKSTATE_EXECUTION_BUTTON, old, this.executionButton);
+        for (Transition transition : this.getChildrenRecursive(Transition.class)) {
+            transition.firePropertyChange(PROPERTY_TASKSTATE_EXECUTION_BUTTON, old, this.executionButton);
+        }
+    }
 }

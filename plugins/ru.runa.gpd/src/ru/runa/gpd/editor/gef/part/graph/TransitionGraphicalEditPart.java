@@ -4,7 +4,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.eclipse.draw2d.AbsoluteBendpoint;
 import org.eclipse.draw2d.Connection;
 import org.eclipse.draw2d.IFigure;
@@ -12,9 +11,8 @@ import org.eclipse.draw2d.RoutingListener;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.gef.EditPolicy;
 import org.eclipse.gef.editparts.AbstractConnectionEditPart;
-
-import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.PluginConstants;
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.gef.figure.TransitionFigure;
 import ru.runa.gpd.editor.gef.policy.ActionContainerLayoutEditPolicy;
 import ru.runa.gpd.editor.gef.policy.TransitionConnectionBendpointEditPolicy;
@@ -161,6 +159,11 @@ public class TransitionGraphicalEditPart extends AbstractConnectionEditPart impl
             }
         } else if (PROPERTY_CHILDREN_CHANGED.equals(messageId)) {
             refreshChildren();
+        }
+        else if (PROPERTY_TASKSTATE_EXECUTION_BUTTON.equals(messageId)) {
+            if (!evt.getOldValue().equals(evt.getNewValue())) {
+                getFigure().setLabelText(getModel().getLabel());
+            }
         }
     }
 }
