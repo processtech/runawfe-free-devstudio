@@ -1,7 +1,6 @@
 package ru.runa.gpd.extension.businessRule;
 
 import java.util.List;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionEvent;
@@ -10,7 +9,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 
 public class LogicComposite extends Composite {
@@ -18,9 +16,9 @@ public class LogicComposite extends Composite {
     public static final int MARGIN_TOP_STEP = 10;
     public static final int MARGIN_BOTTOM_STEP = 10;
 
-    protected static final String AND_LOGIC_EXPRESSION = "and";
-    protected static final String OR_LOGIC_EXPRESSION = "or";
-    protected static final String NULL_LOGIC_EXPRESSION = "null";
+    public static final String AND_LOGIC_EXPRESSION = "and";
+    public static final String OR_LOGIC_EXPRESSION = "or";
+    public static final String NULL_LOGIC_EXPRESSION = "null";
 
     private List<LogicComposite> logicComposites;
     private Composite expressionsComposite;
@@ -202,7 +200,7 @@ public class LogicComposite extends Composite {
     }
 
     public void updateVerticalMargin(int lineIndex) {
-        Composite expression = (Composite) logicComposites.get(lineIndex).getParent();
+        Composite expression = logicComposites.get(lineIndex).getParent();
         LogicComposite logiComposite = logicComposites.get(lineIndex);
 
         ((GridLayout) expression.getLayout()).marginTop = logiComposite.getBrackets()[0] * MARGIN_TOP_STEP;
