@@ -588,8 +588,8 @@ public class GlobalValidatorExpressionConstructorDialog extends Dialog {
         int index = 0;
         Exception firstExpressionlineException = null;
         int firstExpressionlineExceptionIndex = 0;
+        Set<String> paramsNames = ExpressionLine.getParamsNames();
         for (ExpressionLine i : this.expressionLinesList) {
-            Set<String> paramsNames = i.getParamsNames();
             Map<String, String> initializationParamsForExpressionLine = new HashMap<>();
             for (String param : paramsNames) {
                 String paramName = paramPrefix + "_" + String.valueOf(index) + "_" + param;
@@ -676,6 +676,10 @@ public class GlobalValidatorExpressionConstructorDialog extends Dialog {
             return params;
         }
 
+        public int getExpressionLineNumber() {
+            return Integer.parseInt(this.params.get(expressionLineNumberParam));
+        }
+
         public void addExpressionLineModel(ExpressionLine.ExpressionLineModel model) {
             String expressionLinesNumberString = this.params.get(expressionLineNumberParam);
             int expressionLinesNumber = Integer.parseInt(expressionLinesNumberString);
@@ -683,6 +687,15 @@ public class GlobalValidatorExpressionConstructorDialog extends Dialog {
                 this.params.put(paramPrefix + "_" + expressionLinesNumberString + "_" + entry.getKey(), entry.getValue());
             }
             this.params.put(expressionLineNumberParam, String.valueOf(expressionLinesNumber + 1));
+        }
+
+        public ExpressionLine.ExpressionLineModel getExpressionLineModel(int index) {
+            ExpressionLine.ExpressionLineModel model = new ExpressionLine.ExpressionLineModel();
+            for (String param : ExpressionLine.getParamsNames()) {
+                String key = paramPrefix + "_" + index + "_" + param;
+                model.getParamsMap().put(param, this.params.get(key));
+            }
+            return model;
         }
     }
 }
