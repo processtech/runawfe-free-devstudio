@@ -22,7 +22,7 @@ import ru.runa.gpd.util.VariableMapping;
 import ru.runa.gpd.util.VariableUtils;
 import ru.runa.wfe.lang.AsyncCompletionMode;
 
-public class Subprocess extends Node implements Synchronizable, IBoundaryEventContainer {
+public class Subprocess extends Node implements Synchronizable, IBoundaryEventContainer, ITimed {
     protected String subProcessName = "";
     protected List<VariableMapping> variableMappings = Lists.newArrayList();
     private boolean embedded;
@@ -296,6 +296,11 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
 
     public ProcessDefinition getSubProcessDefinition() {
         return SubprocessFinder.findSubProcessDefinition(this);
+    }
+
+    @Override
+    public Timer getTimer() {
+        return getFirstChild(Timer.class);
     }
 
 }

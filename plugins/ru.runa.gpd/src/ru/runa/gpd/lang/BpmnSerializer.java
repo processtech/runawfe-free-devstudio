@@ -270,6 +270,7 @@ public class BpmnSerializer extends ProcessSerializer {
             if (!subprocess.isEmbedded()) {
                 writeVariables(element, subprocess.getVariableMappings());
             }
+            writeBoundaryTimer(processElement, subprocess);
             writeBoundaryEvents(processElement, subprocess);
         }
         List<ThrowEventNode> throwEventNodes = definition.getChildren(ThrowEventNode.class);
