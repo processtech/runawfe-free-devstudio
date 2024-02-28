@@ -10,6 +10,9 @@ public class DeleteAction extends BaseActionDelegate {
     @Override
     @SuppressWarnings("unchecked")
     public void run(IAction action) {
+        if (!isResource()) {
+            return;
+        }
         IStructuredSelection selection = getStructuredSelection();
         if (isBotStructuredSelection()) {
             WorkspaceOperations.deleteBotResources(selection.toList());
