@@ -99,6 +99,10 @@ public abstract class BaseActionDelegate implements IWorkbenchWindowActionDelega
         return false;
     }
 
+    protected boolean isResource() {
+        return getSelectedResource() != null;
+    }
+
     private IResource getSelectedResource() {
         IStructuredSelection selection = getStructuredSelection();
         if (selection != null) {

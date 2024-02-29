@@ -249,6 +249,7 @@ public class Transition extends AbstractTransition implements ActionContainer {
             if (parentError != null) {
                 return parentError;
             }
+            name = name.trim();
             List<Transition> list = getSource().getLeavingTransitions();
             for (Transition transition : list) {
                 if (Objects.equal(name, transition.getName())) {

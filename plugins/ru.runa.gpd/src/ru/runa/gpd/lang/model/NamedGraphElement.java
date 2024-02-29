@@ -1,6 +1,5 @@
 package ru.runa.gpd.lang.model;
 
-import com.google.common.base.Strings;
 import org.eclipse.jface.dialogs.IInputValidator;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.settings.PrefConstants;
@@ -33,8 +32,7 @@ public abstract class NamedGraphElement extends GraphElement implements Comparab
         return (String name) -> {
             if (name != null) {
                 name = name.trim();
-            }
-            if (Strings.isNullOrEmpty(name)) {
+            } else {
                 return Localization.getString("VariableNamePage.error.empty", name);
             }
             if (name.equals(getName())) {

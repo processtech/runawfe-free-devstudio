@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
@@ -360,4 +361,20 @@ public class Variable extends NamedGraphElement implements Describable {
         variable.setName(name);
         return variable;
     }
+
+    @Override
+    public IInputValidator nameValidator() {
+        return (String name) -> {
+            String parentError = super.nameValidator().isValid(name);
+            if (parentError != null) {
+                return parentError;
+            }
+            name = name.trim();
+            if (name.isEmpty()) {
+                return Localization.getString("VariableNamePage.error.empty", name);
+            }
+            return null;
+        };
+    }
+
 }
