@@ -46,6 +46,7 @@ import ru.runa.gpd.lang.NodeRegistry;
 import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.lang.model.Action;
 import ru.runa.gpd.lang.model.Delegable;
+import ru.runa.gpd.lang.model.EndTokenState;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.MessageNode;
 import ru.runa.gpd.lang.model.Node;
@@ -185,9 +186,15 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
                 data.getDomainSpecificContextButtons().add(createTransitionButton.getDragAndDropFeatures().size(), createTransitionButton);
             }
         }
-
-        if ((element instanceof StartState) && (element.getProcessDefinition() instanceof SubprocessDefinition)
-                && ((SubprocessDefinition) element.getProcessDefinition()).isTriggeredByEvent()) {
+        boolean showChangeEventType = element instanceof EndTokenState;
+        if (element instanceof StartState) {
+            if (element.getProcessDefinition() instanceof SubprocessDefinition) {
+                showChangeEventType = ((SubprocessDefinition) element.getProcessDefinition()).isTriggeredByEvent();
+            } else {
+                showChangeEventType = true;
+            }
+        }
+        if (showChangeEventType) {
             ContextButtonEntry changeEventTypeButton = new ContextButtonEntry(null, null);
             changeEventTypeButton.setText(Localization.getString("event.type.label"));
             changeEventTypeButton.setDescription(Localization.getString("event.type.description"));
