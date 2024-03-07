@@ -273,7 +273,6 @@ public abstract class ProcessEditorBase extends MultiPageEditorPart
             ProcessDefinitionValidator.validateDefinition(definition);
             WorkspaceOperations.saveProcessDefinition(definition);
             getCommandStack().markSaveLocation();
-            definition.setDirty(false);
             definition.setRegulationGenerated(false);
             ProcessSaveHistory.addSavepoint(definitionFile);
         } catch (Exception e) {
