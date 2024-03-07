@@ -235,7 +235,9 @@ public class WorkspaceOperations {
         wizard.init(PlatformUI.getWorkbench(), selection);
         WizardDialog dialog = new WizardDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), wizard);
         if (dialog.open() == Window.OK) {
-            return ProcessCache.getProcessDefinition(wizard.getDefinitionFile());
+            ProcessDefinition definition = ProcessCache.getProcessDefinition(wizard.getDefinitionFile());
+            saveProcessDefinition(definition);
+            return definition;
         }
         return null;
     }
