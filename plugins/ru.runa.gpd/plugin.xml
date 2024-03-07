@@ -1591,7 +1591,7 @@
             id="ru.runa.gpd.sleak"
             name="%label.view.sleak"/>
       <view
-            class="org.eclipse.ui.views.properties.PropertySheet"
+            class="ru.runa.gpd.ui.view.CustomPropertySheet"
             icon="icons/properties_view.gif"
             id="org.eclipse.ui.propertiesView"
             name="%label.view.properties"/>

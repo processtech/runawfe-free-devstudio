@@ -3,9 +3,11 @@ package ru.runa.gpd.ui.view;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.eclipse.graphiti.ui.internal.parts.ContainerShapeEditPart;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.views.properties.IPropertySheetEntry;
 import org.eclipse.ui.views.properties.PropertySheetPage;
@@ -30,7 +32,9 @@ public class OrderedPropertySheetPage extends PropertySheetPage implements Prope
     public void createControl(Composite parent) {
         super.createControl(parent);
         // 3274#note-8
-        getControl().setMenu(null);
+        Menu menu = getControl().getMenu();
+        MenuManager menuManager = (MenuManager) menu.getData(MenuManager.MANAGER_KEY);
+        menuManager.remove("defaults");
     }
 
     @Override

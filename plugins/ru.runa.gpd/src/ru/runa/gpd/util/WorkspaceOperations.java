@@ -245,7 +245,9 @@ public class WorkspaceOperations {
         wizard.init(PlatformUI.getWorkbench(), selection);
         WizardDialog dialog = new WizardDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), wizard);
         if (dialog.open() == Window.OK) {
-            return ProcessCache.getProcessDefinition(wizard.getDefinitionFile());
+            ProcessDefinition definition = ProcessCache.getProcessDefinition(wizard.getDefinitionFile());
+            saveProcessDefinition(definition);
+            return definition;
         }
         return null;
     }
@@ -532,13 +534,18 @@ public class WorkspaceOperations {
         }
     }
 
-    public static void saveProcessDefinition(ProcessDefinition definition) throws Exception {
+    public static void saveProcessDefinition(ProcessDefinition definition) {
         ProcessSerializer serializer = definition.getLanguage().getSerializer();
         Document document = serializer.getInitialProcessDefinitionDocument(definition.getName(), null);
         serializer.saveToXML(definition, document);
         byte[] bytes = XmlUtil.writeXml(document);
         ParContentProvider.saveAuxInfo(definition.getFile(), definition);
-        definition.getFile().setContents(new ByteArrayInputStream(bytes), true, false, null);
+        try {
+            definition.getFile().setContents(new ByteArrayInputStream(bytes), true, false, null);
+        } catch (CoreException e) {
+            PluginLogger.logError(e);
+        }
+        definition.setDirty(false);
     }
 
     public static ProcessEditorBase openProcessDefinition(IFile definitionFile) {
