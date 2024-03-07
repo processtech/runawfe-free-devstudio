@@ -523,7 +523,7 @@ public class VariableEditorPage extends EditorPartBase<Variable> {
             moveToUserType(variable, newType);
         }
 
-        private void moveToUserType(Variable variable, VariableUserType newType) throws Exception {
+        private void moveToUserType(Variable variable, VariableUserType newType) throws InterruptedException {
             if (!newType.canUseAsAttribute(variable)) {
                 ErrorDialog.open(Localization.getString("VariableTypeEditorPage.error.attribute.move.loop"));
                 return;

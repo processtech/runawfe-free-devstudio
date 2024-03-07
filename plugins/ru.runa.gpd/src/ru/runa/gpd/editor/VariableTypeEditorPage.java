@@ -735,7 +735,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
 
     private class MergeAttributesSelectionListener extends LoggingSelectionAdapter {
         @Override
-        protected void onSelection(SelectionEvent e) throws Exception {
+        protected void onSelection(SelectionEvent e) throws InterruptedException {
             IResource projectRoot = editor.getDefinitionFile().getParent();
             IDE.saveAllEditors(new IResource[] { projectRoot }, false);
 
@@ -850,7 +850,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             }
         }
 
-        private void moveToTopLevelVariable(VariableUserType oldType, Variable attribute) throws Exception {
+        private void moveToTopLevelVariable(VariableUserType oldType, Variable attribute) throws InterruptedException {
             if (getDefinition().getVariableNames(true).contains(attribute.getName())) {
                 ErrorDialog.open(Localization.getString("VariableTypeEditorPage.error.attribute.move.toplevelvariable.exists"));
                 return;
@@ -883,7 +883,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             }
         }
 
-        private void moveToUserType(VariableUserType oldType, Variable attribute, VariableUserType newType) throws Exception {
+        private void moveToUserType(VariableUserType oldType, Variable attribute, VariableUserType newType) throws InterruptedException {
             if (!newType.canUseAsAttribute(attribute)) {
                 ErrorDialog.open(Localization.getString("VariableTypeEditorPage.error.attribute.move.loop"));
                 return;

@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Objects;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
@@ -69,12 +70,16 @@ public class CopyProcessDefinitionWizard extends Wizard implements INewWizard {
                         ProcessCache.newProcessDefinitionWasCreated(definitionFile);
                         WorkspaceOperations.refreshResource(targetFolder);
                         monitor.done();
-                    } catch (Exception e) {
+                    } catch (CoreException e) {
                         throw new InvocationTargetException(e);
                     }
                 }
             });
-        } catch (Exception e) {
+        } catch (InvocationTargetException e) {
+            PluginLogger.logError(e);
+            return false;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             PluginLogger.logError(e);
             return false;
         }
