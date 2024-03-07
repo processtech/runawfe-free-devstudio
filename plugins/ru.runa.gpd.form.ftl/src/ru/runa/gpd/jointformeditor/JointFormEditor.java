@@ -12,14 +12,17 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.FileEditorInput;
 import ru.runa.gpd.Activator;
+import ru.runa.gpd.editor.DirtyDependentActions;
 import ru.runa.gpd.formeditor.wysiwyg.FormEditor;
 import ru.runa.gpd.jointformeditor.resources.Messages;
 import ru.runa.gpd.jseditor.JavaScriptEditor;
+import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.par.ProcessDefinitionValidator;
 import ru.runa.gpd.settings.PrefConstants;
 import ru.runa.gpd.ui.control.FieldValidatorsPage;
 import ru.runa.gpd.ui.control.GlobalValidatorsPage;
 import ru.runa.gpd.util.IOUtils;
+import ru.runa.gpd.util.WorkspaceOperations;
 import ru.runa.gpd.validation.FormNodeValidation;
 import ru.runa.gpd.validation.ValidationUtil;
 
@@ -95,7 +98,11 @@ public class JointFormEditor extends FormEditor {
         globalValidatorsPage.doSave();
         ValidationUtil.rewriteValidation(formFile, formNode, validation);
         setDirty();
+        ProcessDefinition definition = formNode.getProcessDefinition();
         ProcessDefinitionValidator.validateDefinition(formNode.getProcessDefinition());
+        if (definition.isDirty()) {
+            WorkspaceOperations.saveProcessDefinition(definition);
+        }
     }
 
     @Override
@@ -112,6 +119,7 @@ public class JointFormEditor extends FormEditor {
 
     private void setDirty() {
         firePropertyChange(IEditorPart.PROP_DIRTY);
+        DirtyDependentActions.update();
     }
 
     @Override
