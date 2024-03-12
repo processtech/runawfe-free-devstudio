@@ -72,7 +72,7 @@ public class CompareProcessDefinitionWizardPage extends WizardPage {
     private ISelection firstSelection = null;
     private ISelection secondSelection = null;
 
-    private static final Set<String> EXTENSIONS = Sets.newHashSet("xml", "ftl", "quick", "html", "css", "js");
+    private static final Set<String> EXTENSIONS = Sets.newHashSet("xml", "ftl", "quick", "html", "css", "js", "json");
 
     public CompareProcessDefinitionWizardPage(IStructuredSelection selection) {
         super(CompareProcessDefinitionWizardPage.class.getSimpleName());
