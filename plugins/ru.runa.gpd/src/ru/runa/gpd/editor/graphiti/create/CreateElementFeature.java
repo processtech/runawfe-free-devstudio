@@ -132,7 +132,7 @@ public class CreateElementFeature extends AbstractCreateFeature implements GEFCo
             context.setWidth(defaultSize.width);
         }
         element.setConstraint(new Rectangle(context.getX(), context.getY(), context.getWidth(), context.getHeight()));
-        if (element instanceof IBoundaryEventCapable) {
+        if (element instanceof IBoundaryEventCapable && ((IBoundaryEventCapable) element).isBoundaryEvent()) {
             ((IBoundaryEventCapable) element).updateBoundaryEventConstraint();
         }
     }
