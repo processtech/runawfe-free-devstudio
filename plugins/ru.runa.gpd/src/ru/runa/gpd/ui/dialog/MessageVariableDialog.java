@@ -103,6 +103,7 @@ public class MessageVariableDialog extends Dialog {
                         if (Strings.isNullOrEmpty(aliasText.getText())) {
                             aliasText.setText(variable);
                         }
+                        updateButtons();
                     }
                 }
             });
