@@ -3,7 +3,9 @@ package ru.runa.gpd.util;
 import com.google.common.base.Objects;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class EventSupport {
@@ -35,7 +37,9 @@ public class EventSupport {
     }
 
     protected void firePropertyChange(PropertyChangeEvent event) {
-        for (PropertyChangeListener listener : listeners) {
+        // Создаём копию списка, т.к. исходный список меняется во время обработки событий (rm3444)
+        List<PropertyChangeListener> listenersCopy = new ArrayList<>(listeners);
+        for (PropertyChangeListener listener : listenersCopy) {
             listener.propertyChange(event);
         }
     }
