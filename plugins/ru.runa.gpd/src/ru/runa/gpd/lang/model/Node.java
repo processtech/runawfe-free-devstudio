@@ -243,7 +243,7 @@ public abstract class Node extends NamedGraphElement implements Describable {
 
     public void removeLeavingTransition(Transition transition) {
         removeChild(transition);
-        firePropertyChange(NODE_LEAVING_TRANSITION_REMOVED, null, transition);
+        firePropertyChange(NODE_LEAVING_TRANSITION_REMOVED, transition, null);
         Node target = transition.getTarget();
         if (target != null) {
             target.firePropertyChange(NODE_ARRIVING_TRANSITION_REMOVED, null, transition);
