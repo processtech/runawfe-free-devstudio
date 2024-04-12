@@ -999,7 +999,7 @@
          <graphiti
                add="ru.runa.gpd.editor.graphiti.add.AddStartNodeFeature"
                create="ru.runa.gpd.editor.graphiti.create.CreateStartNodeFeature"
-               update="ru.runa.gpd.editor.graphiti.update.UpdateStartNodeFeature"
+               update="ru.runa.gpd.editor.graphiti.update.UpdateFeatureWithTextDecorator"
                doubleClick="ru.runa.gpd.editor.graphiti.update.DoubleClickFormNodeFeature"
                fixedSize="true"
                height="4"
@@ -1421,7 +1421,7 @@
          <graphiti
                add="ru.runa.gpd.editor.graphiti.add.AddEndNodeFeature"
                create="ru.runa.gpd.editor.graphiti.create.CreateElementFeature"
-               update="ru.runa.gpd.editor.graphiti.update.UpdateEndNodeFeature"
+               update="ru.runa.gpd.editor.graphiti.update.UpdateFeatureWithTextDecorator"
                fixedSize="true"
                height="4"
                width="4">
@@ -1441,7 +1441,7 @@
          <graphiti
                add="ru.runa.gpd.editor.graphiti.add.AddEndNodeFeature"
                create="ru.runa.gpd.editor.graphiti.create.CreateElementFeature"
-               update="ru.runa.gpd.editor.graphiti.update.UpdateEndNodeFeature"
+               update="ru.runa.gpd.editor.graphiti.update.UpdateFeatureWithTextDecorator"
                fixedSize="true"
                height="4"
                width="4">
