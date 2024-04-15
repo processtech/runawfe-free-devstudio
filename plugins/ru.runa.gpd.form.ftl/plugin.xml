@@ -124,10 +124,16 @@
             id="usertypeattribute">
       </type>
       <type
-            class="ru.runa.gpd.formeditor.ftl.parameter.UserTypeAttributeListParameter"
+            class="ru.runa.gpd.formeditor.ftl.parameter.UserTypeAttributeListMultipleParameterType"
             depends="usertypevarlistcombo"
-            validator="ru.runa.gpd.formeditor.ftl.validation.UserTypeAttributeListValidator"
+            validator="ru.runa.gpd.formeditor.ftl.validation.UserTypeAttributeListParameterTypeValidator"
             id="usertypeattributelist">
+      </type>
+      <type
+            class="ru.runa.gpd.formeditor.ftl.parameter.UserTypeAttributeListStringParameterType"
+            depends="usertypevarlistcombo"
+            validator="ru.runa.gpd.formeditor.ftl.validation.UserTypeAttributeListParameterTypeValidator"
+            id="usertypeattributesstring">
       </type>
       <type
             class="ru.runa.gpd.formeditor.ftl.parameter.SwimlaneComboParameter"
@@ -145,7 +151,7 @@
             validator="ru.runa.gpd.formeditor.ftl.validation.ProjectionComponentValidator"
             depends="dbusertypelistcombo"
             id="projections">
-      </type>
+      </type>    
    </extension>
    
    <extension
@@ -1315,23 +1321,75 @@
          </param>
       </component>
       <component
-              enabled="true"
-              id="EdsInteraction"
-              imageProvider="ru.runa.gpd.formeditor.ftl.image.VariableComponentImageProvider"
-              name="%Method.EdsInteraction"
-              order="-77">
+            enabled="true"
+            id="EdsInteraction"
+            imageProvider="ru.runa.gpd.formeditor.ftl.image.VariableComponentImageProvider"
+            name="%Method.EdsInteraction"
+            order="-77">
          <param
-                 name="%Param.Variable"
-                 type="varfinder"
-                 variableAccess="WRITE"
-                 variableTypeFilter="ru.runa.wfe.var.UserTypeMap">
+               name="%Param.Variable"
+               type="varfinder"
+               variableAccess="WRITE"
+               variableTypeFilter="ru.runa.wfe.var.UserTypeMap">
          </param>
          <param
-                 name="%Param.FileVariable"
-                 optional="true"
-                 type="varfinder"
-                 variableAccess="WRITE"
-                 variableTypeFilter="ru.runa.wfe.var.file.FileVariable">
+               name="%Param.FileVariable"
+               optional="true"
+               type="varfinder"
+               variableAccess="WRITE"
+               variableTypeFilter="ru.runa.wfe.var.file.FileVariable">
+         </param>
+      </component>
+      <component
+            enabled="true"
+            id="EditAndDisplayUserTypeList"
+            imageProvider="ru.runa.gpd.formeditor.ftl.image.VariableComponentImageProvider"
+            name="%Method.EditAndDisplayUserTypeList"
+            order="-76">
+         <param
+               name="%Param.Variable"
+               optional="false"
+               type="usertypevarlistcombo"
+               variableAccess="WRITE"
+               variableTypeFilter="java.util.List">
+         </param>
+         <param
+               name="%Param.ListAddition"
+               type="combo"
+               variableAccess="NONE">
+            <paramValue
+                  name="false"
+                  value="false">
+            </paramValue>
+            <paramValue
+                  name="true"
+                  value="true">
+            </paramValue>
+         </param>
+         <param
+               name="%Param.ListRemoval"
+               type="combo"
+               variableAccess="NONE">
+            <paramValue
+                  name="false"
+                  value="false">
+            </paramValue>
+            <paramValue
+                  name="true"
+                  value="true">
+            </paramValue>
+         </param>
+         <param
+               name="%Param.EditableAttributes"
+               optional="true"
+               type="usertypeattributesstring"
+               variableAccess="NONE">
+         </param>
+         <param
+               name="%Param.ReadOnlyAttributes"
+               optional="true"
+               type="usertypeattributesstring"
+               variableAccess="NONE">
          </param>
       </component>
    </extension>
