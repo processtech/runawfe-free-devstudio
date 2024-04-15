@@ -15,6 +15,7 @@ import ru.runa.gpd.BotCache;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.PluginLogger;
+import ru.runa.gpd.editor.graphiti.TooltipBuilderHelper;
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.extension.handler.ParamDef;
@@ -153,6 +154,11 @@ public class TaskState extends FormNode implements ActionContainer, ITimed, Sync
             }
             firePropertyChange(PROPERTY_BOT_TASK_NAME, null, "");
         }
+    }
+
+    public void notifyBotTaskLinkConfigurationHasBeenChanged(String configuration) {
+        firePropertyChange(PROPERTY_CONFIGURATION, null, configuration);
+        setDirty();
     }
 
     public TimerAction getEscalationAction() {
@@ -407,4 +413,24 @@ public class TaskState extends FormNode implements ActionContainer, ITimed, Sync
     protected boolean allowArrivingTransition(Node source, List<Transition> transitions) {
         return true;
     }
+
+    @Override
+    protected void appendExtendedTooltip(StringBuilder tooltipBuilder) {
+        super.appendExtendedTooltip(tooltipBuilder);
+        if (this.getSwimlaneBotName() != null) {
+            tooltipBuilder.append(
+                    TooltipBuilderHelper.NEW_LINE + TooltipBuilderHelper.SPACE + Localization.getString("property.botName")
+                            + TooltipBuilderHelper.COLON + TooltipBuilderHelper.SPACE
+                            + this.getSwimlaneBotName());
+        }
+        if (botTaskLink != null) {
+            tooltipBuilder.append(TooltipBuilderHelper.NEW_LINE + TooltipBuilderHelper.SPACE
+                    + Localization.getString("property.botTaskName") + TooltipBuilderHelper.COLON);
+            tooltipBuilder.append(TooltipBuilderHelper.NEW_LINE + TooltipBuilderHelper.SPACE + TooltipBuilderHelper.INDENT
+                    + Localization.getString("property.delegation.class") + TooltipBuilderHelper.COLON + TooltipBuilderHelper.SPACE
+                    + botTaskLink.getDelegationClassName());
+            TooltipBuilderHelper.addDelegableConfiguration(botTaskLink, tooltipBuilder);
+        }
+    }
+
 }

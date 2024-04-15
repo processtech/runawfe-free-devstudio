@@ -13,7 +13,9 @@ import org.eclipse.ui.views.properties.PropertyDescriptor;
 import org.eclipse.ui.views.properties.TextPropertyDescriptor;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginConstants;
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.GEFConstants;
+import ru.runa.gpd.editor.graphiti.TooltipBuilderHelper;
 import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.extension.decision.IDecisionProvider;
 import ru.runa.gpd.lang.Language;
@@ -115,19 +117,17 @@ public class Transition extends AbstractTransition implements ActionContainer {
         super.populateCustomPropertyDescriptors(descriptors);
         descriptors.add(new PropertyDescriptor(PROPERTY_SOURCE, Localization.getString("Transition.property.source")));
         descriptors.add(new PropertyDescriptor(PROPERTY_TARGET, Localization.getString("Transition.property.target")));
-        if (FormNode.class.isAssignableFrom(getSource().getClass())) {
-            if (getSource().getLeavingTransitions().size() == 1) {
-                descriptors.add(new PropertyDescriptor(PROPERTY_ORDERNUM, Localization.getString("Transition.property.orderNum")));
-            } else {
-                TextPropertyDescriptor orderNumPropertyDescriptor = new TextPropertyDescriptor(PROPERTY_ORDERNUM,
-                        Localization.getString("Transition.property.orderNum"));
-                orderNumPropertyDescriptor.setValidator(new TransitionOrderNumCellEditorValidator(getSource().getLeavingTransitions().size()));
-                descriptors.add(orderNumPropertyDescriptor);
-            }
-            if (getProcessDefinition().getLanguage().equals(Language.BPMN)) {
+        if (getSource().getLeavingTransitions().size() == 1) {
+            descriptors.add(new PropertyDescriptor(PROPERTY_ORDERNUM, Localization.getString("Transition.property.orderNum")));
+        } else {
+            TextPropertyDescriptor orderNumPropertyDescriptor = new TextPropertyDescriptor(PROPERTY_ORDERNUM,
+                    Localization.getString("Transition.property.orderNum"));
+            orderNumPropertyDescriptor.setValidator(new TransitionOrderNumCellEditorValidator(getSource().getLeavingTransitions().size()));
+            descriptors.add(orderNumPropertyDescriptor);
+        }
+        if (FormNode.class.isAssignableFrom(getSource().getClass()) && getProcessDefinition().getLanguage().equals(Language.BPMN)) {
                 descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_COLOR, Localization.getString("Transition.property.color"),
                         Stream.of(TransitionColor.values()).map(e -> e.getLabel()).toArray(String[]::new)));
-            }
         }
     }
 
@@ -138,7 +138,7 @@ public class Transition extends AbstractTransition implements ActionContainer {
         } else if (PROPERTY_TARGET.equals(id) && getTarget() != null) {
             return target != null ? target.getName() : "";
         } else if (PROPERTY_ORDERNUM.equals(id)) {
-            return getSource() instanceof FormNode ? Integer.toString(getSource().getLeavingTransitions().indexOf(this) + 1) : null;
+            return Integer.toString(getSource().getLeavingTransitions().indexOf(this) + 1);
         } else if (PROPERTY_COLOR.equals(id)) {
             return getSource() instanceof FormNode ? getColor().ordinal() : null;
         }
@@ -246,10 +246,21 @@ public class Transition extends AbstractTransition implements ActionContainer {
                     return Localization.getString("error.transition_already_exists", name);
                 }
             }
-            ;
             return null;
         };
 
+    }
+
+    @Override
+    public String getTooltip() {
+        if (this.getParent().getChildren(Transition.class).size() > 1) {
+            StringBuilder tooltipBuilder = new StringBuilder(super.getTooltip());
+            Object orderNum = getPropertyValue(PropertyNames.PROPERTY_ORDERNUM);
+            tooltipBuilder.append(TooltipBuilderHelper.NEW_LINE + TooltipBuilderHelper.SPACE + Localization.getString("Transition.property.orderNum")
+                    + TooltipBuilderHelper.COLON + TooltipBuilderHelper.SPACE + orderNum);
+            return tooltipBuilder.toString();
+        }
+        return super.getTooltip();
     }
 
 }

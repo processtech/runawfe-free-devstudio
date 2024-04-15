@@ -1,9 +1,10 @@
 package ru.runa.gpd.util;
 
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.regex.Pattern;
-
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
@@ -13,7 +14,6 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.resource.ImageDescriptor;
-
 import ru.runa.gpd.BotCache;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.SharedImages;
@@ -33,9 +33,6 @@ import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.swimlane.BotSwimlaneInitializer;
 import ru.runa.gpd.swimlane.SwimlaneInitializer;
 import ru.runa.gpd.swimlane.SwimlaneInitializerParser;
-
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 
 /**
  * The class provide methods for perform operation with bot task config.
@@ -194,7 +191,7 @@ public class BotTaskUtils {
             String oldConfigurationHash = botTaskLink.getDelegationConfiguration().replaceAll(" ", "").replaceAll("\n", "");
             if (!newConfigurationHash.equals(oldConfigurationHash)) {
                 botTaskLink.setDelegationConfiguration(newConfiguration);
-                taskState.setDirty();
+                taskState.notifyBotTaskLinkConfigurationHasBeenChanged(newConfiguration);
             }
         }
     }
