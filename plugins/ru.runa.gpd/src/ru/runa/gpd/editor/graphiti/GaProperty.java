@@ -27,6 +27,7 @@ public class GaProperty extends PropertyImpl {
     public static final String BOUNDARY_ELLIPSE = "boundaryEllipse";
     public static final String TRANSITION_COLOR_MARKER = "transitionColorMarker";
     public static final String TRANSITION_NUMBER = "transitionNumber";
+    public static final String TOOLTIP = "tooltip";
 
     public GaProperty(String name, String value) {
         setKey(name);

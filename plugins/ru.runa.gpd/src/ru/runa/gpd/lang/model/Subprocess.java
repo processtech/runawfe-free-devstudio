@@ -11,6 +11,7 @@ import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
+import ru.runa.gpd.editor.graphiti.TooltipBuilderHelper;
 import ru.runa.gpd.extension.VariableFormatArtifact;
 import ru.runa.gpd.extension.VariableFormatRegistry;
 import ru.runa.gpd.lang.ValidationError;
@@ -123,6 +124,7 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
         this.variableMappings.clear();
         this.variableMappings.addAll(variablesList);
         setDirty();
+        firePropertyChange(PROPERTY_VARIABLES, null, variableMappings);
     }
 
     public void setSubProcessName(String subProcessName) {
@@ -301,6 +303,16 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
     @Override
     public Timer getTimer() {
         return getFirstChild(Timer.class);
+    }
+
+    @Override
+    protected void appendExtendedTooltip(StringBuilder tooltipBuilder) {
+        super.appendExtendedTooltip(tooltipBuilder);
+        if (!getVariableMappings().isEmpty()) {
+            tooltipBuilder.append(TooltipBuilderHelper.NEW_LINE + TooltipBuilderHelper.SPACE + Localization.getString("property.variable.mappings")
+                    + TooltipBuilderHelper.COLON);
+            tooltipBuilder.append(TooltipBuilderHelper.variableMappingsToString(getVariableMappings(), true));
+        }
     }
 
 }

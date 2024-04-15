@@ -105,6 +105,7 @@ public class MessageVariableDialog extends Dialog {
                         }
                         updateButtons();
                     }
+                    updateButtons();
                 }
             });
         }

@@ -1,5 +1,6 @@
 package ru.runa.gpd.editor.graphiti.update;
 
+import com.google.common.base.Objects;
 import org.eclipse.graphiti.features.IReason;
 import org.eclipse.graphiti.features.context.IUpdateContext;
 import org.eclipse.graphiti.features.impl.Reason;
@@ -20,6 +21,10 @@ public class UpdateTimerFeature extends UpdateFeature {
                 return Reason.createTrueReason();
             }
         }
+        String tooltip = PropertyUtil.getPropertyValue(context.getPictogramElement(), GaProperty.TOOLTIP);
+        if (!Objects.equal(tooltip, timer.getTooltip())) {
+            return Reason.createTrueReason();
+        }
         return Reason.createFalseReason();
     }
 
@@ -28,8 +33,11 @@ public class UpdateTimerFeature extends UpdateFeature {
         ContainerShape containerShape = (ContainerShape) context.getPictogramElement();
         Timer timer = (Timer) getBusinessObjectForPictogramElement(containerShape);
         GraphicsAlgorithm boundaryEllipse = PropertyUtil.findGaRecursiveByName(containerShape, GaProperty.BOUNDARY_ELLIPSE);
-        boundaryEllipse.setLineVisible(!timer.isInterruptingBoundaryEvent());
+        if (boundaryEllipse != null) {
+            boundaryEllipse.setLineVisible(!timer.isInterruptingBoundaryEvent());
+        }
         layoutPictogramElement(containerShape);
+        PropertyUtil.setPropertyValue(containerShape, GaProperty.TOOLTIP, timer.getTooltip());
         return true;
     }
 

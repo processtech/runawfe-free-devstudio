@@ -6,6 +6,8 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginConstants;
+import ru.runa.gpd.PropertyNames;
+import ru.runa.gpd.editor.graphiti.TooltipBuilderHelper;
 import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEventCapable;
@@ -163,5 +165,19 @@ public class Timer extends Node implements IBoundaryEventCapable, IBoundaryEvent
     @Override
     public boolean isBoundaryEvent() {
         return isBoundaryEventInParent(getParent());
+    }
+
+    @Override
+    protected void appendExtendedTooltip(StringBuilder tooltipBuilder) {
+        super.appendExtendedTooltip(tooltipBuilder);
+        tooltipBuilder
+                .append(TooltipBuilderHelper.NEW_LINE + TooltipBuilderHelper.SPACE + Localization.getString("property.duration") + TooltipBuilderHelper.COLON
+                        + TooltipBuilderHelper.SPACE + duration);
+        if (this.getAction() != null) {
+            Object handlerClass = this.getAction().getPropertyValue(PropertyNames.PROPERTY_CLASS);
+            tooltipBuilder.append(TooltipBuilderHelper.NEW_LINE + TooltipBuilderHelper.SPACE + Localization.getString("property.delegation.class")
+                    + TooltipBuilderHelper.COLON + TooltipBuilderHelper.SPACE + handlerClass);
+            TooltipBuilderHelper.addDelegableConfiguration(this.getAction(), tooltipBuilder);
+        }
     }
 }

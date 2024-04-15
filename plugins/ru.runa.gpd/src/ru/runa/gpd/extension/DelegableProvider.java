@@ -36,6 +36,10 @@ public class DelegableProvider {
         return null;
     }
 
+    public String getExtendedTooltip(Delegable delegable) {
+        return delegable.getDelegationConfiguration();
+    }
+
     /**
      * Validates configuration. Implementors can return <code>false</code> to raise default invalid configuration message. Or can invoke
      * delegable.addError.

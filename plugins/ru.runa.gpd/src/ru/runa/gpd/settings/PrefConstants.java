@@ -15,6 +15,7 @@ public interface PrefConstants {
     public static final String P_BPMN_MARK_DEFAULT_TRANSITION = "markDefaultTransition";
     public static final String P_BPMN_DEFAULT_TRANSITION_NAMES = "defaultTransitionNames";
     public static final String P_BPMN_EXPAND_CONTEXT_BUTTON_PAD = "expandContextButtonPad";
+    public static final String P_BPMN_TOOLTIP = "tooltip";
     public static final String P_LANGUAGE_NODE_NAME_PATTERN = "nodeNamePattern";
     public static final String P_LANGUAGE_NODE_WIDTH = "nodeWidth";
     public static final String P_LANGUAGE_NODE_HEIGHT = "nodeHeight";
