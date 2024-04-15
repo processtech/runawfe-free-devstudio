@@ -12,7 +12,6 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.views.contentoutline.ContentOutline;
-
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.editor.ProcessEditorBase;
 import ru.runa.gpd.editor.outline.OutlineViewer;
@@ -63,7 +62,7 @@ public abstract class BaseModelActionDelegate implements IObjectActionDelegate {
         if (workbenchPart instanceof ProcessEditorBase) {
             commandStack = ((ProcessEditorBase) workbenchPart).getCommandStack();
         } else if (workbenchPart instanceof GraphicalEditor) {
-            commandStack = (CommandStack) ((GraphicalEditor) workbenchPart).getAdapter(CommandStack.class);
+            commandStack = ((GraphicalEditor) workbenchPart).getAdapter(CommandStack.class);
         } else if (workbenchPart instanceof ContentOutline) {
             commandStack = ((OutlineViewer) ((ContentOutline) workbenchPart).getCurrentPage()).getCommandStack();
             command.execute();
