@@ -24,6 +24,7 @@ import org.codehaus.groovy.ast.stmt.ReturnStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.control.CompilePhase;
 import ru.runa.gpd.PluginLogger;
+import ru.runa.gpd.extension.decision.GroovyTypeSupport.BooleanType;
 import ru.runa.gpd.lang.model.Decision;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.ui.control.ExpressionLine;
@@ -99,11 +100,31 @@ public class GroovyCodeParser {
             parsedData.leftText = be.getLeftExpression().getText();
             parsedData.operationText = be.getOperation().getText();
             parsedData.rightText = be.getRightExpression().getText();
-        } else /* contains */ {
+        } else if (expression instanceof VariableExpression) {
+            // eq for simple variables
+            VariableExpression ve = (VariableExpression) expression;
+            parsedData.leftText = ve.getText();
+            parsedData.operationText = Operation.EQ.getOperator();
+            parsedData.rightText = BooleanType.TRUE;
+        } else if (expression instanceof PropertyExpression) {
+            // eq for complex variables
+            PropertyExpression pe = (PropertyExpression) expression;
+            parsedData.leftText = pe.getText();
+            parsedData.operationText = Operation.EQ.getOperator();
+            parsedData.rightText = BooleanType.TRUE;
+        } else if (expression instanceof NotExpression) {
+            NotExpression ne = (NotExpression) expression;
+            parsedData.leftText = ne.getText();
+            parsedData.operationText = Operation.NOT_EQ.getOperator();
+            parsedData.rightText = BooleanType.TRUE;
+        } else if (expression instanceof MethodCallExpression) {
+            // contains
             MethodCallExpression mce = (MethodCallExpression) expression;
             parsedData.leftText = mce.getObjectExpression().getText();
             parsedData.operationText = mce.getMethodAsString();
             parsedData.rightText = ((ArgumentListExpression) mce.getArguments()).getExpression(0).getText();
+        } else {
+            throw new RuntimeException("Unexpected " + expression);
         }
         return parsedData;
     }

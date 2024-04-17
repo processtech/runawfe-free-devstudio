@@ -3,6 +3,7 @@ package ru.runa.gpd.extension.decision;
 import java.util.ArrayList;
 import java.util.List;
 import ru.runa.gpd.Localization;
+import ru.runa.gpd.extension.decision.GroovyTypeSupport.BooleanType;
 import ru.runa.gpd.lang.model.Variable;
 
 public class Operation {
@@ -27,6 +28,9 @@ public class Operation {
             if (NULL.equals(lexem2)) {
                 return variable.getScriptingName() + " == " + NULL;
             }
+            if (BooleanType.TRUE.equals(lexem2)) {
+                return variable.getScriptingName();
+            }
             return super.generateCode(variable, lexem2);
         }
     }
@@ -41,6 +45,9 @@ public class Operation {
         public String generateCode(Variable variable, Object lexem2) {
             if (NULL.equals(lexem2)) {
                 return variable.getScriptingName() + " != " + NULL;
+            }
+            if (BooleanType.TRUE.equals(lexem2)) {
+                return "!" + variable.getScriptingName();
             }
             return super.generateCode(variable, lexem2);
         }
