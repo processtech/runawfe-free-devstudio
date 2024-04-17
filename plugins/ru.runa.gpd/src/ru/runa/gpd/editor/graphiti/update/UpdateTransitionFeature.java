@@ -83,7 +83,7 @@ public class UpdateTransitionFeature extends UpdateFeature {
             boolean nameLabelVisible = !Strings.isNullOrEmpty(transition.getLabel());
             nameTextGa.getPictogramElement().setVisible(nameLabelVisible);
         }
-        boolean visible = StyleUtil.isTransitionDecoratorVisible(transition);
+        boolean visible = StyleUtil.isFormNodeTransitionDecoratorVisible(transition);
         GraphicsAlgorithm colorMarkerGa = PropertyUtil.findGaRecursiveByName(pe, GaProperty.TRANSITION_COLOR_MARKER);
         if (colorMarkerGa != null) {
             colorMarkerGa.setStyle(StyleUtil.getTransitionColorMarkerStyle(getDiagram(), transition, transition.getColor()));

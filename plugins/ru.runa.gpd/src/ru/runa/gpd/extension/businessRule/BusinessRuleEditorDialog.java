@@ -2,6 +2,7 @@ package ru.runa.gpd.extension.businessRule;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
@@ -27,6 +28,7 @@ import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.extension.businessRule.BusinessRuleModel.IfExpression;
 import ru.runa.gpd.extension.decision.EditorDialog;
+import ru.runa.gpd.extension.decision.GroovyCodeParser;
 import ru.runa.gpd.extension.decision.GroovyTypeSupport;
 import ru.runa.gpd.extension.decision.Operation;
 import ru.runa.gpd.extension.handler.FormulaCellEditorProvider;
@@ -53,11 +55,11 @@ public class BusinessRuleEditorDialog extends EditorDialog<BusinessRuleModel> {
     public BusinessRuleEditorDialog(ProcessDefinition definition, String initialValue) {
         super(definition, initialValue);
         if (this.initialValue.length() > 0) {
-            try {
-                initialModel = new BusinessRuleModel(initialValue, variables);
-            } catch (Throwable e) {
-                initialErrorMessage = e.getMessage();
-                PluginLogger.logErrorWithoutDialog("", e);
+            Optional<BusinessRuleModel> optionalModel = GroovyCodeParser.parseBusinessRuleModel(initialValue, variables);
+            if (optionalModel.isPresent()) {
+                initialModel = optionalModel.get();
+            } else {
+                initialErrorMessage = "failed to parse";
             }
         }
     }

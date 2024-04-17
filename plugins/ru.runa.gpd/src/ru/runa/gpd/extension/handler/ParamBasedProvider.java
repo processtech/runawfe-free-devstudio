@@ -1,8 +1,10 @@
 package ru.runa.gpd.extension.handler;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +25,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import ru.runa.gpd.Localization;
+import ru.runa.gpd.editor.graphiti.TooltipBuilderHelper;
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.LocalizationRegistry;
 import ru.runa.gpd.lang.ValidationError;
@@ -67,6 +70,33 @@ public abstract class ParamBasedProvider extends DelegableProvider {
             return wizard.getConfiguration();
         }
         return null;
+    }
+
+    public String getExtendedTooltip(Delegable delegable) {
+        List<String> lines = new ArrayList<>();
+        ParamDefConfig config = getParamConfig(delegable);
+        Map<String, String> props = config.parseConfiguration(delegable.getDelegationConfiguration());
+        ParamDefGroup inputGroup = config.getGroupByName("input");
+        if (inputGroup != null) {
+            lines.add(Localization.getString("ParamDefGroup.group.input"));
+            for (ParamDef paramDef : inputGroup.getParameters()) {
+                if (props.containsKey(paramDef.getName())) {
+                    lines.add(TooltipBuilderHelper.SPACE + TooltipBuilderHelper.INDENT + paramDef.getLabel() + TooltipBuilderHelper.COLON
+                            + TooltipBuilderHelper.SPACE + props.get(paramDef.getName()));
+                }
+            }
+        }
+        ParamDefGroup outputGroup = config.getGroupByName("output");
+        if (outputGroup != null) {
+            lines.add(Localization.getString("ParamDefGroup.group.output"));
+            for (ParamDef paramDef : outputGroup.getParameters()) {
+                if (props.containsKey(paramDef.getName())) {
+                    lines.add(TooltipBuilderHelper.SPACE + TooltipBuilderHelper.INDENT + paramDef.getLabel() + TooltipBuilderHelper.COLON
+                            + TooltipBuilderHelper.SPACE + props.get(paramDef.getName()));
+                }
+            }
+        }
+        return Joiner.on(TooltipBuilderHelper.NEW_LINE).join(lines);
     }
 
     @Override

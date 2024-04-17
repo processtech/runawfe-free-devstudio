@@ -12,6 +12,7 @@ import org.osgi.framework.Bundle;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.Variable;
+import ru.runa.gpd.lang.model.bpmn.ScriptTask;
 import ru.runa.gpd.ui.enhancement.DialogEnhancementMode;
 
 public class DelegableProvider {
@@ -45,6 +46,10 @@ public class DelegableProvider {
         throw new RuntimeException("The function is not implemented yet!");
     }
 
+    public String getExtendedTooltip(Delegable delegable) {
+        return delegable.getDelegationConfiguration();
+    }
+    
     /**
      * Validates configuration. Implementors can return <code>false</code> to raise default invalid configuration message. Or can invoke
      * delegable.addError.
@@ -84,6 +89,10 @@ public class DelegableProvider {
     public void onCopy(IFolder sourceFolder, Delegable source, IFolder targetFolder, Delegable target) {
         target.setDelegationClassName(source.getDelegationClassName());
         target.setDelegationConfiguration(source.getDelegationConfiguration());
+        if (source instanceof ScriptTask) {
+            ((ScriptTask) target).setUseExternalStorageIn(((ScriptTask) source).isUseExternalStorageIn());
+            ((ScriptTask) target).setUseExternalStorageOut(((ScriptTask) source).isUseExternalStorageOut());
+        }
     }
 
     public List<String> getUsedVariableNames(Delegable delegable) throws Exception {

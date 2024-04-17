@@ -9,7 +9,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
-
 import ru.runa.gpd.quick.Messages;
 
 public class PreviewFormWizard extends Wizard implements INewWizard {

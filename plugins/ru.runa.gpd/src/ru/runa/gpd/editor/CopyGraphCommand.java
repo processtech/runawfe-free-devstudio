@@ -30,6 +30,7 @@ import ru.runa.gpd.editor.CopyBuffer.ExtraCopyAction;
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.lang.Language;
+import ru.runa.gpd.lang.model.AbstractTransition;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.EmbeddedSubprocess.Behavior;
 import ru.runa.gpd.lang.model.EndState;
@@ -170,7 +171,7 @@ public class CopyGraphCommand extends Command {
             }
             // add transitions
             for (NamedGraphElement node : sourceNodeList) {
-                List<Transition> transitions = node.getChildren(Transition.class);
+                List<AbstractTransition> transitions = node.getChildren(AbstractTransition.class);
                 Transition timerTransition = null;
                 Timer timer = null;
                 if (node instanceof ITimed) {
@@ -195,7 +196,7 @@ public class CopyGraphCommand extends Command {
                         }
                     }
                 }
-                for (Transition transition : transitions) {
+                for (AbstractTransition transition : transitions) {
                     NamedGraphElement source = targetNodeMap.get(transition.getSource().getId());
                     if (source == null) {
                         if (transition.equals(timerTransition)) {
@@ -206,7 +207,7 @@ public class CopyGraphCommand extends Command {
                     }
                     NamedGraphElement target = targetNodeMap.get(transition.getTarget().getId());
                     if (source != null && target != null) {
-                        Transition copy = transition.makeCopy(source);
+                        AbstractTransition copy = transition.makeCopy(source);
                         adjustLocation(copy);
                         copy.setTarget((Node) target);
                         newElements.add(copy);
@@ -442,7 +443,7 @@ public class CopyGraphCommand extends Command {
 
         @Override
         public void execute() {
-            if (oldSwimlane == null) {
+            if (oldSwimlane == null && SwimlaneDisplayMode.none == targetDefinition.getSwimlaneDisplayMode()) {
                 addedSwimlane = (Swimlane) sourceSwimlane.makeCopy(targetDefinition);
                 adjustLocation(addedSwimlane);
             }

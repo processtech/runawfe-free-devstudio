@@ -11,18 +11,19 @@ import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
-import ru.runa.gpd.ProcessCache;
+import ru.runa.gpd.editor.graphiti.TooltipBuilderHelper;
 import ru.runa.gpd.extension.VariableFormatArtifact;
 import ru.runa.gpd.extension.VariableFormatRegistry;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 import ru.runa.gpd.settings.LanguageElementPreferenceNode;
 import ru.runa.gpd.settings.PrefConstants;
+import ru.runa.gpd.util.SubprocessFinder;
 import ru.runa.gpd.util.VariableMapping;
 import ru.runa.gpd.util.VariableUtils;
 import ru.runa.wfe.lang.AsyncCompletionMode;
 
-public class Subprocess extends Node implements Synchronizable, IBoundaryEventContainer {
+public class Subprocess extends Node implements Synchronizable, IBoundaryEventContainer, ITimed {
     protected String subProcessName = "";
     protected List<VariableMapping> variableMappings = Lists.newArrayList();
     private boolean embedded;
@@ -45,37 +46,44 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
             if (getLeavingTransitions().size() != 1) {
                 errors.add(ValidationError.createLocalizedError(this, "subprocess.embedded.required1leavingtransition"));
             }
-        }
-        ProcessDefinition subprocessDefinition = ProcessCache.getFirstProcessDefinition(subProcessName, null);
-        if (subprocessDefinition == null) {
-            errors.add(ValidationError.createLocalizedWarning(this, "subprocess.notFound"));
-            return;
-        }
-        for (VariableMapping mapping : variableMappings) {
-            if (mapping.isText() || mapping.isMultiinstanceLinkByRelation()) {
-                continue;
+        } else {
+            ProcessDefinition subprocessDefinition = getSubProcessDefinition();
+            if (subprocessDefinition == null) {
+                errors.add(ValidationError.createLocalizedWarning(this, "subprocess.notFound"));
+                return;
             }
-            if (VariableUtils.isVariableNameWrapped(mapping.getName()) && PLACEHOLDERS.contains(mapping.getName())) {
-                continue;
-            }
-            Variable processVariable = VariableUtils.getVariableByName(getProcessDefinition(), mapping.getName());
-            if (processVariable == null) {
-                errors.add(ValidationError.createLocalizedError(this, "subprocess.processVariableDoesNotExist", mapping.getName()));
-                continue;
-            }
-            if (mapping.isSyncable()) {
-                checkSyncModeUsage(errors, mapping, subprocessDefinition);
-            }
-            Variable subprocessVariable = VariableUtils.getVariableByName(subprocessDefinition, mapping.getMappedName());
-            if (subprocessVariable == null) {
-                errors.add(ValidationError.createLocalizedWarning(this, "subprocess.subProcessVariableDoesNotExist", mapping.getMappedName()));
-                continue;
-            }
-            if (!isCompatibleVariables(mapping, processVariable, subprocessVariable)) {
-                VariableFormatArtifact artifact1 = VariableFormatRegistry.getInstance().getArtifactNotNull(processVariable.getFormatClassName());
-                VariableFormatArtifact artifact2 = VariableFormatRegistry.getInstance().getArtifactNotNull(subprocessVariable.getFormatClassName());
-                errors.add(ValidationError.createLocalizedWarning(this, "subprocess.variableMappingIncompatibleTypes", processVariable.getName(),
-                        artifact1.getLabel(), subprocessVariable.getName(), artifact2.getLabel()));
+            for (VariableMapping mapping : variableMappings) {
+                if (mapping.isText() || mapping.isMultiinstanceLinkByRelation()) {
+                    continue;
+                }
+                if (VariableUtils.isVariableNameWrapped(mapping.getName()) && PLACEHOLDERS.contains(mapping.getName())) {
+                    continue;
+                }
+                Variable processVariable = VariableUtils.getVariableByName(getProcessDefinition(), mapping.getName());
+                if (processVariable == null) {
+                    errors.add(ValidationError.createLocalizedError(this, "subprocess.processVariableDoesNotExist", mapping.getName()));
+                    continue;
+                }
+                if (mapping.isSyncable()) {
+                    checkSyncModeUsage(errors, mapping, subprocessDefinition);
+                }
+                Variable subprocessVariable = VariableUtils.getVariableByName(subprocessDefinition, mapping.getMappedName());
+                if (subprocessVariable == null) {
+                    if (mapping.isMultiinstanceLink() && mapping.getMappedName().isEmpty()) {
+                        errors.add(ValidationError.createLocalizedWarning(this, "subprocess.subProcessVariableIsNotSelected"));
+                    } else {
+                        errors.add(
+                                ValidationError.createLocalizedWarning(this, "subprocess.subProcessVariableDoesNotExist", mapping.getMappedName()));
+                    }
+                    continue;
+                }
+                if (!isCompatibleVariables(mapping, processVariable, subprocessVariable)) {
+                    VariableFormatArtifact artifact1 = VariableFormatRegistry.getInstance().getArtifactNotNull(processVariable.getFormatClassName());
+                    VariableFormatArtifact artifact2 = VariableFormatRegistry.getInstance()
+                            .getArtifactNotNull(subprocessVariable.getFormatClassName());
+                    errors.add(ValidationError.createLocalizedWarning(this, "subprocess.variableMappingIncompatibleTypes", processVariable.getName(),
+                            artifact1.getLabel(), subprocessVariable.getName(), artifact2.getLabel()));
+                }
             }
         }
         if (isAsync()) {
@@ -116,6 +124,7 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
         this.variableMappings.clear();
         this.variableMappings.addAll(variablesList);
         setDirty();
+        firePropertyChange(PROPERTY_VARIABLES, null, variableMappings);
     }
 
     public void setSubProcessName(String subProcessName) {
@@ -272,10 +281,6 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
         }
     }
 
-    public String getQualifiedId() {
-        return getProcessDefinition().getFile().getParent().getFullPath() + "." + getId();
-    }
-
     public boolean isValidateAtStart() {
         return validateAtStart;
     }
@@ -295,4 +300,24 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
         this.disableCascadingSuspension = disableCascadingSuspension;
         firePropertyChange(PROPERTY_DISABLE_CASCADING_SUSPENSION, old, this.disableCascadingSuspension);
     }
+
+    public ProcessDefinition getSubProcessDefinition() {
+        return SubprocessFinder.findSubProcessDefinition(this);
+    }
+
+    @Override
+    public Timer getTimer() {
+        return getFirstChild(Timer.class);
+    }
+
+    @Override
+    protected void appendExtendedTooltip(StringBuilder tooltipBuilder) {
+        super.appendExtendedTooltip(tooltipBuilder);
+        if (!getVariableMappings().isEmpty()) {
+            tooltipBuilder.append(TooltipBuilderHelper.NEW_LINE + TooltipBuilderHelper.SPACE + Localization.getString("property.variable.mappings")
+                    + TooltipBuilderHelper.COLON);
+            tooltipBuilder.append(TooltipBuilderHelper.variableMappingsToString(getVariableMappings(), true));
+        }
+    }
+
 }

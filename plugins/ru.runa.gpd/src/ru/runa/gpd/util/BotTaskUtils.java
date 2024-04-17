@@ -190,7 +190,7 @@ public class BotTaskUtils {
             String oldConfigurationHash = botTaskLink.getDelegationConfiguration().replaceAll(" ", "").replaceAll("\n", "");
             if (!newConfigurationHash.equals(oldConfigurationHash)) {
                 botTaskLink.setDelegationConfiguration(newConfiguration);
-                taskState.setDirty();
+                taskState.notifyBotTaskLinkConfigurationHasBeenChanged(newConfiguration);
             }
         }
     }

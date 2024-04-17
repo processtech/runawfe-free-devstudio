@@ -1,12 +1,13 @@
 package ru.runa.gpd.quick.formeditor.util;
 
+import com.google.common.base.Objects;
+import com.google.common.base.Strings;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.OutputFormat;
@@ -14,21 +15,18 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.CoreException;
 import org.osgi.framework.Bundle;
-
 import ru.runa.gpd.extension.Artifact;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.quick.extension.QuickTemplateArtifact;
 import ru.runa.gpd.quick.extension.QuickTemplateRegister;
 import ru.runa.gpd.quick.formeditor.QuickForm;
+import ru.runa.gpd.quick.formeditor.QuickFormComponent;
 import ru.runa.gpd.quick.formeditor.QuickFormGpdProperty;
-import ru.runa.gpd.quick.formeditor.QuickFormGpdVariable;
+import ru.runa.gpd.quick.tag.FreemarkerConfigurationGpdWrap;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.VariableUtils;
 import ru.runa.gpd.util.XmlUtil;
-
-import com.google.common.base.Objects;
-import com.google.common.base.Strings;
 
 public class QuickFormXMLUtil {
     private static final String TEMPLATE_PATH = "/template/";
@@ -40,6 +38,9 @@ public class QuickFormXMLUtil {
     public static final String ELEMENT_TAGS = "tags";
     public static final String ELEMENT_PROPERTIES = "properties";
     public static final String ELEMENT_PROPERTY = "property";
+    private static final String ELEMENT_PARAM_ITEM = "item";
+    private static final String ATTRIBUTE_MULTIPLE = "multiple";
+    private static final String ATTRIBUTE_MULTIPLE_VALUE_TRUE = "true";
 
     public static String getTemplateFromRegister(Bundle bundle, String templateName) {
         String path = TEMPLATE_PATH + templateName;
@@ -51,14 +52,15 @@ public class QuickFormXMLUtil {
         }
     }
 
-    public static final byte[] convertQuickFormToXML(IFolder folder, QuickForm form, String templateFileName) throws UnsupportedEncodingException, CoreException {
+    public static final byte[] convertQuickFormToXML(IFolder folder, QuickForm form, String templateFileName)
+            throws UnsupportedEncodingException, CoreException {
         Document document = XmlUtil.createDocument(ELEMENT_FORM);
 
         saveTemplateToProcessDefinition(folder, form, templateFileName);
 
         Element tagsElement = document.getRootElement().addElement(ELEMENT_TAGS);
 
-        for (QuickFormGpdVariable templatedVariableDef : form.getVariables()) {
+        for (QuickFormComponent templatedVariableDef : form.getVariables()) {
             populateQuickFormVariable(tagsElement.addElement(ELEMENT_TAG), templatedVariableDef);
         }
 
@@ -70,17 +72,29 @@ public class QuickFormXMLUtil {
         }
 
         byte[] bytes = XmlUtil.writeXml(document, OutputFormat.createPrettyPrint());
-
         return bytes;
     }
 
-    private static void populateQuickFormVariable(Element element, QuickFormGpdVariable templatedVariableDef) {
-        element.addElement(ATTRIBUTE_NAME).addText(getNotNullValue(templatedVariableDef.getTagName().toString()));
-        element.addElement(ELEMENT_PARAM).addText(templatedVariableDef.getName());
-        if (templatedVariableDef.getParams() != null) {
-            for (String param : templatedVariableDef.getParams()) {
-                element.addElement(ELEMENT_PARAM).addText(param);
+    private static void populateQuickFormVariable(Element element, QuickFormComponent templatedVariableDef) {
+        element.addElement(ATTRIBUTE_NAME).addText(getNotNullValue(templatedVariableDef.getTagName()));
+        List<Object> params = templatedVariableDef.getParams();
+        if (params != null) {
+            for (Object param : params) {
+                addParamElement(element, param);
             }
+        }
+    }
+
+    private static void addParamElement(Element element, Object param) {
+        // все параметры бывают 2 типов: либо String, либо List<String>
+        Element paramElement = element.addElement(ELEMENT_PARAM);
+        if (param instanceof List<?>) {
+            paramElement.addAttribute(ATTRIBUTE_MULTIPLE, ATTRIBUTE_MULTIPLE_VALUE_TRUE);
+            for (String i : (List<String>) param) {
+                paramElement.addElement(ELEMENT_PARAM_ITEM).addText(i);
+            }
+        } else {
+            paramElement.addText((String) param);
         }
     }
 
@@ -106,38 +120,31 @@ public class QuickFormXMLUtil {
                 Element tagsElement = document.getRootElement().element(ELEMENT_TAGS);
                 List<Element> varElementsList = tagsElement.elements(ELEMENT_TAG);
                 for (Element varElement : varElementsList) {
-                    QuickFormGpdVariable templatedVariableDef = new QuickFormGpdVariable();
+                    QuickFormComponent templatedVariableDef = new QuickFormComponent();
                     templatedVariableDef.setTagName(varElement.elementText(ATTRIBUTE_NAME));
-
+                    int mainVariableIndex = FreemarkerConfigurationGpdWrap.getInstance().getTagMainVariableIndex(templatedVariableDef.getTagName());
                     List<Element> paramElements = varElement.elements(ELEMENT_PARAM);
-                    if (paramElements != null && paramElements.size() > 0) {
-                        List<String> params = new ArrayList<String>();
+                    int paramElementsSize = paramElements.size();
+                    if (paramElements != null && paramElementsSize > 0) {
+                        List<Object> params = new ArrayList<Object>(paramElementsSize);
                         int index = 0;
                         Variable variable = null;
                         for (Element paramElement : paramElements) {
-                            if (index == 0) {
-                                templatedVariableDef.setName(paramElement.getText());
-                                variable = VariableUtils.getVariableByName(formNode, templatedVariableDef.getName());
+                            if (index == mainVariableIndex) {
+                                variable = VariableUtils.getVariableByName(formNode, paramElement.getText());
                                 if (variable == null) {
                                     break;
                                 }
-                                templatedVariableDef.setFormatLabel(variable.getFormatLabel());
-                                templatedVariableDef.setScriptingName(variable.getScriptingName());
-                                templatedVariableDef.setDescription(variable.getDescription());
-                            } else {
-                                params.add(paramElement.getText());
+                                templatedVariableDef.fillFromVariable(variable);
                             }
-
+                            params.add(getParamFromElement(paramElement));
                             index++;
                         }
-
                         if (variable == null) {
                             continue;
                         }
-
-                        templatedVariableDef.setParams(params.toArray(new String[params.size()]));
+                        templatedVariableDef.setParams(params);
                     }
-
                     quickForm.getVariables().add(templatedVariableDef);
                 }
 
@@ -151,7 +158,8 @@ public class QuickFormXMLUtil {
                         for (QuickTemplateArtifact artifact : QuickTemplateRegister.getInstance().getAll(true)) {
                             if (Objects.equal(formNode.getTemplateFileName(), artifact.getFileName())) {
                                 for (Artifact parameter : artifact.getParameters()) {
-                                    if (quickFormGpdProperty.getName() != null && quickFormGpdProperty.getName().equalsIgnoreCase(parameter.getName())) {
+                                    if (quickFormGpdProperty.getName() != null
+                                            && quickFormGpdProperty.getName().equalsIgnoreCase(parameter.getName())) {
                                         quickFormGpdProperty.setLabel(parameter.getLabel());
                                         break;
                                     }
@@ -168,6 +176,21 @@ public class QuickFormXMLUtil {
             }
         }
         return quickForm;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Object getParamFromElement(Element element) {
+        String isMultiple = element.attributeValue(ATTRIBUTE_MULTIPLE);
+        if (isMultiple != null && isMultiple.equals(ATTRIBUTE_MULTIPLE_VALUE_TRUE)) {
+            List<Element> paramItemElements = element.elements(ELEMENT_PARAM_ITEM);
+            List<String> result = new ArrayList<>(paramItemElements.size());
+            for (Element i : paramItemElements) {
+                result.add(i.getText());
+            }
+            return result;
+        } else {
+            return element.getText();
+        }
     }
 
     private static void saveTemplateToProcessDefinition(IFolder folder, QuickForm quickForm, String templateFileName) throws CoreException {

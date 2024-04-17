@@ -2,7 +2,6 @@ package ru.runa.gpd.formeditor.ftl.parameter;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.layout.GridData;
@@ -10,21 +9,23 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
 import org.eclipse.ui.views.properties.TextPropertyDescriptor;
-
 import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.formeditor.ftl.Component;
 import ru.runa.gpd.formeditor.ftl.ComponentParameter;
+import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
 
 public class StringParameter extends ParameterType {
 
     @Override
-    public PropertyDescriptor createPropertyDescriptor(Component component, ComponentParameter parameter, int propertyId) {
+    public PropertyDescriptor createPropertyDescriptor(Component component, ComponentParameter parameter, int propertyId,
+            ProcessDefinition processDefinition) {
         return new TextPropertyDescriptor(propertyId, parameter.getLabel());
     }
 
     @Override
-    public Object createEditor(Composite parent, Component component, ComponentParameter parameter, final Object oldValue, final PropertyChangeListener listener) {
+    public Object createEditor(Composite parent, Component component, ComponentParameter parameter, final Object oldValue,
+            final PropertyChangeListener listener, ProcessDefinition processDefinition) {
         final Text text = new Text(parent, SWT.BORDER);
         text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         if (oldValue != null) {

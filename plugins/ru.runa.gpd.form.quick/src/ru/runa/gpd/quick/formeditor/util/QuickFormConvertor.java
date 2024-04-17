@@ -58,7 +58,7 @@ public final class QuickFormConvertor {
                 WorkspaceOperations.refreshResource(newFile.getParent());
 
                 IDE.openEditor(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(), newFile, true);
-            } catch (Exception e) {
+            } catch (CoreException e) {
                 PluginLogger.logError("Error on converting template form: '" + converterSource.getQuickForm().getName() + "'", e);
             }
         }
@@ -91,7 +91,7 @@ public final class QuickFormConvertor {
         converterSource.getQuickFormFile().setContents(stream, true, true, null);
     }
 
-    private static IFile updateFormToSimple(ConverterSource converterSource) throws Exception {
+    private static IFile updateFormToSimple(ConverterSource converterSource) {
         File file = converterSource.getQuickFormFile().getRawLocation().makeAbsolute().toFile();
         renameFileExtension(file.getAbsolutePath(), "ftl");
         String newFileName = converterSource.getFormNode().getFormFileName().replaceAll(QuickFormType.TYPE, FtlFormType.TYPE);

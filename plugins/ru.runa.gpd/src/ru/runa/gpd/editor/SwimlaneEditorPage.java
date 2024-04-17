@@ -327,7 +327,7 @@ public class SwimlaneEditorPage extends EditorPartBase<Swimlane> {
         }
 
         private void renameSwimlane(String oldName, String newName, String newScriptingName, ProcessDefinition definition, Swimlane swimlane)
-                throws Exception {
+                throws InterruptedException {
             RenameVariableRefactoring ref = new RenameVariableRefactoring(definition, swimlane, newName, newScriptingName);
             if (ref.isUserInteractionNeeded()) {
                 RenameRefactoringWizard wizard = new RenameRefactoringWizard(ref);

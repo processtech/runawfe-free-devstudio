@@ -514,7 +514,7 @@ public class ExpressionLine extends Composite {
     private static final String logicOperationParamName = "logicOperation";
     private static final String isOpenButtonSelectedParamName = "isOpenButtonSelected";
     private static Set<String> paramsNames = new HashSet<>();
-    {
+    static {
         paramsNames.add(firstVariableParamName);
         paramsNames.add(operationParamName);
         paramsNames.add(secondOperandParamName);
@@ -525,7 +525,7 @@ public class ExpressionLine extends Composite {
         paramsNames.add(isOpenButtonSelectedParamName);
     }
 
-    public Set<String> getParamsNames() {
+    public static Set<String> getParamsNames() {
         return paramsNames;
     }
 
@@ -748,8 +748,16 @@ public class ExpressionLine extends Composite {
             this.params.put(isOpenButtonSelectedParamName, String.valueOf(exist));
         }
 
+        public boolean isOpenBracketExist() {
+            return Boolean.parseBoolean(this.params.get(isOpenButtonSelectedParamName));
+        }
+
         public void setCloseBracketExist(boolean exist) {
             this.params.put(isCloseButtonSelectedParamName, String.valueOf(exist));
+        }
+
+        public boolean isCloseBracketExist() {
+            return Boolean.parseBoolean(this.params.get(isCloseButtonSelectedParamName));
         }
 
         public void setLogicOperationGroovy(String operation) {// на входе - логическая операция на Groovy
@@ -761,16 +769,38 @@ public class ExpressionLine extends Composite {
             // если подана неизвестная операция, она игнорируется
         }
 
+        public String getLogicOperationGroovy() {
+            String operation = this.params.get(logicOperationParamName);
+            if (operation.equals(CloseBracketButtonAndLogicOperationComboAndOpenBracketButton.AND_LOGIC_EXPRESSION)) {
+                return "&&";
+            } else if (operation.equals(CloseBracketButtonAndLogicOperationComboAndOpenBracketButton.OR_LOGIC_EXPRESSION)) {
+                return "||";
+            }
+            return null;
+        }
+
         public void setFirstOperand(String operand) {
             this.params.put(firstVariableParamName, operand);
+        }
+
+        public String getFirstOperand() {
+            return this.params.get(firstVariableParamName);
         }
 
         public void setSecondOperand(String operand) {
             this.params.put(secondOperandParamName, operand);
         }
 
+        public String getSecondOperand() {
+            return this.params.get(secondOperandParamName);
+        }
+
         public void setOperation(String operation) {
             this.params.put(operationParamName, operation);
+        }
+
+        public String getOperation() {
+            return this.params.get(operationParamName);
         }
 
         public void setSecondOperandTypeVariable() {

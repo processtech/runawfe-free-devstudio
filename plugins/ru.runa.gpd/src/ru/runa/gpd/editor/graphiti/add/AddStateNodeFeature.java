@@ -12,7 +12,6 @@ import org.eclipse.graphiti.mm.algorithms.styles.Style;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.services.Graphiti;
-
 import ru.runa.gpd.editor.graphiti.GaProperty;
 import ru.runa.gpd.editor.graphiti.StyleUtil;
 import ru.runa.gpd.editor.graphiti.layout.LayoutStateNodeFeature;

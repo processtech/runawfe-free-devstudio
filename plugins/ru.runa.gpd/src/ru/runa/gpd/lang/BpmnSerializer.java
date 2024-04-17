@@ -25,6 +25,7 @@ import ru.runa.gpd.lang.model.EndState;
 import ru.runa.gpd.lang.model.EndTokenState;
 import ru.runa.gpd.lang.model.EndTokenSubprocessDefinitionBehavior;
 import ru.runa.gpd.lang.model.EventSubprocess;
+import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.ISendMessageNode;
 import ru.runa.gpd.lang.model.ITimed;
@@ -40,6 +41,7 @@ import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.SwimlanedNode;
 import ru.runa.gpd.lang.model.TaskState;
+import ru.runa.gpd.lang.model.TaskStateExecutionButton;
 import ru.runa.gpd.lang.model.Timer;
 import ru.runa.gpd.lang.model.TimerAction;
 import ru.runa.gpd.lang.model.Transition;
@@ -194,6 +196,10 @@ public class BpmnSerializer extends ProcessSerializer {
         if (definition.isUsingGlobalVars()) {
             processProperties.put(USE_GLOBALS, "true");
         }
+        TaskStateExecutionButton executionButton = definition.getExecutionButton();
+        if (executionButton != TaskStateExecutionButton.NONE) {
+            processProperties.put(TASK_BUTTON_LABEL_BY_SINGLE_TRANSITION_NAME, executionButton.stringValueForSaving());
+        }
         writeExtensionElements(processElement, processProperties);
         if (definition.getClass() != SubprocessDefinition.class) {
             Element laneSetElement = processElement.addElement(LANE_SET).addAttribute(ID, "laneSet1");
@@ -294,6 +300,7 @@ public class BpmnSerializer extends ProcessSerializer {
             if (!subprocess.isEmbedded()) {
                 writeVariables(element, subprocess.getVariableMappings());
             }
+            writeBoundaryTimer(processElement, subprocess);
             writeBoundaryEvents(processElement, subprocess);
         }
         List<ThrowEventNode> throwEventNodes = definition.getChildren(ThrowEventNode.class);
@@ -366,6 +373,10 @@ public class BpmnSerializer extends ProcessSerializer {
         String swimlaneName = swimlanedNode.getSwimlaneName();
         if (((ProcessDefinition) swimlanedNode.getParent()).getSwimlaneByName(swimlaneName) != null) {
             properties.put(LANE, swimlaneName);
+        }
+        TaskStateExecutionButton executionButton = ((FormNode) swimlanedNode).getExecutionButton();
+        if (executionButton != TaskStateExecutionButton.NONE) {
+            properties.put(TASK_BUTTON_LABEL_BY_SINGLE_TRANSITION_NAME, executionButton.stringValueForSaving());
         }
         if (swimlanedNode instanceof StartState) {
             StartState startState = (StartState) swimlanedNode;
@@ -778,6 +789,9 @@ public class BpmnSerializer extends ProcessSerializer {
         if (processProperties.containsKey(USE_GLOBALS)) {
             definition.setUsingGlobalVars("true".equals(processProperties.get(USE_GLOBALS)));
         }
+        if (processProperties.containsKey(TASK_BUTTON_LABEL_BY_SINGLE_TRANSITION_NAME)) {
+            definition.setExecutionButton(TaskStateExecutionButton.parseFromSaving(processProperties.get(TASK_BUTTON_LABEL_BY_SINGLE_TRANSITION_NAME)));
+        }
         if (definition instanceof SubprocessDefinition) {
             String behaviorString = processProperties.get(BEHAVIOR);
             if (behaviorString != null) {
@@ -822,9 +836,13 @@ public class BpmnSerializer extends ProcessSerializer {
                     startState.setVariableMappings(parseVariableMappings(startStateElement));
                 }
             } else {
-                String swimlaneName = parseExtensionProperties(startStateElement).get(LANE);
+                Map<String, String> properties = parseExtensionProperties(startStateElement);
+                String swimlaneName = properties.get(LANE);
                 Swimlane swimlane = definition.getSwimlaneByName(swimlaneName);
                 startState.setSwimlane(swimlane);
+                if (properties.containsKey(TASK_BUTTON_LABEL_BY_SINGLE_TRANSITION_NAME)) {
+                    startState.setExecutionButton(TaskStateExecutionButton.parseFromSaving(properties.get(TASK_BUTTON_LABEL_BY_SINGLE_TRANSITION_NAME)));
+                }
             }
         }
         List<Element> taskStateElements = new ArrayList<Element>(processElement.elements(USER_TASK));
@@ -861,6 +879,9 @@ public class BpmnSerializer extends ProcessSerializer {
                 String taskDeadline = properties.get(TASK_DEADLINE);
                 if (taskDeadline != null) {
                     state.setTimeOutDelay(new Duration(taskDeadline));
+                }
+                if (properties.containsKey(TASK_BUTTON_LABEL_BY_SINGLE_TRANSITION_NAME)) {
+                    state.setExecutionButton(TaskStateExecutionButton.parseFromSaving(properties.get(TASK_BUTTON_LABEL_BY_SINGLE_TRANSITION_NAME)));
                 }
                 if (state instanceof MultiTaskState) {
                     MultiTaskState multiTaskState = (MultiTaskState) state;

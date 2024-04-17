@@ -71,7 +71,6 @@ public abstract class GlobalSectionEditorBase extends ProcessEditorBase {
         try {
             ProcessDefinitionValidator.validateDefinition(definition);
             WorkspaceOperations.saveProcessDefinition(definition);
-            definition.setDirty(false);
             ProcessSaveHistory.addSavepoint(definitionFile);
         } catch (Exception e) {
             PluginLogger.logError(e);

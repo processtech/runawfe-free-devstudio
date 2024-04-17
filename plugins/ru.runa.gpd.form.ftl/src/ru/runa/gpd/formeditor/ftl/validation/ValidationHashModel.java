@@ -31,7 +31,7 @@ public class ValidationHashModel extends SimpleHash {
     public List<Component> getComponents() {
         return components;
     }
-    
+
     public List<String> getUndefinedComponentNames() {
         return undefinedComponentNames;
     }
@@ -82,7 +82,7 @@ public class ValidationHashModel extends SimpleHash {
         @Override
         public Object exec(List args) throws TemplateModelException {
             stageRenderingParams = false;
-            Component component = new Component(componentType, 0);
+            Component component = new Component(componentType, 0, definition);
             component.setRawParameters(args);
             components.add(component);
             return "noop";

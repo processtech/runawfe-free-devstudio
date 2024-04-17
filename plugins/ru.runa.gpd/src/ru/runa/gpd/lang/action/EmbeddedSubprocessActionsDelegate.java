@@ -1,8 +1,9 @@
 package ru.runa.gpd.lang.action;
 
+import com.google.common.base.Objects;
+import com.google.common.collect.Lists;
 import java.util.Collections;
 import java.util.List;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
@@ -14,7 +15,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.ui.part.FileEditorInput;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.model.EmbeddedSubprocess;
 import ru.runa.gpd.lang.model.EventSubprocess;
@@ -23,9 +23,6 @@ import ru.runa.gpd.lang.model.Subprocess;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.util.WorkspaceOperations;
 import ru.runa.wfe.definition.ProcessDefinitionAccessType;
-
-import com.google.common.base.Objects;
-import com.google.common.collect.Lists;
 
 public class EmbeddedSubprocessActionsDelegate extends BaseModelDropDownActionDelegate {
     private String selectedName;

@@ -79,9 +79,12 @@ public class ExportParWizardPage extends ExportWizardPage {
                 definitionNameFileMap.put(getKey(file, definition), file);
             }
         }
-
-        Object[] selectionArray = selection.toArray();
-        initialSelection = new StructuredSelection(Arrays.stream(selectionArray).map(e -> getKey((Resource) e)).toArray());
+        if (selection.size() != 0) { // There is a selection in ProcessExplorerTree
+            Object[] selectionArray = selection.toArray();
+            initialSelection = new StructuredSelection(Arrays.stream(selectionArray).map(e -> getKey((Resource) e)).toArray());
+        } else {
+            initialSelection = activeProcessSelection(); // Selection of process opened in editor
+        }
 
     }
 
@@ -175,6 +178,20 @@ public class ExportParWizardPage extends ExportWizardPage {
         return resource.toString().substring(resource.getTypeString().length() + 1);
     }
 
+    private StructuredSelection activeProcessSelection() {
+        IFile adjacentFile = IOUtils.getCurrentFile();
+        if (adjacentFile != null && adjacentFile.getParent().exists()) {
+            IFile definitionFile = IOUtils.getProcessDefinitionFile((IFolder) adjacentFile.getParent());
+            if (definitionFile.exists()) {
+                ProcessDefinition currentDefinition = ProcessCache.getProcessDefinition(definitionFile);
+                if (currentDefinition != null && !(currentDefinition instanceof SubprocessDefinition)) {
+                    return new StructuredSelection(getKey(definitionFile, currentDefinition));
+                }
+            }
+        }
+        return StructuredSelection.EMPTY;
+    }
+
     public boolean finish() {
         final boolean exportToFile = exportToFileButton.getSelection();
         saveDirtyEditors();
@@ -202,8 +219,8 @@ public class ExportParWizardPage extends ExportWizardPage {
                             return Optional.empty();
                         }
                         final String outputFileName = getDestinationValue() + definition.getName() + ".par";
-                        if (new File(outputFileName).exists() && !Dialogs
-                                .confirm(Localization.getString("ImportProjectWizard.page.override.exist", outputFileName))) {
+                        if (new File(outputFileName).exists()
+                                && !Dialogs.confirm(Localization.getString("ImportProjectWizard.page.override.exist", outputFileName))) {
                             return Optional.empty();
                         }
                         return Optional

@@ -1,5 +1,6 @@
 package ru.runa.gpd.formeditor.ftl.ui;
 
+import com.google.common.collect.Lists;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
@@ -12,13 +13,10 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.formeditor.resources.Messages;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.custom.SwtUtils;
-
-import com.google.common.collect.Lists;
 
 public class DualListDialog extends Dialog {
     private final java.util.List<String> availableNames;

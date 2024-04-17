@@ -672,6 +672,10 @@
              name="composition"
              value="false">
        </filter>
+       <filter
+             name="needGeneratedRegulation"
+             value="true">
+       </filter>
        <action
              class="ru.runa.gpd.extension.regulations.ui.CreateRegulationsAction"
              id="ru.runa.gpd.createRegulations"
@@ -693,6 +697,10 @@
        <filter
              name="hasExtendedRegulations"
              value="false">
+       </filter>
+       <filter
+             name="needNotGeneratedRegulation"
+             value="true">
        </filter>
        <action
              class="ru.runa.gpd.extension.regulations.ui.GenerateRegulationDataAction"
@@ -1008,7 +1016,7 @@
          <graphiti
                add="ru.runa.gpd.editor.graphiti.add.AddStartNodeFeature"
                create="ru.runa.gpd.editor.graphiti.create.CreateStartNodeFeature"
-               update="ru.runa.gpd.editor.graphiti.update.UpdateStartNodeFeature"
+               update="ru.runa.gpd.editor.graphiti.update.UpdateFeatureWithTextDecorator"
                doubleClick="ru.runa.gpd.editor.graphiti.update.DoubleClickStartNodeFeature"
                fixedSize="true"
                height="4"
@@ -1446,7 +1454,7 @@
          <graphiti
                add="ru.runa.gpd.editor.graphiti.add.AddEndNodeFeature"
                create="ru.runa.gpd.editor.graphiti.create.CreateElementFeature"
-               update="ru.runa.gpd.editor.graphiti.update.UpdateEndNodeFeature"
+               update="ru.runa.gpd.editor.graphiti.update.UpdateFeatureWithTextDecorator"
                fixedSize="true"
                height="4"
                width="4">
@@ -1466,7 +1474,7 @@
          <graphiti
                add="ru.runa.gpd.editor.graphiti.add.AddEndNodeFeature"
                create="ru.runa.gpd.editor.graphiti.create.CreateElementFeature"
-               update="ru.runa.gpd.editor.graphiti.update.UpdateEndNodeFeature"
+               update="ru.runa.gpd.editor.graphiti.update.UpdateFeatureWithTextDecorator"
                fixedSize="true"
                height="4"
                width="4">
@@ -1583,12 +1591,7 @@
             id="ru.runa.gpd.sleak"
             name="%label.view.sleak"/>
       <view
-            class="ru.runa.gpd.ui.view.PropertiesView"
-            icon="icons/properties_view.gif"
-            id="ru.runa.gpd.propertiesView"
-            name="%label.view.properties"/>
-      <view
-            class="org.eclipse.ui.views.properties.PropertySheet"
+            class="ru.runa.gpd.ui.view.CustomPropertySheet"
             icon="icons/properties_view.gif"
             id="org.eclipse.ui.propertiesView"
             name="%label.view.properties"/>
@@ -2240,6 +2243,16 @@
             enabled="true"
             label="%ru.runa.wfe.extension.handler.sign.CheckSignPdfHandler">
       </handler>
+       <handler
+               actionHandler="true"
+               assignmentHandler="false"
+               botTaskHandler="false"
+               cellEditorProvider="ru.runa.gpd.extension.handler.ConfigBasedProvider"
+               className="ru.runa.wfe.extension.handler.process.ModifyProcessPermissionsHandler"
+               decisionHandler="false"
+               enabled="true"
+               label="%ru.runa.wfe.extension.handler.process.ModifyProcessPermissionsHandler">
+       </handler>
    </extension>
    <extension
          point="ru.runa.gpd.swimlaneElements">
@@ -2707,6 +2720,11 @@
             <separator name="common"/>
             <separator name="additions"/>
          </menu>
+          <menu
+               id="graphChecks"
+               label="%label.menu.graphCheck"
+               path="file/command">
+         </menu>
          
          <action
                class="ru.runa.gpd.ui.action.NewProcessAction"
@@ -2945,7 +2963,7 @@
                menubarPath="view/additions"
                style="push"/>
          <menu
-               id="window"
+               id="gpd.window"
                label="%label.menu.window"
                path="properties">
             <separator name="additions"/>
@@ -2955,21 +2973,21 @@
                icon="icons/thumbnail.gif"
                id="openThumbnail"
                label="%label.menu.view.thumbnail"
-               menubarPath="window/additions"
+               menubarPath="gpd.window/additions"
                style="push"/>
          <action
                class="ru.runa.gpd.ui.action.OpenProperties"
                icon="icons/prop_ps.gif"
                id="openProperties"
                label="%label.menu.view.properties"
-               menubarPath="window/additions"
+               menubarPath="gpd.window/additions"
                style="push"/>
          <action
                class="ru.runa.gpd.ui.action.OpenSearchResult"
                icon="icons/search.gif"
                id="openSearchResult"
                label="%label.menu.view.searchresult"
-               menubarPath="window/additions"
+               menubarPath="gpd.window/additions"
                style="push"/>      
          <action
                id="installSoftware"
@@ -3002,35 +3020,35 @@
                icon="icons/outline_co.gif"
                id="openOutline"
                label="%label.menu.view.outline"
-               menubarPath="window/additions"
+               menubarPath="gpd.window/additions"
                style="push"/>
          <action
                class="ru.runa.gpd.ui.action.OpenExplorer"
                icon="icons/filenav_nav.gif"
                id="openExplorer"
                label="%label.menu.view.explorer"
-               menubarPath="window/additions"
+               menubarPath="gpd.window/additions"
                style="push"/>
          <action
                class="ru.runa.gpd.ui.action.OpenBotExplorer"
                icon="icons/bot_station.gif"
                id="ru.runa.gpd.ui.action.openBotExplorer"
                label="%label.view.botDesignerExplorer"
-               menubarPath="window/additions"
+               menubarPath="gpd.window/additions"
                style="push"/>
          <action
                class="ru.runa.gpd.ui.action.OpenDataSourceExplorer"
                icon="icons/data_sources.png"
                id="ru.runa.gpd.ui.action.openDataSourcesExplorer"
                label="%label.view.dataSourceDesignerExplorer"
-               menubarPath="window/additions"
+               menubarPath="gpd.window/additions"
                style="push"/>
          <action
                class="ru.runa.gpd.ui.action.OpenValidationErrorsView"
                icon="icons/validation_error.gif"
                id="openValidationErrorsView"
                label="%label.menu.view.validationErrors"
-               menubarPath="window/additions"
+               menubarPath="gpd.window/additions"
                style="push">
          </action>
          <action
@@ -3038,14 +3056,14 @@
                icon="icons/regulations_notes.png"
                id="openRegulationsNotesView"
                label="%label.menu.view.regulationsNotes"
-               menubarPath="window/additions"
+               menubarPath="gpd.window/additions"
                style="push">
          </action>
          <action
                class="ru.runa.gpd.ui.action.OpenSleakView"
                id="openSleakView"
                label="%label.view.sleak"
-               menubarPath="window/additions"
+               menubarPath="gpd.window/additions"
                style="push">
          </action>
          <action
@@ -3053,7 +3071,7 @@
                icon="icons/error_log.gif"
                id="openLogView"
                label="%label.menu.view.errorLog"
-               menubarPath="window/additions"
+               menubarPath="gpd.window/additions"
                style="push">
          </action>
          <action
@@ -3066,7 +3084,14 @@
                class="ru.runa.gpd.ui.action.CheckUnlimitedTokenAction"
                id="ru.runa.gpd.checkUnlimitedToken"
                label="%label.menu.checkingTokens"
-               menubarPath="file/command"
+               menubarPath="file/graphChecks/command"
+               style="push">
+         </action>
+          <action
+               class="ru.runa.gpd.ui.action.CheckShortPeriodCycleAction"
+               id="ru.runa.gpd.checkShortPeriodCycles"
+               label="%label.menu.checkingCycles"
+               menubarPath="file/graphChecks/command"
                style="push">
          </action>
          <action
@@ -3166,7 +3191,7 @@
             commandId="ru.runa.gpd.commands.exportProcessDefinitionToServer"
             contextId="ru.runa.gpd.context.app"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="CTRL+D">
+            sequence="CTRL+U">
       </key>
       <key
             commandId="ru.runa.gpd.commands.find.element"
@@ -3301,7 +3326,7 @@
       <format
             className="ru.runa.wfe.var.format.HiddenFormat"
             label="%ru.runa.wfe.var.format.HiddenFormat"
-            enabled="true"
+            enabled="false"
             javaClassName="java.lang.String">
       </format>
       <format
@@ -3342,7 +3367,7 @@
       </format>
       <format
             className="ru.runa.wfe.var.format.MapFormat"
-            enabled="true"
+            enabled="false"
             label="%ru.runa.wfe.var.format.MapFormat"
             javaClassName="java.util.Map">
       </format>

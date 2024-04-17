@@ -7,6 +7,7 @@ import java.util.List;
 import ru.runa.gpd.formeditor.ftl.ComboOption;
 import ru.runa.gpd.formeditor.ftl.Component;
 import ru.runa.gpd.formeditor.ftl.ComponentParameter;
+import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableUserType;
 
@@ -25,8 +26,8 @@ public class UserTypeAttributeParameter extends ComboParameter {
     }
 
     @Override
-    protected List<ComboOption> getOptions(Component component, ComponentParameter parameter) {
-        VariableUserType userType = getUserType(component);
+    public List<ComboOption> getOptions(Component component, ComponentParameter parameter, ProcessDefinition processDefinition) {
+        VariableUserType userType = getUserType(component, processDefinition);
         if (userType == null) {
             return Lists.newArrayList();
         }
@@ -39,14 +40,14 @@ public class UserTypeAttributeParameter extends ComboParameter {
         });
     }
 
-    protected VariableUserType getUserType(Component component) {
+    protected VariableUserType getUserType(Component component, ProcessDefinition processDefinition) {
         for (ComponentParameter componentParameter : component.getType().getParameters()) {
             if (componentParameter.getType() instanceof UserTypeVariableListComboParameter
                     || componentParameter.getType() instanceof VariableComboParameter) {
                 String variableName = (String) component.getParameterValue(componentParameter);
                 if (!Strings.isNullOrEmpty(variableName)) {
-                    Variable variable = getVariables(componentParameter).get(variableName);
-                    return getVariableUserType(variable);
+                    Variable variable = getVariables(componentParameter, processDefinition).get(variableName);
+                    return getVariableUserType(variable, processDefinition);
                 }
             }
         }

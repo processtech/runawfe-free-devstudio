@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import ru.runa.gpd.formeditor.ftl.Component;
 import ru.runa.gpd.formeditor.ftl.ComponentParameter;
+import ru.runa.gpd.formeditor.ftl.parameter.UserTypeAttributeListParameterType;
 import ru.runa.gpd.formeditor.ftl.parameter.UserTypeVariableListComboParameter;
 import ru.runa.gpd.formeditor.resources.Messages;
 import ru.runa.gpd.lang.ValidationError;
@@ -16,13 +17,18 @@ import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.gpd.util.VariableUtils;
 import ru.runa.wfe.commons.TypeConversionUtil;
 
-public class UserTypeAttributeListValidator extends DefaultParameterTypeValidator {
+public class UserTypeAttributeListParameterTypeValidator extends DefaultParameterTypeValidator {
 
     @Override
     public List<ValidationError> validate(FormNode formNode, Component component, ComponentParameter parameter) {
         List<ValidationError> list = super.validate(formNode, component, parameter);
         Object value = component.getParameterValue(parameter);
-        List<String> attributes = TypeConversionUtil.convertTo(List.class, value);
+        List<String> attributes;
+        if (parameter.getType() instanceof UserTypeAttributeListParameterType) {
+            attributes = ((UserTypeAttributeListParameterType) parameter.getType()).convertValueToList(value);
+        } else {
+            attributes = TypeConversionUtil.convertTo(List.class, value);
+        }
         attributes = attributes.stream().filter(s -> s.length() > 0).collect(Collectors.toList());
         if (attributes.isEmpty()) {
             return list;
@@ -70,5 +76,6 @@ public class UserTypeAttributeListValidator extends DefaultParameterTypeValidato
         String userTypeName = componentFormats[0];
         return formNode.getProcessDefinition().getVariableUserType(userTypeName);
     }
+
 
 }

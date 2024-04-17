@@ -1,10 +1,10 @@
 package ru.runa.gpd.editor.graphiti.update;
 
+import com.google.common.base.Objects;
 import org.eclipse.graphiti.features.IReason;
 import org.eclipse.graphiti.features.context.IUpdateContext;
 import org.eclipse.graphiti.features.impl.Reason;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
-
 import ru.runa.gpd.editor.graphiti.GaProperty;
 import ru.runa.gpd.editor.graphiti.PropertyUtil;
 import ru.runa.gpd.lang.model.Node;
@@ -12,9 +12,8 @@ import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.SwimlanedNode;
 import ru.runa.gpd.lang.model.Synchronizable;
 
-import com.google.common.base.Objects;
-
 public class UpdateStateNodeFeature extends UpdateFeature {
+
     @Override
     public IReason updateNeeded(IUpdateContext context) {
         PictogramElement pe = context.getPictogramElement();
@@ -37,7 +36,10 @@ public class UpdateStateNodeFeature extends UpdateFeature {
         if (async != null && !Objects.equal(async, String.valueOf(((Synchronizable) bo).isAsync()))) {
             return Reason.createTrueReason();
         }
-
+        String tooltip = PropertyUtil.getPropertyValue(pe, GaProperty.TOOLTIP);
+        if (!Objects.equal(tooltip, bo.getTooltip())) {
+            return Reason.createTrueReason();
+        }
         return Reason.createFalseReason();
     }
 
@@ -61,6 +63,7 @@ public class UpdateStateNodeFeature extends UpdateFeature {
             PropertyUtil.setPropertyValue(pe, GaProperty.ASYNC, String.valueOf(((Synchronizable) bo).isAsync()));
             layoutPictogramElement(pe);
         }
+        PropertyUtil.setPropertyValue(pe, GaProperty.TOOLTIP, bo.getTooltip());
         return true;
     }
 }

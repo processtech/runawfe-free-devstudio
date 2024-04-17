@@ -1,6 +1,7 @@
 package ru.runa.gpd.extension.decision;
 
 import com.google.common.base.Strings;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
@@ -24,9 +25,14 @@ import org.codehaus.groovy.ast.stmt.ReturnStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.control.CompilePhase;
 import ru.runa.gpd.PluginLogger;
+import ru.runa.gpd.extension.businessRule.BusinessRuleModel;
+import ru.runa.gpd.extension.businessRule.BusinessRuleModel.IfExpression;
+import ru.runa.gpd.extension.businessRule.LogicComposite;
+import ru.runa.gpd.extension.decision.GroovyTypeSupport.BooleanType;
 import ru.runa.gpd.lang.model.Decision;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.ui.control.ExpressionLine;
+import ru.runa.gpd.ui.control.ExpressionLine.ExpressionLineModel;
 import ru.runa.gpd.ui.dialog.GlobalValidatorExpressionConstructorDialog;
 import ru.runa.gpd.util.VariableUtils;
 
@@ -62,10 +68,13 @@ public class GroovyCodeParser {
             BlockStatement blockStatement = (BlockStatement) astNodes.get(0);
             for (Statement statement : blockStatement.getStatements()) {
                 if (statement instanceof IfStatement) {
-                    Expression expression = ((IfStatement) statement).getBooleanExpression().getExpression();
+                    IfStatement ifStatement = (IfStatement) statement;
+                    if (!ifStatement.getElseBlock().isEmpty()) {
+                        throw new RuntimeException("else is not supported in constructor");
+                    }
+                    Expression expression = ifStatement.getBooleanExpression().getExpression();
                     IfStatementParsedData parsedData = parseIfStatementExpression(expression);
-                    ReturnStatement returnStatement = (ReturnStatement) ((BlockStatement) ((IfStatement) statement).getIfBlock()).getStatements()
-                            .get(0);
+                    ReturnStatement returnStatement = (ReturnStatement) ((BlockStatement) ifStatement.getIfBlock()).getStatements().get(0);
                     String transitionName = (String) ((ConstantExpression) returnStatement.getExpression()).getValue();
                     Variable variable1 = VariableUtils.getVariableByScriptingName(variables, parsedData.leftText);
                     assertNotNull(variable1, parsedData.leftText);
@@ -73,15 +82,15 @@ public class GroovyCodeParser {
                     model.addIfExpression(
                             new GroovyDecisionModel.IfExpression(transitionName, variable1, variable2 != null ? variable2 : parsedData.rightText,
                                     Operation.getByOperator(parsedData.operationText, GroovyTypeSupport.get(variable1.getJavaClassName()))));
-                }
-                if (statement instanceof ReturnStatement) {
+                } else if (statement instanceof ReturnStatement) {
                     String transitionName = (String) ((ConstantExpression) ((ReturnStatement) statement).getExpression()).getValue();
                     model.addIfExpression(new GroovyDecisionModel.IfExpression(transitionName));
+                } else {
+                    throw new Exception("Unexpected statement type");
                 }
             }
             return Optional.of(model);
         } catch (Exception e) {
-            PluginLogger.logErrorWithoutDialog("parseDecisionModel " + code, e);
             return Optional.empty();
         }
     }
@@ -96,11 +105,31 @@ public class GroovyCodeParser {
             parsedData.leftText = be.getLeftExpression().getText();
             parsedData.operationText = be.getOperation().getText();
             parsedData.rightText = be.getRightExpression().getText();
-        } else /* contains */ {
+        } else if (expression instanceof VariableExpression) {
+            // eq for simple variables
+            VariableExpression ve = (VariableExpression) expression;
+            parsedData.leftText = ve.getText();
+            parsedData.operationText = Operation.EQ.getOperator();
+            parsedData.rightText = BooleanType.TRUE;
+        } else if (expression instanceof PropertyExpression) {
+            // eq for complex variables
+            PropertyExpression pe = (PropertyExpression) expression;
+            parsedData.leftText = pe.getText();
+            parsedData.operationText = Operation.EQ.getOperator();
+            parsedData.rightText = BooleanType.TRUE;
+        } else if (expression instanceof NotExpression) {
+            NotExpression ne = (NotExpression) expression;
+            parsedData.leftText = ne.getText();
+            parsedData.operationText = Operation.NOT_EQ.getOperator();
+            parsedData.rightText = BooleanType.TRUE;
+        } else if (expression instanceof MethodCallExpression) {
+            // contains
             MethodCallExpression mce = (MethodCallExpression) expression;
             parsedData.leftText = mce.getObjectExpression().getText();
             parsedData.operationText = mce.getMethodAsString();
             parsedData.rightText = ((ArgumentListExpression) mce.getArguments()).getExpression(0).getText();
+        } else {
+            throw new RuntimeException("Unexpected " + expression);
         }
         return parsedData;
     }
@@ -205,127 +234,140 @@ public class GroovyCodeParser {
             List<ASTNode> astNodes = astBuilder.buildFromString(CompilePhase.CONVERSION, true, code); // возвращает один узел типа BlockStatement
             BlockStatement blockStatement = (BlockStatement) astNodes.get(0); // состоит из одного ExpressionStatement
             ExpressionStatement expressionStatement = (ExpressionStatement) blockStatement.getStatements().get(0); // состоит из одного Expression
-            Expression expression = expressionStatement.getExpression(); // выражение - двоичное дерево, каждый узел которого -
-            // BinaryExpression, форма зависит от расстановки скобок
-            // нужно разложить это дерево в список простых выражений, каждое из которых соответствует ExpressionLine в GUI и либо не BinaryExpression,
-            // либо BinaryExpression, но не имеет логическую операцию && или ||
-            List<Expression> expressionList = new LinkedList<>();
-            expressionList.add(expression); // положим корень в список, и будем многократно заменять каждый элемент списка его потомками,
-            // которые встают на место исходного элемента.
-            // Проходить по листу итератором и одновременно модифицировать нельзя. Варианты: по индексу - get долго, использовать ArrayList -
-            // долгая вставка, поэтому используется другой вариант - каждый раз создается новый список
-            // В этой же процедуре для каждого узла определяется, какая логическая операция стоит справа от него в выражении, такая информация
-            // нужна для заполнения Combo логической операции в ExpressionLine
-            // Чтобы хранить эту информацию, она привязывается к узлам в их метаданных.
-            // в этой же процедуре определяется количество скобок рядом с каждым выражением -
-            // открывающие скобки слева от выражения и закрывающие справа от него.
-            // Открывающая скобка родителя идет в левый потомок, закрывающая скобка - в правый потомок.
-            String openBracketsNumber = "openBracketsNumber"; // количество открывающих скобок слева от выражения
-            String closeBracketsNumber = "closeBracketsNumber"; // количество закрывающих скобок справа от выражения
-            String operationOnTheRight = "operationOnTheRight";
-            String operationInParent = "operationInParent";
-            expression.putNodeMetaData(openBracketsNumber, 0);
-            expression.putNodeMetaData(closeBracketsNumber, 0);
-            expression.putNodeMetaData(operationInParent, ""); // операция в родителе узла,
-            // пустой строкой обозначим отсутствие операции (для алгоритма ниже удобней
-            // обозначить это таким значением, а не null, иначе придется делать проверку на null)
-            while (true) {
-                boolean listChangedInCycle = false;
-                List<Expression> newExpressionList = new LinkedList<>();
-                for (Expression i : expressionList) { // ищем элемент, который можно заменить
-                    if (i instanceof BinaryExpression) {
-                        BinaryExpression binaryExpression = (BinaryExpression) i;
-                        String operation = binaryExpression.getOperation().getText();
-                        if (operation.equals("&&") || operation.equals("||")) {
-                            Expression leftExpression = binaryExpression.getLeftExpression();
-                            Expression rightExpression = binaryExpression.getRightExpression();
-                            newExpressionList.add(leftExpression);
-                            newExpressionList.add(rightExpression);
-                            listChangedInCycle = true;
-                            // далее помещение информации о скобках
-                            // помещение скобок вокруг этого BinaryExpression не нужно, когда
-                            // операция - и, так как из всех используемых операций она имеет
-                            // наибольший приоритет. Если операция или, то:
-                            // если в родительском BinaryExpression операция - или, то скобки
-                            // не нужны, потому что a or (b or c) = a or b or c
-                            // если в родительском BinaryExpression операция - и, то скобки
-                            // нужны, потому что родительское подвыражение тогда имеет вид a and (b or c),
-                            // для такого выражения скобки необходимы.
-                            leftExpression.putNodeMetaData(closeBracketsNumber, 0);
-                            rightExpression.putNodeMetaData(openBracketsNumber, 0);
-                            boolean addBrackets = operation.equals("||") && binaryExpression.getNodeMetaData(operationInParent).equals("&&");
-                            int newBracketsNumber = addBrackets ? 1 : 0;
-                            leftExpression.putNodeMetaData(openBracketsNumber,
-                                    newBracketsNumber + (Integer) binaryExpression.getNodeMetaData(openBracketsNumber));
-                            rightExpression.putNodeMetaData(closeBracketsNumber,
-                                    newBracketsNumber + (Integer) binaryExpression.getNodeMetaData(closeBracketsNumber));
-                            leftExpression.putNodeMetaData(operationInParent, operation);
-                            rightExpression.putNodeMetaData(operationInParent, operation);
-                            // далее помещение информации о логической операции
-                            leftExpression.putNodeMetaData(operationOnTheRight, operation);
-                            rightExpression.putNodeMetaData(operationOnTheRight, binaryExpression.getNodeMetaData(operationOnTheRight));
-                        } else {
-                            newExpressionList.add(i);
-                        }
-                    } else {
-                        newExpressionList.add(i);
-                    }
-                }
-                if (!listChangedInCycle) {
-                    break;
-                }
-                expressionList = newExpressionList;
-            }
-            GlobalValidatorExpressionConstructorDialog.ExpressionModel model = new GlobalValidatorExpressionConstructorDialog.ExpressionModel();
-            ListIterator<Expression> iterator = expressionList.listIterator(); // нужен, чтобы в LinkedList смотреть на следующий элемент за текущим
-            while (iterator.hasNext()) {
-                Expression currentExpression = iterator.next();
-                ExpressionLine.ExpressionLineModel expressionLineModel = new ExpressionLine.ExpressionLineModel();
-                Object logicOperation = currentExpression.getNodeMetaData(operationOnTheRight);
-                if (iterator.hasNext()) {
-                    expressionLineModel.setLogicOperationGroovy((String) logicOperation);
-                } else {
-                    // задание логической операции по умолчанию в последнем ExpressionLine, там это значение
-                    // не видно и не используется, пока ExpressionLine остается последней.
-                    expressionLineModel.setLogicOperationGroovy("&&");
-                }
-                int openBracketsAfterExpression;
-                if (iterator.hasNext()) {
-                    Expression nextExpression = iterator.next(); // продвинулись вперед на 1
-                    openBracketsAfterExpression = (Integer) nextExpression.getNodeMetaData(openBracketsNumber);
-                    iterator.previous(); // возвращаемся обратно
-                } else {
-                    openBracketsAfterExpression = 0;
-                }
-                if (openBracketsAfterExpression == 0) {
-                    expressionLineModel.setOpenBracketExist(false);
-                } else if (openBracketsAfterExpression == 1) {
-                    expressionLineModel.setOpenBracketExist(true);
-                } else { // такое невозможно, исходное выражение неправильное
-                    throw new Exception(openBracketsAfterExpression + " open brackets after expression " + iterator.previous() + " , must be 0 or 1");
-                }
-                int closeBracketsAfterExpression = (Integer) currentExpression.getNodeMetaData(closeBracketsNumber);
-                if (closeBracketsAfterExpression == 0 || iterator.nextIndex() == expressionList.size()) {
-                    // на последней ExpressionLine не используются кнопки-скобки
-                    expressionLineModel.setCloseBracketExist(false);
-                } else if (closeBracketsAfterExpression == 1) {
-                    expressionLineModel.setCloseBracketExist(true);
-                } else if (iterator.nextIndex() != expressionList.size()) {
-                    throw new Exception(closeBracketsAfterExpression + " close brackets after expression " + iterator.previous()
-                            + " , must be 0 or 1, these brackets are not in the end of expression");
-                    // такое невозможно, исходное выражение неправильное, если это не конец выражения.
-                    // в конце может быть любое количество закрывающих скобок
-                    // и для конца не надо вызывать setCloseBracketExist, так как в GUI последняя
-                    // ExpressionLine не имеет виджета с кнопками-скобками
-                }
-                parseSimpleExpression(currentExpression, expressionLineModel);
-                model.addExpressionLineModel(expressionLineModel);
-            }
+            Expression expression = expressionStatement.getExpression();
+            GlobalValidatorExpressionConstructorDialog.ExpressionModel model = parseExpression(expression);
             return Optional.of(model);
         } catch (Exception e) {
             PluginLogger.logErrorWithoutDialog("parseValidationModel " + code, e);
             return Optional.empty();
         }
+    }
+
+    /**
+     * @author andrey belozerov
+     */
+    public static GlobalValidatorExpressionConstructorDialog.ExpressionModel parseExpression(Expression expression) throws Exception {
+        // парсит выражения определенного типа. Это те выражения, которые могут загрузиться в конструктор выражения глобального валидатора,
+        // и в конструктор сложного условия бизнес-правила. Эта функция может выполняться многократно при парсинге бизнес-правил, поэтому
+        // в нее не входит дорогостоящее создание AST из кода Groovy.
+
+        // выражение - двоичное дерево, каждый узел которого -
+        // BinaryExpression, форма зависит от расстановки скобок
+        // нужно разложить это дерево в список простых выражений, каждое из которых соответствует ExpressionLine в GUI и либо не BinaryExpression,
+        // либо BinaryExpression, но не имеет логическую операцию && или ||
+        List<Expression> expressionList = new LinkedList<>();
+        expressionList.add(expression); // положим корень в список, и будем многократно заменять каждый элемент списка его потомками,
+        // которые встают на место исходного элемента.
+        // Проходить по листу итератором и одновременно модифицировать нельзя. Варианты: по индексу - get долго, использовать ArrayList -
+        // долгая вставка, поэтому используется другой вариант - каждый раз создается новый список
+        // В этой же процедуре для каждого узла определяется, какая логическая операция стоит справа от него в выражении, такая информация
+        // нужна для заполнения Combo логической операции в ExpressionLine
+        // Чтобы хранить эту информацию, она привязывается к узлам в их метаданных.
+        // в этой же процедуре определяется количество скобок рядом с каждым выражением -
+        // открывающие скобки слева от выражения и закрывающие справа от него.
+        // Открывающая скобка родителя идет в левый потомок, закрывающая скобка - в правый потомок.
+        String openBracketsNumber = "openBracketsNumber"; // количество открывающих скобок слева от выражения
+        String closeBracketsNumber = "closeBracketsNumber"; // количество закрывающих скобок справа от выражения
+        String operationOnTheRight = "operationOnTheRight";
+        String operationInParent = "operationInParent";
+        expression.putNodeMetaData(openBracketsNumber, 0);
+        expression.putNodeMetaData(closeBracketsNumber, 0);
+        expression.putNodeMetaData(operationInParent, ""); // операция в родителе узла,
+        // пустой строкой обозначим отсутствие операции (для алгоритма ниже удобней
+        // обозначить это таким значением, а не null, иначе придется делать проверку на null)
+        while (true) {
+            boolean listChangedInCycle = false;
+            List<Expression> newExpressionList = new LinkedList<>();
+            for (Expression i : expressionList) { // ищем элемент, который можно заменить
+                if (i instanceof BinaryExpression) {
+                    BinaryExpression binaryExpression = (BinaryExpression) i;
+                    String operation = binaryExpression.getOperation().getText();
+                    if (operation.equals("&&") || operation.equals("||")) {
+                        Expression leftExpression = binaryExpression.getLeftExpression();
+                        Expression rightExpression = binaryExpression.getRightExpression();
+                        newExpressionList.add(leftExpression);
+                        newExpressionList.add(rightExpression);
+                        listChangedInCycle = true;
+                        // далее помещение информации о скобках
+                        // помещение скобок вокруг этого BinaryExpression не нужно, когда
+                        // операция - и, так как из всех используемых операций она имеет
+                        // наибольший приоритет. Если операция или, то:
+                        // если в родительском BinaryExpression операция - или, то скобки
+                        // не нужны, потому что a or (b or c) = a or b or c
+                        // если в родительском BinaryExpression операция - и, то скобки
+                        // нужны, потому что родительское подвыражение тогда имеет вид a and (b or c),
+                        // для такого выражения скобки необходимы.
+                        leftExpression.putNodeMetaData(closeBracketsNumber, 0);
+                        rightExpression.putNodeMetaData(openBracketsNumber, 0);
+                        boolean addBrackets = operation.equals("||") && binaryExpression.getNodeMetaData(operationInParent).equals("&&");
+                        int newBracketsNumber = addBrackets ? 1 : 0;
+                        leftExpression.putNodeMetaData(openBracketsNumber,
+                                newBracketsNumber + (Integer) binaryExpression.getNodeMetaData(openBracketsNumber));
+                        rightExpression.putNodeMetaData(closeBracketsNumber,
+                                newBracketsNumber + (Integer) binaryExpression.getNodeMetaData(closeBracketsNumber));
+                        leftExpression.putNodeMetaData(operationInParent, operation);
+                        rightExpression.putNodeMetaData(operationInParent, operation);
+                        // далее помещение информации о логической операции
+                        leftExpression.putNodeMetaData(operationOnTheRight, operation);
+                        rightExpression.putNodeMetaData(operationOnTheRight, binaryExpression.getNodeMetaData(operationOnTheRight));
+                    } else {
+                        newExpressionList.add(i);
+                    }
+                } else {
+                    newExpressionList.add(i);
+                }
+            }
+            if (!listChangedInCycle) {
+                break;
+            }
+            expressionList = newExpressionList;
+        }
+        GlobalValidatorExpressionConstructorDialog.ExpressionModel model = new GlobalValidatorExpressionConstructorDialog.ExpressionModel();
+        ListIterator<Expression> iterator = expressionList.listIterator(); // нужен, чтобы в LinkedList смотреть на следующий элемент за текущим
+        while (iterator.hasNext()) {
+            Expression currentExpression = iterator.next();
+            ExpressionLine.ExpressionLineModel expressionLineModel = new ExpressionLine.ExpressionLineModel();
+            Object logicOperation = currentExpression.getNodeMetaData(operationOnTheRight);
+            if (iterator.hasNext()) {
+                expressionLineModel.setLogicOperationGroovy((String) logicOperation);
+            } else {
+                // задание логической операции по умолчанию в последнем ExpressionLine, там это значение
+                // не видно и не используется, пока ExpressionLine остается последней.
+                expressionLineModel.setLogicOperationGroovy("&&");
+            }
+            int openBracketsAfterExpression;
+            if (iterator.hasNext()) {
+                Expression nextExpression = iterator.next(); // продвинулись вперед на 1
+                openBracketsAfterExpression = (Integer) nextExpression.getNodeMetaData(openBracketsNumber);
+                iterator.previous(); // возвращаемся обратно
+            } else {
+                openBracketsAfterExpression = 0;
+            }
+            if (openBracketsAfterExpression == 0) {
+                expressionLineModel.setOpenBracketExist(false);
+            } else if (openBracketsAfterExpression == 1) {
+                expressionLineModel.setOpenBracketExist(true);
+            } else { // такое невозможно, исходное выражение неправильное
+                throw new Exception(openBracketsAfterExpression + " open brackets after expression " + iterator.previous() + " , must be 0 or 1");
+            }
+            int closeBracketsAfterExpression = (Integer) currentExpression.getNodeMetaData(closeBracketsNumber);
+            if (closeBracketsAfterExpression == 0 || iterator.nextIndex() == expressionList.size()) {
+                // на последней ExpressionLine не используются кнопки-скобки
+                expressionLineModel.setCloseBracketExist(false);
+            } else if (closeBracketsAfterExpression == 1) {
+                expressionLineModel.setCloseBracketExist(true);
+            } else if (iterator.nextIndex() != expressionList.size()) {
+                throw new Exception(closeBracketsAfterExpression + " close brackets after expression " + iterator.previous()
+                        + " , must be 0 or 1, these brackets are not in the end of expression");
+                // такое невозможно, исходное выражение неправильное, если это не конец выражения.
+                // в конце может быть любое количество закрывающих скобок
+                // и для конца не надо вызывать setCloseBracketExist, так как в GUI последняя
+                // ExpressionLine не имеет виджета с кнопками-скобками
+            }
+            parseSimpleExpression(currentExpression, expressionLineModel);
+            model.addExpressionLineModel(expressionLineModel);
+        }
+        return model;
     }
 
     /**
@@ -412,5 +454,112 @@ public class GroovyCodeParser {
         } else {
             return false;
         }
+    }
+
+    /**
+     * @author andrey belozerov
+     */
+    public static Optional<BusinessRuleModel> parseBusinessRuleModel(String code, List<Variable> variables) {
+        try {
+            if (Strings.isNullOrEmpty(code)) {
+                return Optional.empty();
+            }
+            AstBuilder astBuilder = new AstBuilder();
+            List<ASTNode> astNodes = astBuilder.buildFromString(CompilePhase.CONVERSION, true, code);
+            BlockStatement blockStatement = (BlockStatement) astNodes.get(0);
+            BusinessRuleModel model = new BusinessRuleModel();
+            for (Statement statement : blockStatement.getStatements()) {
+                if (statement instanceof IfStatement) {
+                    Expression expression = ((IfStatement) statement).getBooleanExpression().getExpression(); // условие в if
+                    GlobalValidatorExpressionConstructorDialog.ExpressionModel expressionModel = parseExpression(expression);
+                    ReturnStatement returnStatement = (ReturnStatement) ((BlockStatement) ((IfStatement) statement).getIfBlock()).getStatements()
+                            .get(0);
+                    String function = (String) ((ConstantExpression) returnStatement.getExpression()).getValue(); // строка, возвращаемая return
+                    IfExpression ifExpression = createIfExpression(expressionModel, function, variables);
+                    model.addIfExpression(ifExpression);
+                }
+                if (statement instanceof ReturnStatement) {
+                    model.setDefaultFunction((String) ((ConstantExpression) ((ReturnStatement) statement).getExpression()).getValue());
+                }
+            }
+            return Optional.of(model);
+        } catch (Exception e) {
+            PluginLogger.logErrorWithoutDialog("parseBusinessRuleModel " + code, e);
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * @author andrey belozerov
+     * @throws Exception
+     */
+    private static IfExpression createIfExpression(GlobalValidatorExpressionConstructorDialog.ExpressionModel expressionModel, String function,
+            List<Variable> variables) throws Exception {
+        List<Variable> firstVariables = new ArrayList<>(); // в других местах IfExpression всегда принимает списки типа ArrayList
+        List<Object> secondVariables = new ArrayList<>();
+        List<Operation> operations = new ArrayList<>();
+        List<String> logicExpressions = new ArrayList<>();
+        List<Boolean> openBrackets = new ArrayList<>();
+        List<Boolean> closeBrackets = new ArrayList<>();
+        for (int i = 0; i < expressionModel.getExpressionLineNumber(); i++) {
+            ExpressionLineModel expressionLineModel = expressionModel.getExpressionLineModel(i);
+            Variable firstVariable = VariableUtils.getVariableByScriptingName(variables, expressionLineModel.getFirstOperand());
+            if (firstVariable == null) {
+                throw new Exception("first variable not found");
+            }
+            GroovyTypeSupport typeSupport = GroovyTypeSupport.get(firstVariable.getJavaClassName());
+            Operation operation = Operation.getByOperator(expressionLineModel.getOperation(), typeSupport);
+            String secondOperandText = expressionLineModel.getSecondOperand();
+            Object secondVariable;
+            Variable variable = VariableUtils.getVariableByScriptingName(variables, secondOperandText);
+            if (variable != null) {
+                secondVariable = variable;
+            } else {
+                secondVariable = secondOperandText;
+            }
+            if (expressionLineModel.getLogicOperationGroovy().equals("||")) {
+                logicExpressions.add(LogicComposite.OR_LOGIC_EXPRESSION);
+            } else if (expressionLineModel.getLogicOperationGroovy().equals("&&")) {
+                logicExpressions.add(LogicComposite.AND_LOGIC_EXPRESSION);
+            }
+            openBrackets.add(expressionLineModel.isOpenBracketExist());
+            closeBrackets.add(expressionLineModel.isCloseBracketExist());
+            firstVariables.add(firstVariable);
+            secondVariables.add(secondVariable);
+            operations.add(operation);
+        }
+        logicExpressions.remove(logicExpressions.size() - 1);
+        logicExpressions.add(LogicComposite.NULL_LOGIC_EXPRESSION); // несуществующая логическая операция в последней expression line
+        // далее преобразование информации о скобках к виду, используемому в бизнес-правилах
+        int nesting = 0;
+        int minNesting = 0;
+        for (int i = 0; i < expressionModel.getExpressionLineNumber(); i++) {
+            if (closeBrackets.get(i)) {
+                nesting--;
+                if (nesting < minNesting) {
+                    minNesting = nesting;
+                }
+            }
+            if (openBrackets.get(i)) {
+                nesting++;
+            }
+        }
+        int openBracketsInBeginning = 0 - minNesting; // такое количество открываюших скобок
+        // добавляется в начало, чтобы вложенность везде в выражении была >= 0
+        int closeBracketsInEnd = nesting + openBracketsInBeginning; // такое количество закрывающих
+        // скобок добавляется в конец, чтобы вложенность в нем была 0
+        List<int[]> bracketsBusinessRuleView = new ArrayList<>();
+        int[] bracketsInFirstExpressionLine = new int[2];
+        bracketsInFirstExpressionLine[0] = openBracketsInBeginning;
+        bracketsInFirstExpressionLine[1] = closeBrackets.get(0) ? 1 : 0;
+        bracketsBusinessRuleView.add(bracketsInFirstExpressionLine);
+        for (int i = 1; i < expressionModel.getExpressionLineNumber(); i++) {
+            int[] bracketsInExpressionLine = new int[2];
+            bracketsInExpressionLine[0] = openBrackets.get(i - 1) ? 1 : 0;
+            bracketsInExpressionLine[1] = closeBrackets.get(i) ? 1 : 0;
+            bracketsBusinessRuleView.add(bracketsInExpressionLine);
+        }
+        bracketsBusinessRuleView.get(bracketsBusinessRuleView.size() - 1)[1] = closeBracketsInEnd;
+        return new IfExpression(function, firstVariables, secondVariables, operations, logicExpressions, bracketsBusinessRuleView);
     }
 }

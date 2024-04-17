@@ -2,4 +2,19 @@
 <configuration xmlns="http://runa.ru/xml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://runa.ru/xml">	
 	<ftltag name="DisplayVariable" class="ru.runa.gpd.quick.tag.DisplayVariableTag" default="true" />
 	<ftltag name="InputVariable" class="ru.runa.gpd.quick.tag.InputVariableTag" />
+	<ftltag name="ChooseExecutorFromRelation" class="ru.runa.gpd.quick.tag.ImageTag" image="List.png" />
+	<ftltag name="ChooseRelationName" class="ru.runa.gpd.quick.tag.ImageTag" image="List.png" />
+	<ftltag name="DisplayMultipleSelectInList" class="ru.runa.gpd.quick.tag.ImageTag" image="DisplayMultipleSelectInList.png" />
+	<ftltag name="DisplayUserTypeList" class="ru.runa.gpd.quick.tag.ImageTag" image="DisplayUserTypeList.png" />
+	<ftltag name="EditUserTypeList" class="ru.runa.gpd.quick.tag.ImageTag" image="EditUserTypeList.png" />
+	<ftltag name="OptionSelectFromVariableList" class="ru.runa.gpd.quick.tag.ImageTag" image="List.png" />
+	<ftltag name="SelectFromValueList" class="ru.runa.gpd.quick.tag.ImageTag" image="SelectFromValueList.png" />
+	<ftltag name="CheckboxSelectFromVariableList" class="ru.runa.gpd.quick.tag.ImageTag" image="CheckboxSelectFromVariableList.png" />
+	<ftltag name="ChooseActorByRelation" class="ru.runa.gpd.quick.tag.ImageTag" image="List.png" />
+	<ftltag name="ChooseExecutorByRelation" class="ru.runa.gpd.quick.tag.ImageTag" image="List.png" />
+	<ftltag name="GroupMembers" class="ru.runa.gpd.quick.tag.ImageTag" image="List.png" />
+	<ftltag name="MultipleSelectFromList" class="ru.runa.gpd.quick.tag.ImageTag" image="MultipleSelectFromList.png" />
+	<ftltag name="MultipleSelectFromUserTypeList" class="ru.runa.gpd.quick.tag.ImageTag" image="MultipleSelectFromUserTypeList.png" />
+	<ftltag name="SingleSelectFromUserTypeList" class="ru.runa.gpd.quick.tag.ImageTag" image="SingleSelectFromUserTypeList.png" />
+	<ftltag name="AjaxGroupMembers" mainVariableIndex="1" class="ru.runa.gpd.quick.tag.ImageTag" image="AjaxGroupMembers.png" />
 </configuration>

@@ -15,16 +15,20 @@ import java.util.stream.Stream;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IActionFilter;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
 import org.eclipse.ui.views.properties.TextPropertyDescriptor;
+import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.PropertyNames;
+import ru.runa.gpd.editor.graphiti.TooltipBuilderHelper;
 import ru.runa.gpd.extension.DelegableProvider;
+import ru.runa.gpd.extension.HandlerArtifact;
 import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.lang.Language;
 import ru.runa.gpd.lang.NodeRegistry;
@@ -39,7 +43,9 @@ import ru.runa.gpd.property.DelegableConfPropertyDescriptor;
 import ru.runa.gpd.property.DescribablePropertyDescriptor;
 import ru.runa.gpd.property.DurationPropertyDescriptor;
 import ru.runa.gpd.property.TimerActionPropertyDescriptor;
+import ru.runa.gpd.settings.BpmnPreferencePage;
 import ru.runa.gpd.settings.CommonPreferencePage;
+import ru.runa.gpd.settings.PrefConstants;
 import ru.runa.gpd.ui.enhancement.DialogEnhancement;
 import ru.runa.gpd.ui.enhancement.DocxDialogEnhancement;
 import ru.runa.gpd.ui.enhancement.DocxDialogEnhancementMode;
@@ -50,6 +56,7 @@ import ru.runa.gpd.util.VariableUtils;
 @SuppressWarnings("unchecked")
 public abstract class GraphElement extends EventSupport
         implements IPropertySource, PropertyNames, IActionFilter, VariableContainer, ProcessDefinitionAware {
+
     private GraphElement parent;
     private GraphElement uiParentContainer;
     private final List<GraphElement> children = new ArrayList<GraphElement>();
@@ -194,7 +201,9 @@ public abstract class GraphElement extends EventSupport
             provider.onDelete((Delegable) child);
         }
         children.remove(child);
-        firePropertyChange(NODE_REMOVED, child, null);
+        if (child instanceof Node) {
+            firePropertyChange(NODE_REMOVED, child, null);
+        }
         firePropertyChange(PROPERTY_CHILDREN_CHANGED, child, null);
         if (child instanceof Node) {
             ((Node) child).updateRegulationsPropertiesOnDelete();
@@ -509,6 +518,42 @@ public abstract class GraphElement extends EventSupport
 
     public String getLabel() {
         return id;
+    }
+
+    public String getTooltip() {
+        IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+        String tooltipMode = store.getString(PrefConstants.P_BPMN_TOOLTIP);
+        if (BpmnPreferencePage.TOOLTIP_MODE_HIDDEN.equals(tooltipMode)) {
+            return TooltipBuilderHelper.EMPTY_STRING;
+        }
+        StringBuilder tooltipBuilder = new StringBuilder();
+        tooltipBuilder.append(TooltipBuilderHelper.SPACE + Localization.getString("Node.property.id") + TooltipBuilderHelper.COLON
+                + TooltipBuilderHelper.SPACE + getId() + TooltipBuilderHelper.SPACE);
+        if (this instanceof NamedGraphElement) {
+            tooltipBuilder.append(TooltipBuilderHelper.NEW_LINE);
+            tooltipBuilder.append(TooltipBuilderHelper.SPACE + Localization.getString("property.name") + TooltipBuilderHelper.COLON
+                    + TooltipBuilderHelper.SPACE + Strings.nullToEmpty(((NamedGraphElement) this).getName()) + TooltipBuilderHelper.SPACE);
+        }
+        if (this instanceof Delegable && delegationClassName != null) {
+            tooltipBuilder.append(TooltipBuilderHelper.NEW_LINE);
+            String delegationClassNameLabel = Strings.nullToEmpty(delegationClassName);
+            HandlerArtifact delegationClassNameArtifact = HandlerRegistry.getInstance().getArtifact(delegationClassName);
+            if (delegationClassNameArtifact != null && tooltipBuilder.indexOf(delegationClassName) >= 0) {
+                delegationClassNameLabel = delegationClassNameArtifact.getLabel();
+            }
+            tooltipBuilder.append(TooltipBuilderHelper.SPACE + Localization.getString("property.delegation.class") + TooltipBuilderHelper.COLON
+                    + TooltipBuilderHelper.SPACE + delegationClassNameLabel + TooltipBuilderHelper.SPACE);
+        }
+        if (BpmnPreferencePage.TOOLTIP_MODE_EXTENDED.equals(tooltipMode)) {
+            appendExtendedTooltip(tooltipBuilder);
+        }
+        return tooltipBuilder.toString();
+    }
+
+    protected void appendExtendedTooltip(StringBuilder tooltipBuilder) {
+        if (this instanceof Delegable) {
+            TooltipBuilderHelper.addDelegableConfiguration((Delegable) this, tooltipBuilder);
+        }
     }
 
 }

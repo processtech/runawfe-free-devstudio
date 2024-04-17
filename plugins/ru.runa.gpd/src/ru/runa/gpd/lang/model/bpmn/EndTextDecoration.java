@@ -47,6 +47,7 @@ public class EndTextDecoration extends TextDecorationNode {
             return owner;
         }
 
+        @Override
         public String getName() {
             return name.getValue();
         }

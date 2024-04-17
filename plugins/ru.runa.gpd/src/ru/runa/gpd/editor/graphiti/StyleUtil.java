@@ -26,7 +26,9 @@ import org.eclipse.swt.graphics.RGB;
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.GraphElement;
+import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.Subprocess;
+import ru.runa.gpd.lang.model.TaskStateExecutionButton;
 import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.TransitionColor;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEventCapable;
@@ -71,8 +73,16 @@ public class StyleUtil implements PrefConstants {
         return findOrCreateStyle(diagram, "transitionDiamondPolyline", new TransitionDiamondPolylineStyleInitializer());
     }
 
-    public static boolean isTransitionDecoratorVisible(Transition transition) {
-        return transition.getSource() instanceof FormNode && transition.getSource().getLeavingTransitions().size() > 1;
+    public static boolean isFormNodeTransitionDecoratorVisible(Transition transition) {
+        Node source = transition.getSource();
+        if (source instanceof FormNode) {
+            TaskStateExecutionButton sourceExecutionButton = ((FormNode) source).getExecutionButton();
+            return sourceExecutionButton == TaskStateExecutionButton.BY_LEAVING_TRANSITION_NAME
+                    || sourceExecutionButton == TaskStateExecutionButton.NONE
+                            && source.getProcessDefinition().getExecutionButton() == TaskStateExecutionButton.BY_LEAVING_TRANSITION_NAME
+                    || source.getLeavingTransitions().size() > 1;
+        }
+        return false;
     }
 
     public static Style getTransitionColorMarkerStyle(Diagram diagram, Transition transition, TransitionColor color) {

@@ -1,4 +1,4 @@
-﻿package ru.runa.gpd.lang.model;
+package ru.runa.gpd.lang.model;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Sets;
@@ -238,7 +238,7 @@ public abstract class Node extends NamedGraphElement implements Describable {
         onLeavingTransitionAdded(transition);
     }
 
-    public void onLeavingTransitionAdded(Transition transition) {
+    public void onLeavingTransitionAdded(AbstractTransition transition) {
         updateLeavingTransitions();
         firePropertyChange(NODE_LEAVING_TRANSITION_ADDED, null, transition);
         Node target = transition.getTarget();
@@ -250,7 +250,7 @@ public abstract class Node extends NamedGraphElement implements Describable {
     public void removeLeavingTransition(Transition transition) {
         removeChild(transition);
         updateLeavingTransitions();
-        firePropertyChange(NODE_LEAVING_TRANSITION_REMOVED, null, transition);
+        firePropertyChange(NODE_LEAVING_TRANSITION_REMOVED, transition, null);
         Node target = transition.getTarget();
         if (target != null) {
             target.firePropertyChange(NODE_ARRIVING_TRANSITION_REMOVED, null, transition);

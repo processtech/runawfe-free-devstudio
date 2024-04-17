@@ -50,7 +50,9 @@ public abstract class ImportWizardPage extends WizardPage {
         }
         projectViewer.setContentProvider(new ArrayContentProvider());
         projectViewer.setInput(data);
-        if (initialSelection != null) {
+        if (data.size() == 1) {
+            projectViewer.setSelection(new StructuredSelection(data.get(0)));
+        } else if (initialSelection != null) {
             projectViewer.setSelection(new StructuredSelection(initialSelection));
         }
     }

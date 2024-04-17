@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.Set;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import ru.runa.gpd.Localization;
+import ru.runa.gpd.editor.graphiti.TooltipBuilderHelper;
 import ru.runa.gpd.extension.VariableFormatRegistry;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.bpmn.IMultiInstancesContainer;
@@ -215,6 +217,16 @@ public class MultiTaskState extends TaskState implements IMultiInstancesContaine
             }
         }
         return result;
+    }
+
+    @Override
+    protected void appendExtendedTooltip(StringBuilder tooltipBuilder) {
+        super.appendExtendedTooltip(tooltipBuilder);
+        if (!getVariableMappings().isEmpty()) {
+            tooltipBuilder.append(TooltipBuilderHelper.NEW_LINE + TooltipBuilderHelper.SPACE + Localization.getString("property.variable.mappings")
+                    + TooltipBuilderHelper.COLON);
+            tooltipBuilder.append(TooltipBuilderHelper.variableMappingsToString(getVariableMappings(), true));
+        }
     }
 
 }

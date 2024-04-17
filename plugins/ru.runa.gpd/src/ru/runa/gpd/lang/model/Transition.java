@@ -13,7 +13,9 @@ import org.eclipse.ui.views.properties.PropertyDescriptor;
 import org.eclipse.ui.views.properties.TextPropertyDescriptor;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginConstants;
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.GEFConstants;
+import ru.runa.gpd.editor.graphiti.TooltipBuilderHelper;
 import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.extension.decision.IDecisionProvider;
 import ru.runa.gpd.lang.Language;
@@ -115,19 +117,17 @@ public class Transition extends AbstractTransition implements ActionContainer {
         super.populateCustomPropertyDescriptors(descriptors);
         descriptors.add(new PropertyDescriptor(PROPERTY_SOURCE, Localization.getString("Transition.property.source")));
         descriptors.add(new PropertyDescriptor(PROPERTY_TARGET, Localization.getString("Transition.property.target")));
-        if (FormNode.class.isAssignableFrom(getSource().getClass())) {
-            if (getSource().getLeavingTransitions().size() == 1) {
-                descriptors.add(new PropertyDescriptor(PROPERTY_ORDERNUM, Localization.getString("Transition.property.orderNum")));
-            } else {
-                TextPropertyDescriptor orderNumPropertyDescriptor = new TextPropertyDescriptor(PROPERTY_ORDERNUM,
-                        Localization.getString("Transition.property.orderNum"));
-                orderNumPropertyDescriptor.setValidator(new TransitionOrderNumCellEditorValidator(getSource().getLeavingTransitions().size()));
-                descriptors.add(orderNumPropertyDescriptor);
-            }
-            if (getProcessDefinition().getLanguage().equals(Language.BPMN)) {
+        if (getSource().getLeavingTransitions().size() == 1) {
+            descriptors.add(new PropertyDescriptor(PROPERTY_ORDERNUM, Localization.getString("Transition.property.orderNum")));
+        } else {
+            TextPropertyDescriptor orderNumPropertyDescriptor = new TextPropertyDescriptor(PROPERTY_ORDERNUM,
+                    Localization.getString("Transition.property.orderNum"));
+            orderNumPropertyDescriptor.setValidator(new TransitionOrderNumCellEditorValidator(getSource().getLeavingTransitions().size()));
+            descriptors.add(orderNumPropertyDescriptor);
+        }
+        if (FormNode.class.isAssignableFrom(getSource().getClass()) && getProcessDefinition().getLanguage().equals(Language.BPMN)) {
                 descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_COLOR, Localization.getString("Transition.property.color"),
                         Stream.of(TransitionColor.values()).map(e -> e.getLabel()).toArray(String[]::new)));
-            }
         }
     }
 
@@ -138,7 +138,7 @@ public class Transition extends AbstractTransition implements ActionContainer {
         } else if (PROPERTY_TARGET.equals(id) && getTarget() != null) {
             return target != null ? target.getName() : "";
         } else if (PROPERTY_ORDERNUM.equals(id)) {
-            return getSource() instanceof FormNode ? Integer.toString(getSource().getLeavingTransitions().indexOf(this) + 1) : null;
+            return Integer.toString(getSource().getLeavingTransitions().indexOf(this) + 1);
         } else if (PROPERTY_COLOR.equals(id)) {
             return getSource() instanceof FormNode ? getColor().ordinal() : null;
         }
@@ -147,43 +147,46 @@ public class Transition extends AbstractTransition implements ActionContainer {
 
     @Override
     public String getLabel() {
-        StringBuilder result = new StringBuilder();
-        if (getSource() instanceof ExclusiveGateway) {
-            if (((ExclusiveGateway) getSource()).isDecision()) {
-                result.append(getName());
+        Node source = getSource();
+        if (source instanceof ExclusiveGateway) {
+            if (((ExclusiveGateway) source).isDecision()) {
+                return getName();
             }
-        } else if (getSource() instanceof Decision) {
-            result.append(getName());
+        } else if (source instanceof Decision) {
+            return getName();
         } else if (PluginConstants.TIMER_TRANSITION_NAME.equals(getName())) {
             Timer timer = null;
-            if (getSource() instanceof Timer) {
-                timer = (Timer) getSource();
+            if (source instanceof Timer) {
+                timer = (Timer) source;
             }
-            if (getSource() instanceof ITimed) {
-                timer = ((ITimed) getSource()).getTimer();
+            if (source instanceof ITimed) {
+                timer = ((ITimed) source).getTimer();
             }
             if (timer != null) {
-                result.append(timer.getDelay().toString());
+                return timer.getDelay().toString();
             }
-        } else if (getSource() instanceof TaskState || getSource() instanceof StartState) {
-            int count = 0;
-            for (Transition transition : getSource().getLeavingTransitions()) {
-                if (!PluginConstants.TIMER_TRANSITION_NAME.equals(transition.getName())) {
-                    count++;
+        } else {
+            if (source instanceof FormNode) {
+                TaskStateExecutionButton sourceExecutionButton = ((FormNode) source).getExecutionButton();
+                if (sourceExecutionButton == TaskStateExecutionButton.BY_LEAVING_TRANSITION_NAME
+                        || sourceExecutionButton == TaskStateExecutionButton.NONE
+                                && source.getProcessDefinition().getExecutionButton() == TaskStateExecutionButton.BY_LEAVING_TRANSITION_NAME) {
+                    return getName();
                 }
             }
-            if (count > 1) {
-                result.append(getName());
+            if (source instanceof TaskState || source instanceof StartState) {
+                int count = 0;
+                for (Transition transition : source.getLeavingTransitions()) {
+                    if (!PluginConstants.TIMER_TRANSITION_NAME.equals(transition.getName())) {
+                        count++;
+                    }
+                }
+                if (count > 1) {
+                    return getName();
+                }
             }
         }
-        return result.toString();
-    }
-
-    @Override
-    public Transition makeCopy(GraphElement parent) {
-        Transition copy = (Transition) super.makeCopy(parent);
-        ((Node) parent).onLeavingTransitionAdded(copy);
-        return copy;
+        return "";
     }
 
     @Override
@@ -246,16 +249,28 @@ public class Transition extends AbstractTransition implements ActionContainer {
             if (parentError != null) {
                 return parentError;
             }
+            name = name.trim();
             List<Transition> list = getSource().getLeavingTransitions();
             for (Transition transition : list) {
                 if (Objects.equal(name, transition.getName())) {
                     return Localization.getString("error.transition_already_exists", name);
                 }
             }
-            ;
             return null;
         };
 
+    }
+
+    @Override
+    public String getTooltip() {
+        if (this.getParent().getChildren(Transition.class).size() > 1) {
+            StringBuilder tooltipBuilder = new StringBuilder(super.getTooltip());
+            Object orderNum = getPropertyValue(PropertyNames.PROPERTY_ORDERNUM);
+            tooltipBuilder.append(TooltipBuilderHelper.NEW_LINE + TooltipBuilderHelper.SPACE + Localization.getString("Transition.property.orderNum")
+                    + TooltipBuilderHelper.COLON + TooltipBuilderHelper.SPACE + orderNum);
+            return tooltipBuilder.toString();
+        }
+        return super.getTooltip();
     }
 
 }

@@ -8,4 +8,6 @@ public interface UIContainer {
     void update();
 
     PictogramElement getOwner();
+
+    String getName();
 }

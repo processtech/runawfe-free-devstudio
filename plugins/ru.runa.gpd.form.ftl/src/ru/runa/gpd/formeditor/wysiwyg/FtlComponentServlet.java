@@ -1,17 +1,14 @@
 package ru.runa.gpd.formeditor.wysiwyg;
 
+import com.google.common.base.Strings;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import ru.runa.gpd.EditorsPlugin;
-import ru.runa.gpd.formeditor.ftl.Component;
 import ru.runa.gpd.formeditor.ftl.ComponentType;
 import ru.runa.gpd.formeditor.ftl.ComponentTypeRegistry;
 import ru.runa.gpd.formeditor.ftl.conv.DesignUtils;
 import ru.runa.wfe.commons.TypeConversionUtil;
-
-import com.google.common.base.Strings;
 
 public class FtlComponentServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;

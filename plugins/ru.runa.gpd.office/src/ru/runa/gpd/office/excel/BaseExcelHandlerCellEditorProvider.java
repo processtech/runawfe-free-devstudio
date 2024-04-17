@@ -8,11 +8,11 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -34,6 +34,7 @@ import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
 import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.custom.SwtUtils;
+import ru.runa.gpd.ui.dialog.ChooseVariableNameDialog;
 import ru.runa.gpd.util.EmbeddedFileUtils;
 import ru.runa.gpd.util.XmlUtil;
 
@@ -182,19 +183,22 @@ public abstract class BaseExcelHandlerCellEditorProvider extends XmlBasedConstru
                 Group group = new Group(this, SWT.None);
                 group.setLayout(new GridLayout(3, false));
                 group.setText(getTitle());
-                Label l = new Label(group, SWT.NONE);
-                l.setText(Messages.getString("label.variable"));
-                final Combo combo = new Combo(group, SWT.READ_ONLY);
-                for (String variableName : delegable.getVariableNames(true, getTypeFilters())) {
-                    combo.add(variableName);
-                }
-                combo.setText(cmodel.variableName);
-                combo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-                combo.addSelectionListener(new SelectionAdapter() {
+                Button button = new Button(group, SWT.PUSH);
+                button.setText(Messages.getString("label.variable"));
+                final Text text = new Text(group, SWT.READ_ONLY | SWT.BORDER);
+                text.setText(cmodel.variableName);
+                text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                button.addSelectionListener(new LoggingSelectionAdapter() {
                     @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        cmodel.variableName = combo.getText();
-                    }
+                    protected void onSelection(SelectionEvent e) throws Exception {
+                        ChooseVariableNameDialog dialog = new ChooseVariableNameDialog(delegable.getVariableNames(true, getTypeFilters()));
+                        dialog.setSelectedItem(cmodel.variableName);
+                        String variableName = dialog.openDialog();
+                        if (variableName != null) {
+                            cmodel.variableName = variableName;
+                            text.setText(variableName);
+                        }
+                    };
                 });
                 SwtUtils.createLink(group, "[X]", new LoggingHyperlinkAdapter() {
 
@@ -231,7 +235,7 @@ public abstract class BaseExcelHandlerCellEditorProvider extends XmlBasedConstru
                     }
                 });
                 new Label(group, SWT.NONE);
-                l = new Label(group, SWT.None);
+                Label l = new Label(group, SWT.None);
                 l.setText(getXcoordMessage());
                 final Text tx = new Text(group, SWT.BORDER);
                 tx.setText("" + cmodel.getColumn());

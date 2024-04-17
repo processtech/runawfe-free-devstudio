@@ -130,6 +130,9 @@ public abstract class GroovyTypeSupport {
     }
 
     static class BooleanType extends GroovyTypeSupport {
+        public static final String TRUE = "true";
+        public static final String FALSE = "false";
+
         @Override
         String wrap(Object value) {
             if (value instanceof Variable) {
@@ -144,8 +147,8 @@ public abstract class GroovyTypeSupport {
         @Override
         public List<String> getPredefinedValues(Operation operation) {
             List<String> v = super.getPredefinedValues(operation);
-            v.add("true");
-            v.add("false");
+            v.add(TRUE);
+            v.add(FALSE);
             return v;
         }
 
@@ -212,8 +215,6 @@ public abstract class GroovyTypeSupport {
             extOperations.add(new Operation(Localization.getString("Groovy.Operation.latereq"), ">="));
             extOperations.add(new Operation(Localization.getString("Groovy.Operation.earlier"), "<"));
             extOperations.add(new Operation(Localization.getString("Groovy.Operation.earliereq"), "<="));
-            extOperations.add(new Operation(Operation.EQ.getVisibleName(), Operation.EQ.getOperator()));
-            extOperations.add(new Operation(Operation.NOT_EQ.getVisibleName(), Operation.NOT_EQ.getOperator()));
             return extOperations;
         }
     }

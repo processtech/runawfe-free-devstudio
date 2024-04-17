@@ -17,7 +17,6 @@ import ru.runa.gpd.formeditor.ftl.Component;
 import ru.runa.gpd.formeditor.ftl.ComponentParameter;
 import ru.runa.gpd.formeditor.ftl.util.CdataWrapUtils;
 import ru.runa.gpd.formeditor.resources.Messages;
-import ru.runa.gpd.formeditor.wysiwyg.FormEditor;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.ProcessDefinitionAware;
@@ -32,14 +31,14 @@ public class PredicatesParameter extends ParameterType implements DependsOnDbVar
     private PredicatesDelegable delegable;
 
     @Override
-    public PropertyDescriptor createPropertyDescriptor(Component component, ComponentParameter parameter, int propertyId) {
+    public PropertyDescriptor createPropertyDescriptor(Component component, ComponentParameter parameter, int propertyId,
+            ProcessDefinition processDefinition) {
         return new PropertyDescriptor(propertyId, parameter.getLabel());
     }
 
     @Override
-    public Object createEditor(Composite parent, Component component, ComponentParameter parameter, Object oldValue,
-            PropertyChangeListener listener) {
-        final ProcessDefinition processDefinition = FormEditor.getCurrent().getProcessDefinition();
+    public Object createEditor(Composite parent, Component component, ComponentParameter parameter, Object oldValue, PropertyChangeListener listener,
+            ProcessDefinition processDefinition) {
         delegable = new PredicatesDelegable(processDefinition, null, (String) oldValue);
 
         final Composite composite = new Composite(parent, SWT.NONE);
@@ -70,15 +69,15 @@ public class PredicatesParameter extends ParameterType implements DependsOnDbVar
     }
 
     @Override
-    public void updateEditor(Object ui, Component component, ComponentParameter parameter) {
-        super.updateEditor(ui, component, parameter);
-        final Optional<VariableUserType> userType = userType(component, FormEditor.getCurrent().getProcessDefinition());
+    public void updateEditor(Object ui, Component component, ComponentParameter parameter, ProcessDefinition processDefinition) {
+        super.updateEditor(ui, component, parameter, processDefinition);
+        final Optional<VariableUserType> userType = userType(component, processDefinition);
         delegable.setFtlConfiguration(userType.map(type -> InternalStorageDataModel.selectWithoutReturnBy(type).toString()).orElse(""));
         component.setParameterValue(parameter, delegable.getFtlConfiguration());
     }
 
     @Override
-    public Object toPropertyDescriptorValue(Component component, ComponentParameter parameter, Object value) {
+    public Object toPropertyDescriptorValue(Component component, ComponentParameter parameter, Object value, ProcessDefinition processDefinition) {
         return CdataWrapUtils.unwrapCdata((String) value);
     }
 

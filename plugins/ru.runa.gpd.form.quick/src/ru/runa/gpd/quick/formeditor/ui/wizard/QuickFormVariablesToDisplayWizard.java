@@ -6,14 +6,14 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import ru.runa.gpd.lang.model.FormNode;
-import ru.runa.gpd.quick.formeditor.QuickFormGpdVariable;
+import ru.runa.gpd.quick.formeditor.QuickFormComponent;
 
-public class QuickFormVariabliesToDisplayWizard extends Wizard implements INewWizard {
+public class QuickFormVariablesToDisplayWizard extends Wizard implements INewWizard {
     private FormNode formNode;
-    private List<QuickFormGpdVariable> quickFormVariableDefs;
-    private QuickFormVariabliesToDisplayWizardPage page;
+    private List<QuickFormComponent> quickFormVariableDefs;
+    private QuickFormVariablesToDisplayWizardPage page;
 
-    public QuickFormVariabliesToDisplayWizard(FormNode formNode, List<QuickFormGpdVariable> templatedVariableDefs) {
+    public QuickFormVariablesToDisplayWizard(FormNode formNode, List<QuickFormComponent> templatedVariableDefs) {
         this.formNode = formNode;
         this.quickFormVariableDefs = templatedVariableDefs;
     }
@@ -25,15 +25,14 @@ public class QuickFormVariabliesToDisplayWizard extends Wizard implements INewWi
     @Override
     public void addPages() {
         super.addPages();
-        page = new QuickFormVariabliesToDisplayWizardPage(formNode, quickFormVariableDefs);
+        page = new QuickFormVariablesToDisplayWizardPage(formNode, quickFormVariableDefs);
         addPage(page);
     }
 
     @Override
     public boolean performFinish() {
         quickFormVariableDefs.clear();
-    	quickFormVariableDefs.addAll(page.getSelectedVariables());
+        quickFormVariableDefs.addAll(page.getSelectedVariables());
         return true;
     }
-
 }

@@ -169,5 +169,4 @@ public class ComponentTypeRegistry {
             return t1.getOrder() - t2.getOrder();
         }
     }
-
 }

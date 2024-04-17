@@ -1,0 +1,10 @@
+<config>
+    <input>
+        <param name="executor" formatFilter="ru.runa.wfe.user.Executor" label.key="Param.Executor" />
+        <param name="read" formatFilter="java.lang.Boolean" presentation="richcombo" label.key="Param.Read" />
+        <param name="update_permissions" formatFilter="java.lang.Boolean" presentation="richcombo" label.key="Param.UpdatePermissions" />
+        <param name="cancel" formatFilter="java.lang.Boolean" presentation="richcombo" label.key="Param.Cancel" />
+        <param name="update" formatFilter="java.lang.Boolean" presentation="richcombo" label.key="Param.Update" />
+        <param name="delete" formatFilter="java.lang.Boolean" presentation="richcombo" label.key="Param.Delete" />
+    </input>
+</config>

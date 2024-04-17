@@ -87,7 +87,10 @@ public class CreateElementFeature extends AbstractCreateFeature implements GEFCo
 
     @Override
     public Object[] create(ICreateContext context) {
-        graphElement = getNodeDefinition().createElement(getProcessDefinition(), true);
+        GraphElement graphElement = getNodeDefinition().createElement(getProcessDefinition(), true);
+        if (graphElement == null) {
+            return null;
+        }
         UndoRedoUtil.watch(graphElement);
         GraphElement parent = (GraphElement) getBusinessObjectForPictogramElement(context.getTargetContainer());
         if (graphElement instanceof Action) {
@@ -145,7 +148,7 @@ public class CreateElementFeature extends AbstractCreateFeature implements GEFCo
             context.setWidth(defaultSize.width);
         }
         element.setConstraint(new Rectangle(context.getX(), context.getY(), context.getWidth(), context.getHeight()));
-        if (element instanceof IBoundaryEventCapable) {
+        if (element instanceof IBoundaryEventCapable && ((IBoundaryEventCapable) element).isBoundaryEvent()) {
             ((IBoundaryEventCapable) element).updateBoundaryEventConstraint();
         }
     }

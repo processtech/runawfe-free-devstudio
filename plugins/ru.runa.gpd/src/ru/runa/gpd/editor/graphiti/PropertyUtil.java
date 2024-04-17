@@ -1,5 +1,6 @@
 package ru.runa.gpd.editor.graphiti;
 
+import com.google.common.base.Objects;
 import org.eclipse.graphiti.mm.Property;
 import org.eclipse.graphiti.mm.PropertyContainer;
 import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
@@ -10,8 +11,6 @@ import org.eclipse.graphiti.mm.pictograms.ConnectionDecorator;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.mm.pictograms.Shape;
-
-import com.google.common.base.Objects;
 
 public class PropertyUtil {
 
@@ -32,14 +31,14 @@ public class PropertyUtil {
         return null;
     }
 
-    public static boolean setPropertyValue(PropertyContainer ga, String propertyName, String newValue) {
+    public static void setPropertyValue(PropertyContainer ga, String propertyName, String newValue) {
         for (Property property : ga.getProperties()) {
             if (Objects.equal(propertyName, property.getKey())) {
                 property.setValue(newValue);
-                return true;
+                return;
             }
         }
-        return false;
+        ga.getProperties().add(new GaProperty(propertyName, newValue));
     }
 
     public static String findTextValueRecursive(PictogramElement pe, String name) {
