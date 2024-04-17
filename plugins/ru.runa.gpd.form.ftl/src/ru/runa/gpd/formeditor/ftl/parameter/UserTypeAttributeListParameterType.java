@@ -1,9 +1,11 @@
 package ru.runa.gpd.formeditor.ftl.parameter;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -25,11 +27,11 @@ import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.util.VariableUtils;
 
-public class UserTypeAttributeListParameter extends ParameterType {
+public abstract class UserTypeAttributeListParameterType extends ParameterType {
     private static final String VALUES_DELIM = ",";
-
-    public UserTypeAttributeListParameter() {
-        super(true);
+    
+    protected UserTypeAttributeListParameterType(boolean multiple) {
+        super(multiple);
     }
 
     @Override
@@ -47,14 +49,14 @@ public class UserTypeAttributeListParameter extends ParameterType {
         final Text text = new Text(composite, SWT.READ_ONLY | SWT.BORDER);
         text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         if (oldValue != null) {
-            text.setText(Joiner.on(VALUES_DELIM).join((List<String>) oldValue));
-            text.setData(oldValue);
+            text.setText(convertValueToString(oldValue));
+            text.setData(convertValueToList(oldValue));
         }
         text.addModifyListener(new LoggingModifyTextAdapter() {
 
             @Override
             protected void onTextChanged(ModifyEvent e) throws Exception {
-                listener.propertyChange(new PropertyChangeEvent(text, PropertyNames.PROPERTY_VALUE, oldValue, text.getData()));
+                listener.propertyChange(new PropertyChangeEvent(text, PropertyNames.PROPERTY_VALUE, oldValue, convertListTargetValue((List<String>) text.getData())));
             }
 
         });
@@ -70,7 +72,7 @@ public class UserTypeAttributeListParameter extends ParameterType {
                 List<String> result = dialog.openDialog();
                 if (result != null) {
                     text.setData(result);
-                    text.setText(Joiner.on(VALUES_DELIM).join(result));
+                    text.setText(convertValueToString(result));
                 }
             }
         });
@@ -81,6 +83,26 @@ public class UserTypeAttributeListParameter extends ParameterType {
     public void updateEditor(Object ui, Component component, ComponentParameter parameter, ProcessDefinition processDefinition) {
         ((Text) ui).setData(Lists.newArrayList());
         ((Text) ui).setText("");
+    }
+    
+    protected abstract Object convertListTargetValue(List<String> list);
+
+    public List<String> convertValueToList(Object value) {
+        if (value instanceof List) {
+            return (List<String>) value;
+        }
+        String string = (String) value;
+        List<String> result = new ArrayList<>();
+        Splitter.on(VALUES_DELIM).trimResults().split(string).forEach(result::add);
+        return result;
+    }
+
+    protected String convertValueToString(Object value) {
+        if (value instanceof String) {
+            return (String) value;
+        }
+        List<String> list = (List<String>) value;
+        return Joiner.on(VALUES_DELIM).join(list);
     }
 
     protected List<String> getAttributes(Component component, ProcessDefinition processDefinition) {
@@ -101,3 +123,4 @@ public class UserTypeAttributeListParameter extends ParameterType {
     }
 
 }
+

@@ -117,7 +117,7 @@ public class VariableMapping {
 
     @Override
     public String toString() {
-        return name + "=" + mappedName + " (" + usage + ")";
+        return name + " = " + mappedName + " (" + usage + ")";
     }
 
 }

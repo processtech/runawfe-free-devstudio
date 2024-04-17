@@ -1,7 +1,6 @@
 package ru.runa.gpd.ui.custom;
 
 import java.util.EnumSet;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.Bullet;
 import org.eclipse.swt.custom.LineStyleEvent;
@@ -38,7 +37,11 @@ public class FeaturedStyledText extends StyledText {
         /**
          * Undo-redo limited support.
          */
-        UNDO_REDO
+        UNDO_REDO,
+        /**
+         * Find text support.
+         */
+        FIND_TEXT
     }
 
     public FeaturedStyledText(Composite parent, int style) {
@@ -56,6 +59,9 @@ public class FeaturedStyledText extends StyledText {
         }
         if (features.contains(Feature.UNDO_REDO)) {
             addUndoRedoSupport();
+        }
+        if (features.contains(Feature.FIND_TEXT)) {
+            addFindTextSupport();
         }
     }
 
@@ -92,5 +98,9 @@ public class FeaturedStyledText extends StyledText {
                 styledText.redraw();
             }
         });
+    }
+
+    private void addFindTextSupport() {
+        new FindTextListener(this);
     }
 }

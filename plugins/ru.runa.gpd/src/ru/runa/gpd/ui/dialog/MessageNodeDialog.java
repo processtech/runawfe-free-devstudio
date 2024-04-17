@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Objects;
-import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -72,7 +71,7 @@ public class MessageNodeDialog extends Dialog {
 
     public MessageNodeDialog(ProcessDefinition definition, List<VariableMapping> variableMappings, boolean sendMode, String title) {
         super(PlatformUI.getWorkbench().getDisplay().getActiveShell());
-        this.variableMappings = Lists.newArrayList(variableMappings);
+        this.variableMappings = new ArrayList<>(variableMappings);
         this.definition = definition;
         this.sendMode = sendMode;
         this.title = title;
@@ -394,6 +393,15 @@ public class MessageNodeDialog extends Dialog {
     }
 
     public List<VariableMapping> getVariableMappings() {
+        Collections.sort(variableMappings, (a, b) -> {
+            if (a.isPropertySelector() == b.isPropertySelector()) {
+                return 0;
+            }
+            if (a.isPropertySelector()) {
+                return -1;
+            }
+            return 1;
+        });
         return variableMappings;
     }
 

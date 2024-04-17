@@ -4,7 +4,6 @@ import org.eclipse.graphiti.datatypes.IDimension;
 import org.eclipse.graphiti.mm.algorithms.Text;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.ui.services.GraphitiUi;
-
 import ru.runa.gpd.editor.graphiti.UIContainer;
 
 public class EndTextDecoration extends TextDecorationNode {
@@ -47,5 +46,11 @@ public class EndTextDecoration extends TextDecorationNode {
         public PictogramElement getOwner() {
             return owner;
         }
+
+        @Override
+        public String getName() {
+            return name.getValue();
+        }
+
     }
 }

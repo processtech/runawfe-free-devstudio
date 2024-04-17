@@ -48,6 +48,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer impleme
         store.setDefault(LanguageElementPreferenceNode.getBpmnDefaultPropertyName(P_BPMN_BACKGROUND_COLOR), "250, 251, 252");
         store.setDefault(LanguageElementPreferenceNode.getBpmnDefaultPropertyName(P_BPMN_FOREGROUND_COLOR), "3, 104, 154");
         store.setDefault(LanguageElementPreferenceNode.getBpmnDefaultPropertyName(P_BPMN_LINE_WIDTH), 2);
+        store.setDefault(P_BPMN_TOOLTIP, BpmnPreferencePage.TOOLTIP_MODE_BASIC);
         store.setDefault(P_BPMN_EXPAND_CONTEXT_BUTTON_PAD, true);
         store.setDefault(LanguageElementPreferenceNode.getBpmnPropertyName(StyleUtil.TEXT_ANNOTATION_BPMN_NAME, P_BPMN_FOREGROUND_COLOR), "0, 0, 0");
         store.setDefault(LanguageElementPreferenceNode.getBpmnPropertyName(StyleUtil.TRANSITION_BPMN_NAME, P_BPMN_FOREGROUND_COLOR), "0, 0, 0");

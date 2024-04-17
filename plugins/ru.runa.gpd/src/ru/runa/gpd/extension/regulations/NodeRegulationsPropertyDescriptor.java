@@ -105,5 +105,11 @@ public class NodeRegulationsPropertyDescriptor extends PropertyDescriptor {
             nextNodeLabel.setText(Localization.getString("Node.property.nextNodeInRegulations") + ": "
                     + RegulationsUtil.getNodeLabel(properties.getNextNode()));
         }
+
+        @Override
+        protected void doSetFocus() {
+            // ignore
+        }
     }
+
 }

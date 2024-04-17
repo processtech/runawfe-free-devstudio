@@ -28,6 +28,7 @@ import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.businessRule.BusinessRuleModel;
 import ru.runa.gpd.extension.businessRule.BusinessRuleModel.IfExpression;
 import ru.runa.gpd.extension.businessRule.LogicComposite;
+import ru.runa.gpd.extension.decision.GroovyTypeSupport.BooleanType;
 import ru.runa.gpd.lang.model.Decision;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.ui.control.ExpressionLine;
@@ -67,10 +68,13 @@ public class GroovyCodeParser {
             BlockStatement blockStatement = (BlockStatement) astNodes.get(0);
             for (Statement statement : blockStatement.getStatements()) {
                 if (statement instanceof IfStatement) {
-                    Expression expression = ((IfStatement) statement).getBooleanExpression().getExpression();
+                    IfStatement ifStatement = (IfStatement) statement;
+                    if (!ifStatement.getElseBlock().isEmpty()) {
+                        throw new RuntimeException("else is not supported in constructor");
+                    }
+                    Expression expression = ifStatement.getBooleanExpression().getExpression();
                     IfStatementParsedData parsedData = parseIfStatementExpression(expression);
-                    ReturnStatement returnStatement = (ReturnStatement) ((BlockStatement) ((IfStatement) statement).getIfBlock()).getStatements()
-                            .get(0);
+                    ReturnStatement returnStatement = (ReturnStatement) ((BlockStatement) ifStatement.getIfBlock()).getStatements().get(0);
                     String transitionName = (String) ((ConstantExpression) returnStatement.getExpression()).getValue();
                     Variable variable1 = VariableUtils.getVariableByScriptingName(variables, parsedData.leftText);
                     assertNotNull(variable1, parsedData.leftText);
@@ -78,10 +82,11 @@ public class GroovyCodeParser {
                     model.addIfExpression(
                             new GroovyDecisionModel.IfExpression(transitionName, variable1, variable2 != null ? variable2 : parsedData.rightText,
                                     Operation.getByOperator(parsedData.operationText, GroovyTypeSupport.get(variable1.getJavaClassName()))));
-                }
-                if (statement instanceof ReturnStatement) {
+                } else if (statement instanceof ReturnStatement) {
                     String transitionName = (String) ((ConstantExpression) ((ReturnStatement) statement).getExpression()).getValue();
                     model.addIfExpression(new GroovyDecisionModel.IfExpression(transitionName));
+                } else {
+                    throw new Exception("Unexpected statement type");
                 }
             }
             return Optional.of(model);
@@ -100,11 +105,31 @@ public class GroovyCodeParser {
             parsedData.leftText = be.getLeftExpression().getText();
             parsedData.operationText = be.getOperation().getText();
             parsedData.rightText = be.getRightExpression().getText();
-        } else /* contains */ {
+        } else if (expression instanceof VariableExpression) {
+            // eq for simple variables
+            VariableExpression ve = (VariableExpression) expression;
+            parsedData.leftText = ve.getText();
+            parsedData.operationText = Operation.EQ.getOperator();
+            parsedData.rightText = BooleanType.TRUE;
+        } else if (expression instanceof PropertyExpression) {
+            // eq for complex variables
+            PropertyExpression pe = (PropertyExpression) expression;
+            parsedData.leftText = pe.getText();
+            parsedData.operationText = Operation.EQ.getOperator();
+            parsedData.rightText = BooleanType.TRUE;
+        } else if (expression instanceof NotExpression) {
+            NotExpression ne = (NotExpression) expression;
+            parsedData.leftText = ne.getText();
+            parsedData.operationText = Operation.NOT_EQ.getOperator();
+            parsedData.rightText = BooleanType.TRUE;
+        } else if (expression instanceof MethodCallExpression) {
+            // contains
             MethodCallExpression mce = (MethodCallExpression) expression;
             parsedData.leftText = mce.getObjectExpression().getText();
             parsedData.operationText = mce.getMethodAsString();
             parsedData.rightText = ((ArgumentListExpression) mce.getArguments()).getExpression(0).getText();
+        } else {
+            throw new RuntimeException("Unexpected " + expression);
         }
         return parsedData;
     }

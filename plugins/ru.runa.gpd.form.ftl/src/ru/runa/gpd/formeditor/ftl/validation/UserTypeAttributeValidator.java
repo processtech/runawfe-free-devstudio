@@ -11,7 +11,7 @@ import ru.runa.gpd.lang.model.VariableUserType;
  * @author Alekseev Vitaly
  * @since Jan 19, 2018
  */
-public class UserTypeAttributeValidator extends UserTypeAttributeListValidator {
+public class UserTypeAttributeValidator extends UserTypeAttributeListParameterTypeValidator {
 
     @Override
     protected VariableUserType getUserType(FormNode formNode, Component component) {

@@ -1,19 +1,19 @@
 package ru.runa.gpd.extension;
 
+import java.util.EnumSet;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
-
 import ru.runa.gpd.Localization;
+import ru.runa.gpd.ui.custom.FeaturedStyledText;
 
 public class DelegableConfigurationDialog extends Dialog {
-    protected StyledText styledText;
+    protected FeaturedStyledText styledText;
     protected String title;
     protected final String initialValue;
     protected String result;
@@ -40,7 +40,8 @@ public class DelegableConfigurationDialog extends Dialog {
 
         createDialogHeader(composite);
         
-        styledText = new StyledText(composite, SWT.MULTI | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+        styledText = new FeaturedStyledText(composite, SWT.MULTI | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL,
+                EnumSet.of(FeaturedStyledText.Feature.FIND_TEXT));
         styledText.setLayoutData(new GridData(GridData.FILL_BOTH));
         styledText.setLineSpacing(2);
 
