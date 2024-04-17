@@ -2,11 +2,9 @@ package ru.runa.gpd.sync;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
+import java.io.IOException;
 import java.util.List;
 import ru.runa.gpd.PluginLogger;
-import ru.runa.wfe.definition.DefinitionAlreadyExistException;
-import ru.runa.wfe.definition.DefinitionDoesNotExistException;
-import ru.runa.wfe.definition.DefinitionNameMismatchException;
 import ru.runa.wfe.definition.dto.WfDefinition;
 
 public class WfeServerProcessDefinitionImporter extends WfeServerConnectorDataImporter<List<WfDefinition>> {
@@ -56,14 +54,11 @@ public class WfeServerProcessDefinitionImporter extends WfeServerConnectorDataIm
                 data.add(newDefinition);
             }
         } catch (Exception e) {
-            if (retryWithSynchronize) {
-                if (e instanceof DefinitionDoesNotExistException || e instanceof DefinitionAlreadyExistException
-                        || e instanceof DefinitionNameMismatchException) {
-                    PluginLogger.logInfo("Retrying due to " + e);
-                    synchronize(null);
-                    uploadPar(definitionName, updateLatestVersion, par, false);
-                    return;
-                }
+            if (retryWithSynchronize && !(e.getCause() instanceof IOException)) {
+                PluginLogger.logInfo("Retrying due to " + e);
+                synchronize(null);
+                uploadPar(definitionName, updateLatestVersion, par, false);
+                return;
             }
             Throwables.propagate(e);
         }
