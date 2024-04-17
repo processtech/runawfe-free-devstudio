@@ -62,10 +62,13 @@ public class GroovyCodeParser {
             BlockStatement blockStatement = (BlockStatement) astNodes.get(0);
             for (Statement statement : blockStatement.getStatements()) {
                 if (statement instanceof IfStatement) {
-                    Expression expression = ((IfStatement) statement).getBooleanExpression().getExpression();
+                    IfStatement ifStatement = (IfStatement) statement;
+                    if (!ifStatement.getElseBlock().isEmpty()) {
+                        throw new RuntimeException("else is not supported in constructor");
+                    }
+                    Expression expression = ifStatement.getBooleanExpression().getExpression();
                     IfStatementParsedData parsedData = parseIfStatementExpression(expression);
-                    ReturnStatement returnStatement = (ReturnStatement) ((BlockStatement) ((IfStatement) statement).getIfBlock()).getStatements()
-                            .get(0);
+                    ReturnStatement returnStatement = (ReturnStatement) ((BlockStatement) ifStatement.getIfBlock()).getStatements().get(0);
                     String transitionName = (String) ((ConstantExpression) returnStatement.getExpression()).getValue();
                     Variable variable1 = VariableUtils.getVariableByScriptingName(variables, parsedData.leftText);
                     assertNotNull(variable1, parsedData.leftText);
@@ -73,10 +76,11 @@ public class GroovyCodeParser {
                     model.addIfExpression(
                             new GroovyDecisionModel.IfExpression(transitionName, variable1, variable2 != null ? variable2 : parsedData.rightText,
                                     Operation.getByOperator(parsedData.operationText, GroovyTypeSupport.get(variable1.getJavaClassName()))));
-                }
-                if (statement instanceof ReturnStatement) {
+                } else if (statement instanceof ReturnStatement) {
                     String transitionName = (String) ((ConstantExpression) ((ReturnStatement) statement).getExpression()).getValue();
                     model.addIfExpression(new GroovyDecisionModel.IfExpression(transitionName));
+                } else {
+                    throw new Exception("Unexpected statement type");
                 }
             }
             return Optional.of(model);
