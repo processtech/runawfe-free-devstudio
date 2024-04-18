@@ -1,6 +1,8 @@
 package ru.runa.gpd.quick.jointformeditor;
 
 import com.google.common.base.Preconditions;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.UnsupportedEncodingException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -15,6 +17,7 @@ import org.eclipse.ui.part.MultiPageEditorPart;
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.ConfigurableTitleEditorPart;
 import ru.runa.gpd.editor.DirtyDependentActions;
 import ru.runa.gpd.jointformeditor.resources.Messages;
@@ -33,7 +36,7 @@ import ru.runa.gpd.util.WorkspaceOperations;
 import ru.runa.gpd.validation.FormNodeValidation;
 import ru.runa.gpd.validation.ValidationUtil;
 
-public class JointQuickFormEditor extends MultiPageEditorPart implements ConfigurableTitleEditorPart {
+public class JointQuickFormEditor extends MultiPageEditorPart implements ConfigurableTitleEditorPart, PropertyChangeListener {
 
     public static final String ID = "ru.runa.gpd.quickjointformeditor";
 
@@ -64,6 +67,7 @@ public class JointQuickFormEditor extends MultiPageEditorPart implements Configu
             if (input.getName().equals(formNode.getFormFileName())) {
                 this.formNode = formNode;
                 setPartName(UiUtil.getPartName(formNode));
+                formNode.addPropertyChangeListener(this);
                 break;
             }
         }
@@ -185,7 +189,16 @@ public class JointQuickFormEditor extends MultiPageEditorPart implements Configu
     public void dispose() {
         fieldValidatorsPage.dispose();
         globalValidatorsPage.dispose();
+        if (formNode != null)
+            formNode.removePropertyChangeListener(this);
         super.dispose();
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (PropertyNames.PROPERTY_NAME.equals(evt.getPropertyName())) {
+            setPartName(UiUtil.getPartName(formNode));
+        }
     }
 
 }
