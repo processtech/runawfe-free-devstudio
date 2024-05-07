@@ -129,4 +129,12 @@ public class JointFormEditor extends FormEditor {
         super.dispose();
     }
 
+    @Override
+    protected void handlePropertyChange(int propertyId) {
+        super.handlePropertyChange(propertyId);
+        if (propertyId == IEditorPart.PROP_DIRTY) {
+            DirtyDependentActions.update();
+        }
+    }
+
 }
