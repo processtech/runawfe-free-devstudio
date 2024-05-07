@@ -1,7 +1,6 @@
 package ru.runa.gpd.editor;
 
-import com.google.common.base.Objects;
-import java.util.List;
+import java.util.Set;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.gef.ui.actions.Clipboard;
@@ -18,7 +17,7 @@ public class CopyBuffer {
 
     private IFolder sourceFolder;
     private Language sourceLanguage;
-    private List<NamedGraphElement> sourceNodes;
+    private Set<NamedGraphElement> sourceNodes;
     private String editorId;
     private Point viewportLocation;
 
@@ -29,14 +28,14 @@ public class CopyBuffer {
             if (array.length == 5) {
                 sourceFolder = (IFolder) array[0];
                 sourceLanguage = (Language) array[1];
-                sourceNodes = (List<NamedGraphElement>) array[2];
+                sourceNodes = (Set<NamedGraphElement>) array[2];
                 editorId = (String) array[3];
                 viewportLocation = (Point) array[4];
             }
         }
     }
 
-    public CopyBuffer(IFolder sourceFolder, Language sourceLanguage, List<NamedGraphElement> sourceNodes, String editorId, Point viewportLocation) {
+    public CopyBuffer(IFolder sourceFolder, Language sourceLanguage, Set<NamedGraphElement> sourceNodes, String editorId, Point viewportLocation) {
         this.sourceFolder = sourceFolder;
         this.sourceLanguage = sourceLanguage;
         this.sourceNodes = sourceNodes;
@@ -48,7 +47,7 @@ public class CopyBuffer {
         Clipboard.getDefault().setContents(new Object[] { sourceFolder, sourceLanguage, sourceNodes, editorId, viewportLocation });
     }
 
-    public List<NamedGraphElement> getSourceNodes() {
+    public Set<NamedGraphElement> getSourceNodes() {
         return sourceNodes;
     }
 
@@ -72,39 +71,5 @@ public class CopyBuffer {
         return viewportLocation;
     }
 
-    public static abstract class ExtraCopyAction {
 
-        private final String groupName;
-        private final String name;
-
-        public ExtraCopyAction(String groupName, String name) {
-            this.groupName = groupName;
-            this.name = name;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public abstract void execute() throws Exception;
-
-        public abstract void undo() throws Exception;
-
-        @Override
-        public String toString() {
-            return groupName + ": " + name;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            ExtraCopyAction o = (ExtraCopyAction) obj;
-            return groupName.equals(o.groupName) && name.equals(o.name);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hashCode(groupName, name);
-        }
-
-    }
 }

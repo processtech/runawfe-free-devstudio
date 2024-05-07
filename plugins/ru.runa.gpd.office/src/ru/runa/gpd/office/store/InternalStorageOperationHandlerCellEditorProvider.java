@@ -41,6 +41,7 @@ import ru.runa.gpd.office.store.externalstorage.UpdateConstraintsComposite;
 import ru.runa.gpd.office.store.externalstorage.VariableProvider;
 import ru.runa.gpd.ui.custom.SwtUtils;
 import ru.runa.gpd.util.EmbeddedFileUtils;
+import ru.runa.gpd.util.XmlUtil;
 
 public class InternalStorageOperationHandlerCellEditorProvider extends XmlBasedConstructorProvider<InternalStorageDataModel> {
     public static final String INTERNAL_STORAGE_DATASOURCE_PATH = "datasource:InternalStorage";
@@ -48,8 +49,11 @@ public class InternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
     @Override
     public void onDelete(Delegable delegable) {
         try {
-            final InternalStorageDataModel model = fromXml(delegable.getDelegationConfiguration());
-            EmbeddedFileUtils.deleteProcessFile(model.getInOutModel().inputPath);
+            String config = delegable.getDelegationConfiguration();
+            if (XmlUtil.isXml(config)) {
+                final InternalStorageDataModel model = fromXml(config);
+                EmbeddedFileUtils.deleteProcessFile(model.getInOutModel().inputPath);
+            }
         } catch (Exception e) {
             PluginLogger.logErrorWithoutDialog("Template file deletion", e);
         }

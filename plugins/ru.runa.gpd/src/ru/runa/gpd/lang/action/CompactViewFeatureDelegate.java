@@ -2,7 +2,8 @@ package ru.runa.gpd.lang.action;
 
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
-
+import ru.runa.gpd.editor.graphiti.change.ChangeCompactViewFeature;
+import ru.runa.gpd.editor.graphiti.change.UndoRedoUtil;
 import ru.runa.gpd.lang.model.Node;
 
 public class CompactViewFeatureDelegate extends BaseModelActionDelegate {
@@ -18,6 +19,6 @@ public class CompactViewFeatureDelegate extends BaseModelActionDelegate {
     @Override
     public void run(IAction action) {
         Node node = getSelection();
-        node.setMinimizedView(!node.isMinimizedView());
+        UndoRedoUtil.executeFeature(new ChangeCompactViewFeature(node, !node.isMinimizedView()));
     }
 }

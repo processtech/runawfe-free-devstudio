@@ -28,6 +28,8 @@ import org.eclipse.swt.widgets.Text;
 import org.osgi.framework.Bundle;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
+import ru.runa.gpd.editor.graphiti.change.ChangeRegulationsPropertiesFeature;
+import ru.runa.gpd.editor.graphiti.change.UndoRedoUtil;
 import ru.runa.gpd.extension.regulations.NodeRegulationsProperties;
 import ru.runa.gpd.extension.regulations.RegulationsUtil;
 import ru.runa.gpd.lang.model.Node;
@@ -254,7 +256,7 @@ public class EditNodeRegulationsPropertiesDialog extends Dialog {
         if (browser != null) {
             browser.execute("getHTML();");
         }
-        node.setRegulationsProperties(properties);
+        UndoRedoUtil.executeFeature(new ChangeRegulationsPropertiesFeature(node, properties));
         this.close();
     }
 }

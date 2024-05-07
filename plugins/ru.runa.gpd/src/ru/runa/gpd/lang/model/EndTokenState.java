@@ -4,6 +4,8 @@ import java.util.List;
 import org.eclipse.ui.views.properties.ComboBoxPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import ru.runa.gpd.Localization;
+import ru.runa.gpd.editor.graphiti.change.ChangeSubprocessDefinitionBehaviorFeature;
+import ru.runa.gpd.editor.graphiti.change.UndoRedoUtil;
 import ru.runa.gpd.lang.model.EmbeddedSubprocess.Behavior;
 import ru.runa.gpd.lang.model.bpmn.AbstractEndTextDecorated;
 
@@ -32,7 +34,8 @@ public class EndTokenState extends AbstractEndTextDecorated {
     @Override
     public void setPropertyValue(Object id, Object value) {
         if (PROPERTY_BEHAVIOR.equals(id)) {
-            setSubprocessDefinitionBehavior(EndTokenSubprocessDefinitionBehavior.values()[(Integer) value]);
+            UndoRedoUtil.executeFeature(
+                    new ChangeSubprocessDefinitionBehaviorFeature(this, EndTokenSubprocessDefinitionBehavior.values()[(Integer) value]));
         } else {
             super.setPropertyValue(id, value);
         }

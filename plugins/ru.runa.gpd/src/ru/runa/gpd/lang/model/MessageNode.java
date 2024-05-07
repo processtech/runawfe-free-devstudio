@@ -8,6 +8,8 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.editor.graphiti.TooltipBuilderHelper;
+import ru.runa.gpd.editor.graphiti.change.ChangeTtlDurationFeature;
+import ru.runa.gpd.editor.graphiti.change.UndoRedoUtil;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.property.DurationPropertyDescriptor;
 import ru.runa.gpd.ui.custom.JavaIdentifierChecker;
@@ -62,7 +64,7 @@ public abstract class MessageNode extends Node {
     @Override
     public void setPropertyValue(Object id, Object value) {
         if (PROPERTY_TTL.equals(id)) {
-            setTtlDuration((Duration) value);
+            UndoRedoUtil.executeFeature(new ChangeTtlDurationFeature(this, (Duration) value));
             return;
         }
         super.setPropertyValue(id, value);
