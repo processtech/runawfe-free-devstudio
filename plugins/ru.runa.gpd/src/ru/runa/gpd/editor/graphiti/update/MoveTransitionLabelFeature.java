@@ -7,12 +7,14 @@ import org.eclipse.graphiti.features.context.IMoveConnectionDecoratorContext;
 import org.eclipse.graphiti.features.impl.DefaultMoveConnectionDecoratorFeature;
 import org.eclipse.graphiti.mm.pictograms.Connection;
 import org.eclipse.graphiti.mm.pictograms.ConnectionDecorator;
+import ru.runa.gpd.Localization;
 import ru.runa.gpd.editor.graphiti.CustomUndoRedoFeature;
 import ru.runa.gpd.editor.graphiti.GaProperty;
+import ru.runa.gpd.editor.graphiti.IRedoProtected;
 import ru.runa.gpd.editor.graphiti.PropertyUtil;
 import ru.runa.gpd.lang.model.Transition;
 
-public class MoveTransitionLabelFeature extends DefaultMoveConnectionDecoratorFeature implements CustomUndoRedoFeature {
+public class MoveTransitionLabelFeature extends DefaultMoveConnectionDecoratorFeature implements CustomUndoRedoFeature, IRedoProtected {
 
     private Point undoDecoratorPoint;
     private Point redoDecoratorPoint;
@@ -69,7 +71,7 @@ public class MoveTransitionLabelFeature extends DefaultMoveConnectionDecoratorFe
 
     @Override
     public String getName() {
-        return getClass().getSimpleName();
+        return Localization.getString("button.move");
     }
 
 }

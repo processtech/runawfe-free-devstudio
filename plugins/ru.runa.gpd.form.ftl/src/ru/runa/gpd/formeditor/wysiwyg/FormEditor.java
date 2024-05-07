@@ -54,6 +54,7 @@ import org.mortbay.util.MultiException;
 import ru.runa.gpd.EditorsPlugin;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
+import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.ConfigurableTitleEditorPart;
 import ru.runa.gpd.editor.DirtyDependentActions;
 import ru.runa.gpd.formeditor.WebServerUtils;
@@ -87,7 +88,8 @@ import ru.runa.wfe.InternalApplicationException;
  * org.eclipse.ui.texteditor.BasicTextEditorActionContributor
  * </p>
  */
-public class FormEditor extends MultiPageEditorPart implements IResourceChangeListener, IComponentDropTarget, ConfigurableTitleEditorPart {
+public class FormEditor extends MultiPageEditorPart
+        implements IResourceChangeListener, IComponentDropTarget, ConfigurableTitleEditorPart, PropertyChangeListener {
 
     public static final String ID = "ru.runa.gpd.wysiwyg.WYSIWYGHTMLEditor";
     public static final int CLOSED = 197;
@@ -148,6 +150,7 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
             if (editorInput.getName().equals(formNode.getFormFileName())) {
                 this.formNode = formNode;
                 setPartName(UiUtil.getPartName(formNode));
+                formNode.addPropertyChangeListener(this);
                 break;
             }
         }
@@ -423,6 +426,9 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
     public void dispose() {
         sourceEditor.getViewer().removeTextListener(sourceEditorListener);
         firePropertyChange(CLOSED);
+        if (formNode != null) {
+            formNode.removePropertyChangeListener(this);
+        }
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
         super.dispose();
     }
@@ -698,6 +704,13 @@ public class FormEditor extends MultiPageEditorPart implements IResourceChangeLi
         public Object function(Object[] arguments) {
             PluginLogger.logErrorWithoutDialog((String) arguments[0]);
             return null;
+        }
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (PropertyNames.PROPERTY_NAME.equals(evt.getPropertyName())) {
+            setPartName(UiUtil.getPartName(formNode));
         }
     }
 

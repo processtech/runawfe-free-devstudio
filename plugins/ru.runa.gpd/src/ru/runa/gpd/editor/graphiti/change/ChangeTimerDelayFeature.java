@@ -1,7 +1,8 @@
-package ru.runa.gpd.editor.graphiti;
+package ru.runa.gpd.editor.graphiti.change;
 
 import org.eclipse.graphiti.features.context.IContext;
 import org.eclipse.graphiti.features.context.ICustomContext;
+import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.model.Timer;
 import ru.runa.gpd.util.Duration;
 
@@ -23,6 +24,11 @@ public class ChangeTimerDelayFeature extends ChangePropertyFeature<Timer, Durati
     @Override
     public void execute(ICustomContext context) {
         target.setDelay(newValue);
+    }
+
+    @Override
+    public String getName() {
+        return Localization.getString("property.duration");
     }
 
 }

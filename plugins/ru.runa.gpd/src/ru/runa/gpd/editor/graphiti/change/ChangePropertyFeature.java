@@ -1,11 +1,13 @@
-package ru.runa.gpd.editor.graphiti;
+package ru.runa.gpd.editor.graphiti.change;
 
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.IContext;
 import org.eclipse.graphiti.features.context.ICustomContext;
 import org.eclipse.graphiti.features.custom.AbstractCustomFeature;
+import ru.runa.gpd.editor.graphiti.CustomUndoRedoFeature;
+import ru.runa.gpd.editor.graphiti.IRedoProtected;
 
-public abstract class ChangePropertyFeature<T, V> extends AbstractCustomFeature implements CustomUndoRedoFeature {
+public abstract class ChangePropertyFeature<T, V> extends AbstractCustomFeature implements CustomUndoRedoFeature, IRedoProtected {
 
     protected IFeatureProvider fp;
     protected T target;
@@ -52,16 +54,12 @@ public abstract class ChangePropertyFeature<T, V> extends AbstractCustomFeature 
 
     @Override
     public void postUndo(IContext context) {
-        UndoRedoUtil.unwatch();
         undo(context);
-        UndoRedoUtil.watch();
     }
 
     @Override
     public void postRedo(IContext context) {
-        UndoRedoUtil.unwatch();
         execute(context);
-        UndoRedoUtil.watch();
     }
 
 }

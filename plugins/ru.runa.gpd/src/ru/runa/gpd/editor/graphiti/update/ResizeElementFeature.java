@@ -7,11 +7,13 @@ import org.eclipse.graphiti.features.context.IResizeShapeContext;
 import org.eclipse.graphiti.features.context.impl.ResizeContext;
 import org.eclipse.graphiti.features.impl.DefaultResizeShapeFeature;
 import org.eclipse.graphiti.mm.pictograms.Shape;
+import ru.runa.gpd.Localization;
 import ru.runa.gpd.editor.GEFConstants;
 import ru.runa.gpd.editor.graphiti.CustomUndoRedoFeature;
+import ru.runa.gpd.editor.graphiti.IRedoProtected;
 import ru.runa.gpd.lang.model.GraphElement;
 
-public class ResizeElementFeature extends DefaultResizeShapeFeature implements GEFConstants, CustomUndoRedoFeature {
+public class ResizeElementFeature extends DefaultResizeShapeFeature implements GEFConstants, CustomUndoRedoFeature, IRedoProtected {
 
     private Rectangle undoConstraint;
     private Rectangle redoConstraint;
@@ -74,7 +76,7 @@ public class ResizeElementFeature extends DefaultResizeShapeFeature implements G
 
     @Override
     public String getName() {
-        return getClass().getSimpleName();
+        return Localization.getString("feature.resize.element");
     }
 
 }

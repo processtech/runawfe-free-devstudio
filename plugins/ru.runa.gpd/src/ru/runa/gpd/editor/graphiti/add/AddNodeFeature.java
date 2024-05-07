@@ -18,6 +18,8 @@ public abstract class AddNodeFeature extends AddElementFeature {
 
     @Override
     public boolean canUndo(IContext context) {
+        // TODO 1090 Почему его нельзя отменять?
+        // Наверное ко всей иерархии AddElementFeature нужны общие правила, например не добавлять в стек отката (сильно не думал).
         return false;
     }
 

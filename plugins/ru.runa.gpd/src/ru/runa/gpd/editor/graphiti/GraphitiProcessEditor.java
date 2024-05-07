@@ -11,13 +11,14 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.IPropertySourceProvider;
 import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.ProcessEditorBase;
 import ru.runa.gpd.lang.model.GraphElement;
-import ru.runa.gpd.ui.view.OrderedPropertySheetPage;
+import ru.runa.gpd.ui.properties.OrderedPropertySheetPage;
 
 public class GraphitiProcessEditor extends ProcessEditorBase implements IPropertySourceProvider {
     public final static String ID = "ru.runa.gpd.GraphitiProcessEditor";
@@ -47,7 +48,10 @@ public class GraphitiProcessEditor extends ProcessEditorBase implements IPropert
     public Object getAdapter(Class type) {
         if (type == IPropertySheetPage.class) {
             // prevent TabbedPropertySheetPage creation
-            OrderedPropertySheetPage page = new OrderedPropertySheetPage();
+            OrderedPropertySheetPage page = new OrderedPropertySheetPage(getCommandStack(),
+                    getDiagramEditorPage().getActionRegistry().getAction(ActionFactory.UNDO.getId()),
+                    getDiagramEditorPage().getActionRegistry().getAction(ActionFactory.REDO.getId()));
+            page.createControl(getContainer());
             page.setPropertySourceProvider(this);
             return page;
         }

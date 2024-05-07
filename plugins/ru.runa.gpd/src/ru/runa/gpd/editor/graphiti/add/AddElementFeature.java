@@ -48,9 +48,4 @@ public abstract class AddElementFeature extends AbstractAddShapeFeature implemen
         return getClass().getSimpleName();
     }
 
-    @Override
-    public boolean hasDoneChanges() {
-        return false;
-    }
-
 }

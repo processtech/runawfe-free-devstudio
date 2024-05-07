@@ -14,6 +14,7 @@ import org.eclipse.graphiti.features.ILayoutFeature;
 import org.eclipse.graphiti.features.IMoveBendpointFeature;
 import org.eclipse.graphiti.features.IMoveConnectionDecoratorFeature;
 import org.eclipse.graphiti.features.IMoveShapeFeature;
+import org.eclipse.graphiti.features.IPasteFeature;
 import org.eclipse.graphiti.features.IReconnectionFeature;
 import org.eclipse.graphiti.features.IRemoveBendpointFeature;
 import org.eclipse.graphiti.features.IResizeShapeFeature;
@@ -26,6 +27,7 @@ import org.eclipse.graphiti.features.context.ILayoutContext;
 import org.eclipse.graphiti.features.context.IMoveBendpointContext;
 import org.eclipse.graphiti.features.context.IMoveConnectionDecoratorContext;
 import org.eclipse.graphiti.features.context.IMoveShapeContext;
+import org.eclipse.graphiti.features.context.IPasteContext;
 import org.eclipse.graphiti.features.context.IReconnectionContext;
 import org.eclipse.graphiti.features.context.IRemoveBendpointContext;
 import org.eclipse.graphiti.features.context.IResizeShapeContext;
@@ -35,6 +37,7 @@ import org.eclipse.graphiti.mm.algorithms.Text;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.ui.features.DefaultFeatureProvider;
 import ru.runa.gpd.ProcessCache;
+import ru.runa.gpd.editor.ProcessEditorBase;
 import ru.runa.gpd.editor.graphiti.add.AddTransitionBendpointFeature;
 import ru.runa.gpd.editor.graphiti.update.BOUpdateContext;
 import ru.runa.gpd.editor.graphiti.update.DeleteElementFeature;
@@ -223,6 +226,13 @@ public class DiagramFeatureProvider extends DefaultFeatureProvider {
             }
         }
         return super.getUpdateFeature(context);
+    }
+
+
+    @Override
+    public IPasteFeature getPasteFeature(IPasteContext context) {
+        ProcessEditorBase editor = (ProcessEditorBase) context.getProperty(PasteFeature.PROPERTY_EDITOR);
+        return new PasteFeature(this, editor);
     }
 
 }

@@ -21,6 +21,7 @@ import ru.runa.gpd.editor.GEFConstants;
 import ru.runa.gpd.editor.graphiti.CustomUndoRedoFeature;
 import ru.runa.gpd.editor.graphiti.DiagramFeatureProvider;
 import ru.runa.gpd.editor.graphiti.GraphitiProcessEditor;
+import ru.runa.gpd.editor.graphiti.IRedoProtected;
 import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.lang.model.Action;
 import ru.runa.gpd.lang.model.GraphElement;
@@ -32,12 +33,17 @@ import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEventCapable;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 
-public class CreateDragAndDropElementFeature extends AbstractCreateConnectionFeature implements GEFConstants, CustomUndoRedoFeature {
+public class CreateDragAndDropElementFeature extends AbstractCreateConnectionFeature implements GEFConstants, CustomUndoRedoFeature, IRedoProtected {
     public static final String CREATE_CONTEXT = "createContext";
     private NodeTypeDefinition nodeDefinition;
     private DiagramFeatureProvider featureProvider;
     private CreateContext createContext;
     private EditPartViewer viewer;
+    private GraphElement parent;
+    private Swimlane swimlane;
+    private GraphElement graphElement;
+    private Transition transition;
+
     /**
      * The 'alreadyAdded' field is necessary to correct the situation: When creating a new element using the palette, if after clicking the mouse
      * button on the desired element in the microhelp, you do not immediately move the cursor to the point of the future placement of the element, but
@@ -79,66 +85,6 @@ public class CreateDragAndDropElementFeature extends AbstractCreateConnectionFea
 
     public NodeTypeDefinition getNodeDefinition() {
         return nodeDefinition;
-    }
-
-    @Override
-    public boolean canCreate(ICreateConnectionContext context) {
-        boolean create = true;
-        if (viewer != null && context.getTargetPictogramElement() != null) {
-            GraphicsAlgorithm pictogramElement = context.getTargetPictogramElement().getGraphicsAlgorithm();
-            if (context.getTargetAnchor() != null || pictogramElement instanceof Text) {
-                viewer.setCursor(SharedCursors.CURSOR_TREE_MOVE);
-                create = false;
-            }
-        }
-        if (create && !alreadyAdded) {
-            viewer.setCursor(SharedCursors.CURSOR_TREE_ADD);
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public Connection create(ICreateConnectionContext createConnectionContext) {
-        parent = (GraphElement) getBusinessObjectForPictogramElement(createContext.getTargetContainer());
-        graphElement = getNodeDefinition().createElement(getProcessDefinition(), true);
-        if (graphElement instanceof Action) {
-            if (createContext.getTargetConnection() != null) {
-                parent = (GraphElement) getBusinessObjectForPictogramElement(createContext.getTargetConnection());
-            }
-            ((Action) graphElement).setName(getCreateName() + " " + (parent.getChildren(Action.class).size() + 1));
-        }
-        graphElement.setUiParentContainer(parent);
-        Swimlane swimlane = null;
-        if (parent instanceof Swimlane) {
-            swimlane = (Swimlane) parent;
-            parent = parent.getParent();
-        }
-        if (graphElement instanceof SwimlanedNode) {
-            ((SwimlanedNode) graphElement).setSwimlane(swimlane);
-        }
-        if ((!(parent instanceof IBoundaryEventContainer) || parent.getChildren(graphElement.getClass()).size() < 1)) {
-            parent.addChild(graphElement);
-            setLocationAndSize(graphElement, createContext, (CreateConnectionContext) createConnectionContext);
-            PictogramElement element = addGraphicalRepresentation(createContext, graphElement);
-            if (createConnectionContext != null && graphElement instanceof Node) {
-                ((CreateConnectionContext) createConnectionContext).setTargetPictogramElement(element);
-                ((CreateConnectionContext) createConnectionContext).setTargetAnchor(Graphiti.getPeService().getChopboxAnchor((AnchorContainer) element));
-                CreateTransitionFeature createTransitionFeature = new CreateTransitionFeature();
-                createTransitionFeature.setFeatureProvider(featureProvider);
-                createTransitionFeature.create(createConnectionContext);
-            }
-        }
-        alreadyAdded = true;
-        if (viewer != null) {
-            viewer.setCursor(null);
-        }
-        return null;
-    }
-
-    @Override
-    public boolean canStartConnection(ICreateConnectionContext context) {
-        return false;
     }
 
     protected ProcessDefinition getProcessDefinition() {
@@ -199,10 +145,73 @@ public class CreateDragAndDropElementFeature extends AbstractCreateConnectionFea
         element.setConstraint(new Rectangle(context.getX(), context.getY(), context.getWidth(), context.getHeight()));
     }
 
-    private GraphElement parent;
-    private Swimlane swimlane;
-    private GraphElement graphElement;
-    private Transition transition;
+    @Override
+    public boolean canExecute(IContext context) {
+        if (viewer != null) {
+            viewer.setCursor(SharedCursors.CURSOR_TREE_ADD);
+        }
+        return super.canExecute(context);
+    }
+
+    @Override
+    public boolean canCreate(ICreateConnectionContext context) {
+        boolean create = true;
+        if (viewer != null && context.getTargetPictogramElement() != null) {
+            GraphicsAlgorithm pictogramElement = context.getTargetPictogramElement().getGraphicsAlgorithm();
+            if (context.getTargetAnchor() != null || pictogramElement instanceof Text) {
+                viewer.setCursor(SharedCursors.CURSOR_TREE_MOVE);
+                create = false;
+            }
+        }
+        if (create && !alreadyAdded) {
+            viewer.setCursor(SharedCursors.CURSOR_TREE_ADD);
+            return true;
+        }        
+        return false;
+    }
+
+    @Override
+    public Connection create(ICreateConnectionContext createConnectionContext) {
+        parent = (GraphElement) getBusinessObjectForPictogramElement(createContext.getTargetContainer());
+        graphElement = getNodeDefinition().createElement(getProcessDefinition(), true);
+        if (graphElement instanceof Action) {
+            if (createContext.getTargetConnection() != null) {
+                parent = (GraphElement) getBusinessObjectForPictogramElement(createContext.getTargetConnection());
+            }
+            ((Action) graphElement).setName(getCreateName() + " " + (parent.getChildren(Action.class).size() + 1));
+        }
+        graphElement.setUiParentContainer(parent);
+        Swimlane swimlane = null;
+        if (parent instanceof Swimlane) {
+            swimlane = (Swimlane) parent;
+            parent = parent.getParent();
+        }
+        if (graphElement instanceof SwimlanedNode) {
+            ((SwimlanedNode) graphElement).setSwimlane(swimlane);
+        }
+        if (!(parent instanceof IBoundaryEventContainer) || parent.getChildren(graphElement.getClass()).size() < 1) {
+            parent.addChild(graphElement);
+            setLocationAndSize(graphElement, createContext, (CreateConnectionContext) createConnectionContext);
+            PictogramElement element = addGraphicalRepresentation(createContext, graphElement);
+            if (createConnectionContext != null && graphElement instanceof Node) {
+                ((CreateConnectionContext) createConnectionContext).setTargetPictogramElement(element);
+                ((CreateConnectionContext) createConnectionContext).setTargetAnchor(Graphiti.getPeService().getChopboxAnchor((AnchorContainer) element));
+                CreateTransitionFeature createTransitionFeature = new CreateTransitionFeature();
+                createTransitionFeature.setFeatureProvider(featureProvider);
+                createTransitionFeature.create(createConnectionContext);
+            }
+        }
+        alreadyAdded = true;
+        if (viewer != null) {
+            viewer.setCursor(null);
+        }
+        return null;
+    }
+
+    @Override
+    public boolean canStartConnection(ICreateConnectionContext context) {
+        return false;
+    }
 
     @Override
     public void postUndo(IContext context) {
@@ -215,7 +224,6 @@ public class CreateDragAndDropElementFeature extends AbstractCreateConnectionFea
             ((SwimlanedNode) graphElement).setSwimlane(null);
         }
         graphElement.setUiParentContainer(null);
-        getDiagramBehavior().refresh();
     }
 
     @Override
@@ -231,9 +239,8 @@ public class CreateDragAndDropElementFeature extends AbstractCreateConnectionFea
             ((SwimlanedNode) graphElement).setSwimlane(swimlane);
         }
         if (graphElement instanceof Node) {
-            transition.getSource().addChild(transition);
+            transition.getSource().addLeavingTransition(transition);
         }
-        getDiagramBehavior().refresh();
     }
 
     @Override

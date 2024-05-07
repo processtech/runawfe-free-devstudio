@@ -2,9 +2,9 @@ package ru.runa.gpd.lang.action;
 
 import org.eclipse.jface.action.IAction;
 import org.eclipse.ui.PlatformUI;
-import ru.runa.gpd.editor.graphiti.ChangeDelegationConfigurationFeature;
 import ru.runa.gpd.editor.graphiti.GraphitiProcessEditor;
-import ru.runa.gpd.editor.graphiti.UndoRedoUtil;
+import ru.runa.gpd.editor.graphiti.change.ChangeDelegationConfigurationFeature;
+import ru.runa.gpd.editor.graphiti.change.UndoRedoUtil;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.bpmn.ExclusiveGateway;
 import ru.runa.gpd.ui.enhancement.DialogEnhancement;

@@ -5,6 +5,8 @@ import java.util.List;
 import org.eclipse.ui.views.properties.ComboBoxPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import ru.runa.gpd.Localization;
+import ru.runa.gpd.editor.graphiti.change.ChangeActionEventTypeFeature;
+import ru.runa.gpd.editor.graphiti.change.UndoRedoUtil;
 
 public class ActionImpl extends Action {
     private String eventType;
@@ -94,7 +96,7 @@ public class ActionImpl extends Action {
     public void setPropertyValue(Object id, Object value) {
         if (PROPERTY_EVENT_TYPE.equals(id)) {
             int index = ((Integer) value).intValue();
-            setEventType(getAllowedEventTypes().get(index));
+            UndoRedoUtil.executeFeature(new ChangeActionEventTypeFeature(this, getAllowedEventTypes().get(index)));
         } else {
             super.setPropertyValue(id, value);
         }

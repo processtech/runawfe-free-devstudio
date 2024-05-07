@@ -34,6 +34,9 @@ public abstract class DoubleClickElementFeature extends AbstractCustomFeature {
 
     @Override
     public boolean hasDoneChanges() {
+        // если hasDoneChanges = false - то операция не должна попасть в стек отката и тогда по логике никто не должен интересоваться canUndo, можно
+        // убрать
+        // Эта логика не совпадает с логикой Eclipse
         return false;
     }
 

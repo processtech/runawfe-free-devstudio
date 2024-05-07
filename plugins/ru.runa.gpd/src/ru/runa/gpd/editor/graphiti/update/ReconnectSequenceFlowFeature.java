@@ -65,40 +65,34 @@ public class ReconnectSequenceFlowFeature extends DefaultReconnectionFeature imp
         final AbstractTransition abstractTransition = (AbstractTransition) getFeatureProvider()
                 .getBusinessObjectForPictogramElement(context.getConnection());
         targetSource = (Node) getFeatureProvider().getBusinessObjectForPictogramElement(context.getTargetPictogramElement());
+
         if (ReconnectionContext.RECONNECT_TARGET.equalsIgnoreCase(context.getReconnectType())) {
+            oldTarget = abstractTransition.getTarget();
             if (abstractTransition instanceof DottedTransition && targetSource instanceof ConnectableViaDottedTransition) {
                 final ConnectableViaDottedTransition newTarget = (ConnectableViaDottedTransition) targetSource;
                 final DottedTransition transition = (DottedTransition) abstractTransition;
-                final ConnectableViaDottedTransition oldTarget = (ConnectableViaDottedTransition) abstractTransition.getTarget();
-                oldTarget.removeArrivingDottedTransition(transition);
+                ((ConnectableViaDottedTransition) oldTarget).removeArrivingDottedTransition(transition);
                 newTarget.addArrivingDottedTransition(transition);
             } else {
-                oldTarget = abstractTransition.getTarget();
                 abstractTransition.setTarget(targetSource);
-                targetReconnected = true;
             }
+            targetReconnected = true;
         }
-
         if (ReconnectionContext.RECONNECT_SOURCE.equalsIgnoreCase(context.getReconnectType())) {
             // target is the source side of the sequence flow
+            final ContainerShape sourceElement = (ContainerShape) getFeatureProvider()
+                    .getPictogramElementForBusinessObject(abstractTransition.getSource());
+            oldSource = (Node) getFeatureProvider().getBusinessObjectForPictogramElement(sourceElement);
             if (targetSource instanceof ConnectableViaDottedTransition && abstractTransition instanceof DottedTransition) {
-                final ConnectableViaDottedTransition newTarget = (ConnectableViaDottedTransition) targetSource;
                 final DottedTransition transition = (DottedTransition) abstractTransition;
-                final ContainerShape sourceElement = (ContainerShape) getFeatureProvider()
-                        .getPictogramElementForBusinessObject(transition.getSource());
-                final ConnectableViaDottedTransition oldSource = (ConnectableViaDottedTransition) getFeatureProvider()
-                        .getBusinessObjectForPictogramElement(sourceElement);
-
-                oldSource.removeLeavingDottedTransition(transition);
-                newTarget.addLeavingDottedTransition(transition);
+                ((ConnectableViaDottedTransition) oldSource).removeLeavingDottedTransition(transition);
+                ((ConnectableViaDottedTransition) targetSource).addLeavingDottedTransition(transition);
             } else {
                 final Transition transition = (Transition) abstractTransition;
-                ContainerShape sourceElement = (ContainerShape) getFeatureProvider().getPictogramElementForBusinessObject(transition.getSource());
-                oldSource = (Node) getFeatureProvider().getBusinessObjectForPictogramElement(sourceElement);
                 oldSource.removeLeavingTransition(transition);
                 targetSource.addLeavingTransition(transition);
-                sourceReconnected = true;
             }
+            sourceReconnected = true;
         }
     }
 

@@ -23,6 +23,7 @@ import org.eclipse.graphiti.tb.DefaultToolBehaviorProvider;
 import org.eclipse.graphiti.tb.IContextButtonPadData;
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
+import ru.runa.gpd.editor.graphiti.change.ChangeEventTypeFeature;
 import ru.runa.gpd.editor.graphiti.create.CreateDataStoreFeature;
 import ru.runa.gpd.editor.graphiti.create.CreateDottedTransitionFeature;
 import ru.runa.gpd.editor.graphiti.create.CreateDragAndDropElementFeature;
@@ -30,7 +31,6 @@ import ru.runa.gpd.editor.graphiti.create.CreateElementFeature;
 import ru.runa.gpd.editor.graphiti.create.CreateStartNodeFeature;
 import ru.runa.gpd.editor.graphiti.create.CreateSwimlaneFeature;
 import ru.runa.gpd.editor.graphiti.create.CreateTransitionFeature;
-import ru.runa.gpd.editor.graphiti.update.ChangeEventTypeFeature;
 import ru.runa.gpd.editor.graphiti.update.ChangeStartEventTypeFeature;
 import ru.runa.gpd.editor.graphiti.update.OpenSubProcessFeature;
 import ru.runa.gpd.lang.NodeRegistry;
@@ -38,7 +38,6 @@ import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.lang.model.Action;
 import ru.runa.gpd.lang.model.EndTokenState;
 import ru.runa.gpd.lang.model.GraphElement;
-import ru.runa.gpd.lang.model.MessageNode;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.StartState;
 import ru.runa.gpd.lang.model.Subprocess;
@@ -46,6 +45,7 @@ import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Transition;
+import ru.runa.gpd.lang.model.bpmn.AbstractEventNode;
 import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
 import ru.runa.gpd.lang.model.bpmn.DottedTransition;
 import ru.runa.gpd.lang.model.bpmn.EventNodeType;
@@ -229,7 +229,7 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
             }
         }
 
-        if (element instanceof MessageNode) {
+        if (element instanceof AbstractEventNode) {
             ContextButtonEntry changeEventTypeButton = new ContextButtonEntry(null, null);
             changeEventTypeButton.setText(Localization.getString("event.type.label"));
             changeEventTypeButton.setDescription(Localization.getString("event.type.description"));
@@ -239,7 +239,7 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
             ICustomContext customContext = new CustomContext(pes);
             for (int i = 0; i < EventNodeType.LABELS.length; i++) {
                 EventNodeType et = EventNodeType.values()[i];
-                ContextButtonEntry createButton = new ContextButtonEntry(new ChangeEventTypeFeature(getFeatureProvider(), et), customContext);
+                ContextButtonEntry createButton = new ContextButtonEntry(new ChangeEventTypeFeature((AbstractEventNode) element, et), customContext);
                 createButton.setIconId("graph/" + et.getImageName(element instanceof CatchEventNode, false));
                 createButton.setText(EventNodeType.LABELS[i]);
                 changeEventTypeButton.addContextButtonMenuEntry(createButton);

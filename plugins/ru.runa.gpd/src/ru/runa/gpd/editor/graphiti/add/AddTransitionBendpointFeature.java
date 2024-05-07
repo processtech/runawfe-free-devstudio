@@ -12,6 +12,8 @@ import ru.runa.gpd.lang.model.Transition;
 
 public class AddTransitionBendpointFeature extends DefaultAddBendpointFeature implements CustomUndoRedoFeature {
 
+    // TODO 1090 странные манипуляции с локальной переменной
+    // Насколько я понимаю, автор (HITRome) таким образом разрешил undo только в случае, если был выполнен метод addBendpoint(IAddBendpointContext).
     private boolean canUndo = false;
     private org.eclipse.draw2d.geometry.Point redoBendpoint;
 

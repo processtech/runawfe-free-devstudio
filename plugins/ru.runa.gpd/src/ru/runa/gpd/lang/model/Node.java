@@ -11,6 +11,12 @@ import org.eclipse.ui.views.properties.ComboBoxPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginConstants;
+import ru.runa.gpd.editor.graphiti.change.ChangeAsyncExecutionFeature;
+import ru.runa.gpd.editor.graphiti.change.ChangeInterruptingBoundaryEventFeature;
+import ru.runa.gpd.editor.graphiti.change.ChangeRegulationsPropertiesFeature;
+import ru.runa.gpd.editor.graphiti.change.ChangeTimerActionFeature;
+import ru.runa.gpd.editor.graphiti.change.ChangeTimerDelayFeature;
+import ru.runa.gpd.editor.graphiti.change.UndoRedoUtil;
 import ru.runa.gpd.extension.regulations.NodeRegulationsProperties;
 import ru.runa.gpd.extension.regulations.NodeRegulationsPropertyDescriptor;
 import ru.runa.gpd.lang.NodeTypeDefinition;
@@ -145,15 +151,15 @@ public abstract class Node extends NamedGraphElement implements Describable {
                 // ignore, edit was canceled
                 return;
             }
-            ((ITimed) this).getTimer().setDelay((Duration) value);
+            UndoRedoUtil.executeFeature(new ChangeTimerDelayFeature(((ITimed) this).getTimer(), (Duration) value));
         } else if (PROPERTY_TIMER_ACTION.equals(id)) {
-            ((ITimed) this).getTimer().setAction((TimerAction) value);
+            UndoRedoUtil.executeFeature(new ChangeTimerActionFeature(((ITimed) this).getTimer(), (TimerAction) value));
         } else if (PROPERTY_NODE_ASYNC_EXECUTION.equals(id)) {
-            setAsyncExecution(NodeAsyncExecution.values()[(Integer) value]);
+            UndoRedoUtil.executeFeature(new ChangeAsyncExecutionFeature(this, NodeAsyncExecution.values()[(Integer) value]));
         } else if (PROPERTY_INTERRUPTING_BOUNDARY_EVENT.equals(id)) {
-            setInterruptingBoundaryEvent(YesNoComboBoxTransformer.setPropertyValue(value));
+            UndoRedoUtil.executeFeature(new ChangeInterruptingBoundaryEventFeature(this, YesNoComboBoxTransformer.setPropertyValue(value)));
         } else if (PROPERTY_NODE_IN_REGULATIONS.equals(id)) {
-            setRegulationsProperties((NodeRegulationsProperties) value);
+            UndoRedoUtil.executeFeature(new ChangeRegulationsPropertiesFeature(this, (NodeRegulationsProperties) value));
         } else {
             super.setPropertyValue(id, value);
         }

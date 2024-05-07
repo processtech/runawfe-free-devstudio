@@ -8,6 +8,9 @@ import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.graphiti.TooltipBuilderHelper;
+import ru.runa.gpd.editor.graphiti.change.ChangeTimerActionFeature;
+import ru.runa.gpd.editor.graphiti.change.ChangeTimerDelayFeature;
+import ru.runa.gpd.editor.graphiti.change.UndoRedoUtil;
 import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEventCapable;
@@ -88,9 +91,9 @@ public class Timer extends Node implements IBoundaryEventCapable, IBoundaryEvent
                 // ignore, edit was canceled
                 return;
             }
-            setDelay((Duration) value);
+            UndoRedoUtil.executeFeature(new ChangeTimerDelayFeature(this, (Duration) value));
         } else if (PROPERTY_TIMER_ACTION.equals(id)) {
-            setAction((TimerAction) value);
+            UndoRedoUtil.executeFeature(new ChangeTimerActionFeature(this, (TimerAction) value));
         } else {
             super.setPropertyValue(id, value);
         }

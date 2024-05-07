@@ -9,22 +9,27 @@ import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
 import org.eclipse.graphiti.mm.algorithms.Text;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.ui.services.GraphitiUi;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.PlatformUI;
 import ru.runa.gpd.editor.graphiti.GaProperty;
-import ru.runa.gpd.editor.graphiti.GraphitiProcessEditor;
 import ru.runa.gpd.editor.graphiti.PropertyUtil;
 import ru.runa.gpd.editor.graphiti.StyleUtil;
 import ru.runa.gpd.editor.graphiti.TransitionUtil;
+import ru.runa.gpd.editor.graphiti.change.UndoRedoUtil;
 import ru.runa.gpd.lang.model.Transition;
 
 public class UpdateTransitionFeature extends UpdateFeature {
     @Override
     public IReason updateNeeded(IUpdateContext context) {
+
+        if (UndoRedoUtil.isInProgress()) {
+            return Reason.createFalseReason("Undo/Redo of model is in progress. No need to update");
+        }
         // retrieve name from pictogram element
         PictogramElement pe = context.getPictogramElement();
         // retrieve name from business model
         Transition transition = (Transition) getBusinessObjectForPictogramElement(pe);
+        if (transition == null || !transition.getSource().getLeavingTransitions().contains(transition)) {
+            return Reason.createFalseReason("Transition not found in model");
+		}
         GraphicsAlgorithm defaultFlowGa = PropertyUtil.findGaRecursiveByName(pe, GaProperty.DEFAULT_FLOW);
         if (defaultFlowGa != null
                 && defaultFlowGa.getPictogramElement().isVisible() != (TransitionUtil.markDefaultTransition() && transition.isDefaultFlow())) {
@@ -32,7 +37,7 @@ public class UpdateTransitionFeature extends UpdateFeature {
         }
         GraphicsAlgorithm exclusiveFlowGa = PropertyUtil.findGaRecursiveByName(pe, GaProperty.EXCLUSIVE_FLOW);
         if (exclusiveFlowGa != null && exclusiveFlowGa.getPictogramElement().isVisible() != transition.isExclusiveFlow()) {
-            return Reason.createTrueReason("Exclusive flow marker is out of date");
+            return Reason.createTrueReason("Exclusive flow marker must be " + (transition.isExclusiveFlow() ? "true" : "false"));
         }
         Text nameTextGa = (Text) PropertyUtil.findGaRecursiveByName(pe, GaProperty.NAME);
         if (nameTextGa != null) {
@@ -101,23 +106,12 @@ public class UpdateTransitionFeature extends UpdateFeature {
             numberGa.setX(nameTextGa.getX() - numberOffsetX(colorMarkerGa, numberGa));
             numberGa.getPictogramElement().setVisible(visible);
         }
-        refreshLater();
         return true;
     }
 
     private int numberOffsetX(GraphicsAlgorithm colorMarkerGa, Text numberGa) {
         int numberWidth = GraphitiUi.getUiLayoutService().calculateTextSize(numberGa.getValue(), numberGa.getStyle().getFont()).getWidth();
         return numberWidth + (colorMarkerGa.getWidth() - numberWidth) / 2 + 1;
-    }
-
-    private void refreshLater() {
-        Display.getCurrent().asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                ((GraphitiProcessEditor) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor())
-                        .getDiagramEditorPage().getDiagramBehavior().refresh();
-            }
-        });
     }
 
 }

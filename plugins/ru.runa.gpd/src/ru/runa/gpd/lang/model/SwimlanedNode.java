@@ -8,6 +8,8 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.ui.views.properties.ComboBoxPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import ru.runa.gpd.Localization;
+import ru.runa.gpd.editor.graphiti.change.ChangeSwimlaneFeature;
+import ru.runa.gpd.editor.graphiti.change.UndoRedoUtil;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.util.SwimlaneDisplayMode;
 import ru.runa.gpd.util.VariableUtils;
@@ -101,7 +103,7 @@ public abstract class SwimlanedNode extends Node implements PropertyChangeListen
     public void setPropertyValue(Object id, Object value) {
         if (PROPERTY_SWIMLANE.equals(id)) {
             int i = ((Integer) value).intValue();
-            setSwimlane(getProcessDefinition().getSwimlanes().get(i));
+            UndoRedoUtil.executeFeature(new ChangeSwimlaneFeature(this, getProcessDefinition().getSwimlanes().get(i)));
         } else {
             super.setPropertyValue(id, value);
         }

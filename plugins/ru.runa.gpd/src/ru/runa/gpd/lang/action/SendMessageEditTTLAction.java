@@ -2,8 +2,8 @@ package ru.runa.gpd.lang.action;
 
 import com.google.common.base.Objects;
 import org.eclipse.jface.action.IAction;
-import ru.runa.gpd.editor.graphiti.ChangeTtlDurationFeature;
-import ru.runa.gpd.editor.graphiti.UndoRedoUtil;
+import ru.runa.gpd.editor.graphiti.change.ChangeTtlDurationFeature;
+import ru.runa.gpd.editor.graphiti.change.UndoRedoUtil;
 import ru.runa.gpd.lang.model.MessageNode;
 import ru.runa.gpd.ui.dialog.DurationEditDialog;
 import ru.runa.gpd.util.Duration;

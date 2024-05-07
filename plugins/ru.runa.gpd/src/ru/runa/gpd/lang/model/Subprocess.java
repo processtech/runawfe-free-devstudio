@@ -1,8 +1,8 @@
 package ru.runa.gpd.lang.model;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import java.util.List;
+import java.util.Objects;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -12,6 +12,11 @@ import org.eclipse.ui.views.properties.PropertyDescriptor;
 import ru.runa.gpd.Activator;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.editor.graphiti.TooltipBuilderHelper;
+import ru.runa.gpd.editor.graphiti.change.ChangeDisableCascadingSuspensionFeature;
+import ru.runa.gpd.editor.graphiti.change.ChangeTransactionalFeature;
+import ru.runa.gpd.editor.graphiti.change.ChangeUsedSubprocessFeature;
+import ru.runa.gpd.editor.graphiti.change.ChangeValidateAtStartFeature;
+import ru.runa.gpd.editor.graphiti.change.UndoRedoUtil;
 import ru.runa.gpd.extension.VariableFormatArtifact;
 import ru.runa.gpd.extension.VariableFormatRegistry;
 import ru.runa.gpd.lang.ValidationError;
@@ -107,7 +112,7 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
     }
 
     protected boolean isCompatibleVariables(VariableMapping mapping, Variable variable1, Variable variable2) {
-        if (variable1.getUserType() != null && Objects.equal(variable1.getUserType(), variable2.getUserType())) {
+        if (variable1.getUserType() != null && Objects.equals(variable1.getUserType(), variable2.getUserType())) {
             return true;
         }
         if (VariableFormatRegistry.isAssignableFrom(variable1.getJavaClassName(), variable2.getJavaClassName())) {
@@ -160,9 +165,9 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
                     YesNoComboBoxTransformer.LABELS));
         } else {
             descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_VALIDATE_AT_START, Localization.getString("Subprocess.ValidateAtStart"),
-                YesNoComboBoxTransformer.LABELS));
+                    YesNoComboBoxTransformer.LABELS));
             descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_DISABLE_CASCADING_SUSPENSION,
-                Localization.getString("Subprocess.DisableCascadingSuspension"), YesNoComboBoxTransformer.LABELS));
+                    Localization.getString("Subprocess.DisableCascadingSuspension"), YesNoComboBoxTransformer.LABELS));
         }
     }
 
@@ -269,13 +274,14 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
     @Override
     public void setPropertyValue(Object id, Object value) {
         if (PROPERTY_SUBPROCESS.equals(id)) {
-            setSubProcessName((String) value);
+            SubprocessDTO newSubprocessDTO = new SubprocessDTO(getVariableMappings(), (String) value);
+            UndoRedoUtil.executeFeature(new ChangeUsedSubprocessFeature(this, newSubprocessDTO));
         } else if (PROPERTY_TRANSACTIONAL.equals(id)) {
-            setTransactional(YesNoComboBoxTransformer.setPropertyValue(value));
+            UndoRedoUtil.executeFeature(new ChangeTransactionalFeature(this, YesNoComboBoxTransformer.setPropertyValue(value)));
         } else if (PROPERTY_VALIDATE_AT_START.equals(id)) {
-            setValidateAtStart(YesNoComboBoxTransformer.setPropertyValue(value));
+            UndoRedoUtil.executeFeature(new ChangeValidateAtStartFeature(this, YesNoComboBoxTransformer.setPropertyValue(value)));
         } else if (PROPERTY_DISABLE_CASCADING_SUSPENSION.equals(id)) {
-            setDisableCascadingSuspension(YesNoComboBoxTransformer.setPropertyValue(value));
+            UndoRedoUtil.executeFeature(new ChangeDisableCascadingSuspensionFeature(this, YesNoComboBoxTransformer.setPropertyValue(value)));
         } else {
             super.setPropertyValue(id, value);
         }

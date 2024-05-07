@@ -1,19 +1,19 @@
-package ru.runa.gpd.editor.graphiti;
+package ru.runa.gpd.editor.graphiti.change;
 
 import org.eclipse.graphiti.features.context.IContext;
 import org.eclipse.graphiti.features.context.ICustomContext;
-import ru.runa.gpd.lang.model.Delegable;
-import ru.runa.gpd.lang.model.bpmn.ScriptTask;
+import ru.runa.gpd.Localization;
+import ru.runa.gpd.lang.model.DelegationConfiguration;
 
-public class ChangeDelegationClassNameFeature extends ChangePropertyFeature<Delegable, String> {
+public class ChangeDelegationClassNameFeature extends ChangePropertyFeature<DelegationConfiguration, String> {
 
     private String oldConfiguration;
 
-    public ChangeDelegationClassNameFeature(Delegable target, String newValue) {
+    public ChangeDelegationClassNameFeature(DelegationConfiguration target, String newValue) {
         this(target, target.getDelegationClassName(), newValue);
     }
 
-    public ChangeDelegationClassNameFeature(Delegable target, String oldValue, String newValue) {
+    public ChangeDelegationClassNameFeature(DelegationConfiguration target, String oldValue, String newValue) {
         super(target, oldValue, newValue);
         oldConfiguration = target.getDelegationConfiguration();
     }
@@ -28,9 +28,11 @@ public class ChangeDelegationClassNameFeature extends ChangePropertyFeature<Dele
     public void execute(ICustomContext context) {
         target.setDelegationClassName(newValue);
         target.setDelegationConfiguration(null);
-        if (target instanceof ScriptTask) {
-            ((ScriptTask) target).resetNameToDefault();
-        }
+    }
+
+    @Override
+    public String getName() {
+        return Localization.getString("property.delegation.class");
     }
 
 }

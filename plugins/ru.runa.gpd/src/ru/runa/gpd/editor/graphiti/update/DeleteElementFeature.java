@@ -2,13 +2,8 @@ package ru.runa.gpd.editor.graphiti.update;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import java.text.MessageFormat;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.eclipse.core.internal.resources.Workspace;
@@ -35,6 +30,7 @@ import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.editor.graphiti.CustomUndoRedoFeature;
 import ru.runa.gpd.editor.graphiti.HasTextDecorator;
+import ru.runa.gpd.editor.graphiti.IRedoProtected;
 import ru.runa.gpd.lang.model.Action;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.FormNode;
@@ -51,17 +47,14 @@ import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.XmlUtil;
 import ru.runa.wfe.definition.FileDataProvider;
 
-public class DeleteElementFeature extends DefaultDeleteFeature implements CustomUndoRedoFeature {
+public class DeleteElementFeature extends DefaultDeleteFeature implements CustomUndoRedoFeature, IRedoProtected {
 
     private static final String NAME = Localization.getString("DeleteElementFeature_1");
 
     private GraphElement element;
-    private List<Transition> transitions;
-    private Map<Transition, Integer> transitionIndexes;
-    private IPath formFilePath;
-    private IPath scriptFilePath;
-    private IPath validationFilePath;
-
+    private List<Transition> leavingTransitions;
+    private List<Transition> arrivingTransitions;
+    
     public DeleteElementFeature(IFeatureProvider provider) {
         super(provider);
     }
@@ -116,13 +109,11 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements Custom
         if (bo == null) {
             return;
         }
-        if (element == null) {
-            element = (GraphElement) bo;
-        }
-        if (bo instanceof TextDecorationNode) {
-            TextDecorationNode textDecoration = (TextDecorationNode) bo;
+        element = (GraphElement) bo;
+        if (element instanceof TextDecorationNode) {
+            TextDecorationNode textDecoration = (TextDecorationNode) element;
             textDecoration.getTarget().getParent().removeChild(textDecoration.getTarget());
-            return;
+            removeAndStoreTransitions(textDecoration.getTarget());
         } else if (element instanceof HasTextDecorator) {
             // TODO rm1090: Возможно не очень красивое решение с полем textDecorationDeleteFeature. Нужен свежий взгляд, как лучше отрефакторить
             final HasTextDecorator withDefinition = (HasTextDecorator) element;
@@ -158,6 +149,12 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements Custom
     }
 
     @Override
+    public boolean canUndo(IContext context) {
+        return element != null;
+    }    
+
+
+    @Override
     public void postUndo(IContext context) {
         if (element == null) {
             return;
@@ -165,7 +162,6 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements Custom
         if (element instanceof Transition) {
             Transition transition = (Transition) element;
             transition.getSource().addLeavingTransition(transition);
-            getDiagramBehavior().refresh();
             return;
         } else if (element instanceof TextDecorationNode) {
             TextDecorationNode textDecoration = (TextDecorationNode) element;
@@ -190,6 +186,7 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements Custom
     public boolean canRedo(IContext context) {
         return element != null;
     }
+    
 
     @Override
     public void postRedo(IContext context) {
@@ -197,26 +194,32 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements Custom
     }
 
     private void removeAndStoreTransitions(Node node) {
-        transitions = Stream.concat(node.getLeavingTransitions().stream(), node.getArrivingTransitions().stream()).collect(Collectors.toList());
-        transitionIndexes = Maps.newHashMap();
-        transitions.stream().forEach(transition -> {
-            Node source = transition.getSource();
-            transitionIndexes.put(transition, source.getElements().indexOf(transition));
-            source.removeLeavingTransition(transition);
-        });
-        if (node instanceof ConnectableViaDottedTransition) {
-            ((ConnectableViaDottedTransition) node).getArrivingDottedTransitions().forEach(this::removeDottedTransition);
-            ((ConnectableViaDottedTransition) node).getLeavingDottedTransitions().forEach(this::removeDottedTransition);
+        leavingTransitions = node.getLeavingTransitions();
+        for (Transition transition : leavingTransitions) {
+            transition.getSource().removeLeavingTransition(transition);
         }
-        getDiagramBehavior().refresh();
+        arrivingTransitions = node.getArrivingTransitions();
+        for (Transition transition : arrivingTransitions) {
+            transition.getSource().removeLeavingTransition(transition);
+        }
+
+        if (node instanceof ConnectableViaDottedTransition) {
+            ((ConnectableViaDottedTransition) node).getArrivingDottedTransitions().forEach(DeleteElementFeature::removeDottedTransition);
+            ((ConnectableViaDottedTransition) node).getLeavingDottedTransitions().forEach(DeleteElementFeature::removeDottedTransition);
+        }
     }
 
     private void restoreTransitions() {
-        if (transitions != null) {
-            Collections.reverse(transitions);
-            transitions.stream().forEach(transition -> transition.getSource().addLeavingTransition(transition, transitionIndexes.get(transition)));
+        if (leavingTransitions != null) {
+            for (Transition transition : leavingTransitions) {
+                transition.getSource().addChild(transition);
+            }
         }
-        getDiagramBehavior().refresh();
+        if (arrivingTransitions != null) {
+            for (Transition transition : arrivingTransitions) {
+                transition.getSource().addChild(transition);
+            }
+        }
     }
 
     @Override
@@ -228,7 +231,6 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements Custom
                     pe instanceof ConnectionDecorator ? ((ConnectionDecorator) context.getPictogramElement()).getConnection()
                             : ((Shape) context.getPictogramElement()).getContainer());
         }
-        ((DiagramBehavior) getDiagramBehavior()).getEditDomain().getCommandStack().flush();
     }
 
     @Override
@@ -238,6 +240,15 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements Custom
             layoutPictogramElement((PictogramElement) context.getProperty("action-container"));
         }
     }
+
+    public static void removeDottedTransition(DottedTransition transition) {
+        ((ConnectableViaDottedTransition) transition.getSource()).removeLeavingDottedTransition(transition);
+        ((ConnectableViaDottedTransition) transition.getTarget()).removeArrivingDottedTransition(transition);
+    }    
+
+    private IPath formFilePath;
+    private IPath scriptFilePath;
+    private IPath validationFilePath;
 
     private void removeFormFiles(FormNode formNode) {
         IFile processDefinitionFile = formNode.getProcessDefinition().getFile();
@@ -288,6 +299,7 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements Custom
 
     private List<IPath> processFilePaths = Lists.newArrayList();
 
+    // TODO 1090 а если в обработчике xml, но другого формата? Логично возложить на DelegableProvider, он в курсе формата.
     private void removeProcessFiles(Delegable delegable) {
         String config = delegable.getDelegationConfiguration();
         if (XmlUtil.isXml(config)) {
@@ -309,11 +321,6 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements Custom
 
     private void restoreProcessFiles() {
         processFilePaths.stream().forEach(path -> restoreFile(path));
-    }
-
-    private void removeDottedTransition(DottedTransition transition) {
-        ((ConnectableViaDottedTransition) transition.getSource()).removeLeavingDottedTransition(transition);
-        ((ConnectableViaDottedTransition) transition.getTarget()).removeArrivingDottedTransition(transition);
     }
 
 }

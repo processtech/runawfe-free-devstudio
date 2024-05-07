@@ -7,10 +7,11 @@ import org.eclipse.graphiti.features.impl.DefaultMoveBendpointFeature;
 import org.eclipse.graphiti.mm.algorithms.styles.Point;
 import org.eclipse.graphiti.mm.pictograms.FreeFormConnection;
 import ru.runa.gpd.editor.graphiti.CustomUndoRedoFeature;
+import ru.runa.gpd.editor.graphiti.IRedoProtected;
 import ru.runa.gpd.lang.model.AbstractTransition;
 import ru.runa.gpd.lang.model.Transition;
 
-public class MoveTransitionBendpointFeature extends DefaultMoveBendpointFeature implements CustomUndoRedoFeature {
+public class MoveTransitionBendpointFeature extends DefaultMoveBendpointFeature implements CustomUndoRedoFeature, IRedoProtected {
 
     private org.eclipse.draw2d.geometry.Point undoPoint;
     private org.eclipse.draw2d.geometry.Point redoPoint;

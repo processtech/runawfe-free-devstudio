@@ -21,7 +21,10 @@ import org.eclipse.graphiti.ui.editor.DiagramEditor;
 import org.eclipse.graphiti.ui.editor.IDiagramContainerUI;
 import org.eclipse.graphiti.ui.internal.config.IConfigurationProviderInternal;
 import org.eclipse.graphiti.ui.internal.util.gef.ScalableRootEditPartAnimated;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.part.MultiPageEditorSite;
+import ru.runa.gpd.editor.CustomPasteAction;
 import ru.runa.gpd.editor.ProcessEditorBase;
 import ru.runa.gpd.editor.gef.GEFActionBarContributor;
 
@@ -51,9 +54,14 @@ public class CustomDiagramBehavior extends DiagramBehavior {
     protected void initActionRegistry(ZoomManager zoomManager) {
         super.initActionRegistry(zoomManager);
         IDiagramContainerUI diagramContainerUi = getDiagramContainer();
-        GEFActionBarContributor.createCustomGEFActions(diagramContainerUi.getActionRegistry(),
-                (ProcessEditorBase) ((MultiPageEditorSite) diagramContainerUi.getSite()).getMultiPageEditor(),
-                diagramContainerUi.getSelectionActions());
+
+        ProcessEditorBase editor = (ProcessEditorBase) ((MultiPageEditorSite) diagramContainerUi.getSite()).getMultiPageEditor();
+        IAction action = new CustomPasteAction(editor, getConfigurationProvider());
+        action.setId(ActionFactory.PASTE.getId());
+        diagramContainerUi.getActionRegistry().registerAction(action);
+        diagramContainerUi.getSelectionActions().add(action.getId());
+
+        GEFActionBarContributor.createCustomGEFActions(diagramContainerUi.getActionRegistry(), editor, diagramContainerUi.getSelectionActions());
     }
 
     @Override
@@ -112,15 +120,15 @@ public class CustomDiagramBehavior extends DiagramBehavior {
     }
 
     @Override
-    protected DefaultPaletteBehavior createPaletteBehaviour() {
-        paletteBehavior = new CustomPaletteBehavior(this);
-        return paletteBehavior;
-    }
-
-    @Override
     protected void initConfigurationProvider(IDiagramTypeProvider diagramTypeProvider) {
         super.initConfigurationProvider(diagramTypeProvider);
         getEditDomain().setCommandStack(new CustomCommandStack(getConfigurationProvider(), getEditingDomain()));
+    }
+
+    @Override
+    protected DefaultPaletteBehavior createPaletteBehaviour() {
+        paletteBehavior = new CustomPaletteBehavior(this);
+        return paletteBehavior;
     }
 
     @Override

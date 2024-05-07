@@ -2,6 +2,8 @@ package ru.runa.gpd.lang.model;
 
 import org.eclipse.jface.dialogs.IInputValidator;
 import ru.runa.gpd.Localization;
+import ru.runa.gpd.editor.graphiti.change.ChangeNameFeature;
+import ru.runa.gpd.editor.graphiti.change.UndoRedoUtil;
 import ru.runa.gpd.settings.PrefConstants;
 
 public abstract class NamedGraphElement extends GraphElement implements Comparable<NamedGraphElement>, PrefConstants {
@@ -53,7 +55,7 @@ public abstract class NamedGraphElement extends GraphElement implements Comparab
     @Override
     public void setPropertyValue(Object id, Object value) {
         if (PROPERTY_NAME.equals(id)) {
-            setName((String) value);
+            UndoRedoUtil.executeFeature(new ChangeNameFeature(this, (String) value));
         } else {
             super.setPropertyValue(id, value);
         }

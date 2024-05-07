@@ -1,15 +1,16 @@
 package ru.runa.gpd.editor.graphiti.update;
 
+import java.util.Objects;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.IContext;
 import org.eclipse.graphiti.features.context.IDirectEditingContext;
 import org.eclipse.graphiti.features.impl.AbstractDirectEditingFeature;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
-import org.eclipse.graphiti.mm.pictograms.Shape;
 import ru.runa.gpd.editor.graphiti.CustomUndoRedoFeature;
+import ru.runa.gpd.editor.graphiti.IRedoProtected;
 import ru.runa.gpd.lang.model.GraphElement;
 
-public class DirectEditDescriptionFeature extends AbstractDirectEditingFeature implements CustomUndoRedoFeature {
+public class DirectEditDescriptionFeature extends AbstractDirectEditingFeature implements CustomUndoRedoFeature, IRedoProtected {
     private String undoDescription;
     private String redoDescription;
 
@@ -40,14 +41,21 @@ public class DirectEditDescriptionFeature extends AbstractDirectEditingFeature i
     public void setValue(String value, IDirectEditingContext context) {
         PictogramElement pe = context.getPictogramElement();
         GraphElement element = (GraphElement) getBusinessObjectForPictogramElement(pe);
-        undoDescription = element.getDescription();
-        element.setDescription(value);
-        updatePictogramElement(((Shape) pe).getContainer());
+        if (!Objects.equals(element.getDescription(), value)) {
+            undoDescription = element.getDescription();
+            element.setDescription(value);
+            setValueChanged();
+        }
     }
 
     @Override
     public boolean canUndo(IContext context) {
-        return undoDescription != null;
+        if (context instanceof IDirectEditingContext) {
+            PictogramElement pe = ((IDirectEditingContext) context).getPictogramElement();
+            GraphElement element = (GraphElement) getBusinessObjectForPictogramElement(pe);
+            return element.getDescription() != null;
+        }
+        return false;
     }
 
     @Override

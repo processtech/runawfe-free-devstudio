@@ -22,7 +22,6 @@ import ru.runa.gpd.editor.GEFConstants;
 import ru.runa.gpd.editor.graphiti.CustomUndoRedoFeature;
 import ru.runa.gpd.editor.graphiti.DiagramFeatureProvider;
 import ru.runa.gpd.editor.graphiti.HasTextDecorator;
-import ru.runa.gpd.editor.graphiti.UndoRedoUtil;
 import ru.runa.gpd.lang.NodeTypeDefinition;
 import ru.runa.gpd.lang.model.Action;
 import ru.runa.gpd.lang.model.GraphElement;
@@ -39,9 +38,9 @@ import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
 
 public class CreateElementFeature extends AbstractCreateFeature implements GEFConstants, CustomUndoRedoFeature {
     public static final String CONNECTION_PROPERTY = "connectionContext";
+    public static final String ELEMENT_PROPERTY = "element";
     private NodeTypeDefinition nodeDefinition;
     private DiagramFeatureProvider featureProvider;
-    private GraphElement graphElement;
     private List<Transition> transitions;
 
     public CreateElementFeature() {
@@ -54,6 +53,10 @@ public class CreateElementFeature extends AbstractCreateFeature implements GEFCo
 
     public void setFeatureProvider(DiagramFeatureProvider provider) {
         this.featureProvider = provider;
+    }
+
+    private Object getElement(IContext context) {
+        return context.getProperty(ELEMENT_PROPERTY);
     }
 
     @Override
@@ -91,7 +94,6 @@ public class CreateElementFeature extends AbstractCreateFeature implements GEFCo
         if (graphElement == null) {
             return null;
         }
-        UndoRedoUtil.watch(graphElement);
         GraphElement parent = (GraphElement) getBusinessObjectForPictogramElement(context.getTargetContainer());
         if (graphElement instanceof Action) {
             if (context.getTargetConnection() != null) {
@@ -123,6 +125,7 @@ public class CreateElementFeature extends AbstractCreateFeature implements GEFCo
                 createTransitionFeature.setFeatureProvider(featureProvider);
                 createTransitionFeature.create(connectionContext);
             }
+            context.putProperty(ELEMENT_PROPERTY, graphElement);
             return new Object[] { graphElement };
         }
         return null;
@@ -155,11 +158,12 @@ public class CreateElementFeature extends AbstractCreateFeature implements GEFCo
 
     @Override
     public boolean canUndo(IContext context) {
-        return graphElement != null;
+        return getElement(context) != null;
     }
 
     @Override
     public void postUndo(IContext context) {
+        GraphElement graphElement = (GraphElement) getElement(context);
         if (graphElement instanceof TextDecorationNode) {
             TextDecorationNode textDecoration = (TextDecorationNode) graphElement;
             textDecoration.getTarget().getParent().removeChild(textDecoration.getTarget());
@@ -188,11 +192,12 @@ public class CreateElementFeature extends AbstractCreateFeature implements GEFCo
 
     @Override
     public boolean canRedo(IContext context) {
-        return graphElement != null;
+        return getElement(context) != null;
     }
 
     @Override
     public void postRedo(IContext context) {
+        GraphElement graphElement = (GraphElement) getElement(context);
         if (graphElement instanceof TextDecorationNode) {
             TextDecorationNode textDecoration = (TextDecorationNode) graphElement;
             textDecoration.getTarget().getParent().addChild(textDecoration.getTarget());
@@ -209,7 +214,7 @@ public class CreateElementFeature extends AbstractCreateFeature implements GEFCo
         if (transitions != null) {
             transitions.stream().forEach(t -> t.getSource().addChild(t));
         }
-        getDiagramBehavior().refresh();
+
     }
 
     @Override

@@ -71,7 +71,6 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
     @Override
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
         super.init(site, input);
-        UndoRedoUtil.watch(editor.getDefinition());
         editor.getDefinition().addDelegatedListener(this);
         if (editor.getDefinition() instanceof SubprocessDefinition) {
             ((SubprocessDefinition) editor.getDefinition()).getParent().addDelegatedListener(this);
@@ -103,6 +102,10 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
         // TODO unify event propagation to interested parties
         if (pe != null) {
             final PictogramElement fpe = pe;
+            // TODO 1090 см. https://rm.processtech.ru/issues/1090#note-233
+            // Display.getDefault().asyncExec тут для того чтобы запустить UpdateFeature в отдельной транзакции и тогда 1090_3.par работает... но это
+            // же костыль
+            // Считаю что Display.getDefault().asyncExec не должен использоваться для этого тут и ещё в N мест по МР
             Display.getDefault().asyncExec(() -> {
                 BOUpdateContext context = new BOUpdateContext(fpe, event.getSource());
                 getDiagramTypeProvider().getFeatureProvider().updateIfPossibleAndNeeded(context);
@@ -110,6 +113,16 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
             if (PropertyNames.NODE_BOUNDS_RESIZED.equals(event.getPropertyName())) {
                 LayoutContext layoutContext = new LayoutContext(pe);
                 getDiagramTypeProvider().getFeatureProvider().layoutIfPossible(layoutContext);
+            }
+        } else if (event.getSource() instanceof Swimlane && PropertyNames.PROPERTY_NAME.equals(event.getPropertyName())) {
+            for (SwimlanedNode swimlanedNode : editor.getDefinition().getChildren(SwimlanedNode.class)) {
+                if (Objects.equal(swimlanedNode.getSwimlane(), event.getSource())) {
+                    pe = getDiagramTypeProvider().getFeatureProvider().getPictogramElementForBusinessObject(swimlanedNode);
+                    if (pe != null) {
+                        BOUpdateContext context = new BOUpdateContext(pe, swimlanedNode);
+                        getDiagramTypeProvider().getFeatureProvider().updateIfPossibleAndNeeded(context);
+                    }
+                }
             }
         }
         if (event.getSource() instanceof Node) {
@@ -146,7 +159,6 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
         if (diagramCreator != null) {
             diagramCreator.disposeDiagram();
         }
-        UndoRedoUtil.unwatch(editor.getDefinition());
         super.dispose();
     }
 
@@ -421,6 +433,6 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
     }
 
     public PaletteRoot paletteRoot() {
-    	return super.getPaletteRoot();
+        return super.getPaletteRoot();
     }
 }

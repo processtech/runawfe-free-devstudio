@@ -17,18 +17,23 @@ import org.eclipse.graphiti.mm.pictograms.Shape;
 import org.eclipse.graphiti.services.Graphiti;
 import ru.runa.gpd.editor.graphiti.CustomUndoRedoFeature;
 import ru.runa.gpd.editor.graphiti.HasTextDecorator;
+import ru.runa.gpd.editor.graphiti.IRedoProtected;
 import ru.runa.gpd.editor.graphiti.TextDecoratorEmulation;
 import ru.runa.gpd.lang.model.AbstractTransition;
 import ru.runa.gpd.lang.model.Action;
 import ru.runa.gpd.lang.model.GraphElement;
+import ru.runa.gpd.lang.model.ITimed;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.SwimlanedNode;
+import ru.runa.gpd.lang.model.Timer;
+import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
 import ru.runa.gpd.lang.model.bpmn.IBoundaryEventCapable;
+import ru.runa.gpd.lang.model.bpmn.IBoundaryEventContainer;
 import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
 
-public class MoveElementFeature extends DefaultMoveShapeFeature implements CustomUndoRedoFeature {
+public class MoveElementFeature extends DefaultMoveShapeFeature implements CustomUndoRedoFeature, IRedoProtected {
 
     private Rectangle undoConstraint;
     private Rectangle redoConstraint;
@@ -48,7 +53,13 @@ public class MoveElementFeature extends DefaultMoveShapeFeature implements Custo
         if (element instanceof Action) {
             return false;
         }
+        if (element instanceof Timer && element.getParent() instanceof ITimed) {
+            return false;
+        }
         if (element instanceof IBoundaryEventCapable && ((IBoundaryEventCapable) element).isBoundaryEvent()) {
+            return false;
+        }
+        if (element instanceof CatchEventNode && element.getParent() instanceof IBoundaryEventContainer) {
             return false;
         }
         Object parentObject = getBusinessObjectForPictogramElement(context.getTargetContainer());
@@ -105,17 +116,6 @@ public class MoveElementFeature extends DefaultMoveShapeFeature implements Custo
         }
         reconnectToParent(context, element);
 
-        if (context.getSourceContainer() != context.getTargetContainer()) {
-            GraphElement parent = (GraphElement) getBusinessObjectForPictogramElement(context.getTargetContainer());
-            element.setUiParentContainer(parent);
-            if (element instanceof SwimlanedNode) {
-                Swimlane swimlane = null;
-                if (parent instanceof Swimlane) {
-                    swimlane = (Swimlane) parent;
-                }
-                ((SwimlanedNode) element).setSwimlane(swimlane);
-            }
-        }
         // move definition with point
         if (element instanceof HasTextDecorator) {
             HasTextDecorator withDefinition = (HasTextDecorator) element;
@@ -211,7 +211,8 @@ public class MoveElementFeature extends DefaultMoveShapeFeature implements Custo
 
     private void reconnectToParent(IMoveShapeContext workContext, GraphElement element) {
         if (workContext.getSourceContainer() != workContext.getTargetContainer()) {
-            GraphElement parent = (GraphElement) getBusinessObjectForPictogramElement(workContext.getTargetContainer());
+            GraphElement parent = (redoConstraint == null) ? (GraphElement) getBusinessObjectForPictogramElement(workContext.getTargetContainer())
+                    : (GraphElement) getBusinessObjectForPictogramElement(workContext.getSourceContainer());
             element.setUiParentContainer(parent);
             if (element instanceof SwimlanedNode) {
                 Swimlane swimlane = null;
@@ -255,7 +256,8 @@ public class MoveElementFeature extends DefaultMoveShapeFeature implements Custo
             Shape shape = workContext.getShape();
             GraphElement element = (GraphElement) getBusinessObjectForPictogramElement(shape);
             element.setConstraint(redoConstraint);
-
+            redoConstraint = null;
+            
             // move transition bendpoints
             moveTransitionBendpointsUndoRedo(shape, element, redoBendpointsList);
 

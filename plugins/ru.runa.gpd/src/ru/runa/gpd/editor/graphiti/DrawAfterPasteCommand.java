@@ -39,10 +39,10 @@ public class DrawAfterPasteCommand extends Command {
 			removeSwimlanes(elementList);
 		}
         diagramPage.drawElements(diagramPage.getDiagramTypeProvider().getDiagram(), elementList);
-        List<AbstractTransition> transitions = new ArrayList<>();
+		List<AbstractTransition> transitions = new ArrayList<>();
 		for (NamedGraphElement element : elementList) {
 			transitions.addAll(element.getChildrenRecursive(Transition.class));
-            transitions.addAll(element.getChildrenRecursive(DottedTransition.class));
+			transitions.addAll(element.getChildrenRecursive(DottedTransition.class));
 		}
         diagramPage.drawTransitions(transitions);
 	}
