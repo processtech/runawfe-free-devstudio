@@ -7,8 +7,8 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 import ru.runa.gpd.editor.CopyAction;
-import ru.runa.gpd.editor.PasteAction;
 import ru.runa.gpd.editor.ProcessEditorBase;
+import ru.runa.gpd.editor.graphiti.CustomUndoRedoFeature;
 import ru.runa.gpd.editor.graphiti.DiagramEditorPage;
 import ru.runa.gpd.editor.graphiti.GraphitiProcessEditor;
 import ru.runa.gpd.lang.model.GraphElement;
@@ -49,6 +49,8 @@ public aspect ProcessEditorUserActivity extends UserActivity {
     after(ProcessEditorBase editor) : execution(public void dispose()) && this(editor) {
         stopEditingSession(editor.getDefinition());
     }
+    
+    // Diagram Element Selection
 
     after(ProcessEditorBase editor, ISelection selection) : execution(public void selectionChanged(.., ISelection)) && this(editor) && args(.., selection) {
         if (selection instanceof IStructuredSelection) {
@@ -81,6 +83,8 @@ public aspect ProcessEditorUserActivity extends UserActivity {
         log(((CopyAction) thisJoinPoint.getThis()).processEditor.getDefinition(), UserAction.TB_Copy.asString(e));
     }
 
+    // Copy
+
     private ProcessEditorBase CopyAction.processEditor;
 
     after(ProcessEditorBase editor) : execution(ru.runa.gpd.editor.CopyAction.new(ProcessEditorBase)) && args(editor) {
@@ -95,19 +99,26 @@ public aspect ProcessEditorUserActivity extends UserActivity {
         log(((CopyAction) thisJoinPoint.getThis()).processEditor.getDefinition(), UserAction.TB_Copy.asString(e));
     }
 
-    private ProcessEditorBase PasteAction.processEditor;
 
-    after(ProcessEditorBase editor) : execution(ru.runa.gpd.editor.PasteAction.new(ProcessEditorBase)) && args(editor) {
-        ((PasteAction) thisJoinPoint.getThis()).processEditor = editor;
+    // Undo
+
+    before(CustomUndoRedoFeature feature) : execution(public void postUndo(..)) && this(feature) {
+        IEditorPart editorPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+        if (editorPart instanceof ProcessEditorBase) {
+            log(((ProcessEditorBase) editorPart).getDefinition(), UserAction.TB_Undo.asString());
+        }
     }
 
-    after() returning : execution(public void ru.runa.gpd.editor.PasteAction.run()) {
-        log(((PasteAction) thisJoinPoint.getThis()).processEditor.getDefinition(), UserAction.TB_Paste.asString());
+    // Redo
+
+    before(CustomUndoRedoFeature feature) : execution(public void postRedo(..)) && this(feature) {
+        IEditorPart editorPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+        if (editorPart instanceof ProcessEditorBase) {
+            log(((ProcessEditorBase) editorPart).getDefinition(), UserAction.TB_Redo.asString());
+        }
     }
 
-    after() throwing(Exception e) : execution(public void ru.runa.gpd.editor.PasteAction.run()) {
-        log(((PasteAction) thisJoinPoint.getThis()).processEditor.getDefinition(), UserAction.TB_Paste.asString(e));
-    }
+    // Graph element change property
 
     pointcut graphElementProperyChange(String propertyName, Object oldValue, Object newValue) : 
         call(public void firePropertyChange(..)) && target(ru.runa.gpd.lang.model.GraphElement) && args(propertyName, oldValue, newValue) 
@@ -118,7 +129,7 @@ public aspect ProcessEditorUserActivity extends UserActivity {
 
     after(String propertyName, Object oldValue, Object newValue) : graphElementProperyChange(propertyName, oldValue, newValue) {
         if (isStarted()) {
-            GraphElement graphElement = (GraphElement) thisJoinPoint.getThis();
+            GraphElement graphElement = (GraphElement) thisJoinPoint.getTarget();
             log(graphElement.getProcessDefinition(), UserAction.GE_ChangeProperty.asString(graphElement, graphElement.getId(), propertyName, oldValue, newValue));
         }
     }

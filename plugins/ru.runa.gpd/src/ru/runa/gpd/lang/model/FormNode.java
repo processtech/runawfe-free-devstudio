@@ -11,6 +11,8 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
+import ru.runa.gpd.editor.graphiti.change.ChangeReassignSwimlaneToTaskPerformerFeature;
+import ru.runa.gpd.editor.graphiti.change.UndoRedoUtil;
 import ru.runa.gpd.form.FormType;
 import ru.runa.gpd.form.FormTypeProvider;
 import ru.runa.gpd.form.FormVariableAccess;
@@ -155,7 +157,9 @@ public abstract class FormNode extends SwimlanedNode {
     @Override
     public void setPropertyValue(Object id, Object value) {
         if (PROPERTY_SWIMLANE_REASSIGN_TO_TASK_PERFORMER.equals(id)) {
-            setReassignSwimlaneToTaskPerformer(BooleanPropertyDescriptor.Enum.values()[(Integer) value].getValue());
+            UndoRedoUtil.executeFeature(
+                    new ChangeReassignSwimlaneToTaskPerformerFeature(this, BooleanPropertyDescriptor.Enum.values()[(Integer) value].getValue()));
+
         } else {
             super.setPropertyValue(id, value);
         }

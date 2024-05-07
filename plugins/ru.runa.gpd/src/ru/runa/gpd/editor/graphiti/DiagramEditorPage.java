@@ -37,6 +37,7 @@ import org.eclipse.graphiti.services.Graphiti;
 import org.eclipse.graphiti.ui.editor.DiagramBehavior;
 import org.eclipse.graphiti.ui.editor.DiagramEditor;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
@@ -101,11 +102,28 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
         PictogramElement pe = getDiagramTypeProvider().getFeatureProvider().getPictogramElementForBusinessObject(event.getSource());
         // TODO unify event propagation to interested parties
         if (pe != null) {
-            BOUpdateContext context = new BOUpdateContext(pe, event.getSource());
-            getDiagramTypeProvider().getFeatureProvider().updateIfPossibleAndNeeded(context);
+            final PictogramElement fpe = pe;
+            // TODO 1090 см. https://rm.processtech.ru/issues/1090#note-233
+            // Display.getDefault().asyncExec тут для того чтобы запустить UpdateFeature в отдельной транзакции и тогда 1090_3.par работает... но это
+            // же костыль
+            // Считаю что Display.getDefault().asyncExec не должен использоваться для этого тут и ещё в N мест по МР
+            Display.getDefault().asyncExec(() -> {
+                BOUpdateContext context = new BOUpdateContext(fpe, event.getSource());
+                getDiagramTypeProvider().getFeatureProvider().updateIfPossibleAndNeeded(context);
+            });
             if (PropertyNames.NODE_BOUNDS_RESIZED.equals(event.getPropertyName())) {
                 LayoutContext layoutContext = new LayoutContext(pe);
                 getDiagramTypeProvider().getFeatureProvider().layoutIfPossible(layoutContext);
+            }
+        } else if (event.getSource() instanceof Swimlane && PropertyNames.PROPERTY_NAME.equals(event.getPropertyName())) {
+            for (SwimlanedNode swimlanedNode : editor.getDefinition().getChildren(SwimlanedNode.class)) {
+                if (Objects.equal(swimlanedNode.getSwimlane(), event.getSource())) {
+                    pe = getDiagramTypeProvider().getFeatureProvider().getPictogramElementForBusinessObject(swimlanedNode);
+                    if (pe != null) {
+                        BOUpdateContext context = new BOUpdateContext(pe, swimlanedNode);
+                        getDiagramTypeProvider().getFeatureProvider().updateIfPossibleAndNeeded(context);
+                    }
+                }
             }
         }
         if (event.getSource() instanceof Node) {
@@ -118,17 +136,19 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
     }
 
     private void updateLeavingTransitions(Node node) {
-        final List<AbstractTransition> transitions = new ArrayList<>(node.getLeavingTransitions());
-        if (node instanceof ConnectableViaDottedTransition) {
-            transitions.addAll(((ConnectableViaDottedTransition) node).getLeavingDottedTransitions());
-        }
-        for (AbstractTransition transition : transitions) {
-            PictogramElement pe = getDiagramTypeProvider().getFeatureProvider().getPictogramElementForBusinessObject(transition);
-            if (pe != null) {
-                BOUpdateContext context = new BOUpdateContext(pe, transition);
-                getDiagramTypeProvider().getFeatureProvider().updateIfPossibleAndNeeded(context);
+        Display.getDefault().asyncExec(() -> {
+            final List<AbstractTransition> transitions = new ArrayList<>(node.getLeavingTransitions());
+            if (node instanceof ConnectableViaDottedTransition) {
+                transitions.addAll(((ConnectableViaDottedTransition) node).getLeavingDottedTransitions());
             }
-        }
+            for (AbstractTransition transition : transitions) {
+                PictogramElement pe = getDiagramTypeProvider().getFeatureProvider().getPictogramElementForBusinessObject(transition);
+                if (pe != null) {
+                    BOUpdateContext context = new BOUpdateContext(pe, transition);
+                    getDiagramTypeProvider().getFeatureProvider().updateIfPossibleAndNeeded(context);
+                }
+            }
+        });
     }
 
     @Override
@@ -419,6 +439,6 @@ public class DiagramEditorPage extends DiagramEditor implements PropertyChangeLi
     }
 
     public PaletteRoot paletteRoot() {
-    	return super.getPaletteRoot();
+        return super.getPaletteRoot();
     }
 }

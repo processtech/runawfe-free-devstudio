@@ -7,7 +7,6 @@ import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.mm.pictograms.Shape;
 import org.eclipse.graphiti.services.Graphiti;
-
 import ru.runa.gpd.editor.graphiti.GaProperty;
 import ru.runa.gpd.editor.graphiti.PropertyUtil;
 import ru.runa.gpd.lang.model.GraphElement;
@@ -46,6 +45,7 @@ public class LayoutStateNodeFeature extends LayoutElementFeature {
             if (iconImage != null) {
                 iconImage.setTransparency(.0);
             }
+            setHasDoneChanges(true);
             return true;
         }
 
@@ -96,6 +96,7 @@ public class LayoutStateNodeFeature extends LayoutElementFeature {
         for (Shape shape : containerShape.getChildren()) {
             layoutPictogramElement(shape);
         }
+        setHasDoneChanges(true);
         return true;
     }
 

@@ -1,16 +1,16 @@
 package ru.runa.gpd.lang.action;
 
+import com.google.common.base.Objects;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.widgets.Menu;
-
 import ru.runa.gpd.Localization;
+import ru.runa.gpd.editor.graphiti.change.ChangeAsyncCompletionModeFeature;
+import ru.runa.gpd.editor.graphiti.change.UndoRedoUtil;
 import ru.runa.gpd.lang.model.Synchronizable;
 import ru.runa.wfe.lang.AsyncCompletionMode;
-
-import com.google.common.base.Objects;
 
 public class AsyncCompletionModeDelegate extends BaseModelDropDownActionDelegate {
     private AsyncCompletionMode selectedMode;
@@ -54,7 +54,9 @@ public class AsyncCompletionModeDelegate extends BaseModelDropDownActionDelegate
 
         @Override
         public void run() {
-            synchronizable.setAsyncCompletionMode(mode);
+            if (!Objects.equal(selectedMode, mode)) {
+                UndoRedoUtil.executeFeature(new ChangeAsyncCompletionModeFeature(synchronizable, mode));
+            }
         }
     }
 }

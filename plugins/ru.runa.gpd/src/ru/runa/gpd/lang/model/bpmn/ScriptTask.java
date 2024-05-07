@@ -13,6 +13,7 @@ import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.Node;
+import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.StorageAware;
 import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.property.DelegableClassPropertyDescriptor;
@@ -133,7 +134,7 @@ public class ScriptTask extends Node implements Delegable, IBoundaryEventContain
         IPreferenceStore store = Activator.getDefault().getPreferenceStore();
         String property = store.getString(PrefConstants.P_SCRIPT_TASK_NAME_BEHAVIOR);
         String className = getDelegationClassName();
-        String number = " " + getId().substring(getId().indexOf("ID") + 2);
+        String number = " " + getId().substring(getId().indexOf(ProcessDefinition.ID) + 2);
         if (property.endsWith(PrefConstants.P_LANGUAGE_SCRIPT_TASK_HANDLER_CLASS_LABEL)) {
             if (!Strings.isNullOrEmpty(className)) {
                 setName(className.substring(className.lastIndexOf(".") + 1) + number);

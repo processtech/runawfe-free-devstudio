@@ -22,6 +22,11 @@ import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.ProcessCache;
 import ru.runa.gpd.SharedImages;
+import ru.runa.gpd.editor.graphiti.change.ChangeAccessTypeFeature;
+import ru.runa.gpd.editor.graphiti.change.ChangeDefaultNodeAsyncExecutionFeature;
+import ru.runa.gpd.editor.graphiti.change.ChangeDefaultTaskTimeoutDelayFeature;
+import ru.runa.gpd.editor.graphiti.change.ChangeUsingGlobalVarsFeature;
+import ru.runa.gpd.editor.graphiti.change.UndoRedoUtil;
 import ru.runa.gpd.extension.VariableFormatRegistry;
 import ru.runa.gpd.extension.regulations.RegulationsRegistry;
 import ru.runa.gpd.lang.Language;
@@ -40,6 +45,7 @@ import ru.runa.wfe.var.format.ListFormat;
 
 @SuppressWarnings("unchecked")
 public class ProcessDefinition extends NamedGraphElement implements Describable, GlobalObjectAware {
+    public static final String ID = "ID";
     protected Language language;
     protected NodeAsyncExecution defaultNodeAsyncExecution = NodeAsyncExecution.DEFAULT;
     protected boolean dirty;
@@ -114,8 +120,9 @@ public class ProcessDefinition extends NamedGraphElement implements Describable,
     }
 
     public void setAccessType(ProcessDefinitionAccessType accessType) {
+        ProcessDefinitionAccessType oldAccessType = this.accessType;
         this.accessType = accessType;
-        firePropertyChange(PROPERTY_ACCESS_TYPE, null, accessType);
+        firePropertyChange(PROPERTY_ACCESS_TYPE, oldAccessType, accessType);
     }
 
     public void addEmbeddedSubprocess(SubprocessDefinition subprocessDefinition) {
@@ -254,7 +261,7 @@ public class ProcessDefinition extends NamedGraphElement implements Describable,
 
     public String getNextNodeId() {
         int nextId = this.nextNodeIdCounter.incrementAndGet();
-        String nextNodeId = "ID" + nextId;
+        String nextNodeId = ID + nextId;
         if (this instanceof SubprocessDefinition) {
             nextNodeId = getId() + "." + nextNodeId;
         }
@@ -474,14 +481,14 @@ public class ProcessDefinition extends NamedGraphElement implements Describable,
     @Override
     public void setPropertyValue(Object id, Object value) {
         if (PROPERTY_TASK_DEADLINE.equals(id)) {
-            setDefaultTaskTimeoutDelay((Duration) value);
+            UndoRedoUtil.executeFeature(new ChangeDefaultTaskTimeoutDelayFeature(this, (Duration) value));
         } else if (PROPERTY_ACCESS_TYPE.equals(id)) {
             int i = ((Integer) value).intValue();
-            setAccessType(ProcessDefinitionAccessType.values()[i]);
+            UndoRedoUtil.executeFeature(new ChangeAccessTypeFeature(this, ProcessDefinitionAccessType.values()[i]));
         } else if (PROPERTY_NODE_ASYNC_EXECUTION.equals(id)) {
-            setDefaultNodeAsyncExecution(NodeAsyncExecution.values()[(Integer) value]);
+            UndoRedoUtil.executeFeature(new ChangeDefaultNodeAsyncExecutionFeature(this, NodeAsyncExecution.values()[(Integer) value]));
         } else if (PROPERTY_USE_GLOBALS.equals(id)) {
-            setUsingGlobalVars(((int) value) == 1);
+            UndoRedoUtil.executeFeature(new ChangeUsingGlobalVarsFeature(this, ((int) value) == 1));
         } else {
             super.setPropertyValue(id, value);
         }
@@ -690,8 +697,9 @@ public class ProcessDefinition extends NamedGraphElement implements Describable,
             Swimlane swimlaneFromGlobalSection = globalDefinition.getGlobalSwimlaneByName(swimlane.getName());
             if (swimlaneFromGlobalSection == null) {
                 swimlane.setGlobal(false);
-            } else
+            } else {
                 swimlane.updateFromGlobalPartition(swimlaneFromGlobalSection);
+            }
 
         }
         // order of updating is important : we should update usertypes BEFORE usertype's variables

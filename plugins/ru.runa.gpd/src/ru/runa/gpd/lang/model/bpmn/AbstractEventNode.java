@@ -5,6 +5,8 @@ import java.util.List;
 import org.eclipse.ui.views.properties.ComboBoxPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import ru.runa.gpd.Localization;
+import ru.runa.gpd.editor.graphiti.change.ChangeEventTypeFeature;
+import ru.runa.gpd.editor.graphiti.change.UndoRedoUtil;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.MessageNode;
 
@@ -53,7 +55,7 @@ public class AbstractEventNode extends MessageNode {
     public void setPropertyValue(Object id, Object value) {
         if (PROPERTY_EVENT_TYPE.equals(id)) {
             int index = ((Integer) value).intValue();
-            setEventNodeType(EventNodeType.values()[index]);
+             UndoRedoUtil.executeFeature(new ChangeEventTypeFeature(this,EventNodeType.values()[index]));
         } else {
             super.setPropertyValue(id, value);
         }

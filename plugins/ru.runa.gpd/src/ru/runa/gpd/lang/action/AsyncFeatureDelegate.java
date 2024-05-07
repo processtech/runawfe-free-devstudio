@@ -2,7 +2,8 @@ package ru.runa.gpd.lang.action;
 
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
-
+import ru.runa.gpd.editor.graphiti.change.ChangeAsyncFeature;
+import ru.runa.gpd.editor.graphiti.change.UndoRedoUtil;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.Subprocess;
 import ru.runa.gpd.lang.model.Synchronizable;
@@ -25,6 +26,7 @@ public class AsyncFeatureDelegate extends BaseModelActionDelegate {
     @Override
     public void run(IAction action) {
         Synchronizable synchronizable = (Synchronizable) getSelection();
-        synchronizable.setAsync(!synchronizable.isAsync());
+        UndoRedoUtil.executeFeature(new ChangeAsyncFeature(synchronizable, !synchronizable.isAsync()));
+
     }
 }
