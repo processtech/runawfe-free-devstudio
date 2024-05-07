@@ -19,22 +19,20 @@ public class UpdateStateNodeFeature extends UpdateFeature {
         PictogramElement pe = context.getPictogramElement();
         Node bo = (Node) getBusinessObjectForPictogramElement(pe);
         if (bo instanceof SwimlanedNode && !(bo.getUiParentContainer() instanceof Swimlane)) {
-            String swimlaneName = PropertyUtil.findTextValueRecursive(pe, GaProperty.SWIMLANE_NAME);
-            if (!Objects.equal(swimlaneName, ((SwimlanedNode) bo).getSwimlaneLabel())) {
+            if (textPropertiesDiffer(pe, GaProperty.SWIMLANE_NAME, ((SwimlanedNode) bo).getSwimlaneLabel())) {
                 return Reason.createTrueReason();
             }
         }
-        String nodeName = PropertyUtil.findTextValueRecursive(pe, GaProperty.NAME);
-        if (!Objects.equal(nodeName, bo.getName())) {
+        if (textPropertiesDiffer(pe, GaProperty.NAME, bo.getName())) {
             return Reason.createTrueReason();
         }
-        String minimazed = PropertyUtil.getPropertyValue(pe, GaProperty.MINIMIZED_VIEW);
-        if (!Objects.equal(minimazed, String.valueOf(bo.isMinimizedView()))) {
+        if (propertiesDiffer(pe, GaProperty.MINIMIZED_VIEW, String.valueOf(bo.isMinimizedView()))) {
             return Reason.createTrueReason();
         }
-        String async = PropertyUtil.getPropertyValue(pe, GaProperty.ASYNC);
-        if (async != null && !Objects.equal(async, String.valueOf(((Synchronizable) bo).isAsync()))) {
-            return Reason.createTrueReason();
+        if (bo instanceof Synchronizable) {
+            if (propertiesDiffer(pe, GaProperty.ASYNC, String.valueOf(((Synchronizable) bo).isAsync()))) {
+                return Reason.createTrueReason();
+            }
         }
         String tooltip = PropertyUtil.getPropertyValue(pe, GaProperty.TOOLTIP);
         if (!Objects.equal(tooltip, bo.getTooltip())) {
@@ -45,25 +43,31 @@ public class UpdateStateNodeFeature extends UpdateFeature {
 
     @Override
     public boolean update(IUpdateContext context) {
-        // retrieve name from pictogram element
+        // Update pictogram element properties from business object
         PictogramElement pe = context.getPictogramElement();
-        // retrieve name from business model
         Node bo = (Node) getBusinessObjectForPictogramElement(pe);
+
         if (bo instanceof SwimlanedNode) {
-            PropertyUtil.setTextValueProperty(pe, GaProperty.SWIMLANE_NAME, ((SwimlanedNode) bo).getSwimlaneLabel());
+            String peSwimlaneName = PropertyUtil.findTextValueRecursive(pe, GaProperty.SWIMLANE_NAME);
+            if (textPropertiesDiffer(pe, GaProperty.SWIMLANE_NAME, ((SwimlanedNode) bo).getSwimlaneLabel())) {
+                PropertyUtil.setTextValueProperty(pe, GaProperty.SWIMLANE_NAME, ((SwimlanedNode) bo).getSwimlaneLabel());
+            }
         }
-        PropertyUtil.setTextValueProperty(pe, GaProperty.NAME, bo.getName());
-        String minimazed = PropertyUtil.getPropertyValue(pe, GaProperty.MINIMIZED_VIEW);
-        if (!Objects.equal(minimazed, String.valueOf(bo.isMinimizedView()))) {
+        if (textPropertiesDiffer(pe, GaProperty.NAME, bo.getName())) {
+            PropertyUtil.setTextValueProperty(pe, GaProperty.NAME, bo.getName());
+        }
+        if (propertiesDiffer(pe, GaProperty.MINIMIZED_VIEW, String.valueOf(bo.isMinimizedView()))) {
             PropertyUtil.setPropertyValue(pe, GaProperty.MINIMIZED_VIEW, String.valueOf(bo.isMinimizedView()));
             layoutPictogramElement(pe);
         }
-        String async = PropertyUtil.getPropertyValue(pe, GaProperty.ASYNC);
-        if (async != null && !Objects.equal(async, String.valueOf(((Synchronizable) bo).isAsync()))) {
-            PropertyUtil.setPropertyValue(pe, GaProperty.ASYNC, String.valueOf(((Synchronizable) bo).isAsync()));
-            layoutPictogramElement(pe);
+        if (bo instanceof Synchronizable) {
+            if (propertiesDiffer(pe, GaProperty.ASYNC, String.valueOf(((Synchronizable) bo).isAsync()))) {
+                PropertyUtil.setPropertyValue(pe, GaProperty.ASYNC, String.valueOf(((Synchronizable) bo).isAsync()));
+                layoutPictogramElement(pe);
+            }
         }
         PropertyUtil.setPropertyValue(pe, GaProperty.TOOLTIP, bo.getTooltip());
         return true;
     }
+
 }

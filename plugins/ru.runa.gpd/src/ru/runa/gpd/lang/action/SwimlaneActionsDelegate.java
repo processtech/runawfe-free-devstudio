@@ -2,7 +2,6 @@ package ru.runa.gpd.lang.action;
 
 import java.util.List;
 import java.util.Objects;
-
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IAction;
@@ -11,10 +10,13 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.editor.ProcessEditorBase;
-import ru.runa.gpd.editor.gef.command.IgnoreSubstitutionCommand;
+import ru.runa.gpd.editor.graphiti.change.ChangeIgnoreSubstitutionRulesFeature;
+import ru.runa.gpd.editor.graphiti.change.ChangeReassignSwimlaneToInitializerFeature;
+import ru.runa.gpd.editor.graphiti.change.ChangeReassignSwimlaneToTaskPerformerFeature;
+import ru.runa.gpd.editor.graphiti.change.ChangeSwimlaneFeature;
+import ru.runa.gpd.editor.graphiti.change.UndoRedoUtil;
 import ru.runa.gpd.lang.NodeRegistry;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.ProcessDefinition;
@@ -142,9 +144,9 @@ public class SwimlaneActionsDelegate extends BaseModelDropDownActionDelegate {
             if (swimlane == null) {
                 swimlane = definition.getGlobalSwimlaneByName(swimlaneName);
             }
-            swimlanedNode.setSwimlane(swimlane);
+            UndoRedoUtil.executeFeature(new ChangeSwimlaneFeature(swimlanedNode, swimlane));
         } else {
-            swimlanedNode.setSwimlane(null);
+            UndoRedoUtil.executeFeature(new ChangeSwimlaneFeature(swimlanedNode, null));
         }
     }
 
@@ -225,7 +227,7 @@ public class SwimlaneActionsDelegate extends BaseModelDropDownActionDelegate {
 
         @Override
         public void run() {
-            ((TaskState) swimlanedNode).setReassignSwimlaneToInitializer(mode.getValue());
+            UndoRedoUtil.executeFeature(new ChangeReassignSwimlaneToInitializerFeature((TaskState) swimlanedNode, mode.getValue()));
         }
     }
 
@@ -239,7 +241,7 @@ public class SwimlaneActionsDelegate extends BaseModelDropDownActionDelegate {
 
         @Override
         public void run() {
-            ((FormNode) swimlanedNode).setReassignSwimlaneToTaskPerformer(mode.getValue());
+            UndoRedoUtil.executeFeature(new ChangeReassignSwimlaneToTaskPerformerFeature((FormNode) swimlanedNode, mode.getValue()));
         }
     }
 
@@ -250,8 +252,8 @@ public class SwimlaneActionsDelegate extends BaseModelDropDownActionDelegate {
 
         @Override
         public void run() {
-            IgnoreSubstitutionCommand command = new IgnoreSubstitutionCommand((TaskState) swimlanedNode);
-            executeCommand(command);
+            UndoRedoUtil.executeFeature(
+                    new ChangeIgnoreSubstitutionRulesFeature((TaskState) swimlanedNode, !((TaskState) swimlanedNode).isIgnoreSubstitutionRules()));
         }
     }
 }

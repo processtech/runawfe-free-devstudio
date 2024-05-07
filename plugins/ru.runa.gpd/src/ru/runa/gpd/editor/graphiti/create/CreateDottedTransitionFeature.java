@@ -1,38 +1,29 @@
 package ru.runa.gpd.editor.graphiti.create;
 
-import org.eclipse.graphiti.features.IFeatureProvider;
+import java.util.List;
+import org.eclipse.graphiti.features.context.IContext;
 import org.eclipse.graphiti.features.context.ICreateConnectionContext;
 import org.eclipse.graphiti.features.context.impl.AddConnectionContext;
-import org.eclipse.graphiti.features.impl.AbstractCreateConnectionFeature;
 import org.eclipse.graphiti.mm.pictograms.Anchor;
-import org.eclipse.graphiti.mm.pictograms.AnchorContainer;
 import org.eclipse.graphiti.mm.pictograms.Connection;
-import org.eclipse.graphiti.mm.pictograms.ContainerShape;
-import org.eclipse.graphiti.mm.pictograms.PictogramElement;
-import org.eclipse.graphiti.mm.pictograms.Shape;
-import org.eclipse.graphiti.services.Graphiti;
-import ru.runa.gpd.lang.NodeRegistry;
-import ru.runa.gpd.lang.NodeTypeDefinition;
+import ru.runa.gpd.Localization;
+import ru.runa.gpd.editor.graphiti.update.DeleteElementFeature;
+import ru.runa.gpd.lang.model.AbstractTransition;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.bpmn.ConnectableViaDottedTransition;
-import ru.runa.gpd.lang.model.bpmn.DataStore;
 import ru.runa.gpd.lang.model.bpmn.DottedTransition;
-import ru.runa.gpd.lang.model.bpmn.ScriptTask;
 
-public class CreateDottedTransitionFeature extends AbstractCreateConnectionFeature {
-    private final NodeTypeDefinition transitionDefinition;
-    private IFeatureProvider featureProvider;
+public class CreateDottedTransitionFeature extends CreateAbstractTransitionFeature {
 
     public CreateDottedTransitionFeature() {
-        super(null, "", "");
-        this.transitionDefinition = NodeRegistry.getNodeTypeDefinition(DottedTransition.class);
+        super(DottedTransition.class);
     }
 
     @Override
     public boolean canCreate(ICreateConnectionContext context) {
         final Object source = getBusinessObjectForPictogramElement(context.getSourcePictogramElement());
         final Object target = getBusinessObjectForPictogramElement(context.getTargetPictogramElement());
-        if ((source instanceof ScriptTask && target instanceof DataStore) || (source instanceof DataStore && target instanceof ScriptTask)) {
+        if (source instanceof ConnectableViaDottedTransition && target instanceof ConnectableViaDottedTransition) {
             return ((ConnectableViaDottedTransition) target).canAddArrivingDottedTransition((ConnectableViaDottedTransition) source);
         }
         return false;
@@ -43,10 +34,10 @@ public class CreateDottedTransitionFeature extends AbstractCreateConnectionFeatu
         final Node source = (Node) getBusinessObjectForPictogramElement(context.getSourcePictogramElement());
         final Node target = (Node) getBusinessObjectForPictogramElement(context.getTargetPictogramElement());
         // create new business object
-        final DottedTransition transition = transitionDefinition.createElement(source, false);
-        transition.setName(source.getNextTransitionName(transitionDefinition));
-        ((ConnectableViaDottedTransition) source).addLeavingDottedTransition(transition);
-        ((ConnectableViaDottedTransition) target).addArrivingDottedTransition(transition);
+        DottedTransition newTransition = transitionDefinition.createElement(source, false);
+        newTransition.setName(source.getNextTransitionName(transitionDefinition));
+        ((ConnectableViaDottedTransition) source).addLeavingDottedTransition(newTransition);
+        ((ConnectableViaDottedTransition) target).addArrivingDottedTransition(newTransition);
 
         // add connection for business object
         Anchor sourceAnchor = context.getSourceAnchor();
@@ -58,7 +49,7 @@ public class CreateDottedTransitionFeature extends AbstractCreateConnectionFeatu
             targetAnchor = getChopboxAnchor(context.getTargetPictogramElement());
         }
         final AddConnectionContext addConnectionContext = new AddConnectionContext(sourceAnchor, targetAnchor);
-        addConnectionContext.setNewObject(transition);
+        addConnectionContext.setNewObject(newTransition);
         return (Connection) getFeatureProvider().addIfPossible(addConnectionContext);
     }
 
@@ -71,41 +62,32 @@ public class CreateDottedTransitionFeature extends AbstractCreateConnectionFeatu
         return false;
     }
 
-    public void setFeatureProvider(IFeatureProvider featureProvider) {
-        this.featureProvider = featureProvider;
-    }
-
     @Override
-    public IFeatureProvider getFeatureProvider() {
-        return featureProvider;
-    }
-
-    @Override
-    public String getCreateName() {
-        return transitionDefinition.getLabel();
-    }
-
-    @Override
-    public String getCreateImageId() {
-        return transitionDefinition.getPaletteIcon();
-    }
-
-    private Anchor getChopboxAnchor(PictogramElement pe) {
-        if (pe instanceof AnchorContainer) {
-            Anchor anchor = Graphiti.getPeService().getChopboxAnchor((AnchorContainer) pe);
-            if (anchor != null) {
-                return anchor;
-            }
+    public void postUndo(IContext context) {
+        DottedTransition transition = (DottedTransition) getTransition(context);
+        if (transition != null) {
+            DeleteElementFeature.removeDottedTransition(transition);
+            transition.getParent().removeChild(transition);
         }
-        if (pe instanceof ContainerShape) {
-            for (Shape shape : ((ContainerShape) pe).getChildren()) {
-                Anchor anchor = getChopboxAnchor(shape);
-                if (anchor != null) {
-                    return anchor;
-                }
-            }
-        }
-        return null;
+        // Для Redo
+        context.putProperty(CreateElementFeature.CONNECTION_PROPERTY, transition);
+    }
+
+    @Override
+    public void postRedo(IContext context) {
+        DottedTransition transition = (DottedTransition) context.getProperty(CreateElementFeature.CONNECTION_PROPERTY);
+        ((ConnectableViaDottedTransition) transition.getSource()).addLeavingDottedTransition(transition);
+        ((ConnectableViaDottedTransition) transition.getTarget()).addArrivingDottedTransition(transition);
+    }
+
+    @Override
+    public String getName() {
+        return Localization.getString("label.element.dottedTransition");
+    }
+
+    @Override
+    protected List<? extends AbstractTransition> getLeavingTransitions(Object source) {
+        return ((ConnectableViaDottedTransition) source).getLeavingDottedTransitions();
     }
 
 }

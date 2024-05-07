@@ -1,7 +1,8 @@
 package ru.runa.gpd.editor;
 
-import com.google.common.collect.Lists;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.draw2d.FigureCanvas;
 import org.eclipse.gef.EditPart;
@@ -29,9 +30,9 @@ public class CopyAction extends SelectionAction {
         return extractNodes().size() > 0;
     }
 
-    private List<NamedGraphElement> extractNodes() {
+    private Set<NamedGraphElement> extractNodes() {
         List<EditPart> editParts = editor.getGraphicalViewer().getSelectedEditParts();
-        List<NamedGraphElement> result = Lists.newArrayList();
+        Set<NamedGraphElement> result = new HashSet<>();
         for (EditPart editPart : editParts) {
             if (!(editPart instanceof AbstractGraphicalEditPart)) {
                 continue;

@@ -1,15 +1,11 @@
 package ru.runa.gpd.ui.custom;
 
 import java.util.Stack;
-
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ExtendedModifyEvent;
 import org.eclipse.swt.custom.ExtendedModifyListener;
 import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.KeyListener;
 
-public class UndoRedoListener implements KeyListener, ExtendedModifyListener {
+public class UndoRedoListener extends AbstractUndoRedoListener implements ExtendedModifyListener {
     private final StyledText editor;
     private final UndoRedoStack<ExtendedModifyEvent> stack;
     private boolean isUndo;
@@ -31,39 +27,6 @@ public class UndoRedoListener implements KeyListener, ExtendedModifyListener {
         stack = new UndoRedoStack<ExtendedModifyEvent>();
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.eclipse.swt.events.KeyListener#keyPressed(org.eclipse.swt.events.
-     * KeyEvent)
-     */
-    @Override
-    public void keyPressed(KeyEvent e) {
-        // Listen to CTRL+Z for Undo, to CTRL+Y or CTRL+SHIFT+Z for Redo
-        boolean isCtrl = (e.stateMask & SWT.CTRL) > 0;
-        boolean isAlt = (e.stateMask & SWT.ALT) > 0;
-        if (isCtrl && !isAlt) {
-            boolean isShift = (e.stateMask & SWT.SHIFT) > 0;
-            if (!isShift && e.keyCode == 'z') {
-                undo();
-            } else if (!isShift && e.keyCode == 'y' || isShift && e.keyCode == 'z') {
-                redo();
-            }
-        }
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.eclipse.swt.events.KeyListener#keyReleased(org.eclipse.swt.events
-     * .KeyEvent)
-     */
-    @Override
-    public void keyReleased(KeyEvent e) {
-        // ignore
-    }
 
     /**
      * Creates a corresponding Undo or Redo step from the given event and pushes
@@ -87,11 +50,8 @@ public class UndoRedoListener implements KeyListener, ExtendedModifyListener {
         }
     }
 
-    /**
-     * Performs the Undo action. A new corresponding Redo step is automatically
-     * pushed to the stack.
-     */
-    private void undo() {
+    @Override
+    protected void undo() {
         if (stack.hasUndo()) {
             isUndo = true;
             revertEvent(stack.popUndo());
@@ -99,11 +59,8 @@ public class UndoRedoListener implements KeyListener, ExtendedModifyListener {
         }
     }
 
-    /**
-     * Performs the Redo action. A new corresponding Undo step is automatically
-     * pushed to the stack.
-     */
-    private void redo() {
+    @Override
+    protected void redo() {
         if (stack.hasRedo()) {
             isRedo = true;
             revertEvent(stack.popRedo());

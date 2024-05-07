@@ -2,13 +2,11 @@ package ru.runa.gpd.editor.gef.part.graph;
 
 import java.beans.PropertyChangeEvent;
 import java.util.List;
-
 import org.eclipse.draw2d.ConnectionAnchor;
 import org.eclipse.gef.ConnectionEditPart;
 import org.eclipse.gef.EditPolicy;
 import org.eclipse.gef.NodeEditPart;
 import org.eclipse.gef.Request;
-
 import ru.runa.gpd.editor.gef.figure.NodeFigure;
 import ru.runa.gpd.editor.gef.policy.NodeComponentEditPolicy;
 import ru.runa.gpd.editor.gef.policy.NodeGraphicalNodeEditPolicy;

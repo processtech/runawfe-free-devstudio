@@ -16,6 +16,11 @@ import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.editor.graphiti.TooltipBuilderHelper;
+import ru.runa.gpd.editor.graphiti.change.ChangeEscalationActionFeature;
+import ru.runa.gpd.editor.graphiti.change.ChangeEscalationDelayFeature;
+import ru.runa.gpd.editor.graphiti.change.ChangeReassignSwimlaneToInitializerFeature;
+import ru.runa.gpd.editor.graphiti.change.ChangeTaskStateDeadlineFeature;
+import ru.runa.gpd.editor.graphiti.change.UndoRedoUtil;
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.extension.handler.ParamDef;
@@ -215,12 +220,12 @@ public class TaskState extends FormNode implements ActionContainer, ITimed, Sync
     public void populateCustomPropertyDescriptors(List<IPropertyDescriptor> descriptors) {
         super.populateCustomPropertyDescriptors(descriptors);
         descriptors.add(new PropertyDescriptor(PROPERTY_IGNORE_SUBSTITUTION_RULES, Localization.getString("property.ignoreSubstitution")));
-        descriptors.add(new DurationPropertyDescriptor(PROPERTY_TASK_DEADLINE, getProcessDefinition(), getTimeOutDelay(), Localization
-                .getString("property.deadline")));
+        descriptors.add(new DurationPropertyDescriptor(PROPERTY_TASK_DEADLINE, getProcessDefinition(), getTimeOutDelay(),
+                Localization.getString("property.deadline")));
         if (useEscalation) {
             descriptors.add(new EscalationActionPropertyDescriptor(PROPERTY_ESCALATION_ACTION, Localization.getString("escalation.action"), this));
-            descriptors.add(new DurationPropertyDescriptor(PROPERTY_ESCALATION_DURATION, getProcessDefinition(), getEscalationDelay(), Localization
-                    .getString("escalation.duration")));
+            descriptors.add(new DurationPropertyDescriptor(PROPERTY_ESCALATION_DURATION, getProcessDefinition(), getEscalationDelay(),
+                    Localization.getString("escalation.duration")));
         }
         if (botTaskLink != null) {
             descriptors.add(new PropertyDescriptor(PROPERTY_BOT_TASK_NAME, Localization.getString("property.botTaskName")));
@@ -266,17 +271,18 @@ public class TaskState extends FormNode implements ActionContainer, ITimed, Sync
     @Override
     public void setPropertyValue(Object id, Object value) {
         if (PROPERTY_ESCALATION_ACTION.equals(id)) {
-            setEscalationAction((TimerAction) value);
+            UndoRedoUtil.executeFeature(new ChangeEscalationActionFeature(this, (TimerAction) value));
         } else if (PROPERTY_ESCALATION_DURATION.equals(id)) {
-            setEscalationDelay((Duration) value);
+            UndoRedoUtil.executeFeature(new ChangeEscalationDelayFeature(this, (Duration) value));
         } else if (PROPERTY_TASK_DEADLINE.equals(id)) {
             if (value == null) {
                 // ignore, edit was canceled
                 return;
             }
-            setTimeOutDelay((Duration) value);
+            UndoRedoUtil.executeFeature(new ChangeTaskStateDeadlineFeature(this, (Duration) value));
         } else if (PROPERTY_SWIMLANE_REASSIGN_TO_INITIALIZER.equals(id)) {
-            setReassignSwimlaneToInitializer(BooleanPropertyDescriptor.Enum.values()[(Integer) value].getValue());
+            UndoRedoUtil.executeFeature(
+                    new ChangeReassignSwimlaneToInitializerFeature(this, BooleanPropertyDescriptor.Enum.values()[(Integer) value].getValue()));
         } else {
             super.setPropertyValue(id, value);
         }
@@ -408,7 +414,7 @@ public class TaskState extends FormNode implements ActionContainer, ITimed, Sync
             }
         }
     }
-    
+
     @Override
     protected boolean allowArrivingTransition(Node source, List<Transition> transitions) {
         return true;

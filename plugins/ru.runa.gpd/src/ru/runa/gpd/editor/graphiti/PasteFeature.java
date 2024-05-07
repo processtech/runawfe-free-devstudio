@@ -1,5 +1,6 @@
-package ru.runa.gpd.editor;
+package ru.runa.gpd.editor.graphiti;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import java.io.InputStream;
@@ -18,15 +19,24 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.draw2d.FigureCanvas;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.emf.transaction.RollbackException;
+import org.eclipse.emf.transaction.Transaction;
+import org.eclipse.emf.transaction.TransactionalEditingDomain;
+import org.eclipse.emf.transaction.impl.InternalTransactionalEditingDomain;
 import org.eclipse.gef.EditPart;
-import org.eclipse.gef.commands.Command;
+import org.eclipse.graphiti.features.IFeatureProvider;
+import org.eclipse.graphiti.features.context.IContext;
+import org.eclipse.graphiti.features.context.IPasteContext;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
+import org.eclipse.graphiti.ui.features.AbstractPasteFeature;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.widgets.Display;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
-import ru.runa.gpd.editor.CopyBuffer.ExtraCopyAction;
+import ru.runa.gpd.editor.CopyBuffer;
+import ru.runa.gpd.editor.GEFConstants;
+import ru.runa.gpd.editor.ProcessEditorBase;
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.lang.Language;
@@ -57,36 +67,84 @@ import ru.runa.gpd.util.SwimlaneDisplayMode;
 import ru.runa.gpd.util.VariableUtils;
 import ru.runa.wfe.var.UserType;
 
-public class CopyGraphCommand extends Command {
+public class PasteFeature extends AbstractPasteFeature implements CustomUndoRedoFeature, IRedoProtected {
     private final ProcessEditorBase targetEditor;
-    private final Point targetViewportLocation;
     private final ProcessDefinition targetDefinition;
-    private final IFolder targetFolder;
-    private final CopyBuffer copyBuffer;
     private final Map<String, NamedGraphElement> targetNodeMap = Maps.newHashMap();
+    private final CopyBuffer copyBuffer;
+    private final Point targetViewportLocation;
     private final List<ExtraCopyAction> executedCopyActions = Lists.newArrayList();
     private final Map<String, String> nodeToSwimlaneNameMap = Maps.newHashMap();
+    private final IFolder targetFolder;
+    protected DrawAfterPasteCommand dapc;
+    public static final String PROPERTY_EDITOR = "editor";
 
-    public CopyGraphCommand(ProcessEditorBase targetEditor, IFolder targetFolder) {
-        this.targetEditor = targetEditor;
-        this.targetViewportLocation = ((FigureCanvas) targetEditor.getGraphicalViewer().getControl()).getViewport().getViewLocation();
+    public PasteFeature(IFeatureProvider fp, ProcessEditorBase editor) {
+        super(fp);
+        this.targetEditor = editor;
         this.targetDefinition = targetEditor.getDefinition();
-        this.targetFolder = targetFolder;
         this.copyBuffer = new CopyBuffer();
+        this.targetViewportLocation = ((FigureCanvas) this.targetEditor.getGraphicalViewer().getControl()).getViewport().getViewLocation();
+        this.targetFolder = (IFolder) this.targetEditor.getDefinitionFile().getParent();
     }
 
     @Override
-    public boolean canExecute() {
-        return copyBuffer.isValid();
+    public void paste(IPasteContext context) {
+        pasteGraph();
+        drawAfterPaste();
     }
 
     @Override
-    public String getLabel() {
-        return Localization.getString("button.paste");
+    public boolean canPaste(IPasteContext context) {
+        return copyBuffer.isValid() && Language.BPMN.equals(targetEditor.getDefinition().getLanguage())
+                && targetEditor.getDiagramEditorPage() != null;
     }
 
     @Override
-    public void execute() {
+    public boolean canUndo(IContext context) {
+        if (dapc == null) {
+            return false;
+        }
+        return (dapc.canUndo() && targetNodeMap != null && targetDefinition != null);
+    }
+
+    @Override
+    public void postUndo(IContext context) {
+        dapc.undo();
+        // remove nodes
+        for (NamedGraphElement node : targetNodeMap.values()) {
+            targetDefinition.removeChild(node);
+        }
+        // undo actions
+        for (ExtraCopyAction extraCopyAction : executedCopyActions) {
+            try {
+                extraCopyAction.undo();
+            } catch (Exception e) {
+                PluginLogger.logError("Unable undo operation for action " + extraCopyAction, e);
+            }
+        }
+    }
+
+    @Override
+    public boolean canRedo(IContext context) {
+        return !getFilteredElements().isEmpty() && targetEditor != null;
+    }
+
+    @Override
+    public void postRedo(IContext context) {
+        for (NamedGraphElement node : targetNodeMap.values()) {
+            targetDefinition.addChild(node);
+        }
+        for (ExtraCopyAction extraCopyAction : executedCopyActions) {
+            try {
+                extraCopyAction.undo();
+            } catch (Exception e) {
+                PluginLogger.logError("Unable redo operation for action " + extraCopyAction, e);
+            }
+        }
+    }
+
+    protected void pasteGraph() {
         try {
             if (targetDefinition instanceof SubprocessDefinition) {
                 IFile definitionFile = ((SubprocessDefinition) targetDefinition).getMainProcessDefinition().getFile();
@@ -101,11 +159,14 @@ public class CopyGraphCommand extends Command {
                         Localization.getString("CopyBuffer.DifferentVersion.warning"), null).open();
                 return;
             }
+            targetNodeMap.clear();
+            executedCopyActions.clear();
+            nodeToSwimlaneNameMap.clear();
             Set<ExtraCopyAction> copyActions = new HashSet<ExtraCopyAction>();
-            List<NamedGraphElement> sourceNodeList = copyBuffer.getSourceNodes();
+            Set<NamedGraphElement> sourceNodeSet = copyBuffer.getSourceNodes();
             // add nodes
             final List<NamedGraphElement> newElements = new ArrayList<>();
-            for (NamedGraphElement node : sourceNodeList) {
+            for (NamedGraphElement node : sourceNodeSet) {
                 if (!(node.getParent() instanceof ProcessDefinition)) {
                     continue;
                 } else if (node instanceof StartState && targetDefinition.getChildren(StartState.class).size() != 0) {
@@ -167,7 +228,7 @@ public class CopyGraphCommand extends Command {
                 }
             }
             // add transitions
-            for (NamedGraphElement node : sourceNodeList) {
+            for (NamedGraphElement node : sourceNodeSet) {
                 List<AbstractTransition> transitions = node.getChildren(AbstractTransition.class);
                 Transition timerTransition = null;
                 Timer timer = null;
@@ -288,44 +349,66 @@ public class CopyGraphCommand extends Command {
         }
     }
 
-    @Override
-    public void undo() {
-        // remove nodes
-        for (NamedGraphElement node : targetNodeMap.values()) {
-            targetDefinition.removeChild(node);
-        }
-        // undo actions
-        for (ExtraCopyAction extraCopyAction : executedCopyActions) {
+    private void drawAfterPaste() {
+        dapc = new DrawAfterPasteCommand(getFilteredElements(), targetEditor.getDefinition(), targetEditor.getDiagramEditorPage());
+        TransactionalEditingDomain domain = targetEditor.getDiagramEditorPage().getEditingDomain();
+        InternalTransactionalEditingDomain ited = (InternalTransactionalEditingDomain) domain;
+        if (ited.getActiveTransaction() == null) {
+            Transaction tx = null;
             try {
-                extraCopyAction.undo();
-            } catch (Exception e) {
-                PluginLogger.logError("Unable undo operation for action " + extraCopyAction, e);
+                tx = ited.startTransaction(false, null);
+                dapc.execute();
+            } catch (InterruptedException e) {
+                PluginLogger.logError(e);
+            } finally {
+                if (tx != null) {
+                    try {
+                        tx.commit();
+                    } catch (RollbackException e) {
+                        tx.rollback();
+                        PluginLogger.logError(e);
+                    }
+                }
             }
+        } else {
+            dapc.execute();
         }
     }
 
-    public List<NamedGraphElement> getFilteredElements() {
-        return new ArrayList<NamedGraphElement>(targetNodeMap.values());
-    }
+    public static abstract class ExtraCopyAction {
 
-    private void adjustLocation(GraphElement ge) {
-        int shiftInCaseOfTheSameDiagram = targetEditor.toString().equals(copyBuffer.getEditorId()) ? -GEFConstants.GRID_SIZE : 0;
-        Rectangle constraint = ge.getConstraint();
-        int deltaX = shiftInCaseOfTheSameDiagram + copyBuffer.getViewportLocation().x() - targetViewportLocation.x();
-        int deltaY = shiftInCaseOfTheSameDiagram + copyBuffer.getViewportLocation().y() - targetViewportLocation.y();
-        if (constraint != null) {
-            Rectangle rect = constraint.getCopy();
-            rect.setX(constraint.x() - deltaX);
-            rect.setY(constraint.y() - deltaY);
-            ge.setConstraint(rect);
+        private final String groupName;
+        private final String name;
+
+        public ExtraCopyAction(String groupName, String name) {
+            this.groupName = groupName;
+            this.name = name;
         }
-        if (ge instanceof Transition) {
-            List<Point> bendPoints = ((Transition) ge).getBendpoints();
-            for (Point bendPoint : bendPoints) {
-                bendPoint.setX(bendPoint.x() - deltaX);
-                bendPoint.setY(bendPoint.y() - deltaY);
-            }
+
+        public String getName() {
+            return name;
         }
+
+        public abstract void execute() throws Exception;
+
+        public abstract void undo() throws Exception;
+
+        @Override
+        public String toString() {
+            return groupName + ": " + name;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            ExtraCopyAction o = (ExtraCopyAction) obj;
+            return groupName.equals(o.groupName) && name.equals(o.name);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hashCode(groupName, name);
+        }
+
     }
 
     private class CopyFormFilesAction extends ExtraCopyAction {
@@ -393,6 +476,30 @@ public class CopyGraphCommand extends Command {
 
     }
 
+    public List<NamedGraphElement> getFilteredElements() {
+        return new ArrayList<NamedGraphElement>(targetNodeMap.values());
+    }
+
+    private void adjustLocation(GraphElement ge) {
+        int shiftInCaseOfTheSameDiagram = targetEditor.toString().equals(copyBuffer.getEditorId()) ? -GEFConstants.GRID_SIZE : 0;
+        Rectangle constraint = ge.getConstraint();
+        int deltaX = shiftInCaseOfTheSameDiagram + copyBuffer.getViewportLocation().x() - targetViewportLocation.x();
+        int deltaY = shiftInCaseOfTheSameDiagram + copyBuffer.getViewportLocation().y() - targetViewportLocation.y();
+        if (constraint != null) {
+            Rectangle rect = constraint.getCopy();
+            rect.setX(constraint.x() - deltaX);
+            rect.setY(constraint.y() - deltaY);
+            ge.setConstraint(rect);
+        }
+        if (ge instanceof Transition) {
+            List<Point> bendPoints = ((Transition) ge).getBendpoints();
+            for (Point bendPoint : bendPoints) {
+                bendPoint.setX(bendPoint.x() - deltaX);
+                bendPoint.setY(bendPoint.y() - deltaY);
+            }
+        }
+    }
+
     private class CopyDelegableElementAction extends ExtraCopyAction {
         private final NamedGraphElement source;
         private final NamedGraphElement target;
@@ -456,7 +563,7 @@ public class CopyGraphCommand extends Command {
     }
 
     private class CopyVariableAction extends ExtraCopyAction {
-    	private final ProcessDefinition sourceProcessDefinition;
+        private final ProcessDefinition sourceProcessDefinition;
         private final Variable sourceVariable;
         private final Variable oldVariable;
         private Variable addedVariable;

@@ -11,7 +11,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.SharedImages;
@@ -82,11 +81,7 @@ public class NodeRegulationsPropertyDescriptor extends PropertyDescriptor {
 
                 @Override
                 protected void onMouseUp(MouseEvent e) throws Exception {
-                    NodeRegulationsProperties newProperties = (NodeRegulationsProperties) NodeInRegulationsDialogCellEditor.this
-                            .openDialogBox(NodeInRegulationsDialogCellEditor.this.editor);
-                    if (newProperties != null) {
-                        NodeRegulationsPropertyDescriptor.this.node.setRegulationsProperties(newProperties);
-                    }
+                    NodeInRegulationsDialogCellEditor.this.openDialogBox(NodeInRegulationsDialogCellEditor.this.editor);
                 }
             };
             previousNodeLabel.addMouseListener(loggingMouseAdapter);
@@ -102,8 +97,8 @@ public class NodeRegulationsPropertyDescriptor extends PropertyDescriptor {
             enabledLabel.setImage(SharedImages.getImage(properties.isEnabled() ? "icons/checked.gif" : "icons/unchecked.gif"));
             previousNodeLabel.setText(Localization.getString("Node.property.previousNodeInRegulations") + ": "
                     + RegulationsUtil.getNodeLabel(properties.getPreviousNode()));
-            nextNodeLabel.setText(Localization.getString("Node.property.nextNodeInRegulations") + ": "
-                    + RegulationsUtil.getNodeLabel(properties.getNextNode()));
+            nextNodeLabel.setText(
+                    Localization.getString("Node.property.nextNodeInRegulations") + ": " + RegulationsUtil.getNodeLabel(properties.getNextNode()));
         }
 
         @Override

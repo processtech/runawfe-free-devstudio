@@ -26,6 +26,10 @@ import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.graphiti.TooltipBuilderHelper;
+import ru.runa.gpd.editor.graphiti.change.ChangeDelegationClassNameFeature;
+import ru.runa.gpd.editor.graphiti.change.ChangeDelegationConfigurationFeature;
+import ru.runa.gpd.editor.graphiti.change.ChangeDescriptionFeature;
+import ru.runa.gpd.editor.graphiti.change.UndoRedoUtil;
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.HandlerArtifact;
 import ru.runa.gpd.extension.HandlerRegistry;
@@ -50,7 +54,7 @@ import ru.runa.gpd.util.VariableUtils;
 
 @SuppressWarnings("unchecked")
 public abstract class GraphElement extends EventSupport
-        implements IPropertySource, PropertyNames, IActionFilter, VariableContainer, ProcessDefinitionAware {
+        implements IPropertySource, PropertyNames, IActionFilter, VariableContainer, ProcessDefinitionAware, DelegationConfiguration, Describable {
     private static final List<String> TOOLTIP_COMMON_PROPERTY_NAMES = Lists.newArrayList(PropertyNames.PROPERTY_ID, PropertyNames.PROPERTY_NAME,
             PropertyNames.PROPERTY_CLASS);
 
@@ -66,6 +70,10 @@ public abstract class GraphElement extends EventSupport
 
     public void setId(String nodeId) {
         this.id = nodeId;
+    }
+
+    public int getIdNumber() {
+        return Integer.parseInt(getId().substring(ProcessDefinition.ID.length()));
     }
 
     /**
@@ -221,7 +229,7 @@ public abstract class GraphElement extends EventSupport
             firePropertyChange(PROPERTY_CHILDREN_CHANGED, old, before + 1);
         }
     }
-    
+
     public <T extends GraphElement> List<T> getChildren(Class<T> type) {
         return getChildren(type, null);
     }
@@ -281,10 +289,12 @@ public abstract class GraphElement extends EventSupport
     // Describable
     private String description;
 
+    @Override
     public String getDescription() {
         return description;
     }
 
+    @Override
     public void setDescription(String description) {
         String old = this.description;
         this.description = description;
@@ -295,20 +305,24 @@ public abstract class GraphElement extends EventSupport
     private String delegationClassName;
     private String delegationConfiguration = "";
 
+    @Override
     public String getDelegationClassName() {
         return delegationClassName;
     }
 
+    @Override
     public void setDelegationClassName(String delegationClassName) {
         String old = getDelegationClassName();
         this.delegationClassName = delegationClassName;
         firePropertyChange(PropertyNames.PROPERTY_CLASS, old, this.delegationClassName);
     }
 
+    @Override
     public String getDelegationConfiguration() {
         return delegationConfiguration;
     }
 
+    @Override
     public void setDelegationConfiguration(String delegationConfiguration) {
         if (delegationConfiguration == null) {
             delegationConfiguration = "";
@@ -373,8 +387,7 @@ public abstract class GraphElement extends EventSupport
             }
         }
         if (this instanceof Describable) {
-            descriptors
-                    .add(new DescribablePropertyDescriptor(PROPERTY_DESCRIPTION, Localization.getString("property.description"), (Describable) this));
+            descriptors.add(new DescribablePropertyDescriptor(PROPERTY_DESCRIPTION, Localization.getString("property.description"), this));
         }
         if (isDelegable()) {
             Delegable delegable = (Delegable) this;
@@ -418,11 +431,11 @@ public abstract class GraphElement extends EventSupport
     @Override
     public void setPropertyValue(Object id, Object value) {
         if (PROPERTY_CLASS.equals(id)) {
-            setDelegationClassName((String) value);
+            UndoRedoUtil.executeFeature(new ChangeDelegationClassNameFeature(this, (String) value));
         } else if (PROPERTY_CONFIGURATION.equals(id)) {
-            setDelegationConfiguration((String) value);
+            UndoRedoUtil.executeFeature(new ChangeDelegationConfigurationFeature(this, (String) value));
         } else if (PROPERTY_DESCRIPTION.equals(id)) {
-            setDescription((String) value);
+            UndoRedoUtil.executeFeature(new ChangeDescriptionFeature(this, (String) value));
         }
     }
 

@@ -16,6 +16,9 @@ import ru.runa.gpd.PluginConstants;
 import ru.runa.gpd.PropertyNames;
 import ru.runa.gpd.editor.GEFConstants;
 import ru.runa.gpd.editor.graphiti.TooltipBuilderHelper;
+import ru.runa.gpd.editor.graphiti.change.ChangeOrderNumFeature;
+import ru.runa.gpd.editor.graphiti.change.ChangeTransitionColorFeature;
+import ru.runa.gpd.editor.graphiti.change.UndoRedoUtil;
 import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.extension.decision.IDecisionProvider;
 import ru.runa.gpd.lang.Language;
@@ -210,13 +213,9 @@ public class Transition extends AbstractTransition implements ActionContainer {
     @Override
     public void setPropertyValue(Object id, Object value) {
         if (PROPERTY_ORDERNUM.equals(id)) {
-            Object oldOrderNum = getPropertyValue(PROPERTY_ORDERNUM);
-            Transition anotherTransition = getSource().getLeavingTransitions().get(Integer.parseInt((String) value) - 1);
-            getSource().swapChildren(this, anotherTransition);
-            firePropertyChange(PROPERTY_ORDERNUM, oldOrderNum, value);
-            anotherTransition.firePropertyChange(PROPERTY_ORDERNUM, value, oldOrderNum);
+            UndoRedoUtil.executeFeature(new ChangeOrderNumFeature(this, value));
         } else if (PROPERTY_COLOR.equals(id)) {
-            setColor(TransitionColor.values()[(int) value]);
+            UndoRedoUtil.executeFeature(new ChangeTransitionColorFeature(this, TransitionColor.values()[(int) value]));
         } else {
             super.setPropertyValue(id, value);
         }

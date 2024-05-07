@@ -43,4 +43,9 @@ public abstract class AddElementFeature extends AbstractAddShapeFeature implemen
         return element.getTypeDefinition().getGraphitiEntry().getDefaultSystemSize();
     }
 
+    @Override
+    public String getName() {
+        return getClass().getSimpleName();
+    }
+
 }

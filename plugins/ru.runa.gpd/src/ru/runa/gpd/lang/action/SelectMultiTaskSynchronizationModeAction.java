@@ -1,16 +1,16 @@
 package ru.runa.gpd.lang.action;
 
+import com.google.common.base.Objects;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.widgets.Menu;
-
 import ru.runa.gpd.Localization;
+import ru.runa.gpd.editor.graphiti.change.ChangeMultiTaskSynchronizationModeFeature;
+import ru.runa.gpd.editor.graphiti.change.UndoRedoUtil;
 import ru.runa.gpd.lang.model.MultiTaskState;
 import ru.runa.wfe.lang.MultiTaskSynchronizationMode;
-
-import com.google.common.base.Objects;
 
 public class SelectMultiTaskSynchronizationModeAction extends BaseModelDropDownActionDelegate {
     private MultiTaskSynchronizationMode selectedMode;
@@ -53,7 +53,7 @@ public class SelectMultiTaskSynchronizationModeAction extends BaseModelDropDownA
 
         @Override
         public void run() {
-            multiTaskState.setSynchronizationMode(mode);
+            UndoRedoUtil.executeFeature(new ChangeMultiTaskSynchronizationModeFeature(multiTaskState, mode));
         }
     }
 }

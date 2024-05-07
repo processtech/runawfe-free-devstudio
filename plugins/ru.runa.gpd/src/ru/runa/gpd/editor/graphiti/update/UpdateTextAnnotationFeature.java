@@ -4,20 +4,16 @@ import org.eclipse.graphiti.features.IReason;
 import org.eclipse.graphiti.features.context.IUpdateContext;
 import org.eclipse.graphiti.features.impl.Reason;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
-
 import ru.runa.gpd.editor.graphiti.GaProperty;
 import ru.runa.gpd.editor.graphiti.PropertyUtil;
 import ru.runa.gpd.lang.model.bpmn.TextAnnotation;
-
-import com.google.common.base.Objects;
 
 public class UpdateTextAnnotationFeature extends UpdateFeature {
     @Override
     public IReason updateNeeded(IUpdateContext context) {
         PictogramElement pe = context.getPictogramElement();
         TextAnnotation bo = (TextAnnotation) getBusinessObjectForPictogramElement(pe);
-        String name = PropertyUtil.findTextValueRecursive(pe, GaProperty.DESCRIPTION);
-        if (!Objects.equal(name, bo.getDescription())) {
+        if (textPropertiesDiffer(pe, GaProperty.DESCRIPTION, bo.getDescription())) {
             return Reason.createTrueReason();
         }
         return Reason.createFalseReason();

@@ -5,6 +5,8 @@ import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.swt.widgets.Display;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
+import ru.runa.gpd.editor.graphiti.change.ChangeNameFeature;
+import ru.runa.gpd.editor.graphiti.change.UndoRedoUtil;
 import ru.runa.gpd.lang.model.NamedGraphElement;
 
 public class RenameAction extends BaseModelActionDelegate {
@@ -17,7 +19,7 @@ public class RenameAction extends BaseModelActionDelegate {
                 Localization.getString("InputValue"), currentName, element.nameValidator());
         try {
             if (renameNodeDialog.open() == InputDialog.OK) {
-                element.setName(renameNodeDialog.getValue().trim());
+                UndoRedoUtil.executeFeature(new ChangeNameFeature(element, renameNodeDialog.getValue().trim()));
             }
         } catch (Exception e) {
             PluginLogger.logError(e);

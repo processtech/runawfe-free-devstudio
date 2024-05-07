@@ -1,18 +1,23 @@
 package ru.runa.gpd.editor.graphiti.update;
 
+import java.util.Objects;
 import org.eclipse.graphiti.features.IFeatureProvider;
+import org.eclipse.graphiti.features.context.IContext;
 import org.eclipse.graphiti.features.context.IDirectEditingContext;
 import org.eclipse.graphiti.features.impl.AbstractDirectEditingFeature;
 import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
 import org.eclipse.graphiti.mm.algorithms.MultiText;
 import org.eclipse.graphiti.mm.algorithms.Text;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
-import org.eclipse.graphiti.mm.pictograms.Shape;
-
+import ru.runa.gpd.Localization;
+import ru.runa.gpd.editor.graphiti.CustomUndoRedoFeature;
+import ru.runa.gpd.editor.graphiti.IRedoProtected;
 import ru.runa.gpd.lang.model.Node;
 
-public class DirectEditNodeNameFeature extends AbstractDirectEditingFeature {
+public class DirectEditNodeNameFeature extends AbstractDirectEditingFeature implements CustomUndoRedoFeature, IRedoProtected {
     private boolean multiline = false;
+    private String undoName;
+    private String redoName;
 
     public DirectEditNodeNameFeature(IFeatureProvider provider) {
         super(provider);
@@ -63,12 +68,46 @@ public class DirectEditNodeNameFeature extends AbstractDirectEditingFeature {
         // set the new name
         PictogramElement pe = context.getPictogramElement();
         Node node = (Node) getBusinessObjectForPictogramElement(pe);
-        node.setName(value);
-        // Explicitly update the shape to display the new value in the diagram
-        // Note, that this might not be necessary in future versions of the GFW
-        // (currently in discussion)
-        // we know, that pe is the Shape of the Text, so its container is the
-        // main shape of the EClass
-        updatePictogramElement(((Shape) pe).getContainer());
+        if (!Objects.equals(node.getName(), value)) {
+            undoName = node.getName();
+            node.setName(value);
+            setValueChanged();
+        }
     }
+
+    @Override
+    public boolean canUndo(IContext context) {
+        return undoName != null;
+    }
+
+    @Override
+    public void postUndo(IContext context) {
+        if (context instanceof IDirectEditingContext) {
+            PictogramElement pe = ((IDirectEditingContext) context).getPictogramElement();
+            Node node = (Node) getBusinessObjectForPictogramElement(pe);
+            redoName = node.getName();
+            node.setName(undoName);
+        }
+    }
+
+    @Override
+    public boolean canRedo(IContext context) {
+        return redoName != null;
+    }
+
+    @Override
+    public void postRedo(IContext context) {
+        if (context instanceof IDirectEditingContext) {
+            PictogramElement pe = ((IDirectEditingContext) context).getPictogramElement();
+            Node node = (Node) getBusinessObjectForPictogramElement(pe);
+            node.setName(redoName);
+        }
+
+    }
+
+    @Override
+    public String getName() {
+        return Localization.getString("RenameAction.title");
+    }
+
 }
