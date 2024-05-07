@@ -186,7 +186,9 @@ public abstract class GraphElement extends EventSupport
             provider.onDelete((Delegable) child);
         }
         children.remove(child);
-        firePropertyChange(NODE_REMOVED, child, null);
+        if (child instanceof Node) {
+            firePropertyChange(NODE_REMOVED, child, null);
+        }
         firePropertyChange(PROPERTY_CHILDREN_CHANGED, child, null);
         if (child instanceof Node) {
             ((Node) child).updateRegulationsPropertiesOnDelete();
