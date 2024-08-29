@@ -36,7 +36,6 @@ public class CheckShortPeriodCycleAction extends BaseActionDelegate {
                     return;
                 }
                 CheckShortPeriodCycleAlgorithm cycAlgo = new CheckShortPeriodCycleAlgorithm(nodes, transitions);
-                cycAlgo.start();
                 if (cycAlgo.hasShortPeriodCycle()) {
                     Dialogs.warning(Localization.getString("CheckingCyclesAction.SituationExist.Message", cycAlgo.getCycleIds()));
                 } else {

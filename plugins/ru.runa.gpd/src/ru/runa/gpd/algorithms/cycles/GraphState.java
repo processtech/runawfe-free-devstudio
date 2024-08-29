@@ -6,10 +6,8 @@ import java.util.List;
 import java.util.Set;
 
 public class GraphState implements Comparable<Object> {
-
-    private List<Integer> states;
-    private Set<GraphState> nextStates = new HashSet<>();
-    private boolean wasVisitedOnce = false;
+    private final List<Integer> states;
+    private final Set<GraphState> nextStates = new HashSet<>();
     private int weight = 0;
     private int stops = 0;
 
@@ -27,10 +25,7 @@ public class GraphState implements Comparable<Object> {
     }
 
     public void setStops(int previousStops) {
-        if (!wasVisitedOnce) {
-            stops = previousStops + weight;
-        }
-        wasVisitedOnce = true;
+        stops = previousStops + weight;
     }
 
     public int getWeight() {

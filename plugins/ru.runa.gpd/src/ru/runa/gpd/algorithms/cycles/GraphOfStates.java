@@ -29,9 +29,6 @@ public class GraphOfStates {
         root = new GraphState(startState, nodes.size());
         root.setStops(0);
         initilizedStates.add(root);
-    }
-
-    public void createTree() {
         createTree(root);
     }
 

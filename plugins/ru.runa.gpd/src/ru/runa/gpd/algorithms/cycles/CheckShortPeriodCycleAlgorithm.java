@@ -1,17 +1,17 @@
 package ru.runa.gpd.algorithms.cycles;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
-import java.util.ArrayList;
-
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.bpmn.ExclusiveGateway;
 import ru.runa.gpd.lang.model.bpmn.ParallelGateway;
 
-public class CheckShortPeriodCycleAlgorithm {
+import static java.util.stream.Collectors.joining;
 
+public class CheckShortPeriodCycleAlgorithm {
     private List<CycleNode> graph;
     private List<CycleNode> cycle;
     private Node node;
@@ -20,6 +20,8 @@ public class CheckShortPeriodCycleAlgorithm {
         this.graph = convertToCycleNodes(nodes, transitions);
         graph.sort(null);
         node = null;
+        GraphOfStates tree = new GraphOfStates(graph);
+        cycle = tree.getShortPeriodCycle();
     }
 
     private List<CycleNode> convertToCycleNodes(List<Node> nodes, List<Transition> transitions) {
@@ -33,19 +35,19 @@ public class CheckShortPeriodCycleAlgorithm {
                 mapGraph.put(node, new CycleNode(node, i));
             }
         }
-        CycleNode source = null;
-        CycleNode target = null;
-        CycleNode cycleNode = null;
         for (Transition transition : transitions) {
-            source = mapGraph.get(transition.getSource());
-            target = mapGraph.get(transition.getTarget());
+            CycleNode source = mapGraph.get(transition.getSource());
+            CycleNode target = mapGraph.get(transition.getTarget());
             if (target instanceof ParallelCycleNode) {
+                String pseudoId = source.getSource().getId() + " -> " + target.getSource().getId();
                 node = new ExclusiveGateway();
-                cycleNode = new CycleNode(node, mapGraph.size());
-                mapGraph.put(node, cycleNode);
-                source.addTarget(cycleNode);
-                cycleNode.addTarget(target);
-                ((ParallelCycleNode) target).addParent(cycleNode);
+                node.setId(pseudoId);
+                node.setName("Pseudo Gateway " + mapGraph.size());
+                CycleNode pseudoNode = new CycleNode(node, mapGraph.size());
+                mapGraph.put(node, pseudoNode);
+                source.addTarget(pseudoNode);
+                pseudoNode.addTarget(target);
+                ((ParallelCycleNode) target).addParent(pseudoNode);
             } else {
                 source.addTarget(target);
             }
@@ -53,26 +55,14 @@ public class CheckShortPeriodCycleAlgorithm {
         return new ArrayList<>(mapGraph.values());
     }
 
-    public void start() {
-        GraphOfStates tree = new GraphOfStates(graph);
-        tree.createTree();
-        cycle = tree.getShortPeriodCycle();
-    }
-
     public boolean hasShortPeriodCycle() {
         return cycle != null;
     }
 
     public String getCycleIds() {
-        if (cycle != null) {
-            StringBuilder message = new StringBuilder();
-            for (CycleNode node : cycle)
-                if (node.getSource().getId() != null) {
-                    message.append(node.getSource().getId() + ", ");
-                }
-            message.replace(message.length() - 2, message.length() - 1, "");
-            return message.toString();
-        }
-        return "";
+        return cycle.stream()
+                .filter(n -> n.getSource().getId() != null && !n.getSource().getId().contains(" -> "))
+                .map(n -> n.getSource().toString())
+                .collect(joining(" -> "));
     }
 }
