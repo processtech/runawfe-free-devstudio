@@ -93,16 +93,22 @@ public class StartState extends FormNode implements HasTextDecorator, VariableMa
     @Override
     protected void populateCustomPropertyDescriptors(List<IPropertyDescriptor> descriptors) {
         super.populateCustomPropertyDescriptors(descriptors);
-        ProcessDefinition processDefinition = getProcessDefinition();
-        if (processDefinition instanceof SubprocessDefinition && ((SubprocessDefinition) processDefinition).isTriggeredByEvent()) {
-            descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_EVENT_TYPE, Localization.getString("property.eventType"), StartEventType.LABELS));
+        if (isProcessDefinitionTriggeredByEvent()) {
+            List<String> labels = Lists.newArrayList();
+            for (StartEventType type : StartEventType.values()) {
+                if (type != StartEventType.blank) {
+                    labels.add(type.getLabel());
+                }
+            }
+            descriptors.add(new ComboBoxPropertyDescriptor(PROPERTY_EVENT_TYPE, Localization.getString("property.eventType"),
+                    labels.toArray(new String[labels.size()])));
         }
     }
 
     @Override
     public Object getPropertyValue(Object id) {
         if (PROPERTY_EVENT_TYPE.equals(id)) {
-            return getEventType().ordinal();
+            return isProcessDefinitionTriggeredByEvent() ? getEventType().ordinal() - 1 : getEventType().ordinal();
         }
         return super.getPropertyValue(id);
     }
@@ -111,7 +117,9 @@ public class StartState extends FormNode implements HasTextDecorator, VariableMa
     public void setPropertyValue(Object id, Object value) {
         if (PROPERTY_EVENT_TYPE.equals(id)) {
             int index = ((Integer) value).intValue();
-            if (index == 0) {
+            if (isProcessDefinitionTriggeredByEvent()) {
+                index += 1;
+            } else if (index == 0) {
                 getProcessDefinition().setDefaultStartNode(this);
             }
             setEventType(StartEventType.values()[index]);
@@ -207,6 +215,11 @@ public class StartState extends FormNode implements HasTextDecorator, VariableMa
         } else if (isStartByEvent()) {
             copy.setVariableMappings(Lists.newArrayList(getVariableMappings()));
         }
+    }
+
+    private boolean isProcessDefinitionTriggeredByEvent() {
+        ProcessDefinition processDefinition = getProcessDefinition();
+        return processDefinition instanceof SubprocessDefinition && ((SubprocessDefinition) processDefinition).isTriggeredByEvent();
     }
 
 }

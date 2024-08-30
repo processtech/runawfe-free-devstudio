@@ -177,15 +177,11 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
                 data.getDomainSpecificContextButtons().add(createTransitionButton.getDragAndDropFeatures().size(), createTransitionButton);
             }
         }
-        boolean showChangeEventType = element instanceof EndTokenState;
-        if (element instanceof StartState) {
-            if (element.getProcessDefinition() instanceof SubprocessDefinition) {
-                showChangeEventType = ((SubprocessDefinition) element.getProcessDefinition()).isTriggeredByEvent();
-            } else {
-                showChangeEventType = true;
-            }
+        boolean processIsTriggeredByEvent = false;
+        if (element instanceof StartState && element.getProcessDefinition() instanceof SubprocessDefinition) {
+            processIsTriggeredByEvent = ((SubprocessDefinition) element.getProcessDefinition()).isTriggeredByEvent();
         }
-        if (showChangeEventType) {
+        if (element instanceof EndTokenState || processIsTriggeredByEvent) {
             ContextButtonEntry changeEventTypeButton = new ContextButtonEntry(null, null);
             changeEventTypeButton.setText(Localization.getString("event.type.label"));
             changeEventTypeButton.setDescription(Localization.getString("event.type.description"));
@@ -195,8 +191,10 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
             ICustomContext customContext = new CustomContext(pes);
             for (int i = 0; i < StartEventType.LABELS.length; i++) {
                 StartEventType et = StartEventType.values()[i];
-                if (et.equals(StartEventType.timer) && element.getProcessDefinition().getChildren(StartState.class).stream()
-                        .filter(startState -> !Objects.equals(startState.getId(), element.getId())).anyMatch(StartState::isStartByTimer)) {
+                boolean timerStartStateExists = element.getProcessDefinition().getChildren(StartState.class).stream()
+                        .filter(startState -> !Objects.equals(startState.getId(), element.getId()))
+                        .anyMatch(StartState::isStartByTimer);
+                if ((et.equals(StartEventType.blank) && processIsTriggeredByEvent) || (et.equals(StartEventType.timer) && timerStartStateExists)) {
                     continue;
                 }
                 ContextButtonEntry createButton = new ContextButtonEntry(new ChangeStartEventTypeFeature(getFeatureProvider(), et), customContext);
