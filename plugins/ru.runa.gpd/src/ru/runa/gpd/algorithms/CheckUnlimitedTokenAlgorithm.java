@@ -9,8 +9,8 @@ import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.EndState;
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.StartState;
-import ru.runa.gpd.lang.model.Timer;
 import ru.runa.gpd.lang.model.Transition;
+import ru.runa.gpd.lang.model.bpmn.IBoundaryEventCapable;
 import ru.runa.gpd.lang.model.bpmn.ParallelGateway;
 import ru.runa.gpd.lang.model.jpdl.Fork;
 import ru.runa.gpd.lang.model.jpdl.Join;
@@ -19,7 +19,7 @@ public class CheckUnlimitedTokenAlgorithm {
     private static final boolean DEBUG = "true".equals(System.getProperty("ru.runa.gpd.algorithms.checkUnlimitedTokens.debug"));
     List<Transition> transitions;
     List<Node> nodes;
-    List<Vector> vVectorList = new ArrayList<Vector>();
+    List<Vector> vectorList = new ArrayList<Vector>();
     List<Vector> graphList = new ArrayList<Vector>();
     ListUnprocessedStates listUnprocessedStates = new ListUnprocessedStates();
     List<TransitionVector> transitionVectors = new ArrayList<TransitionVector>();
@@ -35,9 +35,9 @@ public class CheckUnlimitedTokenAlgorithm {
             StringBuilder str = new StringBuilder();
             str.append("CheckUnlimitedTokenAlgorithm started.");
             str.append("\n");
-            str.append("The list of V vectors contais:");
+            str.append("The list of V vectors contains:");
             str.append("\n");
-            for (Vector vVector : vVectorList) {
+            for (Vector vVector : vectorList) {
                 str.append(vVector.toString());
                 str.append("\n");
             }
@@ -47,9 +47,6 @@ public class CheckUnlimitedTokenAlgorithm {
         Vector vector = new Vector(transitions.size() + 1);
         vector.setElementValue(0, 1);
         startVectorList.add(vector);
-        Vector initGraphVector = new Vector(transitions.size() + 1);
-        vector.setElementValue(0, 1);
-        graphList.add(initGraphVector);
         listUnprocessedStates.addInList(startVectorList);
 
         while (listUnprocessedStates.isFirstObjExist()) {
@@ -63,7 +60,7 @@ public class CheckUnlimitedTokenAlgorithm {
                 PluginLogger.logInfo(str.toString());
             }
             List<Vector> listIntermediateVectors = new ArrayList<Vector>();
-            for (Vector vVector : vVectorList) {
+            for (Vector vVector : vectorList) {
                 Vector tempVector = uVector.getVectorsSum(vVector);
                 if (!tempVector.isNegativeNumberExist() && !tempVector.isNullValueVector()) {
                     listIntermediateVectors.add(tempVector);
@@ -132,13 +129,13 @@ public class CheckUnlimitedTokenAlgorithm {
                     PluginLogger.logInfo(str.toString());
                 }
                 for (Vector attainableVector : attainableVectorList) {
-                    int stongminusindex = 0;
+                    int strongminusindex = 0;
                     int strongminus = 0;
                     int minusequal = 0;
                     for (int i = 0; i < unprocessedVector.getElements().length; i++) {
-                        if (attainableVector.getElements()[i] < unprocessedVector.getElements()[i] && stongminusindex == 0) {
+                        if (attainableVector.getElements()[i] < unprocessedVector.getElements()[i] && strongminusindex == 0) {
                             strongminus++;
-                            stongminusindex = i;
+                            strongminusindex = i;
                             continue;
                         }
                         if (attainableVector.getElements()[i] <= unprocessedVector.getElements()[i]) {
@@ -146,12 +143,12 @@ public class CheckUnlimitedTokenAlgorithm {
                         }
                     }
                     if (strongminus == 1 && minusequal == unprocessedVector.getElements().length - 1) {
-                        if (DEBUG) {
+                        if (true) {
                             str = new StringBuilder();
                             str.append("The required vector has been found:" + attainableVector.toString());
                             PluginLogger.logInfo(str.toString());
                         }
-                        return transitions.get(stongminusindex - 1);
+                        return transitions.get(strongminusindex - 1);
                     }
                 }
             }
@@ -175,7 +172,7 @@ public class CheckUnlimitedTokenAlgorithm {
                         Vector v = new Vector(transitions.size() + 1);
                         v.setElementValue(0, -1);
                         v.setElementValue(transitions.indexOf(transition) + 1, 1);
-                        vVectorList.add(v);
+                        vectorList.add(v);
                     }
                 }
             }
@@ -185,15 +182,14 @@ public class CheckUnlimitedTokenAlgorithm {
             if (node instanceof Join || node instanceof Fork || node instanceof ParallelGateway) {
                 Vector v = new Vector(transitions.size() + 1);
                 for (Transition transition : transitions) {
-                    if (transition.getSource().equals(node)) {
+                    if (transition.getSource().equals(node) && !(transition.getTarget() instanceof EndState)) {
                         v.setElementValue(transitions.indexOf(transition) + 1, 1);
                     }
                     if (transition.getTarget().equals(node)) {
                         v.setElementValue(transitions.indexOf(transition) + 1, -1);
                     }
                 }
-
-                vVectorList.add(v);
+                vectorList.add(v);
             }
         }
 
@@ -204,14 +200,16 @@ public class CheckUnlimitedTokenAlgorithm {
                         List<Transition> addedVectors = new ArrayList<Transition>();
                         for (Transition transition1 : transitions) {
                             Node sourceNode = transition1.getSource();
-                            if (sourceNode instanceof Timer && sourceNode.getParent() instanceof Node) {
+                            if (sourceNode instanceof IBoundaryEventCapable && sourceNode.getParent() instanceof Node) {
                                 sourceNode = (Node) sourceNode.getParent();
                             }
                             if (sourceNode.equals(node) && !addedVectors.contains(transition1)) {
                                 Vector v = new Vector(transitions.size() + 1);
                                 v.setElementValue(transitions.indexOf(transition) + 1, -1);
-                                v.setElementValue(transitions.indexOf(transition1) + 1, 1);
-                                vVectorList.add(v);
+                                if(!(transition1.getTarget() instanceof EndState)) {
+                                    v.setElementValue(transitions.indexOf(transition1) + 1, 1);
+                                }
+                                vectorList.add(v);
                                 addedVectors.add(transition1);
                             }
                         }
@@ -232,16 +230,16 @@ public class CheckUnlimitedTokenAlgorithm {
         }
 
         while (buffer.size() > 0) {
-            List<Vector> foundedVectors = new ArrayList<Vector>();
+            List<Vector> foundVectors = new ArrayList<Vector>();
             for (TransitionVector transitionVector : transitionVectors) {
                 for (Vector tempVector : buffer) {
                     if (Arrays.equals(tempVector.getElements(), transitionVector.getToVector().getElements())) {
-                        foundedVectors.add(transitionVector.getFromVector());
+                        foundVectors.add(transitionVector.getFromVector());
                     }
                 }
             }
 
-            Iterator<Vector> foundedIterator = foundedVectors.iterator();
+            Iterator<Vector> foundedIterator = foundVectors.iterator();
             while (foundedIterator.hasNext()) {
                 Vector foundVector = foundedIterator.next();
                 for (Vector bufferVector : buffer) {
@@ -252,7 +250,7 @@ public class CheckUnlimitedTokenAlgorithm {
                 }
             }
 
-            foundedIterator = foundedVectors.iterator();
+            foundedIterator = foundVectors.iterator();
             while (foundedIterator.hasNext()) {
                 Vector foundVector = foundedIterator.next();
                 for (Vector listVector : listVectors) {
@@ -265,7 +263,7 @@ public class CheckUnlimitedTokenAlgorithm {
 
             listVectors.addAll(buffer);
             buffer.clear();
-            buffer.addAll(foundedVectors);
+            buffer.addAll(foundVectors);
         }
 
         return listVectors;

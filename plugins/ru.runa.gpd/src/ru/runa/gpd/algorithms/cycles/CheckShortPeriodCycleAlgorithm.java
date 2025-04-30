@@ -4,9 +4,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Collections;
+
 import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.bpmn.ExclusiveGateway;
+import ru.runa.gpd.lang.model.bpmn.IBoundaryEventCapable;
 import ru.runa.gpd.lang.model.bpmn.ParallelGateway;
 
 import static java.util.stream.Collectors.joining;
@@ -36,7 +39,11 @@ public class CheckShortPeriodCycleAlgorithm {
             }
         }
         for (Transition transition : transitions) {
+            Node sourceNode = transition.getSource();
             CycleNode source = mapGraph.get(transition.getSource());
+            if (sourceNode instanceof IBoundaryEventCapable && sourceNode.getParent() instanceof Node) {
+                source = mapGraph.get((Node) sourceNode.getParent());
+            }
             CycleNode target = mapGraph.get(transition.getTarget());
             if (target instanceof ParallelCycleNode) {
                 String pseudoId = source.getSource().getId() + " -> " + target.getSource().getId();
@@ -60,6 +67,7 @@ public class CheckShortPeriodCycleAlgorithm {
     }
 
     public String getCycleIds() {
+        Collections.reverse(cycle);
         return cycle.stream()
                 .filter(n -> n.getSource().getId() != null && !n.getSource().getId().contains(" -> "))
                 .map(n -> n.getSource().toString())
