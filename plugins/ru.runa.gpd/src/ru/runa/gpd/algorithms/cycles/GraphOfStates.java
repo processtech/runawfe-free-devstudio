@@ -4,7 +4,6 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -134,14 +133,14 @@ public class GraphOfStates {
         return deadend;
     }
 
-    private List<GraphState> createNextStates(List<CycleNode> recievers, GraphState previousState) {
+    private List<GraphState> createNextStates(List<CycleNode> receivers, GraphState previousState) {
         List<CycleNode> through = new ArrayList<>();
         List<CycleNode> stop = new ArrayList<>();
-        for (CycleNode reciever : recievers) {
-            if (reciever.getClassification() == NodeClassification.THROUGH) {
-                through.add(reciever);
+        for (CycleNode receiver : receivers) {
+            if (receiver.getClassification() == NodeClassification.THROUGH) {
+                through.add(receiver);
             } else {
-                stop.add(reciever);
+                stop.add(receiver);
             }
         }
         List<GraphState> states = new ArrayList<>();
@@ -150,10 +149,10 @@ public class GraphOfStates {
         } else if (stop.isEmpty()) {
             states.add(new GraphState(through, nodes.size()));
         } else {
-            List<CycleNode> allRecievers = cloneNodes(through);
-            allRecievers.addAll(stop);
+            List<CycleNode> allReceivers = cloneNodes(through);
+            allReceivers.addAll(stop);
             states.add(new GraphState(through, nodes.size()));
-            states.add(new GraphState(allRecievers, nodes.size()));
+            states.add(new GraphState(allReceivers, nodes.size()));
         }
         return states;
     }
@@ -184,10 +183,19 @@ public class GraphOfStates {
     private List<CycleNode> initShortPeriodCycle(List<GraphState> visitedStates, GraphState current, int stops) {
         if (visitedStates.contains(current)) {
             if (current.getStops() >= stops) {
-                return findShortPeriodCycle(visitedStates, current);
-            } else {
-                return null;
+                List<CycleNode> loop = findShortPeriodCycle(visitedStates, current);
+                boolean isValidCycle = true;
+                for (CycleNode node : loop) {
+                    if (node.getClassification() != NodeClassification.THROUGH) {
+                        isValidCycle = false;
+                        break;
+                    }
+                }
+                if (isValidCycle) {
+                    return loop;
+                }
             }
+            return null;
         }
         visitedStates.add(current);
         Set<GraphState> nextStates = current.getNextStates();

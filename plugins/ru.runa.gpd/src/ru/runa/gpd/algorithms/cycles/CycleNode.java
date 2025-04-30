@@ -12,10 +12,10 @@ import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Timer;
 import ru.runa.gpd.lang.model.bpmn.ScriptTask;
 import ru.runa.gpd.lang.model.bpmn.ThrowEventNode;
-import ru.runa.wfe.lang.bpmn2.BusinessRule;
-import ru.runa.wfe.lang.bpmn2.CatchEventNode;
-import ru.runa.wfe.lang.bpmn2.ExclusiveGateway;
-import ru.runa.wfe.lang.bpmn2.ParallelGateway;
+import ru.runa.gpd.lang.model.bpmn.BusinessRule;
+import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
+import ru.runa.gpd.lang.model.bpmn.ExclusiveGateway;
+import ru.runa.gpd.lang.model.bpmn.ParallelGateway;
 
 class CycleNode implements Comparable<CycleNode> {
     private static final List<Class<?>> TROUGH_NODES = Arrays.asList(StartState.class, BusinessRule.class, ScriptTask.class,
