@@ -7,8 +7,11 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.draw2d.FigureCanvas;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
+import org.eclipse.gef.ui.actions.ActionRegistry;
 import org.eclipse.gef.ui.actions.SelectionAction;
 import org.eclipse.graphiti.ui.internal.parts.ContainerShapeEditPart;
+import org.eclipse.ui.actions.ActionFactory;
+
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.editor.gef.part.graph.NodeGraphicalEditPart;
 import ru.runa.gpd.lang.model.Action;
@@ -75,5 +78,6 @@ public class CopyAction extends SelectionAction {
         CopyBuffer copyBuffer = new CopyBuffer((IFolder) editor.getDefinitionFile().getParent(), editor.getDefinition().getLanguage(),
                 extractNodes(), editor.toString(), ((FigureCanvas) editor.getGraphicalViewer().getControl()).getViewport().getViewLocation().getCopy());
         copyBuffer.setToClipboard();
+        ((SelectionAction) ((ActionRegistry) editor.getAdapter(ActionRegistry.class)).getAction(ActionFactory.PASTE.getId())).update();
     }
 }

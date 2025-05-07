@@ -24,6 +24,8 @@ import org.eclipse.graphiti.ui.internal.util.gef.ScalableRootEditPartAnimated;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.part.MultiPageEditorSite;
+
+import ru.runa.gpd.editor.CopyAction;
 import ru.runa.gpd.editor.CustomPasteAction;
 import ru.runa.gpd.editor.ProcessEditorBase;
 import ru.runa.gpd.editor.gef.GEFActionBarContributor;
@@ -56,12 +58,16 @@ public class CustomDiagramBehavior extends DiagramBehavior {
         IDiagramContainerUI diagramContainerUi = getDiagramContainer();
 
         ProcessEditorBase editor = (ProcessEditorBase) ((MultiPageEditorSite) diagramContainerUi.getSite()).getMultiPageEditor();
-        IAction action = new CustomPasteAction(editor, getConfigurationProvider());
-        action.setId(ActionFactory.PASTE.getId());
-        diagramContainerUi.getActionRegistry().registerAction(action);
-        diagramContainerUi.getSelectionActions().add(action.getId());
+        IAction copyAction = new CopyAction(editor);
+        copyAction.setId(ActionFactory.COPY.getId());
+        diagramContainerUi.getActionRegistry().registerAction(copyAction);
+        diagramContainerUi.getSelectionActions().add(copyAction.getId());
 
-        GEFActionBarContributor.createCustomGEFActions(diagramContainerUi.getActionRegistry(), editor, diagramContainerUi.getSelectionActions());
+        IAction pasteAction = new CustomPasteAction(editor, getConfigurationProvider());
+        pasteAction.setId(ActionFactory.PASTE.getId());
+        diagramContainerUi.getActionRegistry().registerAction(pasteAction);
+        diagramContainerUi.getSelectionActions().add(pasteAction.getId());
+
     }
 
     @Override

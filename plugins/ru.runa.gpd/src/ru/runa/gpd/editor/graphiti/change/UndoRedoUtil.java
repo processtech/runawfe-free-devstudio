@@ -5,6 +5,8 @@ import org.eclipse.graphiti.internal.command.GenericFeatureCommandWithContext;
 import org.eclipse.graphiti.ui.editor.DiagramBehavior;
 import org.eclipse.graphiti.ui.internal.command.GefCommandWrapper;
 import org.eclipse.ui.PlatformUI;
+
+import ru.runa.gpd.editor.gef.GEFProcessEditor;
 import ru.runa.gpd.editor.graphiti.GraphitiProcessEditor;
 
 public class UndoRedoUtil {
@@ -17,6 +19,7 @@ public class UndoRedoUtil {
 
     public static boolean isInProgress() {
         return inProgress;
+        
     }
 
     public static void setInProgress(boolean inProgressValue) {
@@ -24,11 +27,21 @@ public class UndoRedoUtil {
     }
 
     public static <T, V> void executeFeature(ChangePropertyFeature<T, V> feature) {
+        if (isJpdlEditor()) {
+            feature.execute(null);
+            return;
+        }
         DiagramBehavior db = ((GraphitiProcessEditor) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor())
                 .getDiagramEditorPage().getDiagramBehavior();
         feature.setFeatureProvider(db.getDiagramTypeProvider().getFeatureProvider());
         db.getEditDomain().getCommandStack()
                 .execute(new GefCommandWrapper(new GenericFeatureCommandWithContext(feature, new CustomContext()), db.getEditingDomain()));
+    }
+    
+
+
+    private static boolean isJpdlEditor() {
+        return PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor() instanceof GEFProcessEditor;
     }
 
 }
