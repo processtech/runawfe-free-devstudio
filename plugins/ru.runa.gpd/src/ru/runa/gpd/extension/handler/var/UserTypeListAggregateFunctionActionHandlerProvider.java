@@ -12,7 +12,6 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 
 import ru.runa.gpd.Localization;
@@ -69,7 +68,7 @@ public class UserTypeListAggregateFunctionActionHandlerProvider extends XmlBased
                 addOperationsSection();
                 ((ScrolledComposite) getParent()).setMinSize(computeSize(getSize().x, SWT.DEFAULT));
                 this.layout(true, true);
-            } catch (Throwable e) {
+            } catch (RuntimeException e) {
                 PluginLogger.logErrorWithoutDialog("Cannot build model", e);
             }
         }
@@ -155,12 +154,6 @@ public class UserTypeListAggregateFunctionActionHandlerProvider extends XmlBased
                     model.updateOperation(index, new UserTypeListAggregateFunctionConfig.Operation(attributeCombo.getText(), operation.getFunction(), operation.getResult()));
                 }
             });
-            // final Text attributeText = new Text(parent, SWT.BORDER);
-            // attributeText.setText(operation.getAttribute());
-            // attributeText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            // attributeText.addModifyListener(e -> {
-            //     model.updateOperation(index, new UserTypeListAggregateFunctionConfig.Operation(attributeText.getText(), operation.getFunction(), operation.getResult()));
-            // });
 
             // Function
             final Combo functionCombo = new Combo(parent, SWT.READ_ONLY);
@@ -180,7 +173,7 @@ public class UserTypeListAggregateFunctionActionHandlerProvider extends XmlBased
 
             // Result
             final Combo resultCombo = new Combo(parent, SWT.READ_ONLY);
-            for (String variableName : delegable.getVariableNames(true, null)) {
+            for (String variableName : delegable.getVariableNames(true)) {
                 resultCombo.add(variableName);
             }
             resultCombo.setText(operation.getResult());
