@@ -1,6 +1,5 @@
 package ru.runa.gpd.ui.dialog;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -234,44 +233,9 @@ public class MultiTaskDiscriminatorDialog extends Dialog {
         private void editVariableMapping(VariableMapping mapping) {
         	 ProcessDefinition processDefinition = state.getProcessDefinition();
         	 List<String> processVariables = getProcessVariablesNames(processDefinition);
-        	    List<Variable> allVariables = processDefinition.getVariables(true, true);
+        	    List<Variable> allVariables = processDefinition.getVariables(true, true); 
         	    
-        	    String listComponentTypeName = null;
-
-        	    if (mapping != null) {
-        	        String listVarName = mapping.getName(); 
-        	        Variable listVar = findVariableByName(allVariables, listVarName);
-
-        	        if (listVar != null && VariableUtils.isContainerVariable(listVar)) {
-        	            listComponentTypeName = VariableUtils.getListVariableComponentFormat(listVar); 
-        	        }
-        	    }
-
-        	    List<String> formVariables = new ArrayList<>();
-        	    for (Variable variable : allVariables) {   
-        	    	if (variable.getName() != null && variable.getName().contains(".")) {
-        	            continue;
-        	        }
-
-        	        if (VariableUtils.isContainerVariable(variable)) {
-        	            continue;
-        	        }
-
-
-        	        if (listComponentTypeName != null) {
-        	            String varTypeName = variable.isComplex()
-        	                    ? variable.getUserType().getName()
-        	                    : variable.getFormatClassName();
-
-        	            if (!listComponentTypeName.equals(varTypeName)) {
-        	                continue;
-        	            }
-        	        }
-
-        	        formVariables.add(variable.getName());
-        	    }
-        	
-            MultiTaskVariableDialog dialog = new MultiTaskVariableDialog(processVariables, formVariables, mapping);
+            MultiTaskVariableDialog dialog = new MultiTaskVariableDialog(processVariables, allVariables, mapping);
             if (dialog.open() != IDialogConstants.CANCEL_ID) {
                 if (mapping == null) {
                     mapping = new VariableMapping();
@@ -288,18 +252,6 @@ public class MultiTaskDiscriminatorDialog extends Dialog {
 
         private void setTableInput() {
             tableViewer.setInput(getVariableMappings());
-        }
-        
-        private Variable findVariableByName(List<Variable> variables, String name) {
-            if (name == null) {
-                return null;
-            }
-            for (Variable v : variables) {
-                if (name.equals(v.getName())) {
-                    return v;
-                }
-            }
-            return null;
         }
 
         private class MoveVariableSelectionListener extends LoggingSelectionAdapter {

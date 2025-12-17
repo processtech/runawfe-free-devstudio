@@ -17,21 +17,24 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 import ru.runa.gpd.Localization;
+import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.util.VariableMapping;
+import ru.runa.gpd.util.VariableUtils;
 
 import com.google.common.base.Strings;
 
 public class MultiTaskVariableDialog extends Dialog {
     private final List<String> processVariables;
-    private final List<String> formVariables;
+    private final List<Variable> allVariables;
     private String processVariable = "";
     private String formVariable = "";
     private final VariableMapping oldMapping;
+    private Text varName2;
 
-    protected MultiTaskVariableDialog(List<String> processVariables, List<String> formVariables, VariableMapping oldMapping) {
+    protected MultiTaskVariableDialog(List<String> processVariables, List<Variable> allVariables, VariableMapping oldMapping) {
         super(Display.getCurrent().getActiveShell());
         this.processVariables = processVariables;
-        this.formVariables = formVariables;
+		this.allVariables = allVariables;
         this.oldMapping = oldMapping;
         if (oldMapping != null) {
             this.processVariable = oldMapping.getName();
@@ -81,6 +84,11 @@ public class MultiTaskVariableDialog extends Dialog {
                 if (result != null) {
                     processVariable = result;
                     varName1.setText(processVariable);
+                    formVariable = "";
+                    if (varName2 != null) {
+                        varName2.setText("");
+                    }
+                    updateButtons();
                 }
             }
         });
@@ -92,7 +100,7 @@ public class MultiTaskVariableDialog extends Dialog {
         Composite varComposite2 = new Composite(composite, SWT.NONE);
         varComposite2.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         varComposite2.setLayout(new GridLayout(2, false));
-        final Text varName2 = new Text(varComposite2, SWT.READ_ONLY | SWT.BORDER);
+         varName2 = new Text(varComposite2, SWT.READ_ONLY | SWT.BORDER);
         GridData processVariableTextData2 = new GridData(GridData.FILL_HORIZONTAL);
         processVariableTextData2.minimumWidth = 200;
         varName2.setLayoutData(processVariableTextData2);
@@ -103,7 +111,8 @@ public class MultiTaskVariableDialog extends Dialog {
         selectButton2.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                String result = new ChooseVariableNameDialog(formVariables).openDialog();
+            	List<String> candidates = buildFormVariablesBySelectedList();
+                String result = new ChooseVariableNameDialog(candidates).openDialog();
                 if (result != null) {
                     formVariable = result;
                     varName2.setText(formVariable);
@@ -129,5 +138,49 @@ public class MultiTaskVariableDialog extends Dialog {
 
     public String getFormVariable() {
         return formVariable;
+    }
+    
+    private List<String> buildFormVariablesBySelectedList() {
+    	if (allVariables == null || Strings.isNullOrEmpty(processVariable)) {
+    	    return java.util.Collections.emptyList();
+    	}
+
+        Variable listVar = findVariableByName(allVariables, getProcessVariable());
+        if (listVar == null || !VariableUtils.isContainerVariable(listVar)) {
+            return java.util.Collections.emptyList();
+        }
+
+
+        String componentType = VariableUtils.getListVariableComponentFormat(listVar);
+
+
+        List<String> result = new java.util.ArrayList<>();
+        for (Variable v : allVariables) {
+            String name = v.getName();
+            if (name == null || name.contains(".")) {      
+                continue;
+            }
+            if (VariableUtils.isContainerVariable(v)) {    
+                continue;
+            }
+
+            String varType = v.isComplex() ? v.getUserType().getName() : v.getFormatClassName();
+            if (componentType != null && componentType.equals(varType)) {
+                result.add(name);
+            }
+        }
+        return result;
+    }
+
+    private Variable findVariableByName(List<Variable> variables, String name) {
+        if (name == null) {
+            return null;
+        }
+        for (Variable v : variables) {
+            if (name.equals(v.getName())) {
+                return v;
+            }
+        }
+        return null;
     }
 }
