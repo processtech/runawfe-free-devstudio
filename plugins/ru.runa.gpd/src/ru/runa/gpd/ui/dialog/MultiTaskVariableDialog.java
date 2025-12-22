@@ -1,5 +1,7 @@
 package ru.runa.gpd.ui.dialog;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.jface.dialogs.Dialog;
@@ -29,7 +31,7 @@ public class MultiTaskVariableDialog extends Dialog {
     private String processVariable = "";
     private String formVariable = "";
     private final VariableMapping oldMapping;
-    private Text varName2;
+    private Text formVariableText;
 
     protected MultiTaskVariableDialog(List<String> processVariables, List<Variable> allVariables, VariableMapping oldMapping) {
         super(Display.getCurrent().getActiveShell());
@@ -69,11 +71,11 @@ public class MultiTaskVariableDialog extends Dialog {
         Composite varComposite1 = new Composite(composite, SWT.NONE);
         varComposite1.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         varComposite1.setLayout(new GridLayout(2, false));
-        final Text varName1 = new Text(varComposite1, SWT.READ_ONLY | SWT.BORDER);
+        final Text processVariableText = new Text(varComposite1, SWT.READ_ONLY | SWT.BORDER);
         GridData processVariableTextData1 = new GridData(GridData.FILL_HORIZONTAL);
         processVariableTextData1.minimumWidth = 200;
-        varName1.setLayoutData(processVariableTextData1);
-        varName1.setText(getProcessVariable());
+        processVariableText.setLayoutData(processVariableTextData1);
+        processVariableText.setText(getProcessVariable());
         Button selectButton1 = new Button(varComposite1, SWT.PUSH);
         selectButton1.setText("...");
         selectButton1.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
@@ -83,10 +85,10 @@ public class MultiTaskVariableDialog extends Dialog {
                 String result = new ChooseVariableNameDialog(processVariables).openDialog();
                 if (result != null) {
                     processVariable = result;
-                    varName1.setText(processVariable);
+                    processVariableText.setText(processVariable);
                     formVariable = "";
-                    if (varName2 != null) {
-                        varName2.setText("");
+                    if (formVariableText != null) {
+                        formVariableText.setText("");
                     }
                     updateButtons();
                 }
@@ -100,11 +102,11 @@ public class MultiTaskVariableDialog extends Dialog {
         Composite varComposite2 = new Composite(composite, SWT.NONE);
         varComposite2.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         varComposite2.setLayout(new GridLayout(2, false));
-         varName2 = new Text(varComposite2, SWT.READ_ONLY | SWT.BORDER);
+         formVariableText = new Text(varComposite2, SWT.READ_ONLY | SWT.BORDER);
         GridData processVariableTextData2 = new GridData(GridData.FILL_HORIZONTAL);
         processVariableTextData2.minimumWidth = 200;
-        varName2.setLayoutData(processVariableTextData2);
-        varName2.setText(getFormVariable());
+        formVariableText.setLayoutData(processVariableTextData2);
+        formVariableText.setText(getFormVariable());
         Button selectButton2 = new Button(varComposite2, SWT.PUSH);
         selectButton2.setText("...");
         selectButton2.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
@@ -115,7 +117,7 @@ public class MultiTaskVariableDialog extends Dialog {
                 String result = new ChooseVariableNameDialog(candidates).openDialog();
                 if (result != null) {
                     formVariable = result;
-                    varName2.setText(formVariable);
+                    formVariableText.setText(formVariable);
                 updateButtons();
                 }
             }
@@ -142,25 +144,22 @@ public class MultiTaskVariableDialog extends Dialog {
     
     private List<String> buildFormVariablesBySelectedList() {
     	if (allVariables == null || Strings.isNullOrEmpty(processVariable)) {
-    	    return java.util.Collections.emptyList();
+    	    return Collections.emptyList();
     	}
 
         Variable listVar = findVariableByName(allVariables, getProcessVariable());
         if (listVar == null || !VariableUtils.isContainerVariable(listVar)) {
-            return java.util.Collections.emptyList();
+            return Collections.emptyList();
         }
 
 
         String componentType = VariableUtils.getListVariableComponentFormat(listVar);
 
 
-        List<String> result = new java.util.ArrayList<>();
+        List<String> result = new ArrayList<>();
         for (Variable v : allVariables) {
             String name = v.getName();
-            if (name == null || name.contains(".")) {      
-                continue;
-            }
-            if (VariableUtils.isContainerVariable(v)) {    
+            if (name == null || name.contains(".") || VariableUtils.isContainerVariable(v)) {    
                 continue;
             }
 
