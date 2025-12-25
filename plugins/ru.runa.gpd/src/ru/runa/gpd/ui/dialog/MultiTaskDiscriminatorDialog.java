@@ -38,6 +38,7 @@ import ru.runa.gpd.ui.custom.SwtUtils;
 import ru.runa.gpd.ui.custom.TableViewerLocalDragAndDropSupport;
 import ru.runa.gpd.util.MultiinstanceParameters;
 import ru.runa.gpd.util.VariableMapping;
+import ru.runa.gpd.util.VariableUtils;
 
 import com.google.common.collect.Lists;
 
@@ -230,7 +231,11 @@ public class MultiTaskDiscriminatorDialog extends Dialog {
         }
 
         private void editVariableMapping(VariableMapping mapping) {
-            MultiTaskVariableDialog dialog = new MultiTaskVariableDialog(getProcessVariablesNames(state.getProcessDefinition()), mapping);
+        	 ProcessDefinition processDefinition = state.getProcessDefinition();
+        	 List<String> processVariables = getProcessVariablesNames(processDefinition);
+        	    List<Variable> allVariables = processDefinition.getVariables(true, true); 
+        	    
+            MultiTaskVariableDialog dialog = new MultiTaskVariableDialog(processVariables, allVariables, mapping);
             if (dialog.open() != IDialogConstants.CANCEL_ID) {
                 if (mapping == null) {
                     mapping = new VariableMapping();
