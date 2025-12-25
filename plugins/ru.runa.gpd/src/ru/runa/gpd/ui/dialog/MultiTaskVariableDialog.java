@@ -68,18 +68,18 @@ public class MultiTaskVariableDialog extends Dialog {
         labelProcessVariable.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
         labelProcessVariable.setText(Localization.getString("Subprocess.ProcessVariableName") + ":");
 
-        Composite varComposite1 = new Composite(composite, SWT.NONE);
-        varComposite1.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        varComposite1.setLayout(new GridLayout(2, false));
-        final Text processVariableText = new Text(varComposite1, SWT.READ_ONLY | SWT.BORDER);
-        GridData processVariableTextData1 = new GridData(GridData.FILL_HORIZONTAL);
-        processVariableTextData1.minimumWidth = 200;
-        processVariableText.setLayoutData(processVariableTextData1);
+        Composite processVariableComposite = new Composite(composite, SWT.NONE);
+        processVariableComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        processVariableComposite.setLayout(new GridLayout(2, false));
+        final Text processVariableText = new Text(processVariableComposite, SWT.READ_ONLY | SWT.BORDER);
+        GridData processVariableTextLayoutData = new GridData(GridData.FILL_HORIZONTAL);
+        processVariableTextLayoutData.minimumWidth = 200;
+        processVariableText.setLayoutData(processVariableTextLayoutData);
         processVariableText.setText(getProcessVariable());
-        Button selectButton1 = new Button(varComposite1, SWT.PUSH);
-        selectButton1.setText("...");
-        selectButton1.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-        selectButton1.addSelectionListener(new SelectionAdapter() {
+        Button selectProcessVariableButton = new Button(processVariableComposite, SWT.PUSH);
+        selectProcessVariableButton.setText("...");
+        selectProcessVariableButton.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+        selectProcessVariableButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 String result = new ChooseVariableNameDialog(processVariables).openDialog();
@@ -99,18 +99,18 @@ public class MultiTaskVariableDialog extends Dialog {
         labelTaskVariable.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
         labelTaskVariable.setText(Localization.getString("MultiTask.FormVariableName") + ":");
         
-        Composite varComposite2 = new Composite(composite, SWT.NONE);
-        varComposite2.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        varComposite2.setLayout(new GridLayout(2, false));
-         formVariableText = new Text(varComposite2, SWT.READ_ONLY | SWT.BORDER);
-        GridData processVariableTextData2 = new GridData(GridData.FILL_HORIZONTAL);
-        processVariableTextData2.minimumWidth = 200;
-        formVariableText.setLayoutData(processVariableTextData2);
+        Composite formVariableComposite = new Composite(composite, SWT.NONE);
+        formVariableComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        formVariableComposite.setLayout(new GridLayout(2, false));
+        formVariableText = new Text(formVariableComposite, SWT.READ_ONLY | SWT.BORDER);
+        GridData formVariableTextLayoutData = new GridData(GridData.FILL_HORIZONTAL);
+        formVariableTextLayoutData.minimumWidth = 200;
+        formVariableText.setLayoutData(formVariableTextLayoutData);
         formVariableText.setText(getFormVariable());
-        Button selectButton2 = new Button(varComposite2, SWT.PUSH);
-        selectButton2.setText("...");
-        selectButton2.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-        selectButton2.addSelectionListener(new SelectionAdapter() {
+        Button selectFormVariableButton = new Button(formVariableComposite, SWT.PUSH);
+        selectFormVariableButton.setText("...");
+        selectFormVariableButton.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+        selectFormVariableButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
             	List<String> candidates = buildFormVariablesBySelectedList();
