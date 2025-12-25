@@ -1,7 +1,12 @@
 package ru.runa.gpd.extension.handler.var;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.dom4j.DocumentException;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -14,6 +19,9 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
+
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.handler.XmlBasedConstructorProvider;
@@ -25,18 +33,16 @@ import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
 import ru.runa.gpd.ui.custom.SwtUtils;
 import ru.runa.gpd.util.VariableUtils;
 
-import com.google.common.collect.Lists;
-
 public class UserTypeListAggregateFunctionActionHandlerProvider extends XmlBasedConstructorProvider<UserTypeListAggregateFunctionConfig> {
 
     @Override
     protected UserTypeListAggregateFunctionConfig createDefault() {
-        return new UserTypeListAggregateFunctionConfig("", Lists.newArrayList(
-            new UserTypeListAggregateFunctionConfig.Operation("", "SUM", "")));
+        return new UserTypeListAggregateFunctionConfig("", new ArrayList<>(Arrays.asList(
+            new UserTypeListAggregateFunctionConfig.Operation("", "SUM", ""))));
     }
 
     @Override
-    protected UserTypeListAggregateFunctionConfig fromXml(String xml) throws Exception {
+    protected UserTypeListAggregateFunctionConfig fromXml(String xml) throws DocumentException {
         return UserTypeListAggregateFunctionConfig.fromXml(xml);
     }
 
@@ -78,7 +84,16 @@ public class UserTypeListAggregateFunctionActionHandlerProvider extends XmlBased
             label.setText(Localization.getString("UserTypeListAggregateFunctionConfig.list"));
             final Combo combo = new Combo(this, SWT.READ_ONLY);
             for (String variableName : delegable.getVariableNames(false, List.class.getName())) {
-                combo.add(variableName);
+                Variable listVar = VariableUtils.getVariableByName(((ProcessDefinitionAware) delegable).getProcessDefinition(), variableName);
+                if (listVar != null && "ru.runa.wfe.var.format.ListFormat".equals(listVar.getFormatClassName())) {
+                    String[] componentTypes = listVar.getFormatComponentClassNames();
+                    if (componentTypes.length > 0) {
+                        VariableUserType userType = ((ProcessDefinitionAware) delegable).getProcessDefinition().getTypeByName(componentTypes[0]);
+                        if (userType != null) {
+                            combo.add(variableName);
+                        }
+                    }
+                }
             }
             combo.setText(model.getListName());
             combo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -173,8 +188,12 @@ public class UserTypeListAggregateFunctionActionHandlerProvider extends XmlBased
 
             // Result
             final Combo resultCombo = new Combo(parent, SWT.READ_ONLY);
+            List<String> numericFormats = Arrays.asList("ru.runa.wfe.var.format.LongFormat", "ru.runa.wfe.var.format.DoubleFormat", "ru.runa.wfe.var.format.BigDecimalFormat");
             for (String variableName : delegable.getVariableNames(true)) {
-                resultCombo.add(variableName);
+                Variable var = VariableUtils.getVariableByName(((ProcessDefinitionAware) delegable).getProcessDefinition(), variableName);
+                if (var != null && numericFormats.contains(var.getFormatClassName())) {
+                    resultCombo.add(variableName);
+                }
             }
             resultCombo.setText(operation.getResult());
             resultCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -189,10 +208,40 @@ public class UserTypeListAggregateFunctionActionHandlerProvider extends XmlBased
             SwtUtils.createLink(parent, "[X]", new LoggingHyperlinkAdapter() {
                 
                 @Override
-                protected void onLinkActivated(HyperlinkEvent e) throws Exception {
+                protected void onLinkActivated(HyperlinkEvent e) throws RuntimeException {
                     model.removeOperation(index);
                 }
             });
         }
+    }
+
+    @Override
+    public List<String> getUsedVariableNames(Delegable delegable) {
+        UserTypeListAggregateFunctionConfig config = UserTypeListAggregateFunctionConfig.fromXml(delegable.getDelegationConfiguration());
+        List<String> result = new ArrayList<>();
+        String listName = config.getListName();
+        if (!listName.isEmpty()) {
+            result.add(listName);
+            for (UserTypeListAggregateFunctionConfig.Operation op : config.getOperations()) {
+                if (!op.getAttribute().isEmpty()) {
+                    result.add(listName + "." + op.getAttribute());
+                }
+                if (!op.getResult().isEmpty()) {
+                    result.add(op.getResult());
+                }
+            }
+        }
+        PluginLogger.logInfo("используемые переменные: " + result);
+        return result;
+    }
+
+
+    // TODO Надо отделить атрибуты от переменных
+    @Override
+    public String getConfigurationOnVariableRename(Delegable delegable, Variable currentVariable, Variable previewVariable) {
+        String oldString = Pattern.quote("\"" + currentVariable.getName() + "\"");
+        String newString = Matcher.quoteReplacement("\"" + previewVariable.getName() + "\"");
+        PluginLogger.logInfo("переменная " + currentVariable.getName() + " заменена на " + previewVariable.getName());
+        return delegable.getDelegationConfiguration().replaceAll(oldString, newString);
     }
 }
