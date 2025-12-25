@@ -37,7 +37,9 @@ public class UserTypeListAggregateFunctionConfig extends Observable {
             String attribute = operationElement.attributeValue("attribute");
             String function = operationElement.attributeValue("function");
             String result = operationElement.attributeValue("result");
-            operations.add(new Operation(attribute, function, result));
+            if (!attribute.isBlank() && ! function.isBlank() && !result.isBlank()) {
+                operations.add(new Operation(attribute, function, result));
+            }
         }
         return new UserTypeListAggregateFunctionConfig(listName, operations);
     }
@@ -81,10 +83,12 @@ public class UserTypeListAggregateFunctionConfig extends Observable {
         Element listElement = rootElement.addElement("list");
         listElement.addAttribute("name", listName);
         for (Operation operation : operations) {
-            Element operationElement = rootElement.addElement("operation");
-            operationElement.addAttribute("attribute", operation.getAttribute());
-            operationElement.addAttribute("function", operation.getFunction());
-            operationElement.addAttribute("result", operation.getResult());
+            if (!operation.getAttribute().isBlank() && ! operation.getFunction().isBlank() && !operation.getResult().isBlank()) {
+                Element operationElement = rootElement.addElement("operation");
+                operationElement.addAttribute("attribute", operation.getAttribute());
+                operationElement.addAttribute("function", operation.getFunction());
+                operationElement.addAttribute("result", operation.getResult());
+            }
         }
         return XmlUtils.toString(document);
     }

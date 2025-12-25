@@ -19,21 +19,28 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
+import ru.runa.gpd.extension.DelegableConfigurationDialog;
+import ru.runa.gpd.extension.HandlerArtifact;
+import ru.runa.gpd.extension.handler.FormulaCellEditorProvider.ConfigurationDialog;
 import ru.runa.gpd.extension.handler.XmlBasedConstructorProvider;
+import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.Delegable;
+import ru.runa.gpd.lang.model.GraphElement;
+import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.ProcessDefinitionAware;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableUserType;
+import ru.runa.gpd.search.VariableSearchVisitor;
 import ru.runa.gpd.ui.custom.LoggingHyperlinkAdapter;
 import ru.runa.gpd.ui.custom.SwtUtils;
 import ru.runa.gpd.util.VariableUtils;
 
 public class UserTypeListAggregateFunctionActionHandlerProvider extends XmlBasedConstructorProvider<UserTypeListAggregateFunctionConfig> {
+
+    // Хардкод ограничения на типы
+    List<String> numericFormats = Arrays.asList("ru.runa.wfe.var.format.LongFormat", "ru.runa.wfe.var.format.DoubleFormat", "ru.runa.wfe.var.format.BigDecimalFormat");
 
     @Override
     protected UserTypeListAggregateFunctionConfig createDefault() {
@@ -149,16 +156,10 @@ public class UserTypeListAggregateFunctionActionHandlerProvider extends XmlBased
             String listName = model.getListName();
             if (!listName.isEmpty()) {
                 Variable listVariable = VariableUtils.getVariableByName(((ProcessDefinitionAware) delegable).getProcessDefinition(), listName);
-                if (listVariable != null && "ru.runa.wfe.var.format.ListFormat".equals(listVariable.getFormatClassName())) {
-                    String[] componentTypes = listVariable.getFormatComponentClassNames();
-                    if (componentTypes.length > 0) {
-                        VariableUserType userType = ((ProcessDefinitionAware) delegable).getProcessDefinition().getTypeByName(componentTypes[0]);
-                        if (userType != null) {
-                            for (Variable attr : userType.getAttributes()) {
-                                attributeCombo.add(attr.getName());
-                            }
-                        }
-                    }
+                String[] componentTypes = listVariable.getFormatComponentClassNames();
+                VariableUserType userType = ((ProcessDefinitionAware) delegable).getProcessDefinition().getTypeByName(componentTypes[0]);
+                for (Variable attr : userType.getAttributes()) {
+                    attributeCombo.add(attr.getName());
                 }
             }
             attributeCombo.setText(operation.getAttribute());
@@ -188,7 +189,6 @@ public class UserTypeListAggregateFunctionActionHandlerProvider extends XmlBased
 
             // Result
             final Combo resultCombo = new Combo(parent, SWT.READ_ONLY);
-            List<String> numericFormats = Arrays.asList("ru.runa.wfe.var.format.LongFormat", "ru.runa.wfe.var.format.DoubleFormat", "ru.runa.wfe.var.format.BigDecimalFormat");
             for (String variableName : delegable.getVariableNames(true)) {
                 Variable var = VariableUtils.getVariableByName(((ProcessDefinitionAware) delegable).getProcessDefinition(), variableName);
                 if (var != null && numericFormats.contains(var.getFormatClassName())) {
@@ -206,7 +206,6 @@ public class UserTypeListAggregateFunctionActionHandlerProvider extends XmlBased
 
             // Delete
             SwtUtils.createLink(parent, "[X]", new LoggingHyperlinkAdapter() {
-                
                 @Override
                 protected void onLinkActivated(HyperlinkEvent e) throws RuntimeException {
                     model.removeOperation(index);
@@ -223,25 +222,94 @@ public class UserTypeListAggregateFunctionActionHandlerProvider extends XmlBased
         if (!listName.isEmpty()) {
             result.add(listName);
             for (UserTypeListAggregateFunctionConfig.Operation op : config.getOperations()) {
-                if (!op.getAttribute().isEmpty()) {
-                    result.add(listName + "." + op.getAttribute());
-                }
-                if (!op.getResult().isEmpty()) {
-                    result.add(op.getResult());
-                }
+                result.add(listName + "." + op.getAttribute());
+                result.add(op.getResult());
             }
         }
-        PluginLogger.logInfo("используемые переменные: " + result);
+
+        // PluginLogger.logInfo("используемые переменные: " + result);
+        // // Атрибутов списка не существует!
+        // for (String varName : result) {
+        //     if (VariableUtils.getVariableByName(((ProcessDefinitionAware) delegable).getProcessDefinition(), varName) != null) {
+        //         PluginLogger.logInfo("переменная " + varName + " существует");
+        //     } else {
+        //         PluginLogger.logInfo("переменной " + varName + " НЕ существует");
+        //     }
+        // }
         return result;
     }
 
-
-    // TODO Надо отделить атрибуты от переменных
     @Override
     public String getConfigurationOnVariableRename(Delegable delegable, Variable currentVariable, Variable previewVariable) {
-        String oldString = Pattern.quote("\"" + currentVariable.getName() + "\"");
-        String newString = Matcher.quoteReplacement("\"" + previewVariable.getName() + "\"");
-        PluginLogger.logInfo("переменная " + currentVariable.getName() + " заменена на " + previewVariable.getName());
-        return delegable.getDelegationConfiguration().replaceAll(oldString, newString);
+        UserTypeListAggregateFunctionConfig config = UserTypeListAggregateFunctionConfig.fromXml(delegable.getDelegationConfiguration());
+        
+        if (config.getListName() != null && config.getListName().equals(currentVariable.getName())) {
+            config.setListName(previewVariable.getName());
+        }
+        
+        List<UserTypeListAggregateFunctionConfig.Operation> updatedOperations = new ArrayList<>();
+        for (UserTypeListAggregateFunctionConfig.Operation op : config.getOperations()) {
+            // TODO Доделать, когда в UsedVariableNames будут атрибуты
+            if (op.getResult() != null && op.getResult().equals(currentVariable.getName())) {
+                updatedOperations.add(new UserTypeListAggregateFunctionConfig.Operation(
+                    op.getAttribute(), op.getFunction(), previewVariable.getName()));
+            } else {
+                updatedOperations.add(op);
+            }
+        }
+
+        config = new UserTypeListAggregateFunctionConfig(config.getListName(), updatedOperations);
+        
+        return config.toString();
+    }
+
+    @Override
+    protected boolean validateModel(Delegable delegable, UserTypeListAggregateFunctionConfig model, List<ValidationError> errors) {
+        String listName = model.getListName();
+        if (listName == null || listName.isEmpty()) {
+            errors.add(ValidationError.createWarning((GraphElement) delegable, "List name is not specified"));
+        } else {
+            Variable listVar = VariableUtils.getVariableByName(((ProcessDefinitionAware) delegable).getProcessDefinition(), listName);
+            if (listVar == null) {
+                errors.add(ValidationError.createWarning((GraphElement) delegable, "List variable '" + listName + "' does not exist"));
+            } else if (!"ru.runa.wfe.var.format.ListFormat".equals(listVar.getFormatClassName())) {
+                errors.add(ValidationError.createWarning((GraphElement) delegable, "Variable '" + listName + "' is not a list"));
+            } else {
+                String[] componentTypes = listVar.getFormatComponentClassNames();
+                if (componentTypes == null || componentTypes.length == 0) {
+                    errors.add(ValidationError.createWarning((GraphElement) delegable, "List '" + listName + "' does not contain user type elements"));
+                } else {
+                    VariableUserType userType = ((ProcessDefinitionAware) delegable).getProcessDefinition().getTypeByName(componentTypes[0]);
+                    if (userType == null) {
+                        errors.add(ValidationError.createWarning((GraphElement) delegable, "Type of list elements '" + listName + "' not found"));
+                    } else {
+
+                        for (UserTypeListAggregateFunctionConfig.Operation operation : model.getOperations()) {
+                            String attribute = operation.getAttribute();
+                            if (attribute == null || attribute.isEmpty()) {
+                                errors.add(ValidationError.createWarning((GraphElement)delegable, "Operation attribute is not specified"));
+                            } else {
+                                boolean attributeExists = userType.getAttributes().stream().anyMatch(attr -> attr.getName().equals(attribute));
+                                if (!attributeExists) {
+                                    errors.add(ValidationError.createWarning((GraphElement)delegable, "Attribute '" + attribute + "' not found in type '" + componentTypes[0] + "'"));
+                                }
+                            }
+                            String result = operation.getResult();
+                            if (result == null || result.isEmpty()) {
+                                errors.add(ValidationError.createWarning((GraphElement)delegable, "Result variable is not specified"));
+                            } else {
+                                Variable resultVar = VariableUtils.getVariableByName(((ProcessDefinitionAware) delegable).getProcessDefinition(), result);
+                                if (resultVar == null) {
+                                    errors.add(ValidationError.createWarning((GraphElement)delegable, "Result variable '" + result + "' does not exist"));
+                                } else if (!numericFormats.contains(resultVar.getFormatClassName())) {
+                                    errors.add(ValidationError.createWarning((GraphElement)delegable, "Result variable '" + result + "' has incorrect format (must be numeric)"));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return super.validateModel(delegable, model, errors);
     }
 }
