@@ -7,6 +7,8 @@ import ru.runa.gpd.lang.model.Variable;
 public class GroovyDecisionModel extends GroovyModel {
     private final List<IfExpression> ifExpressions = new ArrayList<>();
 
+    //something
+    
     public GroovyDecisionModel() {
     }
 
