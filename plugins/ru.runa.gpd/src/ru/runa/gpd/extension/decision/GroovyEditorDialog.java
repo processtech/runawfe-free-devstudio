@@ -371,7 +371,7 @@ public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
             transitionLabel.setLayoutData(new GridData());
             
             GridData expressionLineData = new GridData(GridData.FILL_HORIZONTAL);
-            expressionLineData.horizontalSpan = 5;
+            expressionLineData.horizontalSpan = 6;
             setLayoutData(expressionLineData);
             
             expressionsComposite = new Composite(this, SWT.NONE);
@@ -543,6 +543,11 @@ public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
                         upRecord((Integer) e.widget.getData());
                     }
                 });
+            } else {
+            	upButton = new Button(this, SWT.PUSH);
+                upButton.setImage(upImage);
+                upButton.setData(lineIndex);
+                upButton.setVisible(false);
             }
 
             
