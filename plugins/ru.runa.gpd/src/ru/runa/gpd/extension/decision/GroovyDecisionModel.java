@@ -71,6 +71,31 @@ public class GroovyDecisionModel extends GroovyModel {
         private List<int[]> brackets;
         private final String transition;
         private boolean byDefault;
+        
+        public IfExpression(String transition) {
+            this.transition = transition;
+            this.byDefault = true;
+            this.firstVariables = new ArrayList<>();
+            this.secondVariables = new ArrayList<>();
+            this.operations = new ArrayList<>();
+            this.logicExpressions = new ArrayList<>();
+            this.brackets = new ArrayList<>();
+        }
+        
+        public IfExpression(String transition, Variable firstVariable, Object secondVariable, Operation operation) {
+            this.transition = transition;
+            this.byDefault = false;
+            this.firstVariables = new ArrayList<>();
+            this.firstVariables.add(firstVariable);
+            this.secondVariables = new ArrayList<>();
+            this.secondVariables.add(secondVariable);
+            this.operations = new ArrayList<>();
+            this.operations.add(operation);
+            this.logicExpressions = new ArrayList<>();
+            this.logicExpressions.add(LogicComposite.NULL_LOGIC_EXPRESSION);
+            this.brackets = new ArrayList<>();
+            this.brackets.add(new int[]{0, 0});
+        }
 
 
         public IfExpression(String transition, List<Variable> firstVariables, List<Object> secondVariables, List<Operation> operations,
@@ -81,6 +106,7 @@ public class GroovyDecisionModel extends GroovyModel {
             this.operations = operations;
             this.logicExpressions = logicExpressions;
             this.brackets = brackets;
+            this.byDefault = false;
         }
         
         public static String normalizeReturnString(String returnStr) {
