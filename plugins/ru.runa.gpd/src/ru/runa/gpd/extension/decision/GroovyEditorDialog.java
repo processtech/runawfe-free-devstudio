@@ -29,12 +29,8 @@ import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.SharedImages;
 import ru.runa.gpd.extension.businessRule.BracketPaintListener;
-import ru.runa.gpd.extension.businessRule.BusinessRuleModel;
 import ru.runa.gpd.extension.businessRule.LogicComposite;
-import ru.runa.gpd.extension.decision.EditorDialog.ComboSelectionHandler;
-import ru.runa.gpd.extension.decision.EditorDialog.FilterBoxSelectionHandler;
 import ru.runa.gpd.extension.decision.GroovyDecisionModel.IfExpression;
-import ru.runa.gpd.extension.handler.FormulaCellEditorProvider;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
@@ -91,12 +87,6 @@ public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
             createBottomComposite();
         }
     }
-    
-    private ExpressionLine createExpressionLine(int index, GroovyDecisionModel model) {
-        ExpressionLine expressionLine = new ExpressionLine(index, model);
-        expressionLines.add(index, expressionLine);
-        return expressionLine;
-    }
 
     private void createBottomComposite() {
     	Composite bottomComposite = new Composite(constructor, SWT.NONE);
@@ -117,8 +107,21 @@ public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
             protected void onSelection(SelectionEvent e) throws Exception {
             	String selectedTransition = defaultTransitionCombo.getText();
             	for (ExpressionLine line : expressionLines) {
-                    boolean enabled = !line.getTransitionLabel().equals(selectedTransition);
-                    line.setEnabled(enabled);
+            		line.transitionLabel.setEnabled(true);
+	                line.expressionsComposite.setEnabled(true);
+	                line.getComplexExpressionButton().setEnabled(true);
+	                line.addChangeButton.setEnabled(true);
+                }
+            	if (!selectedTransition.equals(Localization.getString(NO_TRANSITION_BY_DEFAULT))) {
+                    for (ExpressionLine line : expressionLines) {
+                        if (line.getTransitionLabel().getText().equals(selectedTransition)) {
+                        	line.transitionLabel.setEnabled(false);
+        	                line.expressionsComposite.setEnabled(false);
+        	                line.getComplexExpressionButton().setEnabled(false);
+        	                line.addChangeButton.setEnabled(false);
+                            break;
+                        }
+                    }
                 }
             }
         });
@@ -188,7 +191,10 @@ public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
 	        IfExpression ifExpression = initialModel.getIfExpression(transitionName);
 	        if (ifExpression != null) {
 	            if (ifExpression.isByDefault()) {
-	                expressionLine.setEnabled(false);
+	                expressionLine.transitionLabel.setEnabled(false);
+	                expressionLine.expressionsComposite.setEnabled(false);
+	                expressionLine.getComplexExpressionButton().setEnabled(true);
+	                expressionLine.addChangeButton.setEnabled(false);
 	                defaultTransitionCombo.setText(ifExpression.getTransition());
 	            } else {
 	                initialize(ifExpression, expressionLine);
@@ -200,6 +206,7 @@ public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
     }
 
     private void upRecord(Integer recordIndex) {
+//    	System.out.println(recordIndex);
 //        String recordText = labels[recordIndex].getText();
 //        labels[recordIndex].setText(labels[recordIndex - 1].getText());
 //        labels[recordIndex - 1].setText(recordText);
