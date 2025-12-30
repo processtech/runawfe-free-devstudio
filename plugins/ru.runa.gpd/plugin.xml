@@ -2083,16 +2083,26 @@
             className="ru.runa.wfe.extension.handler.var.ConvertMapsToListsHandler"
             enabled="true"
             label="%ru.runa.wfe.extension.handler.var.ConvertMapsToListsHandler">
-      </handler>
-      <handler
-            actionHandler="true"
-            assignmentHandler="false"
-            botTaskHandler="true"
-            cellEditorProvider="ru.runa.gpd.extension.handler.ConfigBasedProvider"
-            className="ru.runa.wfe.extension.handler.user.GetExecutorByRelationHandler"
-            decisionHandler="false"
-            enabled="true"
-            label="%ru.runa.wfe.extension.handler.user.GetExecutorByRelationHandler">
+       </handler>
+       <handler
+             actionHandler="true"
+             assignmentHandler="false"
+             botTaskHandler="true"
+             cellEditorProvider="ru.runa.gpd.extension.handler.var.UserTypeListAggregateFunctionActionHandlerProvider"
+             className="ru.runa.wfe.extension.handler.var.UserTypeListAggregateFunctionActionHandler"
+             decisionHandler="false"
+             enabled="true"
+             label="%ru.runa.wfe.extension.handler.var.UserTypeListAggregateFunctionActionHandler">
+       </handler>
+       <handler
+             actionHandler="true"
+             assignmentHandler="false"
+             botTaskHandler="true"
+             cellEditorProvider="ru.runa.gpd.extension.handler.ConfigBasedProvider"
+             className="ru.runa.wfe.extension.handler.user.GetExecutorByRelationHandler"
+             decisionHandler="false"
+             enabled="true"
+             label="%ru.runa.wfe.extension.handler.user.GetExecutorByRelationHandler">
       </handler>
       <handler
             actionHandler="true"
