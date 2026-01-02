@@ -106,9 +106,6 @@ public class GroovyDecisionModel extends GroovyModel {
         }
 
         public String generateCode() {
-        	if (byDefault) {
-                return ""; 
-            }
         	StringBuffer buffer = new StringBuffer();
             buffer.append("if ( ");
             for (int i = 0; i < firstVariables.size(); i++) {
