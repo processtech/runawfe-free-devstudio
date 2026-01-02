@@ -79,6 +79,7 @@ public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
             }
             transitionNames.addAll(transitionNamesToAdd);
         }
+        expressionLines.clear();
         for (int i = 0; i < transitionNames.size(); i++) {
         	ExpressionLine expressionLine = new ExpressionLine(i,initialModel);
             expressionLines.add(i, expressionLine);

@@ -3,7 +3,10 @@ package ru.runa.gpd.extension.decision;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.common.base.Strings;
+
 import ru.runa.gpd.extension.businessRule.LogicComposite;
+import ru.runa.gpd.extension.businessRule.BusinessRuleModel.IfExpression;
 import ru.runa.gpd.lang.model.Variable;
 
 public class GroovyDecisionModel extends GroovyModel {
@@ -58,7 +61,7 @@ public class GroovyDecisionModel extends GroovyModel {
             }
         }
         if (defaultIf != null) {
-            buffer.append("\nreturn \"" + defaultIf.getTransition() + "\";\n");
+            buffer.append("\nreturn \"" + normalizeString(getDefaultTransitionName()) + "\";\n");
         }
         return buffer.toString();
     }
@@ -75,27 +78,13 @@ public class GroovyDecisionModel extends GroovyModel {
         public IfExpression(String transition) {
             this.transition = transition;
             this.byDefault = true;
-            this.firstVariables = new ArrayList<>();
-            this.secondVariables = new ArrayList<>();
-            this.operations = new ArrayList<>();
-            this.logicExpressions = new ArrayList<>();
-            this.brackets = new ArrayList<>();
+            this.firstVariables = null;
+            this.secondVariables = null;
+            this.operations = null;
+            this.logicExpressions = null;
+            this.brackets = null;
         }
-        
-        public IfExpression(String transition, Variable firstVariable, Object secondVariable, Operation operation) {
-            this.transition = transition;
-            this.byDefault = false;
-            this.firstVariables = new ArrayList<>();
-            this.firstVariables.add(firstVariable);
-            this.secondVariables = new ArrayList<>();
-            this.secondVariables.add(secondVariable);
-            this.operations = new ArrayList<>();
-            this.operations.add(operation);
-            this.logicExpressions = new ArrayList<>();
-            this.logicExpressions.add(LogicComposite.NULL_LOGIC_EXPRESSION);
-            this.brackets = new ArrayList<>();
-            this.brackets.add(new int[]{0, 0});
-        }
+       
 
 
         public IfExpression(String transition, List<Variable> firstVariables, List<Object> secondVariables, List<Operation> operations,
@@ -117,6 +106,9 @@ public class GroovyDecisionModel extends GroovyModel {
         }
 
         public String generateCode() {
+        	if (byDefault) {
+                return ""; 
+            }
         	StringBuffer buffer = new StringBuffer();
             buffer.append("if ( ");
             for (int i = 0; i < firstVariables.size(); i++) {
