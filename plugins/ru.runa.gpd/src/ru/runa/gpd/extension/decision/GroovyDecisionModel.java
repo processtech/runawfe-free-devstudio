@@ -14,6 +14,10 @@ public class GroovyDecisionModel extends GroovyModel {
 
     public GroovyDecisionModel() {
     }
+    
+    public GroovyDecisionModel(List<IfExpression> expressions) {
+        this.ifExpressions.addAll(expressions); 
+    }
 
     public List<String> getTransitionNames() {
         List<String> transitionNames = new ArrayList<>();
@@ -76,13 +80,9 @@ public class GroovyDecisionModel extends GroovyModel {
         private boolean byDefault;
         
         public IfExpression(String transition) {
-            this.transition = transition;
-            this.byDefault = true;
-            this.firstVariables = null;
-            this.secondVariables = null;
             this.operations = null;
-            this.logicExpressions = null;
-            this.brackets = null;
+			this.transition = transition;
+            this.byDefault = true;
         }
        
 

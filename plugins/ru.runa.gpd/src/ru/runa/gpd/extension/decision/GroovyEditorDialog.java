@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.MouseEvent;
@@ -130,6 +129,24 @@ public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
     }
     
     private void initialize(IfExpression ifExpression, ExpressionLine expressionLine) {
+
+        int count = ifExpression.getFirstVariables().size();
+        if (count == 0) {
+            expressionLine.createExpression(0);
+            expressionLine.swapToSimple();
+            return;
+        }
+        expressionLine.swapToComplex();
+        Composite expressionsComposite = expressionLine.expressionsComposite;
+        for (Control child : expressionsComposite.getChildren()) {
+            child.dispose();
+        }
+        expressionLine.variableBoxes.clear();
+        expressionLine.operationBoxes.clear();
+        expressionLine.logicComposites.clear();
+        for (int i = 0; i < count; i++) {
+            expressionLine.createExpression(i);
+        }
         int bracketsCount = 0;
         for (int i = 0; i < ifExpression.getFirstVariables().size(); i++) {
             Variable firstVariable = ifExpression.getFirstVariables().get(i);
@@ -203,7 +220,6 @@ public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
 	        }
 	    }
 	    
-	    ((ScrolledComposite) constructor.getParent()).setMinSize(constructor.computeSize(SWT.MIN, SWT.DEFAULT));
     }
 
     private void upRecord(Integer recordIndex) {
@@ -292,7 +308,6 @@ public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
     protected void toCode() {
         clearErrorLabelText();
         try {
-            tempModel = new GroovyDecisionModel();
             GroovyDecisionModel model = new GroovyDecisionModel();
             String selectedDefault = defaultTransitionCombo.getText();
             IfExpression ifExpression;
@@ -352,6 +367,7 @@ public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
                 }
                 model.addIfExpression(ifExpression);
             }
+            tempModel = model;
             styledText.setText(model.toString());
         } catch (RuntimeException e1) {
             PluginLogger.logError(e1);
