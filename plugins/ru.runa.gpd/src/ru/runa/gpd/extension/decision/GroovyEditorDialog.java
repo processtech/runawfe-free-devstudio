@@ -295,6 +295,7 @@ public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
             tempModel = new GroovyDecisionModel();
             GroovyDecisionModel model = new GroovyDecisionModel();
             String selectedDefault = defaultTransitionCombo.getText();
+            IfExpression ifExpression;
             boolean hasDefault = !selectedDefault.equals(Localization.getString(NO_TRANSITION_BY_DEFAULT));
             for (ExpressionLine expressionLine : expressionLines) {
             	String transition = expressionLine.getTransitionLabel().getText();
@@ -344,8 +345,14 @@ public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
                         logicExpressions.add(expressionLine.getLogicComposites().get(i).getLogicBox().getText());
                     }
                 }
-                IfExpression ifExpression = new IfExpression(expressionLine.getTransitionLabel().getText(), firstVariables, secondVariables,
-                        operations, logicExpressions, brackets);
+                if (expressionLine.getTransitionLabel().getText().equals(defaultTransitionCombo.getText())) {
+                	ifExpression = new IfExpression(expressionLine.getTransitionLabel().getText());
+                	model.addIfExpression(ifExpression);
+                	break;
+                } else {
+                	ifExpression = new IfExpression(expressionLine.getTransitionLabel().getText(), firstVariables, secondVariables,
+                            operations, logicExpressions, brackets);
+                }
                 if (emptyFieldExist) {
                     continue;
                 }
