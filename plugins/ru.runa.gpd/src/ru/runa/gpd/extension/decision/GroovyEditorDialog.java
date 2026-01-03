@@ -345,14 +345,8 @@ public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
                         logicExpressions.add(expressionLine.getLogicComposites().get(i).getLogicBox().getText());
                     }
                 }
-                if (expressionLine.getTransitionLabel().getText().equals(defaultTransitionCombo.getText())) {
-                	ifExpression = new IfExpression(expressionLine.getTransitionLabel().getText());
-                	model.addIfExpression(ifExpression);
-                	break;
-                } else {
-                	ifExpression = new IfExpression(expressionLine.getTransitionLabel().getText(), firstVariables, secondVariables,
+                ifExpression = new IfExpression(transition, firstVariables, secondVariables,
                             operations, logicExpressions, brackets);
-                }
                 if (emptyFieldExist) {
                     continue;
                 }
