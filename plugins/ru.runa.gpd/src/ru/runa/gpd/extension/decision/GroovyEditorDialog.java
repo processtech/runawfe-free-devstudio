@@ -131,10 +131,44 @@ public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
     private void initialize(IfExpression ifExpression, ExpressionLine expressionLine) {
 
         int count = ifExpression.getFirstVariables().size();
-        if (count == 0) {
-            expressionLine.createExpression(0);
-            expressionLine.swapToSimple();
+        if (count ==1 ) {
+        	ifExpression = initialModel.getIfExpression(expressionLine.getTransitionLabel().getText());
+            if (ifExpression != null) {
+                if (ifExpression.isByDefault()) {
+                	expressionLine.transitionLabel.setEnabled(false);
+                	expressionLine.expressionsComposite.setEnabled(false);
+                	expressionLine.getComplexExpressionButton().setEnabled(false);
+                	expressionLine.addChangeButton.setEnabled(false);
+                    defaultTransitionCombo.setText(ifExpression.getTransition());
+                } else {
+                    Variable variable = ifExpression.getFirstVariables().get(expressionLine.getLineIndex());
+                    int index = variables.indexOf(variable);
+                    //variableBoxes[i]   expressionLine.getVariableBoxes().get(expressionLine.getLineIndex())
+                    expressionLine.getVariableBoxes().get(expressionLine.getLineIndex())[0].select(index);
+                    refresh(expressionLine.getVariableBoxes().get(expressionLine.getLineIndex())[0]);
+                    GroovyTypeSupport typeSupport = GroovyTypeSupport.get(variable.getJavaClassName());
+                    index = Operation.getAll(typeSupport).indexOf(ifExpression.getOperations().get(expressionLine.getLineIndex()));
+                    //operationBoxes[i] expressionLine.getOperationBoxes().get(expressionLine.getLineIndex())
+                    expressionLine.getOperationBoxes().get(expressionLine.getLineIndex()).select(index);
+                    refresh(expressionLine.getOperationBoxes().get(expressionLine.getLineIndex()));
+                    String secondVariableText = ifExpression.getSecondVariableTextValue(expressionLine.getLineIndex());
+                    int secondVariableIndex = 0;
+                    if (VariableUtils.getVariableByScriptingName(variables, secondVariableText) != null) {
+                        secondVariableIndex = getSecondVariableNames(variable).indexOf(secondVariableText);
+                    } else {
+                        int predefinedIndex = typeSupport.getPredefinedValues(ifExpression.getOperations().get(expressionLine.getLineIndex())).indexOf(secondVariableText);
+                        if (predefinedIndex >= 0) {
+                            secondVariableIndex = getSecondVariableNames(variable).size() + predefinedIndex;
+                        } else {
+                        	expressionLine.getVariableBoxes().get(expressionLine.getLineIndex())[1].add(secondVariableText, 0);
+                        	expressionLine.getVariableBoxes().get(expressionLine.getLineIndex())[1].setData(DATA_USER_INPUT_KEY, secondVariableText);
+                        }
+                    }
+                    expressionLine.getVariableBoxes().get(expressionLine.getLineIndex())[1].select(secondVariableIndex);
+                }
             return;
+            
+        }
         }
         expressionLine.swapToComplex();
         Composite expressionsComposite = expressionLine.expressionsComposite;
@@ -148,7 +182,7 @@ public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
             expressionLine.createExpression(i);
         }
         int bracketsCount = 0;
-        for (int i = 0; i < ifExpression.getFirstVariables().size(); i++) {
+        for (int i = 0; i < count; i++) {
             Variable firstVariable = ifExpression.getFirstVariables().get(i);
             Combo logicBox = expressionLine.getLogicComposites().get(i).getLogicBox();
             logicBox.select(logicBox.indexOf(ifExpression.getLogicExpressions().get(i)));
@@ -209,9 +243,8 @@ public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
 	        IfExpression ifExpression = initialModel.getIfExpression(transitionName);
 	        if (ifExpression != null) {
 	            if (ifExpression.isByDefault()) {
-	                expressionLine.transitionLabel.setEnabled(false);
 	                expressionLine.expressionsComposite.setEnabled(false);
-	                expressionLine.getComplexExpressionButton().setEnabled(true);
+	                expressionLine.getComplexExpressionButton().setEnabled(false);
 	                expressionLine.addChangeButton.setEnabled(false);
 	                defaultTransitionCombo.setText(ifExpression.getTransition());
 	            } else {
@@ -760,6 +793,12 @@ public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
         public Button getComplexExpressionButton() {
             return complexExpressionButton;
         }
+
+		public int getLineIndex() {
+			return lineIndex;
+		}
+        
+        
     }
 
 }
