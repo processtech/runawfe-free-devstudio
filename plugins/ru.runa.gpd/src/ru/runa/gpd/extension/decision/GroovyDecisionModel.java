@@ -3,20 +3,13 @@ package ru.runa.gpd.extension.decision;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.common.base.Strings;
-
 import ru.runa.gpd.extension.businessRule.LogicComposite;
-import ru.runa.gpd.extension.businessRule.BusinessRuleModel.IfExpression;
 import ru.runa.gpd.lang.model.Variable;
 
 public class GroovyDecisionModel extends GroovyModel {
     private final List<IfExpression> ifExpressions = new ArrayList<>();
 
     public GroovyDecisionModel() {
-    }
-    
-    public GroovyDecisionModel(List<IfExpression> expressions) {
-        this.ifExpressions.addAll(expressions); 
     }
 
     public List<String> getTransitionNames() {
