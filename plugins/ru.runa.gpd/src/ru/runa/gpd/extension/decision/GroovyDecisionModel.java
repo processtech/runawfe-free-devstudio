@@ -91,11 +91,8 @@ public class GroovyDecisionModel extends GroovyModel {
             this.byDefault = false;
         }
         
-        public static String normalizeReturnString(String returnStr) {
-            if (returnStr.contains("\"")) {
-                return returnStr.replaceAll("\"", "\\\\\"");
-            }
-            return returnStr;
+        public static String escapeQuotes(String input) {
+            return input.replaceAll("\"", "\\\\\"");
         }
 
         public String generateCode() {
@@ -128,7 +125,7 @@ public class GroovyDecisionModel extends GroovyModel {
                     }
                 }
             }
-            buffer.append(" ) {\n\treturn \"" + normalizeReturnString(transition) + "\";\n};\n");
+            buffer.append(" ) {\n\treturn \"" + escapeQuotes(transition) + "\";\n};\n");
             return buffer.toString();
         }
 

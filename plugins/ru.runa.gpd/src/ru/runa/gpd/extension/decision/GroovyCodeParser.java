@@ -27,7 +27,6 @@ import org.codehaus.groovy.control.CompilePhase;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.businessRule.BusinessRuleModel;
 import ru.runa.gpd.extension.businessRule.BusinessRuleModel.IfExpression;
-import ru.runa.gpd.extension.decision.GroovyDecisionModel;
 import ru.runa.gpd.extension.businessRule.LogicComposite;
 import ru.runa.gpd.extension.decision.GroovyTypeSupport.BooleanType;
 import ru.runa.gpd.lang.model.Decision;
@@ -92,7 +91,6 @@ public class GroovyCodeParser {
             return Optional.empty();
         }
     }
-
 
     private static IfStatementParsedData parseIfStatementExpression(Expression expression) {
         if (containsDeprecatedInstructions(expression.getText())) {
@@ -474,7 +472,7 @@ public class GroovyCodeParser {
                     ReturnStatement returnStatement = (ReturnStatement) ((BlockStatement) ((IfStatement) statement).getIfBlock()).getStatements()
                             .get(0);
                     String function = (String) ((ConstantExpression) returnStatement.getExpression()).getValue(); // строка, возвращаемая return
-                    IfExpression ifExpression = createIfExpression(expressionModel, function, variables);
+                    IfExpression ifExpression = createBusinessRuleIfExpression(expressionModel, function, variables);
                     model.addIfExpression(ifExpression);
                 }
                 if (statement instanceof ReturnStatement) {
@@ -492,79 +490,22 @@ public class GroovyCodeParser {
      * @author andrey belozerov
      * @throws Exception
      */
-    private static IfExpression createIfExpression(GlobalValidatorExpressionConstructorDialog.ExpressionModel expressionModel, String function,
+    private static IfExpression createBusinessRuleIfExpression(GlobalValidatorExpressionConstructorDialog.ExpressionModel expressionModel, String function,
             List<Variable> variables) throws Exception {
-        List<Variable> firstVariables = new ArrayList<>(); // в других местах IfExpression всегда принимает списки типа ArrayList
-        List<Object> secondVariables = new ArrayList<>();
-        List<Operation> operations = new ArrayList<>();
-        List<String> logicExpressions = new ArrayList<>();
-        List<Boolean> openBrackets = new ArrayList<>();
-        List<Boolean> closeBrackets = new ArrayList<>();
-        for (int i = 0; i < expressionModel.getExpressionLineNumber(); i++) {
-            ExpressionLineModel expressionLineModel = expressionModel.getExpressionLineModel(i);
-            Variable firstVariable = VariableUtils.getVariableByScriptingName(variables, expressionLineModel.getFirstOperand());
-            if (firstVariable == null) {
-                throw new Exception("first variable not found");
-            }
-            GroovyTypeSupport typeSupport = GroovyTypeSupport.get(firstVariable.getJavaClassName());
-            Operation operation = Operation.getByOperator(expressionLineModel.getOperation(), typeSupport);
-            String secondOperandText = expressionLineModel.getSecondOperand();
-            Object secondVariable;
-            Variable variable = VariableUtils.getVariableByScriptingName(variables, secondOperandText);
-            if (variable != null) {
-                secondVariable = variable;
-            } else {
-                secondVariable = secondOperandText;
-            }
-            if (expressionLineModel.getLogicOperationGroovy().equals("||")) {
-                logicExpressions.add(LogicComposite.OR_LOGIC_EXPRESSION);
-            } else if (expressionLineModel.getLogicOperationGroovy().equals("&&")) {
-                logicExpressions.add(LogicComposite.AND_LOGIC_EXPRESSION);
-            }
-            openBrackets.add(expressionLineModel.isOpenBracketExist());
-            closeBrackets.add(expressionLineModel.isCloseBracketExist());
-            firstVariables.add(firstVariable);
-            secondVariables.add(secondVariable);
-            operations.add(operation);
-        }
-        logicExpressions.remove(logicExpressions.size() - 1);
-        logicExpressions.add(LogicComposite.NULL_LOGIC_EXPRESSION); // несуществующая логическая операция в последней expression line
-        // далее преобразование информации о скобках к виду, используемому в бизнес-правилах
-        int nesting = 0;
-        int minNesting = 0;
-        for (int i = 0; i < expressionModel.getExpressionLineNumber(); i++) {
-            if (closeBrackets.get(i)) {
-                nesting--;
-                if (nesting < minNesting) {
-                    minNesting = nesting;
-                }
-            }
-            if (openBrackets.get(i)) {
-                nesting++;
-            }
-        }
-        int openBracketsInBeginning = 0 - minNesting; // такое количество открываюших скобок
-        // добавляется в начало, чтобы вложенность везде в выражении была >= 0
-        int closeBracketsInEnd = nesting + openBracketsInBeginning; // такое количество закрывающих
-        // скобок добавляется в конец, чтобы вложенность в нем была 0
-        List<int[]> bracketsBusinessRuleView = new ArrayList<>();
-        int[] bracketsInFirstExpressionLine = new int[2];
-        bracketsInFirstExpressionLine[0] = openBracketsInBeginning;
-        bracketsInFirstExpressionLine[1] = closeBrackets.get(0) ? 1 : 0;
-        bracketsBusinessRuleView.add(bracketsInFirstExpressionLine);
-        for (int i = 1; i < expressionModel.getExpressionLineNumber(); i++) {
-            int[] bracketsInExpressionLine = new int[2];
-            bracketsInExpressionLine[0] = openBrackets.get(i - 1) ? 1 : 0;
-            bracketsInExpressionLine[1] = closeBrackets.get(i) ? 1 : 0;
-            bracketsBusinessRuleView.add(bracketsInExpressionLine);
-        }
-        bracketsBusinessRuleView.get(bracketsBusinessRuleView.size() - 1)[1] = closeBracketsInEnd;
-        return new IfExpression(function, firstVariables, secondVariables, operations, logicExpressions, bracketsBusinessRuleView);
+        ArgsForIfExpression args = createIfExpression(expressionModel, variables);
+        return new IfExpression(function, args.getFirstVariables(),args.getSecondVariables(),args.getOperations(),args.getLogicExpressions(),args.getBracketsRuleView());
     }
     
     private static GroovyDecisionModel.IfExpression createDecisionIfExpression(GlobalValidatorExpressionConstructorDialog.ExpressionModel expressionModel, String transition,
             List<Variable> variables) throws Exception {
-        List<Variable> firstVariables = new ArrayList<>(); // в других местах IfExpression всегда принимает списки типа ArrayList
+    	ArgsForIfExpression args = createIfExpression(expressionModel, variables);
+        return new GroovyDecisionModel.IfExpression(transition, args.getFirstVariables(),args.getSecondVariables(),args.getOperations(),args.getLogicExpressions(),args.getBracketsRuleView());
+    }
+    
+    private static ArgsForIfExpression createIfExpression(GlobalValidatorExpressionConstructorDialog.ExpressionModel expressionModel,
+    		List<Variable> variables) throws Exception {
+    	
+    	List<Variable> firstVariables = new ArrayList<>(); // в других местах IfExpression всегда принимает списки типа ArrayList
         List<Object> secondVariables = new ArrayList<>();
         List<Operation> operations = new ArrayList<>();
         List<String> logicExpressions = new ArrayList<>();
@@ -617,18 +558,53 @@ public class GroovyCodeParser {
         // добавляется в начало, чтобы вложенность везде в выражении была >= 0
         int closeBracketsInEnd = nesting + openBracketsInBeginning; // такое количество закрывающих
         // скобок добавляется в конец, чтобы вложенность в нем была 0
-        List<int[]> bracketsBusinessRuleView = new ArrayList<>();
+        List<int[]> bracketsRuleView = new ArrayList<>();
         int[] bracketsInFirstExpressionLine = new int[2];
         bracketsInFirstExpressionLine[0] = openBracketsInBeginning;
         bracketsInFirstExpressionLine[1] = closeBrackets.get(0) ? 1 : 0;
-        bracketsBusinessRuleView.add(bracketsInFirstExpressionLine);
+        bracketsRuleView.add(bracketsInFirstExpressionLine);
         for (int i = 1; i < expressionModel.getExpressionLineNumber(); i++) {
             int[] bracketsInExpressionLine = new int[2];
             bracketsInExpressionLine[0] = openBrackets.get(i - 1) ? 1 : 0;
             bracketsInExpressionLine[1] = closeBrackets.get(i) ? 1 : 0;
-            bracketsBusinessRuleView.add(bracketsInExpressionLine);
+            bracketsRuleView.add(bracketsInExpressionLine);
         }
-        bracketsBusinessRuleView.get(bracketsBusinessRuleView.size() - 1)[1] = closeBracketsInEnd;
-        return new GroovyDecisionModel.IfExpression(transition, firstVariables, secondVariables, operations, logicExpressions, bracketsBusinessRuleView);
+        bracketsRuleView.get(bracketsRuleView.size() - 1)[1] = closeBracketsInEnd;
+        return new ArgsForIfExpression(firstVariables, secondVariables, operations, logicExpressions, bracketsRuleView);
+    	
+    }
+    
+    private static class ArgsForIfExpression {
+    	
+    	private List<Variable> firstVariables = new ArrayList<>();
+        private List<Object> secondVariables = new ArrayList<>();
+        private List<Operation> operations = new ArrayList<>();
+        private List<String> logicExpressions = new ArrayList<>();
+        List<int[]> bracketsRuleView = new ArrayList<>();
+		public ArgsForIfExpression(List<Variable> firstVariables, List<Object> secondVariables,
+				List<Operation> operations, List<String> logicExpressions, List<int[]> bracketsRuleView) {
+			super();
+			this.firstVariables = firstVariables;
+			this.secondVariables = secondVariables;
+			this.operations = operations;
+			this.logicExpressions = logicExpressions;
+			this.bracketsRuleView = bracketsRuleView;
+		}
+		public List<Variable> getFirstVariables() {
+			return firstVariables;
+		}
+		public List<Object> getSecondVariables() {
+			return secondVariables;
+		}
+		public List<Operation> getOperations() {
+			return operations;
+		}
+		public List<String> getLogicExpressions() {
+			return logicExpressions;
+		}
+		public List<int[]> getBracketsRuleView() {
+			return bracketsRuleView;
+		}
+		
     }
 }
