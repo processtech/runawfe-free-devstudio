@@ -107,7 +107,6 @@ public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
             protected void onSelection(SelectionEvent e) throws Exception {
             	String selectedTransition = defaultTransitionCombo.getText();
             	for (ExpressionLine line : expressionLines) {
-            		line.transitionLabel.setEnabled(true);
 	                line.expressionsComposite.setEnabled(true);
 	                line.getComplexExpressionButton().setEnabled(true);
 	                line.addChangeButton.setEnabled(true);
@@ -115,7 +114,6 @@ public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
             	if (!selectedTransition.equals(Localization.getString(NO_TRANSITION_BY_DEFAULT))) {
                     for (ExpressionLine line : expressionLines) {
                         if (line.getTransitionLabel().getText().equals(selectedTransition)) {
-                        	line.transitionLabel.setEnabled(false);
         	                line.expressionsComposite.setEnabled(false);
         	                line.getComplexExpressionButton().setEnabled(false);
         	                line.addChangeButton.setEnabled(false);
@@ -135,7 +133,6 @@ public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
         	ifExpression = initialModel.getIfExpression(expressionLine.getTransitionLabel().getText());
             if (ifExpression != null) {
                 if (ifExpression.isByDefault()) {
-                	expressionLine.transitionLabel.setEnabled(false);
                 	expressionLine.expressionsComposite.setEnabled(false);
                 	expressionLine.getComplexExpressionButton().setEnabled(false);
                 	expressionLine.addChangeButton.setEnabled(false);
