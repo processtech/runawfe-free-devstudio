@@ -517,7 +517,7 @@ public class GroovyCodeParser {
             ExpressionLineModel expressionLineModel = expressionModel.getExpressionLineModel(i);
             Variable firstVariable = VariableUtils.getVariableByScriptingName(variables, expressionLineModel.getFirstOperand());
             if (firstVariable == null) {
-                throw new Exception("first variable not found");
+                throw new VariableNotFoundException("first variable not found");
             }
             GroovyTypeSupport typeSupport = GroovyTypeSupport.get(firstVariable.getJavaClassName());
             Operation operation = Operation.getByOperator(expressionLineModel.getOperation(), typeSupport);
