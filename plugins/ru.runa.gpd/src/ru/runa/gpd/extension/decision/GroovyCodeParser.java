@@ -52,6 +52,8 @@ public class GroovyCodeParser {
     private static final String DEPRECATED_DOUBLE_VALUE = ".doubleValue()";
     private static final String DEPRECATED_DATE_VALUE = "CalendarUtil.dateToCalendar";
     private static final String DEPRECATED_BIG_DECIMAL_VALUE = "new BigDecimal(";
+    private static final String OR_STRING = "||";
+    private static final String AND_STRING = "&&";
 
     public static Optional<GroovyDecisionModel> parseDecisionModel(Decision decision) {
         return parseDecisionModel(decision.getDelegationConfiguration(), decision.getVariables(true, true));
@@ -527,9 +529,9 @@ public class GroovyCodeParser {
             } else {
                 secondVariable = secondOperandText;
             }
-            if (expressionLineModel.getLogicOperationGroovy().equals("||")) {
+            if (expressionLineModel.getLogicOperationGroovy().equals(OR_STRING)) {
                 logicExpressions.add(LogicComposite.OR_LOGIC_EXPRESSION);
-            } else if (expressionLineModel.getLogicOperationGroovy().equals("&&")) {
+            } else if (expressionLineModel.getLogicOperationGroovy().equals(AND_STRING)) {
                 logicExpressions.add(LogicComposite.AND_LOGIC_EXPRESSION);
             }
             openBrackets.add(expressionLineModel.isOpenBracketExist());
