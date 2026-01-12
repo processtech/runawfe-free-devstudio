@@ -33,7 +33,7 @@ import ru.runa.gpd.lang.model.Decision;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.ui.control.ExpressionLine;
 import ru.runa.gpd.ui.control.ExpressionLine.ExpressionLineModel;
-import ru.runa.gpd.ui.dialog.GlobalValidatorExpressionConstructorDialog;
+import ru.runa.gpd.ui.dialog.GlobalValidatorExpressionConstructorDialog.ExpressionModel;
 import ru.runa.gpd.util.VariableUtils;
 
 /**
@@ -73,7 +73,7 @@ public class GroovyCodeParser {
                         throw new RuntimeException("else is not supported in constructor");
                     }
                     Expression expression = ifStatement.getBooleanExpression().getExpression();
-                    GlobalValidatorExpressionConstructorDialog.ExpressionModel expressionModel = parseExpression(expression);
+                    ExpressionModel expressionModel = parseExpression(expression);
                     ReturnStatement returnStatement = (ReturnStatement) ((BlockStatement) ((IfStatement) statement).getIfBlock()).getStatements()
                             .get(0);
                     String transitionName = (String) ((ConstantExpression) returnStatement.getExpression()).getValue();
@@ -222,7 +222,7 @@ public class GroovyCodeParser {
     /**
      * @author andrey belozerov
      */
-    public static Optional<GlobalValidatorExpressionConstructorDialog.ExpressionModel> parseValidationModel(String code, List<Variable> variables) {
+    public static Optional<ExpressionModel> parseValidationModel(String code, List<Variable> variables) {
         try {
             if (Strings.isNullOrEmpty(code)) {
                 return Optional.empty();
@@ -232,7 +232,7 @@ public class GroovyCodeParser {
             BlockStatement blockStatement = (BlockStatement) astNodes.get(0); // состоит из одного ExpressionStatement
             ExpressionStatement expressionStatement = (ExpressionStatement) blockStatement.getStatements().get(0); // состоит из одного Expression
             Expression expression = expressionStatement.getExpression();
-            GlobalValidatorExpressionConstructorDialog.ExpressionModel model = parseExpression(expression);
+            ExpressionModel model = parseExpression(expression);
             return Optional.of(model);
         } catch (Exception e) {
             PluginLogger.logErrorWithoutDialog("parseValidationModel " + code, e);
@@ -243,7 +243,7 @@ public class GroovyCodeParser {
     /**
      * @author andrey belozerov
      */
-    public static GlobalValidatorExpressionConstructorDialog.ExpressionModel parseExpression(Expression expression) throws Exception {
+    public static ExpressionModel parseExpression(Expression expression) throws Exception {
         // парсит выражения определенного типа. Это те выражения, которые могут загрузиться в конструктор выражения глобального валидатора,
         // и в конструктор сложного условия бизнес-правила. Эта функция может выполняться многократно при парсинге бизнес-правил, поэтому
         // в нее не входит дорогостоящее создание AST из кода Groovy.
@@ -319,7 +319,7 @@ public class GroovyCodeParser {
             }
             expressionList = newExpressionList;
         }
-        GlobalValidatorExpressionConstructorDialog.ExpressionModel model = new GlobalValidatorExpressionConstructorDialog.ExpressionModel();
+        ExpressionModel model = new ExpressionModel();
         ListIterator<Expression> iterator = expressionList.listIterator(); // нужен, чтобы в LinkedList смотреть на следующий элемент за текущим
         while (iterator.hasNext()) {
             Expression currentExpression = iterator.next();
@@ -468,7 +468,7 @@ public class GroovyCodeParser {
             for (Statement statement : blockStatement.getStatements()) {
                 if (statement instanceof IfStatement) {
                     Expression expression = ((IfStatement) statement).getBooleanExpression().getExpression(); // условие в if
-                    GlobalValidatorExpressionConstructorDialog.ExpressionModel expressionModel = parseExpression(expression);
+                    ExpressionModel expressionModel = parseExpression(expression);
                     ReturnStatement returnStatement = (ReturnStatement) ((BlockStatement) ((IfStatement) statement).getIfBlock()).getStatements()
                             .get(0);
                     String function = (String) ((ConstantExpression) returnStatement.getExpression()).getValue(); // строка, возвращаемая return
@@ -490,19 +490,19 @@ public class GroovyCodeParser {
      * @author andrey belozerov
      * @throws Exception
      */
-    private static IfExpression createBusinessRuleIfExpression(GlobalValidatorExpressionConstructorDialog.ExpressionModel expressionModel, String function,
+    private static IfExpression createBusinessRuleIfExpression(ExpressionModel expressionModel, String function,
             List<Variable> variables) throws Exception {
         ArgsForIfExpression args = createIfExpression(expressionModel, variables);
         return new IfExpression(function, args.getFirstVariables(),args.getSecondVariables(),args.getOperations(),args.getLogicExpressions(),args.getBracketsRuleView());
     }
     
-    private static GroovyDecisionModel.IfExpression createDecisionIfExpression(GlobalValidatorExpressionConstructorDialog.ExpressionModel expressionModel, String transition,
+    private static GroovyDecisionModel.IfExpression createDecisionIfExpression(ExpressionModel expressionModel, String transition,
             List<Variable> variables) throws Exception {
     	ArgsForIfExpression args = createIfExpression(expressionModel, variables);
         return new GroovyDecisionModel.IfExpression(transition, args.getFirstVariables(),args.getSecondVariables(),args.getOperations(),args.getLogicExpressions(),args.getBracketsRuleView());
     }
     
-    private static ArgsForIfExpression createIfExpression(GlobalValidatorExpressionConstructorDialog.ExpressionModel expressionModel,
+    private static ArgsForIfExpression createIfExpression(ExpressionModel expressionModel,
     		List<Variable> variables) throws Exception {
     	
     	List<Variable> firstVariables = new ArrayList<>(); // в других местах IfExpression всегда принимает списки типа ArrayList
