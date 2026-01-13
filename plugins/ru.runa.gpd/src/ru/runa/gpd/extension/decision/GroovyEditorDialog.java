@@ -354,69 +354,102 @@ public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
         try {
             GroovyDecisionModel model = new GroovyDecisionModel();
             String selectedDefault = defaultTransitionCombo.getText();
-            IfExpression ifExpression;
             boolean hasDefault = !selectedDefault.equals(Localization.getString(NO_TRANSITION_BY_DEFAULT));
-            for (ExpressionLine expressionLine : expressionLines) {
-            	String transition = expressionLine.getTransitionLabel().getText();
-                if (hasDefault && transition.equals(selectedDefault)) {
-                    IfExpression defaultExpr = new IfExpression(transition);
-                    model.addIfExpression(defaultExpr);
-                    continue;
-                }
-                List<Variable> firstVariables = new ArrayList<>();
-                List<Object> secondVariables = new ArrayList<>();
-                List<Operation> operations = new ArrayList<>();
-                List<String> logicExpressions = new ArrayList<>();
-                List<int[]> brackets = new ArrayList<>();
-                boolean emptyFieldExist = false;
-                for (int i = 0; i < expressionLine.getVariableBoxes().size(); i++) {
-                    int[] bracket = expressionLine.getLogicComposites().get(i).getBrackets().clone();
-                    brackets.add(bracket);
-
-                    emptyFieldExist = expressionLine.getVariableBoxes().get(i)[0].getText().length() == 0
-                            || expressionLine.getVariableBoxes().get(i)[1].getText().length() == 0
-                            || expressionLine.getOperationBoxes().get(i).getText().length() == 0;
-                    if (emptyFieldExist) {
-                        setErrorLabelText(Localization.getString("GroovyEditor.fillAll"));
-                        if (logicExpressions.size() > 0) {
-                            emptyFieldExist = false;
-                        }
-                        continue;
-                    }
-
-                    Variable firstVariable = (Variable) expressionLine.getVariableBoxes().get(i)[0].getData(DATA_VARIABLE_KEY);
-                    String operationName = expressionLine.getOperationBoxes().get(i)
-                            .getItem(expressionLine.getOperationBoxes().get(i).getSelectionIndex());
-                    String secondVariableText = expressionLine.getVariableBoxes().get(i)[1].getText();
-                    Variable secondVariable = VariableUtils.getVariableByScriptingName(variables, secondVariableText);
-                    GroovyTypeSupport typeSupport = GroovyTypeSupport.get(firstVariable.getJavaClassName());
-
-                    firstVariables.add(firstVariable);
-                    if (secondVariable != null) {
-                        secondVariables.add(secondVariable);
-                    } else {
-                        secondVariables.add(secondVariableText);
-                    }
-                    operations.add(Operation.getByName(operationName, typeSupport));
-                    if (i == expressionLine.getVariableBoxes().size() - 1) {
-                        logicExpressions.add(LogicComposite.NULL_LOGIC_EXPRESSION);
-                    } else {
-                        logicExpressions.add(expressionLine.getLogicComposites().get(i).getLogicBox().getText());
-                    }
-                }
-                ifExpression = new IfExpression(transition, firstVariables, secondVariables,
-                            operations, logicExpressions, brackets);
-                if (emptyFieldExist) {
-                    continue;
-                }
-                model.addIfExpression(ifExpression);
-            }
+            buildDecisionModel(model,selectedDefault,hasDefault);
             tempModel = model;
             styledText.setText(model.toString());
         } catch (RuntimeException e1) {
             PluginLogger.logError(e1);
             setErrorLabelText(Localization.getString("GroovyEditor.error.construct"));
         }
+    }
+    
+    private void buildDecisionModel(GroovyDecisionModel model, String selectedDefault, 
+    		boolean hasDefault) {
+    	IfExpression ifExpression;
+    	for (ExpressionLine expressionLine : expressionLines) {
+        	String transition = expressionLine.getTransitionLabel().getText();
+            if (hasDefault && transition.equals(selectedDefault)) {
+                IfExpression defaultExpr = new IfExpression(transition);
+                model.addIfExpression(defaultExpr);
+                continue;
+            }
+            ConditionResult conditionResult = buildCondition(expressionLine);
+            ifExpression = conditionResult.getIfExpression();
+            if (conditionResult.isEmptyFieldExist()) {
+                continue;
+            }
+            model.addIfExpression(ifExpression);
+        }
+    }
+    
+    private ConditionResult buildCondition(
+    		ExpressionLine expressionLine) {
+    	List<Variable> firstVariables = new ArrayList<>();
+        List<Object> secondVariables = new ArrayList<>();
+        List<Operation> operations = new ArrayList<>();
+        List<String> logicExpressions = new ArrayList<>();
+        List<int[]> brackets = new ArrayList<>();
+        boolean emptyFieldExist = false;
+        for (int i = 0; i < expressionLine.getVariableBoxes().size(); i++) {
+            int[] bracket = expressionLine.getLogicComposites().get(i).getBrackets().clone();
+            brackets.add(bracket);
+
+            emptyFieldExist = expressionLine.getVariableBoxes().get(i)[0].getText().length() == 0
+                    || expressionLine.getVariableBoxes().get(i)[1].getText().length() == 0
+                    || expressionLine.getOperationBoxes().get(i).getText().length() == 0;
+            if (emptyFieldExist) {
+                setErrorLabelText(Localization.getString("GroovyEditor.fillAll"));
+                if (logicExpressions.size() > 0) {
+                    emptyFieldExist = false;
+                }
+                continue;
+            }
+
+            Variable firstVariable = (Variable) expressionLine.getVariableBoxes().get(i)[0].getData(DATA_VARIABLE_KEY);
+            String operationName = expressionLine.getOperationBoxes().get(i)
+                    .getItem(expressionLine.getOperationBoxes().get(i).getSelectionIndex());
+            String secondVariableText = expressionLine.getVariableBoxes().get(i)[1].getText();
+            Variable secondVariable = VariableUtils.getVariableByScriptingName(variables, secondVariableText);
+            GroovyTypeSupport typeSupport = GroovyTypeSupport.get(firstVariable.getJavaClassName());
+
+            firstVariables.add(firstVariable);
+            if (secondVariable != null) {
+                secondVariables.add(secondVariable);
+            } else {
+                secondVariables.add(secondVariableText);
+            }
+            operations.add(Operation.getByName(operationName, typeSupport));
+            if (i == expressionLine.getVariableBoxes().size() - 1) {
+                logicExpressions.add(LogicComposite.NULL_LOGIC_EXPRESSION);
+            } else {
+                logicExpressions.add(expressionLine.getLogicComposites().get(i).getLogicBox().getText());
+            }
+        }   
+        
+        IfExpression ifExpression = new IfExpression(expressionLine.getTransitionLabel().getText(), firstVariables, secondVariables,
+                operations, logicExpressions, brackets);
+        return new ConditionResult(emptyFieldExist, ifExpression);
+        
+    }
+    
+    private class ConditionResult {
+        private final boolean emptyFieldExist;
+        private final IfExpression ifExpression;
+        
+		public ConditionResult(boolean emptyFieldExist, IfExpression ifExpression) {
+			this.emptyFieldExist = emptyFieldExist;
+			this.ifExpression = ifExpression;
+		}
+
+		public boolean isEmptyFieldExist() {
+			return emptyFieldExist;
+		}
+
+		public IfExpression getIfExpression() {
+			return ifExpression;
+		}
+
     }
 
     
