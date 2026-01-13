@@ -104,7 +104,7 @@ public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
         }
         defaultTransitionCombo.addSelectionListener(new LoggingSelectionAdapter() {
             @Override
-            protected void onSelection(SelectionEvent e) throws Exception {
+            protected void onSelection(SelectionEvent e) {
             	String selectedTransition = defaultTransitionCombo.getText();
             	for (ExpressionLine line : expressionLines) {
 	                line.expressionsComposite.setEnabled(true);
@@ -142,7 +142,6 @@ public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
                     if (index == -1) {
                         return; 
                     }
-                    //variableBoxes[i]   expressionLine.getVariableBoxes().get(expressionLine.getLineIndex())
                     expressionLine.getVariableBoxes().get(0)[0].select(index);
                     refresh(expressionLine.getVariableBoxes().get(0)[0]);
                     GroovyTypeSupport typeSupport = GroovyTypeSupport.get(variable.getJavaClassName());
@@ -150,7 +149,6 @@ public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
                     if (index == -1) {
                         return;
                     }
-                    //operationBoxes[i] expressionLine.getOperationBoxes().get(expressionLine.getLineIndex())
                     expressionLine.getOperationBoxes().get(0).select(index);
                     refresh(expressionLine.getOperationBoxes().get(0));
                     String secondVariableText = ifExpression.getSecondVariableTextValue(0);
@@ -467,7 +465,7 @@ public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
 
             complexExpressionButton.addSelectionListener(new LoggingSelectionAdapter() {
                 @Override
-                protected void onSelection(SelectionEvent e) throws Exception {
+                protected void onSelection(SelectionEvent e) {
                     Dialog dialog = new Dialog(Display.getCurrent().getActiveShell()) {
                         ExpressionLine line;
                         Composite composite;
@@ -559,7 +557,7 @@ public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
             addChangeButton.setImage(addImage);
             addChangeButton.addSelectionListener(new LoggingSelectionAdapter() {
                 @Override
-                protected void onSelection(SelectionEvent e) throws Exception {
+                protected void onSelection(SelectionEvent e) {
                     Menu menu = new Menu(Display.getCurrent().getActiveShell(), SWT.POP_UP);
 
                     MenuItem change = new MenuItem(menu, SWT.PUSH);
@@ -573,7 +571,7 @@ public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
 
                     change.addSelectionListener(new LoggingSelectionAdapter() {
                         @Override
-                        protected void onSelection(SelectionEvent e) throws Exception {
+                        protected void onSelection(SelectionEvent e) {
                             if (complexExpressionButton.getVisible()) {
                                 logicComposites.get(0).getBrackets()[0] = 0;
                                 logicComposites.get(0).getBrackets()[1] = 0;
@@ -602,7 +600,7 @@ public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
                 upButton.setData(lineIndex);
                 upButton.addSelectionListener(new LoggingSelectionAdapter() {
                     @Override
-                    protected void onSelection(SelectionEvent e) throws Exception {
+                    protected void onSelection(SelectionEvent e) {
                         upRecord((Integer) e.widget.getData());
                     }
                 });
@@ -696,7 +694,7 @@ public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
             deleteButton.setLayoutData(new GridData());
             deleteButton.addSelectionListener(new LoggingSelectionAdapter() {
                 @Override
-                protected void onSelection(SelectionEvent e) throws Exception {
+                protected void onSelection(SelectionEvent e) {
                     dellExpression(logicComposites.indexOf(logicComposite));
                 }
             });
@@ -706,7 +704,7 @@ public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
             addButton.setLayoutData(new GridData());
             addButton.addSelectionListener(new LoggingSelectionAdapter() {
                 @Override
-                protected void onSelection(SelectionEvent e) throws Exception {
+                protected void onSelection(SelectionEvent e) {
                     int newLogicCompositeIndex = logicComposites.indexOf(logicComposite) + 1;
                     createExpression(newLogicCompositeIndex);
 

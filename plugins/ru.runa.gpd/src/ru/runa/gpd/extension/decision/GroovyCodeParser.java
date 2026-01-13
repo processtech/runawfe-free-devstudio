@@ -33,7 +33,7 @@ import ru.runa.gpd.lang.model.Decision;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.ui.control.ExpressionLine;
 import ru.runa.gpd.ui.control.ExpressionLine.ExpressionLineModel;
-import ru.runa.gpd.ui.dialog.GlobalValidatorExpressionConstructorDialog.ExpressionModel;
+import ru.runa.gpd.ui.dialog.ExpressionModel;
 import ru.runa.gpd.util.VariableUtils;
 
 /**
