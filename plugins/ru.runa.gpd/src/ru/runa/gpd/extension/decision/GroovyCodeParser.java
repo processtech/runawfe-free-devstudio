@@ -499,13 +499,13 @@ public class GroovyCodeParser {
     }
     
     private static GroovyDecisionModel.IfExpression createDecisionIfExpression(ExpressionModel expressionModel, String transition,
-            List<Variable> variables) throws Exception {
+            List<Variable> variables) throws VariableNotFoundException {
     	ArgsForIfExpression args = createIfExpression(expressionModel, variables);
         return new GroovyDecisionModel.IfExpression(transition, args.getFirstVariables(),args.getSecondVariables(),args.getOperations(),args.getLogicExpressions(),args.getBracketsRuleView());
     }
     
     private static ArgsForIfExpression createIfExpression(ExpressionModel expressionModel,
-    		List<Variable> variables) throws Exception {
+    		List<Variable> variables) throws VariableNotFoundException  {
     	
     	List<Variable> firstVariables = new ArrayList<>(); // в других местах IfExpression всегда принимает списки типа ArrayList
         List<Object> secondVariables = new ArrayList<>();
@@ -543,7 +543,15 @@ public class GroovyCodeParser {
         logicExpressions.remove(logicExpressions.size() - 1);
         logicExpressions.add(LogicComposite.NULL_LOGIC_EXPRESSION); // несуществующая логическая операция в последней expression line
         // далее преобразование информации о скобках к виду, используемому в бизнес-правилах
-        int nesting = 0;
+        List<int[]> bracketsRuleView = getBracketsRuleViewList(openBrackets, closeBrackets,expressionModel);
+        return new ArgsForIfExpression(firstVariables, secondVariables, operations, logicExpressions, bracketsRuleView);
+    	
+    }
+    
+    private static List<int[]> getBracketsRuleViewList(List<Boolean> openBrackets, List<Boolean> closeBrackets, 
+    		ExpressionModel expressionModel){
+    	
+    	int nesting = 0;
         int minNesting = 0;
         for (int i = 0; i < expressionModel.getExpressionLineNumber(); i++) {
             if (closeBrackets.get(i)) {
@@ -572,8 +580,7 @@ public class GroovyCodeParser {
             bracketsRuleView.add(bracketsInExpressionLine);
         }
         bracketsRuleView.get(bracketsRuleView.size() - 1)[1] = closeBracketsInEnd;
-        return new ArgsForIfExpression(firstVariables, secondVariables, operations, logicExpressions, bracketsRuleView);
-    	
+        return bracketsRuleView;
     }
     
     private static class ArgsForIfExpression {
