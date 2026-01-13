@@ -281,7 +281,7 @@ public class GroovyCodeParser {
                 if (i instanceof BinaryExpression) {
                     BinaryExpression binaryExpression = (BinaryExpression) i;
                     String operation = binaryExpression.getOperation().getText();
-                    if (operation.equals("&&") || operation.equals("||")) {
+                    if (operation.equals(AND_STRING) || operation.equals(OR_STRING)) {
                         Expression leftExpression = binaryExpression.getLeftExpression();
                         Expression rightExpression = binaryExpression.getRightExpression();
                         newExpressionList.add(leftExpression);
@@ -298,7 +298,7 @@ public class GroovyCodeParser {
                         // для такого выражения скобки необходимы.
                         leftExpression.putNodeMetaData(closeBracketsNumber, 0);
                         rightExpression.putNodeMetaData(openBracketsNumber, 0);
-                        boolean addBrackets = operation.equals("||") && binaryExpression.getNodeMetaData(operationInParent).equals("&&");
+                        boolean addBrackets = operation.equals(OR_STRING) && binaryExpression.getNodeMetaData(operationInParent).equals(AND_STRING);
                         int newBracketsNumber = addBrackets ? 1 : 0;
                         leftExpression.putNodeMetaData(openBracketsNumber,
                                 newBracketsNumber + (Integer) binaryExpression.getNodeMetaData(openBracketsNumber));
