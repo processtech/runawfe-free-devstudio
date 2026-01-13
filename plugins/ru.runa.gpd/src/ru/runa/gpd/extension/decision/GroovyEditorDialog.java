@@ -130,48 +130,59 @@ public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
 
         int count = ifExpression.getFirstVariables().size();
         if (count ==1) {
-            if (ifExpression != null) {
-                if (ifExpression.isByDefault()) {
-                	expressionLine.expressionsComposite.setEnabled(false);
-                	expressionLine.getComplexExpressionButton().setEnabled(false);
-                	expressionLine.addChangeButton.setEnabled(false);
-                    defaultTransitionCombo.setText(ifExpression.getTransition());
-                } else {
-                    Variable variable = ifExpression.getFirstVariables().get(0);
-                    int index = variables.indexOf(variable);
-                    if (index == -1) {
-                        return; 
-                    }
-                    expressionLine.getVariableBoxes().get(0)[0].select(index);
-                    refresh(expressionLine.getVariableBoxes().get(0)[0]);
-                    GroovyTypeSupport typeSupport = GroovyTypeSupport.get(variable.getJavaClassName());
-                    index = Operation.getAll(typeSupport).indexOf(ifExpression.getOperations().get(0));
-                    if (index == -1) {
-                        return;
-                    }
-                    expressionLine.getOperationBoxes().get(0).select(index);
-                    refresh(expressionLine.getOperationBoxes().get(0));
-                    String secondVariableText = ifExpression.getSecondVariableTextValue(0);
-                    int secondVariableIndex = 0;
-                    if (VariableUtils.getVariableByScriptingName(variables, secondVariableText) != null) {
-                        secondVariableIndex = getSecondVariableNames(variable).indexOf(secondVariableText);
-                    } else {
-                        int predefinedIndex = typeSupport.getPredefinedValues(ifExpression.getOperations().get(0)).indexOf(secondVariableText);
-                        if (predefinedIndex >= 0) {
-                            secondVariableIndex = getSecondVariableNames(variable).size() + predefinedIndex;
-                        } else {
-                        	expressionLine.getVariableBoxes().get(0)[1].add(secondVariableText, 0);
-                        	expressionLine.getVariableBoxes().get(0)[1].setData(DATA_USER_INPUT_KEY, secondVariableText);
-                        }
-                    }
-                    expressionLine.getVariableBoxes().get(0)[1].select(secondVariableIndex);
-                }
+            simpleExpression(ifExpression, expressionLine);
             return;
-            
-            }
         }
         expressionLine.swapToComplex();
-        Composite expressionsComposite = expressionLine.expressionsComposite;
+        complexExpression(ifExpression, expressionLine);
+        
+    }
+    
+    private void simpleExpression(IfExpression ifExpression, ExpressionLine expressionLine) {
+    	if (ifExpression != null) {
+            if (ifExpression.isByDefault()) {
+            	expressionLine.expressionsComposite.setEnabled(false);
+            	expressionLine.getComplexExpressionButton().setEnabled(false);
+            	expressionLine.addChangeButton.setEnabled(false);
+                defaultTransitionCombo.setText(ifExpression.getTransition());
+            } else {
+                Variable variable = ifExpression.getFirstVariables().get(0);
+                int index = variables.indexOf(variable);
+                if (index == -1) {
+                    return; 
+                }
+                expressionLine.getVariableBoxes().get(0)[0].select(index);
+                refresh(expressionLine.getVariableBoxes().get(0)[0]);
+                GroovyTypeSupport typeSupport = GroovyTypeSupport.get(variable.getJavaClassName());
+                index = Operation.getAll(typeSupport).indexOf(ifExpression.getOperations().get(0));
+                if (index == -1) {
+                    return;
+                }
+                expressionLine.getOperationBoxes().get(0).select(index);
+                refresh(expressionLine.getOperationBoxes().get(0));
+                String secondVariableText = ifExpression.getSecondVariableTextValue(0);
+                int secondVariableIndex = 0;
+                if (VariableUtils.getVariableByScriptingName(variables, secondVariableText) != null) {
+                    secondVariableIndex = getSecondVariableNames(variable).indexOf(secondVariableText);
+                } else {
+                    int predefinedIndex = typeSupport.getPredefinedValues(ifExpression.getOperations().get(0)).indexOf(secondVariableText);
+                    if (predefinedIndex >= 0) {
+                        secondVariableIndex = getSecondVariableNames(variable).size() + predefinedIndex;
+                    } else {
+                    	expressionLine.getVariableBoxes().get(0)[1].add(secondVariableText, 0);
+                    	expressionLine.getVariableBoxes().get(0)[1].setData(DATA_USER_INPUT_KEY, secondVariableText);
+                    }
+                }
+                expressionLine.getVariableBoxes().get(0)[1].select(secondVariableIndex);
+            }
+            return;
+        
+        }
+    }
+    
+    private void complexExpression(IfExpression ifExpression, ExpressionLine expressionLine) {
+    	int count = ifExpression.getFirstVariables().size();
+    	Composite expressionsComposite = expressionLine.expressionsComposite;
         for (Control child : expressionsComposite.getChildren()) {
             child.dispose();
         }
