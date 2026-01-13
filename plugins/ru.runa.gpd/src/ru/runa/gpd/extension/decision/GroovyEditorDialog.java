@@ -129,8 +129,7 @@ public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
     private void initialize(IfExpression ifExpression, ExpressionLine expressionLine) {
 
         int count = ifExpression.getFirstVariables().size();
-        if (count ==1 ) {
-        	ifExpression = initialModel.getIfExpression(expressionLine.getTransitionLabel().getText());
+        if (count ==1) {
             if (ifExpression != null) {
                 if (ifExpression.isByDefault()) {
                 	expressionLine.expressionsComposite.setEnabled(false);
@@ -138,34 +137,40 @@ public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
                 	expressionLine.addChangeButton.setEnabled(false);
                     defaultTransitionCombo.setText(ifExpression.getTransition());
                 } else {
-                    Variable variable = ifExpression.getFirstVariables().get(expressionLine.getLineIndex());
+                    Variable variable = ifExpression.getFirstVariables().get(0);
                     int index = variables.indexOf(variable);
+                    if (index == -1) {
+                        return; 
+                    }
                     //variableBoxes[i]   expressionLine.getVariableBoxes().get(expressionLine.getLineIndex())
-                    expressionLine.getVariableBoxes().get(expressionLine.getLineIndex())[0].select(index);
-                    refresh(expressionLine.getVariableBoxes().get(expressionLine.getLineIndex())[0]);
+                    expressionLine.getVariableBoxes().get(0)[0].select(index);
+                    refresh(expressionLine.getVariableBoxes().get(0)[0]);
                     GroovyTypeSupport typeSupport = GroovyTypeSupport.get(variable.getJavaClassName());
-                    index = Operation.getAll(typeSupport).indexOf(ifExpression.getOperations().get(expressionLine.getLineIndex()));
+                    index = Operation.getAll(typeSupport).indexOf(ifExpression.getOperations().get(0));
+                    if (index == -1) {
+                        return;
+                    }
                     //operationBoxes[i] expressionLine.getOperationBoxes().get(expressionLine.getLineIndex())
-                    expressionLine.getOperationBoxes().get(expressionLine.getLineIndex()).select(index);
-                    refresh(expressionLine.getOperationBoxes().get(expressionLine.getLineIndex()));
-                    String secondVariableText = ifExpression.getSecondVariableTextValue(expressionLine.getLineIndex());
+                    expressionLine.getOperationBoxes().get(0).select(index);
+                    refresh(expressionLine.getOperationBoxes().get(0));
+                    String secondVariableText = ifExpression.getSecondVariableTextValue(0);
                     int secondVariableIndex = 0;
                     if (VariableUtils.getVariableByScriptingName(variables, secondVariableText) != null) {
                         secondVariableIndex = getSecondVariableNames(variable).indexOf(secondVariableText);
                     } else {
-                        int predefinedIndex = typeSupport.getPredefinedValues(ifExpression.getOperations().get(expressionLine.getLineIndex())).indexOf(secondVariableText);
+                        int predefinedIndex = typeSupport.getPredefinedValues(ifExpression.getOperations().get(0)).indexOf(secondVariableText);
                         if (predefinedIndex >= 0) {
                             secondVariableIndex = getSecondVariableNames(variable).size() + predefinedIndex;
                         } else {
-                        	expressionLine.getVariableBoxes().get(expressionLine.getLineIndex())[1].add(secondVariableText, 0);
-                        	expressionLine.getVariableBoxes().get(expressionLine.getLineIndex())[1].setData(DATA_USER_INPUT_KEY, secondVariableText);
+                        	expressionLine.getVariableBoxes().get(0)[1].add(secondVariableText, 0);
+                        	expressionLine.getVariableBoxes().get(0)[1].setData(DATA_USER_INPUT_KEY, secondVariableText);
                         }
                     }
-                    expressionLine.getVariableBoxes().get(expressionLine.getLineIndex())[1].select(secondVariableIndex);
+                    expressionLine.getVariableBoxes().get(0)[1].select(secondVariableIndex);
                 }
             return;
             
-        }
+            }
         }
         expressionLine.swapToComplex();
         Composite expressionsComposite = expressionLine.expressionsComposite;
@@ -610,33 +615,32 @@ public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
 
             
         }
+        
+        private void configureMode(boolean isComplex) {
+        	Composite expression = (Composite) expressionsComposite.getChildren()[0];
+        	((GridLayout) expression.getLayout()).numColumns = isComplex ? 5 : 3;
+        	if (!isComplex) {
+        		((GridLayout) expression.getLayout()).marginLeft = 0;
+        	}
+        	expression.getChildren()[ADD_DELETE_COMPOSITE_INDEX].setVisible(isComplex ? true : false);
+        	((GridData) expression.getChildren()[ADD_DELETE_COMPOSITE_INDEX].getLayoutData()).exclude = isComplex ? false : true;
+        	if (!isComplex) {
+        		logicComposites.get(0).setVisible(false);
+        	}
+        	((GridData) logicComposites.get(0).getLayoutData()).exclude = isComplex ? false : true;
+        	expressionsComposite.setVisible(isComplex ? false : true);
+        	((GridData) expressionsComposite.getLayoutData()).exclude = isComplex ? true : false;
+        	complexExpressionButton.setVisible(isComplex ? true : false);
+        	((GridData) complexExpressionButton.getLayoutData()).exclude = isComplex ? false : true;
+        	expressionsComposite.layout();
+        }
 
         protected void swapToComplex() {
-            Composite expression = (Composite) expressionsComposite.getChildren()[0];
-            ((GridLayout) expression.getLayout()).numColumns = 5;
-            expression.getChildren()[ADD_DELETE_COMPOSITE_INDEX].setVisible(true);
-            ((GridData) expression.getChildren()[ADD_DELETE_COMPOSITE_INDEX].getLayoutData()).exclude = false;
-            ((GridData) logicComposites.get(0).getLayoutData()).exclude = false;
-            expressionsComposite.setVisible(false);
-            ((GridData) expressionsComposite.getLayoutData()).exclude = true;
-            complexExpressionButton.setVisible(true);
-            ((GridData) complexExpressionButton.getLayoutData()).exclude = false;
-            expressionsComposite.layout();
+        	configureMode(true);
         }
 
         protected void swapToSimple() {
-            Composite expression = (Composite) expressionsComposite.getChildren()[0];
-            ((GridLayout) expression.getLayout()).numColumns = 3;
-            ((GridLayout) expression.getLayout()).marginLeft = 0;
-            expression.getChildren()[ADD_DELETE_COMPOSITE_INDEX].setVisible(false);
-            ((GridData) expression.getChildren()[ADD_DELETE_COMPOSITE_INDEX].getLayoutData()).exclude = true;
-            logicComposites.get(0).setVisible(false);
-            ((GridData) logicComposites.get(0).getLayoutData()).exclude = true;
-            expressionsComposite.setVisible(true);
-            ((GridData) expressionsComposite.getLayoutData()).exclude = false;
-            complexExpressionButton.setVisible(false);
-            ((GridData) complexExpressionButton.getLayoutData()).exclude = true;
-            expressionsComposite.layout();
+        	configureMode(false);
         }
 
         private void createExpression(int index) {
