@@ -267,41 +267,7 @@ public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
     }
 
     private void upRecord(Integer recordIndex) {
-//    	System.out.println(recordIndex);
-//        String recordText = labels[recordIndex].getText();
-//        labels[recordIndex].setText(labels[recordIndex - 1].getText());
-//        labels[recordIndex - 1].setText(recordText);
-//        boolean enabledIndex = variableBoxes[recordIndex][0].getEnabled();
-//        boolean enabledIndexPrev = variableBoxes[recordIndex - 1][0].getEnabled();
-//        int firstVariableIndex = variableBoxes[recordIndex][0].getSelectionIndex();
-//        int operationIndex = operationBoxes[recordIndex].getSelectionIndex();
-//        int secondVariableIndex = variableBoxes[recordIndex][1].getSelectionIndex();
-//        String secondVariableUserInput = (String) variableBoxes[recordIndex][1].getData(DATA_USER_INPUT_KEY);
-//        variableBoxes[recordIndex][0].select(variableBoxes[recordIndex - 1][0].getSelectionIndex());
-//        variableBoxes[recordIndex][0].setEnabled(enabledIndexPrev);
-//        refresh(variableBoxes[recordIndex][0]);
-//        operationBoxes[recordIndex].select(operationBoxes[recordIndex - 1].getSelectionIndex());
-//        operationBoxes[recordIndex].setEnabled(enabledIndexPrev);
-//        refresh(operationBoxes[recordIndex]);
-//        String secondVariableUserInput2 = (String) variableBoxes[recordIndex - 1][1].getData(DATA_USER_INPUT_KEY);
-//        if (secondVariableUserInput2 != null) {
-//            variableBoxes[recordIndex][1].add(secondVariableUserInput2, 0);
-//            variableBoxes[recordIndex][1].setData(DATA_USER_INPUT_KEY, secondVariableUserInput2);
-//        }
-//        variableBoxes[recordIndex][1].select(variableBoxes[recordIndex - 1][1].getSelectionIndex());
-//        variableBoxes[recordIndex][1].setEnabled(enabledIndexPrev);
-//        variableBoxes[recordIndex - 1][0].select(firstVariableIndex);
-//        variableBoxes[recordIndex - 1][0].setEnabled(enabledIndex);
-//        refresh(variableBoxes[recordIndex - 1][0]);
-//        operationBoxes[recordIndex - 1].select(operationIndex);
-//        operationBoxes[recordIndex - 1].setEnabled(enabledIndex);
-//        refresh(operationBoxes[recordIndex - 1]);
-//        if (secondVariableUserInput != null) {
-//            variableBoxes[recordIndex - 1][1].add(secondVariableUserInput, 0);
-//            variableBoxes[recordIndex - 1][1].setData(DATA_USER_INPUT_KEY, secondVariableUserInput);
-//        }
-//        variableBoxes[recordIndex - 1][1].select(secondVariableIndex);
-//        variableBoxes[recordIndex - 1][1].setEnabled(enabledIndex);
+
     }
 
     @Override
