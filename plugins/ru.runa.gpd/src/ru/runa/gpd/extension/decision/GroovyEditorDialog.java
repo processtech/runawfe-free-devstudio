@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.SWTException;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseTrackListener;
@@ -435,135 +436,190 @@ public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
         public ExpressionLine(int index, GroovyDecisionModel model) {
             super(constructor, SWT.NONE);
             lineIndex = index;
-            setLayout(new GridLayout(5, false));
             
-            transitionLabel = new Label(this, SWT.NONE);
-            transitionLabel.setText(transitionNames.get(index));
-            transitionLabel.setLayoutData(new GridData());
-            
-            GridData expressionLineData = new GridData(GridData.FILL_HORIZONTAL);
-            expressionLineData.horizontalSpan = 6;
-            setLayoutData(expressionLineData);
-            
-            expressionsComposite = new Composite(this, SWT.NONE);
-            expressionsComposite.setLayout(new GridLayout(1, false));
-            GridData expressionsData = new GridData(GridData.FILL_HORIZONTAL);
-            expressionsData.horizontalSpan = 1;
-            expressionsComposite.setLayoutData(expressionsData);
-
-            complexExpressionButton = new Button(this, SWT.NONE);
-            GridData buttonData = new GridData(GridData.FILL_HORIZONTAL);
-            buttonData.minimumWidth = 200;
-            complexExpressionButton.setLayoutData(buttonData);
-            complexExpressionButton.setText(Localization.getString("GroovyEditor.complexExpressionButton"));
-
-            complexExpressionButton.addMouseTrackListener(new MouseTrackListener() {
-                @Override
-                public void mouseHover(MouseEvent e) {
-                    toCode();
-                    complexExpressionButton.setToolTipText(tempModel.getIfExpressions().get(lineIndex).generateCode());
-                }
-
-                @Override
-                public void mouseExit(MouseEvent e) {
-                }
-
-                @Override
-                public void mouseEnter(MouseEvent e) {
-                }
-            });
-
-            complexExpressionButton.addSelectionListener(new LoggingSelectionAdapter() {
-                @Override
-                protected void onSelection(SelectionEvent e) {
-                    Dialog dialog = new Dialog(Display.getCurrent().getActiveShell()) {
-                        ExpressionLine line;
-                        Composite composite;
-
-                        {
-                            setShellStyle(getShellStyle() | SWT.RESIZE);
-                        }
-
-                        @Override
-                        protected Point getInitialSize() {
-                            return new Point(700, 400);
-                        }
-
-                        @Override
-                        protected Control createDialogArea(Composite parent) {
-                            getShell().setMinimumSize(getInitialSize());
-                            getShell().setText(Localization.getString("GroovyEditor.title"));
-
-                            ScrolledComposite scrolledComposite = new ScrolledComposite(parent, SWT.V_SCROLL | SWT.BORDER);
-                            scrolledComposite.setExpandHorizontal(true);
-                            scrolledComposite.setExpandVertical(true);
-                            scrolledComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
-
-                            try {
-                                toCode();
-                                clearErrorLabelText();
-                                line = new ExpressionLine(lineIndex, tempModel);
-                                line.swapToComplex();
-
-                                if (tempModel.getIfExpressions().size() > lineIndex) {
-                                    initialize(tempModel.getIfExpressions().get(lineIndex), line);
-                                }
-
-                                composite = line.getExpressionComposite();
-                                composite.setParent(scrolledComposite);
-                                scrolledComposite.setContent(composite);
-                                composite.setVisible(true);
-                                ((GridData) composite.getLayoutData()).exclude = false;
-                                composite.layout();
-                                scrolledComposite.setMinSize(expressionsComposite.computeSize(SWT.MIN, SWT.DEFAULT));
-                            } catch (Throwable e) {
-                                initialErrorMessage = e.getMessage();
-                                PluginLogger.logErrorWithoutDialog("", e);
-                            }
-                            return scrolledComposite;
-                        }
-
-                        @Override
-                        protected void okPressed() {
-                            for (int i = line.getVariableBoxes().size() - 1; i >= 0; i--) {
-                                boolean emptyFieldExist = line.getVariableBoxes().get(i)[0].getText().length() == 0
-                                        || line.getVariableBoxes().get(i)[1].getText().length() == 0
-                                        || line.getOperationBoxes().get(i).getText().length() == 0;
-                                if (emptyFieldExist) {
-                                    line.dellExpression(i);
-                                }
-                            }
-
-                            composite.setParent(line.getExpressionLine());
-                            composite.moveAbove(line.getExpressionLine().getChildren()[0]);
-                            composite.setVisible(false);
-                            ((GridData) composite.getLayoutData()).exclude = true;
-
-                            expressionLines.set(lineIndex, line);
-                            line.getExpressionLine().moveAbove(complexExpressionButton.getParent());
-                            complexExpressionButton.getParent().dispose();
-                            constructor.layout();
-                            super.okPressed();
-                        }
-
-                        @Override
-                        protected void cancelPressed() {
-                            line.getExpressionLine().dispose();
-                            super.cancelPressed();
-                        }
-                    };
-                    
-
-                    dialog.open();
-                }
-            });
+            initLayout();
+            createTransitionLabel(lineIndex);    
+            createExpressionsComposite();
+            createComplexExpressionButton();
 
             createExpression(0);
             swapToSimple();
 
             
+            createAddChangeButton();
+            createUpButton();
+            if (lineIndex == 0) {
+            	upButton.setVisible(false);
+            }
 
-            addChangeButton = new Button(this, SWT.PUSH);
+            
+        }
+        
+        private void initLayout() {
+        	setLayout(new GridLayout(5, false));
+            GridData expressionLineData = new GridData(GridData.FILL_HORIZONTAL);
+            expressionLineData.horizontalSpan = 6;
+            setLayoutData(expressionLineData);
+        }
+        
+        private void createTransitionLabel(int index) {
+        	transitionLabel = new Label(this, SWT.NONE);
+            transitionLabel.setText(transitionNames.get(index));
+            transitionLabel.setLayoutData(new GridData());
+        }
+        
+        private void createExpressionsComposite() {
+        	expressionsComposite = new Composite(this, SWT.NONE);
+            expressionsComposite.setLayout(new GridLayout(1, false));
+            GridData expressionsData = new GridData(GridData.FILL_HORIZONTAL);
+            expressionsData.horizontalSpan = 1;
+            expressionsComposite.setLayoutData(expressionsData);
+        }
+        
+        private void createComplexExpressionButton() {
+        	complexExpressionButton = new Button(this, SWT.NONE);
+            GridData buttonData = new GridData(GridData.FILL_HORIZONTAL);
+            buttonData.minimumWidth = 200;
+            complexExpressionButton.setLayoutData(buttonData);
+            complexExpressionButton.setText(Localization.getString("GroovyEditor.complexExpressionButton"));
+            
+            complexExpressionButton.addMouseTrackListener(
+            		new ComplexExpressionMouseTrackListener()
+            );
+            complexExpressionButton.addSelectionListener(
+            		new ComplexExpressionLoggingSelectionAdapter()
+            );
+        }
+        
+        private void createUpButton() {
+        	upButton = new Button(this, SWT.PUSH);
+            upButton.setImage(upImage);
+            upButton.setData(lineIndex);
+            upButton.addSelectionListener(new LoggingSelectionAdapter() {
+                @Override
+                protected void onSelection(SelectionEvent e) {
+                    upRecord((Integer) e.widget.getData());
+                }
+            });
+        }
+        
+        private class ComplexExpressionMouseTrackListener implements MouseTrackListener {
+
+			@Override
+			public void mouseEnter(MouseEvent e) {
+				
+			}
+
+			@Override
+			public void mouseExit(MouseEvent e) {
+				
+			}
+
+			@Override
+			public void mouseHover(MouseEvent e) {
+				toCode();
+                complexExpressionButton.setToolTipText(tempModel.getIfExpressions().get(lineIndex).generateCode());
+				
+			}
+        	
+        }
+        
+        private class ComplexExpressionLoggingSelectionAdapter extends LoggingSelectionAdapter {
+
+			@Override
+			protected void onSelection(SelectionEvent e) throws Exception {
+				Dialog dialog = new Dialog(Display.getCurrent().getActiveShell()) {
+                    ExpressionLine line;
+                    Composite composite;
+
+                    {
+                        setShellStyle(getShellStyle() | SWT.RESIZE);
+                    }
+
+                    @Override
+                    protected Point getInitialSize() {
+                        return new Point(700, 400);
+                    }
+
+                    @Override
+                    protected Control createDialogArea(Composite parent) {
+                        getShell().setMinimumSize(getInitialSize());
+                        getShell().setText(Localization.getString("GroovyEditor.title"));
+
+                        ScrolledComposite scrolledComposite = new ScrolledComposite(parent, SWT.V_SCROLL | SWT.BORDER);
+                        scrolledComposite.setExpandHorizontal(true);
+                        scrolledComposite.setExpandVertical(true);
+                        scrolledComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+                        try {
+                            toCode();
+                            clearErrorLabelText();
+                            line = new ExpressionLine(lineIndex, tempModel);
+                            line.swapToComplex();
+
+                            if (tempModel.getIfExpressions().size() > lineIndex) {
+                                initialize(tempModel.getIfExpressions().get(lineIndex), line);
+                            }
+
+                            composite = line.getExpressionComposite();
+                            composite.setParent(scrolledComposite);
+                            scrolledComposite.setContent(composite);
+                            composite.setVisible(true);
+                            ((GridData) composite.getLayoutData()).exclude = false;
+                            composite.layout();
+                            scrolledComposite.setMinSize(expressionsComposite.computeSize(SWT.MIN, SWT.DEFAULT));
+                        }  catch (SWTException e) {
+                            initialErrorMessage = e.getMessage();
+                            PluginLogger.logErrorWithoutDialog("", e);
+                        }   catch (RuntimeException e) {
+                            initialErrorMessage = e.getMessage();
+                            PluginLogger.logErrorWithoutDialog("", e);
+                        } catch (Exception e) {
+                        	initialErrorMessage = e.getMessage();
+                            PluginLogger.logErrorWithoutDialog("", e);
+						} 
+                        return scrolledComposite;
+                    }
+
+                    @Override
+                    protected void okPressed() {
+                        for (int i = line.getVariableBoxes().size() - 1; i >= 0; i--) {
+                            boolean emptyFieldExist = line.getVariableBoxes().get(i)[0].getText().length() == 0
+                                    || line.getVariableBoxes().get(i)[1].getText().length() == 0
+                                    || line.getOperationBoxes().get(i).getText().length() == 0;
+                            if (emptyFieldExist) {
+                                line.dellExpression(i);
+                            }
+                        }
+
+                        composite.setParent(line.getExpressionLine());
+                        composite.moveAbove(line.getExpressionLine().getChildren()[0]);
+                        composite.setVisible(false);
+                        ((GridData) composite.getLayoutData()).exclude = true;
+
+                        expressionLines.set(lineIndex, line);
+                        line.getExpressionLine().moveAbove(complexExpressionButton.getParent());
+                        complexExpressionButton.getParent().dispose();
+                        constructor.layout();
+                        super.okPressed();
+                    }
+
+                    @Override
+                    protected void cancelPressed() {
+                        line.getExpressionLine().dispose();
+                        super.cancelPressed();
+                    }
+                };
+                
+
+                dialog.open();
+				
+			}
+        	
+        }
+        
+        private void createAddChangeButton(){
+        	addChangeButton = new Button(this, SWT.PUSH);
             addChangeButton.setImage(addImage);
             addChangeButton.addSelectionListener(new LoggingSelectionAdapter() {
                 @Override
@@ -603,26 +659,9 @@ public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
                     });
                 }
             });
-            
-            if (index != 0) {
-            	upButton = new Button(this, SWT.PUSH);
-                upButton.setImage(upImage);
-                upButton.setData(lineIndex);
-                upButton.addSelectionListener(new LoggingSelectionAdapter() {
-                    @Override
-                    protected void onSelection(SelectionEvent e) {
-                        upRecord((Integer) e.widget.getData());
-                    }
-                });
-            } else {
-            	upButton = new Button(this, SWT.PUSH);
-                upButton.setImage(upImage);
-                upButton.setData(lineIndex);
-                upButton.setVisible(false);
-            }
-
-            
         }
+        
+        
         
         private void configureMode(boolean isComplex) {
         	Composite expression = (Composite) expressionsComposite.getChildren()[0];
