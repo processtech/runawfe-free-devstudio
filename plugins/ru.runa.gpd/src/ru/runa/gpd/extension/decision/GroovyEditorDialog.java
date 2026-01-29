@@ -269,6 +269,53 @@ public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
 
     private void upRecord(Integer recordIndex) {
 
+        ExpressionLine current = expressionLines.get(recordIndex);
+        ExpressionLine previous = expressionLines.get(recordIndex - 1);
+
+        expressionLines.set(recordIndex - 1, current);
+        expressionLines.set(recordIndex, previous);
+
+        String transition = transitionNames.get(recordIndex);
+        transitionNames.set(recordIndex, transitionNames.get(recordIndex - 1));
+        transitionNames.set(recordIndex - 1, transition);
+
+        current.getTransitionLabel().setText(transitionNames.get(recordIndex - 1));
+        previous.getTransitionLabel().setText(transitionNames.get(recordIndex));
+
+        current.setLineIndex(recordIndex - 1);
+        previous.setLineIndex(recordIndex);
+
+        current.moveAbove(previous);
+
+        updateUpButtons();
+        applyDefaultTransitionState();
+
+        constructor.layout();
+    }
+    
+    private void updateUpButtons() {
+        for (int i = 0; i < expressionLines.size(); i++) {
+            ExpressionLine line = expressionLines.get(i);
+            line.setLineIndex(i);
+            line.upButton.setData(i);
+            line.upButton.setVisible(i != 0);
+        }
+    }
+    
+    private void applyDefaultTransitionState() {
+        String selectedDefault = defaultTransitionCombo.getText();
+        boolean hasDefault = !selectedDefault.equals(
+                Localization.getString(NO_TRANSITION_BY_DEFAULT)
+        );
+
+        for (ExpressionLine line : expressionLines) {
+            boolean isDefault = hasDefault &&
+                    line.getTransitionLabel().getText().equals(selectedDefault);
+
+            line.expressionsComposite.setEnabled(!isDefault);
+            line.getComplexExpressionButton().setEnabled(!isDefault);
+            line.addChangeButton.setEnabled(!isDefault);
+        }
     }
 
     @Override
