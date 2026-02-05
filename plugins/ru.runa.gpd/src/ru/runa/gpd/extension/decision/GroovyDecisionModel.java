@@ -2,6 +2,8 @@ package ru.runa.gpd.extension.decision;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import ru.runa.gpd.extension.businessRule.LogicComposite;
 import ru.runa.gpd.lang.model.Variable;
 
 public class GroovyDecisionModel extends GroovyModel {
@@ -56,57 +58,109 @@ public class GroovyDecisionModel extends GroovyModel {
             }
         }
         if (defaultIf != null) {
-            buffer.append("\nreturn \"" + defaultIf.getTransition() + "\";\n");
+            buffer.append("\nreturn \"" + normalizeString(getDefaultTransitionName()) + "\";\n");
         }
         return buffer.toString();
     }
 
     public static class IfExpression {
-        private Variable firstVariable;
-        private Object secondVariable;
-        private final Operation operation;
+    	private List<Variable> firstVariables;
+        private List<Object> secondVariables;
+        private List<String> logicExpressions;
+        private final List<Operation> operations;
+        private List<int[]> brackets;
         private final String transition;
         private boolean byDefault;
-
+        
         public IfExpression(String transition) {
-            this.transition = transition;
+            this.operations = null;
+			this.transition = transition;
             this.byDefault = true;
-            this.firstVariable = null;
-            this.secondVariable = null;
-            this.operation = null;
         }
+       
 
-        public IfExpression(String transition, Variable firstVariable, Object secondVariable, Operation operation) {
+
+        public IfExpression(String transition, List<Variable> firstVariables, List<Object> secondVariables, List<Operation> operations,
+                List<String> logicExpressions, List<int[]> brackets) {
             this.transition = transition;
-            this.firstVariable = firstVariable;
-            this.secondVariable = secondVariable;
-            this.operation = operation;
+            this.firstVariables = firstVariables;
+            this.secondVariables = secondVariables;
+            this.operations = operations;
+            this.logicExpressions = logicExpressions;
+            this.brackets = brackets;
+            this.byDefault = false;
+        }
+        
+        public static String escapeQuotes(String input) {
+            return input.replaceAll("\"", "\\\\\"");
         }
 
         public String generateCode() {
-            return "if ( " + operation.generateCode(firstVariable, secondVariable) + " ) {\n\treturn \"" + transition + "\";\n};\n";
-        }
+        	StringBuffer buffer = new StringBuffer();
+            buffer.append("if ( ");
+            for (int i = 0; i < firstVariables.size(); i++) {
 
-        public Variable getFirstVariable() {
-            return firstVariable;
+                for (int j = 0; j < brackets.get(i)[0]; j++) {
+                    buffer.append("(");
+                }
+                if (brackets.get(i)[0] != 0) {
+                    buffer.append(" ");
+                }
+
+                buffer.append(operations.get(i).generateCode(firstVariables.get(i), secondVariables.get(i)));
+
+                if (brackets.get(i)[1] != 0) {
+                    buffer.append(" ");
+                }
+                for (int j = 0; j < brackets.get(i)[1]; j++) {
+                    buffer.append(")");
+                }
+
+                if (!logicExpressions.get(i).equals(LogicComposite.NULL_LOGIC_EXPRESSION)) {
+                    if (logicExpressions.get(i).equals(LogicComposite.OR_LOGIC_EXPRESSION)) {
+                        buffer.append(" " + "||" + " ");
+                    }
+                    if (logicExpressions.get(i).equals(LogicComposite.AND_LOGIC_EXPRESSION)) {
+                        buffer.append(" " + "&&" + " ");
+                    }
+                }
+            }
+            buffer.append(" ) {\n\treturn \"" + escapeQuotes(transition) + "\";\n};\n");
+            return buffer.toString();
         }
 
         public boolean isByDefault() {
             return byDefault;
         }
+        
+        public List<Variable> getFirstVariables() {
+            return firstVariables;
+        }
 
-        public String getSecondVariableTextValue() {
-            if (secondVariable instanceof Variable) {
-                return ((Variable) secondVariable).getScriptingName();
-            } else if (secondVariable instanceof String) {
-                return (String) secondVariable;
+        public List<Object> getSecondVariables() {
+            return secondVariables;
+        }
+
+        public String getSecondVariableTextValue(int index) {
+            if (secondVariables.get(index) instanceof Variable) {
+                return ((Variable) secondVariables.get(index)).getScriptingName();
+            } else if (secondVariables.get(index) instanceof String) {
+                return (String) secondVariables.get(index);
             } else {
-                throw new IllegalArgumentException("secondVariable class is " + secondVariable.getClass().getName());
+                throw new IllegalArgumentException("secondVariable class is " + secondVariables.get(index).getClass().getName());
             }
         }
 
-        public Operation getOperation() {
-            return operation;
+        public List<Operation> getOperations() {
+            return operations;
+        }
+
+        public List<String> getLogicExpressions() {
+            return logicExpressions;
+        }
+
+        public List<int[]> getBrackets() {
+            return brackets;
         }
 
         public String getTransition() {

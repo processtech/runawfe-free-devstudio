@@ -3,18 +3,33 @@ package ru.runa.gpd.extension.decision;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.SWTException;
+import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseTrackListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.SharedImages;
+import ru.runa.gpd.extension.businessRule.BracketPaintListener;
+import ru.runa.gpd.extension.businessRule.LogicComposite;
 import ru.runa.gpd.extension.decision.GroovyDecisionModel.IfExpression;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Variable;
@@ -24,13 +39,21 @@ import ru.runa.gpd.ui.dialog.FilterBox;
 import ru.runa.gpd.util.VariableUtils;
 
 public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
+	
+	private static final String DATA_EXPRESSION_LINE = "expressionLine";
+
+    private static final int FIRST_VARIABLE_INDEX = 0;
+    private static final int SECOND_VARIABLE_INDEX = 1;
+    private static final int OPERATION_INDEX = 2;
+
+    private static final Image addImage = SharedImages.getImage("icons/add_obj.gif");
+    private static final Image deleteImage = SharedImages.getImage("icons/delete.gif");
+    private List<ExpressionLine> expressionLines = new ArrayList<>();
     private static final String NO_TRANSITION_BY_DEFAULT = "GroovyEditor.no.transition.byDefault";
     private static final Image upImage = SharedImages.getImage("icons/up.gif");
     private final List<String> transitionNames;
-    private Label[] labels;
-    private FilterBox[][] variableBoxes;
-    private Combo[] operationBoxes;
     private Combo defaultTransitionCombo;
+    private GroovyDecisionModel tempModel;
 
     public GroovyEditorDialog(ProcessDefinition definition, List<String> transitionNames, String initialValue) {
         super(definition, initialValue);
@@ -56,167 +79,254 @@ public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
             }
             transitionNames.addAll(transitionNamesToAdd);
         }
-        variableBoxes = new FilterBox[transitionNames.size()][2];
-        operationBoxes = new Combo[transitionNames.size()];
-        labels = new Label[transitionNames.size()];
+        expressionLines.clear();
         for (int i = 0; i < transitionNames.size(); i++) {
-            labels[i] = new Label(constructor, SWT.NONE);
-            labels[i].setText(transitionNames.get(i));
-            labels[i].setLayoutData(getGridData());
-            variableBoxes[i][0] = new FilterBox(constructor, VariableUtils.getVariableNamesForScripting(variables));
-            variableBoxes[i][0].setData(DATA_INDEX_KEY, new int[] { i, 0 });
-            variableBoxes[i][0].setSelectionListener(new FilterBoxSelectionHandler());
-            variableBoxes[i][0].setLayoutData(getGridData());
-
-            operationBoxes[i] = new Combo(constructor, SWT.READ_ONLY);
-            operationBoxes[i].setData(DATA_INDEX_KEY, new int[] { i, 1 });
-            operationBoxes[i].addSelectionListener(new ComboSelectionHandler());
-            operationBoxes[i].setLayoutData(getGridData());
-
-            variableBoxes[i][1] = new FilterBox(constructor, null);
-            variableBoxes[i][1].setData(DATA_INDEX_KEY, new int[] { i, 2 });
-            variableBoxes[i][1].setSelectionListener(new FilterBoxSelectionHandler());
-            variableBoxes[i][1].setLayoutData(getGridData());
-            if (i != 0) {
-                Button upButton = new Button(constructor, SWT.PUSH);
-                upButton.setImage(upImage);
-                upButton.setData(i);
-                upButton.addSelectionListener(new LoggingSelectionAdapter() {
-                    @Override
-                    protected void onSelection(SelectionEvent e) throws Exception {
-                        upRecord((Integer) e.widget.getData());
-                    }
-                });
-            } else {
-                new Label(constructor, SWT.NONE);
-            }
-        }
-        for (int i = 0; i < variableBoxes.length; i++) {
-            for (int j = 0; j < 2; j++) {
-                variableBoxes[i][j].setSize(100, 20);
-            }
+        	ExpressionLine expressionLine = new ExpressionLine(i,initialModel);
+            expressionLines.add(i, expressionLine);
         }
         if (transitionNames.size() > 0) {
-            Composite bottomComposite = new Composite(constructor, SWT.NONE);
-            bottomComposite.setLayout(new GridLayout(2, true));
-            GridData data = new GridData(GridData.FILL_HORIZONTAL);
-            data.horizontalSpan = 5;
-            bottomComposite.setLayoutData(data);
-            Label defaultLabel = new Label(bottomComposite, SWT.NONE);
-            defaultLabel.setText(Localization.getString("GroovyEditor.byDefault") + ":");
-            defaultTransitionCombo = new Combo(bottomComposite, SWT.READ_ONLY);
-            defaultTransitionCombo.add(Localization.getString(NO_TRANSITION_BY_DEFAULT));
-            defaultTransitionCombo.select(0);
-            for (String trName : transitionNames) {
-                defaultTransitionCombo.add(trName);
-            }
-            defaultTransitionCombo.addSelectionListener(new LoggingSelectionAdapter() {
-                @Override
-                protected void onSelection(SelectionEvent e) throws Exception {
-                    for (int j = 0; j < labels.length; j++) {
-                        boolean enabled = !labels[j].getText().equals(defaultTransitionCombo.getText());
-                        variableBoxes[j][0].setEnabled(enabled);
-                        operationBoxes[j].setEnabled(enabled);
-                        variableBoxes[j][1].setEnabled(enabled);
-                    }
-                }
-            });
-            bottomComposite.pack();
+            createBottomComposite();
         }
     }
+
+    private void createBottomComposite() {
+    	Composite bottomComposite = new Composite(constructor, SWT.NONE);
+        bottomComposite.setLayout(new GridLayout(2, true));
+        GridData data = new GridData(GridData.FILL_HORIZONTAL);
+        data.horizontalSpan = 5;
+        bottomComposite.setLayoutData(data);
+        Label defaultLabel = new Label(bottomComposite, SWT.NONE);
+        defaultLabel.setText(Localization.getString("GroovyEditor.byDefault") + ":");
+        defaultTransitionCombo = new Combo(bottomComposite, SWT.READ_ONLY);
+        defaultTransitionCombo.add(Localization.getString(NO_TRANSITION_BY_DEFAULT));
+        defaultTransitionCombo.select(0);
+        for (String trName : transitionNames) {
+            defaultTransitionCombo.add(trName);
+        }
+        defaultTransitionCombo.addSelectionListener(new LoggingSelectionAdapter() {
+            @Override
+            protected void onSelection(SelectionEvent e) {
+            	String selectedTransition = defaultTransitionCombo.getText();
+            	for (ExpressionLine line : expressionLines) {
+	                line.expressionsComposite.setEnabled(true);
+	                line.getComplexExpressionButton().setEnabled(true);
+	                line.addChangeButton.setEnabled(true);
+                }
+            	if (!selectedTransition.equals(Localization.getString(NO_TRANSITION_BY_DEFAULT))) {
+                    for (ExpressionLine line : expressionLines) {
+                        if (line.getTransitionLabel().getText().equals(selectedTransition)) {
+        	                line.expressionsComposite.setEnabled(false);
+        	                line.getComplexExpressionButton().setEnabled(false);
+        	                line.addChangeButton.setEnabled(false);
+                            break;
+                        }
+                    }
+                }
+            }
+        });
+        bottomComposite.pack();
+    }
+    
+    private void initialize(IfExpression ifExpression, ExpressionLine expressionLine) {
+
+        int count = ifExpression.getFirstVariables().size();
+        if (count ==1) {
+            simpleExpression(ifExpression, expressionLine);
+            return;
+        }
+        expressionLine.swapToComplex();
+        complexExpression(ifExpression, expressionLine);
+        
+    }
+    
+    private void simpleExpression(IfExpression ifExpression, ExpressionLine expressionLine) {
+    	if (ifExpression != null) {
+            if (ifExpression.isByDefault()) {
+            	expressionLine.expressionsComposite.setEnabled(false);
+            	expressionLine.getComplexExpressionButton().setEnabled(false);
+            	expressionLine.addChangeButton.setEnabled(false);
+                defaultTransitionCombo.setText(ifExpression.getTransition());
+            } else {
+                Variable variable = ifExpression.getFirstVariables().get(0);
+                int index = variables.indexOf(variable);
+                if (index == -1) {
+                    return; 
+                }
+                expressionLine.getVariableBoxes().get(0)[0].select(index);
+                refresh(expressionLine.getVariableBoxes().get(0)[0]);
+                GroovyTypeSupport typeSupport = GroovyTypeSupport.get(variable.getJavaClassName());
+                index = Operation.getAll(typeSupport).indexOf(ifExpression.getOperations().get(0));
+                if (index == -1) {
+                    return;
+                }
+                expressionLine.getOperationBoxes().get(0).select(index);
+                refresh(expressionLine.getOperationBoxes().get(0));
+                String secondVariableText = ifExpression.getSecondVariableTextValue(0);
+                int secondVariableIndex = 0;
+                if (VariableUtils.getVariableByScriptingName(variables, secondVariableText) != null) {
+                    secondVariableIndex = getSecondVariableNames(variable).indexOf(secondVariableText);
+                } else {
+                    int predefinedIndex = typeSupport.getPredefinedValues(ifExpression.getOperations().get(0)).indexOf(secondVariableText);
+                    if (predefinedIndex >= 0) {
+                        secondVariableIndex = getSecondVariableNames(variable).size() + predefinedIndex;
+                    } else {
+                    	expressionLine.getVariableBoxes().get(0)[1].add(secondVariableText, 0);
+                    	expressionLine.getVariableBoxes().get(0)[1].setData(DATA_USER_INPUT_KEY, secondVariableText);
+                    }
+                }
+                expressionLine.getVariableBoxes().get(0)[1].select(secondVariableIndex);
+            }
+            return;
+        
+        }
+    }
+    
+    private void complexExpression(IfExpression ifExpression, ExpressionLine expressionLine) {
+    	int count = ifExpression.getFirstVariables().size();
+    	Composite expressionsComposite = expressionLine.expressionsComposite;
+        for (Control child : expressionsComposite.getChildren()) {
+            child.dispose();
+        }
+        expressionLine.variableBoxes.clear();
+        expressionLine.operationBoxes.clear();
+        expressionLine.logicComposites.clear();
+        for (int i = 0; i < count; i++) {
+            expressionLine.createExpression(i);
+        }
+        int bracketsCount = 0;
+        for (int i = 0; i < count; i++) {
+            Variable firstVariable = ifExpression.getFirstVariables().get(i);
+            Combo logicBox = expressionLine.getLogicComposites().get(i).getLogicBox();
+            logicBox.select(logicBox.indexOf(ifExpression.getLogicExpressions().get(i)));
+            expressionLine.getLogicComposites().get(i).setBrackets(ifExpression.getBrackets().get(i));
+            int firstVariableIndex = variables.indexOf(firstVariable);
+            if (firstVariableIndex == -1) {
+                // required variable was deleted in process definition
+                continue;
+            }
+            GroovyTypeSupport typeSupport = GroovyTypeSupport.get(firstVariable.getJavaClassName());
+            int operationIndex = Operation.getAll(typeSupport).indexOf(ifExpression.getOperations().get(i));
+            if (operationIndex == -1) {
+                // required operation was deleted !!!
+                continue;
+            }
+            FilterBox firstVariableBox = expressionLine.getVariableBoxes().get(i)[0];
+            firstVariableBox.select(firstVariableIndex);
+            refresh(firstVariableBox);
+            Combo operationBox = expressionLine.getOperationBoxes().get(i);
+            operationBox.select(operationIndex);
+            refresh(operationBox);
+            FilterBox secondVariableBox = expressionLine.getVariableBoxes().get(i)[1];
+            String secondVariableText = ifExpression.getSecondVariableTextValue(i);
+            int secondVariableIndex = 0;
+            boolean secondVariableIsNotUserInput = VariableUtils.getVariableByScriptingName(variables, secondVariableText) != null
+                    && (VariableUtils.getVariableByScriptingName(variables, secondVariableText).getJavaClassName())
+                            .equals(firstVariable.getJavaClassName());
+            if (secondVariableIsNotUserInput) {
+                secondVariableIndex = getSecondVariableNames(firstVariable).indexOf(secondVariableText);
+            } else {
+                int predefinedIndex = typeSupport.getPredefinedValues(ifExpression.getOperations().get(i)).indexOf(secondVariableText);
+                if (predefinedIndex >= 0) {
+                    secondVariableIndex = getSecondVariableNames(firstVariable).size() + predefinedIndex;
+                } else {
+                    secondVariableBox.add(secondVariableText, 0);
+                    secondVariableBox.setData(DATA_USER_INPUT_KEY, secondVariableText);
+                }
+            }
+            secondVariableBox.select(secondVariableIndex);
+
+            expressionLine.getLogicComposites().get(i).updateVerticalMargin(i);
+            bracketsCount += expressionLine.getLogicComposites().get(i).getBrackets()[0];
+            ((GridLayout) ((Composite) expressionLine.getExpressionComposite().getChildren()[i]).getLayout()).marginLeft = bracketsCount
+                    * LogicComposite.MARGIN_LEFT_STEP;
+            bracketsCount -= expressionLine.getLogicComposites().get(i).getBrackets()[1];
+        }
+    }
+   
+
 
     @Override
     protected void initializeConstructorView() {
-        for (int i = 0; i < transitionNames.size(); i++) {
-            IfExpression ifExpression = initialModel.getIfExpression(transitionNames.get(i));
-            if (ifExpression != null) {
-                labels[i].setText(ifExpression.getTransition());
-                if (ifExpression.isByDefault()) {
-                    variableBoxes[i][0].setEnabled(false);
-                    operationBoxes[i].setEnabled(false);
-                    variableBoxes[i][1].setEnabled(false);
-                    defaultTransitionCombo.setText(ifExpression.getTransition());
-                } else {
-                    Variable variable = ifExpression.getFirstVariable();
-                    int index = variables.indexOf(variable);
-                    if (index == -1) {
-                        // required variable was deleted in process definition
-                        continue;
-                    }
-                    variableBoxes[i][0].select(index);
-                    refresh(variableBoxes[i][0]);
-                    GroovyTypeSupport typeSupport = GroovyTypeSupport.get(variable.getJavaClassName());
-                    index = Operation.getAll(typeSupport).indexOf(ifExpression.getOperation());
-                    if (index == -1) {
-                        // required operation was deleted !!!
-                        continue;
-                    }
-                    operationBoxes[i].select(index);
-                    refresh(operationBoxes[i]);
-                    String secondVariableText = ifExpression.getSecondVariableTextValue();
-                    int secondVariableIndex = 0;
-                    if (VariableUtils.getVariableByScriptingName(variables, secondVariableText) != null) {
-                        secondVariableIndex = getSecondVariableNames(variable).indexOf(secondVariableText);
-                    } else {
-                        int predefinedIndex = typeSupport.getPredefinedValues(ifExpression.getOperation()).indexOf(secondVariableText);
-                        if (predefinedIndex >= 0) {
-                            secondVariableIndex = getSecondVariableNames(variable).size() + predefinedIndex;
-                        } else {
-                            variableBoxes[i][1].add(secondVariableText, 0);
-                            variableBoxes[i][1].setData(DATA_USER_INPUT_KEY, secondVariableText);
-                        }
-                    }
-                    variableBoxes[i][1].select(secondVariableIndex);
-                }
-            }
-        }
+    	if (initialModel == null) return;
+	    
+	    for (int i = 0; i < expressionLines.size(); i++) {
+	        ExpressionLine expressionLine = expressionLines.get(i);
+	        String transitionName = transitionNames.get(i);
+	        IfExpression ifExpression = initialModel.getIfExpression(transitionName);
+	        if (ifExpression != null) {
+	            if (ifExpression.isByDefault()) {
+	                expressionLine.expressionsComposite.setEnabled(false);
+	                expressionLine.getComplexExpressionButton().setEnabled(false);
+	                expressionLine.addChangeButton.setEnabled(false);
+	                defaultTransitionCombo.setText(ifExpression.getTransition());
+	            } else {
+	                initialize(ifExpression, expressionLine);
+	            }
+	        }
+	    }
+	    
     }
 
     private void upRecord(Integer recordIndex) {
-        String recordText = labels[recordIndex].getText();
-        labels[recordIndex].setText(labels[recordIndex - 1].getText());
-        labels[recordIndex - 1].setText(recordText);
-        boolean enabledIndex = variableBoxes[recordIndex][0].getEnabled();
-        boolean enabledIndexPrev = variableBoxes[recordIndex - 1][0].getEnabled();
-        int firstVariableIndex = variableBoxes[recordIndex][0].getSelectionIndex();
-        int operationIndex = operationBoxes[recordIndex].getSelectionIndex();
-        int secondVariableIndex = variableBoxes[recordIndex][1].getSelectionIndex();
-        String secondVariableUserInput = (String) variableBoxes[recordIndex][1].getData(DATA_USER_INPUT_KEY);
-        variableBoxes[recordIndex][0].select(variableBoxes[recordIndex - 1][0].getSelectionIndex());
-        variableBoxes[recordIndex][0].setEnabled(enabledIndexPrev);
-        refresh(variableBoxes[recordIndex][0]);
-        operationBoxes[recordIndex].select(operationBoxes[recordIndex - 1].getSelectionIndex());
-        operationBoxes[recordIndex].setEnabled(enabledIndexPrev);
-        refresh(operationBoxes[recordIndex]);
-        String secondVariableUserInput2 = (String) variableBoxes[recordIndex - 1][1].getData(DATA_USER_INPUT_KEY);
-        if (secondVariableUserInput2 != null) {
-            variableBoxes[recordIndex][1].add(secondVariableUserInput2, 0);
-            variableBoxes[recordIndex][1].setData(DATA_USER_INPUT_KEY, secondVariableUserInput2);
+
+        ExpressionLine current = expressionLines.get(recordIndex);
+        ExpressionLine previous = expressionLines.get(recordIndex - 1);
+
+        expressionLines.set(recordIndex - 1, current);
+        expressionLines.set(recordIndex, previous);
+
+        String transition = transitionNames.get(recordIndex);
+        transitionNames.set(recordIndex, transitionNames.get(recordIndex - 1));
+        transitionNames.set(recordIndex - 1, transition);
+
+        current.getTransitionLabel().setText(transitionNames.get(recordIndex - 1));
+        previous.getTransitionLabel().setText(transitionNames.get(recordIndex));
+
+        current.setLineIndex(recordIndex - 1);
+        previous.setLineIndex(recordIndex);
+
+        current.moveAbove(previous);
+
+        updateUpButtons();
+        applyDefaultTransitionState();
+
+        constructor.layout();
+    }
+    
+    private void updateUpButtons() {
+        for (int i = 0; i < expressionLines.size(); i++) {
+            ExpressionLine line = expressionLines.get(i);
+            line.setLineIndex(i);
+            line.upButton.setData(i);
+            line.upButton.setVisible(i != 0);
         }
-        variableBoxes[recordIndex][1].select(variableBoxes[recordIndex - 1][1].getSelectionIndex());
-        variableBoxes[recordIndex][1].setEnabled(enabledIndexPrev);
-        variableBoxes[recordIndex - 1][0].select(firstVariableIndex);
-        variableBoxes[recordIndex - 1][0].setEnabled(enabledIndex);
-        refresh(variableBoxes[recordIndex - 1][0]);
-        operationBoxes[recordIndex - 1].select(operationIndex);
-        operationBoxes[recordIndex - 1].setEnabled(enabledIndex);
-        refresh(operationBoxes[recordIndex - 1]);
-        if (secondVariableUserInput != null) {
-            variableBoxes[recordIndex - 1][1].add(secondVariableUserInput, 0);
-            variableBoxes[recordIndex - 1][1].setData(DATA_USER_INPUT_KEY, secondVariableUserInput);
+    }
+    
+    private void applyDefaultTransitionState() {
+        String selectedDefault = defaultTransitionCombo.getText();
+        boolean hasDefault = !selectedDefault.equals(
+                Localization.getString(NO_TRANSITION_BY_DEFAULT)
+        );
+
+        for (ExpressionLine line : expressionLines) {
+            boolean isDefault = hasDefault &&
+                    line.getTransitionLabel().getText().equals(selectedDefault);
+
+            line.expressionsComposite.setEnabled(!isDefault);
+            line.getComplexExpressionButton().setEnabled(!isDefault);
+            line.addChangeButton.setEnabled(!isDefault);
         }
-        variableBoxes[recordIndex - 1][1].select(secondVariableIndex);
-        variableBoxes[recordIndex - 1][1].setEnabled(enabledIndex);
     }
 
     @Override
     protected void refresh(FilterBox filterBox) {
         try {
             int[] indexes = (int[]) filterBox.getData(DATA_INDEX_KEY);
-            if (indexes[1] == 2) {
+            ExpressionLine expressionLine = (ExpressionLine) filterBox.getData(DATA_EXPRESSION_LINE);
+            if (indexes[1] == SECOND_VARIABLE_INDEX) {
                 if (TypedUserInputCombo.INPUT_VALUE.equals(filterBox.getSelectedItem())) {
                     String oldUserInput = (String) filterBox.getData(DATA_USER_INPUT_KEY);
-                    Variable firstVariable = (Variable) variableBoxes[indexes[0]][0].getData(DATA_VARIABLE_KEY);
+                    Variable firstVariable = (Variable) expressionLine.getVariableBoxes().get(indexes[0])[0].getData(DATA_VARIABLE_KEY);
                     refreshFilterBox(filterBox, oldUserInput, firstVariable);
                 } else {
                     Variable variable = VariableUtils.getVariableByScriptingName(variables, filterBox.getText());
@@ -226,8 +336,12 @@ public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
                 }
                 return;
             }
-            if (indexes[1] == 0) {
-                refreshFilterBox(filterBox, operationBoxes[indexes[0]]);
+            if (indexes[1] == FIRST_VARIABLE_INDEX) {
+                FilterBox secondVariable = expressionLine.getVariableBoxes().get(indexes[0])[1];
+                secondVariable.setSelectedItem("");
+
+                Combo operationCombo = expressionLine.getOperationBoxes().get(indexes[0]);
+                refreshFilterBox(filterBox, operationCombo);
             }
         } catch (RuntimeException e) {
             PluginLogger.logError(e);
@@ -238,53 +352,548 @@ public class GroovyEditorDialog extends EditorDialog<GroovyDecisionModel> {
     protected void refresh(Combo operationCombo) {
         try {
             int[] indexes = (int[]) operationCombo.getData(DATA_INDEX_KEY);
-            Variable firstVariable = (Variable) variableBoxes[indexes[0]][0].getData(DATA_VARIABLE_KEY);
+            ExpressionLine expressionLine = (ExpressionLine) operationCombo.getData(DATA_EXPRESSION_LINE);
+            Variable firstVariable = (Variable) expressionLine.getVariableBoxes().get(indexes[0])[0].getData(DATA_VARIABLE_KEY);
             if (firstVariable != null) {
-                refreshOperationCombo(operationCombo, firstVariable, variableBoxes[indexes[0]][1]);
+                FilterBox targetCombo = expressionLine.getVariableBoxes().get(indexes[0])[1];
+                refreshOperationCombo(operationCombo, firstVariable, targetCombo);
             }
         } catch (RuntimeException e) {
             PluginLogger.logError(e);
         }
     }
-
     @Override
     protected void toCode() {
-        for (int i = 0; i < variableBoxes.length; i++) {
-            for (int j = 0; j < 2; j++) {
-                boolean emptyFieldExist = variableBoxes[i][j].getText().length() == 0
-                        && !labels[i].getText().equals(defaultTransitionCombo.getText());
-                if (emptyFieldExist) {
-                    setErrorLabelText(Localization.getString("GroovyEditor.fillAll"));
-                    // we cannot construct while all data not filled
-                    return;
-                }
-            }
-        }
         clearErrorLabelText();
         try {
-            GroovyDecisionModel decisionModel = new GroovyDecisionModel();
-            for (int i = 0; i < transitionNames.size(); i++) {
-                IfExpression ifExpression;
-                if (labels[i].getText().equals(defaultTransitionCombo.getText())) {
-                    ifExpression = new IfExpression(labels[i].getText());
-                } else {
-                    Variable firstVariable = (Variable) variableBoxes[i][0].getData(DATA_VARIABLE_KEY);
-                    String operationName = operationBoxes[i].getItem(operationBoxes[i].getSelectionIndex());
-                    String secondVariableText = variableBoxes[i][1].getText();
-                    Object secondVariable = VariableUtils.getVariableByScriptingName(variables, secondVariableText);
-                    if (secondVariable == null) {
-                        secondVariable = secondVariableText;
-                    }
-                    GroovyTypeSupport typeSupport = GroovyTypeSupport.get(firstVariable.getJavaClassName());
-                    ifExpression = new IfExpression(labels[i].getText(), firstVariable, secondVariable, Operation.getByName(operationName, typeSupport));
-                }
-                decisionModel.addIfExpression(ifExpression);
-            }
-            styledText.setText(decisionModel.toString());
+            GroovyDecisionModel model = new GroovyDecisionModel();
+            String selectedDefault = defaultTransitionCombo.getText();
+            boolean hasDefault = !selectedDefault.equals(Localization.getString(NO_TRANSITION_BY_DEFAULT));
+            buildDecisionModel(model,selectedDefault,hasDefault);
+            tempModel = model;
+            styledText.setText(model.toString());
         } catch (RuntimeException e1) {
             PluginLogger.logError(e1);
             setErrorLabelText(Localization.getString("GroovyEditor.error.construct"));
         }
+    }
+    
+    private void buildDecisionModel(GroovyDecisionModel model, String selectedDefault, 
+    		boolean hasDefault) {
+    	IfExpression ifExpression;
+    	for (ExpressionLine expressionLine : expressionLines) {
+        	String transition = expressionLine.getTransitionLabel().getText();
+            if (hasDefault && transition.equals(selectedDefault)) {
+                IfExpression defaultExpr = new IfExpression(transition);
+                model.addIfExpression(defaultExpr);
+                continue;
+            }
+            ConditionResult conditionResult = buildCondition(expressionLine);
+            ifExpression = conditionResult.getIfExpression();
+            if (conditionResult.isEmptyFieldExist()) {
+                continue;
+            }
+            model.addIfExpression(ifExpression);
+        }
+    }
+    
+    private ConditionResult buildCondition(
+    		ExpressionLine expressionLine) {
+    	List<Variable> firstVariables = new ArrayList<>();
+        List<Object> secondVariables = new ArrayList<>();
+        List<Operation> operations = new ArrayList<>();
+        List<String> logicExpressions = new ArrayList<>();
+        List<int[]> brackets = new ArrayList<>();
+        boolean emptyFieldExist = false;
+        for (int i = 0; i < expressionLine.getVariableBoxes().size(); i++) {
+            int[] bracket = expressionLine.getLogicComposites().get(i).getBrackets().clone();
+            brackets.add(bracket);
+
+            emptyFieldExist = expressionLine.getVariableBoxes().get(i)[0].getText().length() == 0
+                    || expressionLine.getVariableBoxes().get(i)[1].getText().length() == 0
+                    || expressionLine.getOperationBoxes().get(i).getText().length() == 0;
+            if (emptyFieldExist) {
+                setErrorLabelText(Localization.getString("GroovyEditor.fillAll"));
+                if (logicExpressions.size() > 0) {
+                    emptyFieldExist = false;
+                }
+                continue;
+            }
+
+            Variable firstVariable = (Variable) expressionLine.getVariableBoxes().get(i)[0].getData(DATA_VARIABLE_KEY);
+            String operationName = expressionLine.getOperationBoxes().get(i)
+                    .getItem(expressionLine.getOperationBoxes().get(i).getSelectionIndex());
+            String secondVariableText = expressionLine.getVariableBoxes().get(i)[1].getText();
+            Variable secondVariable = VariableUtils.getVariableByScriptingName(variables, secondVariableText);
+            GroovyTypeSupport typeSupport = GroovyTypeSupport.get(firstVariable.getJavaClassName());
+
+            firstVariables.add(firstVariable);
+            if (secondVariable != null) {
+                secondVariables.add(secondVariable);
+            } else {
+                secondVariables.add(secondVariableText);
+            }
+            operations.add(Operation.getByName(operationName, typeSupport));
+            if (i == expressionLine.getVariableBoxes().size() - 1) {
+                logicExpressions.add(LogicComposite.NULL_LOGIC_EXPRESSION);
+            } else {
+                logicExpressions.add(expressionLine.getLogicComposites().get(i).getLogicBox().getText());
+            }
+        }   
+        
+        IfExpression ifExpression = new IfExpression(expressionLine.getTransitionLabel().getText(), firstVariables, secondVariables,
+                operations, logicExpressions, brackets);
+        return new ConditionResult(emptyFieldExist, ifExpression);
+        
+    }
+    
+    private class ConditionResult {
+        private final boolean emptyFieldExist;
+        private final IfExpression ifExpression;
+        
+		public ConditionResult(boolean emptyFieldExist, IfExpression ifExpression) {
+			this.emptyFieldExist = emptyFieldExist;
+			this.ifExpression = ifExpression;
+		}
+
+		public boolean isEmptyFieldExist() {
+			return emptyFieldExist;
+		}
+
+		public IfExpression getIfExpression() {
+			return ifExpression;
+		}
+
+    }
+
+    
+    protected class ExpressionLine extends Composite {
+        private static final int ADD_DELETE_COMPOSITE_INDEX = 4;
+
+        private Composite expressionsComposite;
+        private Button complexExpressionButton;
+        private Button addChangeButton;
+        private Button upButton;
+        private Label transitionLabel;
+        private List<FilterBox[]> variableBoxes = new ArrayList<>();
+        private List<Combo> operationBoxes = new ArrayList<>();
+        private List<LogicComposite> logicComposites = new ArrayList<>();
+        private int lineIndex;
+
+        public ExpressionLine(int index, GroovyDecisionModel model) {
+            super(constructor, SWT.NONE);
+            lineIndex = index;
+            
+            initLayout();
+            createTransitionLabel(lineIndex);    
+            createExpressionsComposite();
+            createComplexExpressionButton();
+
+            createExpression(0);
+            swapToSimple();
+
+            
+            createAddChangeButton();
+            createUpButton();
+            if (lineIndex == 0) {
+            	upButton.setVisible(false);
+            }
+
+            
+        }
+        
+        private void initLayout() {
+        	setLayout(new GridLayout(5, false));
+            GridData expressionLineData = new GridData(GridData.FILL_HORIZONTAL);
+            expressionLineData.horizontalSpan = 6;
+            setLayoutData(expressionLineData);
+        }
+        
+        private void createTransitionLabel(int index) {
+        	transitionLabel = new Label(this, SWT.NONE);
+            transitionLabel.setText(transitionNames.get(index));
+            transitionLabel.setLayoutData(new GridData());
+        }
+        
+        private void createExpressionsComposite() {
+        	expressionsComposite = new Composite(this, SWT.NONE);
+            expressionsComposite.setLayout(new GridLayout(1, false));
+            GridData expressionsData = new GridData(GridData.FILL_HORIZONTAL);
+            expressionsData.horizontalSpan = 1;
+            expressionsComposite.setLayoutData(expressionsData);
+        }
+        
+        private void createComplexExpressionButton() {
+        	complexExpressionButton = new Button(this, SWT.NONE);
+            GridData buttonData = new GridData(GridData.FILL_HORIZONTAL);
+            buttonData.minimumWidth = 200;
+            complexExpressionButton.setLayoutData(buttonData);
+            complexExpressionButton.setText(Localization.getString("GroovyEditor.complexExpressionButton"));
+            
+            complexExpressionButton.addMouseTrackListener(
+            		new ComplexExpressionMouseTrackListener()
+            );
+            complexExpressionButton.addSelectionListener(
+            		new ComplexExpressionLoggingSelectionAdapter()
+            );
+        }
+        
+        private void createUpButton() {
+        	upButton = new Button(this, SWT.PUSH);
+            upButton.setImage(upImage);
+            upButton.setData(lineIndex);
+            upButton.addSelectionListener(new LoggingSelectionAdapter() {
+                @Override
+                protected void onSelection(SelectionEvent e) {
+                    upRecord((Integer) e.widget.getData());
+                }
+            });
+        }
+        
+        private class ComplexExpressionMouseTrackListener implements MouseTrackListener {
+
+			@Override
+			public void mouseEnter(MouseEvent e) {
+				
+			}
+
+			@Override
+			public void mouseExit(MouseEvent e) {
+				
+			}
+
+			@Override
+			public void mouseHover(MouseEvent e) {
+				toCode();
+                complexExpressionButton.setToolTipText(tempModel.getIfExpressions().get(lineIndex).generateCode());
+				
+			}
+        	
+        }
+        
+        private class ComplexExpressionLoggingSelectionAdapter extends LoggingSelectionAdapter {
+
+			@Override
+			protected void onSelection(SelectionEvent e) throws Exception {
+				Dialog dialog = new Dialog(Display.getCurrent().getActiveShell()) {
+                    ExpressionLine line;
+                    Composite composite;
+
+                    {
+                        setShellStyle(getShellStyle() | SWT.RESIZE);
+                    }
+
+                    @Override
+                    protected Point getInitialSize() {
+                        return new Point(700, 400);
+                    }
+
+                    @Override
+                    protected Control createDialogArea(Composite parent) {
+                        getShell().setMinimumSize(getInitialSize());
+                        getShell().setText(Localization.getString("GroovyEditor.title"));
+
+                        ScrolledComposite scrolledComposite = new ScrolledComposite(parent, SWT.V_SCROLL | SWT.BORDER);
+                        scrolledComposite.setExpandHorizontal(true);
+                        scrolledComposite.setExpandVertical(true);
+                        scrolledComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+                        try {
+                            toCode();
+                            clearErrorLabelText();
+                            line = new ExpressionLine(lineIndex, tempModel);
+                            line.swapToComplex();
+
+                            if (tempModel.getIfExpressions().size() > lineIndex) {
+                                initialize(tempModel.getIfExpressions().get(lineIndex), line);
+                            }
+
+                            composite = line.getExpressionComposite();
+                            composite.setParent(scrolledComposite);
+                            scrolledComposite.setContent(composite);
+                            composite.setVisible(true);
+                            ((GridData) composite.getLayoutData()).exclude = false;
+                            composite.layout();
+                            scrolledComposite.setMinSize(expressionsComposite.computeSize(SWT.MIN, SWT.DEFAULT));
+                        }  catch (SWTException e) {
+                            initialErrorMessage = e.getMessage();
+                            PluginLogger.logErrorWithoutDialog("", e);
+                        }   catch (RuntimeException e) {
+                            initialErrorMessage = e.getMessage();
+                            PluginLogger.logErrorWithoutDialog("", e);
+                        } catch (Exception e) {
+                        	initialErrorMessage = e.getMessage();
+                            PluginLogger.logErrorWithoutDialog("", e);
+						} 
+                        return scrolledComposite;
+                    }
+
+                    @Override
+                    protected void okPressed() {
+                        for (int i = line.getVariableBoxes().size() - 1; i >= 0; i--) {
+                            boolean emptyFieldExist = line.getVariableBoxes().get(i)[0].getText().length() == 0
+                                    || line.getVariableBoxes().get(i)[1].getText().length() == 0
+                                    || line.getOperationBoxes().get(i).getText().length() == 0;
+                            if (emptyFieldExist) {
+                                line.dellExpression(i);
+                            }
+                        }
+
+                        composite.setParent(line.getExpressionLine());
+                        composite.moveAbove(line.getExpressionLine().getChildren()[0]);
+                        composite.setVisible(false);
+                        ((GridData) composite.getLayoutData()).exclude = true;
+
+                        expressionLines.set(lineIndex, line);
+                        line.getExpressionLine().moveAbove(complexExpressionButton.getParent());
+                        complexExpressionButton.getParent().dispose();
+                        constructor.layout();
+                        super.okPressed();
+                    }
+
+                    @Override
+                    protected void cancelPressed() {
+                        line.getExpressionLine().dispose();
+                        super.cancelPressed();
+                    }
+                };
+                
+
+                dialog.open();
+				
+			}
+        	
+        }
+        
+        private void createAddChangeButton(){
+        	addChangeButton = new Button(this, SWT.PUSH);
+            addChangeButton.setImage(addImage);
+            addChangeButton.addSelectionListener(new LoggingSelectionAdapter() {
+                @Override
+                protected void onSelection(SelectionEvent e) {
+                    Menu menu = new Menu(Display.getCurrent().getActiveShell(), SWT.POP_UP);
+
+                    MenuItem change = new MenuItem(menu, SWT.PUSH);
+                    change.setText(Localization.getString("GroovyEditor.addChangeButtonMenu.change"));
+
+                    Point loc = addChangeButton.getLocation();
+                    Rectangle rect = addChangeButton.getBounds();
+                    Point mLoc = new Point(loc.x - 1, loc.y + rect.height);
+                    menu.setLocation(Display.getCurrent().map(addChangeButton.getParent(), null, mLoc));
+                    menu.setVisible(true);
+
+                    change.addSelectionListener(new LoggingSelectionAdapter() {
+                        @Override
+                        protected void onSelection(SelectionEvent e) {
+                            if (complexExpressionButton.getVisible()) {
+                                logicComposites.get(0).getBrackets()[0] = 0;
+                                logicComposites.get(0).getBrackets()[1] = 0;
+                                logicComposites.get(0).updateVerticalMargin(0);
+                                while (logicComposites.size() > 1) {
+                                    expressionsComposite.getChildren()[1].dispose();
+                                    variableBoxes.remove(1);
+                                    operationBoxes.remove(1);
+                                    logicComposites.remove(1);
+                                    expressionsComposite.layout();
+                                }
+                                swapToSimple();
+                                constructor.layout();
+                            } else {
+                                swapToComplex();
+                                constructor.layout();
+                            }
+                        }
+                    });
+                }
+            });
+        }
+        
+        
+        
+        private void configureMode(boolean isComplex) {
+        	Composite expression = (Composite) expressionsComposite.getChildren()[0];
+        	((GridLayout) expression.getLayout()).numColumns = isComplex ? 5 : 3;
+        	if (!isComplex) {
+        		((GridLayout) expression.getLayout()).marginLeft = 0;
+        	}
+        	expression.getChildren()[ADD_DELETE_COMPOSITE_INDEX].setVisible(isComplex ? true : false);
+        	((GridData) expression.getChildren()[ADD_DELETE_COMPOSITE_INDEX].getLayoutData()).exclude = isComplex ? false : true;
+        	if (!isComplex) {
+        		logicComposites.get(0).setVisible(false);
+        	}
+        	((GridData) logicComposites.get(0).getLayoutData()).exclude = isComplex ? false : true;
+        	expressionsComposite.setVisible(isComplex ? false : true);
+        	((GridData) expressionsComposite.getLayoutData()).exclude = isComplex ? true : false;
+        	complexExpressionButton.setVisible(isComplex ? true : false);
+        	((GridData) complexExpressionButton.getLayoutData()).exclude = isComplex ? false : true;
+        	expressionsComposite.layout();
+        }
+
+        protected void swapToComplex() {
+        	configureMode(true);
+        }
+
+        protected void swapToSimple() {
+        	configureMode(false);
+        }
+
+        private void createExpression(int index) {
+            Composite expression = new Composite(expressionsComposite, SWT.NONE);
+            GridLayout expressionLayout = new GridLayout(5, true);
+            expressionLayout.verticalSpacing = 0;
+            expression.setLayout(expressionLayout);
+            expression.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+            FilterBox[] expressionVariables = new FilterBox[2];
+            expressionVariables[0] = new FilterBox(expression, VariableUtils.getVariableNamesForScripting(variables));
+            expressionVariables[0].setData(DATA_INDEX_KEY, new int[] { index, FIRST_VARIABLE_INDEX });
+            expressionVariables[0].setData(DATA_EXPRESSION_LINE, this);
+            expressionVariables[0].setSelectionListener(new FilterBoxSelectionHandler());
+            expressionVariables[0].setLayoutData(getVariableGridData());
+
+            Combo operation = new Combo(expression, SWT.READ_ONLY);
+            operation.setData(DATA_INDEX_KEY, new int[] { index, OPERATION_INDEX });
+            operation.setData(DATA_EXPRESSION_LINE, this);
+            operation.addSelectionListener(new ComboSelectionHandler());
+            operation.setLayoutData(getVariableGridData());
+
+            expressionVariables[1] = new FilterBox(expression, null);
+            expressionVariables[1].setData(DATA_INDEX_KEY, new int[] { index, SECOND_VARIABLE_INDEX });
+            expressionVariables[1].setData(DATA_EXPRESSION_LINE, this);
+            expressionVariables[1].setSelectionListener(new FilterBoxSelectionHandler());
+            expressionVariables[1].setLayoutData(getVariableGridData());
+
+            LogicComposite logicComposite = new LogicComposite(expression, logicComposites);
+
+            variableBoxes.add(index, expressionVariables);
+            operationBoxes.add(index, operation);
+            logicComposites.add(index, logicComposite);
+
+            if (index == logicComposites.size() - 1) {
+                logicComposite.setVisible(false);
+                if (logicComposites.size() > 1) {
+                    logicComposites.get(logicComposites.indexOf(logicComposite) - 1).setVisible(true);
+                }
+            } else {
+                expression.moveAbove(expressionsComposite.getChildren()[index]);
+            }
+
+            Composite addDeleteComposite = new Composite(expression, SWT.NONE);
+            GridLayout layout = new GridLayout(2, true);
+            layout.marginWidth = 0;
+            layout.marginHeight = 0;
+            addDeleteComposite.setLayout(layout);
+            addDeleteComposite.setLayoutData(getGridData());
+
+            Button deleteButton = new Button(addDeleteComposite, SWT.PUSH);
+            deleteButton.setImage(deleteImage);
+            deleteButton.setLayoutData(new GridData());
+            deleteButton.addSelectionListener(new LoggingSelectionAdapter() {
+                @Override
+                protected void onSelection(SelectionEvent e) {
+                    dellExpression(logicComposites.indexOf(logicComposite));
+                }
+            });
+
+            Button addButton = new Button(addDeleteComposite, SWT.PUSH);
+            addButton.setImage(addImage);
+            addButton.setLayoutData(new GridData());
+            addButton.addSelectionListener(new LoggingSelectionAdapter() {
+                @Override
+                protected void onSelection(SelectionEvent e) {
+                    int newLogicCompositeIndex = logicComposites.indexOf(logicComposite) + 1;
+                    createExpression(newLogicCompositeIndex);
+
+                    if (logicComposite.getCloseButton().getSelection()) {
+                        if (newLogicCompositeIndex != logicComposites.size() - 1 && !logicComposite.getOpenButton().getSelection()) {
+                            ((GridLayout) logicComposites.get(newLogicCompositeIndex).getParent()
+                                    .getLayout()).marginLeft = ((GridLayout) logicComposites.get(newLogicCompositeIndex + 1).getParent()
+                                            .getLayout()).marginLeft;
+                        }
+                    } else {
+                        ((GridLayout) logicComposites.get(newLogicCompositeIndex).getParent().getLayout()).marginLeft = ((GridLayout) expression
+                                .getLayout()).marginLeft;
+                    }
+                    if (logicComposite.getOpenButton().getSelection()) {
+                        Button newOpenButton = logicComposites.get(newLogicCompositeIndex).getOpenButton();
+                        logicComposite.getOpenButton().setSelection(false);
+                        newOpenButton.setSelection(true);
+                    }
+
+                    for (int i = 0; i < logicComposites.size(); i++) {
+                        variableBoxes.get(i)[0].setData(DATA_INDEX_KEY, new int[] { i, FIRST_VARIABLE_INDEX });
+                        operationBoxes.get(i).setData(DATA_INDEX_KEY, new int[] { i, OPERATION_INDEX });
+                        variableBoxes.get(i)[1].setData(DATA_INDEX_KEY, new int[] { i, SECOND_VARIABLE_INDEX });
+                    }
+                    expressionsComposite.layout();
+                    ((ScrolledComposite) expressionsComposite.getParent()).setMinSize(expressionsComposite.computeSize(SWT.MIN, SWT.DEFAULT));
+                }
+            });
+            expression.addPaintListener(new BracketPaintListener(logicComposites, expression, logicComposite));
+        }
+
+        private void dellExpression(int index) {
+            if (logicComposites.size() > 1) {
+                logicComposites.get(index).updateBeforeDeletion();
+
+                expressionsComposite.getChildren()[index].dispose();
+                variableBoxes.remove(index);
+                operationBoxes.remove(index);
+                logicComposites.remove(index);
+                expressionsComposite.layout();
+
+                for (int i = 0; i < logicComposites.size(); i++) {
+                    variableBoxes.get(i)[0].setData(DATA_INDEX_KEY, new int[] { i, FIRST_VARIABLE_INDEX });
+                    operationBoxes.get(i).setData(DATA_INDEX_KEY, new int[] { i, OPERATION_INDEX });
+                    variableBoxes.get(i)[1].setData(DATA_INDEX_KEY, new int[] { i, SECOND_VARIABLE_INDEX });
+                }
+                logicComposites.get(0).updateAfterDeletion();
+            }
+        }
+
+        private GridData getVariableGridData() {
+            GridData data = new GridData(GridData.FILL_HORIZONTAL);
+            data.widthHint = 120;
+            return data;
+        }
+
+        public Label getTransitionLabel() {
+            return transitionLabel;
+        }
+
+        public List<FilterBox[]> getVariableBoxes() {
+            return variableBoxes;
+        }
+
+        public List<Combo> getOperationBoxes() {
+            return operationBoxes;
+        }
+
+        public void setLineIndex(int lineIndex) {
+            this.lineIndex = lineIndex;
+        }
+
+        public Composite getExpressionComposite() {
+            return expressionsComposite;
+        }
+
+        public Composite getExpressionLine() {
+            return this;
+        }
+
+        public List<LogicComposite> getLogicComposites() {
+            return logicComposites;
+        }
+
+        public Button getComplexExpressionButton() {
+            return complexExpressionButton;
+        }
+
+		public int getLineIndex() {
+			return lineIndex;
+		}
+        
+        
     }
 
 }

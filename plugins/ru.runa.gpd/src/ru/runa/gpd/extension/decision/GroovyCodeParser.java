@@ -33,7 +33,7 @@ import ru.runa.gpd.lang.model.Decision;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.ui.control.ExpressionLine;
 import ru.runa.gpd.ui.control.ExpressionLine.ExpressionLineModel;
-import ru.runa.gpd.ui.dialog.GlobalValidatorExpressionConstructorDialog;
+import ru.runa.gpd.ui.dialog.ExpressionModel;
 import ru.runa.gpd.util.VariableUtils;
 
 /**
@@ -52,6 +52,8 @@ public class GroovyCodeParser {
     private static final String DEPRECATED_DOUBLE_VALUE = ".doubleValue()";
     private static final String DEPRECATED_DATE_VALUE = "CalendarUtil.dateToCalendar";
     private static final String DEPRECATED_BIG_DECIMAL_VALUE = "new BigDecimal(";
+    private static final String OR_STRING = "||";
+    private static final String AND_STRING = "&&";
 
     public static Optional<GroovyDecisionModel> parseDecisionModel(Decision decision) {
         return parseDecisionModel(decision.getDelegationConfiguration(), decision.getVariables(true, true));
@@ -73,15 +75,12 @@ public class GroovyCodeParser {
                         throw new RuntimeException("else is not supported in constructor");
                     }
                     Expression expression = ifStatement.getBooleanExpression().getExpression();
-                    IfStatementParsedData parsedData = parseIfStatementExpression(expression);
-                    ReturnStatement returnStatement = (ReturnStatement) ((BlockStatement) ifStatement.getIfBlock()).getStatements().get(0);
+                    ExpressionModel expressionModel = parseExpression(expression);
+                    ReturnStatement returnStatement = (ReturnStatement) ((BlockStatement) ((IfStatement) statement).getIfBlock()).getStatements()
+                            .get(0);
                     String transitionName = (String) ((ConstantExpression) returnStatement.getExpression()).getValue();
-                    Variable variable1 = VariableUtils.getVariableByScriptingName(variables, parsedData.leftText);
-                    assertNotNull(variable1, parsedData.leftText);
-                    Variable variable2 = VariableUtils.getVariableByScriptingName(variables, parsedData.rightText);
-                    model.addIfExpression(
-                            new GroovyDecisionModel.IfExpression(transitionName, variable1, variable2 != null ? variable2 : parsedData.rightText,
-                                    Operation.getByOperator(parsedData.operationText, GroovyTypeSupport.get(variable1.getJavaClassName()))));
+                    GroovyDecisionModel.IfExpression ifExpression = createDecisionIfExpression(expressionModel, transitionName, variables);
+                    model.addIfExpression(ifExpression);
                 } else if (statement instanceof ReturnStatement) {
                     String transitionName = (String) ((ConstantExpression) ((ReturnStatement) statement).getExpression()).getValue();
                     model.addIfExpression(new GroovyDecisionModel.IfExpression(transitionName));
@@ -225,7 +224,7 @@ public class GroovyCodeParser {
     /**
      * @author andrey belozerov
      */
-    public static Optional<GlobalValidatorExpressionConstructorDialog.ExpressionModel> parseValidationModel(String code, List<Variable> variables) {
+    public static Optional<ExpressionModel> parseValidationModel(String code, List<Variable> variables) {
         try {
             if (Strings.isNullOrEmpty(code)) {
                 return Optional.empty();
@@ -235,7 +234,7 @@ public class GroovyCodeParser {
             BlockStatement blockStatement = (BlockStatement) astNodes.get(0); // состоит из одного ExpressionStatement
             ExpressionStatement expressionStatement = (ExpressionStatement) blockStatement.getStatements().get(0); // состоит из одного Expression
             Expression expression = expressionStatement.getExpression();
-            GlobalValidatorExpressionConstructorDialog.ExpressionModel model = parseExpression(expression);
+            ExpressionModel model = parseExpression(expression);
             return Optional.of(model);
         } catch (Exception e) {
             PluginLogger.logErrorWithoutDialog("parseValidationModel " + code, e);
@@ -246,7 +245,7 @@ public class GroovyCodeParser {
     /**
      * @author andrey belozerov
      */
-    public static GlobalValidatorExpressionConstructorDialog.ExpressionModel parseExpression(Expression expression) throws Exception {
+    public static ExpressionModel parseExpression(Expression expression) throws Exception {
         // парсит выражения определенного типа. Это те выражения, которые могут загрузиться в конструктор выражения глобального валидатора,
         // и в конструктор сложного условия бизнес-правила. Эта функция может выполняться многократно при парсинге бизнес-правил, поэтому
         // в нее не входит дорогостоящее создание AST из кода Groovy.
@@ -282,7 +281,7 @@ public class GroovyCodeParser {
                 if (i instanceof BinaryExpression) {
                     BinaryExpression binaryExpression = (BinaryExpression) i;
                     String operation = binaryExpression.getOperation().getText();
-                    if (operation.equals("&&") || operation.equals("||")) {
+                    if (operation.equals(AND_STRING) || operation.equals(OR_STRING)) {
                         Expression leftExpression = binaryExpression.getLeftExpression();
                         Expression rightExpression = binaryExpression.getRightExpression();
                         newExpressionList.add(leftExpression);
@@ -299,7 +298,7 @@ public class GroovyCodeParser {
                         // для такого выражения скобки необходимы.
                         leftExpression.putNodeMetaData(closeBracketsNumber, 0);
                         rightExpression.putNodeMetaData(openBracketsNumber, 0);
-                        boolean addBrackets = operation.equals("||") && binaryExpression.getNodeMetaData(operationInParent).equals("&&");
+                        boolean addBrackets = operation.equals(OR_STRING) && binaryExpression.getNodeMetaData(operationInParent).equals(AND_STRING);
                         int newBracketsNumber = addBrackets ? 1 : 0;
                         leftExpression.putNodeMetaData(openBracketsNumber,
                                 newBracketsNumber + (Integer) binaryExpression.getNodeMetaData(openBracketsNumber));
@@ -322,7 +321,7 @@ public class GroovyCodeParser {
             }
             expressionList = newExpressionList;
         }
-        GlobalValidatorExpressionConstructorDialog.ExpressionModel model = new GlobalValidatorExpressionConstructorDialog.ExpressionModel();
+        ExpressionModel model = new ExpressionModel();
         ListIterator<Expression> iterator = expressionList.listIterator(); // нужен, чтобы в LinkedList смотреть на следующий элемент за текущим
         while (iterator.hasNext()) {
             Expression currentExpression = iterator.next();
@@ -471,11 +470,11 @@ public class GroovyCodeParser {
             for (Statement statement : blockStatement.getStatements()) {
                 if (statement instanceof IfStatement) {
                     Expression expression = ((IfStatement) statement).getBooleanExpression().getExpression(); // условие в if
-                    GlobalValidatorExpressionConstructorDialog.ExpressionModel expressionModel = parseExpression(expression);
+                    ExpressionModel expressionModel = parseExpression(expression);
                     ReturnStatement returnStatement = (ReturnStatement) ((BlockStatement) ((IfStatement) statement).getIfBlock()).getStatements()
                             .get(0);
                     String function = (String) ((ConstantExpression) returnStatement.getExpression()).getValue(); // строка, возвращаемая return
-                    IfExpression ifExpression = createIfExpression(expressionModel, function, variables);
+                    IfExpression ifExpression = createBusinessRuleIfExpression(expressionModel, function, variables);
                     model.addIfExpression(ifExpression);
                 }
                 if (statement instanceof ReturnStatement) {
@@ -493,9 +492,22 @@ public class GroovyCodeParser {
      * @author andrey belozerov
      * @throws Exception
      */
-    private static IfExpression createIfExpression(GlobalValidatorExpressionConstructorDialog.ExpressionModel expressionModel, String function,
+    private static IfExpression createBusinessRuleIfExpression(ExpressionModel expressionModel, String function,
             List<Variable> variables) throws Exception {
-        List<Variable> firstVariables = new ArrayList<>(); // в других местах IfExpression всегда принимает списки типа ArrayList
+        ArgsForIfExpression args = createIfExpression(expressionModel, variables);
+        return new IfExpression(function, args.getFirstVariables(),args.getSecondVariables(),args.getOperations(),args.getLogicExpressions(),args.getBracketsRuleView());
+    }
+    
+    private static GroovyDecisionModel.IfExpression createDecisionIfExpression(ExpressionModel expressionModel, String transition,
+            List<Variable> variables) throws VariableNotFoundException {
+    	ArgsForIfExpression args = createIfExpression(expressionModel, variables);
+        return new GroovyDecisionModel.IfExpression(transition, args.getFirstVariables(),args.getSecondVariables(),args.getOperations(),args.getLogicExpressions(),args.getBracketsRuleView());
+    }
+    
+    private static ArgsForIfExpression createIfExpression(ExpressionModel expressionModel,
+    		List<Variable> variables) throws VariableNotFoundException  {
+    	
+    	List<Variable> firstVariables = new ArrayList<>(); // в других местах IfExpression всегда принимает списки типа ArrayList
         List<Object> secondVariables = new ArrayList<>();
         List<Operation> operations = new ArrayList<>();
         List<String> logicExpressions = new ArrayList<>();
@@ -505,7 +517,7 @@ public class GroovyCodeParser {
             ExpressionLineModel expressionLineModel = expressionModel.getExpressionLineModel(i);
             Variable firstVariable = VariableUtils.getVariableByScriptingName(variables, expressionLineModel.getFirstOperand());
             if (firstVariable == null) {
-                throw new Exception("first variable not found");
+                throw new VariableNotFoundException("first variable not found");
             }
             GroovyTypeSupport typeSupport = GroovyTypeSupport.get(firstVariable.getJavaClassName());
             Operation operation = Operation.getByOperator(expressionLineModel.getOperation(), typeSupport);
@@ -517,9 +529,9 @@ public class GroovyCodeParser {
             } else {
                 secondVariable = secondOperandText;
             }
-            if (expressionLineModel.getLogicOperationGroovy().equals("||")) {
+            if (expressionLineModel.getLogicOperationGroovy().equals(OR_STRING)) {
                 logicExpressions.add(LogicComposite.OR_LOGIC_EXPRESSION);
-            } else if (expressionLineModel.getLogicOperationGroovy().equals("&&")) {
+            } else if (expressionLineModel.getLogicOperationGroovy().equals(AND_STRING)) {
                 logicExpressions.add(LogicComposite.AND_LOGIC_EXPRESSION);
             }
             openBrackets.add(expressionLineModel.isOpenBracketExist());
@@ -531,7 +543,15 @@ public class GroovyCodeParser {
         logicExpressions.remove(logicExpressions.size() - 1);
         logicExpressions.add(LogicComposite.NULL_LOGIC_EXPRESSION); // несуществующая логическая операция в последней expression line
         // далее преобразование информации о скобках к виду, используемому в бизнес-правилах
-        int nesting = 0;
+        List<int[]> bracketsRuleView = getBracketsRuleViewList(openBrackets, closeBrackets,expressionModel);
+        return new ArgsForIfExpression(firstVariables, secondVariables, operations, logicExpressions, bracketsRuleView);
+    	
+    }
+    
+    private static List<int[]> getBracketsRuleViewList(List<Boolean> openBrackets, List<Boolean> closeBrackets, 
+    		ExpressionModel expressionModel){
+    	
+    	int nesting = 0;
         int minNesting = 0;
         for (int i = 0; i < expressionModel.getExpressionLineNumber(); i++) {
             if (closeBrackets.get(i)) {
@@ -548,18 +568,52 @@ public class GroovyCodeParser {
         // добавляется в начало, чтобы вложенность везде в выражении была >= 0
         int closeBracketsInEnd = nesting + openBracketsInBeginning; // такое количество закрывающих
         // скобок добавляется в конец, чтобы вложенность в нем была 0
-        List<int[]> bracketsBusinessRuleView = new ArrayList<>();
+        List<int[]> bracketsRuleView = new ArrayList<>();
         int[] bracketsInFirstExpressionLine = new int[2];
         bracketsInFirstExpressionLine[0] = openBracketsInBeginning;
         bracketsInFirstExpressionLine[1] = closeBrackets.get(0) ? 1 : 0;
-        bracketsBusinessRuleView.add(bracketsInFirstExpressionLine);
+        bracketsRuleView.add(bracketsInFirstExpressionLine);
         for (int i = 1; i < expressionModel.getExpressionLineNumber(); i++) {
             int[] bracketsInExpressionLine = new int[2];
             bracketsInExpressionLine[0] = openBrackets.get(i - 1) ? 1 : 0;
             bracketsInExpressionLine[1] = closeBrackets.get(i) ? 1 : 0;
-            bracketsBusinessRuleView.add(bracketsInExpressionLine);
+            bracketsRuleView.add(bracketsInExpressionLine);
         }
-        bracketsBusinessRuleView.get(bracketsBusinessRuleView.size() - 1)[1] = closeBracketsInEnd;
-        return new IfExpression(function, firstVariables, secondVariables, operations, logicExpressions, bracketsBusinessRuleView);
+        bracketsRuleView.get(bracketsRuleView.size() - 1)[1] = closeBracketsInEnd;
+        return bracketsRuleView;
+    }
+    
+    private static class ArgsForIfExpression {
+    	
+    	private List<Variable> firstVariables = new ArrayList<>();
+        private List<Object> secondVariables = new ArrayList<>();
+        private List<Operation> operations = new ArrayList<>();
+        private List<String> logicExpressions = new ArrayList<>();
+        List<int[]> bracketsRuleView = new ArrayList<>();
+		public ArgsForIfExpression(List<Variable> firstVariables, List<Object> secondVariables,
+				List<Operation> operations, List<String> logicExpressions, List<int[]> bracketsRuleView) {
+			super();
+			this.firstVariables = firstVariables;
+			this.secondVariables = secondVariables;
+			this.operations = operations;
+			this.logicExpressions = logicExpressions;
+			this.bracketsRuleView = bracketsRuleView;
+		}
+		public List<Variable> getFirstVariables() {
+			return firstVariables;
+		}
+		public List<Object> getSecondVariables() {
+			return secondVariables;
+		}
+		public List<Operation> getOperations() {
+			return operations;
+		}
+		public List<String> getLogicExpressions() {
+			return logicExpressions;
+		}
+		public List<int[]> getBracketsRuleView() {
+			return bracketsRuleView;
+		}
+		
     }
 }
