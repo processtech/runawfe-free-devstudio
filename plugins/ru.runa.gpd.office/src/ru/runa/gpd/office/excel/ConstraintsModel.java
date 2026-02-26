@@ -1,46 +1,164 @@
 package ru.runa.gpd.office.excel;
 
+import com.google.common.base.Strings;
+import java.util.ArrayList;
+import java.util.List;
 import org.dom4j.Document;
 import org.dom4j.Element;
 
-import ru.runa.gpd.util.BackCompatibilityUtils;
-
 public class ConstraintsModel {
-    public static final int CELL = 0;
-    public static final int ROW = 1;
-    public static final int COLUMN = 2;
+    public static final int CELL = 1;
+    public static final int ROW = 2;
+    public static final int COLUMN = 3;
+
     public static final String CELL_CLASS = "ru.runa.wfe.office.excel.CellConstraints";
     public static final String ROW_CLASS = "ru.runa.wfe.office.excel.RowConstraints";
     public static final String COLUMN_CLASS = "ru.runa.wfe.office.excel.ColumnConstraints";
-    public String sheetName = "";
+
+    public String sheetName;
     public int sheetIndex = 1;
-    public String variableName = "";
+    public String variableName;
     public final int type;
     public int row = 1;
     public int column = 1;
+    public final List<ColumnMapping> columns = new ArrayList<>();
 
-    public String getSheetName() {
-        return sheetName;
+    public static class ColumnMapping {
+        public String attributeName;
+        public int column;
+
+        public ColumnMapping() {
+        }
+
+        public ColumnMapping(String attributeName, int column) {
+            this.attributeName = attributeName;
+            this.column = column;
+        }
     }
 
-    public void setSheetName(String sheetName) {
-        this.sheetName = sheetName;
+    public ConstraintsModel(int type) {
+        this.type = type;
     }
 
-    public int getSheetIndex() {
-        return sheetIndex;
+    public static ConstraintsModel deserialize(Element bindingElement) {
+        int type = defineTypeOfClazz(bindingElement);
+        ConstraintsModel model = new ConstraintsModel(type);
+        model.variableName = bindingElement.attributeValue("variable");
+        Element configElement = bindingElement.element("config");
+        if (configElement != null) {
+            String sheetValue = getSheetValue(configElement);
+            applySheetToModel(sheetValue, model);
+            applyCoordinatesToModel(type, configElement, model);
+        }
+        return applyMappingsToModel(bindingElement, model);
     }
 
-    public void setSheetIndex(int sheetIndex) {
-        this.sheetIndex = sheetIndex;
+    private static int defineTypeOfClazz(Element bindingElement) {
+        String className = bindingElement.attributeValue("class");
+        if (ROW_CLASS.equals(className)) {
+            return ROW;
+        }
+        if (COLUMN_CLASS.equals(className)) {
+            return COLUMN;
+        }
+        return CELL;
     }
 
-    public String getVariableName() {
-        return variableName;
+    private static String getSheetValue(Element configElement) {
+        String sheetValue = configElement.attributeValue("sheet");
+        if (sheetValue == null) {
+            sheetValue = configElement.attributeValue("sheetName");
+            if (sheetValue == null) {
+                sheetValue = configElement.attributeValue("sheetIndex");
+            }
+        }
+        return sheetValue;
     }
 
-    public void setVariableName(String variable) {
-        this.variableName = variable;
+    private static void applySheetToModel(String sheetValue, ConstraintsModel model) {
+        if (sheetValue != null) {
+            try {
+                model.sheetIndex = Integer.parseInt(sheetValue);
+            } catch (NumberFormatException e) {
+                model.sheetName = sheetValue;
+            }
+        }
+    }
+
+    private static void applyCoordinatesToModel(int type, Element configElement, ConstraintsModel model) {
+        if (type == CELL) {
+            model.row = getIntAttr(configElement, "row", 1);
+            model.column = getIntAttr(configElement, "column", 1);
+        } else if (type == ROW) {
+            model.row = getIntAttr(configElement, "row", 1);
+            model.column = getIntAttr(configElement, "columnStart", 1);
+        } else if (type == COLUMN) {
+            model.column = getIntAttr(configElement, "column", 1);
+            model.row = getIntAttr(configElement, "rowStart", 1);
+        }
+    }
+
+    private static int getIntAttr(Element element, String attrName, int defaultValue) {
+        String value = element.attributeValue(attrName);
+        return value != null ? Integer.parseInt(value) : defaultValue;
+    }
+
+    private static ConstraintsModel applyMappingsToModel(Element bindingElement, ConstraintsModel model) {
+        List<Element> mappingElements = bindingElement.elements("mapping");
+        for (Element mappingElement : mappingElements) {
+            String field = mappingElement.attributeValue("field");
+            String col = mappingElement.attributeValue("column");
+            if (field != null && col != null) {
+                model.columns.add(new ColumnMapping(field, Integer.parseInt(col)));
+            }
+        }
+        return model;
+    }
+
+    public void serialize(Document document, Element root) {
+        Element bindingElement = root.addElement("binding");
+        bindingElement.addAttribute("class", getClassNameByType());
+        if (!Strings.isNullOrEmpty(variableName)) {
+            bindingElement.addAttribute("variable", variableName);
+        }
+        serializeConfig(bindingElement);
+        serializeMappings(bindingElement);
+    }
+
+    private String getClassNameByType() {
+        if (type == ROW) {
+            return ROW_CLASS;
+        }
+        if (type == COLUMN) {
+            return COLUMN_CLASS;
+        }
+        return CELL_CLASS;
+    }
+
+    private void serializeConfig(Element bindingElement) {
+        Element configElement = bindingElement.addElement("config");
+        String sheetValue = !Strings.isNullOrEmpty(sheetName) ? sheetName : String.valueOf(sheetIndex);
+        configElement.addAttribute("sheet", sheetValue);
+        if (type == CELL) {
+            configElement.addAttribute("row", String.valueOf(row));
+            configElement.addAttribute("column", String.valueOf(column));
+        } else if (type == ROW) {
+            configElement.addAttribute("row", String.valueOf(row));
+            configElement.addAttribute("columnStart", String.valueOf(column));
+        } else if (type == COLUMN) {
+            configElement.addAttribute("column", String.valueOf(column));
+            configElement.addAttribute("rowStart", String.valueOf(row));
+        }
+    }
+
+    private void serializeMappings(Element bindingElement) {
+        if (type == COLUMN || type == ROW) {
+            for (ColumnMapping mapping : columns) {
+                Element mapElement = bindingElement.addElement("mapping");
+                mapElement.addAttribute("field", mapping.attributeName);
+                mapElement.addAttribute("column", String.valueOf(mapping.column));
+            }
+        }
     }
 
     public int getRow() {
@@ -57,77 +175,5 @@ public class ConstraintsModel {
 
     public void setColumn(int column) {
         this.column = column;
-    }
-
-    public int getType() {
-        return type;
-    }
-
-    public ConstraintsModel(int type) {
-        this.type = type;
-    }
-
-    public static ConstraintsModel deserialize(Element element) {
-        ConstraintsModel model;
-        String className = element.attributeValue("class");
-        className = BackCompatibilityUtils.getClassName(className);
-        if (CELL_CLASS.equals(className)) {
-            model = new ConstraintsModel(CELL);
-        } else if (ROW_CLASS.equals(className)) {
-            model = new ConstraintsModel(ROW);
-        } else if (COLUMN_CLASS.equals(className)) {
-            model = new ConstraintsModel(COLUMN);
-        } else {
-            throw new RuntimeException("Invaid class '" + className + "'");
-        }
-        model.variableName = element.attributeValue("variable");
-        Element conf = element.element("config");
-        model.sheetName = conf.attributeValue("sheetName");
-        if (model.sheetName == null || model.sheetName.length() == 0) {
-            model.sheetIndex = Integer.parseInt(conf.attributeValue("sheet"));
-        }
-        if (model.type == CELL || model.type == ROW) {
-            model.row = Integer.parseInt(conf.attributeValue("row"));
-        } else {
-            model.row = Integer.parseInt(conf.attributeValue("rowStart"));
-        }
-        if (model.type == CELL || model.type == COLUMN) {
-            model.column = Integer.parseInt(conf.attributeValue("column"));
-        } else {
-            model.column = Integer.parseInt(conf.attributeValue("columnStart"));
-        }
-        return model;
-    }
-
-    public void serialize(Document document, Element root) {
-        Element el = root.addElement("binding");
-        Element conf = el.addElement("config");
-        el.addAttribute("variable", variableName);
-        switch (type) {
-        case CELL:
-            el.addAttribute("class", CELL_CLASS);
-            break;
-        case ROW:
-            el.addAttribute("class", ROW_CLASS);
-            break;
-        case COLUMN:
-            el.addAttribute("class", COLUMN_CLASS);
-            break;
-        }
-        if (sheetName != null && sheetName.length() > 0) {
-            conf.addAttribute("sheetName", sheetName);
-        } else {
-            conf.addAttribute("sheet", "" + sheetIndex);
-        }
-        if (type == CELL || type == ROW) {
-            conf.addAttribute("row", "" + row);
-        } else {
-            conf.addAttribute("rowStart", "" + row);
-        }
-        if (type == CELL || type == COLUMN) {
-            conf.addAttribute("column", "" + column);
-        } else {
-            conf.addAttribute("columnStart", "" + column);
-        }
     }
 }

@@ -27,6 +27,7 @@ import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.BotTask;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.GraphElement;
+import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.office.FilesSupplierMode;
 import ru.runa.gpd.office.InputOutputComposite;
 import ru.runa.gpd.office.Messages;
@@ -36,7 +37,9 @@ import ru.runa.gpd.ui.custom.LoggingSelectionAdapter;
 import ru.runa.gpd.ui.custom.SwtUtils;
 import ru.runa.gpd.ui.dialog.ChooseVariableNameDialog;
 import ru.runa.gpd.util.EmbeddedFileUtils;
+import ru.runa.gpd.util.VariableUtils;
 import ru.runa.gpd.util.XmlUtil;
+import ru.runa.wfe.var.format.ListFormat;
 
 public abstract class BaseExcelHandlerCellEditorProvider extends XmlBasedConstructorProvider<ExcelModel> implements IBotFileSupportProvider {
     protected abstract FilesSupplierMode getMode();
@@ -44,13 +47,6 @@ public abstract class BaseExcelHandlerCellEditorProvider extends XmlBasedConstru
     @Override
     protected Composite createConstructorComposite(Composite parent, Delegable delegable, ExcelModel model) {
         return new ConstructorView(parent, delegable, model);
-    }
-
-    @Override
-    protected boolean validateModel(Delegable delegable, ExcelModel model, List<ValidationError> errors) {
-        GraphElement graphElement = ((GraphElement) delegable);
-        model.validate(graphElement, errors);
-        return super.validateModel(delegable, model, errors);
     }
 
     @Override
@@ -64,6 +60,13 @@ public abstract class BaseExcelHandlerCellEditorProvider extends XmlBasedConstru
     }
 
     @Override
+    protected boolean validateModel(Delegable delegable, ExcelModel model, List<ValidationError> errors) {
+        GraphElement graphElement = (GraphElement) delegable;
+        model.validate(graphElement, errors);
+        return super.validateModel(delegable, model, errors);
+    }
+
+    @Override
     public void onDelete(Delegable delegable) {
         try {
             ExcelModel model = fromXml(delegable.getDelegationConfiguration());
@@ -72,6 +75,7 @@ public abstract class BaseExcelHandlerCellEditorProvider extends XmlBasedConstru
             PluginLogger.logErrorWithoutDialog("Template file deletion", e);
         }
     }
+
     @Override
     public String getEmbeddedFileName(BotTask botTask) {
         String xml = botTask.getDelegationConfiguration();
@@ -96,22 +100,21 @@ public abstract class BaseExcelHandlerCellEditorProvider extends XmlBasedConstru
         Document document = XmlUtil.parseWithoutValidation(xml);
         Element root = document.getRootElement();
         Element inputElement = root.element("input");
-        String oldPath = inputElement.attributeValue("path");
-        if (!Strings.isNullOrEmpty(oldPath) && EmbeddedFileUtils.isBotTaskFile(oldPath)) {
-            String oldEmbeddedFileName = EmbeddedFileUtils.getBotTaskFileName(oldPath);
-            if (EmbeddedFileUtils.isBotTaskFileName(oldEmbeddedFileName, botTask.getName())) {
-                oldName = EmbeddedFileUtils.generateBotTaskEmbeddedFileName(oldName);
-                String newEmbeddedFileName = EmbeddedFileUtils.generateBotTaskEmbeddedFileName(newName)
-                        + oldEmbeddedFileName.substring(oldName.length());
-                String newPath = EmbeddedFileUtils.getBotTaskFilePath(newEmbeddedFileName);
-                inputElement.addAttribute("path", newPath);
+        if (inputElement != null) {
+            String path = inputElement.attributeValue("path");
+            if (!Strings.isNullOrEmpty(path) && EmbeddedFileUtils.isBotTaskFile(path)) {
+                String oldFileName = EmbeddedFileUtils.getBotTaskFileName(path);
+                if (EmbeddedFileUtils.isBotTaskFileName(oldFileName, botTask.getName())) {
+                    String baseOldName = EmbeddedFileUtils.generateBotTaskEmbeddedFileName(oldName);
+                    String newFileName = EmbeddedFileUtils.generateBotTaskEmbeddedFileName(newName) + oldFileName.substring(baseOldName.length());
+                    inputElement.addAttribute("path", EmbeddedFileUtils.getBotTaskFilePath(newFileName));
+                }
             }
         }
-        String newXml = XmlUtil.toString(document);
-        botTask.setDelegationConfiguration(newXml);
+        botTask.setDelegationConfiguration(XmlUtil.toString(document));
     }
-    private class ConstructorView extends ConstructorComposite {
 
+    private class ConstructorView extends ConstructorComposite {
         public ConstructorView(Composite parent, Delegable delegable, ExcelModel model) {
             super(parent, delegable, model);
             setLayout(new GridLayout(3, false));
@@ -121,180 +124,212 @@ public abstract class BaseExcelHandlerCellEditorProvider extends XmlBasedConstru
         @Override
         protected void buildFromModel() {
             try {
-                for (Control control : getChildren()) {
-                    control.dispose();
-                }
-                SwtUtils.createLink(this, Messages.getString("label.AddCell"), new LoggingHyperlinkAdapter() {
-
-                    @Override
-                    protected void onLinkActivated(HyperlinkEvent e) throws Exception {
-                        model.constraints.add(new ConstraintsModel(ConstraintsModel.CELL));
-                        buildFromModel();
-                    }
-                }).setLayoutData(new GridData(GridData.GRAB_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
-                SwtUtils.createLink(this, Messages.getString("label.AddRow"), new LoggingHyperlinkAdapter() {
-
-                    @Override
-                    protected void onLinkActivated(HyperlinkEvent e) throws Exception {
-                        model.constraints.add(new ConstraintsModel(ConstraintsModel.ROW));
-                        buildFromModel();
-                    }
-                }).setLayoutData(new GridData(GridData.GRAB_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
-                SwtUtils.createLink(this, Messages.getString("label.AddColumn"), new LoggingHyperlinkAdapter() {
-
-                    @Override
-                    protected void onLinkActivated(HyperlinkEvent e) throws Exception {
-                        model.constraints.add(new ConstraintsModel(ConstraintsModel.COLUMN));
-                        buildFromModel();
-                    }
-                }).setLayoutData(new GridData(GridData.GRAB_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
+                cleanComposite();
+                addActionLinks();
                 new InputOutputComposite(this, delegable, model.getInOutModel(), getMode(), "xlsx", null);
-                for (ConstraintsModel c : model.constraints) {
-                    switch (c.type) {
-                    case ConstraintsModel.CELL:
-                        new CellComposite(c);
-                        break;
-                    case ConstraintsModel.ROW:
-                        new RowComposite(c);
-                        break;
-                    case ConstraintsModel.COLUMN:
-                        new ColumnComposite(c);
-                        break;
-                    }
-                }
-                ((ScrolledComposite) getParent()).setMinSize(computeSize(getSize().x, SWT.DEFAULT));
-                this.layout(true, true);
-                this.redraw();
-            } catch (Throwable e) {
-                PluginLogger.logErrorWithoutDialog("Cannot build model", e);
+                addConstraintsComposites();
+                refreshLayout();
+            } catch (Exception e) {
+                PluginLogger.logErrorWithoutDialog("Build model failed", e);
             }
         }
 
+        private void cleanComposite() {
+            for (Control child : getChildren()) {
+                child.dispose();
+            }
+        }
+
+        private void addActionLinks() {
+            createTypeLink("label.AddCell", ConstraintsModel.CELL);
+            createTypeLink("label.AddRow", ConstraintsModel.ROW);
+            createTypeLink("label.AddColumn", ConstraintsModel.COLUMN);
+        }
+
+        private void createTypeLink(String key, final int type) {
+            SwtUtils.createLink(this, Messages.getString(key), new LoggingHyperlinkAdapter() {
+                @Override
+                protected void onLinkActivated(HyperlinkEvent e) throws Exception {
+                    model.constraints.add(new ConstraintsModel(type));
+                    buildFromModel();
+                }
+            }).setLayoutData(new GridData(GridData.GRAB_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
+        }
+
+        private void addConstraintsComposites() {
+            for (ConstraintsModel c : model.constraints) {
+                if (c.type == ConstraintsModel.CELL) {
+                    new CellComposite(c);
+                } else if (c.type == ConstraintsModel.ROW) {
+                    new RowComposite(c);
+                } else if (c.type == ConstraintsModel.COLUMN) {
+                    new ColumnComposite(c);
+                }
+            }
+        }
+
+        private void refreshLayout() {
+            if (getParent() instanceof ScrolledComposite) {
+                ((ScrolledComposite) getParent()).setMinSize(computeSize(getSize().x, SWT.DEFAULT));
+            }
+            this.layout(true, true);
+        }
+
         public abstract class ConstraintsComposite extends Composite {
-            public final ConstraintsModel cmodel;
+            protected final ConstraintsModel cmodel;
+            protected Button udtButton;
+            protected Group group;
 
             ConstraintsComposite(ConstraintsModel m) {
                 super(ConstructorView.this, SWT.NONE);
-                cmodel = m;
-                GridData data = new GridData(GridData.FILL_HORIZONTAL);
-                data.horizontalSpan = 3;
-                setLayoutData(data);
+                this.cmodel = m;
+                setLayoutData(new GridData(GridData.FILL_HORIZONTAL, GridData.CENTER, true, false, 3, 1));
                 setLayout(new FillLayout(SWT.VERTICAL));
-                Group group = new Group(this, SWT.None);
+                group = new Group(this, SWT.None);
                 group.setLayout(new GridLayout(3, false));
                 group.setText(getTitle());
-                Button button = new Button(group, SWT.PUSH);
-                button.setText(Messages.getString("label.variable"));
-                final Text text = new Text(group, SWT.READ_ONLY | SWT.BORDER);
-                text.setText(cmodel.variableName);
-                text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-                button.addSelectionListener(new LoggingSelectionAdapter() {
+                initComposite();
+            }
+
+            private void initComposite() {
+                createVariablePicker();
+                createSheetPicker();
+                createCoordinateInputs();
+                if (cmodel.type != ConstraintsModel.CELL) {
+                    createUdtSection();
+                }
+            }
+
+            private void createVariablePicker() {
+                Button btn = new Button(group, SWT.PUSH);
+                btn.setText(Messages.getString("label.variable"));
+                final Text txt = new Text(group, SWT.READ_ONLY | SWT.BORDER);
+                txt.setText(Strings.nullToEmpty(cmodel.variableName));
+                txt.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                btn.addSelectionListener(new LoggingSelectionAdapter() {
                     @Override
                     protected void onSelection(SelectionEvent e) throws Exception {
                         ChooseVariableNameDialog dialog = new ChooseVariableNameDialog(delegable.getVariableNames(true, getTypeFilters()));
                         dialog.setSelectedItem(cmodel.variableName);
-                        String variableName = dialog.openDialog();
-                        if (variableName != null) {
-                            cmodel.variableName = variableName;
-                            text.setText(variableName);
+                        String selected = dialog.openDialog();
+                        if (selected != null) {
+                            updateVariable(selected);
+                            txt.setText(selected);
                         }
-                    };
+                    }
                 });
-                SwtUtils.createLink(group, "[X]", new LoggingHyperlinkAdapter() {
+                createDeleteLink();
+            }
 
+            private void updateVariable(String name) {
+                cmodel.variableName = name;
+                if (!isUdtVariable(name)) {
+                    cmodel.columns.clear();
+                }
+                updateUIState();
+            }
+
+            private void createDeleteLink() {
+                SwtUtils.createLink(group, "[X]", new LoggingHyperlinkAdapter() {
                     @Override
                     protected void onLinkActivated(HyperlinkEvent e) throws Exception {
                         model.constraints.remove(cmodel);
                         buildFromModel();
                     }
                 });
-                final Combo sheetCombo = new Combo(group, SWT.READ_ONLY);
-                sheetCombo.add(Messages.getString("label.sheetByTitle"));
-                sheetCombo.add(Messages.getString("label.sheetByIndex"));
-                final Text sheetText = new Text(group, SWT.BORDER);
-                sheetText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-                if (cmodel.sheetName != null && cmodel.sheetName.length() > 0) {
-                    sheetCombo.select(0);
-                    sheetText.setText(cmodel.sheetName);
-                } else {
-                    sheetCombo.select(1);
-                    sheetText.setText("" + cmodel.sheetIndex);
-                }
-                sheetText.addModifyListener(new LoggingModifyTextAdapter() {
-
-                    @Override
-                    protected void onTextChanged(ModifyEvent e) throws Exception {
-                        updateSheet(sheetCombo, sheetText);
-                    }
-                });
-                sheetCombo.addSelectionListener(new LoggingSelectionAdapter() {
-
-                    @Override
-                    protected void onSelection(SelectionEvent e) throws Exception {
-                        updateSheet(sheetCombo, sheetText);
-                    }
-                });
-                new Label(group, SWT.NONE);
-                Label l = new Label(group, SWT.None);
-                l.setText(getXcoordMessage());
-                final Text tx = new Text(group, SWT.BORDER);
-                tx.setText("" + cmodel.getColumn());
-                tx.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-                new Label(group, SWT.NONE);
-                tx.addModifyListener(new ModifyListener() {
-                    @Override
-                    public void modifyText(ModifyEvent arg0) {
-                        try {
-                            int x = Integer.parseInt(tx.getText());
-                            if (x > 0 && x < 65535) {
-                                cmodel.setColumn(x);
-                            } else {
-                                tx.setText("1");
-                            }
-                        } catch (Exception e) {
-                            tx.setText("1");
-                        }
-                    }
-                });
-                l = new Label(group, SWT.None);
-                l.setText(getYcoordMessage());
-                final Text ty = new Text(group, SWT.BORDER);
-                ty.setText("" + cmodel.getRow());
-                ty.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-                new Label(group, SWT.NONE);
-                ty.addModifyListener(new ModifyListener() {
-                    @Override
-                    public void modifyText(ModifyEvent arg0) {
-                        try {
-                            int y = Integer.parseInt(ty.getText());
-                            if (y > 0 && y < 65535) {
-                                cmodel.setRow(y);
-                            } else {
-                                ty.setText("1");
-                            }
-                        } catch (Exception e) {
-                            ty.setText("1");
-                        }
-                    }
-                });
-                layout(true, true);
             }
 
-            private void updateSheet(Combo combo, Text text) {
-                if (combo.getSelectionIndex() == 0) {
-                    cmodel.sheetName = text.getText();
-                    cmodel.sheetIndex = 1;
-                } else {
-                    cmodel.sheetName = "";
-                    try {
-                        cmodel.sheetIndex = Integer.parseInt(text.getText());
-                        if (cmodel.sheetIndex <= 0) {
-                            cmodel.sheetIndex = 1;
+            private void createSheetPicker() {
+                final Combo combo = new Combo(group, SWT.READ_ONLY);
+                combo.add(Messages.getString("label.sheetByTitle"));
+                combo.add(Messages.getString("label.sheetByIndex"));
+                final Text text = new Text(group, SWT.BORDER);
+                text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                boolean isName = !Strings.isNullOrEmpty(cmodel.sheetName);
+                combo.select(isName ? 0 : 1);
+                text.setText(isName ? cmodel.sheetName : String.valueOf(cmodel.sheetIndex));
+                addSheetListeners(combo, text);
+                new Label(group, SWT.NONE);
+            }
+
+            private void addSheetListeners(final Combo combo, final Text text) {
+                text.addModifyListener(new LoggingModifyTextAdapter() {
+                    @Override
+                    protected void onTextChanged(ModifyEvent e) throws Exception {
+                        if (combo.getSelectionIndex() == 0) {
+                            cmodel.sheetName = text.getText();
+                        } else {
+                            cmodel.sheetName = "";
+                            try {
+                                cmodel.sheetIndex = Integer.parseInt(text.getText());
+                            } catch (Exception ex) {
+                                cmodel.sheetIndex = 1;
+                            }
                         }
-                    } catch (Exception e) {
-                        cmodel.sheetIndex = 1;
-                        text.setText("1");
                     }
+                });
+            }
+
+            private void createCoordinateInputs() {
+                createNumericInput(getXcoordMessage(), true);
+                createNumericInput(getYcoordMessage(), false);
+            }
+
+            private void createNumericInput(String label, final boolean isX) {
+                new Label(group, SWT.None).setText(label);
+                final Text text = new Text(group, SWT.BORDER);
+                text.setText(String.valueOf(isX ? cmodel.getColumn() : cmodel.getRow()));
+                text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                text.addModifyListener(new ModifyListener() {
+                    @Override
+                    public void modifyText(ModifyEvent e) {
+                        String input = text.getText();
+                        if (!input.isEmpty() && input.matches("\\d+")) {
+                            int val = Integer.parseInt(input);
+                            if (val > 0) {
+                                if (isX) {
+                                    cmodel.setColumn(val);
+                                } else {
+                                    cmodel.setRow(val);
+                                }
+                            }
+                        }
+                    }
+                });
+                new Label(group, SWT.NONE);
+            }
+
+            private void createUdtSection() {
+                Composite comp = new Composite(group, SWT.NONE);
+                comp.setLayout(new GridLayout(1, false));
+                comp.setLayoutData(new GridData(GridData.FILL_HORIZONTAL, GridData.CENTER, true, false, 3, 1));
+                udtButton = new Button(comp, SWT.PUSH);
+                udtButton.setText(Messages.getString("label.ConfigureUdtFields"));
+                udtButton.addSelectionListener(new LoggingSelectionAdapter() {
+                    @Override
+                    protected void onSelection(SelectionEvent e) throws Exception {
+                        new ExcelColumnMappingDialog(getShell(), delegable, cmodel).open();
+                    }
+                });
+                updateUIState();
+            }
+
+            private boolean isUdtVariable(String name) {
+                if (Strings.isNullOrEmpty(name)) {
+                    return false;
+                }
+                Variable var = VariableUtils.getVariableByName(((GraphElement) delegable).getProcessDefinition(), name);
+                if (var != null && var.getFormatClassName().equals(ListFormat.class.getName())) {
+                    String comp = var.getFormatComponentClassNames()[0];
+                    return comp != null && ((GraphElement) delegable).getProcessDefinition().getVariableUserType(comp) != null;
+                }
+                return false;
+            }
+
+            protected void updateUIState() {
+                if (udtButton != null) {
+                    udtButton.setVisible(isUdtVariable(cmodel.variableName));
+                    group.layout(true, true);
                 }
             }
 
@@ -304,13 +339,9 @@ public abstract class BaseExcelHandlerCellEditorProvider extends XmlBasedConstru
 
             public abstract String getTitle();
 
-            public String getXcoordMessage() {
-                return Messages.getString("label.xcoord");
-            }
+            public abstract String getXcoordMessage();
 
-            public String getYcoordMessage() {
-                return Messages.getString("label.ycoord");
-            }
+            public abstract String getYcoordMessage();
         }
 
         public class CellComposite extends ConstraintsComposite {
@@ -326,6 +357,16 @@ public abstract class BaseExcelHandlerCellEditorProvider extends XmlBasedConstru
             @Override
             public String getTitle() {
                 return Messages.getString("label.Cell");
+            }
+
+            @Override
+            public String getXcoordMessage() {
+                return Messages.getString("label.column");
+            }
+
+            @Override
+            public String getYcoordMessage() {
+                return Messages.getString("label.row");
             }
         }
 
@@ -343,6 +384,11 @@ public abstract class BaseExcelHandlerCellEditorProvider extends XmlBasedConstru
             public String getXcoordMessage() {
                 return Messages.getString("label.xcoord_start");
             }
+
+            @Override
+            public String getYcoordMessage() {
+                return Messages.getString("label.ycoord");
+            }
         }
 
         public class ColumnComposite extends ConstraintsComposite {
@@ -353,6 +399,11 @@ public abstract class BaseExcelHandlerCellEditorProvider extends XmlBasedConstru
             @Override
             public String getTitle() {
                 return Messages.getString("label.Column");
+            }
+
+            @Override
+            public String getXcoordMessage() {
+                return Messages.getString("label.xcoord");
             }
 
             @Override
