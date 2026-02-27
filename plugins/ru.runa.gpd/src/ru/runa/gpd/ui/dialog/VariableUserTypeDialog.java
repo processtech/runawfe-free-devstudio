@@ -25,6 +25,7 @@ import ru.runa.gpd.ui.custom.VariableNameChecker;
 public class VariableUserTypeDialog extends Dialog {
     private String name;
     private boolean isStoreInInternalStorage;
+    private boolean isByReference;
     private final ProcessDefinition processDefinition;
     private final boolean createMode;
 
@@ -33,6 +34,7 @@ public class VariableUserTypeDialog extends Dialog {
         this.processDefinition = processDefinition;
         this.name = type != null ? type.getName() : "";
         this.isStoreInInternalStorage = type != null ? type.isStoreInExternalStorage() : false;
+        this.isByReference = type != null ? type.isByReference() : false;
         this.createMode = type == null;
     }
 
@@ -76,13 +78,37 @@ public class VariableUserTypeDialog extends Dialog {
 
         if (CommonPreferencePage.isInternalStorageFunctionalityEnabled()) {
             new Label(composite, SWT.NONE);
+
             final Button storeInExternalStorageCheckbox = new Button(composite, SWT.CHECK);
             storeInExternalStorageCheckbox.setText(Localization.getString("UserDefinedVariableType.storeInExternalStorage"));
             storeInExternalStorageCheckbox.setSelection(isStoreInInternalStorage);
-            storeInExternalStorageCheckbox.addSelectionListener(SelectionListener.widgetSelectedAdapter(c -> {
-                isStoreInInternalStorage = !isStoreInInternalStorage;
-                updateButtons();
-            }));
+
+            new Label(composite, SWT.NONE);
+
+            final Button byReferenceCheckbox = new Button(composite, SWT.CHECK);
+            byReferenceCheckbox.setText(Localization.getString("UserDefinedVariableType.byReference"));
+            byReferenceCheckbox.setSelection(isByReference);
+            byReferenceCheckbox.setEnabled(isStoreInInternalStorage);
+
+            storeInExternalStorageCheckbox.addSelectionListener(
+                    SelectionListener.widgetSelectedAdapter(c -> {
+                        isStoreInInternalStorage = storeInExternalStorageCheckbox.getSelection();
+
+                        if (!isStoreInInternalStorage) {
+                            isByReference = false;
+                            byReferenceCheckbox.setSelection(false);
+                            byReferenceCheckbox.setEnabled(false);
+                        } else {
+                            byReferenceCheckbox.setEnabled(true);
+                        }
+                        updateButtons();
+                    }));
+
+            byReferenceCheckbox.addSelectionListener(
+                    SelectionListener.widgetSelectedAdapter(c -> {
+                        isByReference = byReferenceCheckbox.getSelection();
+                        updateButtons();
+                    }));
         }
 
         if (!createMode) {
@@ -95,7 +121,7 @@ public class VariableUserTypeDialog extends Dialog {
         final VariableUserType type = processDefinition.getVariableUserType(name);
         final boolean allowCreation = type == null && VariableFormatRegistry.getInstance().getArtifactByLabel(name) == null
                 && VariableNameChecker.isValid(name);
-        final boolean allowEdit = (type != null && type.isStoreInExternalStorage() != isStoreInInternalStorage) || allowCreation;
+        final boolean allowEdit = type != null && (!type.getName().equals(name) || type.isStoreInExternalStorage() != isStoreInInternalStorage || type.isByReference() != isByReference);
         getButton(IDialogConstants.OK_ID).setEnabled(createMode ? allowCreation : allowEdit);
     }
 
@@ -112,4 +138,6 @@ public class VariableUserTypeDialog extends Dialog {
     public boolean isStoreInInternalStorage() {
         return isStoreInInternalStorage;
     }
+
+    public boolean isByReference() { return isByReference; }
 }
