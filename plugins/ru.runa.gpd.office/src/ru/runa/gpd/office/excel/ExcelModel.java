@@ -38,19 +38,23 @@ public class ExcelModel extends Observable {
 
     public static ExcelModel fromXml(String xml, FilesSupplierMode mode) {
         Document document = XmlUtil.parseWithoutValidation(xml);
+        Element root = document.getRootElement();
+
         Element input = null;
         if (mode.isInSupported()) {
-            input = document.getRootElement().element("input");
+            input = root.element("input");
         }
         Element output = null;
-        if (mode.isInSupported()) {
-            output = document.getRootElement().element("output");
+        if (mode.isOutSupported()) {
+            output = root.element("output");
         }
+
         InputOutputModel inOutModel = InputOutputModel.deserialize(input, output);
         ExcelModel model = new ExcelModel(mode, inOutModel);
-        List<Element> constraintsElements = document.getRootElement().elements("binding");
-        for (Element constraintsElement : constraintsElements) {
-            model.constraints.add(ConstraintsModel.deserialize(constraintsElement));
+
+        List<Element> bindingElements = root.elements("binding");
+        for (Element bindingElement : bindingElements) {
+            model.constraints.add(ConstraintsModel.deserialize(bindingElement));
         }
         return model;
     }
