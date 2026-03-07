@@ -4,6 +4,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -161,7 +163,7 @@ public class InternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
         private ConstraintsCompositeBuilder constraintsCompositeBuilder;
 
         public ConstructorView(Composite parent, Delegable delegable, InternalStorageDataModel model, VariableProvider variableProvider,
-                boolean isUseExternalStorageIn, boolean isUseExternalStorageOut) {
+                               boolean isUseExternalStorageIn, boolean isUseExternalStorageOut) {
             super(parent, delegable, model);
             this.variableProvider = variableProvider;
             this.isUseExternalStorageIn = isUseExternalStorageIn;
@@ -171,7 +173,7 @@ public class InternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
         }
 
         public ConstructorView(Composite parent, Delegable delegable, InternalStorageDataModel model, VariableProvider variableProvider,
-                boolean isUseExternalStorageIn, boolean isUseExternalStorageOut, VariableUserTypeInfo variableUserTypeInfo) {
+                               boolean isUseExternalStorageIn, boolean isUseExternalStorageOut, VariableUserTypeInfo variableUserTypeInfo) {
             this(parent, delegable, model, variableProvider, isUseExternalStorageIn, isUseExternalStorageOut);
             this.variableUserTypeInfo = variableUserTypeInfo;
         }
@@ -245,25 +247,25 @@ public class InternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
         private void initConstraintsCompositeBuilder() {
             if (constraintsModel.getQueryType() != null) {
                 switch (constraintsModel.getQueryType()) {
-                case INSERT:
-                    constraintsCompositeBuilder = new InsertConstraintsComposite(this, SWT.NONE, constraintsModel, variableProvider,
-                            variableUserTypeInfo.getVariableTypeName());
-                    break;
-                case SELECT:
-                    constraintsCompositeBuilder = new PredicateCompositeDelegateBuilder(this, SWT.NONE, constraintsModel, variableProvider,
-                            variableUserTypeInfo.getVariableTypeName(), new SelectConstraintsComposite(this, SWT.NONE, constraintsModel,
-                                    variableProvider, variableUserTypeInfo, model.getInOutModel()));
-                    break;
-                case UPDATE:
-                    constraintsCompositeBuilder = new PredicateCompositeDelegateBuilder(this, SWT.NONE, constraintsModel, variableProvider,
-                            variableUserTypeInfo.getVariableTypeName(), new UpdateConstraintsComposite(this, SWT.NONE, constraintsModel,
-                                    variableProvider, variableUserTypeInfo.getVariableTypeName()));
-                    break;
-                case DELETE:
-                    constraintsCompositeBuilder = new PredicateCompositeDelegateBuilder(this, SWT.NONE, constraintsModel, variableProvider,
-                            variableUserTypeInfo.getVariableTypeName(), new DeleteConstraintsComposite(this, SWT.NONE, constraintsModel,
-                                    variableProvider, variableUserTypeInfo.getVariableTypeName()));
-                    break;
+                    case INSERT:
+                        constraintsCompositeBuilder = new InsertConstraintsComposite(this, SWT.NONE, constraintsModel, variableProvider,
+                                variableUserTypeInfo.getVariableTypeName());
+                        break;
+                    case SELECT:
+                        constraintsCompositeBuilder = new PredicateCompositeDelegateBuilder(this, SWT.NONE, constraintsModel, variableProvider,
+                                variableUserTypeInfo.getVariableTypeName(), new SelectConstraintsComposite(this, SWT.NONE, constraintsModel,
+                                variableProvider, variableUserTypeInfo, model.getInOutModel()));
+                        break;
+                    case UPDATE:
+                        constraintsCompositeBuilder = new PredicateCompositeDelegateBuilder(this, SWT.NONE, constraintsModel, variableProvider,
+                                variableUserTypeInfo.getVariableTypeName(), new UpdateConstraintsComposite(this, SWT.NONE, constraintsModel,
+                                variableProvider, variableUserTypeInfo.getVariableTypeName()));
+                        break;
+                    case DELETE:
+                        constraintsCompositeBuilder = new PredicateCompositeDelegateBuilder(this, SWT.NONE, constraintsModel, variableProvider,
+                                variableUserTypeInfo.getVariableTypeName(), new DeleteConstraintsComposite(this, SWT.NONE, constraintsModel,
+                                variableProvider, variableUserTypeInfo.getVariableTypeName()));
+                        break;
                 }
             }
         }
@@ -293,7 +295,17 @@ public class InternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
 
         private void addActionCombo(boolean isUseExternalStorageIn, boolean isUseExternalStorageOut) {
             final Combo combo = new Combo(this, SWT.READ_ONLY);
-            final List<QueryType> types = QueryType.byIntent(isUseExternalStorageIn, isUseExternalStorageOut);
+
+            VariableUserType userType = variableProvider.getUserType(constraintsModel.getSheetName());
+
+            final List<QueryType> types;
+
+            if (userType != null && userType.isByReference()) {
+                types = Arrays.asList(QueryType.SELECT, QueryType.DELETE);
+            } else {
+                types = QueryType.byIntent(isUseExternalStorageIn, isUseExternalStorageOut);
+            }
+
             for (QueryType type : types) {
                 combo.add(type.name());
             }

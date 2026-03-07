@@ -81,6 +81,7 @@ public interface PropertyNames {
     public static final String PROPERTY_VALIDATE_AT_START = "validateAtStart";
     public static final String PROPERTY_TIMER_EVENT_DEFINITION = "timerEventDefinition";
     public static final String PROPERTY_STORE_IN_EXTERNAL_STORAGE = "storeInExternalStorage";
+    public static final String PROPERTY_BY_REFERENCE = "byReference";
     public static final String PROPERTY_DISABLE_CASCADING_SUSPENSION = "disableCascadingSuspension";
 
 }
