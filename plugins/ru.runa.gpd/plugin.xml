@@ -2585,6 +2585,13 @@
              label="%validator.listElementsAreUnique.name"
              name="listElementsAreUnique">
        </validator>
+
+        <validator
+                applicable="java.lang.Object"
+                description="Проверка уникальности ID во внутреннем хранилище"
+                label="Уникальность ХД"
+                name="unique-external-storage">
+        </validator>
     </extension>
     <extension
           point="org.eclipse.core.runtime.preferences">
