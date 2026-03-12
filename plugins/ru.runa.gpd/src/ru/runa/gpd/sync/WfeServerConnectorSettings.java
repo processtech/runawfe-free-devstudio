@@ -55,8 +55,15 @@ public class WfeServerConnectorSettings implements PrefConstants {
         } else {
             this.protocol = "http";
             this.allowSslInsecure = false;
-            this.host = "localhost";
-            this.port = 8080;
+            this.host = System.getProperty("wfe.default.host", "localhost");
+            String portStr = System.getProperty("wfe.default.port", "8080");
+            int parsedPort;
+            try {
+                parsedPort = Integer.parseInt(portStr);
+            } catch (NumberFormatException e) {
+                parsedPort = 8080;
+            }
+            this.port = parsedPort;
             this.authenticationType = AUTHENTICATION_TYPE_LOGIN_PASSWORD;
             this.login = "Administrator";
             this.password = "wf";
@@ -129,7 +136,7 @@ public class WfeServerConnectorSettings implements PrefConstants {
                     }
                 }
             });
-            if (userInputPassword.length() == 0) {
+            if (userInputPassword == null || userInputPassword.length() == 0) {
                 PluginLogger.logInfo("[wfeserverconnector] empty password");
                 return null;
             }
