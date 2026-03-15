@@ -2590,7 +2590,7 @@
                 applicable="java.lang.Object"
                 description="Проверка уникальности ID во внутреннем хранилище"
                 label="Уникальность ХД"
-                name="unique-external-storage">
+                name="unique-storage-user-type-attribute">
         </validator>
     </extension>
     <extension
