@@ -2587,9 +2587,9 @@
        </validator>
 
         <validator
-                applicable="java.lang.Object"
-                description="Проверка уникальности ID во внутреннем хранилище"
-                label="Уникальность ХД"
+                applicable="java.util.List,java.util.Map"
+                description="%validator.uniqueCheckInStorage"
+                label="%validator.Unique.name"
                 name="unique-storage-user-type-attribute">
         </validator>
     </extension>
