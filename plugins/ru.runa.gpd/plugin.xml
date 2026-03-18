@@ -2587,7 +2587,7 @@
        </validator>
 
         <validator
-                applicable="java.util.List,java.util.Map"
+                applicable="java.lang.String,java.lang.Long,java.lang.Integer"
                 description="%validator.uniqueCheckInStorage"
                 label="%validator.Unique.name"
                 name="unique-storage-user-type-attribute">
