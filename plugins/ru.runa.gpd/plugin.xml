@@ -2588,8 +2588,7 @@
 
         <validator
                 applicable="java.lang.String,java.lang.Long,java.lang.Integer"
-                description="%validator.uniqueCheckInStorage"
-                label="%validator.Unique.name"
+                label="%validator.UniqueStorageUserTypeAttributeValidator"
                 name="unique-storage-user-type-attribute">
         </validator>
     </extension>
