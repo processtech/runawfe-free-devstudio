@@ -236,7 +236,7 @@ public abstract class BaseCommonStorageHandlerCellEditorProvider extends XmlBase
                 for (String variableName : delegable.getVariableNames(true, getTypeFilters())) {
                     combo.add(variableName);
                 }
-                combo.setText(cmodel.variableName);
+                combo.setText(cmodel.variableName != null ? cmodel.variableName : "");
                 combo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
                 combo.addSelectionListener(new SelectionAdapter() {
                     @Override
