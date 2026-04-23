@@ -10,6 +10,7 @@ import ru.runa.gpd.ui.dialog.CopyFormDialog;
 import ru.runa.gpd.util.IOUtils;
 
 public class CopyFormDelegate extends FormDelegate {
+
     @Override
     public void run(IAction action) {
         try {
@@ -46,5 +47,4 @@ public class CopyFormDelegate extends FormDelegate {
             throw new RuntimeException(e);
         }
     }
-
 }

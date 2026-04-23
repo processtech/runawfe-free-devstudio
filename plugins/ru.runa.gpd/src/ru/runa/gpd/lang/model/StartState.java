@@ -147,6 +147,11 @@ public class StartState extends FormNode implements HasTextDecorator, VariableMa
         return super.testAttribute(target, name, value);
     }
 
+    @Override
+    protected boolean isFormMenuAllowed() {
+        return !(getProcessDefinition() instanceof SubprocessDefinition);
+    }
+
     public String getTimerEventDefinition() {
         return timerEventDefinition;
     }
