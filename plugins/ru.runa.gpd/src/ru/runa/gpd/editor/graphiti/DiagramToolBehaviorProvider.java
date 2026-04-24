@@ -235,11 +235,13 @@ public class DiagramToolBehaviorProvider extends DefaultToolBehaviorProvider {
             data.getDomainSpecificContextButtons().add(changeEventTypeButton);
             PictogramElement pes[] = { pe };
             ICustomContext customContext = new CustomContext(pes);
-            for (int i = 0; i < EventNodeType.LABELS.length; i++) {
-                EventNodeType et = EventNodeType.values()[i];
-                ContextButtonEntry createButton = new ContextButtonEntry(new ChangeEventTypeFeature((AbstractEventNode) element, et), customContext);
+            EventNodeType[] types = EventNodeType.getSupportedTypes((AbstractEventNode) element);
+            for (EventNodeType et : types) {
+                ChangeEventTypeFeature feature = new ChangeEventTypeFeature((AbstractEventNode) element, et);
+                feature.setFeatureProvider(getFeatureProvider());
+                ContextButtonEntry createButton = new ContextButtonEntry(feature, customContext);
                 createButton.setIconId("graph/" + et.getImageName(element instanceof CatchEventNode, false));
-                createButton.setText(EventNodeType.LABELS[i]);
+                createButton.setText(et.getLabel());
                 changeEventTypeButton.addContextButtonMenuEntry(createButton);
             }
         }

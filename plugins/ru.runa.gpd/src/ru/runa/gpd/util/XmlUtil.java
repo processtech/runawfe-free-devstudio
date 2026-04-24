@@ -15,6 +15,7 @@ import javax.xml.validation.SchemaFactory;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
 import org.dom4j.Node;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
@@ -156,6 +157,12 @@ public class XmlUtil {
     public static Document createDocument(String rootElementName) {
         Document document = DocumentHelper.createDocument();
         document.addElement(rootElementName);
+        return document;
+    }
+
+    public static Document createDocument(Element rootElement) {
+        Document document = DocumentHelper.createDocument();
+        document.add(rootElement);
         return document;
     }
 
