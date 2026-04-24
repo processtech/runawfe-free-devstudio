@@ -30,6 +30,7 @@ import ru.runa.gpd.lang.model.StorageAware;
 import ru.runa.gpd.lang.model.VariableContainer;
 import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.gpd.lang.model.VariableUserTypeNameAware;
+import ru.runa.gpd.lang.model.VariableStorageKind;
 import ru.runa.gpd.office.FilesSupplierMode;
 import ru.runa.gpd.office.Messages;
 import ru.runa.gpd.office.store.externalstorage.ConstraintsCompositeBuilder;
@@ -300,7 +301,7 @@ public class InternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
 
             final List<QueryType> types;
 
-            if (userType != null && userType.isByReference()) {
+            if (userType != null && userType.getReferenceStorage() != VariableStorageKind.NONE) {
                 types = Arrays.asList(QueryType.SELECT, QueryType.DELETE);
             } else {
                 types = QueryType.byIntent(isUseExternalStorageIn, isUseExternalStorageOut);

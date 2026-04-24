@@ -298,6 +298,11 @@ public class ProcessDefinition extends NamedGraphElement implements Describable,
                 break;
             }
         }
+        for (VariableUserType userType : getVariableUserTypes()) {
+            if (userType.getReferenceStorage() == VariableStorageKind.REDMINE && userType.getAttributes().isEmpty()) {
+                errors.add(ValidationError.createLocalizedWarning(this, "UserDefinedVariableType.referenceStorage.redmine.noAttributes", userType.getName()));
+            }
+        }
         boolean invalid = false;
         for (ValidationError validationError : errors) {
             if (validationError.getSeverity() == IMarker.SEVERITY_ERROR) {

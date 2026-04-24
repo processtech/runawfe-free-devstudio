@@ -21,7 +21,7 @@ public class VariableUserType extends EventSupport implements VariableContainer,
     private final List<Variable> attributes = Lists.newArrayList();
     private ProcessDefinition processDefinition;
     private boolean isStoreInExternalStorage = false;
-    private boolean isByReference = false;
+    private VariableStorageKind referenceStorage = VariableStorageKind.NONE;
     private boolean global;
 
     public VariableUserType() {
@@ -36,10 +36,10 @@ public class VariableUserType extends EventSupport implements VariableContainer,
         setStoreInExternalStorage(isStoreInExternalStorage);
     }
 
-    public VariableUserType(String name, boolean isStoreInExternalStorage, boolean isByReference) {
+    public VariableUserType(String name, boolean isStoreInExternalStorage, VariableStorageKind referenceStorage) {
         setName(name);
         setStoreInExternalStorage(isStoreInExternalStorage);
-        setByReference(isByReference);
+        setReferenceStorage(referenceStorage);
     }
 
     public ProcessDefinition getProcessDefinition() {
@@ -95,7 +95,7 @@ public class VariableUserType extends EventSupport implements VariableContainer,
             return false;
         }
 
-        if (isByReference != usertype.isByReference()) {
+        if (isByReference() != usertype.isByReference()) {
             return false;
         }
 
@@ -108,7 +108,7 @@ public class VariableUserType extends EventSupport implements VariableContainer,
     }
 
     public void addAttribute(Variable variable) {
-        if (isByReference && BY_REFERENCE_ID_ATTRIBUTE_NAME.equals(variable.getName())) {
+        if (isByReference() && BY_REFERENCE_ID_ATTRIBUTE_NAME.equals(variable.getName())) {
             if (!hasIdAttribute()) {
                 attributes.add(0, variable);
                 variable.setParent(getProcessDefinition());
@@ -122,10 +122,10 @@ public class VariableUserType extends EventSupport implements VariableContainer,
     }
 
     public void changeAttributePosition(Variable attribute, int position) {
-        if (isByReference && BY_REFERENCE_ID_ATTRIBUTE_NAME.equals(attribute.getName())) {
+        if (isByReference() && BY_REFERENCE_ID_ATTRIBUTE_NAME.equals(attribute.getName())) {
             return;
         }
-        if (isByReference && position == 0) {
+        if (isByReference() && position == 0) {
             position = 1;
         }
         if (position != -1 && attributes.remove(attribute)) {
@@ -135,7 +135,7 @@ public class VariableUserType extends EventSupport implements VariableContainer,
     }
 
     public void removeAttribute(Variable variable) {
-        if (isByReference && BY_REFERENCE_ID_ATTRIBUTE_NAME.equals(variable.getName())) {
+        if (isByReference() && BY_REFERENCE_ID_ATTRIBUTE_NAME.equals(variable.getName())) {
             return;
         }
         attributes.remove(variable);
@@ -153,20 +153,25 @@ public class VariableUserType extends EventSupport implements VariableContainer,
         return isStoreInExternalStorage;
     }
 
-    public boolean isByReference() {
-        return isByReference;
-    }
-
     public void setStoreInExternalStorage(boolean isStoreInExternalStorage) {
         final boolean old = this.isStoreInExternalStorage;
         this.isStoreInExternalStorage = isStoreInExternalStorage;
         firePropertyChange(PROPERTY_STORE_IN_EXTERNAL_STORAGE, old, isStoreInExternalStorage);
     }
 
-    public void setByReference(boolean isByReference) {
-        final boolean old = this.isByReference;
-        this.isByReference = isByReference;
-        if (isByReference) {
+    public VariableStorageKind getReferenceStorage() {
+        return referenceStorage;
+    }
+
+    public boolean isByReference() {
+        return referenceStorage != VariableStorageKind.NONE;
+    }
+
+    public void setReferenceStorage(VariableStorageKind referenceStorage) {
+        VariableStorageKind old = this.referenceStorage;
+        VariableStorageKind next = referenceStorage != null ? referenceStorage : VariableStorageKind.NONE;
+        this.referenceStorage = next;
+        if (next != VariableStorageKind.NONE) {
             if (hasIdAttribute()) {
                 attributes.get(0).setFormat(BY_REFERENCE_ID_ATTRIBUTE_FORMAT);
             } else {
@@ -191,7 +196,7 @@ public class VariableUserType extends EventSupport implements VariableContainer,
             }
         }
 
-        firePropertyChange(PROPERTY_BY_REFERENCE, old, isByReference);
+        firePropertyChange(PropertyNames.PROPERTY_REFERENCE_STORAGE, old, next);
     }
 
     public boolean hasIdAttribute() {
@@ -247,7 +252,7 @@ public class VariableUserType extends EventSupport implements VariableContainer,
     }
 
     public VariableUserType getCopy(VariableUserType source) {
-        VariableUserType clone = new VariableUserType(source.getName(), source.isStoreInExternalStorage(), source.isByReference());
+        VariableUserType clone = new VariableUserType(source.getName(), source.isStoreInExternalStorage(), source.getReferenceStorage());
         for (Variable attribute : source.getAttributes()) {
             if (attribute.isComplex()) {
                 clone.addAttribute(
@@ -262,7 +267,7 @@ public class VariableUserType extends EventSupport implements VariableContainer,
 
     public void updateFromGlobalPartition(VariableUserType typeFromGlobalSection) {
         this.isStoreInExternalStorage = typeFromGlobalSection.isStoreInExternalStorage;
-        this.isByReference = typeFromGlobalSection.isByReference;
+        this.referenceStorage = typeFromGlobalSection.referenceStorage;
         attributes.clear();
         for (Variable attribute : typeFromGlobalSection.getAttributes()) {
             if (attribute.isComplex()) {
@@ -277,7 +282,7 @@ public class VariableUserType extends EventSupport implements VariableContainer,
     public VariableUserType getCopyForGlobalPartition() {
         VariableUserType type = new VariableUserType();
         type.isStoreInExternalStorage = this.isStoreInExternalStorage;
-        type.isByReference = this.isByReference;
+        type.referenceStorage = this.referenceStorage;
 
         for (Variable attribute : this.getAttributes()) {
             if (attribute.isComplex()) {

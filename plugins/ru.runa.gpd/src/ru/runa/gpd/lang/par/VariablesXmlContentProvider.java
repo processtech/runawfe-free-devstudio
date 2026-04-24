@@ -8,6 +8,7 @@ import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.Variable;
+import ru.runa.gpd.lang.model.VariableStorageKind;
 import ru.runa.gpd.lang.model.VariableStoreType;
 import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.gpd.util.VariableUtils;
@@ -30,6 +31,7 @@ public class VariablesXmlContentProvider extends AuxContentProvider {
     private static final String USER_TYPE = "usertype";
     private static final String EDITOR = "editor";
     private static final String GLOBAL = "global";
+    private static final String REFERENCE_STORAGE = "referenceStorage";
 
     @Override
     public boolean isSupportedForEmbeddedSubprocess() {
@@ -56,7 +58,7 @@ public class VariablesXmlContentProvider extends AuxContentProvider {
                     Variable variable = parse(attributeElement, definition);
                     type.addAttribute(variable);
                 }
-                type.setByReference(Boolean.parseBoolean(typeElement.attributeValue(VariableUserType.PROPERTY_BY_REFERENCE)));
+                type.setReferenceStorage(parseReferenceStorage(typeElement));
                 definition.addGlobalType(type);
             }
         }
@@ -70,7 +72,7 @@ public class VariablesXmlContentProvider extends AuxContentProvider {
                 Variable variable = parse(attributeElement, definition);
                 type.addAttribute(variable);
             }
-            type.setByReference(Boolean.parseBoolean(typeElement.attributeValue(VariableUserType.PROPERTY_BY_REFERENCE)));
+            type.setReferenceStorage(parseReferenceStorage(typeElement));
         }
         List<Element> elementsList = document.getRootElement().elements(VARIABLE);
 
@@ -120,6 +122,19 @@ public class VariablesXmlContentProvider extends AuxContentProvider {
         }
     }
 
+    private VariableStorageKind parseReferenceStorage(Element typeElement) {
+        String referenceStorageAttr = typeElement.attributeValue(REFERENCE_STORAGE);
+        if (referenceStorageAttr != null) {
+            try {
+                return VariableStorageKind.valueOf(referenceStorageAttr.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                return VariableStorageKind.NONE;
+            }
+        }
+
+        return VariableStorageKind.NONE;
+    }
+
     private Variable parse(Element element, ProcessDefinition processDefinition) {
         String variableName = element.attributeValue(NAME);
         String format;
@@ -166,8 +181,8 @@ public class VariablesXmlContentProvider extends AuxContentProvider {
             if (type.isStoreInExternalStorage()) {
                 typeElement.addAttribute(VariableUserType.PROPERTY_STORE_IN_EXTERNAL_STORAGE, Boolean.TRUE.toString());
             }
-            if (type.isByReference()) {
-                typeElement.addAttribute(VariableUserType.PROPERTY_BY_REFERENCE, Boolean.TRUE.toString());
+            if (type.getReferenceStorage() != VariableStorageKind.NONE) {
+                typeElement.addAttribute(REFERENCE_STORAGE, type.getReferenceStorage().name().toLowerCase());
             }
             if (type.isGlobal()) {
                 typeElement.addAttribute(GLOBAL, "true");

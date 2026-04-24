@@ -4,10 +4,13 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
@@ -17,6 +20,7 @@ import org.eclipse.swt.widgets.Text;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.extension.VariableFormatRegistry;
 import ru.runa.gpd.lang.model.ProcessDefinition;
+import ru.runa.gpd.lang.model.VariableStorageKind;
 import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.gpd.settings.CommonPreferencePage;
 import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
@@ -25,7 +29,7 @@ import ru.runa.gpd.ui.custom.VariableNameChecker;
 public class VariableUserTypeDialog extends Dialog {
     private String name;
     private boolean isStoreInInternalStorage;
-    private boolean isByReference;
+    private VariableStorageKind referenceStorage;
     private final ProcessDefinition processDefinition;
     private final boolean createMode;
 
@@ -34,7 +38,7 @@ public class VariableUserTypeDialog extends Dialog {
         this.processDefinition = processDefinition;
         this.name = type != null ? type.getName() : "";
         this.isStoreInInternalStorage = type != null ? type.isStoreInExternalStorage() : false;
-        this.isByReference = type != null ? type.isByReference() : false;
+        this.referenceStorage = type != null ? type.getReferenceStorage() : VariableStorageKind.NONE;
         this.createMode = type == null;
     }
 
@@ -83,32 +87,39 @@ public class VariableUserTypeDialog extends Dialog {
             storeInExternalStorageCheckbox.setText(Localization.getString("UserDefinedVariableType.storeInExternalStorage"));
             storeInExternalStorageCheckbox.setSelection(isStoreInInternalStorage);
 
-            new Label(composite, SWT.NONE);
+            final Label referenceStorageLabel = new Label(composite, SWT.NONE);
+            referenceStorageLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            referenceStorageLabel.setText(Localization.getString("UserDefinedVariableType.referenceStorage") + ":");
 
-            final Button byReferenceCheckbox = new Button(composite, SWT.CHECK);
-            byReferenceCheckbox.setText(Localization.getString("UserDefinedVariableType.byReference"));
-            byReferenceCheckbox.setSelection(isByReference);
-            byReferenceCheckbox.setEnabled(isStoreInInternalStorage);
+            final Combo referenceStorageCombo = new Combo(composite, SWT.READ_ONLY);
+            referenceStorageCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            for (VariableStorageKind kind : VariableStorageKind.values()) {
+                referenceStorageCombo.add(Localization.getString("UserDefinedVariableType.referenceStorage." + kind.name().toLowerCase()));
+            }
+            referenceStorageCombo.select(referenceStorage.ordinal());
+            referenceStorageCombo.setEnabled(isStoreInInternalStorage);
 
             storeInExternalStorageCheckbox.addSelectionListener(
                     SelectionListener.widgetSelectedAdapter(c -> {
                         isStoreInInternalStorage = storeInExternalStorageCheckbox.getSelection();
 
                         if (!isStoreInInternalStorage) {
-                            isByReference = false;
-                            byReferenceCheckbox.setSelection(false);
-                            byReferenceCheckbox.setEnabled(false);
+                            referenceStorage = VariableStorageKind.NONE;
+                            referenceStorageCombo.select(VariableStorageKind.NONE.ordinal());
+                            referenceStorageCombo.setEnabled(false);
                         } else {
-                            byReferenceCheckbox.setEnabled(true);
+                            referenceStorageCombo.setEnabled(true);
                         }
                         updateButtons();
                     }));
 
-            byReferenceCheckbox.addSelectionListener(
-                    SelectionListener.widgetSelectedAdapter(c -> {
-                        isByReference = byReferenceCheckbox.getSelection();
-                        updateButtons();
-                    }));
+            referenceStorageCombo.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    referenceStorage = VariableStorageKind.values()[referenceStorageCombo.getSelectionIndex()];
+                    updateButtons();
+                }
+            });
         }
 
         if (!createMode) {
@@ -121,7 +132,9 @@ public class VariableUserTypeDialog extends Dialog {
         final VariableUserType type = processDefinition.getVariableUserType(name);
         final boolean allowCreation = type == null && VariableFormatRegistry.getInstance().getArtifactByLabel(name) == null
                 && VariableNameChecker.isValid(name);
-        final boolean allowEdit = type != null && (!type.getName().equals(name) || type.isStoreInExternalStorage() != isStoreInInternalStorage || type.isByReference() != isByReference);
+        final boolean allowEdit = type != null && (!type.getName().equals(name)
+                || type.isStoreInExternalStorage() != isStoreInInternalStorage
+                || type.getReferenceStorage() != referenceStorage);
         getButton(IDialogConstants.OK_ID).setEnabled(createMode ? allowCreation : allowEdit);
     }
 
@@ -139,5 +152,7 @@ public class VariableUserTypeDialog extends Dialog {
         return isStoreInInternalStorage;
     }
 
-    public boolean isByReference() { return isByReference; }
+    public VariableStorageKind getReferenceStorage() {
+        return referenceStorage;
+    }
 }
