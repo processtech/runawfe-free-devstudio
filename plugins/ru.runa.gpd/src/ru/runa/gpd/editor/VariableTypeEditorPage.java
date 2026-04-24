@@ -52,6 +52,7 @@ import ru.runa.gpd.lang.model.GlobalSectionDefinition;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.model.Variable;
+import ru.runa.gpd.lang.model.VariableStorageKind;
 import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.ltk.MoveUserTypeAttributeRefactoring;
@@ -130,6 +131,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
         final List<TableColumnDescription> descriptions = Lists.newArrayList(new TableColumnDescription("property.name", 190, SWT.LEFT));
         if (CommonPreferencePage.isInternalStorageFunctionalityEnabled()) {
             descriptions.add(new TableColumnDescription("UserDefinedVariableType.storeInExternalStorage", 80, SWT.LEFT));
+            descriptions.add(new TableColumnDescription("UserDefinedVariableType.referenceStorage", 100, SWT.LEFT));
             internalStorageColumn = 1;
         } else {
             internalStorageColumn = 0; // zero when not used
@@ -138,32 +140,24 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             descriptions.add(new TableColumnDescription("Variable.property.isGlobal", 30, SWT.LEFT));
         }
 
+        final int referenceStorageColumn = CommonPreferencePage.isInternalStorageFunctionalityEnabled() ? 2 : -1;
+        final int globalColumn = CommonPreferencePage.isInternalStorageFunctionalityEnabled() ? 3 : 1;
         createTable(typeTableViewer, new DataViewerComparator<>(new ValueComparator<VariableUserType>() {
             @Override
             public int compare(VariableUserType o1, VariableUserType o2) {
                 int result = 0;
                 if (getColumn() == 0) {
                     result = o1.getName().compareTo(o2.getName());
-                } else if (getColumn() == internalStorageColumn) {
-                    if (o1.isStoreInExternalStorage() == o2.isStoreInExternalStorage()) {
-                        result = 0;
-                    } else if (o1.isStoreInExternalStorage() && !o2.isStoreInExternalStorage()) {
-                        result = 1;
-                    } else {
-                        result = -1;
-                    }
-                } else if ((getColumn() == 1 + internalStorageColumn)) {
-                    if (o1.isGlobal() == o2.isGlobal()) {
-                        result = 0;
-                    } else if (o1.isGlobal() && !o2.isGlobal()) {
-                        result = 1;
-                    } else {
-                        result = -1;
-                    }
+                } else if (internalStorageColumn > 0 && getColumn() == internalStorageColumn) {
+                    result = Boolean.compare(o1.isStoreInExternalStorage(), o2.isStoreInExternalStorage());
+                } else if (referenceStorageColumn > 0 && getColumn() == referenceStorageColumn) {
+                    result = o1.getReferenceStorage().compareTo(o2.getReferenceStorage());
+                } else if (getColumn() == globalColumn) {
+                    result = Boolean.compare(o1.isGlobal(), o2.isGlobal());
                 }
                 return result;
             }
-        }), descriptions.toArray(new TableColumnDescription[descriptions.size()]));
+        }), descriptions.toArray(new TableColumnDescription[0]));
 
         Composite typeButtonsBar = createActionBar(leftComposite);
         addButton(typeButtonsBar, "button.create", new CreateTypeSelectionListener(), false);
@@ -232,7 +226,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
         if (PropertyNames.PROPERTY_USER_TYPES_CHANGED.equals(type)) {
             updateViewer();
         } else if (evt.getSource() instanceof VariableUserType) {
-            if (PropertyNames.PROPERTY_NAME.equals(type) || PropertyNames.PROPERTY_STORE_IN_EXTERNAL_STORAGE.equals(type)) {
+            if (PropertyNames.PROPERTY_NAME.equals(type) || PropertyNames.PROPERTY_STORE_IN_EXTERNAL_STORAGE.equals(type) || PropertyNames.PROPERTY_REFERENCE_STORAGE.equals(type)) {
                 typeTableViewer.refresh(evt.getSource());
             }
             if (PropertyNames.PROPERTY_CHILDREN_CHANGED.equals(type)) {
@@ -287,16 +281,20 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
         }
         enableAction(copyAttributeButton, withoutGlobals && selectedType != null);
         enableAction(pasteAttributeButton, withoutGlobals && selectedType != null);
-        enableAction(changeAttributeButton, attributes.size() == 1 && withoutGlobals);
+
+        boolean isIdByRef = selectedType != null
+                && selectedType.getReferenceStorage() != VariableStorageKind.NONE
+                && attributes.size() == 1
+                && VariableUserType.BY_REFERENCE_ID_ATTRIBUTE_NAME.equals(attributes.get(0).getName());
+
+        enableAction(changeAttributeButton, attributes.size() == 1 && withoutGlobals && !isIdByRef);
         enableAction(searchAttributeButton, attributes.size() == 1);
-        enableAction(renameAttributeButton, attributes.size() == 1 && withoutGlobals);
+        enableAction(renameAttributeButton, attributes.size() == 1 && withoutGlobals && !isIdByRef);
         enableAction(mergeAttributesButton, attributes.size() == 2 && withoutGlobals);
-        enableAction(moveUpAttributeButton,
-                selectedType != null && attributes.size() == 1 && selectedType.getAttributes().indexOf(attributes.get(0)) > 0);
-        enableAction(moveDownAttributeButton, selectedType != null && attributes.size() == 1
-                && selectedType.getAttributes().indexOf(attributes.get(0)) < selectedType.getAttributes().size() - 1);
-        enableAction(deleteAttributeButton, attributes.size() > 0 && withoutGlobals);
-        enableAction(moveToTypeAttributeButton, attributes.size() == 1 && withoutGlobals);
+        enableAction(moveUpAttributeButton, selectedType != null && attributes.size() == 1 && selectedType.getAttributes().indexOf(attributes.get(0)) > (selectedType.getReferenceStorage() != VariableStorageKind.NONE ? 1 : 0) && !isIdByRef);
+        enableAction(moveDownAttributeButton, selectedType != null && attributes.size() == 1 && selectedType.getAttributes().indexOf(attributes.get(0)) < selectedType.getAttributes().size() - 1 && !isIdByRef);
+        enableAction(deleteAttributeButton, attributes.size() > 0 && withoutGlobals && !isIdByRef);
+        enableAction(moveToTypeAttributeButton, attributes.size() == 1 && withoutGlobals && !isIdByRef);
         updateAttributeViewer();
     }
 
@@ -325,7 +323,7 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
         protected void onSelection(SelectionEvent e) throws Exception {
             VariableUserTypeDialog dialog = new VariableUserTypeDialog(getDefinition(), null);
             if (dialog.open() == Window.OK) {
-                VariableUserType type = new VariableUserType(dialog.getName(), dialog.isStoreInInternalStorage());
+                VariableUserType type = new VariableUserType(dialog.getName(), dialog.isStoreInInternalStorage(), dialog.getReferenceStorage());
                 getDefinition().addVariableUserType(type);
                 typeTableViewer.setSelection(new StructuredSelection(type));
             }
@@ -338,8 +336,19 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             VariableUserType type = getSelection();
             VariableUserTypeDialog dialog = new VariableUserTypeDialog(getDefinition(), type);
             if (dialog.open() == Window.OK) {
+
+                if (type.getReferenceStorage() != dialog.getReferenceStorage()) {
+                    boolean hasCustomTypeAttributes = type.getAttributes().stream()
+                            .anyMatch(attr -> attr.getUserType() != null);
+                    if (hasCustomTypeAttributes) {
+                        ErrorDialog.open(Localization.getString("UserDefinedVariableType.byReference.changeNotAllowed"));
+                        return;
+                    }
+                }
+
                 VariableUtils.renameUserType(getDefinition(), type, dialog.getName());
                 type.setStoreInExternalStorage(dialog.isStoreInInternalStorage());
+                type.setReferenceStorage(dialog.getReferenceStorage());
             }
         }
     }
@@ -554,16 +563,13 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
         @Override
         public String getColumnText(Object element, int index) {
             VariableUserType type = (VariableUserType) element;
-            switch (index) {
-            case 0:
+            if (index == 0) {
                 return type.getName();
-            case 1:
-                    return "";
-            case 2:
-                return "";
-            default:
-                return "unknown " + index;
             }
+            if (CommonPreferencePage.isInternalStorageFunctionalityEnabled() && index == 2) {
+                return Localization.getString("UserDefinedVariableType.referenceStorage." + type.getReferenceStorage().name().toLowerCase());
+            }
+            return "";
         }
 
         @Override
@@ -575,8 +581,8 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
         public Image getColumnImage(Object element, int columnIndex) {
             if (CommonPreferencePage.isInternalStorageFunctionalityEnabled()) {
                 if (columnIndex == 1) {
-                return SharedImages.getImage(((VariableUserType) element).isStoreInExternalStorage() ? "icons/checked.gif" : "icons/unchecked.gif");
-                } else if (columnIndex == 2) {
+                    return SharedImages.getImage(((VariableUserType) element).isStoreInExternalStorage() ? "icons/checked.gif" : "icons/unchecked.gif");
+                } else if (columnIndex == 3) {
                     return SharedImages.getImage(((VariableUserType) element).isGlobal() ? "icons/checked.gif" : "icons/unchecked.gif");
                 }
             } else if (columnIndex == 1) {

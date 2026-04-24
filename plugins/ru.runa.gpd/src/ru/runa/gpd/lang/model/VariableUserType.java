@@ -14,11 +14,14 @@ import ru.runa.gpd.util.IOUtils;
 public class VariableUserType extends EventSupport implements VariableContainer, PropertyNames, Comparable<VariableUserType> {
     public static final String PREFIX = "usertype:";
     public static final String DELIM = ".";
+    public static final String BY_REFERENCE_ID_ATTRIBUTE_NAME = "id";
+    public static final String BY_REFERENCE_ID_ATTRIBUTE_FORMAT = "ru.runa.wfe.var.format.LongFormat";
 
     private String name;
     private final List<Variable> attributes = Lists.newArrayList();
     private ProcessDefinition processDefinition;
     private boolean isStoreInExternalStorage = false;
+    private VariableStorageKind referenceStorage = VariableStorageKind.NONE;
     private boolean global;
 
     public VariableUserType() {
@@ -31,6 +34,12 @@ public class VariableUserType extends EventSupport implements VariableContainer,
     public VariableUserType(String name, boolean isStoreInExternalStorage) {
         setName(name);
         setStoreInExternalStorage(isStoreInExternalStorage);
+    }
+
+    public VariableUserType(String name, boolean isStoreInExternalStorage, VariableStorageKind referenceStorage) {
+        setName(name);
+        setStoreInExternalStorage(isStoreInExternalStorage);
+        setReferenceStorage(referenceStorage);
     }
 
     public ProcessDefinition getProcessDefinition() {
@@ -84,23 +93,41 @@ public class VariableUserType extends EventSupport implements VariableContainer,
     public boolean canUseAsAttributeType(VariableUserType usertype) {
         if (Objects.equal(name, usertype.name)) {
             return false;
-        } else {
-            for (Variable attribute : usertype.getAttributes()) {
-                if (!canUseAsAttribute(attribute)) {
-                    return false;
-                }
-            }
-            return true;
         }
+
+        if (isByReference() != usertype.isByReference()) {
+            return false;
+        }
+
+        for (Variable attribute : usertype.getAttributes()) {
+            if (!canUseAsAttribute(attribute)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public void addAttribute(Variable variable) {
+        if (isByReference() && BY_REFERENCE_ID_ATTRIBUTE_NAME.equals(variable.getName())) {
+            if (!hasIdAttribute()) {
+                attributes.add(0, variable);
+                variable.setParent(getProcessDefinition());
+                firePropertyChange(PROPERTY_CHILDREN_CHANGED, null, variable);
+            }
+            return;
+        }
         attributes.add(variable);
         variable.setParent(getProcessDefinition());
         firePropertyChange(PROPERTY_CHILDREN_CHANGED, null, variable);
     }
 
     public void changeAttributePosition(Variable attribute, int position) {
+        if (isByReference() && BY_REFERENCE_ID_ATTRIBUTE_NAME.equals(attribute.getName())) {
+            return;
+        }
+        if (isByReference() && position == 0) {
+            position = 1;
+        }
         if (position != -1 && attributes.remove(attribute)) {
             attributes.add(position, attribute);
             firePropertyChange(PROPERTY_CHILDREN_CHANGED, null, attribute);
@@ -108,6 +135,9 @@ public class VariableUserType extends EventSupport implements VariableContainer,
     }
 
     public void removeAttribute(Variable variable) {
+        if (isByReference() && BY_REFERENCE_ID_ATTRIBUTE_NAME.equals(variable.getName())) {
+            return;
+        }
         attributes.remove(variable);
         firePropertyChange(PROPERTY_CHILDREN_CHANGED, null, variable);
     }
@@ -127,6 +157,59 @@ public class VariableUserType extends EventSupport implements VariableContainer,
         final boolean old = this.isStoreInExternalStorage;
         this.isStoreInExternalStorage = isStoreInExternalStorage;
         firePropertyChange(PROPERTY_STORE_IN_EXTERNAL_STORAGE, old, isStoreInExternalStorage);
+    }
+
+    public VariableStorageKind getReferenceStorage() {
+        return referenceStorage;
+    }
+
+    public boolean isByReference() {
+        return referenceStorage != VariableStorageKind.NONE;
+    }
+
+    public void setReferenceStorage(VariableStorageKind referenceStorage) {
+        VariableStorageKind old = this.referenceStorage;
+        VariableStorageKind next = referenceStorage != null ? referenceStorage : VariableStorageKind.NONE;
+        this.referenceStorage = next;
+        if (next != VariableStorageKind.NONE) {
+            if (hasIdAttribute()) {
+                attributes.get(0).setFormat(BY_REFERENCE_ID_ATTRIBUTE_FORMAT);
+            } else {
+                Variable existingIdAttr = null;
+                for (Variable attr : attributes) {
+                    if (BY_REFERENCE_ID_ATTRIBUTE_NAME.equals(attr.getName())) {
+                        existingIdAttr = attr;
+                        break;
+                    }
+                }
+                if (existingIdAttr != null) {
+                    attributes.remove(existingIdAttr);
+                    existingIdAttr.setFormat(BY_REFERENCE_ID_ATTRIBUTE_FORMAT);
+                    attributes.add(0, existingIdAttr);
+                } else {
+                    Variable idAttr = createIdAttribute();
+                    attributes.add(0, idAttr);
+                    if (processDefinition != null) {
+                        idAttr.setParent(processDefinition);
+                    }
+                }
+            }
+        }
+
+        firePropertyChange(PropertyNames.PROPERTY_REFERENCE_STORAGE, old, next);
+    }
+
+    public boolean hasIdAttribute() {
+        return !attributes.isEmpty()
+                && BY_REFERENCE_ID_ATTRIBUTE_NAME.equals(attributes.get(0).getName());
+    }
+
+    private Variable createIdAttribute() {
+        return new Variable(
+                BY_REFERENCE_ID_ATTRIBUTE_NAME,
+                BY_REFERENCE_ID_ATTRIBUTE_NAME,
+                BY_REFERENCE_ID_ATTRIBUTE_FORMAT,
+                null);
     }
 
     public VariableUserType getCopy() {
@@ -169,7 +252,7 @@ public class VariableUserType extends EventSupport implements VariableContainer,
     }
 
     public VariableUserType getCopy(VariableUserType source) {
-        VariableUserType clone = new VariableUserType(source.getName(), source.isStoreInExternalStorage());
+        VariableUserType clone = new VariableUserType(source.getName(), source.isStoreInExternalStorage(), source.getReferenceStorage());
         for (Variable attribute : source.getAttributes()) {
             if (attribute.isComplex()) {
                 clone.addAttribute(
@@ -184,6 +267,7 @@ public class VariableUserType extends EventSupport implements VariableContainer,
 
     public void updateFromGlobalPartition(VariableUserType typeFromGlobalSection) {
         this.isStoreInExternalStorage = typeFromGlobalSection.isStoreInExternalStorage;
+        this.referenceStorage = typeFromGlobalSection.referenceStorage;
         attributes.clear();
         for (Variable attribute : typeFromGlobalSection.getAttributes()) {
             if (attribute.isComplex()) {
@@ -198,6 +282,7 @@ public class VariableUserType extends EventSupport implements VariableContainer,
     public VariableUserType getCopyForGlobalPartition() {
         VariableUserType type = new VariableUserType();
         type.isStoreInExternalStorage = this.isStoreInExternalStorage;
+        type.referenceStorage = this.referenceStorage;
 
         for (Variable attribute : this.getAttributes()) {
             if (attribute.isComplex()) {
