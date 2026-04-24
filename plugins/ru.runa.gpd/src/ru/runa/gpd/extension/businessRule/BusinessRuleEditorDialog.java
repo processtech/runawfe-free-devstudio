@@ -48,8 +48,8 @@ public class BusinessRuleEditorDialog extends EditorDialog<BusinessRuleModel> {
 
     private static final Image addImage = SharedImages.getImage("icons/add_obj.gif");
     private static final Image deleteImage = SharedImages.getImage("icons/delete.gif");
-    private List<ExpressionLine> expressionLines = new ArrayList<>();
-    private Button defaultButton;
+    protected List<ExpressionLine> expressionLines = new ArrayList<>();
+    protected Button defaultButton;
     private BusinessRuleModel tempModel;
 
     public BusinessRuleEditorDialog(ProcessDefinition definition, String initialValue) {
@@ -76,13 +76,13 @@ public class BusinessRuleEditorDialog extends EditorDialog<BusinessRuleModel> {
         createBottomComposite();
     }
 
-    private ExpressionLine createExpressionLine(int index, BusinessRuleModel model) {
+    protected ExpressionLine createExpressionLine(int index, BusinessRuleModel model) {
         ExpressionLine expressionLine = new ExpressionLine(index, model);
         expressionLines.add(index, expressionLine);
         return expressionLine;
     }
 
-    private void createBottomComposite() {
+    protected void createBottomComposite() {
         Composite bottomComposite = new Composite(constructor, SWT.NONE);
         bottomComposite.setLayout(new GridLayout(2, false));
         GridData data = new GridData(GridData.FILL_HORIZONTAL);
@@ -358,7 +358,7 @@ public class BusinessRuleEditorDialog extends EditorDialog<BusinessRuleModel> {
                             try {
                                 toCode();
                                 clearErrorLabelText();
-                                line = new ExpressionLine(lineIndex, tempModel);
+                                line = newExpressionLine(lineIndex, tempModel);
                                 line.swapToComplex();
 
                                 if (tempModel.getIfExpressions().size() > lineIndex) {
@@ -430,19 +430,7 @@ public class BusinessRuleEditorDialog extends EditorDialog<BusinessRuleModel> {
                 }
             }
 
-            functionButton = new Button(this, SWT.NONE);
-            functionButton.setLayoutData(getVariableGridData());
-            functionButton.setText(Localization.getString("GroovyEditor.functionButton") + lineIndex);
-            functionButton.addSelectionListener(new LoggingSelectionAdapter() {
-                @Override
-                protected void onSelection(SelectionEvent e) throws Exception {
-                    FormulaCellEditorProvider.ConfigurationDialog dialog = new FormulaCellEditorProvider.ConfigurationDialog(functionButton.getText(),
-                            variableNames);
-                    if (dialog.open() == Window.OK) {
-                        functionButton.setText(dialog.getResult());
-                    }
-                }
-            });
+            functionButton = createFunctionButton();
 
             Button addChangeButton = new Button(this, SWT.PUSH);
             addChangeButton.setImage(addImage);
@@ -686,6 +674,25 @@ public class BusinessRuleEditorDialog extends EditorDialog<BusinessRuleModel> {
             return data;
         }
 
+        protected Button createFunctionButton() {
+            Button button = new Button(this, SWT.NONE);
+            button.setLayoutData(getVariableGridData());
+            button.setText(Localization.getString("GroovyEditor.functionButton") + lineIndex);
+
+            button.addSelectionListener(new LoggingSelectionAdapter() {
+                @Override
+                protected void onSelection(SelectionEvent e) throws Exception {
+                    FormulaCellEditorProvider.ConfigurationDialog dialog =
+                            new FormulaCellEditorProvider.ConfigurationDialog(button.getText(), variableNames);
+                    if (dialog.open() == Window.OK) {
+                        button.setText(dialog.getResult());
+                    }
+                }
+            });
+
+            return button;
+        }
+
         public Button getFunctionButton() {
             return functionButton;
         }
@@ -700,6 +707,10 @@ public class BusinessRuleEditorDialog extends EditorDialog<BusinessRuleModel> {
 
         public void setLineIndex(int lineIndex) {
             this.lineIndex = lineIndex;
+        }
+
+        protected ExpressionLine newExpressionLine(int index, BusinessRuleModel model) {
+            return new ExpressionLine(index, model);
         }
 
         public Composite getExpressionComposite() {

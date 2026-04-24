@@ -69,10 +69,6 @@ public class InternalStorageDataModel extends DataModel {
         return model;
     }
 
-    public void setMode(FilesSupplierMode mode) {
-        this.mode = mode;
-    }
-
     @Override
     public void validate(GraphElement graphElement, List<ValidationError> errors) {
         if (constraints.size() != 1) {

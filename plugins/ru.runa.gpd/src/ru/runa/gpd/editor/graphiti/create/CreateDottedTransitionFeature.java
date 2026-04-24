@@ -10,7 +10,9 @@ import ru.runa.gpd.Localization;
 import ru.runa.gpd.editor.graphiti.update.DeleteElementFeature;
 import ru.runa.gpd.lang.model.AbstractTransition;
 import ru.runa.gpd.lang.model.Node;
+import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
 import ru.runa.gpd.lang.model.bpmn.ConnectableViaDottedTransition;
+import ru.runa.gpd.lang.model.bpmn.DataStore;
 import ru.runa.gpd.lang.model.bpmn.DottedTransition;
 
 public class CreateDottedTransitionFeature extends CreateAbstractTransitionFeature {
@@ -35,6 +37,13 @@ public class CreateDottedTransitionFeature extends CreateAbstractTransitionFeatu
         final Node target = (Node) getBusinessObjectForPictogramElement(context.getTargetPictogramElement());
         // create new business object
         DottedTransition newTransition = transitionDefinition.createElement(source, false);
+        // save EventNodeType if needed
+        if (source instanceof DataStore && target instanceof CatchEventNode) {
+            CatchEventNode node = (CatchEventNode) target;
+            if (!node.isConditional()) {
+                newTransition.setEventNodeType(node.getEventNodeType());
+            }
+        }
         newTransition.setName(source.getNextTransitionName(transitionDefinition));
         ((ConnectableViaDottedTransition) source).addLeavingDottedTransition(newTransition);
         ((ConnectableViaDottedTransition) target).addArrivingDottedTransition(newTransition);
@@ -66,8 +75,13 @@ public class CreateDottedTransitionFeature extends CreateAbstractTransitionFeatu
     public void postUndo(IContext context) {
         DottedTransition transition = (DottedTransition) getTransition(context);
         if (transition != null) {
+            Node target = transition.getTarget();
             DeleteElementFeature.removeDottedTransition(transition);
             transition.getParent().removeChild(transition);
+            //undo EventNodeType if needed
+            if (transition.getEventNodeType() != null && target instanceof CatchEventNode) {
+                ((CatchEventNode) target).setEventNodeType(transition.getEventNodeType());
+            }
         }
         // Для Redo
         context.putProperty(CreateElementFeature.CONNECTION_PROPERTY, transition);

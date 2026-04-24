@@ -472,6 +472,9 @@ public class BpmnSerializer extends ProcessSerializer {
         if (eventNode instanceof ISendMessageNode) {
             eventElement.addAttribute(RUNA_PREFIX + ":" + TIME_DURATION, eventNode.getTtlDuration().getDuration());
         }
+        if (eventNode.isDelegable()) {
+            writeDelegation(eventElement, (Delegable) eventNode);
+        }
         writeVariables(eventElement, eventNode.getVariableMappings());
         writeNodeAsyncExecution(eventElement, eventNode);
         writeTransitions(processElement, eventNode);
@@ -1043,6 +1046,9 @@ public class BpmnSerializer extends ProcessSerializer {
             transition.setName(transitionElement.attributeValue(NAME));
             transition.setTarget(target);
             ((ConnectableViaDottedTransition) source).addLeavingDottedTransition(transition);
+            if (target instanceof ConnectableViaDottedTransition) {
+                ((ConnectableViaDottedTransition) target).addArrivingDottedTransition(transition);
+            }
         }
         definition.onLoadingCompleted();
     }

@@ -127,10 +127,10 @@ public abstract class XmlBasedConstructorProvider<T extends Observable> extends 
 
     }
 
-    private class XmlBasedConstructorDialog extends Dialog {
+    protected class XmlBasedConstructorDialog extends Dialog {
         protected T model;
-        private TabFolder tabFolder;
-        private XmlContentView xmlContentView;
+        protected TabFolder tabFolder;
+        protected XmlContentView xmlContentView;
         private Composite constructorView;
         private final String initialValue;
         private String result;
@@ -276,7 +276,7 @@ public abstract class XmlBasedConstructorProvider<T extends Observable> extends 
             }
         }
 
-        private void populateToSourceView() {
+        protected void populateToSourceView() {
             xmlContentView.setValue(model.toString());
         }
 
