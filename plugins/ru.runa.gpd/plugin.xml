@@ -2585,6 +2585,13 @@
              label="%validator.listElementsAreUnique.name"
              name="listElementsAreUnique">
        </validator>
+
+        <validator
+                applicable="java.lang.String,java.lang.Long,java.lang.Integer"
+                description="%validator.UniqueStorageUserTypeAttributeValidator.desc"
+                label="%validator.UniqueStorageUserTypeAttributeValidator"
+                name="unique-storage-user-type-attribute">
+        </validator>
     </extension>
     <extension
           point="org.eclipse.core.runtime.preferences">
