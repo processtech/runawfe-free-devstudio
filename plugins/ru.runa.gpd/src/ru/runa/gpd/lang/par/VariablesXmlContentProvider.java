@@ -56,6 +56,7 @@ public class VariablesXmlContentProvider extends AuxContentProvider {
                     Variable variable = parse(attributeElement, definition);
                     type.addAttribute(variable);
                 }
+                type.setByReference(Boolean.parseBoolean(typeElement.attributeValue(VariableUserType.PROPERTY_BY_REFERENCE)));
                 definition.addGlobalType(type);
             }
         }
@@ -69,6 +70,7 @@ public class VariablesXmlContentProvider extends AuxContentProvider {
                 Variable variable = parse(attributeElement, definition);
                 type.addAttribute(variable);
             }
+            type.setByReference(Boolean.parseBoolean(typeElement.attributeValue(VariableUserType.PROPERTY_BY_REFERENCE)));
         }
         List<Element> elementsList = document.getRootElement().elements(VARIABLE);
 
@@ -163,6 +165,9 @@ public class VariablesXmlContentProvider extends AuxContentProvider {
             typeElement.addAttribute(NAME, type.getName());
             if (type.isStoreInExternalStorage()) {
                 typeElement.addAttribute(VariableUserType.PROPERTY_STORE_IN_EXTERNAL_STORAGE, Boolean.TRUE.toString());
+            }
+            if (type.isByReference()) {
+                typeElement.addAttribute(VariableUserType.PROPERTY_BY_REFERENCE, Boolean.TRUE.toString());
             }
             if (type.isGlobal()) {
                 typeElement.addAttribute(GLOBAL, "true");
