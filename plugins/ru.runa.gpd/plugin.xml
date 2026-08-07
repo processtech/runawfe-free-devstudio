@@ -251,6 +251,10 @@
           adaptable="false"
           id="formdata"
           objectClass="ru.runa.gpd.lang.model.FormNode">
+       <filter
+             name="formMenuAllowed"
+             value="true">
+       </filter>
        <menu
              id="formdata"
              label="%label.action.formdata"
@@ -281,6 +285,10 @@
           id="formdata.noformexists"
           objectClass="ru.runa.gpd.lang.model.FormNode">
        <filter
+             name="formMenuAllowed"
+             value="true">
+       </filter>
+       <filter
              name="formExists"
              value="false">
        </filter>
@@ -301,6 +309,10 @@
           adaptable="false"
           id="formdata.formexists"
           objectClass="ru.runa.gpd.lang.model.FormNode">
+       <filter
+             name="formMenuAllowed"
+             value="true">
+       </filter>
        <filter
              name="formExists"
              value="true">

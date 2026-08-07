@@ -5,7 +5,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.window.Window;
 
-import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.form.FormTypeProvider;
 import ru.runa.gpd.lang.model.FormNode;
@@ -14,6 +13,7 @@ import ru.runa.gpd.ui.dialog.ChooseFormTypeDialog;
 import ru.runa.gpd.util.IOUtils;
 
 public class CreateFormDelegate extends FormDelegate {
+
     @Override
     public void run(IAction action) {
         try {
@@ -39,5 +39,4 @@ public class CreateFormDelegate extends FormDelegate {
             throw new RuntimeException(e);
         }
     }
-
 }
