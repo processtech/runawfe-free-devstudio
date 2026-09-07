@@ -81,6 +81,9 @@ public class VariableWizard extends Wizard {
             variable.setDefaultValue(defaultValue == null || defaultValue.isEmpty() ? null : defaultValue);
             variable.setDescription(description);
             variable.setStoreType(storeTypePage.getStoreType());
+            if (namePage != null) {
+                variable.setRedmineFieldName(namePage.getRedmineFieldName());
+            }
             return true;
         }
     }

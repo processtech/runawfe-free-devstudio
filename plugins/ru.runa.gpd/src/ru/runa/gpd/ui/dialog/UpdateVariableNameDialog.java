@@ -17,6 +17,8 @@ import org.eclipse.swt.widgets.Text;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableContainer;
+import ru.runa.gpd.lang.model.VariableStorageKind;
+import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.gpd.ui.custom.VariableNameChecker;
 import ru.runa.gpd.util.VariableUtils;
 
@@ -25,20 +27,33 @@ import com.google.common.base.Strings;
 public class UpdateVariableNameDialog extends Dialog {
     private final VariableContainer variableContainer;
     private final Variable variable;
+    private final boolean isRename;
     private Text scriptingNameField;
     private String scriptingName;
     private String name;
+    private String redmineFieldName;
 
     public UpdateVariableNameDialog(VariableContainer variableContainer, Variable variable) {
+        this(variableContainer, variable, false);
+    }
+
+    public UpdateVariableNameDialog(VariableContainer variableContainer, Variable variable, boolean isRename) {
         super(Display.getDefault().getActiveShell());
         this.variableContainer = variableContainer;
         this.variable = variable;
+        this.isRename = isRename;
         this.name = variable.getName();
+        this.redmineFieldName = variable.getRedmineFieldName();
         if (variable.getScriptingName() != null) {
             this.scriptingName = variable.getScriptingName();
         } else {
             this.scriptingName = VariableUtils.generateNameForScripting(variableContainer, name, variable);
         }
+    }
+
+    private boolean isRedmineAttribute() {
+        return variableContainer instanceof VariableUserType
+                && ((VariableUserType) variableContainer).getReferenceStorage() == VariableStorageKind.REDMINE;
     }
 
     public UpdateVariableNameDialog(Variable variable) {
@@ -93,6 +108,23 @@ public class UpdateVariableNameDialog extends Dialog {
         scriptingNameField.setEditable(false);
         scriptingNameField.setText(scriptingName);
 
+        if (isRedmineAttribute()) {
+            Label redmineLabel = new Label(composite, SWT.NONE);
+            redmineLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            redmineLabel.setText(Localization.getString("Variable.property.redmineFieldName") + ":");
+
+            final Text redmineField = new Text(composite, SWT.BORDER);
+            redmineField.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            if (redmineFieldName != null) {
+                redmineField.setText(redmineFieldName);
+            }
+            redmineField.setMessage(variable.getName());
+            redmineField.addModifyListener(ev -> {
+                redmineFieldName = redmineField.getText();
+                updateButtons();
+            });
+        }
+
         Text saveAllEditorsLabel = new Text(composite, SWT.MULTI | SWT.READ_ONLY);
         GridData gridData = new GridData(GridData.GRAB_HORIZONTAL);
         gridData.horizontalSpan = 2;
@@ -110,9 +142,15 @@ public class UpdateVariableNameDialog extends Dialog {
     }
 
     private void updateButtons() {
-        boolean allowCreation = !Strings.isNullOrEmpty(name)
-                && !VariableUtils.getVariableNames(variableContainer.getVariables(false, true)).contains(name) && VariableNameChecker.isValid(name);
-        getButton(IDialogConstants.OK_ID).setEnabled(allowCreation);
+        boolean nameValid = !Strings.isNullOrEmpty(name) && VariableNameChecker.isValid(name);
+        boolean nameIsDuplicate = VariableUtils.getVariableNames(variableContainer.getVariables(false, true)).contains(name);
+        boolean nameUnchanged = name.equals(variable.getName());
+        boolean allowRename = nameValid && !nameIsDuplicate;
+        boolean redmineChanged = isRedmineAttribute() && !java.util.Objects.equals(
+                Strings.nullToEmpty(redmineFieldName).trim(),
+                Strings.nullToEmpty(variable.getRedmineFieldName()).trim());
+        boolean allowRedmineOnly = isRename && isRedmineAttribute() && nameValid && nameUnchanged && redmineChanged;
+        getButton(IDialogConstants.OK_ID).setEnabled(allowRename || allowRedmineOnly);
     }
 
     @Override
@@ -127,6 +165,10 @@ public class UpdateVariableNameDialog extends Dialog {
 
     public String getScriptingName() {
         return scriptingName;
+    }
+
+    public String getRedmineFieldName() {
+        return redmineFieldName == null || redmineFieldName.trim().isEmpty() ? null : redmineFieldName.trim();
     }
 
 }

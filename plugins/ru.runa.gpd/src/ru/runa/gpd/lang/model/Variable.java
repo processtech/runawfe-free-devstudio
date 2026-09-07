@@ -2,6 +2,7 @@ package ru.runa.gpd.lang.model;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
+import com.google.common.base.Strings;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -32,6 +33,7 @@ public class Variable extends NamedGraphElement implements Describable {
     private VariableUserType userType;
     private VariableStoreType storeType = VariableStoreType.DEFAULT;
     private boolean global;
+    private String redmineFieldName;
 
     public Variable() {
     }
@@ -49,6 +51,7 @@ public class Variable extends NamedGraphElement implements Describable {
         setEditableInChat(variable.isEditableInChat());
         setDefaultValue(variable.getDefaultValue());
         setStoreType(variable.getStoreType());
+        setRedmineFieldName(variable.getRedmineFieldName());
     }
 
     public Variable(String name, String scriptingName, Variable variable) {
@@ -57,6 +60,7 @@ public class Variable extends NamedGraphElement implements Describable {
         setEditableInChat(variable.isEditableInChat());
         setDefaultValue(variable.getDefaultValue());
         setStoreType(variable.getStoreType());
+        setRedmineFieldName(variable.getRedmineFieldName());
     }
 
     public VariableUserType getUserType() {
@@ -190,6 +194,20 @@ public class Variable extends NamedGraphElement implements Describable {
         firePropertyChange(PROPERTY_STORE_TYPE, old, this.storeType);
     }
 
+    public String getRedmineFieldName() {
+        return redmineFieldName;
+    }
+
+    public String getEffectiveRedmineFieldName() {
+        return Strings.isNullOrEmpty(redmineFieldName) ? getName() : redmineFieldName;
+    }
+
+    public void setRedmineFieldName(String redmineFieldName) {
+        String old = this.redmineFieldName;
+        this.redmineFieldName = Strings.isNullOrEmpty(redmineFieldName) ? null : redmineFieldName;
+        firePropertyChange(PROPERTY_REDMINE_FIELD_NAME, old, this.redmineFieldName);
+    }
+
     @Override
     public void populateCustomPropertyDescriptors(List<IPropertyDescriptor> descriptors) {
         super.populateCustomPropertyDescriptors(descriptors);
@@ -258,6 +276,7 @@ public class Variable extends NamedGraphElement implements Describable {
         copyVariable.setEditableInChat(isEditableInChat());
         copyVariable.setStoreType(getStoreType());
         copyVariable.setGlobal(isGlobal());
+        copyVariable.setRedmineFieldName(getRedmineFieldName());
     }
 
     public boolean isGlobal() {
