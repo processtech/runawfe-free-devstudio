@@ -75,7 +75,10 @@ public class AiBpmnExecutor extends Thread {
         }
         String response = api.sendRequest();
         PluginLogger.logInfo("response " + response);
-        return OBJECT_MAPPER.readTree(response);
+        int start = response.indexOf('{');
+        int end = response.lastIndexOf('}');
+        String json = response.substring(start, end + 1);
+        return OBJECT_MAPPER.readTree(json);
     }
 
     private BpmnResult getBpmnFromCommands(JsonNode commandsObject) throws Exception {
