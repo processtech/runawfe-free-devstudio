@@ -18,6 +18,12 @@ public class VersionSplashHandler extends EclipseSplashHandler {
     @Override
     public void init(final Shell splash) {
         super.init(splash);
+        // TODO temporary workaround for the flipped splash image on macOS 14 (Sonoma):
+        // https://github.com/eclipse-platform/eclipse.platform.swt/issues/772
+        // Eclipse 4.30+ already contains this fix in Workbench:
+        // https://github.com/eclipse-platform/eclipse.platform.ui/pull/1355
+        // After migrating to Eclipse 4.30+ remove this call and flipBackgroundImageForMacSonomaBug(),
+        // otherwise the image will be flipped twice.
         flipBackgroundImageForMacSonomaBug(splash);
         getContent().addPaintListener(new PaintListener() {
 
@@ -39,6 +45,8 @@ public class VersionSplashHandler extends EclipseSplashHandler {
         } catch (RuntimeException e) {
             return;
         }
+        // fixed by Apple in macOS 15, so Eclipse limited its check to 14 as well:
+        // https://github.com/eclipse-platform/eclipse.platform.ui/pull/2170
         if (majorVersion != 14) {
             return;
         }
