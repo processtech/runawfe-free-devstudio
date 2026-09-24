@@ -21,7 +21,6 @@ import ru.runa.gpd.settings.PrefConstants;
 
 public class ScriptTask extends Node implements Delegable, IBoundaryEventContainer, ConnectableViaDottedTransition, StorageAware {
     public static final String INTERNAL_STORAGE_HANDLER_CLASS_NAME = "ru.runa.wfe.office.storage.handler.InternalStorageHandler";
-    private static final String PROPERTY_DELEGABLE_EDIT_HANDLER = "delegableEditHandler";
 
     private boolean isUseExternalStorageOut = false;
     private boolean isUseExternalStorageIn = false;
@@ -152,9 +151,9 @@ public class ScriptTask extends Node implements Delegable, IBoundaryEventContain
     public List<NamedGraphElement> getDottedTransitionTarget() {
         List<NamedGraphElement> result = new ArrayList<>();
         for (DottedTransition transition : getLeavingDottedTransitions()) {
-                result.add(transition.getTarget());
-            }
-            return result;
+            result.add(transition.getTarget());
+        }
+        return result;
     }
 
     public List<NamedGraphElement> getDottedTransitionSource() {

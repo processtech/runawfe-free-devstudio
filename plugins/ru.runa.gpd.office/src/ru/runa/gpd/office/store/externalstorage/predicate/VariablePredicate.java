@@ -3,9 +3,10 @@ package ru.runa.gpd.office.store.externalstorage.predicate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import ru.runa.gpd.lang.model.DataFieldVariable;
 import ru.runa.gpd.lang.model.Variable;
 
-class VariablePredicate extends ConstraintsPredicate<Variable, Variable> {
+public class VariablePredicate extends ConstraintsPredicate<Variable, Variable> {
     static final VariablePredicate EMPTY = new VariablePredicate();
 
     public VariablePredicate() {
@@ -34,7 +35,7 @@ class VariablePredicate extends ConstraintsPredicate<Variable, Variable> {
         for (int i = 0; i < brackets[0]; i++) {
             builder.append("(");
         }
-        if(builder.length() > 0) {
+        if (builder.length() > 0) {
             builder.append(' ');
         }
         if (left != null) {
@@ -48,8 +49,19 @@ class VariablePredicate extends ConstraintsPredicate<Variable, Variable> {
             builder.append(' ');
         }
         if (right != null) {
-            builder.append('@');
-            builder.append(right.getScriptingName());
+            if (right instanceof DataFieldVariable) {
+                DataFieldVariable field = (DataFieldVariable) right;
+                builder.append('[');
+                builder.append(field.getTableName());
+                builder.append(']');
+                builder.append('.');
+                builder.append('[');
+                builder.append(field.getFieldScriptName());
+                builder.append(']');
+            } else {
+                builder.append('@');
+                builder.append(right.getScriptingName());
+            }
             builder.append(' ');
         }
         for (int i = 0; i < brackets[1]; i++) {

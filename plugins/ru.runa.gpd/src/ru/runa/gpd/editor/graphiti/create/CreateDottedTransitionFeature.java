@@ -10,10 +10,15 @@ import ru.runa.gpd.Localization;
 import ru.runa.gpd.editor.graphiti.update.DeleteElementFeature;
 import ru.runa.gpd.lang.model.AbstractTransition;
 import ru.runa.gpd.lang.model.Node;
+import ru.runa.gpd.lang.model.StartState;
 import ru.runa.gpd.lang.model.bpmn.ConnectableViaDottedTransition;
+import ru.runa.gpd.lang.model.bpmn.DataStore;
 import ru.runa.gpd.lang.model.bpmn.DottedTransition;
+import ru.runa.gpd.lang.model.bpmn.StartEventType;
 
 public class CreateDottedTransitionFeature extends CreateAbstractTransitionFeature {
+
+    private Enum<?> oldEventType;
 
     public CreateDottedTransitionFeature() {
         super(DottedTransition.class);
@@ -33,6 +38,9 @@ public class CreateDottedTransitionFeature extends CreateAbstractTransitionFeatu
     public Connection create(ICreateConnectionContext context) {
         final Node source = (Node) getBusinessObjectForPictogramElement(context.getSourcePictogramElement());
         final Node target = (Node) getBusinessObjectForPictogramElement(context.getTargetPictogramElement());
+        if (target instanceof StartState && source instanceof DataStore) {
+            oldEventType = ((StartState) target).getEventType();
+        }
         // create new business object
         DottedTransition newTransition = transitionDefinition.createElement(source, false);
         newTransition.setName(source.getNextTransitionName(transitionDefinition));
@@ -68,6 +76,10 @@ public class CreateDottedTransitionFeature extends CreateAbstractTransitionFeatu
         if (transition != null) {
             DeleteElementFeature.removeDottedTransition(transition);
             transition.getParent().removeChild(transition);
+            Node target = transition.getTarget();
+            if (target instanceof StartState && oldEventType instanceof StartEventType) {
+                ((StartState) target).setEventType((StartEventType) oldEventType);
+            }
         }
         // Для Redo
         context.putProperty(CreateElementFeature.CONNECTION_PROPERTY, transition);

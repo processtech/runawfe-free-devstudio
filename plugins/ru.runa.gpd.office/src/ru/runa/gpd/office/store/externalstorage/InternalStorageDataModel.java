@@ -48,29 +48,17 @@ public class InternalStorageDataModel extends DataModel {
         return model;
     }
 
-    @SuppressWarnings("unchecked")
     public static InternalStorageDataModel fromXml(String xml) {
         final Document document = XmlUtil.parseWithoutValidation(xml);
 
-        final List<StorageConstraintsModel> constraints = (List<StorageConstraintsModel>) document.getRootElement().elements("binding").stream()
-                .map(element -> StorageConstraintsModel.deserialize((Element) element)).collect(Collectors.toList());
-
-        Preconditions.checkState(constraints.size() == 1, "Expected constraints.size() == 1, actual " + constraints.size());
+        final List<StorageConstraintsModel> constraints = deserializeConstraints(document, 1);
 
         final StorageConstraintsModel constraintsModel = Iterables.getOnlyElement(constraints);
-        final FilesSupplierMode mode = constraintsModel.getQueryType().equals(QueryType.SELECT) ? FilesSupplierMode.BOTH : FilesSupplierMode.IN;
+        final FilesSupplierMode mode = constraintsModel.getQueryType() == QueryType.SELECT ? FilesSupplierMode.BOTH : FilesSupplierMode.IN;
 
-        final ExternalStorageHandlerInputOutputModel inOutModel = ExternalStorageHandlerInputOutputModel.deserialize(
-                mode.isInSupported() ? document.getRootElement().element("input") : null,
-                mode.isOutSupported() ? document.getRootElement().element("output") : null);
-
-        final InternalStorageDataModel model = new InternalStorageDataModel(mode, inOutModel);
+        final InternalStorageDataModel model = new InternalStorageDataModel(mode, deserializeInOutModel(document, mode));
         model.constraints.addAll(constraints);
         return model;
-    }
-
-    public void setMode(FilesSupplierMode mode) {
-        this.mode = mode;
     }
 
     @Override
@@ -81,20 +69,38 @@ public class InternalStorageDataModel extends DataModel {
         }
 
         final StorageConstraintsModel constraintsModel = Iterables.getOnlyElement(constraints);
+        final VariableProvider variableProvider = new ProcessDefinitionVariableProvider(graphElement.getProcessDefinition());
+
+        validateConstraints(graphElement, constraintsModel, variableProvider, errors);
+    }
+
+    @SuppressWarnings("unchecked")
+    protected static List<StorageConstraintsModel> deserializeConstraints(Document document, int expectedCount) {
+        final List<StorageConstraintsModel> constraints = (List<StorageConstraintsModel>) document.getRootElement().elements("binding").stream()
+                .map(element -> StorageConstraintsModel.deserialize((Element) element)).collect(Collectors.toList());
+
+        Preconditions.checkState(constraints.size() == expectedCount,
+                "Expected constraints.size() == " + expectedCount + ", actual " + constraints.size());
+
+        return constraints;
+    }
+
+    protected static ExternalStorageHandlerInputOutputModel deserializeInOutModel(Document document, FilesSupplierMode mode) {
+        return ExternalStorageHandlerInputOutputModel.deserialize(
+                mode.isInSupported() ? document.getRootElement().element("input") : null,
+                mode.isOutSupported() ? document.getRootElement().element("output") : null);
+    }
+
+    protected void validateConstraints(
+            GraphElement graphElement,
+            StorageConstraintsModel constraintsModel,
+            VariableProvider variableProvider,
+            List<ValidationError> errors) {
+
         if (constraintsModel.getQueryType() == QueryType.INSERT || constraintsModel.getQueryType() == QueryType.UPDATE) {
             super.validate(graphElement, errors);
             if (!errors.isEmpty()) {
                 return;
-            }
-            if (constraintsModel.getQueryType() == QueryType.UPDATE) {
-                final String variableName = constraintsModel.getVariableName();
-                final Optional<Variable> selected = graphElement.getProcessDefinition().getVariables(true, false).stream()
-                        .filter(variable -> Objects.equal(variableName, variable.getName())).findAny();
-                if (selected.isPresent() && !selected.get().isComplex()) {
-                    errors.add(ValidationError.createError(graphElement,
-                            MessageFormat.format(Messages.getString("model.validation.storage.update.listVariable"), variableName)));
-                    return;
-                }
             }
         } else {
             inOutModel.validate(graphElement, mode, errors);
@@ -105,7 +111,18 @@ public class InternalStorageDataModel extends DataModel {
             return;
         }
 
-        final VariableProvider variableProvider = new ProcessDefinitionVariableProvider(graphElement.getProcessDefinition());
+        if (constraintsModel.getQueryType() == QueryType.UPDATE) {
+            final String variableName = constraintsModel.getVariableName();
+            if (variableName != null && !variableName.isEmpty()) {
+                final Optional<Variable> updateVariable = variableProvider.variableByName(variableName);
+                if (updateVariable.isPresent() && !updateVariable.get().isComplex()) {
+                    errors.add(ValidationError.createError(graphElement,
+                            MessageFormat.format(Messages.getString("model.validation.storage.update.listVariableWithCondition"), variableName)));
+                    return;
+                }
+            }
+        }
+
         final ConstraintsPredicate<?, ?> parsed = new PredicateParser(queryString, variableProvider.getUserType(constraintsModel.sheetName),
                 variableProvider).parse();
 
@@ -138,7 +155,7 @@ public class InternalStorageDataModel extends DataModel {
         }
     }
 
-    private void validateVariableHasDefaultValue(GraphElement graphElement, List<ValidationError> errors, String variableName) {
+    protected void validateVariableHasDefaultValue(GraphElement graphElement, List<ValidationError> errors, String variableName) {
         final Optional<Variable> searchResult = graphElement.getProcessDefinition().getVariables(true, false).stream()
                 .filter(variable -> Objects.equal(variableName, variable.getName())).findAny();
         if (searchResult.isPresent() && searchResult.get().getDefaultValue() == null) {

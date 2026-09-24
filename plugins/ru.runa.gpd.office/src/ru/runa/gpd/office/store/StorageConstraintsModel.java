@@ -2,6 +2,7 @@ package ru.runa.gpd.office.store;
 
 import org.dom4j.Document;
 import org.dom4j.Element;
+import ru.runa.gpd.office.store.externalstorage.QueryRole;
 import ru.runa.gpd.util.BackCompatibilityUtils;
 
 public class StorageConstraintsModel {
@@ -20,11 +21,18 @@ public class StorageConstraintsModel {
     public int row = 1;
     public int column = 1;
     private QueryType queryType;
+    private QueryRole queryRole;
     private String queryString;
 
     public StorageConstraintsModel(int type, QueryType queryType) {
         this.type = type;
         this.queryType = queryType;
+    }
+
+    public StorageConstraintsModel(int type, QueryType queryType, QueryRole queryRole) {
+        this.type = type;
+        this.queryType = queryType;
+        this.queryRole = queryRole;
     }
 
     public String getSheetName() {
@@ -83,6 +91,14 @@ public class StorageConstraintsModel {
         return queryString;
     }
 
+    public QueryRole getQueryRole() {
+        return queryRole;
+    }
+
+    public void setQueryRole(QueryRole queryRole) {
+        this.queryRole = queryRole;
+    }
+
     public void setQueryString(String queryString) {
         this.queryString = queryString;
     }
@@ -99,17 +115,22 @@ public class StorageConstraintsModel {
         }
         Element conditions = element.element("conditions");
         QueryType queryType = null;
+        QueryRole queryRole = null;
         if (conditions != null) {
             queryType = QueryType.valueOf(conditions.attributeValue("type"));
+            String role = conditions.attributeValue("role");
+            if (role != null) {
+                queryRole = QueryRole.valueOf(role);
+            }
         }
         if (ATTR_CLASS.equals(className)) {
-            model = new StorageConstraintsModel(ATTR, queryType);
+            model = new StorageConstraintsModel(ATTR, queryType, queryRole);
         } else if (CELL_CLASS.equals(className)) {
-            model = new StorageConstraintsModel(CELL, queryType);
+            model = new StorageConstraintsModel(CELL, queryType, queryRole);
         } else if (ROW_CLASS.equals(className)) {
-            model = new StorageConstraintsModel(ROW, queryType);
+            model = new StorageConstraintsModel(ROW, queryType, queryRole);
         } else if (COLUMN_CLASS.equals(className)) {
-            model = new StorageConstraintsModel(COLUMN, queryType);
+            model = new StorageConstraintsModel(COLUMN, queryType, queryRole);
         } else {
             throw new RuntimeException("Invaid class '" + className + "'");
         }
@@ -172,5 +193,8 @@ public class StorageConstraintsModel {
         conditionEl.addAttribute("query", getQueryString());
         Element conditions = binding.addElement("conditions");
         conditions.addAttribute("type", getQueryType().toString());
+        if (getQueryRole() != null) {
+            conditions.addAttribute("role", getQueryRole().toString());
+        }
     }
 }

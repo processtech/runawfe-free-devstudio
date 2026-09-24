@@ -221,6 +221,9 @@ public class BpmnSerializer extends ProcessSerializer {
                     if (!Strings.isNullOrEmpty(startState.getTimerEventDefinition())) {
                         element.addElement(TIMER_EVENT_DEFINITION).addElement(timeElement(startState)).addText(startState.getTimerEventDefinition());
                     }
+                }else if (startState.isStartByCondition()) {
+                    writeDelegation(element, startState);
+                    writeVariables(element, startState.getVariableMappings());
                 } else {
                     List<VariableMapping> variableMappings = startState.getVariableMappings();
                     Map<String, Object> properties = Maps.newLinkedHashMap();
@@ -471,6 +474,9 @@ public class BpmnSerializer extends ProcessSerializer {
         eventElement.addAttribute(RUNA_PREFIX + ":" + TYPE, eventNode.getEventNodeType().name());
         if (eventNode instanceof ISendMessageNode) {
             eventElement.addAttribute(RUNA_PREFIX + ":" + TIME_DURATION, eventNode.getTtlDuration().getDuration());
+        }
+        if (eventNode.isDelegable()) {
+            writeDelegation(eventElement, (Delegable) eventNode);
         }
         writeVariables(eventElement, eventNode.getVariableMappings());
         writeNodeAsyncExecution(eventElement, eventNode);

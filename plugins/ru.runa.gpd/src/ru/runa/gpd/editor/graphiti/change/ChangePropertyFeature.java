@@ -46,7 +46,7 @@ public abstract class ChangePropertyFeature<T, V> extends AbstractCustomFeature 
         return fp;
     }
 
-    void setFeatureProvider(IFeatureProvider fp) {
+    public void setFeatureProvider(IFeatureProvider fp) {
         this.fp = fp;
     }
 

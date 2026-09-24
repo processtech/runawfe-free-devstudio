@@ -38,46 +38,68 @@ public class PredicateParser {
 
             if (token.startsWith("[") && token.endsWith("]")) {
                 token = token.replace(UNICODE_CHARACTER_OVERLINE, ' ');
-                final String userTypeFieldName = token.substring(1, token.length() - 1);
-                final Variable userTypeField = getUserTypeFieldByName(userTypeFieldName)
-                        .orElseThrow(() -> new VariableDoesNotExistException(userTypeFieldName));
 
-                if (result != null && result instanceof VariablePredicate) {
-                    ((VariablePredicate) result).setLeft(userTypeField);
-                } else if (result != null && result instanceof ExpressionPredicate) {
-                    VariablePredicate right = ((ExpressionPredicate<?>) result).getRight();
-                    if (right != null) {
-                        right.setLeft(userTypeField);
-                    } else {
-                        right = new VariablePredicate(userTypeField, null, null);
-                        ((ExpressionPredicate<?>) result).setRight(right);
-                        right.setParent(result);
-                        right.setBrackets(brackets);
-                    }
-                } else {
-                    result = new VariablePredicate(userTypeField, null, null);
-                }
-            } else if (PredicateOperationType.codes().contains(token.toLowerCase())) {
-                PredicateOperationType type = PredicateOperationType.byCode(token.toLowerCase()).get();
-                if (PredicateOperationType.AND.equals(type) || PredicateOperationType.OR.equals(type)) {
+                String[] parts = token.split("\\.");
+                if (parts.length == 2) {
+                    final String userTypeTableFieldName = parts[0].substring(1, parts[0].length() - 1)
+                            + "."
+                            + parts[1].substring(1, parts[1].length() - 1);
+
+                    final Variable comparingWithVariable = variableProvider.variableByName(userTypeTableFieldName)
+                            .orElseThrow(() -> new VariableDoesNotExistException(userTypeTableFieldName));
+
                     if (result instanceof VariablePredicate) {
-                        result = new ExpressionPredicate<VariablePredicate>((VariablePredicate) result, type, null);
+                        ((VariablePredicate) result).setRight(comparingWithVariable);
+                    } else if (result instanceof ExpressionPredicate) {
+                        ((ExpressionPredicate<?>) result).getRight().setRight(comparingWithVariable);
+                    }
+
+                    endExpressionLine = true;
+                } else {
+                    final String userTypeFieldName = token.substring(1, token.length() - 1);
+                    final Variable userTypeField = getUserTypeFieldByName(userTypeFieldName) // поле пользователького типа
+                            .orElseThrow(() -> new VariableDoesNotExistException(userTypeFieldName));
+
+                    if (result != null && result instanceof VariablePredicate) {
+                        ((VariablePredicate) result).setLeft(userTypeField);
+                    } else if (result != null && result instanceof ExpressionPredicate) {
+                        VariablePredicate right = ((ExpressionPredicate<?>) result).getRight();
+                        if (right != null) {
+                            right.setLeft(userTypeField);
+                        } else {
+                            right = new VariablePredicate(userTypeField, null, null);
+                            ((ExpressionPredicate<?>) result).setRight(right);
+                            right.setParent(result);
+                            right.setBrackets(brackets);
+                        }
                     } else {
+                        result = new VariablePredicate(userTypeField, null, null); // узел дерева - операция, в которой участвует это поле
+                        // пользователького типа. Ее левый потомок - это userTypeField - поле пользователького типа
+                    }
+                }
+            } else if (PredicateOperationType.codes().contains(token.toLowerCase())) { // если токен обозначает операцию
+                PredicateOperationType type = PredicateOperationType.byCode(token.toLowerCase()).get();
+                if (PredicateOperationType.AND.equals(type) || PredicateOperationType.OR.equals(type)) { // если логическая операция
+                    if (result instanceof VariablePredicate) { // создаем узел дерева для операции; то, что было слева, становится левым потомком
+                        result = new ExpressionPredicate<VariablePredicate>((VariablePredicate) result, type, null);
+                    } else { // то же самое, но если слева было сложное выражение
                         result = new ExpressionPredicate<ExpressionPredicate<?>>((ExpressionPredicate<?>) result, type, null);
                     }
-                    ((ConstraintsPredicate<?, ?>) result.getLeft()).setParent(result);
+                    if (result.getLeft() != null) {
+                        ((ConstraintsPredicate<?, ?>) result.getLeft()).setParent(result);
+                    }
                     brackets = new int[2];
                 } else if (result != null && result instanceof ExpressionPredicate) {
                     final VariablePredicate right = ((ExpressionPredicate<?>) result).getRight();
                     right.setType(type);
-                } else if (result != null && result instanceof VariablePredicate) {
-                    ((VariablePredicate) result).setType(type);
+                } else if (result != null && result instanceof VariablePredicate) { // для операции уже был сделан узел с заданным левым потомком
+                    ((VariablePredicate) result).setType(type); // теперь устанавливается тип операции
                 }
-            } else if (token.startsWith("@")) {
+            } else if (token.startsWith("@")) { // если токен - переменная
                 final String variableName = token.substring(1);
                 final Variable comparingWithVariable = variableProvider.variableByScriptingName(variableName)
                         .orElseThrow(() -> new VariableDoesNotExistException(variableName));
-                if (result != null && result instanceof VariablePredicate) {
+                if (result != null && result instanceof VariablePredicate) {// result - узел операции, в которой участвует эта переменная
                     ((VariablePredicate) result).setRight(comparingWithVariable);
                 } else if (result != null && result instanceof ExpressionPredicate) {
                     final VariablePredicate right = ((ExpressionPredicate<?>) result).getRight();
@@ -91,21 +113,17 @@ public class PredicateParser {
 
     public String trimBrackets(String str, int[] brackets) {
         while (str.charAt(0) == '(') {
-            if (str.charAt(0) == '(') {
-                brackets[0]++;
-                str = str.substring(1);
-            }
-            if (str.length() == 0 || str.charAt(0) != '(') {
+            brackets[0]++;
+            str = str.substring(1);
+            if (str.length() == 0) {
                 break;
             }
         }
         if (str.length() != 0) {
             while (str.charAt(str.length() - 1) == ')') {
-                if (str.charAt(str.length() - 1) == ')') {
-                    brackets[1]++;
-                    str = str.substring(0, str.length() - 1);
-                }
-                if (str.length() == 0 || str.charAt(str.length() - 1) != ')') {
+                brackets[1]++;
+                str = str.substring(0, str.length() - 1);
+                if (str.length() == 0) {
                     break;
                 }
             }

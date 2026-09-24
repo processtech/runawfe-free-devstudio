@@ -1,8 +1,5 @@
 package ru.runa.gpd.extension.decision;
 
-import com.google.common.collect.Lists;
-import groovy.lang.Binding;
-import groovy.lang.GroovyShell;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -10,19 +7,16 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.eclipse.jface.window.Window;
-import ru.runa.gpd.extension.DelegableProvider;
+import ru.runa.gpd.extension.GroovyBasedProvider;
 import ru.runa.gpd.extension.HandlerArtifact;
-import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.Decision;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.Transition;
-import ru.runa.gpd.lang.model.Variable;
-import ru.runa.gpd.search.VariableSearchVisitor;
 import ru.runa.gpd.ui.enhancement.DialogEnhancementMode;
 
-public class GroovyDecisionProvider extends DelegableProvider implements IDecisionProvider {
+public class GroovyDecisionProvider extends GroovyBasedProvider implements IDecisionProvider {
     @Override
     public String showConfigurationDialog(Delegable delegable, DialogEnhancementMode dialogEnhancementMode) {
         if (!HandlerArtifact.DECISION.equals(delegable.getDelegationType())) {
@@ -39,19 +33,6 @@ public class GroovyDecisionProvider extends DelegableProvider implements IDecisi
             return dialog.getResult();
         }
         return null;
-    }
-
-    @Override
-    public boolean validateValue(Delegable delegable, List<ValidationError> errors) {
-        String configuration = delegable.getDelegationConfiguration();
-        if (configuration.trim().length() == 0) {
-            errors.add(ValidationError.createLocalizedError((GraphElement) delegable, "delegable.invalidConfiguration.empty"));
-        } else {
-            Binding binding = new Binding();
-            GroovyShell shell = new GroovyShell(binding);
-            shell.parse(configuration);
-        }
-        return true;
     }
 
     @Override
@@ -78,25 +59,4 @@ public class GroovyDecisionProvider extends DelegableProvider implements IDecisi
         conf = conf.replaceAll(Pattern.quote("\"" + oldName + "\""), Matcher.quoteReplacement("\"" + newName + "\""));
         decision.setDelegationConfiguration(conf);
     }
-
-    @Override
-    public List<String> getUsedVariableNames(Delegable delegable) throws Exception {
-        List<Variable> variables = ((GraphElement) delegable).getProcessDefinition().getVariables(true, true);
-        List<String> result = Lists.newArrayList();
-        String configuration = "(" + delegable.getDelegationConfiguration() + ")";
-        for (Variable variable : variables) {
-            String variableName = String.format(VariableSearchVisitor.REGEX_SCRIPT_VARIABLE, variable.getScriptingName());
-            if (Pattern.compile(variableName).matcher(configuration).find()) {
-                result.add(variable.getName());
-            }
-        }
-        return result;
-    }
-
-    @Override
-    public String getConfigurationOnVariableRename(Delegable delegable, Variable currentVariable, Variable previewVariable) {
-        return delegable.getDelegationConfiguration().replaceAll(Pattern.quote(currentVariable.getScriptingName()),
-                Matcher.quoteReplacement(previewVariable.getScriptingName()));
-    }
-
 }
