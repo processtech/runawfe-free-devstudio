@@ -34,6 +34,7 @@ import ru.runa.gpd.lang.model.BotTaskType;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.GraphElement;
+import ru.runa.gpd.lang.model.GraphElementAware;
 import ru.runa.gpd.lang.model.ITimed;
 import ru.runa.gpd.lang.model.MessageNode;
 import ru.runa.gpd.lang.model.MultiTaskState;
@@ -47,9 +48,12 @@ import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Timer;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.bpmn.BusinessRule;
+import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
 import ru.runa.gpd.lang.model.bpmn.ExclusiveGateway;
 import ru.runa.gpd.lang.model.bpmn.ScriptTask;
 import ru.runa.gpd.lang.par.ParContentProvider;
+import ru.runa.gpd.ui.enhancement.ConditionalEventExpressionDelegableAdapter;
+import ru.runa.gpd.ui.enhancement.ConditionalEventStorageDelegableAdapter;
 import ru.runa.gpd.util.IOUtils;
 import ru.runa.gpd.util.VariableMapping;
 import ru.runa.gpd.util.VariableUtils;
@@ -107,7 +111,7 @@ public class VariableSearchVisitor {
                 while (!inner.isCanceled()) {
                     if (currentElement != null && currentElement instanceof NamedGraphElement) {
                         String name = ((NamedGraphElement) currentElement).getName();
-                        Object[] args = { name, numberOfScannedElements, numberOfElementsToScan };
+                        Object[] args = {name, numberOfScannedElements, numberOfElementsToScan};
                         progressMonitor.subTask(MessageFormat.format(SearchMessages.TextSearchVisitor_scanning, args));
                         int steps = numberOfScannedElements - lastNumberOfScannedElements;
                         progressMonitor.worked(steps);
@@ -158,7 +162,11 @@ public class VariableSearchVisitor {
                 processFormNode(definitionFile, (FormNode) graphElement);
             }
             if (graphElement instanceof Delegable) {
-                processDelegableNode(definitionFile, (Delegable) graphElement);
+                if (graphElement instanceof CatchEventNode) {
+                    processCatchEventDelegableNode(definitionFile, (CatchEventNode) graphElement);
+                } else {
+                    processDelegableNode(definitionFile, (Delegable) graphElement);
+                }
             }
             if (graphElement instanceof ITimed && searchTargets.contains(VariableSearchTarget.TIMER)) {
                 processTimedNode(definitionFile, (ITimed) graphElement);
@@ -212,7 +220,7 @@ public class VariableSearchVisitor {
     private boolean isNotPredefinedSearchTarget(Delegable delegable) {
         return !(delegable instanceof ScriptTask || delegable instanceof ExclusiveGateway || delegable instanceof Swimlane
                 || delegable instanceof BotTask || delegable instanceof BusinessRule);
-    };
+    }
 
     private void processDelegableNode(IFile definitionFile, Delegable delegable) throws Exception {
         if (delegable instanceof ScriptTask && searchTargets.contains(VariableSearchTarget.SCRIPT_TASK)
@@ -230,7 +238,9 @@ public class VariableSearchVisitor {
                 delegableMatcher = scriptMatcherByVariable;
             }
             String conf = delegable.getDelegationConfiguration();
-            ElementMatch elementMatch = new ElementMatch((GraphElement) delegable, definitionFile);
+            ElementMatch elementMatch = new ElementMatch(delegable instanceof GraphElementAware
+                    ? ((GraphElementAware) delegable).getGraphElement()
+                    : (GraphElement) delegable, definitionFile);
             List<Match> matches = findInString(elementMatch, "(" + conf + ")", delegableMatcher);
             elementMatch.setPotentialMatchesCount(matches.size());
             for (Match match : matches) {
@@ -244,6 +254,14 @@ public class VariableSearchVisitor {
                     query.getSearchResult().addMatch(match);
                 }
             }
+        }
+    }
+
+    private void processCatchEventDelegableNode(IFile definitionFile, CatchEventNode node) throws Exception {
+        if (CatchEventNode.CONDITIONAL_EXPRESSION_HANDLER.equals(node.getDelegationClassName())) {
+            processDelegableNode(definitionFile, new ConditionalEventExpressionDelegableAdapter(node));
+        } else if (CatchEventNode.CONDITIONAL_INTERNAL_STORAGE_HANDLER.equals(node.getDelegationClassName())) {
+            processDelegableNode(definitionFile, new ConditionalEventStorageDelegableAdapter(node));
         }
     }
 

@@ -53,13 +53,27 @@ public class DataModel extends Observable {
 
     @Override
     public String toString() {
+        Document document = toDocument();
+        return XmlUtil.toString(document);
+    }
+
+
+    public Document toDocument() {
         Document document = XmlUtil.createDocument("config");
         Element root = document.getRootElement();
         inOutModel.serialize(document, root, mode);
         for (StorageConstraintsModel model : constraints) {
             model.serialize(document, root);
         }
-        return XmlUtil.toString(document);
+        return document;
+    }
+
+    public FilesSupplierMode getMode() {
+        return this.mode;
+    }
+
+    public void setMode(FilesSupplierMode mode) {
+        this.mode = mode;
     }
 
     public void validate(GraphElement graphElement, List<ValidationError> errors) {

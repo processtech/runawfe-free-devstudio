@@ -472,6 +472,9 @@ public class BpmnSerializer extends ProcessSerializer {
         if (eventNode instanceof ISendMessageNode) {
             eventElement.addAttribute(RUNA_PREFIX + ":" + TIME_DURATION, eventNode.getTtlDuration().getDuration());
         }
+        if (eventNode.isDelegable()) {
+            writeDelegation(eventElement, (Delegable) eventNode);
+        }
         writeVariables(eventElement, eventNode.getVariableMappings());
         writeNodeAsyncExecution(eventElement, eventNode);
         writeTransitions(processElement, eventNode);

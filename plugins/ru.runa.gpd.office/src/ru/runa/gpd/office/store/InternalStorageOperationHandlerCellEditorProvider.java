@@ -149,16 +149,16 @@ public class InternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
         return result;
     }
 
-    private class ConstructorView extends ConstructorComposite {
+    protected class ConstructorView extends ConstructorComposite {
         private final VariableProvider variableProvider;
 
         private final boolean isUseExternalStorageIn;
         private final boolean isUseExternalStorageOut;
 
-        private StorageConstraintsModel constraintsModel;
+        protected StorageConstraintsModel constraintsModel;
         private VariableUserTypeInfo variableUserTypeInfo = new VariableUserTypeInfo(false, "");
 
-        private ConstraintsCompositeBuilder constraintsCompositeBuilder;
+        protected ConstraintsCompositeBuilder constraintsCompositeBuilder;
 
         public ConstructorView(Composite parent, Delegable delegable, InternalStorageDataModel model, VariableProvider variableProvider,
                 boolean isUseExternalStorageIn, boolean isUseExternalStorageOut) {
@@ -228,7 +228,7 @@ public class InternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
             this.redraw();
         }
 
-        private void initConstraintsModel() {
+        protected void initConstraintsModel() {
             if (constraintsModel != null && model.constraints.get(0) == constraintsModel) {
                 return;
             }
@@ -242,7 +242,7 @@ public class InternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
             }
         }
 
-        private void initConstraintsCompositeBuilder() {
+        protected void initConstraintsCompositeBuilder() {
             if (constraintsModel.getQueryType() != null) {
                 switch (constraintsModel.getQueryType()) {
                 case INSERT:
@@ -252,7 +252,7 @@ public class InternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
                 case SELECT:
                     constraintsCompositeBuilder = new PredicateCompositeDelegateBuilder(this, SWT.NONE, constraintsModel, variableProvider,
                             variableUserTypeInfo.getVariableTypeName(), new SelectConstraintsComposite(this, SWT.NONE, constraintsModel,
-                                    variableProvider, variableUserTypeInfo, model.getInOutModel()));
+                                    variableProvider, variableUserTypeInfo, model));
                     break;
                 case UPDATE:
                     constraintsCompositeBuilder = new PredicateCompositeDelegateBuilder(this, SWT.NONE, constraintsModel, variableProvider,
@@ -268,7 +268,7 @@ public class InternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
             }
         }
 
-        private void addDataTypeCombo() {
+        protected void addDataTypeCombo() {
             final Combo combo = new Combo(this, SWT.READ_ONLY);
             variableProvider.complexUserTypeNames().collect(Collectors.toSet()).forEach(combo::add);
             combo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
