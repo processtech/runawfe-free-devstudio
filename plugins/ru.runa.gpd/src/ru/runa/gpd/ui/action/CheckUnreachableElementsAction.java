@@ -1,8 +1,14 @@
 package ru.runa.gpd.ui.action;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Throwables;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.concurrent.CancellationException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.dialogs.ProgressMonitorDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -27,29 +33,16 @@ public class CheckUnreachableElementsAction extends BaseActionDelegate {
             IEditorInput editorInput = editorPart.getEditorInput();
             if (editorInput instanceof FileEditorInput) {
                 ProcessDefinition definition = ProcessCache.getProcessDefinition(((FileEditorInput) editorInput).getFile());
-                List<Transition> transitions = definition.getChildrenRecursive(Transition.class);
-                List<Node> nodes = definition.getChildren(Node.class);
-                if (new CheckUnlimitedTokenAlgorithm(transitions, nodes).startAlgorithm() != null) {
-                    Dialogs.warning(Localization.getString("CheckingUnreachableElementsAction.UnlimitedTokens.Message"));
+                CheckOperation operation = new CheckOperation(definition);
+                try {
+                    new ProgressMonitorDialog(window.getShell()).run(true, true, operation);
+                } catch (InvocationTargetException e) {
+                    Throwables.throwIfUnchecked(e.getTargetException());
+                    throw new RuntimeException(e.getTargetException());
+                } catch (InterruptedException e) {
                     return;
                 }
-                ProcessGraphConverter converter = new ProcessGraphConverter(definition);
-                if (!converter.getUnsupportedNodes().isEmpty()) {
-                    Dialogs.warning(Localization.getString("CheckingUnreachableElementsAction.UnsupportedElements.Message",
-                            Joiner.on(", ").join(converter.getUnsupportedNodes())));
-                    return;
-                }
-                CheckUnreachableElementsAlgorithm algorithm = new CheckUnreachableElementsAlgorithm(converter.getGraph());
-                algorithm.startAlgorithm(() -> false);
-                if (!algorithm.isTokenCountBounded()) {
-                    Dialogs.warning(Localization.getString("CheckingUnreachableElementsAction.UnboundedStates.Message",
-                            algorithm.getUnboundedElement().toString()));
-                } else if (!algorithm.getUnreachableElements().isEmpty()) {
-                    Dialogs.warning(Localization.getString("CheckingUnreachableElementsAction.SituationExist.Message",
-                            Joiner.on(", ").join(algorithm.getUnreachableElements())));
-                } else {
-                    Dialogs.information(Localization.getString("CheckingUnreachableElementsAction.SituationNotExist.Message"));
-                }
+                showResult(operation);
             }
         }
     }
@@ -63,5 +56,58 @@ public class CheckUnreachableElementsAction extends BaseActionDelegate {
 
     private IEditorPart[] getDirtyEditors() {
         return window.getActivePage().getDirtyEditors();
+    }
+
+    private void showResult(CheckOperation operation) {
+        if (operation.unlimitedTokens) {
+            Dialogs.warning(Localization.getString("CheckingUnreachableElementsAction.UnlimitedTokens.Message"));
+        } else if (!operation.converter.getUnsupportedNodes().isEmpty()) {
+            Dialogs.warning(Localization.getString("CheckingUnreachableElementsAction.UnsupportedElements.Message",
+                    Joiner.on(", ").join(operation.converter.getUnsupportedNodes())));
+        } else if (!operation.algorithm.isTokenCountBounded()) {
+            Dialogs.warning(Localization.getString("CheckingUnreachableElementsAction.UnboundedStates.Message",
+                    operation.algorithm.getUnboundedElement().toString()));
+        } else if (!operation.algorithm.getUnreachableElements().isEmpty()) {
+            Dialogs.warning(Localization.getString("CheckingUnreachableElementsAction.SituationExist.Message",
+                    Joiner.on(", ").join(operation.algorithm.getUnreachableElements())));
+        } else {
+            Dialogs.information(Localization.getString("CheckingUnreachableElementsAction.SituationNotExist.Message"));
+        }
+    }
+
+    private static class CheckOperation implements IRunnableWithProgress {
+        private final ProcessDefinition definition;
+        private boolean unlimitedTokens;
+        private ProcessGraphConverter converter;
+        private CheckUnreachableElementsAlgorithm algorithm;
+
+        CheckOperation(ProcessDefinition definition) {
+            this.definition = definition;
+        }
+
+        @Override
+        public void run(IProgressMonitor monitor) throws InterruptedException {
+            monitor.beginTask(Localization.getString("task.CheckUnreachableElements"), IProgressMonitor.UNKNOWN);
+            try {
+                List<Transition> transitions = definition.getChildrenRecursive(Transition.class);
+                List<Node> nodes = definition.getChildren(Node.class);
+                unlimitedTokens = new CheckUnlimitedTokenAlgorithm(transitions, nodes).startAlgorithm() != null;
+                if (unlimitedTokens) {
+                    return;
+                }
+                if (monitor.isCanceled()) {
+                    throw new InterruptedException();
+                }
+                converter = new ProcessGraphConverter(definition);
+                if (converter.getUnsupportedNodes().isEmpty()) {
+                    algorithm = new CheckUnreachableElementsAlgorithm(converter.getGraph());
+                    algorithm.startAlgorithm(monitor::isCanceled);
+                }
+            } catch (CancellationException e) {
+                throw new InterruptedException();
+            } finally {
+                monitor.done();
+            }
+        }
     }
 }
