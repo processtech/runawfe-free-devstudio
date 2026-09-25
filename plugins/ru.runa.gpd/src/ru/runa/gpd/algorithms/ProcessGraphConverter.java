@@ -1,9 +1,12 @@
 package ru.runa.gpd.algorithms;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import ru.runa.gpd.algorithms.reachability.ElementType;
 import ru.runa.gpd.algorithms.reachability.ProcessGraph;
+import ru.runa.gpd.lang.model.EmbeddedSubprocess;
 import ru.runa.gpd.lang.model.EndState;
 import ru.runa.gpd.lang.model.EndTokenState;
 import ru.runa.gpd.lang.model.EventSubprocess;
@@ -11,6 +14,7 @@ import ru.runa.gpd.lang.model.Node;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.StartState;
 import ru.runa.gpd.lang.model.Subprocess;
+import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.model.Synchronizable;
 import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Timer;
@@ -29,12 +33,20 @@ public class ProcessGraphConverter {
     private final List<Node> unsupportedNodes = new ArrayList<>();
 
     public ProcessGraphConverter(ProcessDefinition definition) {
+        boolean repeatedStart = definition instanceof SubprocessDefinition && ((SubprocessDefinition) definition).isTriggeredByEvent();
         for (Node node : definition.getChildren(Node.class)) {
             if (node instanceof DataStore) {
                 continue;
             }
             if (node instanceof EventSubprocess) {
                 unsupportedNodes.addAll(getBoundaryEvents(node));
+                continue;
+            }
+            // tokens beyond the model: an event subprocess diagram starts again on each trigger,
+            // a graph part subprocess returns a token to the parent from each of its ends
+            if ((repeatedStart && node instanceof StartState)
+                    || (node instanceof Subprocess && canReturnSeveralTokens((Subprocess) node, new HashSet<>()))) {
+                unsupportedNodes.add(node);
                 continue;
             }
             ElementType type = getElementType(node);
@@ -104,6 +116,27 @@ public class ProcessGraphConverter {
 
     private static boolean isAsync(Node node) {
         return node instanceof Synchronizable && ((Synchronizable) node).isAsync();
+    }
+
+    private static boolean canReturnSeveralTokens(Subprocess subprocess, Set<String> visitedIds) {
+        SubprocessDefinition definition = subprocess.isEmbedded() ? subprocess.getEmbeddedSubprocess() : null;
+        if (definition == null || definition.getBehavior() != EmbeddedSubprocess.Behavior.GraphPart || !visitedIds.add(definition.getId())) {
+            return false;
+        }
+        for (Node node : definition.getChildren(Node.class)) {
+            if (node instanceof ParallelGateway && node.getLeavingTransitions().size() > 1) {
+                return true;
+            }
+            if (node instanceof Subprocess && canReturnSeveralTokens((Subprocess) node, visitedIds)) {
+                return true;
+            }
+            for (Node boundaryEvent : getBoundaryEvents(node)) {
+                if (!boundaryEvent.isInterruptingBoundaryEvent() && !boundaryEvent.getLeavingTransitions().isEmpty()) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private static List<Node> getBoundaryEvents(Node node) {
