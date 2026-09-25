@@ -57,7 +57,7 @@ public class CheckUnreachableElementsAlgorithm {
                 }
                 for (ProcessFlow flow : element.getLeavingFlows()) {
                     int[] counts = state.getCounts();
-                    counts[elementComponents.get(element)]--;
+                    removeToken(counts, element);
                     Set<ProcessElement> firedElements = new LinkedHashSet<>();
                     firedElements.add(element);
                     TokenState nextState = new TokenState(deliver(counts, flow, firedElements));
@@ -162,6 +162,25 @@ public class CheckUnreachableElementsAlgorithm {
 
     private void enter(int[] counts, ProcessElement element) {
         counts[elementComponents.get(element)]++;
+        for (ProcessElement boundaryEvent : element.getBoundaryEvents()) {
+            counts[elementComponents.get(boundaryEvent)]++;
+        }
+    }
+
+    // a boundary event token lives while the token of its host stays in the host
+    private void removeToken(int[] counts, ProcessElement element) {
+        int component = elementComponents.get(element);
+        counts[component]--;
+        if (element.isBoundaryEvent()) {
+            if (element.isInterrupting()) {
+                removeToken(counts, element.getHost());
+            }
+            return;
+        }
+        for (ProcessElement boundaryEvent : element.getBoundaryEvents()) {
+            int boundaryComponent = elementComponents.get(boundaryEvent);
+            counts[boundaryComponent] = Math.min(counts[boundaryComponent], counts[component]);
+        }
     }
 
     // '?' of the article: the state covers one of its ancestors in the tree of first discovery

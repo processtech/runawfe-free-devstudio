@@ -11,17 +11,25 @@ public class ProcessGraph {
     private final List<ProcessFlow> flows = new ArrayList<>();
 
     public ProcessElement addElement(String id, String name, ElementType type) {
-        if (elements.containsKey(id)) {
-            throw new IllegalArgumentException("Duplicate element id: " + id);
+        return addElement(new ProcessElement(id, name, type, null, false));
+    }
+
+    public ProcessElement addBoundaryEvent(String id, String name, String hostId, boolean interrupting) {
+        ProcessElement host = getExistingElement(hostId);
+        if (host.getType().isInstant() || host.isBoundaryEvent()) {
+            throw new IllegalArgumentException("Element " + hostId + " cannot have boundary events");
         }
-        ProcessElement element = new ProcessElement(id, name, type);
-        elements.put(id, element);
-        return element;
+        ProcessElement boundaryEvent = addElement(new ProcessElement(id, name, ElementType.CATCH_EVENT, host, interrupting));
+        host.addBoundaryEvent(boundaryEvent);
+        return boundaryEvent;
     }
 
     public ProcessFlow addFlow(String id, String sourceId, String targetId) {
         ProcessElement source = getExistingElement(sourceId);
         ProcessElement target = getExistingElement(targetId);
+        if (target.isBoundaryEvent()) {
+            throw new IllegalArgumentException("Boundary event " + targetId + " cannot have arriving flows");
+        }
         ProcessFlow flow = new ProcessFlow(id, source, target);
         source.addLeavingFlow(flow);
         target.addArrivingFlow(flow);
@@ -39,6 +47,14 @@ public class ProcessGraph {
 
     public List<ProcessFlow> getFlows() {
         return Collections.unmodifiableList(flows);
+    }
+
+    private ProcessElement addElement(ProcessElement element) {
+        if (elements.containsKey(element.getId())) {
+            throw new IllegalArgumentException("Duplicate element id: " + element.getId());
+        }
+        elements.put(element.getId(), element);
+        return element;
     }
 
     private ProcessElement getExistingElement(String id) {
