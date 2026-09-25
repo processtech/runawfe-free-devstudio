@@ -40,6 +40,7 @@ public class CheckUnreachableElementsAction extends BaseActionDelegate {
                     Throwables.throwIfUnchecked(e.getTargetException());
                     throw new RuntimeException(e.getTargetException());
                 } catch (InterruptedException e) {
+                    Dialogs.information(Localization.getString("CheckingUnreachableElementsAction.Canceled.Message"));
                     return;
                 }
                 showResult(operation);
@@ -91,7 +92,7 @@ public class CheckUnreachableElementsAction extends BaseActionDelegate {
             try {
                 List<Transition> transitions = definition.getChildrenRecursive(Transition.class);
                 List<Node> nodes = definition.getChildren(Node.class);
-                unlimitedTokens = new CheckUnlimitedTokenAlgorithm(transitions, nodes).startAlgorithm() != null;
+                unlimitedTokens = new CheckUnlimitedTokenAlgorithm(transitions, nodes).startAlgorithm(monitor::isCanceled) != null;
                 if (unlimitedTokens) {
                     return;
                 }
