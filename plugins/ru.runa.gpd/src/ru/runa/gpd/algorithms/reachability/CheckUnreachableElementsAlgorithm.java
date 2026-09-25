@@ -11,6 +11,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CancellationException;
+import java.util.function.BooleanSupplier;
 
 // State graph of the modified algorithm (A.G. Mikheev, 2024): instant elements fire right after
 // the element whose firing enabled them, so only token placements without enabled instant elements become states.
@@ -39,7 +41,7 @@ public class CheckUnreachableElementsAlgorithm {
         }
     }
 
-    public void startAlgorithm() {
+    public void startAlgorithm(BooleanSupplier canceled) {
         List<ProcessElement> elements = graph.getElements();
         Deque<TokenState> unprocessedStates = new ArrayDeque<>();
         for (ProcessElement element : elements) {
@@ -50,6 +52,9 @@ public class CheckUnreachableElementsAlgorithm {
             }
         }
         while (!unprocessedStates.isEmpty() && unboundedElement == null) {
+            if (canceled.getAsBoolean()) {
+                throw new CancellationException();
+            }
             TokenState state = unprocessedStates.poll();
             for (ProcessElement element : elements) {
                 if (element.getType().isInstant() || state.getCount(elementComponents.get(element)) == 0) {
