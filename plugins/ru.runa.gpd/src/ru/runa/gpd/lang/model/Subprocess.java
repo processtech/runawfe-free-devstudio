@@ -1,8 +1,10 @@
 package ru.runa.gpd.lang.model;
 
 import com.google.common.collect.Lists;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -51,6 +53,7 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
             if (getLeavingTransitions().size() != 1) {
                 errors.add(ValidationError.createLocalizedError(this, "subprocess.embedded.required1leavingtransition"));
             }
+            checkEmbeddedCompositionCycle(errors);
         } else {
             ProcessDefinition subprocessDefinition = getSubProcessDefinition();
             if (subprocessDefinition == null) {
@@ -103,6 +106,33 @@ public class Subprocess extends Node implements Synchronizable, IBoundaryEventCo
                 }
             }
         }
+    }
+    
+    private void checkEmbeddedCompositionCycle(List<ValidationError> errors) {
+        String cyclicCompositionName = findEmbeddedCompositionCycle(getSubProcessName(), new HashSet<>());
+        if (cyclicCompositionName != null) {
+            errors.add(ValidationError.createLocalizedError(this, "subprocess.embedded.compositionCycle", cyclicCompositionName));
+        }
+    }
+
+    private String findEmbeddedCompositionCycle(String subprocessName, Set<String> path) {
+        if (!path.add(subprocessName)) {
+            return subprocessName;
+        }
+        SubprocessDefinition subprocessDefinition = getProcessDefinition().getMainProcessDefinition()
+                .getEmbeddedSubprocessByName(subprocessName);
+        if (subprocessDefinition == null) {
+            return null;
+        }
+        for (Subprocess childSubprocess : subprocessDefinition.getChildrenRecursive(Subprocess.class)) {
+            if (childSubprocess.isEmbedded()) {
+                String cycle = findEmbeddedCompositionCycle(childSubprocess.getSubProcessName(), path);
+                if (cycle != null) {
+                    return cycle;
+                }
+            }
+        }
+        return null;
     }
 
     protected void checkSyncModeUsage(List<ValidationError> errors, VariableMapping mapping, ProcessDefinition subprocessDefinition) {
