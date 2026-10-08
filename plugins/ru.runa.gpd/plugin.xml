@@ -3097,6 +3097,13 @@
                menubarPath="file/graphChecks/command"
                style="push">
          </action>
+         <action
+               class="ru.runa.gpd.ui.action.CheckUnreachableElementsAction"
+               id="ru.runa.gpd.checkUnreachableElements"
+               label="%label.menu.checkingUnreachableElements"
+               menubarPath="file/graphChecks/command"
+               style="push">
+         </action>
           <action
                class="ru.runa.gpd.ui.action.CheckShortPeriodCycleAction"
                id="ru.runa.gpd.checkShortPeriodCycles"

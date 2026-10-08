@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CancellationException;
+import java.util.function.BooleanSupplier;
 
 import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.lang.model.EndState;
@@ -23,11 +25,17 @@ public class CheckUnlimitedTokenAlgorithm {
     List<Vector> graphList = new ArrayList<Vector>();
     ListUnprocessedStates listUnprocessedStates = new ListUnprocessedStates();
     List<TransitionVector> transitionVectors = new ArrayList<TransitionVector>();
+    private BooleanSupplier canceled = () -> false;
 
     public CheckUnlimitedTokenAlgorithm(List<Transition> transitions, List<Node> nodes) {
         this.transitions = transitions;
         this.nodes = nodes;
         init();
+    }
+
+    public Transition startAlgorithm(BooleanSupplier canceled) {
+        this.canceled = canceled;
+        return startAlgorithm();
     }
 
     public Transition startAlgorithm() {
@@ -50,6 +58,7 @@ public class CheckUnlimitedTokenAlgorithm {
         listUnprocessedStates.addInList(startVectorList);
 
         while (listUnprocessedStates.isFirstObjExist()) {
+            checkCanceled();
             Vector uVector = listUnprocessedStates.getFirstObj();
             if (DEBUG) {
                 StringBuilder str = new StringBuilder();
@@ -230,8 +239,10 @@ public class CheckUnlimitedTokenAlgorithm {
         }
 
         while (buffer.size() > 0) {
+            checkCanceled();
             List<Vector> foundVectors = new ArrayList<Vector>();
             for (TransitionVector transitionVector : transitionVectors) {
+                checkCanceled();
                 for (Vector tempVector : buffer) {
                     if (Arrays.equals(tempVector.getElements(), transitionVector.getToVector().getElements())) {
                         foundVectors.add(transitionVector.getFromVector());
@@ -241,6 +252,7 @@ public class CheckUnlimitedTokenAlgorithm {
 
             Iterator<Vector> foundedIterator = foundVectors.iterator();
             while (foundedIterator.hasNext()) {
+                checkCanceled();
                 Vector foundVector = foundedIterator.next();
                 for (Vector bufferVector : buffer) {
                     if (Arrays.equals(foundVector.getElements(), bufferVector.getElements())) {
@@ -252,6 +264,7 @@ public class CheckUnlimitedTokenAlgorithm {
 
             foundedIterator = foundVectors.iterator();
             while (foundedIterator.hasNext()) {
+                checkCanceled();
                 Vector foundVector = foundedIterator.next();
                 for (Vector listVector : listVectors) {
                     if (Arrays.equals(foundVector.getElements(), listVector.getElements())) {
@@ -267,5 +280,11 @@ public class CheckUnlimitedTokenAlgorithm {
         }
 
         return listVectors;
+    }
+
+    private void checkCanceled() {
+        if (canceled.getAsBoolean()) {
+            throw new CancellationException();
+        }
     }
 }
