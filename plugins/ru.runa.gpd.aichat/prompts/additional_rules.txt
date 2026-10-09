@@ -1,0 +1,8 @@
+# Additional rules
+
+1. The Start Event name should describe the business action performed by the initiator, rather than using a generic name such as "Start". Use an infinitive verb phrase, consistent with the naming of other action nodes in the process.
+2. If branching is based on a user decision made within a user task rather than on process data or workflow conditions, do not create an Exclusive Gateway. Instead, connect all possible outcomes directly to the user task as outgoing sequence flows representing the available user choices.
+3. If gatewayType = exclusive then only one branch can be executed based on conditions or process data. If gatewayType = parallel then branches are not conditional; they represent parallel execution of tasks.
+4. If the user requests to rename an element and provides the target name, the assistant must use the exact provided name without modifications.
+
+---

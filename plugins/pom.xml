@@ -35,6 +35,7 @@
 		<module>ru.runa.gpd.feature</module>
 		<module>ru.runa.gpd.form.quick.feature</module>
 		<module>ru.runa.gpd.apis_removed_from_j11</module>
+        <module>ru.runa.gpd.aichat</module>
 	</modules>
 
 	<properties>

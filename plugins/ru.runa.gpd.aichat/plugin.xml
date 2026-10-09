@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.startup">
+       <startup
+          class="ru.runa.gpd.aichat.EarlyStartup">
+       </startup>
+   </extension>
+   <extension
+         point="org.eclipse.ui.views">
+       <view
+           id="ru.runa.gpd.ui.view.aichatview"
+           name="%label.view.aichat"
+           class="ru.runa.gpd.aichat.view.AiChatView"
+           icon="icons/ai_chat.png"
+           category="org.eclipse.ui"
+           restorable="true"/>
+   </extension>
+   <extension
+         point="org.eclipse.ui.actionSets">
+         <actionSet
+               id="ru.runa.gpd.form.ftl.actionSet4"
+               label="aichat"
+               visible="true">
+            <action
+                  id="ru.runa.gpd.aichat.action.open"
+                  label="%label.action.aichat"
+                  class="ru.runa.gpd.aichat.action.OpenAiChat"
+                  icon="icons/ai_chat.png"
+                  menubarPath="gpd.window/additions"
+                  style="push"/>
+         </actionSet>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer class="ru.runa.gpd.aichat.settings.PreferenceInitializer"/>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            category="gpd.pref.connector"
+            class="ru.runa.gpd.settings.EmptyPreferencePage"
+            id="gpd.pref.connector.aichat"
+            name="%pref.aichat">
+      </page>
+      <page
+            category="gpd.pref.connector.aichat"
+            class="ru.runa.gpd.aichat.settings.AiChatPromptsPreferencePage"
+            id="gpd.pref.connector.aichat.prompts"
+            name="%prompts.settings">
+      </page>
+   </extension>
+<!--    <extension point="org.eclipse.ui.perspectiveExtensions">-->
+<!--        <perspectiveExtension targetID="ru.runa.gpd.perspective">-->
+<!--            <actionSet id="ru.runa.gpd.aichat.actionSet"/>-->
+<!--        </perspectiveExtension>-->
+<!--    </extension>-->
+</plugin>

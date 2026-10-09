@@ -1534,6 +1534,11 @@
                relationship="stack"
                relative="org.eclipse.ui.views.ContentOutline" />
          <view
+               id="ru.runa.gpd.ui.view.aichatview"
+               ratio="0.8"
+               relationship="stack"
+               relative="org.eclipse.ui.views.ContentOutline" />
+         <view
                id="ru.runa.gpd.botExplorerView"
                ratio="0.2"
                relationship="stack"
