@@ -12,6 +12,8 @@ import org.eclipse.swt.widgets.Text;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableContainer;
+import ru.runa.gpd.lang.model.VariableStorageKind;
+import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.gpd.ui.custom.ContentWizardPage;
 import ru.runa.gpd.ui.custom.LoggingModifyTextAdapter;
 import ru.runa.gpd.ui.custom.VariableNameChecker;
@@ -26,6 +28,7 @@ public class VariableNamePage extends ContentWizardPage {
     private String variableDesc;
     private Text scriptingNameField;
     private String scriptingVariableName;
+    private String redmineFieldName;
 
     public VariableNamePage(VariableContainer variableContainer, Variable variable) {
         this.variableContainer = variableContainer;
@@ -48,6 +51,12 @@ public class VariableNamePage extends ContentWizardPage {
             this.scriptingVariableName = VariableUtils.generateNameForScripting(variableContainer, variableName, variable);
         }
         this.variableDesc = variable != null && variable.getDescription() != null ? variable.getDescription() : "";
+        this.redmineFieldName = variable != null ? variable.getRedmineFieldName() : null;
+    }
+
+    private boolean isRedmineAttribute() {
+        return variableContainer instanceof VariableUserType
+                && ((VariableUserType) variableContainer).getReferenceStorage() == VariableStorageKind.REDMINE;
     }
 
     @Override
@@ -87,6 +96,28 @@ public class VariableNamePage extends ContentWizardPage {
                 variableDesc = descriptionField.getText();
             }
         });
+        if (isRedmineAttribute()) {
+            Label redmineLabel = new Label(composite, SWT.NONE);
+            redmineLabel.setText(Localization.getString("Variable.property.redmineFieldName"));
+            final Text redmineField = new Text(composite, SWT.BORDER);
+            redmineField.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            if (redmineFieldName != null) {
+                redmineField.setText(redmineFieldName);
+            }
+            redmineField.setMessage(variableName);
+            nameField.addModifyListener(new LoggingModifyTextAdapter() {
+                @Override
+                protected void onTextChanged(ModifyEvent e) throws Exception {
+                    redmineField.setMessage(variableName);
+                }
+            });
+            redmineField.addModifyListener(new LoggingModifyTextAdapter() {
+                @Override
+                protected void onTextChanged(ModifyEvent e) throws Exception {
+                    redmineFieldName = redmineField.getText();
+                }
+            });
+        }
         nameField.setFocus();
         nameField.selectAll();
     }
@@ -123,5 +154,9 @@ public class VariableNamePage extends ContentWizardPage {
     
     public void setVariableName(String Name) {
         this.variableName = Name;
+    }
+
+    public String getRedmineFieldName() {
+        return redmineFieldName == null || redmineFieldName.trim().isEmpty() ? null : redmineFieldName.trim();
     }
 }
