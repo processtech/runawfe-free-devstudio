@@ -46,10 +46,17 @@ public abstract class FormNode extends SwimlanedNode {
         if (super.testAttribute(target, name, value)) {
             return true;
         }
+        if ("formMenuAllowed".equals(name)) {
+            return Objects.equal(value, String.valueOf(isFormMenuAllowed()));
+        }
         if ("formExists".equals(name)) {
             return Objects.equal(value, String.valueOf(hasForm()));
         }
         return false;
+    }
+
+    protected boolean isFormMenuAllowed() {
+        return true;
     }
 
     public String getFormType() {
