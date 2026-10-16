@@ -31,6 +31,7 @@ import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Timer;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.bpmn.BusinessRule;
+import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
 import ru.runa.gpd.lang.model.bpmn.ScriptTask;
 import ru.runa.gpd.util.VariableUtils;
 
@@ -128,6 +129,10 @@ public class RenameVariableRefactoring extends Refactoring {
         List<BusinessRule> businessRules = processDefinition.getChildren(BusinessRule.class);
         for (BusinessRule businessRule : businessRules) {
             cache.add(new DelegablePresentation(businessRule));
+        }
+        List<CatchEventNode> conditionalEvents = processDefinition.getChildrenRecursive(CatchEventNode.class);
+        for (CatchEventNode node : conditionalEvents) {
+            cache.add(new ConditionalEventDelegablePresentation(node));
         }
         List<Subprocess> subprocesses = processDefinition.getChildren(Subprocess.class);
         for (Subprocess subprocess : subprocesses) {

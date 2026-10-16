@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.function.Predicate;
 import org.eclipse.swt.widgets.Composite;
 import ru.runa.gpd.lang.model.Variable;
+import ru.runa.gpd.office.FilesSupplierMode;
 import ru.runa.gpd.office.InputOutputModel;
 import ru.runa.gpd.office.Messages;
 import ru.runa.gpd.office.store.InternalStorageOperationHandlerCellEditorProvider.VariableUserTypeInfo;
@@ -12,12 +13,14 @@ import ru.runa.gpd.office.store.StorageConstraintsModel;
 public class SelectConstraintsComposite extends AbstractOperatingVariableComboBasedConstraintsCompositeBuilder {
     private final VariableUserTypeInfo variableUserTypeInfo;
     private final InputOutputModel inOutModel;
+    private final FilesSupplierMode mode;
 
     public SelectConstraintsComposite(Composite parent, int style, StorageConstraintsModel constraintsModel, VariableProvider variableProvider,
-            VariableUserTypeInfo variableUserTypeInfo, InputOutputModel inOutModel) {
+            VariableUserTypeInfo variableUserTypeInfo, InternalStorageDataModel dataModel) {
         super(parent, style, constraintsModel, variableProvider, variableUserTypeInfo.getVariableTypeName());
         this.variableUserTypeInfo = variableUserTypeInfo;
-        this.inOutModel = inOutModel;
+        this.inOutModel = dataModel.getInOutModel();
+        this.mode = dataModel.getMode();
     }
 
     @Override
@@ -40,7 +43,7 @@ public class SelectConstraintsComposite extends AbstractOperatingVariableComboBa
 
     @Override
     public void build() {
-        if (variableUserTypeInfo.isImmutable()) {
+        if (variableUserTypeInfo.isImmutable() || !mode.isOutSupported()) {
             return;
         }
         super.build();
@@ -53,7 +56,7 @@ public class SelectConstraintsComposite extends AbstractOperatingVariableComboBa
 
     @Override
     protected String[] getTypeNameFilters() {
-        return new String[] { List.class.getName() };
+        return new String[]{List.class.getName()};
     }
 
     @Override

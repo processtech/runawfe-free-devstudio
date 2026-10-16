@@ -11,11 +11,13 @@ import org.eclipse.gef.ui.actions.ActionRegistry;
 import org.eclipse.gef.ui.actions.SelectionAction;
 import org.eclipse.graphiti.ui.internal.parts.ContainerShapeEditPart;
 import org.eclipse.ui.actions.ActionFactory;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.editor.gef.part.graph.NodeGraphicalEditPart;
 import ru.runa.gpd.lang.model.Action;
 import ru.runa.gpd.lang.model.NamedGraphElement;
+import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
+import ru.runa.gpd.lang.model.bpmn.DataStore;
+import ru.runa.gpd.lang.model.bpmn.DottedTransition;
 import ru.runa.gpd.lang.model.bpmn.ScriptTask;
 import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
 
@@ -67,7 +69,15 @@ public class CopyAction extends SelectionAction {
                         result.addAll(scriptTask.getDottedTransitionSource());
                     }
 
-				}
+                }
+                if (node instanceof CatchEventNode) {
+                    CatchEventNode catchEvent = (CatchEventNode) node;
+                    catchEvent.getArrivingDottedTransitions().stream()
+                            .map(DottedTransition::getSource)
+                            .filter(DataStore.class::isInstance)
+                            .findFirst()
+                            .ifPresent(result::add);
+                }
             }
         }
         return result;
