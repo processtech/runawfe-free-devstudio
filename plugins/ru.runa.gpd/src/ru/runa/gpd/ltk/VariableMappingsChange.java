@@ -10,7 +10,7 @@ import ru.runa.gpd.util.VariableMapping;
 
 import com.google.common.base.Objects;
 
-public class VariableMappingsChange extends TextCompareChange {
+public class VariableMappingsChange extends TextCompareChange<Variable> {
     private final List<VariableMapping> mappingsToChange;
 
     public VariableMappingsChange(NamedGraphElement element, Variable currentVariable, Variable replacementVariable,
@@ -22,12 +22,12 @@ public class VariableMappingsChange extends TextCompareChange {
     @Override
     protected void performInUIThread() {
         for (VariableMapping mapping : mappingsToChange) {
-            if (Objects.equal(currentVariable.getName(), mapping.getName())) {
-                mapping.setName(replacementVariable.getName());
+            if (Objects.equal(currentObject.getName(), mapping.getName())) {
+                mapping.setName(replacementObject.getName());
             }
             if (mapping.isMultiinstanceLinkByRelation()) {
-                mapping.setName(mapping.getName().replace(Pattern.quote("(" + currentVariable.getName() + ")"),
-                        Matcher.quoteReplacement("(" + replacementVariable.getName() + ")")));
+                mapping.setName(mapping.getName().replace(Pattern.quote("(" + currentObject.getName() + ")"),
+                        Matcher.quoteReplacement("(" + replacementObject.getName() + ")")));
             }
         }
     }
@@ -36,12 +36,12 @@ public class VariableMappingsChange extends TextCompareChange {
     protected String toPreviewContent(Variable variable) {
         StringBuffer buffer = new StringBuffer();
         for (VariableMapping mapping : mappingsToChange) {
-            if (Objects.equal(currentVariable.getName(), mapping.getName())) {
+            if (Objects.equal(currentObject.getName(), mapping.getName())) {
                 buffer.append("<variable access=\"").append(mapping.getUsage()).append("\" mapped-name=\"").append(variable.getName());
                 buffer.append("\" name=\"").append(mapping.getMappedName()).append("\" />").append("\n");
             }
             if (mapping.isMultiinstanceLinkByRelation()) {
-                String s = mapping.getName().replace(Pattern.quote("(" + currentVariable.getName() + ")"),
+                String s = mapping.getName().replace(Pattern.quote("(" + currentObject.getName() + ")"),
                         Matcher.quoteReplacement("(" + variable.getName() + ")"));
                 buffer.append("<variable access=\"").append(mapping.getUsage()).append("\" mapped-name=\"").append(mapping.getMappedName());
                 buffer.append("\" name=\"").append(s).append("\" />").append("\n");

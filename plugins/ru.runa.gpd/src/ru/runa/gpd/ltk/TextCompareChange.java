@@ -10,35 +10,33 @@ import org.eclipse.ltk.core.refactoring.TextEditBasedChange;
 import org.eclipse.ltk.core.refactoring.TextEditBasedChangeGroup;
 import org.eclipse.ltk.ui.refactoring.TextEditChangeNode;
 import org.eclipse.swt.widgets.Display;
-
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.PluginLogger;
-import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.ui.dialog.ErrorDialog;
 
-public abstract class TextCompareChange extends TextEditBasedChange {
-    protected final Object object;
-    protected final Variable currentVariable;
-    protected final Variable replacementVariable;
+public abstract class TextCompareChange<E> extends TextEditBasedChange {
+    protected final Object targetObject;
+    protected final E currentObject;
+    protected final E replacementObject;
 
-    public TextCompareChange(Object element, Variable currentVariable, Variable replacementVariable) {
+    public TextCompareChange(Object element, E currentObject, E replacementObject) {
         super(element.toString());
-        this.object = element;
-        this.currentVariable = currentVariable;
-        this.replacementVariable = replacementVariable;
+        this.targetObject = element;
+        this.currentObject = currentObject;
+        this.replacementObject = replacementObject;
     }
 
     @Override
-    public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
+    public <T> T getAdapter(Class<T> adapter) {
         if (adapter == TextEditChangeNode.class) {
-            return new ChangeNode(this, object);
+            return adapter.cast(new ChangeNode(this, targetObject));
         }
         return super.getAdapter(adapter);
     }
 
     @Override
     public String getCurrentContent(IProgressMonitor pm) throws CoreException {
-        return toPreviewContent(currentVariable);
+        return toPreviewContent(currentObject);
     }
 
     @Override
@@ -48,7 +46,7 @@ public abstract class TextCompareChange extends TextEditBasedChange {
 
     @Override
     public String getPreviewContent(IProgressMonitor pm) throws CoreException {
-        return toPreviewContent(replacementVariable);
+        return toPreviewContent(replacementObject);
     }
 
     @Override
@@ -59,7 +57,7 @@ public abstract class TextCompareChange extends TextEditBasedChange {
 
     @Override
     public Object getModifiedElement() {
-        return object;
+        return targetObject;
     }
 
     @Override
@@ -71,20 +69,16 @@ public abstract class TextCompareChange extends TextEditBasedChange {
         return RefactoringStatus.createInfoStatus("Ok");
     }
 
-    protected abstract String toPreviewContent(Variable variable);
+    protected abstract String toPreviewContent(E object);
 
     @Override
     public Change perform(IProgressMonitor pm) throws CoreException {
-        Display.getDefault().asyncExec(new Runnable() {
-
-            @Override
-            public void run() {
-                try {
-                    performInUIThread();
-                } catch (Exception e) {
-                    PluginLogger.logErrorWithoutDialog("Unable to perform change in " + object, e);
-                    ErrorDialog.open(Localization.getString("RenameVariableException") + object + ": " + e.getLocalizedMessage(), e);
-                }
+        Display.getDefault().asyncExec(() -> {
+            try {
+                performInUIThread();
+            } catch (Exception e) {
+                PluginLogger.logErrorWithoutDialog("Unable to perform change in " + targetObject, e);
+                ErrorDialog.open(Localization.getString("RenameVariableException") + targetObject + ": " + e.getLocalizedMessage(), e);
             }
         });
         return new NullChange();

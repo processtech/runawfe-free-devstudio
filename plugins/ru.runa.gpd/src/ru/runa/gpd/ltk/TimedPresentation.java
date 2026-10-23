@@ -29,7 +29,7 @@ public class TimedPresentation extends SingleVariableRenameProvider<ITimed> {
         return changes;
     }
 
-    private class TimedChange extends TextCompareChange {
+    private class TimedChange extends TextCompareChange<Variable> {
 
         public TimedChange(Object element, Variable currentVariable, Variable previewVariable) {
             super(element, currentVariable, previewVariable);
@@ -37,7 +37,7 @@ public class TimedPresentation extends SingleVariableRenameProvider<ITimed> {
 
         @Override
         protected void performInUIThread() {
-            element.getTimer().setDelayVariableName(replacementVariable.getName());
+            element.getTimer().setDelayVariableName(replacementObject.getName());
         }
 
         @Override

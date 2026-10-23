@@ -32,7 +32,7 @@ public class SwimlanePresentation extends SingleVariableRenameProvider<Swimlane>
         return changes;
     }
 
-    private class SwimlaneInitializerChange extends TextCompareChange {
+    private class SwimlaneInitializerChange extends TextCompareChange<Variable> {
 
         public SwimlaneInitializerChange(Object element, Variable currentVariable, Variable previewVariable) {
             super(element, currentVariable, previewVariable);
@@ -46,7 +46,7 @@ public class SwimlanePresentation extends SingleVariableRenameProvider<Swimlane>
         private String getReplacementConfig() {
             String config = element.getDelegationConfiguration();
             SwimlaneInitializer swimlaneInitializer = SwimlaneInitializerParser.parse(config);
-            swimlaneInitializer.onVariableRename(currentVariable.getName(), replacementVariable.getName());
+            swimlaneInitializer.onVariableRename(currentObject.getName(), replacementObject.getName());
             return swimlaneInitializer.toString();
         }
 

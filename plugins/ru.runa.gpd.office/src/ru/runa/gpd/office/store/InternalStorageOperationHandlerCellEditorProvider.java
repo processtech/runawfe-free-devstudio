@@ -1,11 +1,15 @@
 package ru.runa.gpd.office.store;
 
+import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
@@ -25,6 +29,7 @@ import ru.runa.gpd.lang.model.GraphElementAware;
 import ru.runa.gpd.lang.model.ProcessDefinition;
 import ru.runa.gpd.lang.model.ProcessDefinitionAware;
 import ru.runa.gpd.lang.model.StorageAware;
+import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.VariableContainer;
 import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.gpd.lang.model.VariableUserTypeNameAware;
@@ -39,6 +44,10 @@ import ru.runa.gpd.office.store.externalstorage.ProcessDefinitionVariableProvide
 import ru.runa.gpd.office.store.externalstorage.SelectConstraintsComposite;
 import ru.runa.gpd.office.store.externalstorage.UpdateConstraintsComposite;
 import ru.runa.gpd.office.store.externalstorage.VariableProvider;
+import ru.runa.gpd.office.store.externalstorage.predicate.ConstraintsPredicate;
+import ru.runa.gpd.office.store.externalstorage.predicate.PredicateParser;
+import ru.runa.gpd.office.store.externalstorage.predicate.PredicateTree;
+import ru.runa.gpd.office.store.externalstorage.predicate.VariablePredicate;
 import ru.runa.gpd.ui.custom.SwtUtils;
 import ru.runa.gpd.util.EmbeddedFileUtils;
 import ru.runa.gpd.util.XmlUtil;
@@ -140,13 +149,176 @@ public class InternalStorageOperationHandlerCellEditorProvider extends XmlBasedC
         if (Strings.isNullOrEmpty(configuration)) {
             return Lists.newArrayList();
         }
-        List<String> result = super.getUsedVariableNames(delegable);
-        for (String variableName : delegable.getVariableNames(true)) {
-            if (configuration.contains("@" + variableName + "\"")) {
-                result.add(variableName);
+
+        InternalStorageDataModel model = InternalStorageDataModel.fromXml(configuration);
+        Set<String> usedVariableNames = new LinkedHashSet<>();
+
+        VariableProvider variableProvider =
+                new ProcessDefinitionVariableProvider(((ProcessDefinitionAware) delegable).getProcessDefinition());
+
+        List<Variable> processVariables = variableProvider.getVariables(true, true);
+
+        if (model.getInOutModel() != null) {
+            if (containsVariableByName(processVariables, model.inOutModel.inputVariable)) {
+                usedVariableNames.add(model.inOutModel.inputVariable);
+            }
+            if (containsVariableByName(processVariables, model.inOutModel.outputVariable)) {
+                usedVariableNames.add(model.inOutModel.outputVariable);
             }
         }
-        return result;
+
+        for (StorageConstraintsModel constraintsModel : model.constraints) {
+            if (containsVariableByName(processVariables, constraintsModel.variableName)) {
+                usedVariableNames.add(constraintsModel.variableName);
+            }
+
+            PredicateTree predicateTree = parsePredicate(constraintsModel);
+            if (predicateTree == null) {
+                continue;
+            }
+
+            for (ConstraintsPredicate<?, ?> predicate : predicateTree) {
+                if (!(predicate instanceof VariablePredicate)) {
+                    continue;
+                }
+                Variable right = ((VariablePredicate) predicate).getRight();
+                if (right != null) {
+                    processVariables.stream().filter(variable -> Objects.equal(variable.getScriptingName(), right.getScriptingName())).findFirst()
+                            .ifPresent(variable -> usedVariableNames.add(variable.getName()));
+                }
+            }
+        }
+
+        return new ArrayList<>(usedVariableNames);
+    }
+
+    @Override
+    public String getConfigurationOnVariableRename(Delegable delegable, Variable currentVariable, Variable previewVariable) throws Exception {
+        return getConfigurationOnVariableRename(delegable, currentVariable, previewVariable, null);
+    }
+
+    @Override
+    public String getConfigurationOnVariableRename(
+            Delegable delegable,
+            Variable currentVariable,
+            Variable previewVariable,
+            VariableUserType userType) throws Exception {
+
+        String configuration = delegable.getDelegationConfiguration();
+        if (Strings.isNullOrEmpty(configuration)) {
+            return configuration;
+        }
+
+        InternalStorageDataModel model = fromXml(configuration);
+        if (model.getInOutModel() != null) {
+            if (Objects.equal(model.inOutModel.inputVariable, currentVariable.getName())) {
+                model.inOutModel.inputVariable = previewVariable.getName();
+            }
+            if (Objects.equal(model.inOutModel.outputVariable, currentVariable.getName())) {
+                model.inOutModel.outputVariable = previewVariable.getName();
+            }
+        }
+
+        String currentAttributeName = null;
+        String previewAttributeName = null;
+        if (userType != null) {
+            currentAttributeName = getUserTypeAttributeName(currentVariable);
+            previewAttributeName = getUserTypeAttributeName(previewVariable);
+        }
+
+        for (StorageConstraintsModel constraintsModel : model.constraints) {
+            if (Objects.equal(constraintsModel.variableName, currentVariable.getName())) {
+                constraintsModel.variableName = previewVariable.getName();
+            }
+
+            final PredicateTree predicateTree = parsePredicate(constraintsModel);
+            if (predicateTree == null) {
+                continue;
+            }
+
+            boolean changed = false;
+
+            for (ConstraintsPredicate<?, ?> predicate : predicateTree) {
+                if (!(predicate instanceof VariablePredicate)) {
+                    continue;
+                }
+
+                VariablePredicate variablePredicate = (VariablePredicate) predicate;
+
+                if (userType != null && Objects.equal(userType.getName(), constraintsModel.getSheetName())) {
+                    Variable left = variablePredicate.getLeft();
+                    if (left != null && Objects.equal(left.getName(), currentAttributeName)) {
+                        left.setName(previewAttributeName);
+                        changed = true;
+                    }
+                }
+
+                Variable right = variablePredicate.getRight();
+                if (right != null && Objects.equal(right.getScriptingName(), currentVariable.getScriptingName())) {
+                    variablePredicate.setRight(previewVariable);
+                    changed = true;
+                }
+            }
+
+            if (changed) {
+                constraintsModel.setQueryString(predicateTree.head().toString().trim());
+            }
+        }
+
+        return model.toString();
+    }
+
+    @Override
+    public List<String> getUsedUserTypeNames(Delegable delegable) {
+        String configuration = delegable.getDelegationConfiguration();
+        if (Strings.isNullOrEmpty(configuration)) {
+            return Lists.newArrayList();
+        }
+        InternalStorageDataModel model = InternalStorageDataModel.fromXml(configuration);
+        return model.constraints.stream().map(StorageConstraintsModel::getSheetName).collect(Collectors.toList());
+    }
+
+    @Override
+    public String getConfigurationOnUserTypeRename(
+            Delegable delegable,
+            VariableUserType currentUserType,
+            VariableUserType previewUserType) throws Exception {
+        String configuration = delegable.getDelegationConfiguration();
+        if (Strings.isNullOrEmpty(configuration)) {
+            return configuration;
+        }
+        InternalStorageDataModel model = fromXml(configuration);
+        for (StorageConstraintsModel constraintsModel : model.constraints) {
+            if (Objects.equal(constraintsModel.getSheetName(), currentUserType.getName())) {
+                constraintsModel.setSheetName(previewUserType.getName());
+            }
+        }
+        return model.toString();
+    }
+
+    protected boolean containsVariableByName(List<Variable> variables, String variableName) {
+        return variableName != null && variables.stream().anyMatch(variable -> Objects.equal(variable.getName(), variableName));
+    }
+
+    protected PredicateTree parsePredicate(StorageConstraintsModel constraintsModel) {
+        String queryString = constraintsModel.getQueryString();
+        if (Strings.isNullOrEmpty(queryString)) {
+            return null;
+        }
+
+        PredicateParser predicateParser = new PredicateParser(queryString);
+        PredicateTree predicateTree = new PredicateTree();
+        predicateTree.setHead(predicateParser.parse());
+        return predicateTree;
+    }
+
+    protected String getUserTypeAttributeName(Variable variable) {
+        String name = variable.getName();
+        int delimiterIndex = name.lastIndexOf(VariableUserType.DELIM);
+        if (delimiterIndex < 0) {
+            return "";
+        }
+        return name.substring(delimiterIndex + VariableUserType.DELIM.length());
     }
 
     private class ConstructorView extends ConstructorComposite {

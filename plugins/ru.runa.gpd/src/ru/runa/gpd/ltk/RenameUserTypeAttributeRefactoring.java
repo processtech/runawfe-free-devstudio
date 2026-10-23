@@ -45,7 +45,7 @@ public class RenameUserTypeAttributeRefactoring extends Refactoring {
                             VariableUserType.DELIM + newAttributeName);
                     String newScriptingName = variable.getScriptingName().replace(VariableUserType.DELIM + oldAttribute.getScriptingName(),
                             VariableUserType.DELIM + newAttributeScriptingName);
-                    RenameVariableRefactoring refactoring = new RenameVariableRefactoring(processDefinition, variable, newName, newScriptingName);
+                    RenameVariableRefactoring refactoring = new RenameVariableRefactoring(processDefinition, variable, newName, newScriptingName, type);
                     status.merge(refactoring.checkInitialConditions(progressMonitor));
                     refactorings.add(refactoring);
                 }
@@ -85,7 +85,8 @@ public class RenameUserTypeAttributeRefactoring extends Refactoring {
             }
             return change.getChildren().length > 0;
         } catch (CoreException e) {
-            throw Throwables.propagate(e);
+            Throwables.throwIfUnchecked(e);
+            throw new RuntimeException(e);
         }
     }
 

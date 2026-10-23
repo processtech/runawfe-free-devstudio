@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Objects;
 import ru.runa.gpd.lang.model.Variable;
 
-class VariablePredicate extends ConstraintsPredicate<Variable, Variable> {
+public class VariablePredicate extends ConstraintsPredicate<Variable, Variable> {
     static final VariablePredicate EMPTY = new VariablePredicate();
 
     public VariablePredicate() {

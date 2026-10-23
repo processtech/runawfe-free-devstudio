@@ -30,6 +30,7 @@ import ru.runa.gpd.lang.model.Swimlane;
 import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Timer;
 import ru.runa.gpd.lang.model.Variable;
+import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.gpd.lang.model.bpmn.BusinessRule;
 import ru.runa.gpd.lang.model.bpmn.ScriptTask;
 import ru.runa.gpd.util.VariableUtils;
@@ -40,17 +41,18 @@ public class RenameVariableRefactoring extends Refactoring {
     private final IFolder definitionFolder;
     private final ProcessDefinition mainProcessDefinition;
     private final SortedMap<Variable, Variable> variablesMap;
+    private final VariableUserType userType;
     private final RefactoringStatus finalStatus;
 
     public RenameVariableRefactoring(ProcessDefinition definition, Variable oldVariable, String newName, String newScriptingName) {
+        this(definition, oldVariable, newName, newScriptingName, null);
+    }
+
+    public RenameVariableRefactoring(ProcessDefinition definition, Variable oldVariable, String newName, String newScriptingName, VariableUserType userType) {
         this.definitionFolder = (IFolder) definition.getFile().getParent();
         this.mainProcessDefinition = definition.getMainProcessDefinition();
-        this.variablesMap = new TreeMap<Variable, Variable>(new Comparator<Variable>() {
-            @Override
-            public int compare(Variable o1, Variable o2) {
-                return o1.getName().compareTo(o2.getName());
-            }
-        });
+        this.variablesMap = new TreeMap<>(Comparator.comparing(Variable::getName));
+        this.userType = userType;
         Variable newVariable = new Variable(newName, newScriptingName, oldVariable);
         this.variablesMap.put(oldVariable, newVariable);
         if (oldVariable.isComplex()) {
@@ -161,10 +163,10 @@ public class RenameVariableRefactoring extends Refactoring {
             cachedChange = new CompositeChange(getName());
             for (VariableRenameProvider<?> classPresentation : cache) {
                 try {
-                    List<Change> changes = classPresentation.getChanges(variablesMap);
+                    List<Change> changes = classPresentation.getChanges(variablesMap, userType);
                     cachedChange.addAll(changes.toArray(new Change[changes.size()]));
                 } catch (Exception e) {
-                    PluginLogger.logErrorWithoutDialog("Unable to get used variabes in " + classPresentation.element, e);
+                    PluginLogger.logErrorWithoutDialog("Unable to get used variables in " + classPresentation.element, e);
                     RenameVariableRefactoringStatusContext context = new RenameVariableRefactoringStatusContext(classPresentation, definitionFolder);
                     finalStatus.addWarning(
                             Localization.getString("RenameVariableException") + classPresentation.element + ": " + e.getLocalizedMessage(), context);

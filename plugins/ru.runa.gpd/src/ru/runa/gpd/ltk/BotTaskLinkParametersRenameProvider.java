@@ -38,7 +38,7 @@ public class BotTaskLinkParametersRenameProvider extends SingleVariableRenamePro
         return changes;
     }
 
-    private class ParamChange extends TextCompareChange {
+    private class ParamChange extends TextCompareChange<Variable> {
 
         public ParamChange(BotTaskLink element, Variable currentVariable, Variable previewVariable) {
             super(element, currentVariable, previewVariable);
@@ -56,8 +56,8 @@ public class BotTaskLinkParametersRenameProvider extends SingleVariableRenamePro
             for (Element groupElement : groupElements) {
                 List<Element> paramElements = groupElement.elements(PARAM);
                 for (Element element : paramElements) {
-                    if (Objects.equal(currentVariable.getName(), element.attributeValue(VARIABLE))) {
-                        element.addAttribute(VARIABLE, replacementVariable.getName());
+                    if (Objects.equal(currentObject.getName(), element.attributeValue(VARIABLE))) {
+                        element.addAttribute(VARIABLE, replacementObject.getName());
                     }
                 }
             }

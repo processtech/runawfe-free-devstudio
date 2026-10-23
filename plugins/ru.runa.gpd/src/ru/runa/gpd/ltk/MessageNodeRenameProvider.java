@@ -34,7 +34,7 @@ public class MessageNodeRenameProvider extends SingleVariableRenameProvider<Mess
         return changes;
     }
 
-    private class VariableMappingChange extends TextCompareChange {
+    private class VariableMappingChange extends TextCompareChange<Variable> {
 
         private final List<VariableMapping> mappingsToChange;
 
@@ -48,9 +48,9 @@ public class MessageNodeRenameProvider extends SingleVariableRenameProvider<Mess
         protected void performInUIThread() {
             for (VariableMapping mapping : mappingsToChange) {
                 if (mapping.isPropertySelector()) {
-                    mapping.setMappedName(VariableUtils.wrapVariableName(replacementVariable.getName()));
+                    mapping.setMappedName(VariableUtils.wrapVariableName(replacementObject.getName()));
                 } else {
-                    mapping.setName(replacementVariable.getName());
+                    mapping.setName(replacementObject.getName());
                 }
             }
         }

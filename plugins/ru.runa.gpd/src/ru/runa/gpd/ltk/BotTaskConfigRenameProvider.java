@@ -2,7 +2,6 @@ package ru.runa.gpd.ltk;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -11,8 +10,8 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
-
 import ru.runa.gpd.BotCache;
+import ru.runa.gpd.PluginLogger;
 import ru.runa.gpd.extension.DelegableProvider;
 import ru.runa.gpd.extension.HandlerRegistry;
 import ru.runa.gpd.lang.model.BotTask;
@@ -36,7 +35,7 @@ public class BotTaskConfigRenameProvider extends SingleVariableRenameProvider<Bo
         return changes;
     }
 
-    private class ConfigChange extends TextCompareChange {
+    private class ConfigChange extends TextCompareChange<Variable> {
 
         public ConfigChange(Variable currentVariable, Variable replacementVariable) {
             super(element, currentVariable, replacementVariable);
@@ -61,8 +60,12 @@ public class BotTaskConfigRenameProvider extends SingleVariableRenameProvider<Bo
         }
 
         private String getConfigurationReplacement() {
-            DelegableProvider provider = HandlerRegistry.getProvider(element.getDelegationClassName());
-            return provider.getConfigurationOnVariableRename(element, currentVariable, replacementVariable);
+            try {
+                return provider.getConfigurationOnVariableRename(element, currentObject, replacementObject);
+            } catch (Exception e) {
+                PluginLogger.logErrorWithoutDialog(this.getClass().getName(), e);
+                return element.getDelegationConfiguration();
+            }
         }
 
         @Override

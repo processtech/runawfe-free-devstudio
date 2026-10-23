@@ -70,7 +70,7 @@ public abstract class XmlBasedConstructorProvider<T extends Observable> extends 
     }
 
     @Override
-    public String getConfigurationOnVariableRename(Delegable delegable, Variable currentVariable, Variable previewVariable) {
+    public String getConfigurationOnVariableRename(Delegable delegable, Variable currentVariable, Variable previewVariable) throws Exception {
         String oldString = Pattern.quote("\"" + currentVariable.getName() + "\"");
         String newString = Matcher.quoteReplacement("\"" + previewVariable.getName() + "\"");
         return delegable.getDelegationConfiguration().replaceAll(oldString, newString);

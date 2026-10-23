@@ -12,6 +12,7 @@ import org.osgi.framework.Bundle;
 import ru.runa.gpd.lang.ValidationError;
 import ru.runa.gpd.lang.model.Delegable;
 import ru.runa.gpd.lang.model.Variable;
+import ru.runa.gpd.lang.model.VariableUserType;
 import ru.runa.gpd.lang.model.bpmn.ScriptTask;
 import ru.runa.gpd.ui.enhancement.DialogEnhancementMode;
 
@@ -49,11 +50,11 @@ public class DelegableProvider {
     public String getExtendedTooltip(Delegable delegable) {
         return delegable.getDelegationConfiguration();
     }
-    
+
     /**
      * Validates configuration. Implementors can return <code>false</code> to raise default invalid configuration message. Or can invoke
      * delegable.addError.
-     * 
+     *
      * @return <code>false</code> for raising default invalid configuration message
      */
     public boolean validateValue(Delegable delegable, List<ValidationError> errors) throws Exception {
@@ -62,7 +63,7 @@ public class DelegableProvider {
 
     /**
      * Callback is invoked when delegable is deleted from process definition.
-     * 
+     *
      * @param delegable
      */
     public void onDelete(Delegable delegable) {
@@ -70,7 +71,7 @@ public class DelegableProvider {
 
     /**
      * Callback is invoked when delegable is renamed in process definition.
-     * 
+     *
      * @param delegable
      * @param oldName
      * @param newName
@@ -80,7 +81,7 @@ public class DelegableProvider {
 
     /**
      * Callback is invoked when delegable is copied in process definition.
-     * 
+     *
      * @param sourceFolder
      * @param source
      * @param targetFolder
@@ -96,22 +97,44 @@ public class DelegableProvider {
     }
 
     public List<String> getUsedVariableNames(Delegable delegable) throws Exception {
-        String configuration = delegable.getDelegationConfiguration();
+        return findUsedNames(delegable.getDelegationConfiguration(), delegable.getVariableNames(true));
+    }
+
+    public String getConfigurationOnVariableRename(Delegable delegable, Variable currentVariable, Variable previewVariable) throws Exception {
+        return delegable.getDelegationConfiguration().replaceAll(Pattern.quote(currentVariable.getName()),
+                Matcher.quoteReplacement(previewVariable.getName()));
+    }
+
+    public String getConfigurationOnVariableRename(
+            Delegable delegable,
+            Variable currentAttribute,
+            Variable previewAttribute,
+            VariableUserType userType) throws Exception {
+        return getConfigurationOnVariableRename(delegable, currentAttribute, previewAttribute);
+    }
+
+    public List<String> getUsedUserTypeNames(Delegable delegable) throws Exception {
+        return Lists.newArrayList();
+    }
+
+    public String getConfigurationOnUserTypeRename(
+            Delegable delegable,
+            VariableUserType currentUserType,
+            VariableUserType previewUserType) throws Exception {
+        return delegable.getDelegationConfiguration();
+    }
+
+    protected List<String> findUsedNames(String configuration, List<String> names) {
         if (Strings.isNullOrEmpty(configuration)) {
             return Lists.newArrayList();
         }
         List<String> result = Lists.newArrayList();
-        for (String variableName : delegable.getVariableNames(true)) {
-            Matcher matcher = Pattern.compile(variableName + "[^\\.]").matcher(configuration);
+        for (String name : names) {
+            Matcher matcher = Pattern.compile(Pattern.quote(name) + "[^\\.]").matcher(configuration);
             if (matcher.find()) {
-                result.add(variableName);
+                result.add(name);
             }
         }
         return result;
-    }
-
-    public String getConfigurationOnVariableRename(Delegable delegable, Variable currentVariable, Variable previewVariable) {
-        return delegable.getDelegationConfiguration().replaceAll(Pattern.quote(currentVariable.getName()),
-                Matcher.quoteReplacement(previewVariable.getName()));
     }
 }

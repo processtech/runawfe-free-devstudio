@@ -49,7 +49,7 @@ public class MultiTaskPresentation extends SingleVariableRenameProvider<MultiTas
         return changes;
     }
 
-    private class MultiTaskDiscriminatorChange extends TextCompareChange {
+    private class MultiTaskDiscriminatorChange extends TextCompareChange<Variable> {
 
         public MultiTaskDiscriminatorChange(Object element, Variable currentVariable, Variable previewVariable) {
             super(element, currentVariable, previewVariable);
@@ -59,14 +59,14 @@ public class MultiTaskPresentation extends SingleVariableRenameProvider<MultiTas
         protected void performInUIThread() {
             VariableMapping discriminatorMapping = element.getDiscriminatorMapping();
             if (discriminatorMapping.isMultiinstanceLinkByVariable()) {
-                element.setDiscriminatorValue(replacementVariable.getName());
+                element.setDiscriminatorValue(replacementObject.getName());
             }
             if (discriminatorMapping.isMultiinstanceLinkByGroup() && !discriminatorMapping.isText()) {
-                element.setDiscriminatorValue(replacementVariable.getName());
+                element.setDiscriminatorValue(replacementObject.getName());
             }
             if (discriminatorMapping.isMultiinstanceLinkByRelation()) {
                 String s = element.getDiscriminatorValue();
-                s = s.replace("(" + currentVariable.getName() + ")", "(" + replacementVariable.getName() + ")");
+                s = s.replace("(" + currentObject.getName() + ")", "(" + replacementObject.getName() + ")");
                 element.setDiscriminatorValue(s);
             }
         }

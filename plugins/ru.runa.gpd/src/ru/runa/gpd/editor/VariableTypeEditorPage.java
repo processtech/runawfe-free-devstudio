@@ -57,6 +57,7 @@ import ru.runa.gpd.lang.par.ParContentProvider;
 import ru.runa.gpd.ltk.MoveUserTypeAttributeRefactoring;
 import ru.runa.gpd.ltk.RenameRefactoringWizard;
 import ru.runa.gpd.ltk.RenameUserTypeAttributeRefactoring;
+import ru.runa.gpd.ltk.RenameUserTypeRefactoring;
 import ru.runa.gpd.search.ElementMatch;
 import ru.runa.gpd.search.MultiVariableSearchQuery;
 import ru.runa.gpd.search.SearchResult;
@@ -352,6 +353,19 @@ public class VariableTypeEditorPage extends EditorPartBase<VariableUserType> {
             if (dialog.open() == Window.OK) {
                 String oldName = type.getName();
                 String newName = dialog.getName();
+                if (!Objects.equal(oldName, newName)) {
+                    RenameUserTypeRefactoring refactoring = new RenameUserTypeRefactoring(getDefinition(), type, dialog.getName());
+                    if (refactoring.isUserInteractionNeeded()) {
+                        RenameRefactoringWizard wizard = new RenameRefactoringWizard(refactoring);
+                        wizard.setDefaultPageTitle(Localization.getString("UserDefinedVariableType.update.title"));
+                        RefactoringWizardOpenOperation operation = new RefactoringWizardOpenOperation(wizard);
+                        int result = operation.run(Display.getCurrent().getActiveShell(),
+                                Localization.getString("UserDefinedVariableType.update.title"));
+                        if (result != IDialogConstants.OK_ID) {
+                            return;
+                        }
+                    }
+                }
                 VariableUtils.renameUserType(getDefinition(), type, dialog.getName());
                 if (GlobalSectionUtils.isGlobalSectionName(editor.getPartName())) {
                     oldName = IOUtils.GLOBAL_OBJECT_PREFIX + oldName;

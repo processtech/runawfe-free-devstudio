@@ -1,5 +1,6 @@
 package ru.runa.gpd.office.store.externalstorage.predicate;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.StringTokenizer;
 import ru.runa.gpd.lang.model.Variable;
@@ -14,9 +15,24 @@ public class PredicateParser {
     private final VariableUserType variableUserType;
     private final VariableProvider variableProvider;
 
+    /**
+     * * Создаёт парсер для разбора выражения без проверки существования переменных {@link Variable}
+     * * и атрибутов пользовательского типа {@link VariableUserType}.
+     * <p>
+     * Для переменных имя берётся из сохранённого в выражении {@code scriptingName},
+     * а для атрибутов пользовательского типа из сохранённого в выражении {@code name}.
+     *
+     * @param predicateString строка с предикатом для разбора
+     */
+    public PredicateParser(String predicateString) {
+        this.variableUserType = null;
+        this.variableProvider = null;
+        this.predicateString = hideSpacesInAttributeNames(predicateString.trim());
+    }
+
     public PredicateParser(String predicateString, VariableUserType variableUserType, VariableProvider variableProvider) {
-        this.variableUserType = variableUserType;
-        this.variableProvider = variableProvider;
+        this.variableUserType = Objects.requireNonNull(variableUserType);
+        this.variableProvider = Objects.requireNonNull(variableProvider);
         this.predicateString = hideSpacesInAttributeNames(predicateString.trim());
     }
 
@@ -39,8 +55,14 @@ public class PredicateParser {
             if (token.startsWith("[") && token.endsWith("]")) {
                 token = token.replace(UNICODE_CHARACTER_OVERLINE, ' ');
                 final String userTypeFieldName = token.substring(1, token.length() - 1);
-                final Variable userTypeField = getUserTypeFieldByName(userTypeFieldName)
-                        .orElseThrow(() -> new VariableDoesNotExistException(userTypeFieldName));
+                final Variable userTypeField; // поле пользовательского типа
+                if (variableUserType == null) {
+                    userTypeField = new Variable();
+                    userTypeField.setName(userTypeFieldName);
+                } else {
+                    userTypeField = getUserTypeFieldByName(userTypeFieldName)
+                            .orElseThrow(() -> new VariableDoesNotExistException(userTypeFieldName));
+                }
 
                 if (result != null && result instanceof VariablePredicate) {
                     ((VariablePredicate) result).setLeft(userTypeField);
@@ -61,7 +83,7 @@ public class PredicateParser {
                 PredicateOperationType type = PredicateOperationType.byCode(token.toLowerCase()).get();
                 if (PredicateOperationType.AND.equals(type) || PredicateOperationType.OR.equals(type)) {
                     if (result instanceof VariablePredicate) {
-                        result = new ExpressionPredicate<VariablePredicate>((VariablePredicate) result, type, null);
+                        result = new ExpressionPredicate<>((VariablePredicate) result, type, null);
                     } else {
                         result = new ExpressionPredicate<ExpressionPredicate<?>>((ExpressionPredicate<?>) result, type, null);
                     }
@@ -71,15 +93,22 @@ public class PredicateParser {
                     final VariablePredicate right = ((ExpressionPredicate<?>) result).getRight();
                     right.setType(type);
                 } else if (result != null && result instanceof VariablePredicate) {
-                    ((VariablePredicate) result).setType(type);
+                    result.setType(type);
                 }
             } else if (token.startsWith("@")) {
                 final String variableName = token.substring(1);
-                final Variable comparingWithVariable = variableProvider.variableByScriptingName(variableName)
-                        .orElseThrow(() -> new VariableDoesNotExistException(variableName));
-                if (result != null && result instanceof VariablePredicate) {
+                final Variable comparingWithVariable;
+                if (variableProvider == null) {
+                    comparingWithVariable = new Variable();
+                    comparingWithVariable.setName(variableName);
+                    comparingWithVariable.setScriptingName(variableName);
+                } else {
+                    comparingWithVariable = variableProvider.variableByScriptingName(variableName)
+                            .orElseThrow(() -> new VariableDoesNotExistException(variableName));
+                }
+                if (result instanceof VariablePredicate) {// result - узел операции, в которой участвует эта переменная
                     ((VariablePredicate) result).setRight(comparingWithVariable);
-                } else if (result != null && result instanceof ExpressionPredicate) {
+                } else if (result instanceof ExpressionPredicate) {
                     final VariablePredicate right = ((ExpressionPredicate<?>) result).getRight();
                     right.setRight(comparingWithVariable);
                 }
