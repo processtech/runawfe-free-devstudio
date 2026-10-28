@@ -4,19 +4,27 @@ import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.ui.views.properties.ComboBoxPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import ru.runa.gpd.Localization;
 import ru.runa.gpd.editor.graphiti.HasTextDecorator;
 import ru.runa.gpd.editor.graphiti.TextDecoratorEmulation;
+import ru.runa.gpd.extension.HandlerArtifact;
 import ru.runa.gpd.lang.ValidationError;
+import ru.runa.gpd.lang.model.bpmn.ConnectableViaDottedTransition;
+import ru.runa.gpd.lang.model.bpmn.DataStore;
+import ru.runa.gpd.lang.model.bpmn.DottedTransition;
 import ru.runa.gpd.lang.model.bpmn.StartEventType;
 import ru.runa.gpd.util.VariableMapping;
 import ru.runa.wfe.definition.ProcessDefinitionAccessType;
 
-public class StartState extends FormNode implements HasTextDecorator, VariableMappingsValidator {
+public class StartState extends FormNode implements ConnectableViaDottedTransition, Delegable, HasTextDecorator, StorageAware, VariableMappingsValidator {
+
+    private static final String CONDITIONAL_INTERNAL_STORAGE_HANDLER = "ru.runa.wfe.office.storage.handler.StartInternalStorageHandler";
 
     protected TextDecoratorEmulation decoratorEmulation;
     protected String timerEventDefinition;
@@ -26,13 +34,61 @@ public class StartState extends FormNode implements HasTextDecorator, VariableMa
     }
 
     @Override
-    protected boolean allowArrivingTransition(Node source, List<Transition> transitions) {
+    public boolean isUseExternalStorageIn() {
+        return isConnectedToExternalStorageIn();
+    }
+
+    @Override
+    public boolean isUseExternalStorageOut() {
         return false;
     }
 
     @Override
-    protected boolean allowLeavingTransition(List<Transition> transitions) {
-        return true;
+    public boolean canAddLeavingDottedTransition() {
+        return false;
+    }
+
+    @Override
+    public boolean canAddArrivingDottedTransition(ConnectableViaDottedTransition source) {
+        return source instanceof DataStore
+                && ConnectableViaDottedTransition.super.canAddArrivingDottedTransition(source);
+    }
+
+    @Override
+    public void addArrivingDottedTransition(DottedTransition transition) {
+        setSwimlane(null);
+        setEventType(StartEventType.conditional);
+        transition.setTarget(this);
+        setDelegationClassName(CONDITIONAL_INTERNAL_STORAGE_HANDLER);
+    }
+
+    @Override
+    public void removeArrivingDottedTransition(DottedTransition transition) {
+//        setDelegationClassName(null);
+    }
+
+    @Override
+    public void addLeavingDottedTransition(DottedTransition transition) {
+        // forbidden
+    }
+
+    @Override
+    public void removeLeavingDottedTransition(DottedTransition transition) {
+        // impossible
+    }
+
+    @Override
+    public List<DottedTransition> getLeavingDottedTransitions() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public List<DottedTransition> getArrivingDottedTransitions() {
+        return getProcessDefinition().getNodesRecursive().stream()
+                .filter(n -> n instanceof ConnectableViaDottedTransition)
+                .flatMap(n -> ((ConnectableViaDottedTransition) n).getLeavingDottedTransitions().stream())
+                .filter(t -> t.getTarget() != null && t.getTarget().equals(this))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -144,6 +200,9 @@ public class StartState extends FormNode implements HasTextDecorator, VariableMa
         if ("isEventTypeDefined".equals(name)) {
             return Objects.equal(value, String.valueOf(isStartByEvent()));
         }
+        if (PROPERTY_DELEGABLE_EDIT_HANDLER.equals(name)) {
+            return false;
+        }
         return super.testAttribute(target, name, value);
     }
 
@@ -152,7 +211,7 @@ public class StartState extends FormNode implements HasTextDecorator, VariableMa
     }
 
     public void setTimerEventDefinition(String timerEventDefinition) {
-        if (timerEventDefinition != this.timerEventDefinition) {
+        if (Objects.equal(timerEventDefinition, this.timerEventDefinition)) {
             String oldTimerEventDefinition = this.timerEventDefinition;
             this.timerEventDefinition = timerEventDefinition;
             firePropertyChange(PROPERTY_TIMER_EVENT_DEFINITION, oldTimerEventDefinition, this.timerEventDefinition);
@@ -161,6 +220,10 @@ public class StartState extends FormNode implements HasTextDecorator, VariableMa
 
     public boolean isStartByTimer() {
         return eventType == StartEventType.timer;
+    }
+
+    public boolean isStartByCondition() {
+        return eventType == StartEventType.conditional;
     }
 
     private StartEventType eventType = StartEventType.blank;
@@ -217,9 +280,24 @@ public class StartState extends FormNode implements HasTextDecorator, VariableMa
         }
     }
 
+    @Override
+    public String getDelegationType() {
+        return HandlerArtifact.ACTION;
+    }
+
+    @Override
+    public boolean isDelegable() {
+        return isStartByCondition();
+    }
+
     private boolean isProcessDefinitionTriggeredByEvent() {
         ProcessDefinition processDefinition = getProcessDefinition();
         return processDefinition instanceof SubprocessDefinition && ((SubprocessDefinition) processDefinition).isTriggeredByEvent();
+    }
+
+    public boolean isConnectedToExternalStorageIn() {
+        return getArrivingDottedTransitions().stream()
+                .anyMatch(transition -> transition.getSource() instanceof DataStore);
     }
 
 }

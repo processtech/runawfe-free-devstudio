@@ -37,9 +37,12 @@ import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.NamedGraphElement;
 import ru.runa.gpd.lang.model.Node;
+import ru.runa.gpd.lang.model.StartState;
 import ru.runa.gpd.lang.model.Transition;
 import ru.runa.gpd.lang.model.bpmn.ConnectableViaDottedTransition;
+import ru.runa.gpd.lang.model.bpmn.DataStore;
 import ru.runa.gpd.lang.model.bpmn.DottedTransition;
+import ru.runa.gpd.lang.model.bpmn.StartEventType;
 import ru.runa.gpd.lang.model.bpmn.TextDecorationNode;
 import ru.runa.gpd.settings.PrefConstants;
 import ru.runa.gpd.util.EmbeddedFileUtils;
@@ -133,6 +136,7 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements Custom
             return;
         } else if (element instanceof DottedTransition) {
             removeDottedTransition((DottedTransition) element);
+            restoreStartEventType((DottedTransition) element, StartEventType.blank);
             return;
         }
         if (element instanceof Node) {
@@ -163,16 +167,28 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements Custom
             Transition transition = (Transition) element;
             transition.getSource().addLeavingTransition(transition);
             return;
-        } else if (element instanceof TextDecorationNode) {
+        }
+        if (element instanceof DottedTransition) {
+            DottedTransition transition = (DottedTransition) element;
+            restoreStartEventType(transition, StartEventType.blank);
+            Node target = transition.getTarget();
+            Node source = transition.getSource();
+            if (target instanceof StartState && source instanceof DataStore) {
+                ((StartState) target).setEventType(StartEventType.conditional);
+            }
+            return;
+        }
+        if (element instanceof TextDecorationNode) {
             TextDecorationNode textDecoration = (TextDecorationNode) element;
             textDecoration.getTarget().getParent().addChild(textDecoration.getTarget());
             restoreTransitions();
             return;
-        } else {
-            element.getParent().addChild(element);
-            if (element instanceof FormNode) {
-                restoreFormFiles();
-            }
+        }
+
+        element.getParent().addChild(element);
+
+        if (element instanceof FormNode) {
+            restoreFormFiles();
         }
         if (element instanceof Node) {
             restoreTransitions();
@@ -321,6 +337,14 @@ public class DeleteElementFeature extends DefaultDeleteFeature implements Custom
 
     private void restoreProcessFiles() {
         processFilePaths.stream().forEach(path -> restoreFile(path));
+    }
+
+    private void restoreStartEventType(DottedTransition transition, StartEventType type) {
+        Node target = transition.getTarget();
+        Node source = transition.getSource();
+        if (target instanceof StartState && source instanceof DataStore) {
+            ((StartState) target).setEventType(type);
+        }
     }
 
 }

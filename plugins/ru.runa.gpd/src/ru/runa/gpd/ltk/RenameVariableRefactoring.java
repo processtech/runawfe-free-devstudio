@@ -24,6 +24,7 @@ import ru.runa.gpd.lang.model.FormNode;
 import ru.runa.gpd.lang.model.GraphElement;
 import ru.runa.gpd.lang.model.MultiTaskState;
 import ru.runa.gpd.lang.model.ProcessDefinition;
+import ru.runa.gpd.lang.model.StartState;
 import ru.runa.gpd.lang.model.Subprocess;
 import ru.runa.gpd.lang.model.SubprocessDefinition;
 import ru.runa.gpd.lang.model.Swimlane;
@@ -31,6 +32,7 @@ import ru.runa.gpd.lang.model.TaskState;
 import ru.runa.gpd.lang.model.Timer;
 import ru.runa.gpd.lang.model.Variable;
 import ru.runa.gpd.lang.model.bpmn.BusinessRule;
+import ru.runa.gpd.lang.model.bpmn.CatchEventNode;
 import ru.runa.gpd.lang.model.bpmn.ScriptTask;
 import ru.runa.gpd.util.VariableUtils;
 
@@ -86,6 +88,10 @@ public class RenameVariableRefactoring extends Refactoring {
         for (FormNode formNode : formNodes) {
             cache.add(new FormNodePresentation(definitionFolder, formNode));
         }
+        List<StartState> startStates = processDefinition.getChildren(StartState.class);
+        for (StartState startState : startStates) {
+            cache.add(new ConditionalEventDelegablePresentation(startState));
+        }
         List<TaskState> stateNodes = processDefinition.getChildren(TaskState.class);
         for (TaskState taskState : stateNodes) {
             cache.add(new TimedPresentation(taskState));
@@ -128,6 +134,10 @@ public class RenameVariableRefactoring extends Refactoring {
         List<BusinessRule> businessRules = processDefinition.getChildren(BusinessRule.class);
         for (BusinessRule businessRule : businessRules) {
             cache.add(new DelegablePresentation(businessRule));
+        }
+        List<CatchEventNode> conditionalEvents = processDefinition.getChildrenRecursive(CatchEventNode.class);
+        for (CatchEventNode node : conditionalEvents) {
+            cache.add(new ConditionalEventDelegablePresentation(node));
         }
         List<Subprocess> subprocesses = processDefinition.getChildren(Subprocess.class);
         for (Subprocess subprocess : subprocesses) {
